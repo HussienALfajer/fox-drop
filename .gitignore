@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+
+# Flutter and Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+*.iml
+**/android/local.properties
+**/android/key.properties
+**/ios/Pods/
+**/ios/Flutter/Generated.xcconfig
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.jks
+*.keystore
+google-services.json
+GoogleService-Info.plist
+
+# Tests
+.verify/
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# Local uploads and storage
+storage/
+uploads/
+.data/
+
+# Logs
+*.log
+logs/
+
+# Local agent files
+CLAUDE.local.md
+.claude/settings.local.json
+.claude/worktrees/
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
