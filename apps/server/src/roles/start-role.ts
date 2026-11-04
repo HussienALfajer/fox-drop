@@ -1,17 +1,28 @@
-import { type INestApplicationContext, Module } from '@nestjs/common';
+import { type INestApplicationContext, Module, type Type } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Logger } from 'nestjs-pino';
 import { ApiModule } from '../api.module.js';
 import { createApiApp } from '../http/create-api-app.js';
 import { LoggingModule } from '../logging/logging.module.js';
+import { AuditWorkerModule } from '../modules/audit/index.js';
 import type { ProcessRole } from './process-role.js';
 
-@Module({ imports: [LoggingModule] })
-class BackgroundRoleModule {}
+type BackgroundRole = Exclude<ProcessRole, 'api'>;
 
 // The worker, dispatcher and otp-sender roles have no HTTP server. Their jobs,
-// loops and queues join this context in the slices that build them.
-export async function createBackgroundContext(): Promise<INestApplicationContext> {
+// loops and queues join their role here in the slices that build them.
+const BACKGROUND_MODULES: Record<BackgroundRole, Type[]> = {
+  worker: [AuditWorkerModule],
+  dispatcher: [],
+  'otp-sender': [],
+};
+
+export async function createBackgroundContext(
+  role: BackgroundRole,
+): Promise<INestApplicationContext> {
+  @Module({ imports: [LoggingModule, ...BACKGROUND_MODULES[role]] })
+  class BackgroundRoleModule {}
+
   const context = await NestFactory.createApplicationContext(BackgroundRoleModule, {
     bufferLogs: true,
     abortOnError: false,
@@ -44,7 +55,7 @@ export async function startRole(role: ProcessRole): Promise<void> {
     await app.listen({ host: '0.0.0.0', port: Number(process.env.PORT ?? 3000) });
     context = app;
   } else {
-    context = await createBackgroundContext();
+    context = await createBackgroundContext(role);
   }
   const logger = context.get(Logger);
   logger.log(`${role} started`, 'ProcessRole');

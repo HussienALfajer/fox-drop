@@ -1,54 +1,19 @@
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDatabase, type Database } from './database.js';
 import { runMigrations } from './migrate.js';
+import { startTestDatabase, type TestDatabase } from './test-database.js';
 
-// The migrations on a fresh PostGIS, set up exactly as compose.yaml sets up
-// the local one: the same image, the same bootstrap of the two roles.
-const serverDir = new URL('../../', import.meta.url);
-const composeFile = readFileSync(new URL('../../compose.yaml', serverDir), 'utf8');
-const image = /image: (postgis\/postgis:\S+)/.exec(composeFile)?.[1];
-if (!image) throw new Error('compose.yaml has no postgis image');
-
-const passwords = { migrator: 'test-migrator-password', app: 'test-app-password' };
-
-let container: StartedPostgreSqlContainer;
+let database: TestDatabase;
 let app: Database;
 
-function roleUrl(role: string, password: string): string {
-  return `postgres://${role}:${password}@${container.getHost()}:${container.getPort()}/fox_drop`;
-}
-
 beforeAll(async () => {
-  container = await new PostgreSqlContainer(image)
-    .withDatabase('fox_drop')
-    .withUsername('postgres')
-    .withPassword('test-postgres-password')
-    .withEnvironment({
-      FOX_DROP_MIGRATOR_PASSWORD: passwords.migrator,
-      FOX_DROP_APP_PASSWORD: passwords.app,
-    })
-    .withCopyFilesToContainer([
-      {
-        source: fileURLToPath(new URL('db/init-development.sh', serverDir)),
-        target: '/docker-entrypoint-initdb.d/20-fox-drop.sh',
-        mode: 0o755,
-      },
-      {
-        source: fileURLToPath(new URL('db/bootstrap.sql', serverDir)),
-        target: '/fox-drop/bootstrap.sql',
-      },
-    ])
-    .start();
-  await runMigrations(roleUrl('fox_drop_migrator', passwords.migrator));
-  app = createDatabase(roleUrl('fox_drop_app', passwords.app));
+  database = await startTestDatabase();
+  app = createDatabase(database.appUrl);
 }, 300_000);
 
 afterAll(async () => {
   await app?.pool.end();
-  await container?.stop();
+  await database?.stop();
 });
 
 async function appQuery(text: string) {
@@ -71,8 +36,7 @@ describe('migrations on a fresh database', () => {
   });
 
   it('apply nothing on a second run, even two at once', async () => {
-    const url = roleUrl('fox_drop_migrator', passwords.migrator);
-    await Promise.all([runMigrations(url), runMigrations(url)]);
+    await Promise.all([runMigrations(database.migratorUrl), runMigrations(database.migratorUrl)]);
 
     const { rows } = await appQuery('SELECT count(*)::int AS count FROM geo.cities');
     expect(rows[0].count).toBe(1);

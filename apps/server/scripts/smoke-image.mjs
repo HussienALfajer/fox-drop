@@ -1,7 +1,9 @@
-// Starts the server image once per role and checks that each role starts,
-// that the api answers with Server-Time, and that each stops cleanly on
-// SIGTERM. Usage: node apps/server/scripts/smoke-image.mjs <image>
+// Starts the server image once per role against a migrated PostGIS and checks
+// that each role starts, that the api answers with Server-Time, and that each
+// stops cleanly on SIGTERM. Usage: node apps/server/scripts/smoke-image.mjs <image>
 import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const image = process.argv[2];
 if (!image) throw new Error('Usage: smoke-image.mjs <image>');
@@ -19,12 +21,90 @@ async function waitForLog(container, text) {
   throw new Error(`"${text}" never appeared:\n${docker('logs', container)}`);
 }
 
+// The database the roles connect to, bootstrapped as compose.yaml does it and
+// migrated by the image itself, as a deploy does (architecture §17.3).
+const serverDir = new URL('../', import.meta.url);
+const postgisImage = /image: (postgis\/postgis:\S+)/.exec(
+  readFileSync(new URL('../../compose.yaml', serverDir), 'utf8'),
+)?.[1];
+if (!postgisImage) throw new Error('compose.yaml has no postgis image');
+const network = 'fox-drop-smoke';
+const databaseUrl = (role, password) => `postgres://${role}:${password}@postgis:5432/fox_drop`;
+
+async function startDatabase() {
+  docker('network', 'create', network);
+  docker(
+    'run',
+    '--detach',
+    '--name',
+    'fox-drop-smoke-postgis',
+    '--network',
+    network,
+    '--network-alias',
+    'postgis',
+    '--env',
+    'POSTGRES_DB=fox_drop',
+    '--env',
+    'POSTGRES_PASSWORD=smoke-postgres-password',
+    '--env',
+    'FOX_DROP_MIGRATOR_PASSWORD=smoke-migrator-password',
+    '--env',
+    'FOX_DROP_APP_PASSWORD=smoke-app-password',
+    '--volume',
+    `${fileURLToPath(new URL('db/init-development.sh', serverDir))}:/docker-entrypoint-initdb.d/20-fox-drop.sh:ro`,
+    '--volume',
+    `${fileURLToPath(new URL('db/bootstrap.sql', serverDir))}:/fox-drop/bootstrap.sql:ro`,
+    postgisImage,
+  );
+  // The init scripts run on a server that listens on its socket only, so
+  // TCP answers once the real server is up.
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    try {
+      docker(
+        'exec',
+        'fox-drop-smoke-postgis',
+        'pg_isready',
+        '--username',
+        'postgres',
+        '--host',
+        '127.0.0.1',
+      );
+      break;
+    } catch {
+      await pause(500);
+    }
+  }
+  docker(
+    'run',
+    '--rm',
+    '--network',
+    network,
+    '--env',
+    `MIGRATION_DATABASE_URL=${databaseUrl('fox_drop_migrator', 'smoke-migrator-password')}`,
+    image,
+    'node',
+    'dist/database/migrate-command.js',
+  );
+}
+
+function stopDatabase() {
+  try {
+    docker('rm', '--force', '--volumes', 'fox-drop-smoke-postgis');
+  } finally {
+    docker('network', 'rm', network);
+  }
+}
+
 async function checkRole(role) {
   const container = docker(
     'run',
     '--detach',
+    '--network',
+    network,
     '--env',
     `PROCESS_ROLE=${role}`,
+    '--env',
+    `DATABASE_URL=${databaseUrl('fox_drop_app', 'smoke-app-password')}`,
     '--publish',
     '127.0.0.1::3000',
     image,
@@ -47,4 +127,9 @@ async function checkRole(role) {
   }
 }
 
-for (const role of ['api', 'worker', 'dispatcher', 'otp-sender']) await checkRole(role);
+try {
+  await startDatabase();
+  for (const role of ['api', 'worker', 'dispatcher', 'otp-sender']) await checkRole(role);
+} finally {
+  stopDatabase();
+}
