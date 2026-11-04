@@ -4,6 +4,16 @@ import { cleanupOpenApiDoc } from 'nestjs-zod';
 
 const SERVER_TIME = 'Server-Time';
 
+// Building the API module to read its routes needs the variables its modules
+// read at start. Nothing is queried, so addresses where nothing listens do:
+// the pool connects on first use only, and Valkey's failed connection is
+// closed with the app.
+export function setOpenApiPlaceholderEnvironment(): void {
+  process.env.DATABASE_URL ??= 'postgres://openapi:openapi@127.0.0.1:1/openapi';
+  process.env.VALKEY_URL ??= 'redis://127.0.0.1:1';
+  process.env.IDENTITY_ENCRYPTION_KEY ??= Buffer.alloc(32).toString('base64');
+}
+
 // Architecture §5.3, E6: the OpenAPI 3.1 document is generated from the
 // controllers, and the TypeScript and Dart clients are generated from it.
 export function createOpenApiDocument(app: INestApplication): OpenAPIObject {

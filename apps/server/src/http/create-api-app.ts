@@ -1,3 +1,4 @@
+import fastifyCookie from '@fastify/cookie';
 import { Module, type Type } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -14,6 +15,8 @@ export async function createApiApp(module: Type): Promise<NestFastifyApplication
     abortOnError: false,
   });
   app.useLogger(app.get(Logger));
+  // Reads and sets the admin session cookie (architecture §10.3).
+  await app.register(fastifyCookie);
   app.setGlobalPrefix('v1');
   app.useGlobalPipes(new ZodValidationPipe());
   // Responses declared with @ZodResponse are parsed by their schema, so a
