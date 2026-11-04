@@ -12,7 +12,7 @@ part 'setup_link_dto_output.g.dart';
 ///
 /// Properties:
 /// * [accountId]
-/// * [setupToken] - Shown this once. The panel builds the link <panel>/setup#token=<setupToken> for the owner to share.
+/// * [setupToken] - Shown this once. The panel puts it in its setup link, after /setup#token=, for the owner to share.
 /// * [setupExpiresAt]
 @BuiltValue()
 abstract class SetupLinkDtoOutput
@@ -20,7 +20,7 @@ abstract class SetupLinkDtoOutput
   @BuiltValueField(wireName: r'accountId')
   String get accountId;
 
-  /// Shown this once. The panel builds the link <panel>/setup#token=<setupToken> for the owner to share.
+  /// Shown this once. The panel puts it in its setup link, after /setup#token=, for the owner to share.
   @BuiltValueField(wireName: r'setupToken')
   String get setupToken;
 

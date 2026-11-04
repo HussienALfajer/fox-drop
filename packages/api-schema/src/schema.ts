@@ -349,7 +349,7 @@ export interface components {
         SetupLinkDto_Output: {
             /** Format: uuid */
             accountId: string;
-            /** @description Shown this once. The panel builds the link <panel>/setup#token=<setupToken> for the owner to share. */
+            /** @description Shown this once. The panel puts it in its setup link, after /setup#token=, for the owner to share. */
             setupToken: string;
             /** Format: date-time */
             setupExpiresAt: string;

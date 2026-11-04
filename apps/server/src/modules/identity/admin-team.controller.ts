@@ -68,7 +68,7 @@ class SetupLinkDto extends createZodDto(
     setupToken: z
       .string()
       .describe(
-        'Shown this once. The panel builds the link <panel>/setup#token=<setupToken> for the owner to share.',
+        'Shown this once. The panel puts it in its setup link, after /setup#token=, for the owner to share.',
       ),
     setupExpiresAt: z.iso.datetime(),
   }),

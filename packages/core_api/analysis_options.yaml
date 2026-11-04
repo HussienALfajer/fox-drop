@@ -6,6 +6,8 @@ include: ../../analysis_options.yaml
 
 analyzer:
   errors:
+    # Enum values such as the role codes OWN and FIN keep their spelling.
+    constant_identifier_names: ignore
     no_leading_underscores_for_local_identifiers: ignore
     unnecessary_brace_in_string_interps: ignore
     unnecessary_this: ignore
