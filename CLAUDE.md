@@ -11,7 +11,7 @@ Food delivery platform for Syria, launching in Azaz: a customer app, a restauran
 
 ## Commands
 
-Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes from `packageManager` in `package.json`.
+Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes from `packageManager` in `package.json`. `fvm install` installs the pinned Flutter and links it at `.fvm/flutter_sdk`, which `pnpm verify` and the format hook use before any Flutter on PATH.
 
 - `pnpm install`, then `dart pub get`: install the TypeScript and Dart dependencies (the pub workspace replaces `melos bootstrap`).
 - `pnpm verify`: the single check (Prettier, ESLint, type checks and tests through Turborepo, then Dart analyze, format and tests through Melos). CI runs the same command, and `main` requires it. The `checker` agent runs it for you.

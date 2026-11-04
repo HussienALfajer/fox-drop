@@ -9,6 +9,7 @@ build/
 
 # Flutter and Dart
 .dart_tool/
+.fvm/
 .flutter-plugins
 .flutter-plugins-dependencies
 .packages
