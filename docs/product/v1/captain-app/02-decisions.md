@@ -1,0 +1,65 @@
+# 2. Decisions
+
+> Part of the [captain app spec](README.md) (CA). A bare "§n" here means CA §n.
+
+## 2.1 Owner decisions (2026-11-03)
+
+| ID | Topic | Decision |
+|---|---|---|
+| C1 | Platforms | Android and iOS (iPhone), with the same features. |
+| C2 | Offer content | Before accepting, the offer shows: the restaurant and its distance from the captain, the customer's neighbourhood, the trip distance, the captain's pay, the amount to pay the restaurant, the amount to collect from the customer, and the order's preparation state. The exact address and the customer's phone appear only after acceptance. |
+| C3 | Unanswered offers | After 3 offers in a row expire without an answer, the captain is set offline automatically and notified. |
+| C4 | Maximum pickup amount | The captain sets «أقصى مبلغ أحمله» (the most I can pay a restaurant). Offers whose pickup payment is above it are not sent to them. This closes AP §13 item 3. |
+| C5 | Withdrawing after acceptance | A button «لا أستطيع إكمال الطلب», with a reason, sends an urgent request to operations. The order is withdrawn only when operations withdraw it, and the event is recorded. |
+| C6 | Arrival at the restaurant | «وصلت إلى المطعم» works only within 150 metres of the restaurant. The app suggests it automatically when the captain gets close. |
+| C7 | Item check | A mandatory checklist: the captain ticks every item before the payment button appears. No photo in V1. |
+| C8 | Paying the restaurant in other currencies | The captain chooses in Settings the currencies they usually carry. The app proposes a split based on them, and the captain can change it. |
+| C9 | Delivery confirmation | No code from the customer in V1. «تم التسليم» is accepted within 200 metres of the customer's address; farther away, the captain gives a reason that operations see. |
+| C10 | Contacting the customer | Call and WhatsApp buttons during the order only. They disappear when the order ends. |
+| C11 | Food from a failed order | Operations decide in each case. By default the food stays with the captain, because it was paid for and is not returned to the restaurant. |
+| C12 | Tips | Cash, entirely the captain's, outside the system. There is no tip field in V1. |
+| C13 | Office hours | Set by admins and shown in the app with the office location on a map. When a captain goes offline holding cash, they get a reminder such as «عليك 120 ₺، المكتب مفتوح حتى 11 م». |
+| C14 | Captain rating | The captain sees their average rating and the reasons customers picked, without customer names. |
+| C15 | Emergency button | A clear «طوارئ» button during an order calls operations, sends the captain's location and marks the order urgent, so operations can hand it to another captain if needed. |
+| C16 | Appealing a violation | An «اعتراض» button on each violation opens a ticket for the supervisor. |
+| C17 | Early exit from the commitment period | No financial penalty in V1. The kit must be returned, otherwise the deposit is withheld. The captain's file is flagged «خروج مبكر», and they can be rehired only with the owner's approval. This closes AP §13 item 1. |
+| C18 | Criminal record certificate | Renewed every 12 months, with a reminder 30 days before it expires. This closes AP §13 item 7. |
+
+## 2.2 Rules set by this spec
+
+The owner did not decide these explicitly. They follow from the decisions above or close gaps found while writing this spec. The owner may change any of them.
+
+| ID | Rule | Why |
+|---|---|---|
+| K1 | Only consecutive **expired** offers count toward C3. Any accept or reject resets the count (§7.4). | A captain who rejects is present; one who never answers is not. |
+| K2 | «أقصى مبلغ أحمله» is empty (no limit) by default. The app asks for it during the activation setup (§5.5), and again the first time the captain goes online if it is still empty. C4 applies to automatic offers. OPS MAY still send a **manual** offer above it, with a warning, which the captain can accept or reject (§8.4, §10.5). | Small orders should not be blocked by an empty field, and operations need a way out for a large order. |
+| K3 | If GPS fails at the restaurant, OPS can record the captain's arrival from the panel, with a reason (§9.2, AP §9.3.2). | A broken GPS must not block the pickup. |
+| K4 | Arrival at the customer follows the same 200-metre rule as delivery. A reason given once covers both (§9.6). | A wrong map pin must not block the order. |
+| K5 | A captain is signed in on one device at a time (fixed). Signing in on a new device signs the old one out (§4.9). | The account holds cash and earnings. |
+| K6 | An expired required document blocks going online. An expired optional document does not (§7.2, §12.2). | The rules in AP §9.7.1 require the documents to be valid. |
+| K7 | A new version of the captain terms blocks going online until it is accepted. A current order continues (§4.8). | The captain must agree to the rules they work under. |
+| K8 | The customer's name, phone and exact address disappear from the app when the order ends. History keeps the restaurant, the neighbourhood and the amounts (§9.13). | Privacy, from the plan: customer data is for delivery only. |
+| K9 | When OPS ends an order with an amount still to collect, the captain records the payment lines in the app (§9.10, AP §9.3.2). | Custody is tracked per currency, so only the captain knows what was received. |
+| K10 | A failed order records where the food went: with the captain (default), returned to the restaurant, or disposed of. «أُعيد إلى المطعم» is allowed only when the restaurant is the responsible party, because only then does the restaurant return the pickup payment (§9.12, AP §8.9). | C11 needs a record, and food must not go back to a restaurant that keeps the cash. |
+| K11 | A rejected applicant can apply again after 30 days (fixed) (§5.4). | Avoids repeated applications while keeping the door open. |
+| K12 | The emergency button needs a 2-second press (fixed) (§9.11). | Prevents accidental emergencies in a pocket or on a bumpy road. |
+| K13 | A captain with an active order cannot go offline. They use «لا أريد طلبات جديدة» instead (§7.3). | An order must never be left without a captain. |
+| K14 | A tip is never recorded. If the customer leaves the change as a tip, the captain records the change the customer was due as given (§9.7, §10.8). | C12 keeps tips outside the system, and a recorded tip would become custody. |
+| K15 | On iPhone, offers use time-sensitive notifications with a sound of at most 30 seconds. The device check asks the captain to keep the ring switch on. FOX DROP SHOULD apply for Apple's Critical Alerts permission (§4.4). | iOS limits how loudly and how long an app can ring in the background. |
+| K16 | Collecting less than the amount due needs a reason (§9.7). | Operations resolve every shortfall (AP §8.6) and need the captain's account of it. |
+| K17 | After a «لا أستطيع إكمال الطلب» request, an emergency, or handing an order over to another captain, the captain is set offline when the order leaves them. After any other withdrawal they become available again, unless last-order mode is on (§7.3, §9.10). | A captain who just reported a breakdown or an accident must not get a new offer seconds later. |
+| K18 | Force offline or a suspension during an active order puts the captain in last-order mode. Tracking continues until the order ends, then the captain goes offline (§7.6). | The customer's tracking and the arrival checks need the location until the order is done. |
+
+## 2.3 Admin-panel decisions that shape this app
+
+| AP decision | Effect here |
+|---|---|
+| D6 Dispatch at launch | Manual dispatch first, then mixed. Manual assignments reach the captain as offers (§8.4) |
+| D10 Cash limit | Set per captain by finance. At 100% the captain gets no new offers (§10.4) |
+| D11 Daily hand-in | Cash from a previous business day blocks going online (§10.3) |
+| D12 Thursday settlement | Full settlement and payout every Thursday (§10.7) |
+| D15 Peak bonus | Built and off by default. When on, the captain sees the windows (§12.5) |
+| D24 Onboarding | Required documents, a signed contract, 1 month of probation, then 3 months of commitment (§5, §12.3) |
+| D25 Currencies | USD, TRY and SYP, with the order's exchange-rate snapshot (§9.7, §10.5) |
+| D26 Pickup payment | The captain pays the restaurant the full items value at pickup (§9.4) |
+| RA R4 | The restaurant confirms the pickup with one tap, or it is confirmed automatically after 60 seconds (§9.4) |
