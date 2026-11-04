@@ -1,0 +1,44 @@
+# FOX DROP V1 — Customer App Specification
+
+| | |
+|---|---|
+| Product | FOX DROP, a food delivery platform launching in Azaz, Syria, then expanding city by city |
+| Scope | V1, the first version that completes a full order cycle |
+| Component | The customer app «تطبيق الزبون» for Android and iOS |
+| Status | Approved by the owner on 2026-11-03 (decisions in §2) |
+| Audience | Engineers and coding agents (Claude Code) who build the customer app and the server rules behind it |
+| UI language | Arabic only, right to left |
+| Related | Admin panel spec [`docs/product/v1/admin-panel/`](../admin-panel/README.md), cited as "AP §n". Restaurant app spec [`docs/product/v1/restaurant-app/`](../restaurant-app/README.md), cited as "RA §n". Captain app spec [`docs/product/v1/captain-app/`](../captain-app/README.md), cited as "CA §n". Arabic V1 plan page: https://claude.ai/artifact/8XR91QrZHk73nRHdu7E1q6. BeeOrder customer research: `01-customer-app.md` (kept outside this repository). Technology stack: [`docs/architecture/`](../../../architecture/README.md) |
+
+## How these files are organised
+
+Each section of the original document is one file, and a long section is a folder with one file per subsection. Section numbers are unchanged, so a citation such as "CU §n" still finds its place: the file name starts with the section number, and a subsection file inside a folder starts with the subsection number.
+
+§16 «Changes made to the other specs» was removed on 2026-11-04 after a check confirmed that every change it listed is in the target documents. The git history keeps it. The section numbers after it are unchanged.
+
+## Contents
+
+| Section | File |
+|---|---|
+| 0. How to use this document | [00-how-to-use-this-document.md](00-how-to-use-this-document.md) |
+| 1. Context and principles | [01-context-and-principles.md](01-context-and-principles.md) |
+| 2. Decisions | [02-decisions.md](02-decisions.md) |
+| 3. Glossary | [03-glossary.md](03-glossary.md) |
+| 4. Platforms and technical foundations | [04-platforms-and-technical-foundations.md](04-platforms-and-technical-foundations.md) |
+| 5. Account | [05-account.md](05-account.md) |
+| 6. Navigation | [06-navigation.md](06-navigation.md) |
+| 7. Location and addresses | [07-location-and-addresses.md](07-location-and-addresses.md) |
+| 8. Finding food | [08-finding-food.md](08-finding-food.md) |
+| 9. Restaurant page and items | [09-restaurant-page-and-items.md](09-restaurant-page-and-items.md) |
+| 10. Cart and checkout | [10-cart-and-checkout.md](10-cart-and-checkout.md) |
+| 11. The active order | [11-the-active-order.md](11-the-active-order.md) |
+| 12. After the order | [12-after-the-order.md](12-after-the-order.md) |
+| 13. «حسابي» (my account) | [13-my-account.md](13-my-account.md) |
+| 14. Notifications | [14-notifications.md](14-notifications.md) |
+| 15. Server commands | [15-server-commands.md](15-server-commands.md) |
+| 17. Not in the customer app V1 | [17-not-in-the-customer-app-v1.md](17-not-in-the-customer-app-v1.md) |
+| 18. Open items (these do not block the build) | [18-open-items.md](18-open-items.md) |
+| 19. Definition of done (customer app V1) | [19-definition-of-done.md](19-definition-of-done.md) |
+| Appendix A. Settings | [appendix-a-settings.md](appendix-a-settings.md) |
+| Appendix B. Main Arabic UI strings | [appendix-b-main-arabic-ui-strings.md](appendix-b-main-arabic-ui-strings.md) |
+| Appendix C. Reason lists and customer-facing texts | [appendix-c-reason-lists-and-customer-facing-texts.md](appendix-c-reason-lists-and-customer-facing-texts.md) |
