@@ -37,26 +37,26 @@ platform_margin     = commission + delivery_fee − platform_funded_discount
 
 **Worked example** (base TRY, numbers for illustration):
 
-| Line | Amount | Note |
-|---|---|---|
-| Items value | 400 | Menu prices, which equal in-store prices |
-| Delivery fee | 40 | From the published fee table |
-| Platform code (10%, capped at 30) | −30 | Funded by the platform |
-| **Customer pays the captain** | **410** | Cash at the door |
-| **Captain pays the restaurant** | **400** | Cash at pickup, the full items value. Nothing is deducted. |
-| Custody gained | +10 | 410 − 400. Handed in at the desk the same business day. |
-| Captain pay | 35 | Base 25 for the first 3 km, plus 2 extra km × 5. Added to earnings, paid on Thursday. |
-| Commission 15% | 60 | On 400. Added to the restaurant account and collected on Saturday. |
-| Restaurant keeps | 340 | 400 received − 60 paid on Saturday |
-| Platform margin | 35 | 60 + 40 − 30 − 35, before fixed costs |
+| Line                              | Amount  | Note                                                                                  |
+| --------------------------------- | ------- | ------------------------------------------------------------------------------------- |
+| Items value                       | 400     | Menu prices, which equal in-store prices                                              |
+| Delivery fee                      | 40      | From the published fee table                                                          |
+| Platform code (10%, capped at 30) | −30     | Funded by the platform                                                                |
+| **Customer pays the captain**     | **410** | Cash at the door                                                                      |
+| **Captain pays the restaurant**   | **400** | Cash at pickup, the full items value. Nothing is deducted.                            |
+| Custody gained                    | +10     | 410 − 400. Handed in at the desk the same business day.                               |
+| Captain pay                       | 35      | Base 25 for the first 3 km, plus 2 extra km × 5. Added to earnings, paid on Thursday. |
+| Commission 15%                    | 60      | On 400. Added to the restaurant account and collected on Saturday.                    |
+| Restaurant keeps                  | 340     | 400 received − 60 paid on Saturday                                                    |
+| Platform margin                   | 35      | 60 + 40 − 30 − 35, before fixed costs                                                 |
 
 **When each amount reaches the platform:**
 
-| When | Platform cash | From |
-|---|---|---|
-| Same business day | +10 | The captain hands in custody |
-| Thursday | −35 | The captain is paid their earnings |
-| Saturday | +60 | The restaurant pays its commission |
-| **Total** | **+35** | Equals the platform margin |
+| When              | Platform cash | From                               |
+| ----------------- | ------------- | ---------------------------------- |
+| Same business day | +10           | The captain hands in custody       |
+| Thursday          | −35           | The captain is paid their earnings |
+| Saturday          | +60           | The restaurant pays its commission |
+| **Total**         | **+35**       | Equals the platform margin         |
 
 **If a discount is funded by the restaurant**, the captain still pays the full items value, so custody is lower by the discount. The restaurant pays the discount back on Saturday, together with the commission (`merchant_weekly_due`).

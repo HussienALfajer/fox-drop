@@ -4,40 +4,40 @@
 
 ## 7.1 States
 
-| State | Arabic | Meaning |
-|---|---|---|
-| Offline | «غير متصل» | No offers, no location tracking |
-| Online, available | «متصل متاح» | Can receive offers |
-| Busy | «مشغول» | Has an active order. Gets no offers in V1, because there is no order stacking (AP §9.12.6). |
-| Last-order mode | «آخر طلب» | Busy, and will go offline after this order (§7.3) |
+| State                | Arabic         | Meaning                                                                                      |
+| -------------------- | -------------- | -------------------------------------------------------------------------------------------- |
+| Offline              | «غير متصل»     | No offers, no location tracking                                                              |
+| Online, available    | «متصل متاح»    | Can receive offers                                                                           |
+| Busy                 | «مشغول»        | Has an active order. Gets no offers in V1, because there is no order stacking (AP §9.12.6).  |
+| Last-order mode      | «آخر طلب»      | Busy, and will go offline after this order (§7.3)                                            |
 | Not receiving offers | «لا تصلك عروض» | Online, but at the cash limit or past the hand-in grace (§10.3, §10.4). The reason is shown. |
-| Suspended | «موقوف» | Set by OPS, with a reason and an end time if any (AP §9.7.5) |
+| Suspended            | «موقوف»        | Set by OPS, with a reason and an end time if any (AP §9.7.5)                                 |
 
 ## 7.2 Going online, and what blocks it
 
 The «متصل» switch on the home screen is refused in these cases. Each shows its reason and the next step:
 
-| Block | Message | Ends when |
-|---|---|---|
+| Block                                         | Message                                                                                                                    | Ends when                                       |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | Cash from a previous business day (AP §8.5.4) | «لديك نقد غير مسلّم من يوم {التاريخ}: {المبلغ}. سلّمه في المكتب لتتمكن من الاتصال.» with the office hours and a map button | Hand-in at the desk, or a grace from OWN or FIN |
-| Cash limit reached (AP §8.5.3) | «بلغت حد العهدة ({المبلغ}). سلّم النقد في المكتب لتصلك العروض.» | Custody below the limit |
-| Required document expired (K6) | «انتهت صلاحية {المستند}. ارفع نسخة جديدة من «ملفي».» | The new document is accepted by OPS |
-| Suspended | «حسابك موقوف حتى {التاريخ}: {السبب}» with «اعتراض» (§11.3) | The suspension ends or OPS lift it |
-| Terms not accepted (K7) | The terms screen | Accepted |
-| Version below the minimum | The update screen | Updated |
-| Simulated location active | «أوقف تطبيقات تغيير الموقع لتتمكن من الاتصال.» | Turned off |
-| Contract ended | «انتهى تعاقدك مع FOX DROP.» | — |
+| Cash limit reached (AP §8.5.3)                | «بلغت حد العهدة ({المبلغ}). سلّم النقد في المكتب لتصلك العروض.»                                                            | Custody below the limit                         |
+| Required document expired (K6)                | «انتهت صلاحية {المستند}. ارفع نسخة جديدة من «ملفي».»                                                                       | The new document is accepted by OPS             |
+| Suspended                                     | «حسابك موقوف حتى {التاريخ}: {السبب}» with «اعتراض» (§11.3)                                                                 | The suspension ends or OPS lift it              |
+| Terms not accepted (K7)                       | The terms screen                                                                                                           | Accepted                                        |
+| Version below the minimum                     | The update screen                                                                                                          | Updated                                         |
+| Simulated location active                     | «أوقف تطبيقات تغيير الموقع لتتمكن من الاتصال.»                                                                             | Turned off                                      |
+| Contract ended                                | «انتهى تعاقدك مع FOX DROP.»                                                                                                | —                                               |
 
 **Already online when a block starts.** A current order always continues to the end.
 
-| Block that starts while online | What happens |
-|---|---|
-| Cutoff with `closed_due` open | Offers continue for `captain.remit_online_grace_hours` (4) hours, then «لا تصلك عروض» until the hand-in (AP §8.5.4) |
-| Cash limit reached | «لا تصلك عروض» until custody drops below the limit |
-| Required document expired | «لا تصلك عروض» until the new document is accepted |
-| Simulated location detected | «لا تصلك عروض» until it is turned off |
-| New terms version, or version below the minimum | Offers continue. The block applies the next time the captain goes online. |
-| Suspension, force offline or contract end | Last-order mode (K18): no new offers, tracking continues, offline when the order ends. Without an order, offline at once. |
+| Block that starts while online                  | What happens                                                                                                              |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Cutoff with `closed_due` open                   | Offers continue for `captain.remit_online_grace_hours` (4) hours, then «لا تصلك عروض» until the hand-in (AP §8.5.4)       |
+| Cash limit reached                              | «لا تصلك عروض» until custody drops below the limit                                                                        |
+| Required document expired                       | «لا تصلك عروض» until the new document is accepted                                                                         |
+| Simulated location detected                     | «لا تصلك عروض» until it is turned off                                                                                     |
+| New terms version, or version below the minimum | Offers continue. The block applies the next time the captain goes online.                                                 |
+| Suspension, force offline or contract end       | Last-order mode (K18): no new offers, tracking continues, offline when the order ends. Without an order, offline at once. |
 
 ## 7.3 Last-order mode «لا أريد طلبات جديدة»
 

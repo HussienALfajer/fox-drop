@@ -15,15 +15,15 @@ Two side stages: «مرفوض» (rejected) and «قائمة انتظار» (wait
 - Applicant data: full three-part name, phone (verified), date of birth (`captain.min_age` 18), neighbourhood, vehicle type (motorbike, car, bicycle or e-bike, walking), plate number for motor vehicles.
 - **Documents (D24).** Each document has its file(s), number (where relevant), issue date, an optional expiry date, a status («بانتظار التحقق» pending, «مقبول» accepted, «مرفوض» rejected with a reason) and who verified it.
 
-  | Document | Arabic | Required |
-  |---|---|---|
-  | National ID, front and back | «الهوية» | Yes |
-  | Personal photo | «صورة شخصية» | Yes |
-  | Civil registry extract | «إخراج قيد» | Yes |
-  | Criminal record certificate | «لا حكم عليه» | Yes. Valid `captain.criminal_record_validity_months` (12) from its issue date, which sets its expiry date. |
-  | Vehicle papers | «أوراق المركبة» | Yes for motor vehicles (licensed vehicles only) |
-  | Driving licence | «شهادة قيادة» | Optional |
-  | Signed contract | «العقد الموقّع» | Yes, before activation |
+  | Document                    | Arabic          | Required                                                                                                   |
+  | --------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------- |
+  | National ID, front and back | «الهوية»        | Yes                                                                                                        |
+  | Personal photo              | «صورة شخصية»    | Yes                                                                                                        |
+  | Civil registry extract      | «إخراج قيد»     | Yes                                                                                                        |
+  | Criminal record certificate | «لا حكم عليه»   | Yes. Valid `captain.criminal_record_validity_months` (12) from its issue date, which sets its expiry date. |
+  | Vehicle papers              | «أوراق المركبة» | Yes for motor vehicles (licensed vehicles only)                                                            |
+  | Driving licence             | «شهادة قيادة»   | Optional                                                                                                   |
+  | Signed contract             | «العقد الموقّع» | Yes, before activation                                                                                     |
 
 - Applicants upload documents from the captain app. The office can also upload paper scans from the panel.
 - **Duplicate check:** an automatic warning appears if the ID number, phone or plate is already registered to another captain or applicant.
@@ -32,18 +32,18 @@ Two side stages: «مرفوض» (rejected) and «قائمة انتظار» (wait
 
 **Pipeline actions:**
 
-| Action | Effect | Who |
-|---|---|---|
-| Request a document or correction «طلب مستند» | The applicant is notified of what is missing | OPS, OWN |
-| Schedule an interview «تحديد مقابلة» | Date and time sent to the applicant | OPS, OWN |
-| Record training and test passed | Moves the application to «بانتظار العدة» | OPS, OWN |
-| Issue the kit «تسليم العدة» | Items (thermal bag, vest, sizes) | OPS, OWN |
-| Record the deposit | Paid in full or in instalments (deducted on Thursdays); receipt | FIN, OWN |
-| Set the cash limit | Required before activation (D10) | FIN, OWN |
-| Record the contract | Signing date and scan; computes probation and commitment dates (§9.7.2) | OPS, OWN |
-| Activate «تفعيل» | Needs: required documents accepted, training passed, kit issued, deposit recorded, contract signed, vehicle set, cash limit set, and OWN's approval for a captain flagged «خروج مبكر». The captain can now go online. | OPS, OWN (OWN only for a flagged captain) |
-| Reject «رفض» | With a reason that is sent to the applicant | OPS, OWN |
-| Waitlist «قائمة انتظار» | For when no captains are needed now; the applicant is told | OPS, OWN |
+| Action                                       | Effect                                                                                                                                                                                                                | Who                                       |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| Request a document or correction «طلب مستند» | The applicant is notified of what is missing                                                                                                                                                                          | OPS, OWN                                  |
+| Schedule an interview «تحديد مقابلة»         | Date and time sent to the applicant                                                                                                                                                                                   | OPS, OWN                                  |
+| Record training and test passed              | Moves the application to «بانتظار العدة»                                                                                                                                                                              | OPS, OWN                                  |
+| Issue the kit «تسليم العدة»                  | Items (thermal bag, vest, sizes)                                                                                                                                                                                      | OPS, OWN                                  |
+| Record the deposit                           | Paid in full or in instalments (deducted on Thursdays); receipt                                                                                                                                                       | FIN, OWN                                  |
+| Set the cash limit                           | Required before activation (D10)                                                                                                                                                                                      | FIN, OWN                                  |
+| Record the contract                          | Signing date and scan; computes probation and commitment dates (§9.7.2)                                                                                                                                               | OPS, OWN                                  |
+| Activate «تفعيل»                             | Needs: required documents accepted, training passed, kit issued, deposit recorded, contract signed, vehicle set, cash limit set, and OWN's approval for a captain flagged «خروج مبكر». The captain can now go online. | OPS, OWN (OWN only for a flagged captain) |
+| Reject «رفض»                                 | With a reason that is sent to the applicant                                                                                                                                                                           | OPS, OWN                                  |
+| Waitlist «قائمة انتظار»                      | For when no captains are needed now; the applicant is told                                                                                                                                                            | OPS, OWN                                  |
 
 ## 9.7.2 Contract «العقد» (D24)
 
@@ -98,17 +98,17 @@ Two side stages: «مرفوض» (rejected) and «قائمة انتظار» (wait
 
 ## 9.7.5 Captain actions
 
-| Action | Detail | Who | Reason |
-|---|---|---|---|
-| Suspend «إيقاف» | For a duration or until further notice. The reason is shown to the captain in the app. | OWN, OPS | Required |
-| Reactivate | Ends a suspension | OWN, OPS | Required |
-| Force offline «فصل من الاتصال» | Sets the captain offline immediately. With an active order, the captain enters last-order mode instead: tracking continues, and they go offline when the order ends. A suspension during an order works the same way. | OWN, OPS | Required |
-| Release the device «تحرير الجهاز» | Signs out the captain's current device, so they can sign in on another phone, including during an active order (captain-app spec §4.9) | OWN, OPS | Required |
-| Change the cash limit | New value, effective immediately | OWN, FIN | Required |
-| Hand-in grace | Lifts the daily hand-in block until the next cutoff; the custody stays due (§8.5.4) | OWN, FIN | Required |
-| Message or push | A direct notification to the captain | OWN, OPS | — |
-| Record a violation | Pick the type; the system suggests the next ladder step (§9.7.6); the admin confirms; the captain sees it. The captain's «اعتراض» in the app opens a ticket, and its result is recorded on the violation. | OWN, OPS | Required |
-| Terminate «إنهاء التعاقد» | Offboarding checklist (below) | OWN, OPS start it; the money steps follow the checklist | Required |
+| Action                            | Detail                                                                                                                                                                                                                | Who                                                     | Reason   |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | -------- |
+| Suspend «إيقاف»                   | For a duration or until further notice. The reason is shown to the captain in the app.                                                                                                                                | OWN, OPS                                                | Required |
+| Reactivate                        | Ends a suspension                                                                                                                                                                                                     | OWN, OPS                                                | Required |
+| Force offline «فصل من الاتصال»    | Sets the captain offline immediately. With an active order, the captain enters last-order mode instead: tracking continues, and they go offline when the order ends. A suspension during an order works the same way. | OWN, OPS                                                | Required |
+| Release the device «تحرير الجهاز» | Signs out the captain's current device, so they can sign in on another phone, including during an active order (captain-app spec §4.9)                                                                                | OWN, OPS                                                | Required |
+| Change the cash limit             | New value, effective immediately                                                                                                                                                                                      | OWN, FIN                                                | Required |
+| Hand-in grace                     | Lifts the daily hand-in block until the next cutoff; the custody stays due (§8.5.4)                                                                                                                                   | OWN, FIN                                                | Required |
+| Message or push                   | A direct notification to the captain                                                                                                                                                                                  | OWN, OPS                                                | —        |
+| Record a violation                | Pick the type; the system suggests the next ladder step (§9.7.6); the admin confirms; the captain sees it. The captain's «اعتراض» in the app opens a ticket, and its result is recorded on the violation.             | OWN, OPS                                                | Required |
+| Terminate «إنهاء التعاقد»         | Offboarding checklist (below)                                                                                                                                                                                         | OWN, OPS start it; the money steps follow the checklist | Required |
 
 **Offboarding checklist:**
 
@@ -132,5 +132,6 @@ Two side stages: «مرفوض» (rejected) and «قائمة انتظار» (wait
   4. «إنهاء التعاقد» (termination)
 
   Violations count within `captain.violation_window_days` (90). Severe violations (theft, harassment, violence) mean immediate termination. The system suggests the step and the admin decides.
+
 - **Cancellation after acceptance:** a captain who cannot complete an accepted order presses «لا أستطيع إكمال الطلب» with a reason, which raises «كابتن لا يستطيع إكمال الطلب» (§9.1.3). The order stays with the captain until OPS reassign it (before pickup) or hand it over (after pickup) (§9.3.2). It is logged as a captain cancellation, unless OPS marks it as not the captain's fault.
 - **Automatic offline:** after `captain.offer_expiry_offline_count` (3) offers in a row expire without an answer, the captain is set offline automatically (captain-app spec §7.4). Expired offers also count in the acceptance rate.

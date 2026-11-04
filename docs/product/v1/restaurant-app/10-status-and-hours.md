@@ -23,4 +23,5 @@
   - contract dates
 
   A «طلب تعديل» button opens a support ticket of the type «طلب تعديل بيانات» (§15).
+
 - **Effect of changes:** they apply immediately and are recorded in the restaurant change log that admins see (AP §9.6.4).

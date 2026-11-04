@@ -4,12 +4,12 @@
 
 ## 10.1 One order, end to end
 
-| Step | Amount | Account |
-|---|---|---|
-| Pay the restaurant at pickup | −400 ₺ | Custody (`custody.pay_merchant`) |
-| Collect from the customer | +410 ₺ | Custody (`custody.collect`) |
-| **Custody from this order** | **+10 ₺** | Handed in at the office the same business day |
-| Order pay | +35 ₺ | Earnings (`earn.order_pay`), paid on Thursday |
+| Step                         | Amount    | Account                                       |
+| ---------------------------- | --------- | --------------------------------------------- |
+| Pay the restaurant at pickup | −400 ₺    | Custody (`custody.pay_merchant`)              |
+| Collect from the customer    | +410 ₺    | Custody (`custody.collect`)                   |
+| **Custody from this order**  | **+10 ₺** | Handed in at the office the same business day |
+| Order pay                    | +35 ₺     | Earnings (`earn.order_pay`), paid on Thursday |
 
 Custody can be negative: for example when a platform discount code is larger than the delivery fee, or when an order fails. The office then pays the captain back (AP §8.5.1).
 

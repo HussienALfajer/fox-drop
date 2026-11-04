@@ -85,17 +85,17 @@ From top to bottom:
   - a quote version, which changes only when a money line, an equivalent, the exchange rates or a blocking problem changes. A new estimate alone does not change it.
 - **Problems that block ordering** show at the top of checkout with the action to fix each. The texts are in Appendix C.
 
-  | Check | Source |
-  |---|---|
-  | App version, maintenance, terms accepted | §4.2, §4.7 |
-  | Platform hours and emergency stop | §4.7 |
-  | Account state and the active-order limit | §5.5 |
-  | Point inside an active zone and inside the restaurant's coverage | §7, §8.2 |
-  | Restaurant can take orders, including its maximum active orders | §9.2, RA §7.4 |
-  | Every item and option available, prices accepted | §9.3, §10.1 |
-  | Minimum order | §10.2 |
-  | Code valid (otherwise the order can go without it) | §10.4 |
-  | An eligible captain nearby (capacity check) | AP §9.12.6 |
+  | Check                                                            | Source        |
+  | ---------------------------------------------------------------- | ------------- |
+  | App version, maintenance, terms accepted                         | §4.2, §4.7    |
+  | Platform hours and emergency stop                                | §4.7          |
+  | Account state and the active-order limit                         | §5.5          |
+  | Point inside an active zone and inside the restaurant's coverage | §7, §8.2      |
+  | Restaurant can take orders, including its maximum active orders  | §9.2, RA §7.4 |
+  | Every item and option available, prices accepted                 | §9.3, §10.1   |
+  | Minimum order                                                    | §10.2         |
+  | Code valid (otherwise the order can go without it)               | §10.4         |
+  | An eligible captain nearby (capacity check)                      | AP §9.12.6    |
 
 - **The capacity check** is part of every quote while `dispatch.capacity_check` is on. A refusal shows «الضغط عالٍ الآن، جرّب بعد دقائق». It is logged as lost demand once per checkout session, which runs from opening checkout until the customer leaves it or places the order (AP §9.12.6).
 

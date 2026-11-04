@@ -2,17 +2,17 @@
 
 > Part of AP §8, the domain reference shared by all four V1 specs ([index](README.md)). A bare "§n" here means AP §n.
 
-| Status | Arabic label (panel) | What the customer sees | Changed by | Next statuses |
-|---|---|---|---|---|
-| `placed` | «بانتظار المطعم» | «بانتظار تأكيد المطعم» | System when the order is placed | `accepted`, `rejected`, `cancelled` |
-| `accepted` | «قيد التحضير» | «المطعم يحضّر طلبك» | Restaurant, or OPS on its behalf | `ready`, `picked_up` (pickup confirmed before ready was pressed; `ready` is recorded at the same moment), `cancelled` |
-| `ready` | «جاهز» | «طلبك جاهز» | Restaurant | `picked_up`, `cancelled`, `accepted` (only when OPS adds items, §9.3.3) |
-| `picked_up` | «مع الكابتن» | «في الطريق إليك» | Pickup confirmation: the restaurant confirms the captain's pickup request, the server confirms it automatically, or OPS confirms it on the restaurant's behalf | `arrived`, `delivered` (OPS via «تحديد النتيجة»), `failed` |
-| `arrived` | «الكابتن وصل» | «الكابتن عند الباب» | Captain | `delivered`, `failed`, `picked_up` (handover to another captain, §9.3.2) |
-| `delivered` | «تم التسليم» | «تم التسليم» | Captain, or OPS via «تحديد النتيجة» | Final |
-| `rejected` | «مرفوض» | Apology with the reason | Restaurant, or OPS on its behalf | Final |
-| `cancelled` | «ملغى» | «أُلغي الطلب» with the reason | Customer (only while `placed`), OPS, or the system (no restaurant response) | Final |
-| `failed` | «فشل التسليم» | «تعذّر التسليم» | OPS (after pickup) | Final |
+| Status      | Arabic label (panel) | What the customer sees        | Changed by                                                                                                                                                     | Next statuses                                                                                                         |
+| ----------- | -------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `placed`    | «بانتظار المطعم»     | «بانتظار تأكيد المطعم»        | System when the order is placed                                                                                                                                | `accepted`, `rejected`, `cancelled`                                                                                   |
+| `accepted`  | «قيد التحضير»        | «المطعم يحضّر طلبك»           | Restaurant, or OPS on its behalf                                                                                                                               | `ready`, `picked_up` (pickup confirmed before ready was pressed; `ready` is recorded at the same moment), `cancelled` |
+| `ready`     | «جاهز»               | «طلبك جاهز»                   | Restaurant                                                                                                                                                     | `picked_up`, `cancelled`, `accepted` (only when OPS adds items, §9.3.3)                                               |
+| `picked_up` | «مع الكابتن»         | «في الطريق إليك»              | Pickup confirmation: the restaurant confirms the captain's pickup request, the server confirms it automatically, or OPS confirms it on the restaurant's behalf | `arrived`, `delivered` (OPS via «تحديد النتيجة»), `failed`                                                            |
+| `arrived`   | «الكابتن وصل»        | «الكابتن عند الباب»           | Captain                                                                                                                                                        | `delivered`, `failed`, `picked_up` (handover to another captain, §9.3.2)                                              |
+| `delivered` | «تم التسليم»         | «تم التسليم»                  | Captain, or OPS via «تحديد النتيجة»                                                                                                                            | Final                                                                                                                 |
+| `rejected`  | «مرفوض»              | Apology with the reason       | Restaurant, or OPS on its behalf                                                                                                                               | Final                                                                                                                 |
+| `cancelled` | «ملغى»               | «أُلغي الطلب» with the reason | Customer (only while `placed`), OPS, or the system (no restaurant response)                                                                                    | Final                                                                                                                 |
+| `failed`    | «فشل التسليم»        | «تعذّر التسليم»               | OPS (after pickup)                                                                                                                                             | Final                                                                                                                 |
 
 - A finished order (`delivered` or `failed`) always has an **outcome** (§8.9).
 - A `cancelled` order also records whether food had been prepared.

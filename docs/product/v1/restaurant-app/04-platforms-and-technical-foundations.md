@@ -4,12 +4,12 @@
 
 ## 4.1 Platforms
 
-| Platform | Users | Receives orders | Other screens | Minimum |
-|---|---|---|---|---|
-| Android phone | MO, MC | Yes, with tabs | By role (§5.4) | Android 8.0 (API 26) |
-| Android tablet | MO, MC | Yes, with four columns | By role | Android 8.0 (API 26) |
-| Windows desktop app | MO, MC | Yes, with four columns | By role | Windows 10 or 11, 64-bit |
-| Owner web portal | MO only | No: a read-only live view | Everything an owner can do | Current Chrome, Edge, Firefox or Safari |
+| Platform            | Users   | Receives orders           | Other screens              | Minimum                                 |
+| ------------------- | ------- | ------------------------- | -------------------------- | --------------------------------------- |
+| Android phone       | MO, MC  | Yes, with tabs            | By role (§5.4)             | Android 8.0 (API 26)                    |
+| Android tablet      | MO, MC  | Yes, with four columns    | By role                    | Android 8.0 (API 26)                    |
+| Windows desktop app | MO, MC  | Yes, with four columns    | By role                    | Windows 10 or 11, 64-bit                |
+| Owner web portal    | MO only | No: a read-only live view | Everything an owner can do | Current Chrome, Edge, Firefox or Safari |
 
 - The Android and Windows apps MUST have the same features and rules. They are one Flutter codebase, with native layers for ringing on Android and Windows (technology-stack §12).
 - Layout follows the window width, not the platform: at 840 dp or wider, the orders screen shows four columns; below that it shows tabs (§6.2).
@@ -38,11 +38,11 @@
 
 ## 4.4 Sounds and alert levels
 
-| Level | Arabic | Behaviour | Used for |
-|---|---|---|---|
-| Ring | «رنين» | Loops until someone handles it. On Android, a full-screen prompt where the system allows it (§4.5), otherwise a heads-up notification. On Windows, the window comes to the front. | New order, pickup request, cancellation after acceptance, an edit that adds items |
-| Chime | «تنبيه» | Plays once, with a notification | The events marked Chime in §16 |
-| Silent | «صامت» | A notification or a screen update only | The events marked Silent in §16 |
+| Level  | Arabic  | Behaviour                                                                                                                                                                         | Used for                                                                          |
+| ------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Ring   | «رنين»  | Loops until someone handles it. On Android, a full-screen prompt where the system allows it (§4.5), otherwise a heads-up notification. On Windows, the window comes to the front. | New order, pickup request, cancellation after acceptance, an edit that adds items |
+| Chime  | «تنبيه» | Plays once, with a notification                                                                                                                                                   | The events marked Chime in §16                                                    |
+| Silent | «صامت»  | A notification or a screen update only                                                                                                                                            | The events marked Silent in §16                                                   |
 
 - **Stopping a ring:** a ring stops on every device of the restaurant as soon as any device handles it (accept, reject, confirm, dispute, acknowledge), or when its condition ends (for example the order was auto-cancelled or operations accepted it).
 - **Several rings at once:** one sound loop plays. The prompts stack, oldest first, with a counter.
@@ -54,16 +54,16 @@
 
 The device check runs at the first sign-in on each device, and can be run again from Settings. Each step explains what to do with screenshots, including the settings path for common phone brands (Samsung, Xiaomi/Redmi/Poco, Huawei/Honor, Oppo/Realme, Vivo).
 
-| # | Check | Android | Windows |
-|---|---|---|---|
-| 1 | Notifications allowed | Yes | Yes |
-| 2 | Battery optimisation off for the app | Yes | — |
-| 3 | Auto-start allowed (brand setting) | Yes, where the brand has one | Start with Windows on |
-| 4 | Full-screen notifications allowed (Android 14+) | Yes | — |
-| 5 | Alarm volume at least 70% and Do Not Disturb off or allowing the app | Yes | Output not muted |
-| 6 | The computer does not sleep during opening hours | — | SHOULD read the power plan and warn |
-| 7 | Test ring: the device plays the new-order sound and the user taps «سمعت الصوت» (I heard it) | Yes | Yes |
-| 8 | Server connection and its delay | Yes | Yes |
+| #   | Check                                                                                       | Android                      | Windows                             |
+| --- | ------------------------------------------------------------------------------------------- | ---------------------------- | ----------------------------------- |
+| 1   | Notifications allowed                                                                       | Yes                          | Yes                                 |
+| 2   | Battery optimisation off for the app                                                        | Yes                          | —                                   |
+| 3   | Auto-start allowed (brand setting)                                                          | Yes, where the brand has one | Start with Windows on               |
+| 4   | Full-screen notifications allowed (Android 14+)                                             | Yes                          | —                                   |
+| 5   | Alarm volume at least 70% and Do Not Disturb off or allowing the app                        | Yes                          | Output not muted                    |
+| 6   | The computer does not sleep during opening hours                                            | —                            | SHOULD read the power plan and warn |
+| 7   | Test ring: the device plays the new-order sound and the user taps «سمعت الصوت» (I heard it) | Yes                          | Yes                                 |
+| 8   | Server connection and its delay                                                             | Yes                          | Yes                                 |
 
 - Checks 1–6 are read again automatically each time the app opens. If any check fails, a yellow banner stays on the orders screen: «هذا الجهاز قد لا يرن عند وصول طلب — أكمل فحص الجهاز».
 - The result of each device's last check is sent to the server and shown in the panel (AP §9.6.4).

@@ -4,18 +4,18 @@
 
 ## 6.1 Screen map
 
-| # | Screen | Arabic | Owner | Cashier | Portal |
-|---|---|---|---|---|---|
-| 1 | Orders | «الطلبات» | Yes | Yes | Read-only (§17) |
-| 2 | History | «السجل» | Yes | Limited (§5.4) | Yes |
-| 3 | Menu | «القائمة» | Yes | Availability only | Yes |
-| 4 | Status and hours | «الحالة والأوقات» | Yes | Status only | Yes |
-| 5 | Reports | «التقارير» | Yes | — | Yes |
-| 6 | Account | «الحساب» | Yes | — | Yes |
-| 7 | Ratings | «التقييمات» | Yes | — | Yes |
-| 8 | Staff and devices | «الموظفون والأجهزة» | Yes | — | Yes |
-| 9 | Settings | «الإعدادات» | Yes | This device only | Restaurant settings |
-| 10 | Support | «الدعم» | Yes | Yes | Yes |
+| #   | Screen            | Arabic              | Owner | Cashier           | Portal              |
+| --- | ----------------- | ------------------- | ----- | ----------------- | ------------------- |
+| 1   | Orders            | «الطلبات»           | Yes   | Yes               | Read-only (§17)     |
+| 2   | History           | «السجل»             | Yes   | Limited (§5.4)    | Yes                 |
+| 3   | Menu              | «القائمة»           | Yes   | Availability only | Yes                 |
+| 4   | Status and hours  | «الحالة والأوقات»   | Yes   | Status only       | Yes                 |
+| 5   | Reports           | «التقارير»          | Yes   | —                 | Yes                 |
+| 6   | Account           | «الحساب»            | Yes   | —                 | Yes                 |
+| 7   | Ratings           | «التقييمات»         | Yes   | —                 | Yes                 |
+| 8   | Staff and devices | «الموظفون والأجهزة» | Yes   | —                 | Yes                 |
+| 9   | Settings          | «الإعدادات»         | Yes   | This device only  | Restaurant settings |
+| 10  | Support           | «الدعم»             | Yes   | Yes               | Yes                 |
 
 ## 6.2 Layout
 

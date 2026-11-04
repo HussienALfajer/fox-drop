@@ -11,31 +11,31 @@ Custody is the platform's physical cash in the captain's hands.
 - A **positive** balance means the captain must hand cash in.
 - A **negative** balance means the captain paid from their own pocket and the platform owes them.
 
-| Entry type | Sign | When |
-|---|---|---|
-| `custody.collect` | + | At delivery, one entry per currency the customer paid in |
-| `custody.change_given` | − | At delivery, per currency of the change the captain gave back |
-| `custody.pay_merchant` | − | At pickup: the full items value (D26), per currency the captain paid the restaurant in (normally the base currency) |
-| `custody.hand_in` | − | Cash handed in at the desk (receipt) |
-| `custody.reimburse` | + | The desk pays back a negative custody (receipt) |
-| `custody.fx_convert` | ± | Cross-currency settlement at the desk at the current rate (§9.10.3) |
-| `custody.pickup_correction` | ± | A pickup dispute resolved in the accounts (§9.9.3), per currency: + when the captain paid the restaurant less in that currency than recorded at pickup (they still hold that cash), − when they paid more |
-| `custody.adjustment` | ± | Manual correction (OWN/FIN, reason) |
+| Entry type                  | Sign | When                                                                                                                                                                                                      |
+| --------------------------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `custody.collect`           | +    | At delivery, one entry per currency the customer paid in                                                                                                                                                  |
+| `custody.change_given`      | −    | At delivery, per currency of the change the captain gave back                                                                                                                                             |
+| `custody.pay_merchant`      | −    | At pickup: the full items value (D26), per currency the captain paid the restaurant in (normally the base currency)                                                                                       |
+| `custody.hand_in`           | −    | Cash handed in at the desk (receipt)                                                                                                                                                                      |
+| `custody.reimburse`         | +    | The desk pays back a negative custody (receipt)                                                                                                                                                           |
+| `custody.fx_convert`        | ±    | Cross-currency settlement at the desk at the current rate (§9.10.3)                                                                                                                                       |
+| `custody.pickup_correction` | ±    | A pickup dispute resolved in the accounts (§9.9.3), per currency: + when the captain paid the restaurant less in that currency than recorded at pickup (they still hold that cash), − when they paid more |
+| `custody.adjustment`        | ±    | Manual correction (OWN/FIN, reason)                                                                                                                                                                       |
 
 ## 8.5.2 Earnings «المستحقات» (base currency)
 
 Earnings are what the platform owes the captain for their work.
 
-| Entry type | Sign | When |
-|---|---|---|
-| `earn.order_pay` | + | Order finished with pay due to the captain (§8.9) |
-| `earn.waiting_pay` | + | Waiting past the threshold, if the pay table includes it |
-| `earn.peak_bonus` | + | Order delivered inside an active peak window (D15) |
-| `earn.bonus` | + | Manual bonus (OWN/FIN, reason) |
-| `earn.charge` | − | Cost charged to the captain as the responsible party (§8.9) |
-| `earn.deposit_instalment` | − | Kit deposit instalment |
-| `earn.payout` | − | Thursday payout, or an off-cycle payout (receipt) |
-| `earn.adjustment` | ± | Manual correction (OWN/FIN, reason) |
+| Entry type                | Sign | When                                                        |
+| ------------------------- | ---- | ----------------------------------------------------------- |
+| `earn.order_pay`          | +    | Order finished with pay due to the captain (§8.9)           |
+| `earn.waiting_pay`        | +    | Waiting past the threshold, if the pay table includes it    |
+| `earn.peak_bonus`         | +    | Order delivered inside an active peak window (D15)          |
+| `earn.bonus`              | +    | Manual bonus (OWN/FIN, reason)                              |
+| `earn.charge`             | −    | Cost charged to the captain as the responsible party (§8.9) |
+| `earn.deposit_instalment` | −    | Kit deposit instalment                                      |
+| `earn.payout`             | −    | Thursday payout, or an off-cycle payout (receipt)           |
+| `earn.adjustment`         | ±    | Manual correction (OWN/FIN, reason)                         |
 
 ## 8.5.3 Cash limit (D10)
 

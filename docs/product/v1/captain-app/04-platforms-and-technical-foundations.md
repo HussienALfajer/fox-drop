@@ -4,10 +4,10 @@
 
 ## 4.1 Platforms
 
-| Platform | Minimum | Notes |
-|---|---|---|
+| Platform      | Minimum              | Notes                                                       |
+| ------------- | -------------------- | ----------------------------------------------------------- |
 | Android phone | Android 8.0 (API 26) | Full behaviour, including a foreground service while online |
-| iPhone | iOS 15 | Same features. Background rules differ (§4.3, §4.4). |
+| iPhone        | iOS 15               | Same features. Background rules differ (§4.3, §4.4).        |
 
 - Both apps MUST have the same features and rules. They are one Flutter codebase, with `flutter_background_geolocation` for location and native layers for offers and sounds (technology-stack §14).
 - Phones only. Tablets are not a target, but the layout MUST not break on one.
@@ -46,16 +46,16 @@
 
 The device check runs before the first time a captain goes online, and again from Settings. Each step explains with screenshots what to do, including settings paths for common Android brands (Samsung, Xiaomi/Redmi/Poco, Huawei/Honor, Oppo/Realme, Vivo).
 
-| # | Check | Android | iPhone |
-|---|---|---|---|
-| 1 | Notifications allowed | Read by the app | Read by the app, including time-sensitive notifications |
-| 2 | Location always, precise | Read by the app | Read by the app |
-| 3 | Running in the background | Battery optimisation off: read by the app. Brand auto-start: confirmed by the captain | Background App Refresh on and Low Power Mode off: read by the app |
-| 4 | Full-screen notifications allowed (Android 14+) | Read by the app | — |
-| 5 | Sound can be heard | Alarm volume at least 70%: read by the app. Do Not Disturb allowing the app: confirmed by the captain | Ring switch on and Focus allowing the app: confirmed by the captain (iOS does not let apps read the switch) |
-| 6 | Test offer: the phone plays the offer sound with the screen locked, and the captain taps «سمعت الصوت» | Yes | Yes |
-| 7 | Server connection and GPS accuracy | Read by the app | Read by the app |
-| 8 | Call permission for the emergency button | Read by the app | — (iOS asks to confirm each call) |
+| #   | Check                                                                                                 | Android                                                                                               | iPhone                                                                                                      |
+| --- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| 1   | Notifications allowed                                                                                 | Read by the app                                                                                       | Read by the app, including time-sensitive notifications                                                     |
+| 2   | Location always, precise                                                                              | Read by the app                                                                                       | Read by the app                                                                                             |
+| 3   | Running in the background                                                                             | Battery optimisation off: read by the app. Brand auto-start: confirmed by the captain                 | Background App Refresh on and Low Power Mode off: read by the app                                           |
+| 4   | Full-screen notifications allowed (Android 14+)                                                       | Read by the app                                                                                       | —                                                                                                           |
+| 5   | Sound can be heard                                                                                    | Alarm volume at least 70%: read by the app. Do Not Disturb allowing the app: confirmed by the captain | Ring switch on and Focus allowing the app: confirmed by the captain (iOS does not let apps read the switch) |
+| 6   | Test offer: the phone plays the offer sound with the screen locked, and the captain taps «سمعت الصوت» | Yes                                                                                                   | Yes                                                                                                         |
+| 7   | Server connection and GPS accuracy                                                                    | Read by the app                                                                                       | Read by the app                                                                                             |
+| 8   | Call permission for the emergency button                                                              | Read by the app                                                                                       | — (iOS asks to confirm each call)                                                                           |
 
 - **Re-checks:** the checks the app can read are read again each time the app opens and each time the captain goes online. The checks the captain confirms are asked again only when the test offer (check 6) fails or the captain runs the check again. A failed check shows a yellow banner: «هاتفك قد لا يرن عند وصول عرض — أكمل فحص الجهاز».
 - **Going online:** a failed check never blocks going online. It warns only, because a captain can still work with the app open.

@@ -12,14 +12,14 @@
 
 ## 6.2 Channels
 
-| Channel | Subscribers | Carries |
-|---|---|---|
-| `ops:city.{city_id}` | Panel users with access to the city | Orders, alerts, tickets, cash desk, emergency stop |
-| `ops_map:city.{city_id}` | Live map screen | Captain positions and states (every 10 s) |
-| `merchant:{merchant_id}` | Every signed-in device of the restaurant | Orders, pickup requests, edits, state, banners |
-| `captain:{captain_id}` | The captain's device | Offers, assignment changes, order events, banners |
-| `order:{order_id}` | The customer's devices while the order is active | Status, ETA, captain position after pickup |
-| `customer:{customer_id}` | The customer's devices | Account state, codes, banners |
+| Channel                  | Subscribers                                      | Carries                                            |
+| ------------------------ | ------------------------------------------------ | -------------------------------------------------- |
+| `ops:city.{city_id}`     | Panel users with access to the city              | Orders, alerts, tickets, cash desk, emergency stop |
+| `ops_map:city.{city_id}` | Live map screen                                  | Captain positions and states (every 10 s)          |
+| `merchant:{merchant_id}` | Every signed-in device of the restaurant         | Orders, pickup requests, edits, state, banners     |
+| `captain:{captain_id}`   | The captain's device                             | Offers, assignment changes, order events, banners  |
+| `order:{order_id}`       | The customer's devices while the order is active | Status, ETA, captain position after pickup         |
+| `customer:{customer_id}` | The customer's devices                           | Account state, codes, banners                      |
 
 ## 6.3 Heartbeats and fallbacks
 

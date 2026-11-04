@@ -1,0 +1,23 @@
+{
+  "name": "fox-drop",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": "26.13.0"
+  },
+  "scripts": {
+    "verify": "node scripts/verify.mjs",
+    "format": "prettier --write .",
+    "lint:root": "eslint --ignore-pattern \"apps/**\" --ignore-pattern \"packages/**\" --ignore-pattern \"tools/**\" ."
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.14.0",
+    "globals": "17.14.0",
+    "prettier": "3.9.10",
+    "turbo": "2.11.10",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1"
+  }
+}

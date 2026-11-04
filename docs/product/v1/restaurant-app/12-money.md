@@ -6,11 +6,11 @@
 
 The formulas are in AP §8.4. The restaurant sees only its own part.
 
-| Line | Example | When |
-|---|---|---|
-| Items value, paid by the captain in cash | 400 | At pickup |
-| Commission 15% | 60 | Owed; paid on Saturday |
-| **The restaurant keeps** | **340** | |
+| Line                                     | Example | When                   |
+| ---------------------------------------- | ------- | ---------------------- |
+| Items value, paid by the captain in cash | 400     | At pickup              |
+| Commission 15%                           | 60      | Owed; paid on Saturday |
+| **The restaurant keeps**                 | **340** |                        |
 
 With a 20 restaurant-funded item discount, the captain still pays 400. The commission is calculated after the restaurant's item discount: 15% × 380 = 57. On Saturday the restaurant owes 57 + 20 = 77, and keeps 400 − 77 = 323.
 
@@ -52,16 +52,16 @@ With a 20 restaurant-funded item discount, the captain still pays 400. The commi
 
 Exceptions are entries other than the commission and discount share (AP §8.7):
 
-| Entry | Arabic in the app | Effect | When |
-|---|---|---|---|
-| `merchant.credit` | «تعويض عن طلب أُلغي بعد التحضير» | Lowers what you owe | An order was cancelled after the food was prepared, and you were not responsible (AP §8.9) |
-| `merchant.credit` | «تصحيح مبلغ الاستلام» | Lowers what you owe | A pickup dispute was resolved: the captain paid you less than the items value (§8.10) |
-| `merchant.debit` | «استرداد مبلغ الاستلام» | Raises what you owe | A failed or refused order where you were responsible: you return the full pickup payment (AP §8.9) |
-| `merchant.debit` | «أصناف حُذفت بعد الاستلام» | Raises what you owe | Items removed after pickup, with you responsible (AP §9.3.3) |
-| `merchant.debit` | «مشكلة بعد التسليم» | Raises what you owe | A post-delivery ticket with you responsible (AP §8.10) |
-| `merchant.debit` | «تصحيح مبلغ الاستلام» | Raises what you owe | A pickup dispute was resolved: the captain paid you more than the items value |
-| `merchant.commission` (reversal) | «إلغاء عمولة» | Lowers what you owe | The commission on removed or affected items is reversed |
-| `merchant.adjustment` | «تسوية يدوية: {السبب}» | Either way | A manual correction by FOX DROP finance |
+| Entry                            | Arabic in the app                | Effect              | When                                                                                               |
+| -------------------------------- | -------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------- |
+| `merchant.credit`                | «تعويض عن طلب أُلغي بعد التحضير» | Lowers what you owe | An order was cancelled after the food was prepared, and you were not responsible (AP §8.9)         |
+| `merchant.credit`                | «تصحيح مبلغ الاستلام»            | Lowers what you owe | A pickup dispute was resolved: the captain paid you less than the items value (§8.10)              |
+| `merchant.debit`                 | «استرداد مبلغ الاستلام»          | Raises what you owe | A failed or refused order where you were responsible: you return the full pickup payment (AP §8.9) |
+| `merchant.debit`                 | «أصناف حُذفت بعد الاستلام»       | Raises what you owe | Items removed after pickup, with you responsible (AP §9.3.3)                                       |
+| `merchant.debit`                 | «مشكلة بعد التسليم»              | Raises what you owe | A post-delivery ticket with you responsible (AP §8.10)                                             |
+| `merchant.debit`                 | «تصحيح مبلغ الاستلام»            | Raises what you owe | A pickup dispute was resolved: the captain paid you more than the items value                      |
+| `merchant.commission` (reversal) | «إلغاء عمولة»                    | Lowers what you owe | The commission on removed or affected items is reversed                                            |
+| `merchant.adjustment`            | «تسوية يدوية: {السبب}»           | Either way          | A manual correction by FOX DROP finance                                                            |
 
 Each exception shows the order number, the reason, and who decided it.
 

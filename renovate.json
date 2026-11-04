@@ -1,0 +1,21 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+  "timezone": "Asia/Damascus",
+  "schedule": ["* 0-6 * * 1"],
+  "rangeStrategy": "pin",
+  "lockFileMaintenance": { "enabled": true },
+  "packageRules": [
+    {
+      "description": "One pull request a week for every minor and patch update.",
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "groupName": "minor and patch updates"
+    },
+    {
+      "description": "Runtimes move once a quarter, on staging first (architecture §19.4).",
+      "matchDepNames": ["node", "flutter", "dart"],
+      "groupName": "runtimes",
+      "schedule": ["* 0-6 1 1,4,7,10 *"]
+    }
+  ]
+}

@@ -17,15 +17,15 @@
 
 ## 9.2 Restaurant states (U6, Q8)
 
-| State (RA §7.1) | What the customer sees | Can add to the cart |
-|---|---|---|
-| Open | Nothing extra | Yes |
-| Open, busy mode on | The longer estimate, and «قد يستغرق الطلب وقتاً أطول قليلاً» (Q8) | Yes |
-| Busy (limit reached) | «المطعم مشغول حالياً، جرّب بعد قليل» | No |
-| Paused (any source) | «المطعم متوقف مؤقتاً، يعود خلال {المدة}», or «… يعود قريباً» when there is no end time, plus the operations message when operations paused it (AP §9.6.5) | No |
-| Closed by schedule | «مغلق — يفتح {اليوم} {الساعة}» | No |
-| Holiday close | «مغلق حتى {التاريخ}», plus the restaurant's message | No |
-| Suspended | Not shown | — |
+| State (RA §7.1)      | What the customer sees                                                                                                                                    | Can add to the cart |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| Open                 | Nothing extra                                                                                                                                             | Yes                 |
+| Open, busy mode on   | The longer estimate, and «قد يستغرق الطلب وقتاً أطول قليلاً» (Q8)                                                                                         | Yes                 |
+| Busy (limit reached) | «المطعم مشغول حالياً، جرّب بعد قليل»                                                                                                                      | No                  |
+| Paused (any source)  | «المطعم متوقف مؤقتاً، يعود خلال {المدة}», or «… يعود قريباً» when there is no end time, plus the operations message when operations paused it (AP §9.6.5) | No                  |
+| Closed by schedule   | «مغلق — يفتح {اليوم} {الساعة}»                                                                                                                            | No                  |
+| Holiday close        | «مغلق حتى {التاريخ}», plus the restaurant's message                                                                                                       | No                  |
+| Suspended            | Not shown                                                                                                                                                 | —                   |
 
 - In every state except open, the menu stays browsable and the add buttons are disabled with the state message (U6).
 - **A cart from a restaurant that changed state** stays in the app. Checkout shows the state message until the restaurant can take orders again.
@@ -59,12 +59,12 @@
 - **Badge:** every restaurant page shows «نفس أسعار المحل». A tap opens an explanation: «أسعار هذا المطعم في التطبيق هي نفس أسعاره في المحل. إن وجدت فرقاً فأخبرنا.»
 - **«أبلغ عن سعر مختلف»** (signed-in customers) opens a form:
 
-  | Field | Rule |
-  |---|---|
-  | Item | Optional, picked from the menu |
-  | Price in the shop | Optional, in the base currency |
-  | Note | Optional, up to 300 characters |
-  | Photo | Optional, 1, for example of the shop's menu board |
+  | Field             | Rule                                              |
+  | ----------------- | ------------------------------------------------- |
+  | Item              | Optional, picked from the menu                    |
+  | Price in the shop | Optional, in the base currency                    |
+  | Note              | Optional, up to 300 characters                    |
+  | Photo             | Optional, 1, for example of the shop's menu board |
 
 - **Sending** creates a ticket of the type «سعر مختلف عن المحل», linked to the restaurant (AP §9.9.1). The app answers «شكراً، سنتحقق من السعر». The resolution, «تم تصحيح السعر» or «السعر صحيح», reaches the customer as a push (AP §9.9.3).
 - **Limit:** one report per restaurant per customer per business day (fixed): «أرسلت بلاغاً عن هذا المطعم اليوم».

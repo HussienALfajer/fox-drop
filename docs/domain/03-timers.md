@@ -2,23 +2,23 @@
 
 > Part of AP §8, the domain reference shared by all four V1 specs ([index](README.md)). A bare "§n" here means AP §n.
 
-| Timer | Key | Default | What happens when it fires |
-|---|---|---|---|
-| Restaurant acceptance alert | `order.merchant_accept_alert_min` | 3 min | Critical alert: «مطعم لم يقبل» |
-| Auto-cancel for no restaurant response | `order.merchant_auto_cancel_min` | 7 min | The system cancels with reason «المطعم لم يستجب», apologises to the customer and counts an unanswered order for the restaurant |
-| Captain offer | `dispatch.offer_timeout_sec` | 45 s | The offer expires, the response is logged as «انتهت المهلة», and the next captain gets the offer |
-| No captain after the search-start moment | `dispatch.no_captain_alert_min` | 5 min | Critical alert: «طلب بلا كابتن» |
-| No captain after the order is ready | `dispatch.no_captain_after_ready_min` | 15 min | Critical alert. OPS calls the customer: wait, or cancel with an apology and a code |
-| Prep running late (ops) | `order.prep_late_ops_alert_min` | +10 min past the chosen prep time | Warning: «تحضير متأخر». The restaurant itself is alerted at +0. |
-| Captain waiting at the restaurant | `captain.waiting_threshold_min` | 10 min | Waiting pay starts, if the pay table includes it. Warning: «كابتن ينتظر عند المطعم» |
-| Customer not answering | `customer.no_answer_pings` × `customer.no_answer_ping_interval_min` | 3 × 5 min | After 15 min the captain gets the «الزبون لا يستجيب» button. Warning: «زبون لا يرد». OPS decides. |
-| Late delivery | `order.delivery_late_alert_min` | +20 min past the promised time | Warning: «توصيل متأخر». The customer gets an apology. |
-| Late delivery compensation | `order.delivery_late_compensation_min` | +45 min past the promised time | The system issues a next-order code worth `order.late_compensation_value` |
-| Captain GPS lost on an active order | `captain.gps_stale_alert_min` | 2 min | Critical alert: «انقطع اتصال كابتن أثناء طلب» |
-| Pickup confirmation | `order.pickup_confirm_timeout_sec` | 60 s | The server confirms the captain's pickup request automatically (§8.1) |
-| Pickup dispute window | `order.pickup_dispute_window_min` | 10 min after pickup | The restaurant's «المبلغ غير صحيح» button disappears from the order |
-| Open restaurant without a receiving device | `merchant.no_device_alert_min` | 5 min | Warning: «مطعم مفتوح بلا جهاز استقبال» (restaurant-app spec §4.6) |
-| Customer self-cancel | **fixed** | Only while `placed` | After that, the customer asks support by call or WhatsApp, and OPS performs the cancellation (customer-app spec §11.4) |
+| Timer                                      | Key                                                                 | Default                           | What happens when it fires                                                                                                     |
+| ------------------------------------------ | ------------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Restaurant acceptance alert                | `order.merchant_accept_alert_min`                                   | 3 min                             | Critical alert: «مطعم لم يقبل»                                                                                                 |
+| Auto-cancel for no restaurant response     | `order.merchant_auto_cancel_min`                                    | 7 min                             | The system cancels with reason «المطعم لم يستجب», apologises to the customer and counts an unanswered order for the restaurant |
+| Captain offer                              | `dispatch.offer_timeout_sec`                                        | 45 s                              | The offer expires, the response is logged as «انتهت المهلة», and the next captain gets the offer                               |
+| No captain after the search-start moment   | `dispatch.no_captain_alert_min`                                     | 5 min                             | Critical alert: «طلب بلا كابتن»                                                                                                |
+| No captain after the order is ready        | `dispatch.no_captain_after_ready_min`                               | 15 min                            | Critical alert. OPS calls the customer: wait, or cancel with an apology and a code                                             |
+| Prep running late (ops)                    | `order.prep_late_ops_alert_min`                                     | +10 min past the chosen prep time | Warning: «تحضير متأخر». The restaurant itself is alerted at +0.                                                                |
+| Captain waiting at the restaurant          | `captain.waiting_threshold_min`                                     | 10 min                            | Waiting pay starts, if the pay table includes it. Warning: «كابتن ينتظر عند المطعم»                                            |
+| Customer not answering                     | `customer.no_answer_pings` × `customer.no_answer_ping_interval_min` | 3 × 5 min                         | After 15 min the captain gets the «الزبون لا يستجيب» button. Warning: «زبون لا يرد». OPS decides.                              |
+| Late delivery                              | `order.delivery_late_alert_min`                                     | +20 min past the promised time    | Warning: «توصيل متأخر». The customer gets an apology.                                                                          |
+| Late delivery compensation                 | `order.delivery_late_compensation_min`                              | +45 min past the promised time    | The system issues a next-order code worth `order.late_compensation_value`                                                      |
+| Captain GPS lost on an active order        | `captain.gps_stale_alert_min`                                       | 2 min                             | Critical alert: «انقطع اتصال كابتن أثناء طلب»                                                                                  |
+| Pickup confirmation                        | `order.pickup_confirm_timeout_sec`                                  | 60 s                              | The server confirms the captain's pickup request automatically (§8.1)                                                          |
+| Pickup dispute window                      | `order.pickup_dispute_window_min`                                   | 10 min after pickup               | The restaurant's «المبلغ غير صحيح» button disappears from the order                                                            |
+| Open restaurant without a receiving device | `merchant.no_device_alert_min`                                      | 5 min                             | Warning: «مطعم مفتوح بلا جهاز استقبال» (restaurant-app spec §4.6)                                                              |
+| Customer self-cancel                       | **fixed**                                                           | Only while `placed`               | After that, the customer asks support by call or WhatsApp, and OPS performs the cancellation (customer-app spec §11.4)         |
 
 **Dispatch modes and the "search start" moment.** The server computes the search-start moment for every order in every mode (§9.12.6).
 

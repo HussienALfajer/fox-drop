@@ -4,45 +4,45 @@
 
 "All" means every signed-in device of the restaurant. "Owners" means owner devices and owner portal sessions. Owner devices with ringing off get Ring events silently.
 
-| # | Event | Level | Who | Text |
-|---|---|---|---|---|
-| 1 | New order | Ring | All | «طلب جديد #{رقم}» |
-| 2 | Auto-cancelled for no answer | Chime | All | «أُلغي الطلب #{رقم} لعدم الرد ({العدد} من {الحد} اليوم)» |
-| 3 | Restaurant auto-paused | Chime | All | «أُوقف مطعمك تلقائياً بعد {العدد} طلبات دون رد. تواصل مع العمليات لإعادة التشغيل.» |
-| 4 | Customer cancelled a new order | Chime | All | «ألغى الزبون الطلب #{رقم}» |
-| 5 | Accepted by operations | Chime | All | «قبلت العمليات الطلب #{رقم} نيابة عنكم — وقت التحضير {د} د» |
-| 6 | Rejected by operations | Chime | All | «رفضت العمليات الطلب #{رقم}: {السبب}» |
-| 7 | Captain assigned | Silent | All | Card update |
-| 8 | Captain changed | Chime | All | «تغيّر كابتن الطلب #{رقم}: {الاسم}» |
-| 9 | Captain arrived | Chime | All | «وصل الكابتن {الاسم} لاستلام الطلب #{رقم}» |
-| 10 | Captain waiting 10 min | Chime | All | «الكابتن ينتظر الطلب #{رقم} منذ {د} دقائق» |
-| 11 | Prep late (repeats every 5 min) | Chime | All | «تحضير متأخر #{رقم} — اضغط «الطلب جاهز» فور الانتهاء» |
-| 12 | Prep time changed by operations | Chime | All | «عدّلت العمليات وقت تحضير #{رقم} إلى {د} د» |
-| 13 | Pickup request | Ring | All | «الكابتن {الاسم} يؤكد أنه دفع لك {المبلغ} واستلم الطلب #{رقم}» |
-| 14 | Pickup confirmed (another device or automatic) | Silent | All | «تم استلام الطلب #{رقم}» |
-| 15 | Pickup confirmed by operations | Chime | All | «أكّدت العمليات استلام الكابتن للطلب #{رقم}» |
-| 16 | Order edited, items added | Ring until acknowledged | All | «تم تعديل الطلب #{رقم} — أُضيفت أصناف» |
-| 17 | Order edited, other changes | Chime | All | «تم تعديل الطلب #{رقم}» |
-| 18 | Cancelled after acceptance | Ring until acknowledged | All | «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» |
-| 19 | Failed, or an outcome that affects your money | Silent push | Owners | «لم يُسلَّم الطلب #{رقم}: {النتيجة}» with the money effect |
-| 20 | Delivered | Silent | All | Moves to history |
-| 21 | Admin price change | Chime | Owners | «عدّلت FOX DROP سعر {الصنف}: {القديم} ← {الجديد}» |
-| 22 | Menu change request decided | Silent push | Owners | «قُبل تعديلك على {الصنف}» / «رُفض تعديلك على {الصنف}: {السبب}» |
-| 23 | Paused, resumed or suspended by operations; busy mode ended by operations | Chime | All | «أوقفت العمليات مطعمك مؤقتاً: {السبب}» / «أعادت العمليات تشغيل مطعمك» / «أنهت العمليات وضع الضغط» |
-| 24 | Pause ended automatically | Chime | All | «انتهى الإيقاف المؤقت — مطعمك يستقبل الطلبات» |
-| 25 | Busy-mode reminder (hourly) | Chime | All | «وضع الضغط ما زال مفعّلاً (+{د} د)» |
-| 26 | Limit reached or cleared | Silent | All | Banner (§7.4) |
-| 27 | No receiving device for 5 min | Push | Owners | «لا يوجد جهاز يستقبل الطلبات في مطعمك الآن» |
-| 28 | Connection lost for 30 s | Chime | That device only | Red bar (§4.7) |
-| 29 | Ticket resolved | Silent push | Owners and the reporter | «تم حل بلاغك T-{رقم}: {الرد}» |
-| 30 | Weekly statement | Silent push | Owners | «كشف الأسبوع جاهز: المستحق {المبلغ}…» |
-| 31 | Settlement receipt | Silent push | Owners | «إيصال {رقم}: استلمنا منك {المبلغ}» |
-| 32 | Settlement overdue | Silent push and banner | Owners | «لديك مبلغ متأخر: {المبلغ}…» |
-| 33 | Commission change scheduled | Silent push | Owners | «تتغيّر عمولتك إلى {النسبة}% اعتباراً من {التاريخ}» |
-| 34 | Emergency stop on or off | Chime | All | Banner (§8.17) |
-| 35 | Terms version published | Blocking on next open | Owners | Accept screen (§4.10) |
-| 36 | Forced update or maintenance | Blocking | All | Update or maintenance screen (§4.2, §4.10) |
-| 37 | Item-unavailable report closed by operations without an edit | Chime | All | «أغلقت العمليات بلاغ الصنف في الطلب #{رقم}: {السبب}» |
-| 38 | Pickup request rejected as incomplete (another device) | Silent | All | The prompt closes |
+| #   | Event                                                                     | Level                   | Who                     | Text                                                                                              |
+| --- | ------------------------------------------------------------------------- | ----------------------- | ----------------------- | ------------------------------------------------------------------------------------------------- |
+| 1   | New order                                                                 | Ring                    | All                     | «طلب جديد #{رقم}»                                                                                 |
+| 2   | Auto-cancelled for no answer                                              | Chime                   | All                     | «أُلغي الطلب #{رقم} لعدم الرد ({العدد} من {الحد} اليوم)»                                          |
+| 3   | Restaurant auto-paused                                                    | Chime                   | All                     | «أُوقف مطعمك تلقائياً بعد {العدد} طلبات دون رد. تواصل مع العمليات لإعادة التشغيل.»                |
+| 4   | Customer cancelled a new order                                            | Chime                   | All                     | «ألغى الزبون الطلب #{رقم}»                                                                        |
+| 5   | Accepted by operations                                                    | Chime                   | All                     | «قبلت العمليات الطلب #{رقم} نيابة عنكم — وقت التحضير {د} د»                                       |
+| 6   | Rejected by operations                                                    | Chime                   | All                     | «رفضت العمليات الطلب #{رقم}: {السبب}»                                                             |
+| 7   | Captain assigned                                                          | Silent                  | All                     | Card update                                                                                       |
+| 8   | Captain changed                                                           | Chime                   | All                     | «تغيّر كابتن الطلب #{رقم}: {الاسم}»                                                               |
+| 9   | Captain arrived                                                           | Chime                   | All                     | «وصل الكابتن {الاسم} لاستلام الطلب #{رقم}»                                                        |
+| 10  | Captain waiting 10 min                                                    | Chime                   | All                     | «الكابتن ينتظر الطلب #{رقم} منذ {د} دقائق»                                                        |
+| 11  | Prep late (repeats every 5 min)                                           | Chime                   | All                     | «تحضير متأخر #{رقم} — اضغط «الطلب جاهز» فور الانتهاء»                                             |
+| 12  | Prep time changed by operations                                           | Chime                   | All                     | «عدّلت العمليات وقت تحضير #{رقم} إلى {د} د»                                                       |
+| 13  | Pickup request                                                            | Ring                    | All                     | «الكابتن {الاسم} يؤكد أنه دفع لك {المبلغ} واستلم الطلب #{رقم}»                                    |
+| 14  | Pickup confirmed (another device or automatic)                            | Silent                  | All                     | «تم استلام الطلب #{رقم}»                                                                          |
+| 15  | Pickup confirmed by operations                                            | Chime                   | All                     | «أكّدت العمليات استلام الكابتن للطلب #{رقم}»                                                      |
+| 16  | Order edited, items added                                                 | Ring until acknowledged | All                     | «تم تعديل الطلب #{رقم} — أُضيفت أصناف»                                                            |
+| 17  | Order edited, other changes                                               | Chime                   | All                     | «تم تعديل الطلب #{رقم}»                                                                           |
+| 18  | Cancelled after acceptance                                                | Ring until acknowledged | All                     | «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}»                                                      |
+| 19  | Failed, or an outcome that affects your money                             | Silent push             | Owners                  | «لم يُسلَّم الطلب #{رقم}: {النتيجة}» with the money effect                                        |
+| 20  | Delivered                                                                 | Silent                  | All                     | Moves to history                                                                                  |
+| 21  | Admin price change                                                        | Chime                   | Owners                  | «عدّلت FOX DROP سعر {الصنف}: {القديم} ← {الجديد}»                                                 |
+| 22  | Menu change request decided                                               | Silent push             | Owners                  | «قُبل تعديلك على {الصنف}» / «رُفض تعديلك على {الصنف}: {السبب}»                                    |
+| 23  | Paused, resumed or suspended by operations; busy mode ended by operations | Chime                   | All                     | «أوقفت العمليات مطعمك مؤقتاً: {السبب}» / «أعادت العمليات تشغيل مطعمك» / «أنهت العمليات وضع الضغط» |
+| 24  | Pause ended automatically                                                 | Chime                   | All                     | «انتهى الإيقاف المؤقت — مطعمك يستقبل الطلبات»                                                     |
+| 25  | Busy-mode reminder (hourly)                                               | Chime                   | All                     | «وضع الضغط ما زال مفعّلاً (+{د} د)»                                                               |
+| 26  | Limit reached or cleared                                                  | Silent                  | All                     | Banner (§7.4)                                                                                     |
+| 27  | No receiving device for 5 min                                             | Push                    | Owners                  | «لا يوجد جهاز يستقبل الطلبات في مطعمك الآن»                                                       |
+| 28  | Connection lost for 30 s                                                  | Chime                   | That device only        | Red bar (§4.7)                                                                                    |
+| 29  | Ticket resolved                                                           | Silent push             | Owners and the reporter | «تم حل بلاغك T-{رقم}: {الرد}»                                                                     |
+| 30  | Weekly statement                                                          | Silent push             | Owners                  | «كشف الأسبوع جاهز: المستحق {المبلغ}…»                                                             |
+| 31  | Settlement receipt                                                        | Silent push             | Owners                  | «إيصال {رقم}: استلمنا منك {المبلغ}»                                                               |
+| 32  | Settlement overdue                                                        | Silent push and banner  | Owners                  | «لديك مبلغ متأخر: {المبلغ}…»                                                                      |
+| 33  | Commission change scheduled                                               | Silent push             | Owners                  | «تتغيّر عمولتك إلى {النسبة}% اعتباراً من {التاريخ}»                                               |
+| 34  | Emergency stop on or off                                                  | Chime                   | All                     | Banner (§8.17)                                                                                    |
+| 35  | Terms version published                                                   | Blocking on next open   | Owners                  | Accept screen (§4.10)                                                                             |
+| 36  | Forced update or maintenance                                              | Blocking                | All                     | Update or maintenance screen (§4.2, §4.10)                                                        |
+| 37  | Item-unavailable report closed by operations without an edit              | Chime                   | All                     | «أغلقت العمليات بلاغ الصنف في الطلب #{رقم}: {السبب}»                                              |
+| 38  | Pickup request rejected as incomplete (another device)                    | Silent                  | All                     | The prompt closes                                                                                 |
 
 Notification texts come from Content templates (AP §9.13), so admins can edit them. The texts above are the defaults.

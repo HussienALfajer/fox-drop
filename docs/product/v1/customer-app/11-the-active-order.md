@@ -25,17 +25,17 @@
 
 The labels follow the "What the customer sees" column of AP §8.1. The order screen also shows the captain's progress, and the captain's own track (AP §8.2) is never shown as such.
 
-| Moment | Title | Subtitle | Push |
-|---|---|---|---|
-| `placed` | «بانتظار تأكيد المطعم» | «أرسلنا طلبك إلى {المطعم}» | — |
-| `accepted` | «المطعم يحضّر طلبك» | «يصل حوالي {الساعة}» | Yes |
-| Captain assigned (before pickup) | Unchanged | «الكابتن {الاسم} في طريقه إلى المطعم» | Yes |
-| Captain at the restaurant | Unchanged | «الكابتن {الاسم} وصل إلى المطعم» | — |
-| `ready` | «طلبك جاهز» | «ينتظر الكابتن», or «الكابتن يستلم طلبك الآن» when the captain is there | — |
-| `picked_up` | «في الطريق إليك» | «الكابتن {الاسم} استلم طلبك» | Yes |
-| `arrived` | «الكابتن عند الباب» | «جهّز {المبلغ}» | Yes, high priority |
-| `delivered` | «تم التسليم» | «بالعافية!» | Yes |
-| `rejected`, `cancelled`, `failed` | §11.9 | §11.9 | Yes |
+| Moment                            | Title                  | Subtitle                                                                | Push               |
+| --------------------------------- | ---------------------- | ----------------------------------------------------------------------- | ------------------ |
+| `placed`                          | «بانتظار تأكيد المطعم» | «أرسلنا طلبك إلى {المطعم}»                                              | —                  |
+| `accepted`                        | «المطعم يحضّر طلبك»    | «يصل حوالي {الساعة}»                                                    | Yes                |
+| Captain assigned (before pickup)  | Unchanged              | «الكابتن {الاسم} في طريقه إلى المطعم»                                   | Yes                |
+| Captain at the restaurant         | Unchanged              | «الكابتن {الاسم} وصل إلى المطعم»                                        | —                  |
+| `ready`                           | «طلبك جاهز»            | «ينتظر الكابتن», or «الكابتن يستلم طلبك الآن» when the captain is there | —                  |
+| `picked_up`                       | «في الطريق إليك»       | «الكابتن {الاسم} استلم طلبك»                                            | Yes                |
+| `arrived`                         | «الكابتن عند الباب»    | «جهّز {المبلغ}»                                                         | Yes, high priority |
+| `delivered`                       | «تم التسليم»           | «بالعافية!»                                                             | Yes                |
+| `rejected`, `cancelled`, `failed` | §11.9                  | §11.9                                                                   | Yes                |
 
 - **Pickup request:** while the captain's pickup request is pending (`pickup_pending`), the customer still sees the restaurant step.
 - **Reassignment before pickup:** the captain card changes to the new captain with «تغيّر الكابتن: {الاسم} في طريقه إلى المطعم».
@@ -62,6 +62,7 @@ The labels follow the "What the customer sees" column of AP §8.1. The order scr
   3. «نعم، ألغِ الطلب».
 
   The order becomes `cancelled`. The restaurant's prompt closes (RA §8.3). There is no strike.
+
 - **Race with acceptance:** if the restaurant accepted in the meantime, the server refuses: «قبل المطعم طلبك قبل لحظات. لإلغائه تواصل مع الدعم.»
 - **After acceptance:**
   - The cancel button is replaced, inside «مساعدة», by «لإلغاء الطلب تواصل مع الدعم».
@@ -82,15 +83,15 @@ Support's numbers come from Content (AP §9.13). There is no in-app ticket durin
 
 ## 11.6 Changes by the restaurant or operations (Q13)
 
-| Change | What the customer sees |
-|---|---|
-| Item unavailable after acceptance (RA §8.12) | A push with sound and a banner: «المطعم أبلغ أن صنفاً في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن.» The banner clears when operations edit or cancel the order or close the report, or when the restaurant withdraws the report (RA §8.12). |
-| Edit by operations (AP §9.3.3) | A push: «عدّلت FOX DROP طلبك. المجموع الجديد: {المبلغ}». The summary marks added items «أُضيف», strikes removed items «حُذف», shows quantity changes, and shows the new total. No approval is asked in the app, because operations agree it by phone. |
-| Prep or promised time changed | «تغيّر موعد وصول طلبك إلى {الساعة}» |
-| Late, 20 minutes past the promised time (AP §8.3) | A push and a banner: «نعتذر، طلبك متأخر قليلاً. نتابعه الآن.» |
-| Late, 45 minutes past the promised time | A push: «تأخر طلبك، وهذا كود خصم {القيمة} لطلبك القادم: {الكود}». The code is in «أكوادي». |
-| Emergency stop | A push and a banner with the delay notice (AP §9.1.6) |
-| Outcome with an amount to collect (AP §9.3.2 «تحديد النتيجة») | The order screen updates the amount: «المبلغ المطلوب الآن: {المبلغ}», or «لن تدفع شيئاً لهذا الطلب» |
+| Change                                                        | What the customer sees                                                                                                                                                                                                                                |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Item unavailable after acceptance (RA §8.12)                  | A push with sound and a banner: «المطعم أبلغ أن صنفاً في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن.» The banner clears when operations edit or cancel the order or close the report, or when the restaurant withdraws the report (RA §8.12).        |
+| Edit by operations (AP §9.3.3)                                | A push: «عدّلت FOX DROP طلبك. المجموع الجديد: {المبلغ}». The summary marks added items «أُضيف», strikes removed items «حُذف», shows quantity changes, and shows the new total. No approval is asked in the app, because operations agree it by phone. |
+| Prep or promised time changed                                 | «تغيّر موعد وصول طلبك إلى {الساعة}»                                                                                                                                                                                                                   |
+| Late, 20 minutes past the promised time (AP §8.3)             | A push and a banner: «نعتذر، طلبك متأخر قليلاً. نتابعه الآن.»                                                                                                                                                                                         |
+| Late, 45 minutes past the promised time                       | A push: «تأخر طلبك، وهذا كود خصم {القيمة} لطلبك القادم: {الكود}». The code is in «أكوادي».                                                                                                                                                            |
+| Emergency stop                                                | A push and a banner with the delay notice (AP §9.1.6)                                                                                                                                                                                                 |
+| Outcome with an amount to collect (AP §9.3.2 «تحديد النتيجة») | The order screen updates the amount: «المبلغ المطلوب الآن: {المبلغ}», or «لن تدفع شيئاً لهذا الطلب»                                                                                                                                                   |
 
 ## 11.7 The captain at the door (Q15)
 
@@ -112,14 +113,14 @@ Support's numbers come from Content (AP §9.13). There is no in-app ticket durin
 
 ## 11.9 Orders that do not complete (Q22)
 
-| Case | What the customer sees |
-|---|---|
-| Rejected by the restaurant (RA §8.6) | «نعتذر، لم يقبل المطعم طلبك», with the customer-facing reason (Appendix C), and up to 5 similar restaurants: open, same category, delivering to the pin. For «صنف غير متوفر», also «اطلب بدون الأصناف غير المتوفرة», which rebuilds the cart without those items (Q22). |
-| Cancelled for no restaurant response (AP §8.3) | «لم يرد المطعم على طلبك، نعتذر», with similar restaurants |
-| Cancelled by operations | «أُلغي طلبك», with the customer-facing reason (Appendix C), and the compensation code when one was given |
-| Cancelled by the customer | «ألغيت طلبك» |
-| Failed after pickup (AP §8.9) | «تعذّر التسليم», with the reason. For a `fake` outcome, the dues banner applies (§5.5). |
-| Delivered as `free`, or `damaged` with a reduction | «تم التسليم», with «لم تدفع شيئاً لهذا الطلب» or the reduced amount |
+| Case                                               | What the customer sees                                                                                                                                                                                                                                                  |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rejected by the restaurant (RA §8.6)               | «نعتذر، لم يقبل المطعم طلبك», with the customer-facing reason (Appendix C), and up to 5 similar restaurants: open, same category, delivering to the pin. For «صنف غير متوفر», also «اطلب بدون الأصناف غير المتوفرة», which rebuilds the cart without those items (Q22). |
+| Cancelled for no restaurant response (AP §8.3)     | «لم يرد المطعم على طلبك، نعتذر», with similar restaurants                                                                                                                                                                                                               |
+| Cancelled by operations                            | «أُلغي طلبك», with the customer-facing reason (Appendix C), and the compensation code when one was given                                                                                                                                                                |
+| Cancelled by the customer                          | «ألغيت طلبك»                                                                                                                                                                                                                                                            |
+| Failed after pickup (AP §8.9)                      | «تعذّر التسليم», with the reason. For a `fake` outcome, the dues banner applies (§5.5).                                                                                                                                                                                 |
+| Delivered as `free`, or `damaged` with a reduction | «تم التسليم», with «لم تدفع شيئاً لهذا الطلب» or the reduced amount                                                                                                                                                                                                     |
 
 - The cart was emptied when the order was placed (§10.7). «اطلب بدون الأصناف غير المتوفرة» and «اطلب مرة أخرى» (§12.3) rebuild it, and ask first when the current cart is not empty.
 - A code used on a rejected, cancelled or failed order comes back when the customer was not at fault (§10.4).

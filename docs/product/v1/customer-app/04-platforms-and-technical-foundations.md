@@ -4,10 +4,10 @@
 
 ## 4.1 Platforms
 
-| Platform | Minimum | Notes |
-|---|---|---|
+| Platform      | Minimum              | Notes         |
+| ------------- | -------------------- | ------------- |
 | Android phone | Android 8.0 (API 26) | Full features |
-| iPhone | iOS 15 | Same features |
+| iPhone        | iOS 15               | Same features |
 
 - Both apps MUST have the same features and rules. They are one Flutter codebase, as in CA §4.1 (technology-stack §13).
 - Phones, portrait. The layout MUST not break on a tablet.
