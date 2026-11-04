@@ -17,13 +17,15 @@ it('orders the migrations by creation time', () => {
     readFileSync(path.join(MIGRATIONS_FOLDER, 'meta', '_journal.json'), 'utf8'),
   ) as { entries: JournalEntry[] };
 
+  let previous: JournalEntry | undefined;
   journal.entries.forEach((entry, position) => {
     expect(entry.idx, entry.tag).toBe(position);
-    if (position > 0) {
+    if (previous) {
       expect(
         entry.when,
         `${entry.tag} is older than the migration before it: regenerate it after the rebase`,
-      ).toBeGreaterThan(journal.entries[position - 1].when);
+      ).toBeGreaterThan(previous.when);
     }
+    previous = entry;
   });
 });
