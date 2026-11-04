@@ -20,6 +20,9 @@ WORKDIR /app
 COPY --from=build /out/package.json ./
 COPY --from=build /out/node_modules node_modules
 COPY --from=build /out/dist dist
+# Applied by `node dist/database/migrate-command.js` as its own deploy step
+# (architecture §17.3), with MIGRATION_DATABASE_URL set.
+COPY --from=build /repo/apps/server/migrations migrations
 USER node
 EXPOSE 3000
 CMD ["node", "dist/main.js"]
