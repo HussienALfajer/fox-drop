@@ -86,7 +86,9 @@ function contractFingerprint() {
     .sort();
   for (const file of new Set(files)) {
     hash.update(`${file}\n`);
-    hash.update(existsSync(file) ? readFileSync(file) : 'deleted');
+    // Git stores LF (.gitattributes), so CRLF written on Windows is not a change.
+    const content = existsSync(file) ? readFileSync(file, 'utf8') : 'deleted';
+    hash.update(content.replaceAll('\r\n', '\n'));
   }
   return hash.digest('hex');
 }
@@ -97,7 +99,8 @@ function checkApiContract() {
   if (contractFingerprint() === before) return;
   console.error(
     '\nThe committed OpenAPI document or a generated client was stale. It is regenerated' +
-      ' now: review the changes in packages/api-schema and packages/core_api, then commit them.',
+      ' now: review the changes in packages/api-schema and packages/core_api and commit them.' +
+      ' A second run passes locally, but CI fails until they are committed.',
   );
   fail('API contract');
 }

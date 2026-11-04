@@ -46,6 +46,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # The generator jar, version pinned in openapitools.json, downloads once.
+      - uses: actions/cache@v5
+        with:
+          path: node_modules/@openapitools/openapi-generator-cli/versions
+          key: openapi-generator-${{ hashFiles('openapitools.json') }}
+
       - run: dart pub get --enforce-lockfile
 
       - run: pnpm verify

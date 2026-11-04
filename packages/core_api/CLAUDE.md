@@ -10,6 +10,6 @@ The Dart client of the FOX DROP API for the three Flutter apps (architecture §5
 ## Rules
 
 - Never edit `lib/` by hand. Change the server, run `pnpm generate:api` from the repository root (it needs Java 11 or later) and commit what changed. `pnpm verify` fails when the committed `lib/` is stale.
-- `analysis_options.yaml` switches off only the style rules the generator's templates break. Do not add a rule there to hide an error or a warning from a real change: fix the server's document instead.
+- `analysis_options.yaml` switches off, for the whole package `test/` included, the style rules the generator's templates break and one warning, `unused_import`. Do not add a rule there to hide an error or another warning from a real change: fix the server's document instead.
 - When a generated file imports a new package, add it to `pubspec.yaml` with an exact version.
 - The auth interceptors and the `Idempotency-Key` and app-version headers of §11.2 come with the slices that need them. `pnpm generate:api` replaces all of `lib/`, so the first of those slices moves the generated code into a folder of its own before adding hand-written code.
