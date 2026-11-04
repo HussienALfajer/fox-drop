@@ -1,10 +1,18 @@
-import type { Type } from '@nestjs/common';
+import { Module, type Type } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
+import { Logger } from 'nestjs-pino';
 import { ZodValidationPipe } from 'nestjs-zod';
+import { LoggingModule } from '../logging/logging.module.js';
 
 export async function createApiApp(module: Type): Promise<NestFastifyApplication> {
-  const app = await NestFactory.create<NestFastifyApplication>(module, new FastifyAdapter());
+  @Module({ imports: [LoggingModule, module] })
+  class RootModule {}
+
+  const app = await NestFactory.create<NestFastifyApplication>(RootModule, new FastifyAdapter(), {
+    bufferLogs: true,
+  });
+  app.useLogger(app.get(Logger));
   app.setGlobalPrefix('v1');
   app.useGlobalPipes(new ZodValidationPipe());
 
