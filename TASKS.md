@@ -4,21 +4,20 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 0, slice 0.7: admin accounts and sign-in (`docs/roadmap.md`).
+Phase 0, slice 0.8: roles, permissions and admin team API (`docs/roadmap.md`).
 
-- **Implements:** AP §5.1 (email or phone and password of at least `admin.password_min_length`; mandatory TOTP per RFC 6238; one-time setup link valid 24 hours; TOTP enrolment by QR code; 10 single-use backup codes shown once; lockout for `admin.lockout_min` after `admin.login_max_attempts` failures), AP §5.2 (idle and maximum session lifetimes from `admin.session_idle_min` and `admin.session_max_hours`; each session records device, browser, IP, sign-in time and last activity), AP §5.3 (the first OWN account by a server command, never from the UI), architecture §10.3 (Argon2id, `otplib`, backup codes stored hashed, an HTTP-only, secure, same-site cookie with lifetimes enforced on the server).
-- **Branch:** `feat/admin-sign-in`
-- **Done when:** a server command creates the first OWN account and prints its setup link; the setup link sets the password and enrols TOTP once and expires after 24 hours; sign-in needs the password and a TOTP or backup code; failures lock the account; the session cookie expires on idle and at its maximum, read from the settings; sign-in, sign-out, setup and lockout are audited; no password, TOTP secret, setup token or backup code is logged, returned twice or stored in clear; tests cover each rule. Roles, guards and the admin team actions are slice 0.8.
+- **Implements:** AP §6.1 (five fixed roles OWN, OPS, SUP, FIN, DATA; permissions stored as data; a user holds one or more roles and gets their union), AP §6.2 and §6.3 (the module access matrix and the special permissions), AP §5.2 last item and §5.3 (OWN sees every open session and forces a user out of all of them; creates a user with a setup link, changes roles, disables a user, ending their sessions at once, resets a user's TOTP), AP §9.15 (the admin team screen's API), AP §14 items 1–2, architecture §15.2 (guards on every route, the UI hides and the server enforces; a test calls every forbidden route for every role).
+- **Branch:** `feat/admin-roles`
+- **Done when:** roles and permissions are rows, not code; every admin route is denied unless it names its permission, and a test matrix calls every admin route with every role; a user with two roles gets the union; OWN can list users and open sessions, create a user and get its setup link, change roles, disable a user (sessions end at once), reset TOTP (enrolment again at the next sign-in) and force a sign-out everywhere, each audited; tests cover each rule.
 
 ## Plan
 
-- [ ] Read AP §5.1–5.3, architecture §10.3 and §15; ask the owner whether the email or the phone is the sign-in name (§5.1 allows both) and anything else unclear.
-- [ ] The `identity` schema through the `db-migration` skill: admin accounts (email or phone, password hash, TOTP secret, roles held as text until 0.8, status), setup links (hashed token, expiry, used), backup codes (hashed, used), sessions (hashed id, device, browser, IP, signed in, last activity, ended).
-- [ ] The first-OWN server command, with a test.
-- [ ] Setup: the link, the password rule, TOTP enrolment and the backup codes, with tests (failing first for the expiry and single use).
-- [ ] Sign-in and lockout, with tests (failing first for the attempt count and lockout time from the settings).
-- [ ] Sessions: the cookie, idle and maximum lifetimes, sign-out, with tests. The `api` role imports its first database module here: make `DATABASE_URL` and `VALKEY_URL` available to the OpenAPI generation and to `scripts/smoke-image.mjs`.
-- [ ] Folder `CLAUDE.md` for the module, `pnpm generate:api`, and the pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
+- [ ] Read AP §6, §5.2–5.3, §9.15, §14 items 1–2 and architecture §15.2; ask the owner about anything unclear (how the audit records the role of a user with several roles; whether a locked account keeps answering `423`, see the notes).
+- [ ] Roles and permissions as data through the `db-migration` skill: the five roles, the permissions of AP §6.2–6.3, and the account's roles as references; keep `AdminRole` in the settings catalogue in step with them.
+- [ ] Deny-by-default guards for the admin group: a route names its permission or is marked public. Public: the four `GET /v1/<group>/status` routes and `POST /v1/admin/auth/sign-in`, `setup/totp` and `setup/complete`.
+- [ ] The test matrix: every admin route with every role, and the union of two roles.
+- [ ] The admin team API (AP §9.15): list users and their open sessions, create a user with a setup link, change roles, disable, reset TOTP, force sign-out everywhere, each audited, with tests.
+- [ ] Folder `CLAUDE.md` rules, `pnpm generate:api`, and the pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
 
 ## Notes from earlier slices
 
@@ -33,7 +32,13 @@ Phase 0, slice 0.7: admin accounts and sign-in (`docs/roadmap.md`).
 - The settings money values are not yet tied to the currency data: `captain.remit_tolerance` takes any currency code, and `currency.<code>.*` takes any three capital letters. The `fx` slice checks them against the city's currencies and base currency (AP §13 item 4).
 - No settings change reaches the apps yet; AP §10 (force update, maintenance) needs an event through the outbox when `app.<app>.*` changes.
 - `pnpm` on this machine needs `fnm env` in the shell (Git Bash: `eval "$(fnm env --shell bash)"; fnm use`). `pnpm add` and `pnpm install` also fail an engine check that reports Node 99999.0.0; `pnpm --config.engine-strict=false add ...` works around it.
+- Slice 0.7 added admin sign-in in the `identity` module (`apps/server/src/modules/identity/CLAUDE.md`). A route that needs a session uses `AdminSessionGuard` and `@CurrentAdminSession()`. The API now needs `IDENTITY_ENCRYPTION_KEY` (32 bytes in base64) besides `DATABASE_URL` and `VALKEY_URL`; the OpenAPI generation uses placeholders (`setOpenApiPlaceholderEnvironment`).
+- The audit actor role of an admin is `roles.join(',')` (such as `OPS,FIN`) until slice 0.8 decides how a user with several roles is recorded.
+- A locked account answers `423` and anything else `401`, so five wrong attempts show whether a sign-in name has an account. AP §5.1 does not require showing the lock: owner's decision pending (raised 2026-11-05).
+- The API has no `trustProxy` yet, so behind Cloudflare and the proxy every session and audit event would record the proxy's IP. The deploy slice sets the trusted hops or reads `CF-Connecting-IP` from a trusted hop, never `trustProxy: true`.
+- Sign-in and setup cost an Argon2 hash per request; nothing limits their rate yet. The deploy slice (Cloudflare rate limits, architecture §15.5) or a per-IP limit in Valkey must cover `/v1/admin/auth/*`.
+- The session cookie is `__Host-` and `SameSite=Strict`, so the panel and the API must be served from the same site; the panel slice decides the origin (or adds CORS with credentials).
 
 ## Next
 
-Slice 0.8, roles, permissions and admin team API (`docs/roadmap.md`).
+Slice 0.9, settings edit API (`docs/roadmap.md`).
