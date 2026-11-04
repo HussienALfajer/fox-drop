@@ -17,6 +17,7 @@ import { AdminSessionsService } from './admin-sessions.service.js';
 import { AdminSetupService, SetupRefusedError } from './admin-setup.service.js';
 import { AdminSignInService, SignInRefusedError } from './admin-sign-in.service.js';
 import { createFirstOwner, FirstOwnerExistsError } from './first-owner.js';
+import { OWNER_COMMAND_USAGE, parseOwnerArguments } from './owner-arguments.js';
 import { adminAccounts, adminSetupLinks } from './schema.js';
 import { IdentitySecrets, newToken, tokenHash } from './secrets.js';
 import { setupLinkUrl } from './setup-link-url.js';
@@ -152,7 +153,7 @@ describe('the first OWN account (AP §5.3)', () => {
     const now = new Date('2026-11-05T10:00:00Z');
     const owner = await createFirstOwner(
       { db: db.db, audit, secrets },
-      { email: 'owner@example.test' },
+      { email: 'owner@example.test', phone: '+963944000009' },
       now,
     );
     const { rows } = await sql.query(
@@ -172,10 +173,55 @@ describe('the first OWN account (AP §5.3)', () => {
     expect(await auditActions(owner.accountId)).toEqual(['admin_account.create']);
   });
 
-  it('is created once only', async () => {
-    await expect(
-      createFirstOwner({ db: db.db, audit, secrets }, { phone: '+963944000001' }),
-    ).rejects.toThrow(FirstOwnerExistsError);
+  it('refuses another name while one exists', async () => {
+    for (const name of [
+      { email: null, phone: '+963944000001' },
+      { email: 'owner@example.test', phone: null },
+    ]) {
+      await expect(createFirstOwner({ db: db.db, audit, secrets }, name)).rejects.toThrow(
+        FirstOwnerExistsError,
+      );
+    }
+  });
+
+  it('replaces the link of a pending owner with the same name, then refuses once set up', async () => {
+    const name = { email: 'owner@example.test', phone: '+963944000009' };
+    const now = new Date();
+    const first = await createFirstOwner({ db: db.db, audit, secrets }, name, now);
+    const second = await createFirstOwner({ db: db.db, audit, secrets }, name, now);
+    expect(second).toMatchObject({ accountId: first.accountId, reissued: true });
+    await expect(setup.startTotpEnrolment(first.setupToken, now)).rejects.toMatchObject({
+      refusal: 'link_invalid',
+    });
+    expect(await auditActions(first.accountId)).toEqual([
+      'admin_account.create',
+      'admin_account.setup_link_reissue',
+      'admin_account.setup_link_reissue',
+    ]);
+
+    const { secret } = await setup.startTotpEnrolment(second.setupToken, now);
+    await setup.completeSetup(
+      { token: second.setupToken, password, code: await totpCode(secret, now) },
+      context,
+      now,
+    );
+    await expect(createFirstOwner({ db: db.db, audit, secrets }, name, now)).rejects.toThrow(
+      FirstOwnerExistsError,
+    );
+  });
+
+  it('takes an email, a phone or both on the command line', () => {
+    expect(parseOwnerArguments(['--email', 'Owner@Example.test'])).toEqual({
+      email: 'owner@example.test',
+      phone: null,
+    });
+    expect(
+      parseOwnerArguments(['--email', 'o@example.test', '--phone', '+963 944 000 009']),
+    ).toEqual({ email: 'o@example.test', phone: '+963944000009' });
+    expect(parseOwnerArguments([])).toBe(OWNER_COMMAND_USAGE);
+    expect(parseOwnerArguments(['--name', 'x'])).toBe(OWNER_COMMAND_USAGE);
+    expect(parseOwnerArguments(['--email', 'nope'])).toMatch(/email/);
+    expect(parseOwnerArguments(['--phone', '0944000009'])).toMatch(/international/);
   });
 
   it('gets a link with the token in the fragment, never sent to a server', () => {
@@ -314,6 +360,27 @@ describe('the setup link (AP §5.1 item 3)', () => {
     );
   });
 
+  it('lets one of two setups at once use the link', async () => {
+    const now = new Date();
+    const { token } = await pendingAccount({ email: newEmail() }, now);
+    const { secret } = await setup.startTotpEnrolment(token, now);
+    const code = await totpCode(secret, now);
+    const results = await Promise.allSettled(
+      [0, 1].map(() => setup.completeSetup({ token, password, code }, context, now)),
+    );
+    expect(results.map((result) => result.status).sort()).toEqual(['fulfilled', 'rejected']);
+  });
+
+  it('refuses the link of an account that is no longer pending', async () => {
+    const { accountId, token } = await pendingAccount({ email: newEmail() });
+    await sql.query(`UPDATE identity.admin_accounts SET status = 'disabled' WHERE id = $1`, [
+      accountId,
+    ]);
+    await expect(setup.startTotpEnrolment(token)).rejects.toMatchObject({
+      refusal: 'link_invalid',
+    });
+  });
+
   it('needs the TOTP enrolment first', async () => {
     const { token } = await pendingAccount({ email: newEmail() });
     await expect(
@@ -378,6 +445,28 @@ describe('sign-in (AP §5.1)', () => {
     await expect(
       signIn.signIn({ login: account.login, password, code }, context, at),
     ).rejects.toBeInstanceOf(SignInRefusedError);
+  });
+
+  it('takes one TOTP code once even when sent twice at once', async () => {
+    const account = await activeAccount();
+    const at = later(account.setupAt);
+    const code = await totpCode(account.secret, at);
+    const results = await Promise.allSettled(
+      [0, 1].map(() => signIn.signIn({ login: account.login, password, code }, context, at)),
+    );
+    expect(results.map((result) => result.status).sort()).toEqual(['fulfilled', 'rejected']);
+  });
+
+  it('refuses a code when the last accepted step is ahead of this clock', async () => {
+    const account = await activeAccount();
+    const behind = new Date(account.setupAt.getTime() - 10 * 60_000);
+    await expect(
+      signIn.signIn(
+        { login: account.login, password, code: await totpCode(account.secret, behind) },
+        context,
+        behind,
+      ),
+    ).rejects.toMatchObject({ refusal: 'invalid' });
   });
 
   it('takes each backup code once', async () => {
@@ -598,6 +687,21 @@ describe('the session cookie over HTTP (architecture §10.3)', () => {
       'admin_session.sign_in',
       'admin_session.sign_out',
     ]);
+  });
+
+  it('lives as long as a changed admin.session_max_hours', async () => {
+    await changeSetting('admin.session_max_hours', 2);
+    try {
+      const account = await activeAccount();
+      const response = await app.inject({
+        method: 'POST',
+        url: '/v1/admin/auth/sign-in',
+        payload: { login: account.login, password, code: account.backupCodes[0] },
+      });
+      expect(response.cookies[0]).toMatchObject({ maxAge: 2 * 3600 });
+    } finally {
+      await resetSetting('admin.session_max_hours');
+    }
   });
 
   it('answers 401 without a cookie', async () => {

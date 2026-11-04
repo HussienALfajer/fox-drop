@@ -12,12 +12,18 @@ export async function verifyTotp(
   now: Date,
   afterTimeStep: number | null = null,
 ): Promise<number | null> {
-  const result = await verify({
-    secret,
-    token: code,
-    epoch: Math.floor(now.getTime() / 1000),
-    epochTolerance: TOLERANCE_SECONDS,
-    ...(afterTimeStep === null ? {} : { afterTimeStep }),
-  });
-  return result.valid && 'timeStep' in result ? result.timeStep : null;
+  try {
+    const result = await verify({
+      secret,
+      token: code,
+      epoch: Math.floor(now.getTime() / 1000),
+      epochTolerance: TOLERANCE_SECONDS,
+      ...(afterTimeStep === null ? {} : { afterTimeStep }),
+    });
+    return result.valid && 'timeStep' in result ? result.timeStep : null;
+  } catch {
+    // otplib throws when the last accepted step is ahead of this clock's
+    // window, as after a server clock stepped back: the code is refused.
+    return null;
+  }
 }

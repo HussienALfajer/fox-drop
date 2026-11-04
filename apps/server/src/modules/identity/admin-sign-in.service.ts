@@ -68,8 +68,7 @@ export class AdminSignInService {
         ? await tx.select().from(adminAccounts).where(where).for('update')
         : [];
       if (!account || account.status !== 'active' || !account.passwordHash) {
-        await verifyNoPassword(input.password);
-        return { refusal: 'invalid' as const };
+        return { refusal: 'invalid' as const, noAccount: true };
       }
       if (account.lockedUntil && account.lockedUntil > now) return { refusal: 'locked' as const };
 
@@ -91,7 +90,12 @@ export class AdminSignInService {
       const signedIn = await this.sessions.start(tx, account, context, now);
       return { signedIn };
     });
-    if ('refusal' in outcome) throw new SignInRefusedError(outcome.refusal);
+    if ('refusal' in outcome) {
+      // Outside the transaction, so a guessed name holds no connection while
+      // it takes as long as a wrong password.
+      if ('noAccount' in outcome) await verifyNoPassword(input.password);
+      throw new SignInRefusedError(outcome.refusal);
+    }
     return outcome.signedIn;
   }
 
@@ -155,8 +159,11 @@ export class AdminSignInService {
         cityId: null,
         action: 'admin_account.lock',
         target: { type: 'admin_account', id: account.id },
-        before: { lockedUntil: null },
-        after: { lockedUntil: lockedUntil.toISOString(), failedAttempts },
+        before: {
+          lockedUntil: account.lockedUntil?.toISOString() ?? null,
+          failedAttempts: account.failedAttempts,
+        },
+        after: { lockedUntil: lockedUntil.toISOString(), failedAttempts: 0 },
       },
       tx,
     );

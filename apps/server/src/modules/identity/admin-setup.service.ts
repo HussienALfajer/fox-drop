@@ -53,10 +53,13 @@ export class AdminSetupService {
   async startTotpEnrolment(token: string, now = new Date()): Promise<TotpEnrolment> {
     const link = await this.usableLink(this.database.db, token, now);
     const secret = generateSecret();
-    await this.database.db
+    // A setup that completed meanwhile used the link up.
+    const offered = await this.database.db
       .update(adminSetupLinks)
       .set({ pendingTotpSecretEncrypted: this.secrets.encrypt(secret) })
-      .where(eq(adminSetupLinks.id, link.id));
+      .where(and(eq(adminSetupLinks.id, link.id), isNull(adminSetupLinks.usedAt)))
+      .returning({ id: adminSetupLinks.id });
+    if (offered.length === 0) throw new SetupRefusedError('link_invalid');
     const label = link.email ?? (link.phoneEncrypted && this.secrets.decrypt(link.phoneEncrypted));
     return {
       secret,
@@ -74,6 +77,9 @@ export class AdminSetupService {
     if (input.password.length < minLength) {
       throw new SetupRefusedError('password_too_short', minLength);
     }
+    // A cheap check first, so a made-up token never costs an Argon2 hash. The
+    // transaction checks again under the lock.
+    await this.usableLink(this.database.db, input.token, now);
     const passwordHash = await hashPassword(input.password);
     const backupCodes = Array.from({ length: BACKUP_CODE_COUNT }, newBackupCode);
 
