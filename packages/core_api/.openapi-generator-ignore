@@ -1,0 +1,8 @@
+# scripts/generate-api.mjs regenerates lib/ only; everything else in this
+# package is written by hand.
+pubspec.yaml
+README.md
+analysis_options.yaml
+.gitignore
+doc/**
+test/**

@@ -8,11 +8,13 @@
   },
   "scripts": {
     "verify": "node scripts/verify.mjs",
+    "generate:api": "node scripts/generate-api.mjs",
     "format": "prettier --write .",
     "lint:root": "eslint --ignore-pattern \"apps/**\" --ignore-pattern \"packages/**\" --ignore-pattern \"tools/**\" ."
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@openapitools/openapi-generator-cli": "2.42.0",
     "eslint": "10.14.0",
     "globals": "17.14.0",
     "prettier": "3.9.10",

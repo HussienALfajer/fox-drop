@@ -4,7 +4,8 @@ publish_to: none
 environment:
   sdk: ^3.11.0
 
-workspace: []
+workspace:
+  - packages/core_api
 
 dev_dependencies:
   lints: 6.1.0
