@@ -1,8 +1,8 @@
 import { Module, type Type } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 import { Logger } from 'nestjs-pino';
-import { ZodValidationPipe } from 'nestjs-zod';
+import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { LoggingModule } from '../logging/logging.module.js';
 
 export async function createApiApp(module: Type): Promise<NestFastifyApplication> {
@@ -16,6 +16,9 @@ export async function createApiApp(module: Type): Promise<NestFastifyApplication
   app.useLogger(app.get(Logger));
   app.setGlobalPrefix('v1');
   app.useGlobalPipes(new ZodValidationPipe());
+  // Responses declared with @ZodResponse are parsed by their schema, so a
+  // route cannot return more or other than its documented model.
+  app.useGlobalInterceptors(new ZodSerializerInterceptor(app.get(Reflector)));
 
   // The apps compute their clock offset from this header (RA §4.7), so it is
   // set as late as possible and on every response, errors included.

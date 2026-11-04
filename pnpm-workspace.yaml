@@ -4,6 +4,8 @@ packages:
   - tools/*
 
 allowBuilds:
+  '@openapitools/openapi-generator-cli': false
+  '@scarf/scarf': false
   '@swc/core': false
 
 engineStrict: true
