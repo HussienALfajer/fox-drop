@@ -29,6 +29,13 @@
       "when": 1793829057513,
       "tag": "0003_identity_admin_accounts",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793832632570,
+      "tag": "0004_identity_admin_roles",
+      "breakpoints": true
     }
   ]
 }

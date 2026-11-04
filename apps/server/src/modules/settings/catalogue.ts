@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-// The five admin roles of AP §6.1. Slice 0.8 stores them as data; until then
-// the settings catalogue is their only user.
+// The five admin roles of AP §6.1, the codes of identity.admin_roles
+// (identity's admin-team.test.ts keeps the two equal).
 export const adminRoles = ['OWN', 'OPS', 'SUP', 'FIN', 'DATA'] as const;
 export type AdminRole = (typeof adminRoles)[number];
 

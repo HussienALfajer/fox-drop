@@ -1,7 +1,7 @@
-import { and, arrayContains, eq, gt, isNull, sql } from 'drizzle-orm';
+import { and, eq, gt, isNull, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { AuditService } from '../audit/index.js';
-import { adminAccounts, adminSetupLinks } from './schema.js';
+import { adminAccountRoles, adminAccounts, adminSetupLinks } from './schema.js';
 import { type IdentitySecrets, newToken, tokenHash } from './secrets.js';
 
 // AP §5.1 item 3: a setup link is valid 24 hours (fixed).
@@ -52,7 +52,8 @@ export async function createFirstOwner(
         phoneHash: adminAccounts.phoneHash,
       })
       .from(adminAccounts)
-      .where(arrayContains(adminAccounts.roles, ['OWN']))
+      .innerJoin(adminAccountRoles, eq(adminAccountRoles.accountId, adminAccounts.id))
+      .where(and(eq(adminAccountRoles.roleCode, 'OWN'), isNull(adminAccountRoles.revokedAt)))
       .limit(1);
     if (
       owner &&
@@ -81,7 +82,6 @@ export async function createFirstOwner(
           email: name.email,
           phoneEncrypted: name.phone && secrets.encrypt(name.phone),
           phoneHash,
-          roles: ['OWN'],
           status: 'pending',
           createdAt: now,
           updatedAt: now,
@@ -89,6 +89,7 @@ export async function createFirstOwner(
         .returning({ id: adminAccounts.id });
       if (!account) throw new Error('the account was not created');
       accountId = account.id;
+      await tx.insert(adminAccountRoles).values({ accountId, roleCode: 'OWN', grantedAt: now });
     }
 
     const setupToken = newToken();

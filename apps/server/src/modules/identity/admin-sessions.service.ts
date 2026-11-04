@@ -1,22 +1,37 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq, gt, isNull } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditExecutor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { SettingsService } from '../settings/index.js';
-import { adminAccounts, adminSessions } from './schema.js';
+import type { AdminPermission } from './permissions.js';
+import { accountAccess, actorRole } from './roles.js';
+import { adminAccounts, adminSessionEndReasons, adminSessions } from './schema.js';
 import { newToken, tokenHash } from './secrets.js';
 
 export interface AdminSession {
   id: string;
   accountId: string;
+  // The roles held now, sorted, and the union of their permissions (AP §6.1).
   roles: string[];
+  permissions: AdminPermission[];
   signedInAt: Date;
   // The earlier of the idle end and the maximum end, as of the last activity.
   expiresAt: Date;
 }
 
 type Executor = AuditExecutor & Pick<Database['db'], 'select' | 'update'>;
+
+export type SessionEndReason = (typeof adminSessionEndReasons)[number];
+
+export interface OpenSession {
+  id: string;
+  accountId: string;
+  userAgent: string | null;
+  ipAddress: string | null;
+  signedInAt: Date;
+  lastActivityAt: Date;
+}
 
 // AP §5.2: a session ends after admin.session_idle_min without activity, and
 // in any case admin.session_max_hours after sign-in, both read at every check
@@ -32,15 +47,16 @@ export class AdminSessionsService {
   // Called by the sign-in inside its transaction.
   async start(
     tx: Executor,
-    account: { id: string; roles: string[] },
+    accountId: string,
     context: AuditRequestContext,
     now: Date,
   ): Promise<{ token: string; session: AdminSession }> {
+    const access = await accountAccess(tx, accountId);
     const token = newToken();
     const [row] = await tx
       .insert(adminSessions)
       .values({
-        accountId: account.id,
+        accountId,
         tokenHash: tokenHash(token),
         userAgent: context.device,
         ipAddress: context.ipAddress,
@@ -51,20 +67,20 @@ export class AdminSessionsService {
     if (!row) throw new Error('the session was not created');
     await this.audit.recordWrite(
       {
-        actor: { type: 'admin', id: account.id, role: account.roles.join(',') },
+        actor: { type: 'admin', id: accountId, role: actorRole(access.roles) },
         context,
         cityId: null,
         action: 'admin_session.sign_in',
         target: { type: 'admin_session', id: row.id },
         before: null,
-        after: { accountId: account.id },
+        after: { accountId },
       },
       tx,
     );
     const session = {
       id: row.id,
-      accountId: account.id,
-      roles: account.roles,
+      accountId,
+      ...access,
       signedInAt: now,
       expiresAt: await this.expiresAt(now, now),
     };
@@ -78,7 +94,6 @@ export class AdminSessionsService {
       .select({
         id: adminSessions.id,
         accountId: adminSessions.accountId,
-        roles: adminAccounts.roles,
         status: adminAccounts.status,
         signedInAt: adminSessions.signedInAt,
         lastActivityAt: adminSessions.lastActivityAt,
@@ -105,7 +120,7 @@ export class AdminSessionsService {
     return {
       id: row.id,
       accountId: row.accountId,
-      roles: row.roles,
+      ...(await accountAccess(this.database.db, row.accountId)),
       signedInAt: row.signedInAt,
       expiresAt: await this.expiresAt(row.signedInAt, now),
     };
@@ -117,7 +132,7 @@ export class AdminSessionsService {
       if (!ended) return;
       await this.audit.recordWrite(
         {
-          actor: { type: 'admin', id: session.accountId, role: session.roles.join(',') },
+          actor: { type: 'admin', id: session.accountId, role: actorRole(session.roles) },
           context,
           cityId: null,
           action: 'admin_session.sign_out',
@@ -128,6 +143,47 @@ export class AdminSessionsService {
         tx,
       );
     });
+  }
+
+  // The sessions not yet ended nor past their idle or maximum end (AP §5.2:
+  // OWN sees every open session), oldest first.
+  async openSessions(now = new Date()): Promise<OpenSession[]> {
+    const idleMinutes = await this.settings.get('admin.session_idle_min');
+    const maxHours = await this.settings.get('admin.session_max_hours');
+    return this.database.db
+      .select({
+        id: adminSessions.id,
+        accountId: adminSessions.accountId,
+        userAgent: adminSessions.userAgent,
+        ipAddress: adminSessions.ipAddress,
+        signedInAt: adminSessions.signedInAt,
+        lastActivityAt: adminSessions.lastActivityAt,
+      })
+      .from(adminSessions)
+      .where(
+        and(
+          isNull(adminSessions.endedAt),
+          gt(adminSessions.lastActivityAt, new Date(now.getTime() - idleMinutes * 60_000)),
+          gt(adminSessions.signedInAt, new Date(now.getTime() - maxHours * 3_600_000)),
+        ),
+      )
+      .orderBy(adminSessions.signedInAt);
+  }
+
+  // Ends every open session of an account, inside the caller's transaction
+  // (AP §5.2–5.3: force sign-out, disable, TOTP reset). Returns how many.
+  async endAll(
+    executor: Pick<Database['db'], 'update'>,
+    accountId: string,
+    reason: SessionEndReason,
+    now: Date,
+  ): Promise<number> {
+    const ended = await executor
+      .update(adminSessions)
+      .set({ endedAt: now, endReason: reason })
+      .where(and(eq(adminSessions.accountId, accountId), isNull(adminSessions.endedAt)))
+      .returning({ id: adminSessions.id });
+    return ended.length;
   }
 
   // The longest a cookie can still be useful, for its Max-Age.
@@ -149,7 +205,7 @@ export class AdminSessionsService {
   // Ends an open session; false when it had already ended.
   private async end(
     id: string,
-    reason: 'sign_out' | 'idle' | 'max_lifetime',
+    reason: SessionEndReason,
     now: Date,
     executor: Pick<Database['db'], 'update'> = this.database.db,
   ): Promise<boolean> {
