@@ -53,28 +53,33 @@ part 'serializers.g.dart';
   TeamUsersDtoOutputUsersInnerOpenSessionsInner,
   TotpEnrolmentDtoOutput,
 ])
-Serializers serializers = (_$serializers.toBuilder()
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(TeamUsersDtoOutputUsersInner)]),
-        () => ListBuilder<TeamUsersDtoOutputUsersInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(TeamUsersDtoOutputUsersInnerOpenSessionsInner)]),
-        () => ListBuilder<TeamUsersDtoOutputUsersInnerOpenSessionsInner>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(String)]),
-        () => ListBuilder<String>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(RoleMatrixDtoOutputRolesInner)]),
-        () => ListBuilder<RoleMatrixDtoOutputRolesInner>(),
-      )
-      ..add(const OneOfSerializer())
-      ..add(const AnyOfSerializer())
-      ..add(const DateSerializer())
-      ..add(Iso8601DateTimeSerializer())
-    ).build();
+Serializers serializers =
+    (_$serializers.toBuilder()
+          ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(TeamUsersDtoOutputUsersInner)]),
+            () => ListBuilder<TeamUsersDtoOutputUsersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(TeamUsersDtoOutputUsersInnerOpenSessionsInner),
+            ]),
+            () => ListBuilder<TeamUsersDtoOutputUsersInnerOpenSessionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(RoleMatrixDtoOutputRolesInner),
+            ]),
+            () => ListBuilder<RoleMatrixDtoOutputRolesInner>(),
+          )
+          ..add(const OneOfSerializer())
+          ..add(const AnyOfSerializer())
+          ..add(const DateSerializer())
+          ..add(Iso8601DateTimeSerializer()))
+        .build();
 
 Serializers standardSerializers =
     (serializers.toBuilder()..addPlugin(StandardJsonPlugin())).build();
