@@ -22,17 +22,33 @@ async function waitForLog(container, text) {
 }
 
 // The database the roles connect to, bootstrapped as compose.yaml does it and
-// migrated by the image itself, as a deploy does (architecture §17.3).
+// migrated by the image itself, as a deploy does (architecture §17.3), and
+// the Valkey the api reads its settings through.
 const serverDir = new URL('../', import.meta.url);
-const postgisImage = /image: (postgis\/postgis:\S+)/.exec(
-  readFileSync(new URL('../../compose.yaml', serverDir), 'utf8'),
-)?.[1];
+const composeFile = readFileSync(new URL('../../compose.yaml', serverDir), 'utf8');
+const postgisImage = /image: (postgis\/postgis:\S+)/.exec(composeFile)?.[1];
 if (!postgisImage) throw new Error('compose.yaml has no postgis image');
+const valkeyImage = /image: (valkey\/valkey:\S+)/.exec(composeFile)?.[1];
+if (!valkeyImage) throw new Error('compose.yaml has no valkey image');
 const network = 'fox-drop-smoke';
 const databaseUrl = (role, password) => `postgres://${role}:${password}@postgis:5432/fox_drop`;
 
 async function startDatabase() {
   docker('network', 'create', network);
+  docker(
+    'run',
+    '--detach',
+    '--name',
+    'fox-drop-smoke-valkey',
+    '--network',
+    network,
+    '--network-alias',
+    'valkey',
+    valkeyImage,
+    'valkey-server',
+    '--requirepass',
+    'smoke-valkey-password',
+  );
   docker(
     'run',
     '--detach',
@@ -97,6 +113,7 @@ ${docker('logs', 'fox-drop-smoke-postgis')}`);
 function stopDatabase() {
   for (const args of [
     ['rm', '--force', '--volumes', 'fox-drop-smoke-postgis'],
+    ['rm', '--force', 'fox-drop-smoke-valkey'],
     ['network', 'rm', network],
   ]) {
     try {
@@ -117,6 +134,10 @@ async function checkRole(role) {
     `PROCESS_ROLE=${role}`,
     '--env',
     `DATABASE_URL=${databaseUrl('fox_drop_app', 'smoke-app-password')}`,
+    '--env',
+    'VALKEY_URL=redis://:smoke-valkey-password@valkey:6379',
+    '--env',
+    `IDENTITY_ENCRYPTION_KEY=${Buffer.alloc(32, 1).toString('base64')}`,
     '--publish',
     '127.0.0.1::3000',
     image,

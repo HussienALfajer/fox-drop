@@ -4,13 +4,14 @@ import type { OpenAPIObject } from '@nestjs/swagger';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ApiModule } from '../api.module.js';
 import { createApiApp } from './create-api-app.js';
-import { createOpenApiDocument } from './openapi.js';
+import { createOpenApiDocument, setOpenApiPlaceholderEnvironment } from './openapi.js';
 import { ROUTE_GROUPS } from './route-groups.js';
 
 let app: NestFastifyApplication;
 let document: OpenAPIObject;
 
 beforeAll(async () => {
+  setOpenApiPlaceholderEnvironment();
   app = await createApiApp(ApiModule);
   await app.init();
   await app.getHttpAdapter().getInstance().ready();

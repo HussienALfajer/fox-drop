@@ -10,6 +10,8 @@ const SECRET_SUFFIXES = [
   'codes',
   'cookie',
   'otp',
+  // An otpauth:// URI carries the TOTP secret.
+  'otpauthuri',
   'passwd',
   'password',
   'pin',

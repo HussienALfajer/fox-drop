@@ -17,7 +17,8 @@ function capture() {
   return { logger, line, json: () => JSON.parse(line()) as Record<string, unknown> };
 }
 
-const SECRETS = /482913|r-secret|a-secret|s-secret|f-secret|k-secret|963912345678|0912345678/;
+const SECRETS =
+  /482913|r-secret|a-secret|s-secret|f-secret|k-secret|t-secret|b-secret|963912345678|0912345678/;
 
 describe('structured logs', () => {
   it('are JSON lines', () => {
@@ -33,7 +34,13 @@ describe('structured logs', () => {
 
     logger.info({
       code: '482913',
-      body: { otpCode: '482913', refresh_token: 'r-secret', nested: [{ fcmToken: 'f-secret' }] },
+      body: {
+        otpCode: '482913',
+        refresh_token: 'r-secret',
+        nested: [{ fcmToken: 'f-secret' }],
+        otpauthUri: 'otpauth://totp/x?secret=t-secret',
+        backupCodes: ['b-secret'],
+      },
       headers: {
         authorization: 'Bearer a-secret',
         cookie: 'sid=s-secret',
