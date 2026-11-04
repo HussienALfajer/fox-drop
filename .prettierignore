@@ -1,0 +1,5 @@
+pnpm-lock.yaml
+**/*.dart
+**/.dart_tool/
+**/coverage/
+pubspec.lock
