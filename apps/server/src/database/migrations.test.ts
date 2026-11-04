@@ -136,3 +136,41 @@ describe('the audit log (AP §9.16)', () => {
     await expect(appQuery(statement)).rejects.toThrow(/permission denied|must be owner/);
   });
 });
+
+describe('the settings tables (AP §4.4)', () => {
+  const editor = "'0190f3a0-0000-7000-8000-000000000001', '{OWN}'";
+
+  it('keep one stored value per key and scope, global included', async () => {
+    await appQuery("INSERT INTO settings.values (key, value) VALUES ('test.global', '1')");
+
+    await expect(
+      appQuery("INSERT INTO settings.values (key, value) VALUES ('test.global', '2')"),
+    ).rejects.toThrow(/values_key_city/);
+  });
+
+  it('let the application role change a stored value', async () => {
+    await appQuery("UPDATE settings.values SET value = '3' WHERE key = 'test.global'");
+  });
+
+  it('refuse a value on a row reset to the default', async () => {
+    await expect(
+      appQuery(
+        "INSERT INTO settings.values (key, value, is_default) VALUES ('test.reset', '1', true)",
+      ),
+    ).rejects.toThrow(/values_default_has_no_value/);
+  });
+
+  it('take a change from the application role', async () => {
+    await appQuery(
+      `INSERT INTO settings.changes (key, action, before, after, editor_id, editor_roles) VALUES ('test.global', 'update', '1', '3', ${editor})`,
+    );
+  });
+
+  it.each([
+    ['change a change', "UPDATE settings.changes SET reason = 'x'"],
+    ['delete a change', 'DELETE FROM settings.changes'],
+    ['delete a stored value', 'DELETE FROM settings.values'],
+  ])('refuse the application role to %s', async (_, statement) => {
+    await expect(appQuery(statement)).rejects.toThrow(/permission denied/);
+  });
+});
