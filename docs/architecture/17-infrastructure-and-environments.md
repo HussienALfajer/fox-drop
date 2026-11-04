@@ -4,11 +4,11 @@
 
 ## 17.1 Environments
 
-| Environment   | Purpose                                                                                                                 |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `development` | Local, with Docker Compose: PostgreSQL with PostGIS, Valkey, Centrifugo, OSRM (small extract), MinIO for object storage |
-| `staging`     | A smaller copy of production, used for the definition-of-done demonstrations in the four specs                          |
-| `production`  | Live                                                                                                                    |
+| Environment   | Purpose                                                                                                                                                                           |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `development` | Local, with Docker Compose: PostgreSQL with PostGIS, Valkey, Centrifugo (`compose.yaml`). OSRM (small extract) and an S3-compatible object storage join with their first use (T7) |
+| `staging`     | A smaller copy of production, used for the definition-of-done demonstrations in the four specs                                                                                    |
+| `production`  | Live                                                                                                                                                                              |
 
 Each environment has its own database, Firebase project, storage buckets, secrets and WhatsApp sender numbers (staging uses one test number).
 

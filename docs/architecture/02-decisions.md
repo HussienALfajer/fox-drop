@@ -12,6 +12,7 @@
 | T4  | Sign-in codes               | Codes are sent over **WhatsApp only**, through a third-party WhatsApp sending library, with protections that keep the sending numbers from being banned as far as possible (§8.3).                                                                                                               |
 | T5  | SMS and voice               | There is no SMS provider for now. SMS and voice codes are not part of V1. The channel abstraction keeps them possible later without a client change (§8.3.1).                                                                                                                                    |
 | T6  | One repository              | The server, the web apps and the three Flutter apps live in **one repository** (`fox-drop`), so a change to the API contract, its generated clients and every app that uses it lands in one pull request and passes one set of checks. This replaces the two repositories first planned (§19.1). |
+| T7  | Local object storage        | MinIO no longer publishes container images, so the development S3-compatible storage is chosen in the slice that first stores a file, like OSRM. Until then `compose.yaml` has no object storage (§17.1). Decided 2026-11-04.                                                                    |
 
 ## 2.2 Rules set by this document (the owner may change them)
 
