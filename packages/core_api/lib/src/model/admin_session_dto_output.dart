@@ -14,6 +14,7 @@ part 'admin_session_dto_output.g.dart';
 /// Properties:
 /// * [accountId]
 /// * [roles]
+/// * [permissions] - The union of the roles' permissions (AP §6.1), so the panel hides what is not allowed.
 /// * [signedInAt]
 /// * [expiresAt] - When the session ends unless used again before (AP §5.2).
 @BuiltValue()
@@ -24,6 +25,10 @@ abstract class AdminSessionDtoOutput
 
   @BuiltValueField(wireName: r'roles')
   BuiltList<String> get roles;
+
+  /// The union of the roles' permissions (AP §6.1), so the panel hides what is not allowed.
+  @BuiltValueField(wireName: r'permissions')
+  BuiltList<String> get permissions;
 
   @BuiltValueField(wireName: r'signedInAt')
   DateTime get signedInAt;
@@ -70,6 +75,11 @@ class _$AdminSessionDtoOutputSerializer
     yield r'roles';
     yield serializers.serialize(
       object.roles,
+      specifiedType: const FullType(BuiltList, [FullType(String)]),
+    );
+    yield r'permissions';
+    yield serializers.serialize(
+      object.permissions,
       specifiedType: const FullType(BuiltList, [FullType(String)]),
     );
     yield r'signedInAt';
@@ -128,6 +138,17 @@ class _$AdminSessionDtoOutputSerializer
                   )
                   as BuiltList<String>;
           result.roles.replace(valueDes);
+          break;
+        case r'permissions':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
+          result.permissions.replace(valueDes);
           break;
         case r'signedInAt':
           final valueDes =

@@ -1,6 +1,7 @@
 import { Get } from '@nestjs/common';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
+import { Public } from './access.js';
 import {
   AdminController,
   CaptainController,
@@ -24,6 +25,7 @@ function currentStatus(): StatusDto {
 @AdminController('status')
 export class AdminStatusController {
   @Get()
+  @Public()
   @ZodResponse({ status: 200, type: StatusDto })
   get() {
     return currentStatus();
@@ -33,6 +35,7 @@ export class AdminStatusController {
 @MerchantController('status')
 export class MerchantStatusController {
   @Get()
+  @Public()
   @ZodResponse({ status: 200, type: StatusDto })
   get() {
     return currentStatus();
@@ -42,6 +45,7 @@ export class MerchantStatusController {
 @CaptainController('status')
 export class CaptainStatusController {
   @Get()
+  @Public()
   @ZodResponse({ status: 200, type: StatusDto })
   get() {
     return currentStatus();
@@ -51,6 +55,7 @@ export class CaptainStatusController {
 @CustomerController('status')
 export class CustomerStatusController {
   @Get()
+  @Public()
   @ZodResponse({ status: 200, type: StatusDto })
   get() {
     return currentStatus();

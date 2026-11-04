@@ -12,13 +12,13 @@ import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
 import { AuditService } from '../audit/index.js';
 import { type SettingKey, SettingsService } from '../settings/index.js';
-import { ADMIN_SESSION_COOKIE } from './admin-session.guard.js';
+import { ADMIN_SESSION_COOKIE } from './route-access.guard.js';
 import { AdminSessionsService } from './admin-sessions.service.js';
 import { AdminSetupService, SetupRefusedError } from './admin-setup.service.js';
 import { AdminSignInService, SignInRefusedError } from './admin-sign-in.service.js';
 import { createFirstOwner, FirstOwnerExistsError } from './first-owner.js';
 import { OWNER_COMMAND_USAGE, parseOwnerArguments } from './owner-arguments.js';
-import { adminAccounts, adminSetupLinks } from './schema.js';
+import { adminAccountRoles, adminAccounts, adminSetupLinks } from './schema.js';
 import { IdentitySecrets, newToken, tokenHash } from './secrets.js';
 import { setupLinkUrl } from './setup-link-url.js';
 import type { SignInName } from './sign-in-name.js';
@@ -102,8 +102,8 @@ function newEmail(): string {
   return `admin${accounts}@example.test`;
 }
 
-// A pending account with its setup link, as slice 0.8 will create them.
-async function pendingAccount(name: SignInName, now = new Date()) {
+// A pending account with its setup link, as the admin team creates them.
+async function pendingAccount(name: SignInName, now = new Date(), roles = ['OPS']) {
   const phone = 'phone' in name ? name.phone : null;
   const [account] = await db.db
     .insert(adminAccounts)
@@ -111,9 +111,11 @@ async function pendingAccount(name: SignInName, now = new Date()) {
       email: 'email' in name ? name.email : null,
       phoneEncrypted: phone && secrets.encrypt(phone),
       phoneHash: phone && secrets.phoneHash(phone),
-      roles: ['OPS'],
     })
     .returning({ id: adminAccounts.id });
+  await db.db
+    .insert(adminAccountRoles)
+    .values(roles.map((roleCode) => ({ accountId: account!.id, roleCode })));
   const token = newToken();
   await db.db.insert(adminSetupLinks).values({
     accountId: account!.id,
@@ -157,7 +159,8 @@ describe('the first OWN account (AP §5.3)', () => {
       now,
     );
     const { rows } = await sql.query(
-      `SELECT a.roles, a.status, l.token_hash, l.expires_at
+      `SELECT array(SELECT role_code FROM identity.admin_account_roles r WHERE r.account_id = a.id) AS roles,
+              a.status, l.token_hash, l.expires_at
          FROM identity.admin_accounts a JOIN identity.admin_setup_links l ON l.account_id = a.id
         WHERE a.id = $1`,
       [owner.accountId],

@@ -148,6 +148,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/team/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminTeamList"];
+        put?: never;
+        post: operations["adminTeamCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/team/users/{accountId}/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminTeamChangeRoles"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/team/users/{accountId}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminTeamDisable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/team/users/{accountId}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminTeamEnable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/team/users/{accountId}/sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminTeamForceSignOut"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/team/users/{accountId}/totp-reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminTeamResetTotp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/team/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminTeamRoleMatrix"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -188,6 +300,8 @@ export interface components {
             /** Format: uuid */
             accountId: string;
             roles: string[];
+            /** @description The union of the roles' permissions (AP §6.1), so the panel hides what is not allowed. */
+            permissions: string[];
             /** Format: date-time */
             signedInAt: string;
             /**
@@ -199,6 +313,60 @@ export interface components {
         SignedOutDto_Output: {
             /** @constant */
             status: "signed_out";
+        };
+        TeamUsersDto_Output: {
+            users: {
+                /** Format: uuid */
+                id: string;
+                name: string | null;
+                email: string | null;
+                phone: string | null;
+                roles: string[];
+                /** @enum {string} */
+                status: "pending" | "active" | "totp_reset" | "disabled";
+                totpEnrolled: boolean;
+                lastSignInAt: string | null;
+                openSessions: {
+                    /** Format: uuid */
+                    id: string;
+                    userAgent: string | null;
+                    ipAddress: string | null;
+                    /** Format: date-time */
+                    signedInAt: string;
+                    /** Format: date-time */
+                    lastActivityAt: string;
+                }[];
+            }[];
+        };
+        CreateUserDto: {
+            name: string;
+            email?: string | null;
+            /** @description In international form, such as +963944000000. */
+            phone?: string | null;
+            /** @description One or more roles (AP §6.1). */
+            roles: ("OWN" | "OPS" | "SUP" | "FIN" | "DATA")[];
+        };
+        SetupLinkDto_Output: {
+            /** Format: uuid */
+            accountId: string;
+            /** @description Shown this once. The panel builds the link <panel>/setup#token=<setupToken> for the owner to share. */
+            setupToken: string;
+            /** Format: date-time */
+            setupExpiresAt: string;
+        };
+        ChangeRolesDto: {
+            /** @description One or more roles (AP §6.1). */
+            roles: ("OWN" | "OPS" | "SUP" | "FIN" | "DATA")[];
+        };
+        DoneDto_Output: {
+            /** @constant */
+            status: "done";
+        };
+        RoleMatrixDto_Output: {
+            roles: {
+                role: string;
+                permissions: string[];
+            }[];
         };
     };
     responses: never;
@@ -400,6 +568,184 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SignedOutDto_Output"];
+                };
+            };
+        };
+    };
+    adminTeamList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamUsersDto_Output"];
+                };
+            };
+        };
+    };
+    adminTeamCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateUserDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupLinkDto_Output"];
+                };
+            };
+        };
+    };
+    adminTeamChangeRoles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeRolesDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoneDto_Output"];
+                };
+            };
+        };
+    };
+    adminTeamDisable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoneDto_Output"];
+                };
+            };
+        };
+    };
+    adminTeamEnable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoneDto_Output"];
+                };
+            };
+        };
+    };
+    adminTeamForceSignOut: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoneDto_Output"];
+                };
+            };
+        };
+    };
+    adminTeamResetTotp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupLinkDto_Output"];
+                };
+            };
+        };
+    };
+    adminTeamRoleMatrix: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleMatrixDto_Output"];
                 };
             };
         };

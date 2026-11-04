@@ -12,6 +12,8 @@ class _$AdminSessionDtoOutput extends AdminSessionDtoOutput {
   @override
   final BuiltList<String> roles;
   @override
+  final BuiltList<String> permissions;
+  @override
   final DateTime signedInAt;
   @override
   final DateTime expiresAt;
@@ -23,6 +25,7 @@ class _$AdminSessionDtoOutput extends AdminSessionDtoOutput {
   _$AdminSessionDtoOutput._({
     required this.accountId,
     required this.roles,
+    required this.permissions,
     required this.signedInAt,
     required this.expiresAt,
   }) : super._();
@@ -41,6 +44,7 @@ class _$AdminSessionDtoOutput extends AdminSessionDtoOutput {
     return other is AdminSessionDtoOutput &&
         accountId == other.accountId &&
         roles == other.roles &&
+        permissions == other.permissions &&
         signedInAt == other.signedInAt &&
         expiresAt == other.expiresAt;
   }
@@ -50,6 +54,7 @@ class _$AdminSessionDtoOutput extends AdminSessionDtoOutput {
     var _$hash = 0;
     _$hash = $jc(_$hash, accountId.hashCode);
     _$hash = $jc(_$hash, roles.hashCode);
+    _$hash = $jc(_$hash, permissions.hashCode);
     _$hash = $jc(_$hash, signedInAt.hashCode);
     _$hash = $jc(_$hash, expiresAt.hashCode);
     _$hash = $jf(_$hash);
@@ -61,6 +66,7 @@ class _$AdminSessionDtoOutput extends AdminSessionDtoOutput {
     return (newBuiltValueToStringHelper(r'AdminSessionDtoOutput')
           ..add('accountId', accountId)
           ..add('roles', roles)
+          ..add('permissions', permissions)
           ..add('signedInAt', signedInAt)
           ..add('expiresAt', expiresAt))
         .toString();
@@ -79,6 +85,12 @@ class AdminSessionDtoOutputBuilder
   ListBuilder<String> get roles => _$this._roles ??= ListBuilder<String>();
   set roles(ListBuilder<String>? roles) => _$this._roles = roles;
 
+  ListBuilder<String>? _permissions;
+  ListBuilder<String> get permissions =>
+      _$this._permissions ??= ListBuilder<String>();
+  set permissions(ListBuilder<String>? permissions) =>
+      _$this._permissions = permissions;
+
   DateTime? _signedInAt;
   DateTime? get signedInAt => _$this._signedInAt;
   set signedInAt(DateTime? signedInAt) => _$this._signedInAt = signedInAt;
@@ -96,6 +108,7 @@ class AdminSessionDtoOutputBuilder
     if ($v != null) {
       _accountId = $v.accountId;
       _roles = $v.roles.toBuilder();
+      _permissions = $v.permissions.toBuilder();
       _signedInAt = $v.signedInAt;
       _expiresAt = $v.expiresAt;
       _$v = null;
@@ -128,6 +141,7 @@ class AdminSessionDtoOutputBuilder
               'accountId',
             ),
             roles: roles.build(),
+            permissions: permissions.build(),
             signedInAt: BuiltValueNullFieldError.checkNotNull(
               signedInAt,
               r'AdminSessionDtoOutput',
@@ -144,6 +158,8 @@ class AdminSessionDtoOutputBuilder
       try {
         _$failedField = 'roles';
         roles.build();
+        _$failedField = 'permissions';
+        permissions.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminSessionDtoOutput',

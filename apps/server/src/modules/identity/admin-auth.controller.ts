@@ -8,21 +8,17 @@ import {
   Req,
   Res,
   UnauthorizedException,
-  UseGuards,
 } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
+import { Public } from '../../http/access.js';
 import { AdminController } from '../../http/route-groups.js';
-import type { AuditRequestContext } from '../audit/index.js';
-import {
-  ADMIN_SESSION_COOKIE,
-  AdminSessionGuard,
-  CurrentAdminSession,
-} from './admin-session.guard.js';
 import { type AdminSession, AdminSessionsService } from './admin-sessions.service.js';
 import { AdminSetupService, SetupRefusedError } from './admin-setup.service.js';
 import { AdminSignInService, SignInRefusedError } from './admin-sign-in.service.js';
+import { requestContext } from './request-context.js';
+import { ADMIN_SESSION_COOKIE, CurrentAdminSession, SignedIn } from './route-access.guard.js';
 
 // Bounds that keep a request cheap; the password rule itself is a setting.
 const token = z.string().min(1).max(200);
@@ -69,6 +65,11 @@ class AdminSessionDto extends createZodDto(
   z.object({
     accountId: z.uuid(),
     roles: z.array(z.string()),
+    permissions: z
+      .array(z.string())
+      .describe(
+        "The union of the roles' permissions (AP §6.1), so the panel hides what is not allowed.",
+      ),
     signedInAt: z.iso.datetime(),
     expiresAt: z.iso
       .datetime()
@@ -78,17 +79,11 @@ class AdminSessionDto extends createZodDto(
 
 class SignedOutDto extends createZodDto(z.object({ status: z.literal('signed_out') })) {}
 
-function requestContext(request: FastifyRequest): AuditRequestContext {
-  return {
-    ipAddress: request.ip,
-    device: request.headers['user-agent']?.slice(0, 500) ?? null,
-  };
-}
-
 function sessionBody(session: AdminSession): AdminSessionDto {
   return {
     accountId: session.accountId,
     roles: session.roles,
+    permissions: session.permissions,
     signedInAt: session.signedInAt.toISOString(),
     expiresAt: session.expiresAt.toISOString(),
   };
@@ -116,6 +111,7 @@ export class AdminAuthController {
   ) {}
 
   @Post('setup/totp')
+  @Public()
   @HttpCode(200)
   @ZodResponse({ status: 200, type: TotpEnrolmentDto })
   async startTotpEnrolment(@Body() body: SetupTokenDto) {
@@ -127,6 +123,7 @@ export class AdminAuthController {
   }
 
   @Post('setup/complete')
+  @Public()
   @HttpCode(200)
   @ZodResponse({ status: 200, type: BackupCodesDto })
   async completeSetup(@Body() body: CompleteSetupDto, @Req() request: FastifyRequest) {
@@ -138,6 +135,7 @@ export class AdminAuthController {
   }
 
   @Post('sign-in')
+  @Public()
   @HttpCode(200)
   @ZodResponse({ status: 200, type: AdminSessionDto })
   async signIn(
@@ -168,7 +166,7 @@ export class AdminAuthController {
   }
 
   @Get('session')
-  @UseGuards(AdminSessionGuard)
+  @SignedIn()
   @ZodResponse({ status: 200, type: AdminSessionDto })
   current(@CurrentAdminSession() session: AdminSession) {
     return sessionBody(session);
@@ -176,7 +174,7 @@ export class AdminAuthController {
 
   @Post('sign-out')
   @HttpCode(200)
-  @UseGuards(AdminSessionGuard)
+  @SignedIn()
   @ZodResponse({ status: 200, type: SignedOutDto })
   async signOut(
     @CurrentAdminSession() session: AdminSession,

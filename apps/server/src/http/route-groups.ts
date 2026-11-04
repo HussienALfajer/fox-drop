@@ -1,4 +1,4 @@
-import { applyDecorators, Controller } from '@nestjs/common';
+import { applyDecorators, Controller, SetMetadata } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 // Architecture §5.3: every route belongs to one product's group under /v1.
@@ -8,9 +8,16 @@ import { ApiTags } from '@nestjs/swagger';
 export const ROUTE_GROUPS = ['admin', 'merchant', 'captain', 'customer'] as const;
 export type RouteGroup = (typeof ROUTE_GROUPS)[number];
 
+// The group of a controller, for the guards.
+export const ROUTE_GROUP = 'fox_drop:route_group';
+
 function routeGroupController(group: RouteGroup) {
   return (path = ''): ClassDecorator =>
-    applyDecorators(Controller(path ? `${group}/${path}` : group), ApiTags(group));
+    applyDecorators(
+      Controller(path ? `${group}/${path}` : group),
+      ApiTags(group),
+      SetMetadata(ROUTE_GROUP, group),
+    );
 }
 
 export const AdminController = routeGroupController('admin');

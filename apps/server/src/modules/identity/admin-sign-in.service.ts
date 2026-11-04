@@ -5,6 +5,7 @@ import type { Database } from '../../database/database.js';
 import { type AuditRequestContext, AuditService } from '../audit/index.js';
 import { SettingsService } from '../settings/index.js';
 import { AdminSessionsService, type AdminSession } from './admin-sessions.service.js';
+import { recordFailedAttempt } from './lockout.js';
 import { adminAccounts, adminBackupCodes } from './schema.js';
 import {
   IDENTITY_SECRETS,
@@ -77,7 +78,15 @@ export class AdminSignInService {
       const passwordValid = await verifyPassword(account.passwordHash, input.password);
       const totpStep = passwordValid ? await this.checkCode(tx, account, input.code, now) : null;
       if (totpStep === null) {
-        return this.recordFailure(tx, account, maxAttempts, lockoutMinutes, context, now);
+        const locked = await recordFailedAttempt(
+          tx,
+          this.audit,
+          account,
+          { maxAttempts, lockoutMinutes },
+          context,
+          now,
+        );
+        return { refusal: locked ? ('locked' as const) : ('invalid' as const) };
       }
 
       await tx
@@ -89,7 +98,7 @@ export class AdminSignInService {
           updatedAt: now,
         })
         .where(eq(adminAccounts.id, account.id));
-      const signedIn = await this.sessions.start(tx, account, context, now);
+      const signedIn = await this.sessions.start(tx, account.id, context, now);
       return { signedIn };
     });
     if ('refusal' in outcome) {
@@ -128,48 +137,10 @@ export class AdminSignInService {
           eq(adminBackupCodes.accountId, account.id),
           eq(adminBackupCodes.codeHash, this.secrets.backupCodeHash(normalizeBackupCode(code))),
           isNull(adminBackupCodes.usedAt),
+          isNull(adminBackupCodes.revokedAt),
         ),
       )
       .returning({ id: adminBackupCodes.id });
     return used.length > 0 ? 'backup_code' : null;
-  }
-
-  private async recordFailure(
-    tx: Transaction,
-    account: typeof adminAccounts.$inferSelect,
-    maxAttempts: number,
-    lockoutMinutes: number,
-    context: AuditRequestContext,
-    now: Date,
-  ): Promise<{ refusal: 'invalid' | 'locked' }> {
-    const failedAttempts = account.failedAttempts + 1;
-    if (failedAttempts < maxAttempts) {
-      await tx
-        .update(adminAccounts)
-        .set({ failedAttempts, updatedAt: now })
-        .where(eq(adminAccounts.id, account.id));
-      return { refusal: 'invalid' };
-    }
-    const lockedUntil = new Date(now.getTime() + lockoutMinutes * 60_000);
-    await tx
-      .update(adminAccounts)
-      .set({ failedAttempts: 0, lockedUntil, updatedAt: now })
-      .where(eq(adminAccounts.id, account.id));
-    await this.audit.recordWrite(
-      {
-        actor: { type: 'system', id: null, role: null },
-        context,
-        cityId: null,
-        action: 'admin_account.lock',
-        target: { type: 'admin_account', id: account.id },
-        before: {
-          lockedUntil: account.lockedUntil?.toISOString() ?? null,
-          failedAttempts: account.failedAttempts,
-        },
-        after: { lockedUntil: lockedUntil.toISOString(), failedAttempts: 0 },
-      },
-      tx,
-    );
-    return { refusal: 'locked' };
   }
 }

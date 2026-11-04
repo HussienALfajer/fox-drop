@@ -17,9 +17,19 @@ export 'package:core_api/src/api/merchant_api.dart';
 
 export 'package:core_api/src/model/admin_session_dto_output.dart';
 export 'package:core_api/src/model/backup_codes_dto_output.dart';
+export 'package:core_api/src/model/change_roles_dto.dart';
 export 'package:core_api/src/model/complete_setup_dto.dart';
+export 'package:core_api/src/model/create_user_dto.dart';
+export 'package:core_api/src/model/done_dto_output.dart';
+export 'package:core_api/src/model/role_matrix_dto_output.dart';
+export 'package:core_api/src/model/role_matrix_dto_output_roles_inner.dart';
+export 'package:core_api/src/model/setup_link_dto_output.dart';
 export 'package:core_api/src/model/setup_token_dto.dart';
 export 'package:core_api/src/model/sign_in_dto.dart';
 export 'package:core_api/src/model/signed_out_dto_output.dart';
 export 'package:core_api/src/model/status_dto_output.dart';
+export 'package:core_api/src/model/team_users_dto_output.dart';
+export 'package:core_api/src/model/team_users_dto_output_users_inner.dart';
+export 'package:core_api/src/model/team_users_dto_output_users_inner_open_sessions_inner.dart';
 export 'package:core_api/src/model/totp_enrolment_dto_output.dart';
+
