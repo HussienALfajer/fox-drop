@@ -1,0 +1,40 @@
+name: fox_drop_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+
+workspace: []
+
+dev_dependencies:
+  lints: 6.1.0
+  melos: 8.10.0
+
+melos:
+  scripts:
+    analyze:
+      description: Analyze every Dart package, warnings and infos fail.
+      exec:
+        command: dart analyze --fatal-infos
+        failFast: true
+    format:check:
+      description: Fail when a Dart file is not formatted.
+      exec:
+        command: dart format --output=none --set-exit-if-changed .
+        failFast: true
+    test:dart:
+      description: Run the tests of every Dart package that has a test folder.
+      exec:
+        command: dart test
+        failFast: true
+      packageFilters:
+        flutter: false
+        dirExists: test
+    test:flutter:
+      description: Run the tests of every Flutter package that has a test folder.
+      exec:
+        command: flutter test
+        failFast: true
+      packageFilters:
+        flutter: true
+        dirExists: test
