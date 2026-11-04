@@ -3,6 +3,7 @@ import {
   boolean,
   check,
   index,
+  integer,
   jsonb,
   pgSchema,
   text,
@@ -31,6 +32,9 @@ export const values = settings.table(
     // own (such as push.daily_limit «none») unless is_default is set.
     value: jsonb('value'),
     isDefault: boolean('is_default').notNull().default(false),
+    // Counts the changes of this row, so the cache never takes an older value
+    // over a newer one.
+    version: integer('version').notNull().default(1),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [

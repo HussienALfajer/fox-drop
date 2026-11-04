@@ -15,8 +15,8 @@ Phase 0, slice 0.6: settings catalogue, server side (`docs/roadmap.md`).
 - [ ] Read Appendix A and list each key's type; ask the owner about any key whose type, default or scope is unclear, and about values marked "Before launch".
 - [ ] The `settings` schema through the `db-migration` skill: stored values (key, city or global, value, effective date where needed) and the change history.
 - [x] The catalogue in code: each key with its type (duration, percentage, money, count, enum, boolean, text, schedule), default, scope and edit roles, with a test that it lists every Appendix A key.
-- [ ] The `settings` module's public service: read with the Valkey cache, change with history and an audit event in one transaction, reset to default, refusal for a role that may not edit.
-- [ ] Valkey wiring in Nest (`VALKEY_URL`), closed on shutdown; a Testcontainers test for the cache.
+- [x] The `settings` module's public service: read with the Valkey cache, change with history and an audit event in one transaction, reset to default, refusal for a role that may not edit.
+- [x] Valkey wiring in Nest (`VALKEY_URL`), closed on shutdown; a Testcontainers test for the cache.
 - [ ] Folder `CLAUDE.md` for the module, and the pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
 
 ## Notes from earlier slices

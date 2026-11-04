@@ -1,5 +1,5 @@
 {
-  "id": "6cf0281b-964d-47a2-9b43-0574fd10b5a6",
+  "id": "574bdd4d-cda1-4140-87ae-5bc95d223458",
   "prevId": "488bc53f-cc2b-4992-a10d-dbbb2ce95ab6",
   "version": "7",
   "dialect": "postgresql",
@@ -341,6 +341,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
         },
         "updated_at": {
           "name": "updated_at",

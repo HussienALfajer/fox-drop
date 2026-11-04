@@ -26,6 +26,7 @@ CREATE TABLE "settings"."values" (
 	"city_id" uuid,
 	"value" jsonb,
 	"is_default" boolean DEFAULT false NOT NULL,
+	"version" integer DEFAULT 1 NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "values_key_city" UNIQUE NULLS NOT DISTINCT("key","city_id"),
 	CONSTRAINT "values_default_has_no_value" CHECK (NOT "settings"."values"."is_default" OR "settings"."values"."value" IS NULL)
