@@ -1,12 +1,26 @@
 -- Run once per environment by a database administrator, connected to the
--- FOX DROP database, before the first migration:
---   psql -v migrator_password=... -v app_password=... -f bootstrap.sql
--- Locally, init-development.sh runs it when the container first starts.
+-- FOX DROP database, before the first migration, with psql 15 or later:
+--   read -rs FOX_DROP_MIGRATOR_PASSWORD; read -rs FOX_DROP_APP_PASSWORD
+--   export FOX_DROP_MIGRATOR_PASSWORD FOX_DROP_APP_PASSWORD
+--   psql --file bootstrap.sql
+-- The passwords come from the environment, so they stay out of the shell
+-- history and the process list. Locally, init-development.sh runs it when the
+-- container first starts.
 --
 -- fox_drop_migrator runs the migrations and owns every module schema.
 -- fox_drop_app is the role the server connects with: it reads and writes the
 -- rows the migrations grant it, and can never change the schema.
 \set ON_ERROR_STOP on
+\getenv migrator_password FOX_DROP_MIGRATOR_PASSWORD
+\getenv app_password FOX_DROP_APP_PASSWORD
+\if :{?migrator_password}
+\else
+  DO $$ BEGIN RAISE EXCEPTION 'FOX_DROP_MIGRATOR_PASSWORD is not set'; END $$;
+\endif
+\if :{?app_password}
+\else
+  DO $$ BEGIN RAISE EXCEPTION 'FOX_DROP_APP_PASSWORD is not set'; END $$;
+\endif
 
 CREATE ROLE fox_drop_migrator LOGIN PASSWORD :'migrator_password';
 CREATE ROLE fox_drop_app LOGIN PASSWORD :'app_password';

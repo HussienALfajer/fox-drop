@@ -12,9 +12,9 @@ Phase 0, slice 0.5: audit log (`docs/roadmap.md`).
 
 ## Plan
 
-- [ ] The `audit` schema and table through the `db-migration` skill: UUIDv7 key, `city_id` (nullable for global actions; ask the owner), partitioned by month on the event time, `REVOKE UPDATE` from the application role.
+- [ ] The `audit` schema and table through the `db-migration` skill: UUIDv7 key, `city_id` (nullable for global actions; ask the owner), partitioned by month on the event time; the schema's default privileges give the application role `SELECT` and `INSERT` only, so every partition is append-only too.
 - [ ] The `audit` module's public service: record an event (write action or sensitive view) with its actor, request context (IP address, device) and diff. Ask the owner how the actor is identified before slice 0.7 brings admin accounts.
-- [ ] Wire the database into Nest: a provider built from `DATABASE_URL` for the roles that write events, closed on shutdown; the smoke-image job passes a `DATABASE_URL` or starts PostGIS.
+- [ ] Wire the database into Nest: a provider built from `DATABASE_URL` for the roles that write events, closed on shutdown, with a `pool.on('error')` handler that logs through the redacting logger (an idle-client error otherwise crashes the process); the smoke-image job passes a `DATABASE_URL` or starts PostGIS.
 - [ ] Testcontainers test: an event recorded and read back, `UPDATE` and `DELETE` refused for the application role, a month partition present for the current month.
 - [ ] Folder `CLAUDE.md` for the module, and the pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
 

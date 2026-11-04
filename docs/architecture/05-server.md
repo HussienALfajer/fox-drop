@@ -34,7 +34,7 @@
 
 ## 5.4 Database
 
-- **PostgreSQL**, latest stable, managed (§17.2), with a hot standby and a read replica.
+- **PostgreSQL**, latest stable and at least 18 (the migrations use its built-in `uuidv7()`), managed (§17.2), with a hot standby and a read replica.
 - **PostGIS** for zones (polygons), point-in-zone checks, distance checks and the vote heatmap.
 - **Partitioning** by month for orders, order events, location history, ledger entries and the audit log.
 - **Search in V1:** PostgreSQL full text plus `pg_trgm`, on a normalised Arabic column. Normalisation removes diacritics and tatweel and unifies «أ إ آ ا», «ة ه» and «ى ي».

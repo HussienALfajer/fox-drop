@@ -4,6 +4,15 @@
     "//#lint:root": { "cache": false },
     "lint": { "cache": false },
     "typecheck": { "cache": false },
-    "test": { "cache": false }
+    "test": {
+      "cache": false,
+      "passThroughEnv": [
+        "DOCKER_HOST",
+        "DOCKER_TLS_VERIFY",
+        "DOCKER_CERT_PATH",
+        "DOCKER_CONTEXT",
+        "TESTCONTAINERS_*"
+      ]
+    }
   }
 }

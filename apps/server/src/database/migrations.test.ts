@@ -70,11 +70,17 @@ describe('migrations on a fresh database', () => {
     ]);
   });
 
-  it('apply nothing on a second run', async () => {
-    await runMigrations(roleUrl('fox_drop_migrator', passwords.migrator));
+  it('apply nothing on a second run, even two at once', async () => {
+    const url = roleUrl('fox_drop_migrator', passwords.migrator);
+    await Promise.all([runMigrations(url), runMigrations(url)]);
 
     const { rows } = await appQuery('SELECT count(*)::int AS count FROM geo.cities');
     expect(rows[0].count).toBe(1);
+  });
+
+  it('have only the extensions production has', async () => {
+    const { rows } = await appQuery('SELECT extname FROM pg_extension ORDER BY extname');
+    expect(rows.map((row) => row.extname)).toEqual(['plpgsql', 'postgis']);
   });
 
   it('give the application role PostGIS', async () => {

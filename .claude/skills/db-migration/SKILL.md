@@ -31,10 +31,13 @@ Read the generated `apps/server/migrations/NNNN_<name>.sql` as SQL, then add by 
   ALTER DEFAULT PRIVILEGES IN SCHEMA "<module>" GRANT USAGE, SELECT ON SEQUENCES TO fox_drop_app;
   ```
 
-- **Append-only tables** (ledger, audit log, order events): `REVOKE UPDATE ON <table> FROM fox_drop_app;` after the `CREATE TABLE`.
+- **Append-only tables** (ledger, audit log, order events; architecture §5.6, §15.3): the application role gets `SELECT` and `INSERT` only. These tables are partitioned by month (§5.4) and every partition is a table of its own, so a `REVOKE` on the parent does not reach a new partition:
+  - A schema holding only append-only tables (`ledger`, `audit`) grants `SELECT, INSERT ON TABLES` in its default privileges, without `UPDATE`.
+  - A schema that mixes them (`ordering`) revokes `UPDATE` on the parent and on every partition when it is created.
+  - Partitions are created by the migration role, never by the application role, and the test proves `UPDATE` is refused on a partition, not only on the parent.
 - **Reference data every environment needs** (such as the Azaz city): an `INSERT` in the migration. Development-only data never goes in a migration.
 
-Never `GRANT DELETE`: business records are not deleted (§5.2). Never edit a migration that has reached `main`; add a new one.
+Never `GRANT DELETE`: business records are not deleted (§5.2). Never edit a migration that has reached `main`; add a new one. After a rebase onto a `main` that gained a migration, delete yours and generate it again, so it is numbered and dated after the other (`src/database/journal.test.ts` fails otherwise: Drizzle silently skips an older one). Only `plpgsql` and `postgis` are installed; a new extension goes in `db/bootstrap.sql` and is created by an administrator in every environment.
 
 ## 3. Keep it backward compatible
 
