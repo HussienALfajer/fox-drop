@@ -68,9 +68,11 @@ export class AdminSignInService {
         ? await tx.select().from(adminAccounts).where(where).for('update')
         : [];
       if (!account || account.status !== 'active' || !account.passwordHash) {
-        return { refusal: 'invalid' as const, noAccount: true };
+        return { refusal: 'invalid' as const, unchecked: true };
       }
-      if (account.lockedUntil && account.lockedUntil > now) return { refusal: 'locked' as const };
+      if (account.lockedUntil && account.lockedUntil > now) {
+        return { refusal: 'locked' as const, unchecked: true };
+      }
 
       const passwordValid = await verifyPassword(account.passwordHash, input.password);
       const totpStep = passwordValid ? await this.checkCode(tx, account, input.code, now) : null;
@@ -91,9 +93,10 @@ export class AdminSignInService {
       return { signedIn };
     });
     if ('refusal' in outcome) {
-      // Outside the transaction, so a guessed name holds no connection while
-      // it takes as long as a wrong password.
-      if ('noAccount' in outcome) await verifyNoPassword(input.password);
+      // A refusal that checked no password takes as long as one that did, so
+      // the time never shows an unknown name or a lock. Outside the
+      // transaction, so it holds no connection.
+      if ('unchecked' in outcome) await verifyNoPassword(input.password);
       throw new SignInRefusedError(outcome.refusal);
     }
     return outcome.signedIn;

@@ -12,7 +12,7 @@ Phase 0, slice 0.8: roles, permissions and admin team API (`docs/roadmap.md`).
 
 ## Plan
 
-- [ ] Read AP §6, §5.2–5.3, §9.15, §14 items 1–2 and architecture §15.2; ask the owner about anything unclear (how the audit records the role of a user with several roles; whether a locked account keeps answering `423`, see the notes).
+- [ ] Read AP §6, §5.2–5.3, §9.15, §14 items 1–2 and architecture §15.2; ask the owner about anything unclear (such as how the audit records the role of a user with several roles).
 - [ ] Roles and permissions as data through the `db-migration` skill: the five roles, the permissions of AP §6.2–6.3, and the account's roles as references; keep `AdminRole` in the settings catalogue in step with them.
 - [ ] Deny-by-default guards for the admin group: a route names its permission or is marked public. Public: the four `GET /v1/<group>/status` routes and `POST /v1/admin/auth/sign-in`, `setup/totp` and `setup/complete`.
 - [ ] The test matrix: every admin route with every role, and the union of two roles.
@@ -34,7 +34,7 @@ Phase 0, slice 0.8: roles, permissions and admin team API (`docs/roadmap.md`).
 - `pnpm` on this machine needs `fnm env` in the shell (Git Bash: `eval "$(fnm env --shell bash)"; fnm use`). `pnpm add` and `pnpm install` also fail an engine check that reports Node 99999.0.0; `pnpm --config.engine-strict=false add ...` works around it.
 - Slice 0.7 added admin sign-in in the `identity` module (`apps/server/src/modules/identity/CLAUDE.md`). A route that needs a session uses `AdminSessionGuard` and `@CurrentAdminSession()`. The API now needs `IDENTITY_ENCRYPTION_KEY` (32 bytes in base64) besides `DATABASE_URL` and `VALKEY_URL`; the OpenAPI generation uses placeholders (`setOpenApiPlaceholderEnvironment`).
 - The audit actor role of an admin is `roles.join(',')` (such as `OPS,FIN`) until slice 0.8 decides how a user with several roles is recorded.
-- A locked account answers `423` and anything else `401`, so five wrong attempts show whether a sign-in name has an account. AP §5.1 does not require showing the lock: owner's decision pending (raised 2026-11-05).
+- Owner decision 2026-11-05: a locked admin account answers `401` like every other sign-in refusal, never `423`.
 - The API has no `trustProxy` yet, so behind Cloudflare and the proxy every session and audit event would record the proxy's IP. The deploy slice sets the trusted hops or reads `CF-Connecting-IP` from a trusted hop, never `trustProxy: true`.
 - Sign-in and setup cost an Argon2 hash per request; nothing limits their rate yet. The deploy slice (Cloudflare rate limits, architecture §15.5) or a per-IP limit in Valkey must cover `/v1/admin/auth/*`.
 - The session cookie is `__Host-` and `SameSite=Strict`, so the panel and the API must be served from the same site; the panel slice decides the origin (or adds CORS with credentials).

@@ -709,18 +709,31 @@ describe('the session cookie over HTTP (architecture §10.3)', () => {
     expect(response.statusCode).toBe(401);
   });
 
-  it('answers 401 to a wrong sign-in and 423 to a locked account', async () => {
+  // Owner decision 2026-11-05: a locked account answers like any refusal, so
+  // a refusal never shows whether a sign-in name has an account.
+  it('answers a wrong sign-in, a locked account and an unknown name alike', async () => {
     const account = await activeAccount();
-    const wrong = { login: account.login, password: 'wrong password!', code: '000000' };
-    const statuses: number[] = [];
-    for (let attempt = 0; attempt < 6; attempt += 1) {
+    const attempts = [
+      ...Array.from({ length: 6 }, () => ({
+        login: account.login,
+        password: 'wrong password!',
+        code: '000000',
+      })),
+      { login: account.login, password, code: account.backupCodes[0] },
+      { login: 'nobody@example.test', password, code: '000000' },
+    ];
+    const answers = [];
+    for (const payload of attempts) {
       const response = await app.inject({
         method: 'POST',
         url: '/v1/admin/auth/sign-in',
-        payload: wrong,
+        payload,
       });
-      statuses.push(response.statusCode);
+      answers.push({ status: response.statusCode, body: response.body });
     }
-    expect(statuses).toEqual([401, 401, 401, 401, 423, 423]);
+    expect(new Set(answers.map((answer) => JSON.stringify(answer)))).toEqual(
+      new Set([JSON.stringify({ status: 401, body: answers[0]!.body })]),
+    );
+    expect(answers[0]!.status).toBe(401);
   });
 });
