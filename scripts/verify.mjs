@@ -4,6 +4,11 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
+// `fvm install` links the Flutter pinned in .fvmrc at .fvm/flutter_sdk; use it
+// before any Flutter on PATH. CI puts the pinned Flutter on PATH instead.
+const fvmFlutter = path.resolve('.fvm', 'flutter_sdk', 'bin');
+if (existsSync(fvmFlutter)) process.env.PATH = `${fvmFlutter}${path.delimiter}${process.env.PATH}`;
+
 function run(command) {
   const result = spawnSync(command, { shell: true, stdio: 'inherit' });
   return result.status ?? 1;
