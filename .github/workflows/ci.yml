@@ -38,6 +38,12 @@ jobs:
           flutter-version: ${{ steps.flutter.outputs.version }}
           cache: true
 
+      # openapi-generator, which generates the Dart client, runs on Java.
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
       - run: pnpm install --frozen-lockfile
 
       - run: dart pub get --enforce-lockfile

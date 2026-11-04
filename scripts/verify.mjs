@@ -1,6 +1,7 @@
 // The single check command (architecture §18.4): TypeScript through Turborepo,
 // then Dart through Melos. Stops at the first failing step.
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
@@ -72,6 +73,36 @@ function checkDartWorkspace() {
   }
 }
 
+// Architecture §5.3, E6: the committed OpenAPI document and both clients must
+// match the server. Regenerating changes no file when they do; otherwise the
+// regenerated files are left in place to review and commit.
+function contractFingerprint() {
+  const hash = createHash('sha256');
+  const files = read(
+    'git ls-files --cached --others --exclude-standard -- packages/api-schema packages/core_api',
+  )
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .sort();
+  for (const file of new Set(files)) {
+    hash.update(`${file}\n`);
+    hash.update(existsSync(file) ? readFileSync(file) : 'deleted');
+  }
+  return hash.digest('hex');
+}
+
+function checkApiContract() {
+  const before = contractFingerprint();
+  step('Generate the API contract and clients', 'pnpm generate:api');
+  if (contractFingerprint() === before) return;
+  console.error(
+    '\nThe committed OpenAPI document or a generated client was stale. It is regenerated' +
+      ' now: review the changes in packages/api-schema and packages/core_api, then commit them.',
+  );
+  fail('API contract');
+}
+
+checkApiContract();
 step('Prettier', 'pnpm exec prettier --check .');
 step('Lint, type check and test (Turborepo)', 'pnpm exec turbo run lint:root lint typecheck test');
 
