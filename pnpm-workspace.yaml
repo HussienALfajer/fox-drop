@@ -3,4 +3,7 @@ packages:
   - packages/*
   - tools/*
 
+allowBuilds:
+  '@swc/core': false
+
 engineStrict: true

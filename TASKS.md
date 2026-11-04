@@ -12,7 +12,7 @@ Phase 0, slice 0.2: server skeleton and module boundaries (`docs/roadmap.md`).
 
 ## Plan
 
-- [ ] `apps/server`: NestJS on Fastify, strict TypeScript (shared `tsconfig` base), Vitest, `lint`, `typecheck` and `test` scripts picked up by Turborepo.
+- [x] `apps/server`: NestJS on Fastify, strict TypeScript (shared `tsconfig` base), Vitest, `lint`, `typecheck` and `test` scripts picked up by Turborepo.
 - [ ] HTTP layer: `/v1` prefix, the `/admin`, `/merchant`, `/captain` and `/customer` route groups, a `Server-Time` header on every response, Zod validation (`nestjs-zod`); tests for each.
 - [ ] Structured logs (Pino) that redact codes, tokens and phone numbers, with a test.
 - [ ] Module boundaries: the module folder layout of §4.2 with a public entry per module, and the ESLint boundary rule; a fixture proves a forbidden import fails.
