@@ -30,7 +30,12 @@ ALTER TABLE "identity"."admin_account_roles" ADD CONSTRAINT "admin_account_roles
 ALTER TABLE "identity"."admin_account_roles" ADD CONSTRAINT "admin_account_roles_role_code_admin_roles_code_fk" FOREIGN KEY ("role_code") REFERENCES "identity"."admin_roles"("code") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "identity"."admin_role_permissions" ADD CONSTRAINT "admin_role_permissions_role_code_admin_roles_code_fk" FOREIGN KEY ("role_code") REFERENCES "identity"."admin_roles"("code") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "identity"."admin_role_permissions" ADD CONSTRAINT "admin_role_permissions_permission_code_admin_permissions_code_fk" FOREIGN KEY ("permission_code") REFERENCES "identity"."admin_permissions"("code") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "admin_account_roles_account" ON "identity"."admin_account_roles" USING btree ("account_id");--> statement-breakpoint
+CREATE INDEX "admin_account_roles_role" ON "identity"."admin_account_roles" USING btree ("role_code");--> statement-breakpoint
 CREATE UNIQUE INDEX "admin_account_roles_held" ON "identity"."admin_account_roles" USING btree ("account_id","role_code") WHERE "identity"."admin_account_roles"."revoked_at" IS NULL;--> statement-breakpoint
+CREATE INDEX "admin_role_permissions_permission" ON "identity"."admin_role_permissions" USING btree ("permission_code");--> statement-breakpoint
+CREATE INDEX "admin_sessions_account_signed_in" ON "identity"."admin_sessions" USING btree ("account_id","signed_in_at");--> statement-breakpoint
+CREATE INDEX "admin_sessions_open" ON "identity"."admin_sessions" USING btree ("account_id") WHERE "identity"."admin_sessions"."ended_at" IS NULL;--> statement-breakpoint
 ALTER TABLE "identity"."admin_accounts" ADD CONSTRAINT "admin_accounts_totp_reset_has_password" CHECK ("identity"."admin_accounts"."status" <> 'totp_reset' OR ("identity"."admin_accounts"."password_hash" IS NOT NULL AND "identity"."admin_accounts"."totp_secret_encrypted" IS NULL));--> statement-breakpoint
 ALTER TABLE "identity"."admin_accounts" ADD CONSTRAINT "admin_accounts_status_values" CHECK ("identity"."admin_accounts"."status" IN ('pending', 'active', 'totp_reset', 'disabled'));--> statement-breakpoint
 ALTER TABLE "identity"."admin_sessions" ADD CONSTRAINT "admin_sessions_end_reason_values" CHECK ("identity"."admin_sessions"."end_reason" IN ('sign_out', 'idle', 'max_lifetime', 'forced_sign_out', 'account_disabled', 'totp_reset'));--> statement-breakpoint
@@ -217,3 +222,6 @@ INSERT INTO "identity"."admin_role_permissions" ("role_code", "permission_code")
 -- The roles accounts held in the old column, as rows.
 INSERT INTO "identity"."admin_account_roles" ("account_id", "role_code", "granted_at")
 SELECT "id", unnest("roles"), "created_at" FROM "identity"."admin_accounts";
+--> statement-breakpoint
+-- Nothing reads the old column any more; empty, so it cannot mislead.
+UPDATE "identity"."admin_accounts" SET "roles" = '{}';

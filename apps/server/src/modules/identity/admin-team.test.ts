@@ -302,6 +302,7 @@ const routeAccess: Record<string, 'public' | 'session' | 'undeclared' | AdminPer
   'POST /v1/admin/team/users/{accountId}/enable': 'admin_team.manage',
   'POST /v1/admin/team/users/{accountId}/sign-out': 'admin_team.manage',
   'POST /v1/admin/team/users/{accountId}/totp-reset': 'admin_team.manage',
+  'POST /v1/admin/team/users/{accountId}/setup-link': 'admin_team.manage',
   'GET /v1/admin/team/roles': 'admin_team.manage',
   'GET /v1/admin/test-access/undeclared': 'undeclared',
   'GET /v1/admin/test-access/operations': 'operations.manage',
@@ -645,5 +646,159 @@ describe('the admin team (AP §5.2–5.3, §9.15)', () => {
       cookies: own.cookies,
     });
     expect(response.statusCode).toBe(404);
+  });
+
+  it('lets only one of two OWNs disabling each other at once succeed', async () => {
+    await sql.query(
+      `UPDATE identity.admin_accounts SET status = 'disabled'
+        WHERE status = 'active' AND id IN (SELECT account_id FROM identity.admin_account_roles WHERE role_code = 'OWN')`,
+    );
+    const first = await owner();
+    const second = await owner();
+    const results = await Promise.allSettled([
+      team.disable(second.accountId, first.session, context),
+      team.disable(first.accountId, second.session, context),
+    ]);
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+    const [refused] = results.filter((result) => result.status === 'rejected');
+    // The loser is either the last OWN or no longer allowed to act.
+    expect(['last_owner', 'actor_not_allowed']).toContain(
+      (refused!.reason as { refusal: string }).refusal,
+    );
+    const { rows } = await sql.query(
+      `SELECT count(*)::int AS owners FROM identity.admin_accounts a
+         JOIN identity.admin_account_roles r ON r.account_id = a.id AND r.revoked_at IS NULL
+        WHERE r.role_code = 'OWN' AND a.status = 'active'`,
+    );
+    expect(rows).toEqual([{ owners: 1 }]);
+  });
+
+  it('refuses an actor who lost admin_team.manage after the guard let them in', async () => {
+    const own = await owner();
+    const other = await owner();
+    await team.changeRoles(own.accountId, ['OPS'], other.session, context);
+    const user = await activeUser(['SUP']);
+    await expect(team.forceSignOut(user.accountId, own.session, context)).rejects.toMatchObject({
+      refusal: 'actor_not_allowed',
+    });
+  });
+
+  it('reissues the setup link of a pending user, and a disable ends the open links', async () => {
+    const own = await owner();
+    const created = await team.create(
+      { name: 'Sami', email: newEmail(), phone: '+963944000123', roles: ['DATA'] },
+      own.session,
+      context,
+    );
+    const reissued = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/team/users/${created.accountId}/setup-link`,
+      cookies: own.cookies,
+    });
+    expect(reissued.statusCode).toBe(200);
+    const { setupToken } = reissued.json<{ setupToken: string }>();
+    await expect(setup.startTotpEnrolment(created.setupToken)).rejects.toMatchObject({
+      refusal: 'link_invalid',
+    });
+
+    await team.disable(created.accountId, own.session, context);
+    await team.enable(created.accountId, own.session, context);
+    const { rows } = await sql.query(
+      'SELECT status, phone_encrypted FROM identity.admin_accounts WHERE id = $1',
+      [created.accountId],
+    );
+    expect(rows[0].status).toBe('pending');
+    expect(rows[0].phone_encrypted).not.toContain('944000123');
+    await expect(setup.startTotpEnrolment(setupToken)).rejects.toMatchObject({
+      refusal: 'link_invalid',
+    });
+
+    // The tokens are only in the answers, never stored or audited in clear.
+    const stored = await sql.query(
+      `SELECT (SELECT json_agg(l) FROM identity.admin_setup_links l WHERE l.account_id = $1)::text AS links,
+              (SELECT json_agg(e) FROM audit.events e WHERE e.target_id = $1::text)::text AS events`,
+      [created.accountId],
+    );
+    for (const token of [created.setupToken, setupToken]) {
+      expect(stored.rows[0].links).not.toContain(token);
+      expect(stored.rows[0].events).not.toContain(token);
+    }
+    expect(stored.rows[0].events).not.toContain('944000123');
+    expect((await auditEvents(created.accountId)).map((event) => event.action)).toEqual([
+      'admin_account.create',
+      'admin_account.setup_link_reissue',
+      'admin_account.disable',
+      'admin_account.enable',
+    ]);
+
+    const active = await activeUser(['OPS']);
+    await expect(
+      team.reissueSetupLink(active.accountId, own.session, context),
+    ).rejects.toMatchObject({ refusal: 'wrong_status' });
+  });
+
+  it('enables a disabled user back to the TOTP enrolment it was waiting for', async () => {
+    const own = await owner();
+    const user = await activeUser(['FIN']);
+    await team.resetTotp(user.accountId, own.session, context);
+    await team.disable(user.accountId, own.session, context);
+    await team.enable(user.accountId, own.session, context);
+    const { rows } = await sql.query('SELECT status FROM identity.admin_accounts WHERE id = $1', [
+      user.accountId,
+    ]);
+    expect(rows).toEqual([{ status: 'totp_reset' }]);
+  });
+
+  it('locks the account after admin.login_max_attempts wrong passwords at a TOTP re-enrolment', async () => {
+    const own = await owner();
+    const user = await activeUser(['OPS']);
+    const now = new Date();
+    const { setupToken } = await team.resetTotp(user.accountId, own.session, context, now);
+    const { secret } = await setup.startTotpEnrolment(setupToken, now);
+    const code = await totpCode(secret, now);
+    const wrong = { token: setupToken, password: 'wrong password!', code };
+    for (const refusal of [
+      'password_invalid',
+      'password_invalid',
+      'password_invalid',
+      'password_invalid',
+      'account_locked',
+    ]) {
+      await expect(setup.completeSetup(wrong, context, now)).rejects.toMatchObject({ refusal });
+    }
+    // Locked: the right password is refused too until the lockout ends.
+    await expect(
+      setup.completeSetup({ token: setupToken, password, code }, context, now),
+    ).rejects.toMatchObject({ refusal: 'account_locked' });
+    expect((await auditEvents(user.accountId)).map((event) => event.action)).toContain(
+      'admin_account.lock',
+    );
+  });
+
+  it('takes a setup link only for a pending account and a reset link only after a reset', async () => {
+    const own = await owner();
+    const created = await team.create(
+      { name: 'Rami', email: newEmail(), phone: null, roles: ['SUP'] },
+      own.session,
+      context,
+    );
+    // A pending account's link cannot serve once its status no longer fits.
+    await sql.query(
+      `UPDATE identity.admin_setup_links SET purpose = 'totp_reset' WHERE account_id = $1`,
+      [created.accountId],
+    );
+    await expect(setup.startTotpEnrolment(created.setupToken)).rejects.toMatchObject({
+      refusal: 'link_invalid',
+    });
+
+    const user = await activeUser(['OPS']);
+    const { setupToken } = await team.resetTotp(user.accountId, own.session, context);
+    await sql.query(
+      `UPDATE identity.admin_setup_links SET purpose = 'setup' WHERE account_id = $1`,
+      [user.accountId],
+    );
+    await expect(setup.startTotpEnrolment(setupToken)).rejects.toMatchObject({
+      refusal: 'link_invalid',
+    });
   });
 });

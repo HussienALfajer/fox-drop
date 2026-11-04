@@ -10,7 +10,7 @@ import {
   type OpenSession,
 } from './admin-sessions.service.js';
 import { SETUP_LINK_HOURS } from './first-owner.js';
-import { actorRole } from './roles.js';
+import { accountAccess, actorRole } from './roles.js';
 import {
   adminAccountRoles,
   adminAccounts,
@@ -28,7 +28,9 @@ export type TeamRefusal =
   // Owner decision 2026-11-05: the platform never has no active OWN.
   | 'last_owner'
   | 'own_account'
-  | 'wrong_status';
+  | 'wrong_status'
+  // The actor lost admin_team.manage or was disabled while the request ran.
+  | 'actor_not_allowed';
 
 export class TeamRefusedError extends Error {
   constructor(readonly refusal: TeamRefusal) {
@@ -116,6 +118,7 @@ export class AdminTeamService {
   ): Promise<IssuedLink> {
     const phoneHash = user.phone && this.secrets.phoneHash(user.phone);
     return this.database.db.transaction(async (tx) => {
+      await this.lockTeam(tx, actor);
       const taken = await tx
         .select({ id: adminAccounts.id })
         .from(adminAccounts)
@@ -126,6 +129,7 @@ export class AdminTeamService {
           ),
         );
       if (taken.length > 0) throw new TeamRefusedError('name_taken');
+      // The team lock makes creates take turns, so the check above holds.
       const [account] = await tx
         .insert(adminAccounts)
         .values({
@@ -176,7 +180,7 @@ export class AdminTeamService {
   ): Promise<void> {
     const wanted: string[] = [...new Set(roles)].sort();
     await this.database.db.transaction(async (tx) => {
-      await this.lockOwners(tx);
+      await this.lockTeam(tx, actor);
       const account = await this.account(tx, accountId);
       const held = await this.heldRoles(tx, accountId);
       if (held.join(',') === wanted.join(',')) return;
@@ -226,7 +230,7 @@ export class AdminTeamService {
   ): Promise<void> {
     if (accountId === actor.accountId) throw new TeamRefusedError('own_account');
     await this.database.db.transaction(async (tx) => {
-      await this.lockOwners(tx);
+      await this.lockTeam(tx, actor);
       const account = await this.account(tx, accountId);
       if (account.status === 'disabled') return;
       await this.refuseLastOwner(tx, account);
@@ -234,6 +238,8 @@ export class AdminTeamService {
         .update(adminAccounts)
         .set({ status: 'disabled', updatedAt: now })
         .where(eq(adminAccounts.id, accountId));
+      // An old link never works again after an enable; OWN issues a new one.
+      await this.expireLinks(tx, accountId, now);
       const sessionsEnded = await this.sessions.endAll(tx, accountId, 'account_disabled', now);
       await this.audit.recordWrite(
         {
@@ -259,6 +265,7 @@ export class AdminTeamService {
     now = new Date(),
   ): Promise<void> {
     await this.database.db.transaction(async (tx) => {
+      await this.lockTeam(tx, actor);
       const account = await this.account(tx, accountId);
       if (account.status !== 'disabled') return;
       const status = !account.passwordHash
@@ -293,6 +300,7 @@ export class AdminTeamService {
     now = new Date(),
   ): Promise<void> {
     await this.database.db.transaction(async (tx) => {
+      await this.lockTeam(tx, actor);
       await this.account(tx, accountId);
       const sessionsEnded = await this.sessions.endAll(tx, accountId, 'forced_sign_out', now);
       await this.audit.recordWrite(
@@ -321,7 +329,7 @@ export class AdminTeamService {
     now = new Date(),
   ): Promise<IssuedLink> {
     return this.database.db.transaction(async (tx) => {
-      await this.lockOwners(tx);
+      await this.lockTeam(tx, actor);
       const account = await this.account(tx, accountId);
       if (account.status !== 'active' && account.status !== 'totp_reset') {
         throw new TeamRefusedError('wrong_status');
@@ -346,16 +354,7 @@ export class AdminTeamService {
             isNull(adminBackupCodes.revokedAt),
           ),
         );
-      await tx
-        .update(adminSetupLinks)
-        .set({ expiresAt: now })
-        .where(
-          and(
-            eq(adminSetupLinks.accountId, accountId),
-            isNull(adminSetupLinks.usedAt),
-            gt(adminSetupLinks.expiresAt, now),
-          ),
-        );
+      await this.expireLinks(tx, accountId, now);
       const sessionsEnded = await this.sessions.endAll(tx, accountId, 'totp_reset', now);
       const link = await this.issueLink(tx, accountId, 'totp_reset', now);
       await this.audit.recordWrite(
@@ -379,14 +378,80 @@ export class AdminTeamService {
     });
   }
 
+  // A new setup link for a user who has not used theirs (AP §5.3: the link
+  // is valid 24 hours), replacing the open ones.
+  async reissueSetupLink(
+    accountId: string,
+    actor: AdminSession,
+    context: AuditRequestContext,
+    now = new Date(),
+  ): Promise<IssuedLink> {
+    return this.database.db.transaction(async (tx) => {
+      await this.lockTeam(tx, actor);
+      const account = await this.account(tx, accountId);
+      if (account.status !== 'pending') throw new TeamRefusedError('wrong_status');
+      await this.expireLinks(tx, accountId, now);
+      const link = await this.issueLink(tx, accountId, 'setup', now);
+      await this.audit.recordWrite(
+        {
+          actor: this.actor(actor),
+          context,
+          cityId: null,
+          action: 'admin_account.setup_link_reissue',
+          target: { type: 'admin_account', id: accountId },
+          before: { status: 'pending' },
+          after: { status: 'pending', setupLinkExpiresAt: link.setupExpiresAt.toISOString() },
+        },
+        tx,
+      );
+      return link;
+    });
+  }
+
+  // The role matrix (AP §9.15, read-only in V1): each role's permissions.
+  async roleMatrix(): Promise<{ role: string; permissions: string[] }[]> {
+    const rows = await this.database.db
+      .select()
+      .from(adminRolePermissions)
+      .orderBy(adminRolePermissions.roleCode, adminRolePermissions.permissionCode);
+    const matrix = new Map<string, string[]>();
+    for (const row of rows) {
+      matrix.set(row.roleCode, [...(matrix.get(row.roleCode) ?? []), row.permissionCode]);
+    }
+    return [...matrix].map(([role, permissions]) => ({ role, permissions }));
+  }
+
   private actor(session: AdminSession) {
     return { type: 'admin' as const, id: session.accountId, role: actorRole(session.roles) };
   }
 
-  // Actions that could leave no active OWN take turns, so two OWNs cannot
-  // disable each other at once.
-  private async lockOwners(tx: Transaction): Promise<void> {
+  // The team's actions take turns, so two OWNs cannot disable each other at
+  // once and two creates cannot take one name. Under the lock, the actor is
+  // checked again: another OWN may have disabled them or removed their role
+  // after the guard let the request through.
+  private async lockTeam(tx: Transaction, actor: AdminSession): Promise<void> {
     await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('identity.owners'))`);
+    const [account] = await tx
+      .select({ status: adminAccounts.status })
+      .from(adminAccounts)
+      .where(eq(adminAccounts.id, actor.accountId));
+    const { permissions } = await accountAccess(tx, actor.accountId);
+    if (account?.status !== 'active' || !permissions.includes('admin_team.manage')) {
+      throw new TeamRefusedError('actor_not_allowed');
+    }
+  }
+
+  private async expireLinks(tx: Transaction, accountId: string, now: Date): Promise<void> {
+    await tx
+      .update(adminSetupLinks)
+      .set({ expiresAt: now })
+      .where(
+        and(
+          eq(adminSetupLinks.accountId, accountId),
+          isNull(adminSetupLinks.usedAt),
+          gt(adminSetupLinks.expiresAt, now),
+        ),
+      );
   }
 
   private async account(tx: Transaction, accountId: string) {
@@ -448,18 +513,5 @@ export class AdminTeamService {
       createdAt: now,
     });
     return { accountId, setupToken, setupExpiresAt };
-  }
-
-  // The role matrix (AP §9.15, read-only in V1): each role's permissions.
-  async roleMatrix(): Promise<{ role: string; permissions: string[] }[]> {
-    const rows = await this.database.db
-      .select()
-      .from(adminRolePermissions)
-      .orderBy(adminRolePermissions.roleCode, adminRolePermissions.permissionCode);
-    const matrix = new Map<string, string[]>();
-    for (const row of rows) {
-      matrix.set(row.roleCode, [...(matrix.get(row.roleCode) ?? []), row.permissionCode]);
-    }
-    return [...matrix].map(([role, permissions]) => ({ role, permissions }));
   }
 }

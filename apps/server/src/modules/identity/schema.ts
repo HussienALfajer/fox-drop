@@ -101,7 +101,10 @@ export const adminRolePermissions = identity.table(
       .notNull()
       .references(() => adminPermissions.code),
   },
-  (table) => [primaryKey({ columns: [table.roleCode, table.permissionCode] })],
+  (table) => [
+    primaryKey({ columns: [table.roleCode, table.permissionCode] }),
+    index('admin_role_permissions_permission').on(table.permissionCode),
+  ],
 );
 
 // The roles an account holds (AP §6.1: one or more). A removed role is
@@ -122,6 +125,8 @@ export const adminAccountRoles = identity.table(
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
   },
   (table) => [
+    index('admin_account_roles_account').on(table.accountId),
+    index('admin_account_roles_role').on(table.roleCode),
     uniqueIndex('admin_account_roles_held')
       .on(table.accountId, table.roleCode)
       .where(sql`${table.revokedAt} IS NULL`),
@@ -207,6 +212,11 @@ export const adminSessions = identity.table(
   },
   (table) => [
     index('admin_sessions_account').on(table.accountId),
+    // The team list: each account's last sign-in and its open sessions.
+    index('admin_sessions_account_signed_in').on(table.accountId, table.signedInAt),
+    index('admin_sessions_open')
+      .on(table.accountId)
+      .where(sql`${table.endedAt} IS NULL`),
     check(
       'admin_sessions_end_reason_values',
       sql`${table.endReason} IN ('sign_out', 'idle', 'max_lifetime', 'forced_sign_out', 'account_disabled', 'totp_reset')`,

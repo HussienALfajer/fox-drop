@@ -1,5 +1,5 @@
 {
-  "id": "08762beb-1ae0-4244-8d30-f2861efa33ec",
+  "id": "c5fd0d09-db03-4779-9de1-c102c723d5b3",
   "prevId": "0b400daa-8d75-48b0-a8aa-28af2e5f2e64",
   "version": "7",
   "dialect": "postgresql",
@@ -236,6 +236,36 @@
         }
       },
       "indexes": {
+        "admin_account_roles_account": {
+          "name": "admin_account_roles_account",
+          "columns": [
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "admin_account_roles_role": {
+          "name": "admin_account_roles_role",
+          "columns": [
+            {
+              "expression": "role_code",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "admin_account_roles_held": {
           "name": "admin_account_roles_held",
           "columns": [
@@ -552,7 +582,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "admin_role_permissions_permission": {
+          "name": "admin_role_permissions_permission",
+          "columns": [
+            {
+              "expression": "permission_code",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "admin_role_permissions_role_code_admin_roles_code_fk": {
           "name": "admin_role_permissions_role_code_admin_roles_code_fk",
@@ -690,6 +736,43 @@
             }
           ],
           "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "admin_sessions_account_signed_in": {
+          "name": "admin_sessions_account_signed_in",
+          "columns": [
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "signed_in_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "admin_sessions_open": {
+          "name": "admin_sessions_open",
+          "columns": [
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"identity\".\"admin_sessions\".\"ended_at\" IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}

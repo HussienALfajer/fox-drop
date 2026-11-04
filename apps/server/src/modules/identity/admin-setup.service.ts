@@ -87,7 +87,7 @@ export class AdminSetupService {
   ): Promise<string[]> {
     // A cheap check first, so a made-up token never costs an Argon2 hash. The
     // transaction checks again under the lock.
-    const { purpose } = await this.usableLink(this.database.db, input.token, now);
+    const { purpose, accountId } = await this.usableLink(this.database.db, input.token, now);
     let passwordHash: string | null = null;
     if (purpose === 'setup') {
       const minLength = await this.settings.get('admin.password_min_length');
@@ -105,6 +105,13 @@ export class AdminSetupService {
     // A wrong password commits its failure count, so the transaction returns
     // the refusal instead of throwing it.
     const refusal = await this.database.db.transaction(async (tx) => {
+      // The account first, then the link: the order the admin team's actions
+      // lock them in, so a TOTP reset during an enrolment cannot deadlock.
+      await tx
+        .select({ id: adminAccounts.id })
+        .from(adminAccounts)
+        .where(eq(adminAccounts.id, accountId))
+        .for('update');
       const link = await this.usableLink(tx, input.token, now, true);
       if (!link.pendingTotpSecretEncrypted) throw new SetupRefusedError('enrolment_not_started');
       if (link.purpose === 'totp_reset') {

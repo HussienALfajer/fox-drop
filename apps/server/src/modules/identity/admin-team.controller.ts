@@ -1,6 +1,7 @@
 import {
   Body,
   ConflictException,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -121,6 +122,7 @@ function linkBody(link: IssuedLink): SetupLinkDto {
 function teamError(error: unknown): unknown {
   if (!(error instanceof TeamRefusedError)) return error;
   if (error.refusal === 'not_found') return new NotFoundException();
+  if (error.refusal === 'actor_not_allowed') return new ForbiddenException();
   return new ConflictException({ statusCode: HttpStatus.CONFLICT, error: error.refusal });
 }
 
@@ -244,6 +246,22 @@ export class AdminTeamController {
     return linkBody(
       await refusalsAsHttp(() =>
         this.team.resetTotp(params.accountId, actor, requestContext(request)),
+      ),
+    );
+  }
+
+  @Post('users/:accountId/setup-link')
+  @HttpCode(200)
+  @RequirePermission('admin_team.manage')
+  @ZodResponse({ status: 200, type: SetupLinkDto })
+  async reissueSetupLink(
+    @Param() params: AccountParamsDto,
+    @CurrentAdminSession() actor: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return linkBody(
+      await refusalsAsHttp(() =>
+        this.team.reissueSetupLink(params.accountId, actor, requestContext(request)),
       ),
     );
   }
