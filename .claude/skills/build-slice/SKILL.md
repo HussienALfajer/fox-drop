@@ -43,4 +43,4 @@ If the session ends with work open instead, add a "Stopped at" line to `TASKS.md
 
 ## 6. Report
 
-To the owner, in Arabic: what changed with the pull request link, how it was verified (commands and results), what you found, what the owner needs to do or decide, and the next slice.
+In the format of "Reporting" in `CLAUDE.md`. Under «ما المطلوب منك», turn the slice's "what the owner can try" into numbered steps to run after the merge. Under «الخطوة التالية», name the next slice and give its first message, such as `ابنِ الشريحة 0.3`.

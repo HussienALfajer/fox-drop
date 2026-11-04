@@ -53,4 +53,10 @@ Talk to the owner in Arabic: messages, questions and reports. Everything stored 
 
 ## Reporting
 
-End each task with: what changed (with the pull request link), how it was verified, what you found, what the owner needs to do or decide, and the next step.
+End every substantial task with these sections, in Arabic, in this order:
+
+1. «ما المطلوب منك»: decisions blocking progress, what the owner can try (a slice's acceptance steps, to run after the merge), or «لا شيء». When the task opened or merged a pull request and the branch is still checked out locally, end with the cleanup line in a code block: `cd D:\fox-drop; git switch main; git pull --ff-only; git branch -d <branch>`.
+2. «ما تغيّر»: what was built or changed, with the pull request link.
+3. «التحقق»: the checks run and their results.
+4. «ما وجدته»: issues, risks and follow-ups noticed.
+5. «الخطوة التالية»: always last. The next task (from `docs/roadmap.md` or what this task uncovered), why it comes next and what it needs from the owner first; whether it needs a new session (`/clear`); the model and effort if they differ from `.claude/settings.json`; and the exact first message to send, in its own code block.
