@@ -5,6 +5,11 @@ export default [
   ...rootConfig,
   { ignores: ['test/fixtures/'] },
   {
+    // Logs go through the redacting logger (architecture §16).
+    files: ['src/**/*.ts'],
+    rules: { 'no-console': 'error' },
+  },
+  {
     // Every route lives in one product's group (architecture §5.3).
     files: ['src/**/*.ts'],
     ignores: ['src/http/route-groups.ts'],
