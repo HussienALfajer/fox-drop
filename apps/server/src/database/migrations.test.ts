@@ -174,3 +174,48 @@ describe('the settings tables (AP §4.4)', () => {
     await expect(appQuery(statement)).rejects.toThrow(/permission denied/);
   });
 });
+
+describe('the identity tables (AP §5.1–5.2)', () => {
+  it('refuse an admin account without an email or a phone', async () => {
+    await expect(
+      appQuery("INSERT INTO identity.admin_accounts (roles) VALUES ('{OWN}')"),
+    ).rejects.toThrow(/admin_accounts_has_sign_in_name/);
+  });
+
+  it('refuse an active admin account without a password and a TOTP secret', async () => {
+    await expect(
+      appQuery(
+        "INSERT INTO identity.admin_accounts (email, roles, status) VALUES ('a@example.test', '{OWN}', 'active')",
+      ),
+    ).rejects.toThrow(/admin_accounts_active_is_set_up/);
+  });
+
+  it('keep one account per email', async () => {
+    await appQuery(
+      "INSERT INTO identity.admin_accounts (email, roles) VALUES ('owner@example.test', '{OWN}')",
+    );
+    await expect(
+      appQuery(
+        "INSERT INTO identity.admin_accounts (email, roles) VALUES ('owner@example.test', '{OPS}')",
+      ),
+    ).rejects.toThrow(/admin_accounts_email_unique/);
+  });
+
+  it('let the application role end a session', async () => {
+    await appQuery(
+      "INSERT INTO identity.admin_sessions (account_id, token_hash) SELECT id, 'h1' FROM identity.admin_accounts WHERE email = 'owner@example.test'",
+    );
+    await appQuery(
+      "UPDATE identity.admin_sessions SET ended_at = now(), end_reason = 'sign_out' WHERE token_hash = 'h1'",
+    );
+  });
+
+  it.each([
+    ['delete an account', 'DELETE FROM identity.admin_accounts'],
+    ['delete a session', 'DELETE FROM identity.admin_sessions'],
+    ['delete a backup code', 'DELETE FROM identity.admin_backup_codes'],
+    ['delete a setup link', 'DELETE FROM identity.admin_setup_links'],
+  ])('refuse the application role to %s', async (_, statement) => {
+    await expect(appQuery(statement)).rejects.toThrow(/permission denied/);
+  });
+});
