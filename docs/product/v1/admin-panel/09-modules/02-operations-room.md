@@ -22,13 +22,13 @@ Each column header shows its count and how many of its cards are late.
 
   The limit for each column:
 
-  | Column | Limit |
-  |---|---|
-  | «بانتظار المطعم» | The acceptance alert (3 min) |
-  | «قيد التحضير» | The chosen prep time |
-  | «جاهز» | The no-captain-after-ready limit (15 min) |
-  | «مع الكابتن» | The promised delivery time |
-  | «الكابتن وصل» | The no-answer window (15 min) |
+  | Column           | Limit                                     |
+  | ---------------- | ----------------------------------------- |
+  | «بانتظار المطعم» | The acceptance alert (3 min)              |
+  | «قيد التحضير»    | The chosen prep time                      |
+  | «جاهز»           | The no-captain-after-ready limit (15 min) |
+  | «مع الكابتن»     | The promised delivery time                |
+  | «الكابتن وصل»    | The no-answer window (15 min)             |
 
 - The captain's name, or a red «بلا كابتن» (no captain) when unassigned.
 - The customer total in the base currency.

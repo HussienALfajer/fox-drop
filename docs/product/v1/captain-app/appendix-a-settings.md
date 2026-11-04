@@ -4,12 +4,12 @@
 
 New settings introduced by this spec. They are also listed in AP Appendix A. Scope: **C** per city.
 
-| Key | Default | Scope | Edit | Description |
-|---|---|---|---|---|
-| `captain.offer_expiry_offline_count` | 3 | C | OWN | Consecutive expired offers that set a captain offline (C3) |
-| `captain.merchant_arrival_radius_m` | 150 | C | OWN | Distance from the restaurant within which «وصلت إلى المطعم» works (C6) |
-| `captain.customer_radius_m` | 200 | C | OWN | Distance from the customer's pin within which arrival and delivery need no reason (C9) |
-| `captain.criminal_record_validity_months` | 12 | C | OWN | Validity of the criminal record certificate from its issue date (C18) |
+| Key                                       | Default | Scope | Edit | Description                                                                            |
+| ----------------------------------------- | ------- | ----- | ---- | -------------------------------------------------------------------------------------- |
+| `captain.offer_expiry_offline_count`      | 3       | C     | OWN  | Consecutive expired offers that set a captain offline (C3)                             |
+| `captain.merchant_arrival_radius_m`       | 150     | C     | OWN  | Distance from the restaurant within which «وصلت إلى المطعم» works (C6)                 |
+| `captain.customer_radius_m`               | 200     | C     | OWN  | Distance from the customer's pin within which arrival and delivery need no reason (C9) |
+| `captain.criminal_record_validity_months` | 12      | C     | OWN  | Validity of the criminal record certificate from its issue date (C18)                  |
 
 **Existing settings this app uses** (AP Appendix A):
 
@@ -27,14 +27,14 @@ New settings introduced by this spec. They are also listed in AP Appendix A. Sco
 
 **Fixed values in this spec:**
 
-| Value | Fixed at |
-|---|---|
-| Location interval while online | 10 s (AP §4.2) |
-| Location while offline | None collected |
-| Offline chime | After 30 s without connection |
-| Signed-in devices per captain | 1 |
-| Re-apply after rejection | 30 days |
-| Emergency button press | 2 s |
-| Hand-in reminder push | 22:00 city time |
-| GPS accuracy for the "weak signal" hint | Worse than 100 m |
-| On-time rate window | Last 50 delivered orders |
+| Value                                   | Fixed at                      |
+| --------------------------------------- | ----------------------------- |
+| Location interval while online          | 10 s (AP §4.2)                |
+| Location while offline                  | None collected                |
+| Offline chime                           | After 30 s without connection |
+| Signed-in devices per captain           | 1                             |
+| Re-apply after rejection                | 30 days                       |
+| Emergency button press                  | 2 s                           |
+| Hand-in reminder push                   | 22:00 city time               |
+| GPS accuracy for the "weak signal" hint | Worse than 100 m              |
+| On-time rate window                     | Last 50 delivered orders      |

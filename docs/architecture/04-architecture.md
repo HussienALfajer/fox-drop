@@ -10,25 +10,25 @@ Why not microservices in V1: they would put the money flows behind distributed t
 
 ## 4.2 Modules
 
-| Module | Owns |
-|---|---|
-| `identity` | Users of all four products, sessions, devices, OTP, TOTP, roles and permissions |
-| `geo` | Cities, zones, distances (OSRM client), zone checks, votes |
-| `settings` | The typed settings catalogue, scopes, effective dates and their history (AP §4.4) |
-| `content` | Texts, terms versions, reason lists (AP §9.13) |
-| `merchants` | Restaurants, hours, states, devices, menu, menu change requests |
-| `ordering` | The quote, the order, its state machine, edits, outcomes |
-| `dispatch` | Eligibility, ranking, offers, assignments, handovers |
-| `captains` | Applications, documents, contracts, availability, performance, violations |
-| `customers` | Profiles, addresses, trust, strikes, dues |
-| `ledger` | Accounts and append-only double-entry ledger entries in every currency |
-| `cashdesk` | Drawer sessions, receipts, hand-ins, payouts, restaurant settlements |
-| `fx` | Exchange rates and rounding per currency |
-| `support` | Tickets, compensation, approvals |
-| `marketing` | Promo codes, banners, home sections, mass push |
-| `notifications` | Push, in-app messages, real-time publishing, sound levels |
-| `audit` | The append-only audit log |
-| `reporting` | Daily report, statements, exports (reads from the replica) |
+| Module          | Owns                                                                              |
+| --------------- | --------------------------------------------------------------------------------- |
+| `identity`      | Users of all four products, sessions, devices, OTP, TOTP, roles and permissions   |
+| `geo`           | Cities, zones, distances (OSRM client), zone checks, votes                        |
+| `settings`      | The typed settings catalogue, scopes, effective dates and their history (AP §4.4) |
+| `content`       | Texts, terms versions, reason lists (AP §9.13)                                    |
+| `merchants`     | Restaurants, hours, states, devices, menu, menu change requests                   |
+| `ordering`      | The quote, the order, its state machine, edits, outcomes                          |
+| `dispatch`      | Eligibility, ranking, offers, assignments, handovers                              |
+| `captains`      | Applications, documents, contracts, availability, performance, violations         |
+| `customers`     | Profiles, addresses, trust, strikes, dues                                         |
+| `ledger`        | Accounts and append-only double-entry ledger entries in every currency            |
+| `cashdesk`      | Drawer sessions, receipts, hand-ins, payouts, restaurant settlements              |
+| `fx`            | Exchange rates and rounding per currency                                          |
+| `support`       | Tickets, compensation, approvals                                                  |
+| `marketing`     | Promo codes, banners, home sections, mass push                                    |
+| `notifications` | Push, in-app messages, real-time publishing, sound levels                         |
+| `audit`         | The append-only audit log                                                         |
+| `reporting`     | Daily report, statements, exports (reads from the replica)                        |
 
 ## 4.3 Module rules (MUST)
 
@@ -42,11 +42,11 @@ Why not microservices in V1: they would put the money flows behind distributed t
 
 The same container image runs in four roles:
 
-| Role | Does |
-|---|---|
-| `api` | HTTP API for all clients. Stateless, scaled horizontally. |
-| `worker` | pg-boss jobs: timers, outbox relay, push sending, exports, reports |
-| `dispatcher` | The dispatch loop for each city (one active leader per city, using a PostgreSQL advisory lock) |
+| Role         | Does                                                                                                   |
+| ------------ | ------------------------------------------------------------------------------------------------------ |
+| `api`        | HTTP API for all clients. Stateless, scaled horizontally.                                              |
+| `worker`     | pg-boss jobs: timers, outbox relay, push sending, exports, reports                                     |
+| `dispatcher` | The dispatch loop for each city (one active leader per city, using a PostgreSQL advisory lock)         |
 | `otp-sender` | The WhatsApp sessions and the sending queue (§8.3). Isolated so a library crash never affects the API. |
 
 Centrifugo, OSRM and imgproxy run as their own containers.

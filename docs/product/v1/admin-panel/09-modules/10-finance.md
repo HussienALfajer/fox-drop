@@ -47,10 +47,10 @@ The cash desk is used at the office counter. Every transaction gets a numbered r
    3. Enter what is physically received per currency.
    4. Confirm.
    5. The receipt is issued.
-
    - If custody is negative in a currency, the desk pays it back (`custody.reimburse`).
    - **Cross-currency settlement:** if the captain holds one currency and settles in another, the desk converts at the current rate, shown on screen (`custody.fx_convert`). FIN and OWN only.
    - A difference between expected and received stays as open custody. It is not hidden.
+
 2. **«تصفية الخميس»** (Thursday settlement):
    - Lists the captains with an earnings balance or open custody.
    - Performs the full settlement in §8.5.5 in one flow and issues the weekly statement.

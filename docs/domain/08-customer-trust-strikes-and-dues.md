@@ -14,13 +14,14 @@
   - FIN records the payment at the desk, which unblocks the customer automatically.
 - **Dues ledger «مستحقات الزبون»** (base currency):
 
-  | Entry | Sign | When |
-  |---|---|---|
-  | `dues.charge` | + | A fake order, or a collection shortfall with the customer responsible |
-  | `dues.payment` | − | Payment recorded at the desk (receipt) |
-  | `dues.adjustment` | ± | Manual correction (OWN/FIN, reason) |
+  | Entry             | Sign | When                                                                  |
+  | ----------------- | ---- | --------------------------------------------------------------------- |
+  | `dues.charge`     | +    | A fake order, or a collection shortfall with the customer responsible |
+  | `dues.payment`    | −    | Payment recorded at the desk (receipt)                                |
+  | `dues.adjustment` | ±    | Manual correction (OWN/FIN, reason)                                   |
 
   A dues block lifts automatically when the balance reaches 0 or less.
+
 - **Account closure (D19):**
   - Closure happens from the customer app's own delete-account button, or from the panel on the customer's request. Both lead to the same result (app stores require deletion to be possible inside the app).
   - Closure is refused while the customer has an active order, in the app and in the panel.

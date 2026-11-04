@@ -4,14 +4,14 @@
 
 Every order that ends after pickup gets an outcome. Every outcome except `normal` also needs a **responsible party**: restaurant, captain, customer or platform.
 
-| Outcome | Arabic | Status | Customer pays |
-|---|---|---|---|
-| `normal` | «عادي» | delivered | Full total |
-| `free` | «مجاني» | delivered | 0, or a reduced amount set by OPS |
-| `fake` | «وهمي» | failed | 0 (customer at fault, dues apply) |
-| `damaged` | «تالف» | failed or delivered with a reduction | 0, or a reduced amount |
-| `wrong_refused` | «خطأ ورفضه الزبون» | failed | 0 |
-| `failed_other` | «تعذّر التسليم» | failed | 0 (for example address unreachable or force majeure) |
+| Outcome         | Arabic             | Status                               | Customer pays                                        |
+| --------------- | ------------------ | ------------------------------------ | ---------------------------------------------------- |
+| `normal`        | «عادي»             | delivered                            | Full total                                           |
+| `free`          | «مجاني»            | delivered                            | 0, or a reduced amount set by OPS                    |
+| `fake`          | «وهمي»             | failed                               | 0 (customer at fault, dues apply)                    |
+| `damaged`       | «تالف»             | failed or delivered with a reduction | 0, or a reduced amount                               |
+| `wrong_refused` | «خطأ ورفضه الزبون» | failed                               | 0                                                    |
+| `failed_other`  | «تعذّر التسليم»    | failed                               | 0 (for example address unreachable or force majeure) |
 
 **One rule computes the money effect of every non-normal outcome:**
 

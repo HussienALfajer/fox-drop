@@ -7,19 +7,19 @@
 - **List columns:** code, type, value, status, uses compared with the limit, cost to date, end date.
 - **Create or edit:**
 
-| Field | Options |
-|---|---|
-| Code | Typed by hand, or a generated batch of unique codes |
-| Type | Percentage · fixed amount · free delivery |
-| Value and cap | For example 20% with a maximum of 50 |
-| Minimum order | For example 150 |
-| Validity | From and to dates, with optional hours of the day |
-| Usage limits | Total and per customer |
-| Audience | Everyone · new users only (first order) |
-| Scope | All or selected restaurants · all or selected zones |
-| Funding | Platform 100% · restaurant 100% · shared by ratio |
+| Field            | Options                                                      |
+| ---------------- | ------------------------------------------------------------ |
+| Code             | Typed by hand, or a generated batch of unique codes          |
+| Type             | Percentage · fixed amount · free delivery                    |
+| Value and cap    | For example 20% with a maximum of 50                         |
+| Minimum order    | For example 150                                              |
+| Validity         | From and to dates, with optional hours of the day            |
+| Usage limits     | Total and per customer                                       |
+| Audience         | Everyone · new users only (first order)                      |
+| Scope            | All or selected restaurants · all or selected zones          |
+| Funding          | Platform 100% · restaurant 100% · shared by ratio            |
 | Daily budget cap | The code pauses automatically when the day's cost reaches it |
-| Visibility | Shown in the app · secret (shared outside the app) |
+| Visibility       | Shown in the app · secret (shared outside the app)           |
 
 - **Rules:**
   - One code per order.
@@ -48,12 +48,12 @@
 
 ## 9.11.4 Mass push «الإشعارات الجماعية» (no daily limit, D20)
 
-| Field | Options |
-|---|---|
-| Title and text | What appears on the phone |
-| Audience | All customers · a zone · no order in the last N days · registered but never ordered |
-| Target | Opens a restaurant, a code or the home screen |
-| Timing | Now or scheduled |
+| Field          | Options                                                                             |
+| -------------- | ----------------------------------------------------------------------------------- |
+| Title and text | What appears on the phone                                                           |
+| Audience       | All customers · a zone · no order in the last N days · registered but never ordered |
+| Target         | Opens a restaurant, a code or the home screen                                       |
+| Timing         | Now or scheduled                                                                    |
 
 - Before sending, the panel shows the audience size and asks for confirmation.
 - History lists each push with its sender, audience, and how many were sent and delivered.

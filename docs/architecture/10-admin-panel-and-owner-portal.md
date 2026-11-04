@@ -4,19 +4,19 @@
 
 ## 10.1 Stack
 
-| Concern | Choice |
-|---|---|
-| Build | **Vite**, React (latest stable), TypeScript strict |
-| Routing | **TanStack Router** (typed routes and search parameters) |
-| Server state | **TanStack Query**; real-time events from Centrifugo update the query cache directly |
-| Tables | **TanStack Table** with **TanStack Virtual** for long lists (operations room, history, statements) |
-| Forms | **React Hook Form** with **Zod** schemas shared with the server |
-| Components | `packages/ui-web` on **Base UI** (§9.2) |
-| Maps | **MapLibre GL JS**; **Terra Draw** for drawing zone polygons |
-| Charts | **Apache ECharts** (RTL, large data sets) |
-| Dates and numbers | `date-fns` with `date-fns-tz`; `Intl` formatters with Western digits |
-| Translations | `i18next` with Arabic as the only V1 language (AP D21) |
-| API client | Generated from OpenAPI (§5.3) |
+| Concern           | Choice                                                                                             |
+| ----------------- | -------------------------------------------------------------------------------------------------- |
+| Build             | **Vite**, React (latest stable), TypeScript strict                                                 |
+| Routing           | **TanStack Router** (typed routes and search parameters)                                           |
+| Server state      | **TanStack Query**; real-time events from Centrifugo update the query cache directly               |
+| Tables            | **TanStack Table** with **TanStack Virtual** for long lists (operations room, history, statements) |
+| Forms             | **React Hook Form** with **Zod** schemas shared with the server                                    |
+| Components        | `packages/ui-web` on **Base UI** (§9.2)                                                            |
+| Maps              | **MapLibre GL JS**; **Terra Draw** for drawing zone polygons                                       |
+| Charts            | **Apache ECharts** (RTL, large data sets)                                                          |
+| Dates and numbers | `date-fns` with `date-fns-tz`; `Intl` formatters with Western digits                               |
+| Translations      | `i18next` with Arabic as the only V1 language (AP D21)                                             |
+| API client        | Generated from OpenAPI (§5.3)                                                                      |
 
 ## 10.2 Why a single-page app
 

@@ -4,14 +4,14 @@ One line per item. Details belong in the specs and the architecture, not here.
 
 ## Versions
 
-| Version | Scope | Status |
-|---|---|---|
-| V1 | Full order cycle for restaurants: cash on delivery, captain cash custody and earnings, launch promo codes. Azaz only. | Specified |
-| V2 | Quality and operations: printing, panel chat, penalties engine, English UI | Not started |
-| V3 | Stores and errands, central catalogue, order stacking | Not started |
-| V4 | Growth: loyalty, referral, campaigns | Not started |
-| V5 | Electronic payments and wallet | Not started |
-| V6 | Scale and intelligence: smart dispatch, forecasting | Not started |
+| Version | Scope                                                                                                                 | Status      |
+| ------- | --------------------------------------------------------------------------------------------------------------------- | ----------- |
+| V1      | Full order cycle for restaurants: cash on delivery, captain cash custody and earnings, launch promo codes. Azaz only. | Specified   |
+| V2      | Quality and operations: printing, panel chat, penalties engine, English UI                                            | Not started |
+| V3      | Stores and errands, central catalogue, order stacking                                                                 | Not started |
+| V4      | Growth: loyalty, referral, campaigns                                                                                  | Not started |
+| V5      | Electronic payments and wallet                                                                                        | Not started |
+| V6      | Scale and intelligence: smart dispatch, forecasting                                                                   | Not started |
 
 The technical growth path is [architecture §20](architecture/20-growth-path-v1-v6.md).
 

@@ -4,18 +4,18 @@
 
 ## 6.1 Screen map
 
-| # | Screen | Arabic | Section |
-|---|---|---|---|
-| 1 | Home | «الرئيسية» | §7 |
-| 2 | Offer | «عرض» (full screen) | §8 |
-| 3 | Active order | «الطلب الجاري» | §9 |
-| 4 | Earnings | «أرباحي» | §10.6 |
-| 5 | Custody | «عهدتي» | §10.2 |
-| 6 | Performance | «أدائي» | §11 |
-| 7 | Profile | «ملفي» | §12 |
-| 8 | History | «السجل» | §9.13 |
-| 9 | Support | «الدعم» | §13 |
-| 10 | Settings | «الإعدادات» | §10.5, §4.5 |
+| #   | Screen       | Arabic              | Section     |
+| --- | ------------ | ------------------- | ----------- |
+| 1   | Home         | «الرئيسية»          | §7          |
+| 2   | Offer        | «عرض» (full screen) | §8          |
+| 3   | Active order | «الطلب الجاري»      | §9          |
+| 4   | Earnings     | «أرباحي»            | §10.6       |
+| 5   | Custody      | «عهدتي»             | §10.2       |
+| 6   | Performance  | «أدائي»             | §11         |
+| 7   | Profile      | «ملفي»              | §12         |
+| 8   | History      | «السجل»             | §9.13       |
+| 9   | Support      | «الدعم»             | §13         |
+| 10  | Settings     | «الإعدادات»         | §10.5, §4.5 |
 
 ## 6.2 Layout
 

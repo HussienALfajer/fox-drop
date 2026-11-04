@@ -15,19 +15,19 @@ The structure matches the admin menu editor (AP §9.6.6):
 
 ## 9.2 What publishes immediately and what needs review (R12, S1)
 
-| Change | Who | Publishes |
-|---|---|---|
-| Availability of an item, option or category | MO, MC | Immediately |
-| Item price or option price delta | MO | Immediately, with a log; large changes alert operations (§9.4) |
-| Hide or show an item or category | MO | Immediately |
-| Order of items and categories | MO | Immediately |
-| Category availability window | MO | Immediately |
-| New item | MO | After admin review |
-| New or replaced photo | MO | After admin review. The old photo stays until the new one is approved. |
-| Item or category name or description | MO | After admin review. The old text stays until approved. |
-| New category | MO | After admin review |
-| Option groups: a new group or option, linking a group to items, or changing required, minimum or maximum | MO | After admin review |
-| Delete | — | Not in the app. The restaurant hides the item, and operations delete it in the panel if needed. |
+| Change                                                                                                   | Who    | Publishes                                                                                       |
+| -------------------------------------------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------- |
+| Availability of an item, option or category                                                              | MO, MC | Immediately                                                                                     |
+| Item price or option price delta                                                                         | MO     | Immediately, with a log; large changes alert operations (§9.4)                                  |
+| Hide or show an item or category                                                                         | MO     | Immediately                                                                                     |
+| Order of items and categories                                                                            | MO     | Immediately                                                                                     |
+| Category availability window                                                                             | MO     | Immediately                                                                                     |
+| New item                                                                                                 | MO     | After admin review                                                                              |
+| New or replaced photo                                                                                    | MO     | After admin review. The old photo stays until the new one is approved.                          |
+| Item or category name or description                                                                     | MO     | After admin review. The old text stays until approved.                                          |
+| New category                                                                                             | MO     | After admin review                                                                              |
+| Option groups: a new group or option, linking a group to items, or changing required, minimum or maximum | MO     | After admin review                                                                              |
+| Delete                                                                                                   | —      | Not in the app. The restaurant hides the item, and operations delete it in the panel if needed. |
 
 ## 9.3 Availability
 

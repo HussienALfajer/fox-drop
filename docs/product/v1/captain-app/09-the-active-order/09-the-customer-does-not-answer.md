@@ -11,4 +11,5 @@
    - or end the order with an outcome: `fake` or `failed_other` (AP §8.9)
 
    The captain sees the result and the food instruction (§9.12).
+
 5. **The customer appears in the meantime:** the captain continues with payment and delivery as normal.

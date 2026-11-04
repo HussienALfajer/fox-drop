@@ -4,13 +4,13 @@
 
 ## 15.1 Authentication
 
-| Product | Method |
-|---|---|
-| Admin panel | Password (Argon2id) and TOTP, mandatory (AP §5.1) |
-| Owner portal | Phone and WhatsApp code (§8.3) |
+| Product        | Method                                                                  |
+| -------------- | ----------------------------------------------------------------------- |
+| Admin panel    | Password (Argon2id) and TOTP, mandatory (AP §5.1)                       |
+| Owner portal   | Phone and WhatsApp code (§8.3)                                          |
 | Restaurant app | Phone and WhatsApp code; device registration on first sign-in (RA §5.2) |
-| Captain app | Phone and WhatsApp code; one device (CA §4.9) |
-| Customer app | Phone and WhatsApp code at «تأكيد الطلب» (CU §5.1–5.2) |
+| Captain app    | Phone and WhatsApp code; one device (CA §4.9)                           |
+| Customer app   | Phone and WhatsApp code at «تأكيد الطلب» (CU §5.1–5.2)                  |
 
 - Apps receive a short-lived access token (15 minutes, JWT signed with a rotating key) and a refresh token. Refresh tokens are stored hashed, rotated on every use, and revoked on reuse.
 - Blocking, closing an account or forcing sign-out revokes every refresh token at once (CU §5.4).

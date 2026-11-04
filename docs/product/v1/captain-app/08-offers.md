@@ -17,16 +17,16 @@
 
 A full-screen sheet with the offer sound (§4.4) and a countdown ring.
 
-| Item | Example |
-|---|---|
-| The captain's pay for this order (largest text) | «35 ₺» |
-| Restaurant and distance from the captain | «مطعم الشام · 1.2 كم» |
-| Customer neighbourhood and trip distance (restaurant to customer) | «حي الشهداء · 2.8 كم» |
-| Pay to the restaurant at pickup | «تدفع للمطعم: 400 ₺» |
-| Collect from the customer | «تقبض من الزبون: 410 ₺» |
-| Preparation state | «قيد التحضير — جاهز بعد 8 د تقريباً» or «جاهز» |
-| Peak bonus, when one applies | «يشمل مكافأة الذروة +5 ₺» |
-| Map | The restaurant and the customer's neighbourhood, without the exact pin |
+| Item                                                              | Example                                                                |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| The captain's pay for this order (largest text)                   | «35 ₺»                                                                 |
+| Restaurant and distance from the captain                          | «مطعم الشام · 1.2 كم»                                                  |
+| Customer neighbourhood and trip distance (restaurant to customer) | «حي الشهداء · 2.8 كم»                                                  |
+| Pay to the restaurant at pickup                                   | «تدفع للمطعم: 400 ₺»                                                   |
+| Collect from the customer                                         | «تقبض من الزبون: 410 ₺»                                                |
+| Preparation state                                                 | «قيد التحضير — جاهز بعد 8 د تقريباً» or «جاهز»                         |
+| Peak bonus, when one applies                                      | «يشمل مكافأة الذروة +5 ₺»                                              |
+| Map                                                               | The restaurant and the customer's neighbourhood, without the exact pin |
 
 - **Pay estimate:** the pay shown is the order pay from the pay table (AP §8.4), plus the peak bonus if it would apply now. Waiting pay is added later, if any. The offer says «قد يُضاف أجر انتظار».
 - **Hidden until acceptance:** the customer's name, phone and exact address (C2).

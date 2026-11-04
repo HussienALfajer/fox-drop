@@ -36,33 +36,33 @@
 
 The server enforces every permission. The app hides what a role cannot do.
 
-| Capability | Owner (app) | Cashier (app) | Owner (portal) |
-|---|---|---|---|
-| Receive, accept and reject new orders | Yes | Yes | No |
-| Mark ready, confirm or dispute a pickup, report an item unavailable, acknowledge edits and cancellations | Yes | Yes | No |
-| See live orders | Yes | Yes | Read-only |
-| See items and the items value (the pickup payment) | Yes | Yes | Yes |
-| See commission, restaurant-funded discounts and the net amount | Yes | No | Yes |
-| Order history | Full, with money | Today plus the previous 7 business days, without money (S12) | Full, with money |
-| Call the captain | Yes | Yes | No |
-| Menu availability | Yes | Yes | Yes |
-| Menu prices, items, photos, categories and options | Yes | No | Yes |
-| Pause, resume and busy mode | Yes | Yes | Yes |
-| Hours, holiday close, default prep time, maximum active orders | Yes | No | Yes |
-| Pickup currencies | Yes | No | Yes |
-| Reports | Yes | No | Yes, with Excel export |
-| Account, statements and receipts | Yes | No | Yes, with PDF and Excel |
-| Ratings | Yes | No | Yes |
-| Staff and devices | Yes | No | Yes |
-| Ring on or off for this device | Yes | No (always on) | — |
-| Support | Yes | Yes | Yes |
+| Capability                                                                                               | Owner (app)      | Cashier (app)                                                | Owner (portal)          |
+| -------------------------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------ | ----------------------- |
+| Receive, accept and reject new orders                                                                    | Yes              | Yes                                                          | No                      |
+| Mark ready, confirm or dispute a pickup, report an item unavailable, acknowledge edits and cancellations | Yes              | Yes                                                          | No                      |
+| See live orders                                                                                          | Yes              | Yes                                                          | Read-only               |
+| See items and the items value (the pickup payment)                                                       | Yes              | Yes                                                          | Yes                     |
+| See commission, restaurant-funded discounts and the net amount                                           | Yes              | No                                                           | Yes                     |
+| Order history                                                                                            | Full, with money | Today plus the previous 7 business days, without money (S12) | Full, with money        |
+| Call the captain                                                                                         | Yes              | Yes                                                          | No                      |
+| Menu availability                                                                                        | Yes              | Yes                                                          | Yes                     |
+| Menu prices, items, photos, categories and options                                                       | Yes              | No                                                           | Yes                     |
+| Pause, resume and busy mode                                                                              | Yes              | Yes                                                          | Yes                     |
+| Hours, holiday close, default prep time, maximum active orders                                           | Yes              | No                                                           | Yes                     |
+| Pickup currencies                                                                                        | Yes              | No                                                           | Yes                     |
+| Reports                                                                                                  | Yes              | No                                                           | Yes, with Excel export  |
+| Account, statements and receipts                                                                         | Yes              | No                                                           | Yes, with PDF and Excel |
+| Ratings                                                                                                  | Yes              | No                                                           | Yes                     |
+| Staff and devices                                                                                        | Yes              | No                                                           | Yes                     |
+| Ring on or off for this device                                                                           | Yes              | No (always on)                                               | —                       |
+| Support                                                                                                  | Yes              | Yes                                                          | Yes                     |
 
 ## 5.5 Restaurant account status (AP §9.6.1)
 
-| Status | What the app does |
-|---|---|
-| `draft` | Sign-in refused (§5.2) |
-| `test` | Everything works. A blue banner says «وضع تجريبي — مطعمك ظاهر لحسابات الاختبار فقط». Test orders are marked (§8.16). |
-| `active` | Normal |
-| `suspended` | No new orders arrive. A red banner shows «حساب مطعمك معلّق: {السبب}. تواصل مع فريق العمليات.» Active orders, history, menu, money and support still work. |
-| `terminated` | Cashiers cannot sign in. Owners can sign in to the money section only, read-only: statements, receipts and the final balance. |
+| Status       | What the app does                                                                                                                                         |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `draft`      | Sign-in refused (§5.2)                                                                                                                                    |
+| `test`       | Everything works. A blue banner says «وضع تجريبي — مطعمك ظاهر لحسابات الاختبار فقط». Test orders are marked (§8.16).                                      |
+| `active`     | Normal                                                                                                                                                    |
+| `suspended`  | No new orders arrive. A red banner shows «حساب مطعمك معلّق: {السبب}. تواصل مع فريق العمليات.» Active orders, history, menu, money and support still work. |
+| `terminated` | Cashiers cannot sign in. Owners can sign in to the money section only, read-only: statements, receipts and the final balance.                             |

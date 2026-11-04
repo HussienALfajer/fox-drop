@@ -41,13 +41,13 @@
 
 One screen, «أكمل بياناتك»:
 
-| Field | Rule |
-|---|---|
-| «الاسم» first name | Required. 2 to 30 Arabic or Latin letters, with spaces and «-» |
-| «الكنية» last name | Optional. Same rule |
-| «الجنس» gender | Required: «ذكر» or «أنثى» |
-| «تاريخ الميلاد» birthday | Optional. A past date from a date picker. No age check in V1 |
-| Terms | Required checkbox: «أوافق على الشروط وسياسة الخصوصية», with links to both (AP §9.13) |
+| Field                    | Rule                                                                                 |
+| ------------------------ | ------------------------------------------------------------------------------------ |
+| «الاسم» first name       | Required. 2 to 30 Arabic or Latin letters, with spaces and «-»                       |
+| «الكنية» last name       | Optional. Same rule                                                                  |
+| «الجنس» gender           | Required: «ذكر» or «أنثى»                                                            |
+| «تاريخ الميلاد» birthday | Optional. A past date from a date picker. No age check in V1                         |
+| Terms                    | Required checkbox: «أوافق على الشروط وسياسة الخصوصية», with links to both (AP §9.13) |
 
 - **Who sees what (Q2):**
   - The restaurant sees the first name (RA §8.4).
@@ -65,14 +65,14 @@ One screen, «أكمل بياناتك»:
 
 ## 5.5 Account states (AP §8.8, Q21)
 
-| State | What the app shows | Browse | Order |
-|---|---|---|---|
-| Active, at the active-order limit (D23) | At checkout: «يمكنك طلب واحد في كل مرة حتى يكتمل طلبك الحالي» for a new account, or «وصلت إلى الحد الأقصى للطلبات الجارية» for a trusted one | Yes | Not until an active order ends |
-| «موقوف حتى مراجعة الدعم» (review stop) | Banner: «حسابك موقوف حتى مراجعة فريق الدعم», with call and WhatsApp buttons | Yes | No |
-| «محظور» for a duration | Banner: «حسابك محظور حتى {التاريخ}: {السبب}» | Yes | No |
-| «محظور» until further notice | Banner: «حسابك محظور: {السبب}. تواصل مع الدعم.» | Yes | No |
-| «محظور» until dues are paid | Banner: «عليك {المبلغ} لـ FOX DROP. ادفعه في المكتب ليُفك الحظر تلقائياً.» A sheet shows the office location on a map and its hours (AP §9.12.1) | Yes | No |
-| «مغلق» (closed) | Signed out on every device. Signing in again with the same number creates a new account, linked to the closed one (AP §8.8) | — | — |
+| State                                   | What the app shows                                                                                                                               | Browse | Order                          |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------ | ------------------------------ |
+| Active, at the active-order limit (D23) | At checkout: «يمكنك طلب واحد في كل مرة حتى يكتمل طلبك الحالي» for a new account, or «وصلت إلى الحد الأقصى للطلبات الجارية» for a trusted one     | Yes    | Not until an active order ends |
+| «موقوف حتى مراجعة الدعم» (review stop)  | Banner: «حسابك موقوف حتى مراجعة فريق الدعم», with call and WhatsApp buttons                                                                      | Yes    | No                             |
+| «محظور» for a duration                  | Banner: «حسابك محظور حتى {التاريخ}: {السبب}»                                                                                                     | Yes    | No                             |
+| «محظور» until further notice            | Banner: «حسابك محظور: {السبب}. تواصل مع الدعم.»                                                                                                  | Yes    | No                             |
+| «محظور» until dues are paid             | Banner: «عليك {المبلغ} لـ FOX DROP. ادفعه في المكتب ليُفك الحظر تلقائياً.» A sheet shows the office location on a map and its hours (AP §9.12.1) | Yes    | No                             |
+| «مغلق» (closed)                         | Signed out on every device. Signing in again with the same number creates a new account, linked to the closed one (AP §8.8)                      | —      | —                              |
 
 - The customer-facing reason comes from the block reason list (AP Appendix B), mapped in Appendix C.
 - Trust itself, «موثوق», is not shown to the customer. Only its effect on the limit is shown.

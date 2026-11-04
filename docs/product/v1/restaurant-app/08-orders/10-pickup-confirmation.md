@@ -15,6 +15,7 @@
    - a countdown: «يُؤكَّد تلقائياً خلال {ث} ث»
 
    Owner devices with ringing off show the same prompt silently.
+
 4. **Confirm:** the server performs the pickup as one atomic action (AP §8.1): it posts `custody.pay_merchant` with the payment lines and sets the order to `picked_up`. If the restaurant had not pressed ready, `ready` is recorded at the same moment and flagged «لم يُضغط جاهز» (S8). Both apps show «تم الاستلام» at once, and the captain may leave.
 5. **No answer:** after `order.pickup_confirm_timeout_sec` (60) seconds without an answer, the server confirms the pickup automatically. The timeline records «تأكيد تلقائي» (automatic confirmation).
 6. **Dispute before confirmation:**

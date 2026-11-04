@@ -16,12 +16,12 @@
 - The customer can send one part and skip the other. A sent part cannot be edited (Q16).
 - **Who sees what:**
 
-  | Viewer | Sees |
-  |---|---|
-  | Customers | The restaurant's average and number of ratings, or «جديد» until it has 5 ratings (Q16). Nothing about captains. |
-  | The restaurant | Stars, reasons and comments, without the customer's name (RA §13) |
-  | The captain | Their average, and reasons with counts. No comments (CA §11.2) |
-  | Admins | Everything, in the restaurant, captain and customer profiles (AP §9.6.4, AP §9.7.4 and AP §9.8) |
+  | Viewer         | Sees                                                                                                            |
+  | -------------- | --------------------------------------------------------------------------------------------------------------- |
+  | Customers      | The restaurant's average and number of ratings, or «جديد» until it has 5 ratings (Q16). Nothing about captains. |
+  | The restaurant | Stars, reasons and comments, without the customer's name (RA §13)                                               |
+  | The captain    | Their average, and reasons with counts. No comments (CA §11.2)                                                  |
+  | Admins         | Everything, in the restaurant, captain and customer profiles (AP §9.6.4, AP §9.7.4 and AP §9.8)                 |
 
 - **No replies** to ratings in V1 (RA R16).
 
@@ -30,12 +30,12 @@
 - **«الإبلاغ عن مشكلة»** is on the detail of a delivered order, for `customer.report_problem_window_hours` (24) hours after delivery.
 - **The form:**
 
-  | Field | Rule |
-  |---|---|
-  | Type | One of the customer problem list (AP Appendix B): «صنف ناقص» · «صنف خطأ» · «الطعام بارد» · «الطلب تالف» · «تأخير» · «سلوك الكابتن» · «مشكلة في المبلغ أو الباقي» · «أخرى» |
-  | Items | Required for «صنف ناقص», «صنف خطأ» and «الطلب تالف»: picked from the order's lines, with the quantity |
-  | Note | Optional, up to 300 characters. Required for «أخرى» |
-  | Photos | Optional, up to 3 (fixed) |
+  | Field  | Rule                                                                                                                                                                      |
+  | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | Type   | One of the customer problem list (AP Appendix B): «صنف ناقص» · «صنف خطأ» · «الطعام بارد» · «الطلب تالف» · «تأخير» · «سلوك الكابتن» · «مشكلة في المبلغ أو الباقي» · «أخرى» |
+  | Items  | Required for «صنف ناقص», «صنف خطأ» and «الطلب تالف»: picked from the order's lines, with the quantity                                                                     |
+  | Note   | Optional, up to 300 characters. Required for «أخرى»                                                                                                                       |
+  | Photos | Optional, up to 3 (fixed)                                                                                                                                                 |
 
 - **Sending** creates a ticket in the panel (AP §9.9.1), resolved within `support.resolution_post_delivery_hours` (24) hours. The app answers «استلمنا بلاغك T-{رقم}. سنرد عليك خلال 24 ساعة.»
 - **One report per order** (Q17). After that, the order shows «بلاغك T-{رقم}: {الحالة}».

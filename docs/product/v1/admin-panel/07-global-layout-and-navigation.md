@@ -4,24 +4,24 @@
 
 ## 7.1 Main navigation (right-side sidebar, RTL)
 
-| # | Module | Arabic label | Section |
-|---|---|---|---|
-| 1 | Dashboard | «لوحة التحكم» | §9.1 |
-| 2 | Operations room | «غرفة العمليات» | §9.2–9.3 |
-| 3 | Live map | «الخريطة الحية» | §9.4 |
-| 4 | Order history | «سجل الطلبات» | §9.5 |
-| 5 | Restaurants | «المطاعم» | §9.6 |
-| 6 | Captains | «الكباتن» | §9.7 |
-| 7 | Customers | «الزبائن» | §9.8 |
-| 8 | Support | «الدعم» | §9.9 |
-| 9 | Finance | «المالية» | §9.10 |
-| 10 | Marketing | «التسويق» | §9.11 |
-| 11 | Zones and pricing | «المناطق والتسعير» | §9.12 |
-| 12 | Content | «المحتوى» | §9.13 |
-| 13 | Settings | «الإعدادات» | §9.14 |
-| 14 | Admin team | «فريق الإدارة» | §9.15 |
-| 15 | Audit log | «سجل التدقيق» | §9.16 |
-| 16 | Reports | «التقارير» | §9.17 |
+| #   | Module            | Arabic label       | Section  |
+| --- | ----------------- | ------------------ | -------- |
+| 1   | Dashboard         | «لوحة التحكم»      | §9.1     |
+| 2   | Operations room   | «غرفة العمليات»    | §9.2–9.3 |
+| 3   | Live map          | «الخريطة الحية»    | §9.4     |
+| 4   | Order history     | «سجل الطلبات»      | §9.5     |
+| 5   | Restaurants       | «المطاعم»          | §9.6     |
+| 6   | Captains          | «الكباتن»          | §9.7     |
+| 7   | Customers         | «الزبائن»          | §9.8     |
+| 8   | Support           | «الدعم»            | §9.9     |
+| 9   | Finance           | «المالية»          | §9.10    |
+| 10  | Marketing         | «التسويق»          | §9.11    |
+| 11  | Zones and pricing | «المناطق والتسعير» | §9.12    |
+| 12  | Content           | «المحتوى»          | §9.13    |
+| 13  | Settings          | «الإعدادات»        | §9.14    |
+| 14  | Admin team        | «فريق الإدارة»     | §9.15    |
+| 15  | Audit log         | «سجل التدقيق»      | §9.16    |
+| 16  | Reports           | «التقارير»         | §9.17    |
 
 Each user sees only the modules their roles allow.
 

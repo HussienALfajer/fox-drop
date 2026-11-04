@@ -6,14 +6,14 @@
 
 One repository, `fox-drop`, holds everything:
 
-| Folder | Contains | Tooling |
-|---|---|---|
-| `apps/server`, `apps/admin`, `apps/merchant-portal` | The server and the two web apps | pnpm workspaces and Turborepo |
-| `apps/merchant`, `apps/captain`, `apps/customer` | The three Flutter apps | Dart pub workspace and Melos |
-| `packages/ui-web`, `packages/design-tokens`, `packages/api-schema` (Zod and OpenAPI) | Shared TypeScript packages | pnpm workspaces and Turborepo |
-| `packages/core_*` | Shared Flutter packages (§11.2) | Dart pub workspace and Melos |
-| `tools/captain-simulator` | The captain simulator (§18.3) | pnpm workspaces |
-| `infra/` | Terraform and Kamal | — |
+| Folder                                                                               | Contains                        | Tooling                       |
+| ------------------------------------------------------------------------------------ | ------------------------------- | ----------------------------- |
+| `apps/server`, `apps/admin`, `apps/merchant-portal`                                  | The server and the two web apps | pnpm workspaces and Turborepo |
+| `apps/merchant`, `apps/captain`, `apps/customer`                                     | The three Flutter apps          | Dart pub workspace and Melos  |
+| `packages/ui-web`, `packages/design-tokens`, `packages/api-schema` (Zod and OpenAPI) | Shared TypeScript packages      | pnpm workspaces and Turborepo |
+| `packages/core_*`                                                                    | Shared Flutter packages (§11.2) | Dart pub workspace and Melos  |
+| `tools/captain-simulator`                                                            | The captain simulator (§18.3)   | pnpm workspaces               |
+| `infra/`                                                                             | Terraform and Kamal             | —                             |
 
 The design tokens compile into the web theme and the `core_ui` Dart theme in the same build (§9.1); no package is published between repositories. One check command runs the TypeScript and the Dart checks, and a change merges only when both pass (§18.4).
 

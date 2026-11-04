@@ -23,17 +23,17 @@
 
 ## 7.3 Saved addresses (U5, Q5, Q6)
 
-| Field | Rule |
-|---|---|
-| Pin | Required, inside an active zone, at street-level zoom (§7.1) |
-| Label | «البيت», «العمل» or «آخر» with a custom name |
-| Neighbourhood «الحي» | Filled from the zone name. Read-only |
-| Street and building «الشارع والبناء» | Required, 3 to 100 characters |
-| Floor and apartment «الطابق والشقة» | Optional |
-| Landmark «بالقرب من» | Required, 3 to 100 characters (U5). Placeholder «مثلاً: قرب جامع النور» |
-| Contact phone «رقم التواصل» | The account's phone by default. May be another Syrian or Turkish mobile (U5) |
-| Recipient's name «اسم المستلم» | Required only when the contact phone is not the account's (Q5) |
-| Directions for the captain «توجيهات للكابتن» | Optional, up to 200 characters, for example «الباب الأزرق بجانب الصيدلية» |
+| Field                                        | Rule                                                                         |
+| -------------------------------------------- | ---------------------------------------------------------------------------- |
+| Pin                                          | Required, inside an active zone, at street-level zoom (§7.1)                 |
+| Label                                        | «البيت», «العمل» or «آخر» with a custom name                                 |
+| Neighbourhood «الحي»                         | Filled from the zone name. Read-only                                         |
+| Street and building «الشارع والبناء»         | Required, 3 to 100 characters                                                |
+| Floor and apartment «الطابق والشقة»          | Optional                                                                     |
+| Landmark «بالقرب من»                         | Required, 3 to 100 characters (U5). Placeholder «مثلاً: قرب جامع النور»      |
+| Contact phone «رقم التواصل»                  | The account's phone by default. May be another Syrian or Turkish mobile (U5) |
+| Recipient's name «اسم المستلم»               | Required only when the contact phone is not the account's (Q5)               |
+| Directions for the captain «توجيهات للكابتن» | Optional, up to 200 characters, for example «الباب الأزرق بجانب الصيدلية»    |
 
 - **Limits:** up to 10 saved addresses (fixed). One is the default.
 - **Editing (U5):** every field can be edited, including the pin. The pin can move only inside active zones.

@@ -54,6 +54,7 @@
   - «السعر صحيح» (the price is correct)
 
   The customer gets the resolution message. The ticket follows `support.resolution_post_delivery_hours` (24) as its SLA.
+
 - **Close:** a resolution message is sent to the customer as a notification. For restaurant and captain tickets, it is sent to the restaurant or captain instead.
 
 > In V1, real conversations with customers happen by phone or WhatsApp outside the system, and the ticket documents them. In-app chat comes in V2.
