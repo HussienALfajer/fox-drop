@@ -1,0 +1,47 @@
+# The local development services (architecture §17.1). Copy .env.example to
+# .env first; every value there is fake and only for this machine.
+#   docker compose up --detach
+# OSRM and the S3-compatible object storage join with their first use (T7).
+name: fox-drop
+
+services:
+  postgres:
+    # 18-3.6 moves with patch releases, so the digest pins it.
+    image: postgis/postgis:18-3.6@sha256:4a43e3c3e5d55b9208240fc71db543b79c638766280c625a425bd0a2390989c4
+    environment:
+      POSTGRES_DB: fox_drop
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?copy .env.example to .env}
+      FOX_DROP_MIGRATOR_PASSWORD: ${FOX_DROP_MIGRATOR_PASSWORD:?copy .env.example to .env}
+      FOX_DROP_APP_PASSWORD: ${FOX_DROP_APP_PASSWORD:?copy .env.example to .env}
+    volumes:
+      # Creates the migration and application roles on the first start of an
+      # empty volume, after the image's own PostGIS script.
+      - ./apps/server/db/init-development.sh:/docker-entrypoint-initdb.d/20-fox-drop.sh:ro
+      - ./apps/server/db/bootstrap.sql:/fox-drop/bootstrap.sql:ro
+      - postgres-data:/var/lib/postgresql
+    ports:
+      - 127.0.0.1:${POSTGRES_PORT:-5432}:5432
+    healthcheck:
+      test: [CMD-SHELL, pg_isready --username postgres --dbname fox_drop]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  valkey:
+    image: valkey/valkey:9.1.3-alpine
+    command: [valkey-server, --requirepass, '${VALKEY_PASSWORD:?copy .env.example to .env}']
+    ports:
+      - 127.0.0.1:${VALKEY_PORT:-6379}:6379
+
+  centrifugo:
+    image: centrifugo/centrifugo:v6.10.2
+    command: [centrifugo]
+    environment:
+      CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY: ${CENTRIFUGO_TOKEN_SECRET:?copy .env.example to .env}
+      CENTRIFUGO_HTTP_API_KEY: ${CENTRIFUGO_API_KEY:?copy .env.example to .env}
+    ports:
+      - 127.0.0.1:${CENTRIFUGO_PORT:-8000}:8000
+
+volumes:
+  postgres-data:
