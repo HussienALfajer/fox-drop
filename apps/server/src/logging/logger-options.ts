@@ -1,5 +1,5 @@
-import type { LoggerOptions } from 'pino';
-import { redact, redactText } from './redact.js';
+import { type LoggerOptions, pino } from 'pino';
+import { redactLine } from './redact.js';
 
 interface RequestLike {
   id?: unknown;
@@ -12,12 +12,12 @@ interface ResponseLike {
 }
 
 // Query strings and headers can carry tokens and codes, so a request is
-// logged by its id, method and path only.
+// logged by its id, method and path only. Secrets never go in a path.
 export function serializeRequest(request: RequestLike) {
   return {
     id: request.id,
     method: request.method,
-    path: request.url === undefined ? undefined : redactText(request.url.split('?')[0] ?? ''),
+    path: request.url?.split('?')[0],
   };
 }
 
@@ -28,19 +28,12 @@ export function serializeResponse(response: ResponseLike) {
 export function loggerOptions(level = process.env.LOG_LEVEL ?? 'info'): LoggerOptions {
   return {
     level,
-    formatters: {
-      log: (object) => redact(object) as Record<string, unknown>,
-    },
-    hooks: {
-      logMethod(args, method) {
-        method.apply(
-          this,
-          args.map((arg: unknown) =>
-            typeof arg === 'string' ? redactText(arg) : arg,
-          ) as Parameters<typeof method>,
-        );
-      },
-    },
+    hooks: { streamWrite: redactLine },
     serializers: { req: serializeRequest, res: serializeResponse },
   };
+}
+
+// For what happens outside Nest: start-up failures and process-level errors.
+export function createLogger() {
+  return pino(loggerOptions());
 }

@@ -14,6 +14,7 @@ class BackgroundRoleModule {}
 export async function createBackgroundContext(): Promise<INestApplicationContext> {
   const context = await NestFactory.createApplicationContext(BackgroundRoleModule, {
     bufferLogs: true,
+    abortOnError: false,
   });
   context.useLogger(context.get(Logger));
   return context;
@@ -34,6 +35,9 @@ function shutdownSignal(): Promise<NodeJS.Signals> {
 }
 
 export async function startRole(role: ProcessRole): Promise<void> {
+  // Listening before start-up means a stop during start-up is not ignored by
+  // Node running as PID 1 in the container.
+  const stopped = shutdownSignal();
   let context: INestApplicationContext;
   if (role === 'api') {
     const app = await createApiApp(ApiModule);
@@ -45,7 +49,7 @@ export async function startRole(role: ProcessRole): Promise<void> {
   const logger = context.get(Logger);
   logger.log(`${role} started`, 'ProcessRole');
 
-  const signal = await shutdownSignal();
+  const signal = await stopped;
   logger.log(`${role} stopping on ${signal}`, 'ProcessRole');
   await context.close();
 }

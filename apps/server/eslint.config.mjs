@@ -1,3 +1,4 @@
+import path from 'node:path';
 import boundaries from 'eslint-plugin-boundaries';
 import rootConfig from '../../eslint.config.mjs';
 
@@ -34,7 +35,10 @@ export default [
     files: ['src/**/*.ts', 'test/fixtures/**/*.ts'],
     plugins: { boundaries },
     settings: {
-      'import/resolver': { typescript: { project: 'tsconfig.json' } },
+      'import/resolver': {
+        typescript: { project: path.join(import.meta.dirname, 'tsconfig.json') },
+      },
+      'boundaries/root-path': import.meta.dirname,
       'boundaries/elements': [
         { type: 'module', pattern: 'src/modules/*', capture: ['name'], partialMatch: false },
         // Everything else in src: the HTTP layer, logging, the process roles.
@@ -44,6 +48,8 @@ export default [
     rules: {
       // Every file belongs to a module or to the shared layer, so none escapes the rule.
       'boundaries/no-unknown-files': 'error',
+      // An import the rule cannot classify fails instead of passing unchecked.
+      'boundaries/no-unknown-dependencies': 'error',
       'boundaries/dependencies': [
         'error',
         {

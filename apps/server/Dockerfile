@@ -3,9 +3,10 @@
 #   docker build -f apps/server/Dockerfile -t fox-drop-server .
 
 FROM node:26.13.0-trixie-slim AS build
-RUN npm install --global pnpm@12.16.1
 WORKDIR /repo
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+# The pnpm version comes from packageManager, like everywhere else.
+RUN npm install --global "$(node -p "require('./package.json').packageManager")"
 COPY apps/server/package.json apps/server/
 RUN pnpm install --frozen-lockfile --filter @fox-drop/server
 COPY apps/server apps/server

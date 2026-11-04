@@ -25,6 +25,11 @@ class AdminProbe {
   echo(@Body() body: EchoDto) {
     return body;
   }
+
+  @Get('fail')
+  fail() {
+    throw new Error('unexpected');
+  }
 }
 
 @MerchantController('probe')

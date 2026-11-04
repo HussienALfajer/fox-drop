@@ -11,6 +11,7 @@ export async function createApiApp(module: Type): Promise<NestFastifyApplication
 
   const app = await NestFactory.create<NestFastifyApplication>(RootModule, new FastifyAdapter(), {
     bufferLogs: true,
+    abortOnError: false,
   });
   app.useLogger(app.get(Logger));
   app.setGlobalPrefix('v1');

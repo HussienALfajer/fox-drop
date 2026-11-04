@@ -1,31 +1,52 @@
 // Architecture §16: logs never contain codes, tokens or full phone numbers.
+// Redaction runs on the finished JSON line, after pino's serializers, so it
+// covers fields, child bindings, errors and messages alike.
 
-const SECRET_KEYS = new Set([
-  'accesstoken',
+// A field is secret when its normalised name ends with one of these.
+const SECRET_SUFFIXES = [
   'apikey',
   'authorization',
-  'backupcode',
   'code',
+  'codes',
   'cookie',
-  'idtoken',
   'otp',
+  'passwd',
   'password',
-  'refreshtoken',
+  'pin',
+  'privatekey',
   'secret',
-  'setcookie',
+  'secrets',
   'token',
+  'tokens',
   'totp',
-]);
+];
 
-const PHONE_KEYS = new Set(['mobile', 'msisdn', 'phone', 'phonenumber']);
+// Fields that end like a secret but are not one.
+const NOT_SECRET = new Set(['countrycode', 'currencycode', 'errorcode', 'statuscode']);
 
-// E.164 numbers and Syrian local mobile numbers (09XXXXXXXX).
-const PHONE_PATTERN = /\+\d{8,15}|(?<!\d)09\d{8}(?!\d)/g;
+const PHONE_SUFFIXES = ['mobile', 'msisdn', 'phone', 'phonenumber', 'phones'];
+
+const PHONE_PATTERNS = [
+  // WhatsApp ids, as the otp-sender's library logs them.
+  /(?<!\d)\d{8,15}@s\.whatsapp\.net/g,
+  // International, with + or 00, digit groups optionally split by spaces or dashes.
+  /(?:\+|(?<!\d)00)\d(?:[\s-]?\d){7,14}(?!\d)/g,
+  // Syrian numbers without a prefix: 963XXXXXXXXX and 09XXXXXXXX.
+  /(?<!\d)963(?:[\s-]?\d){9}(?!\d)/g,
+  /(?<!\d)09\d(?:[\s-]?\d){7}(?!\d)/g,
+];
+
+// Error codes such as ECONNREFUSED or FST_ERR_VALIDATION stay readable.
+const ERROR_CODE = /^[A-Z][A-Z0-9_]*$/;
 
 export const REDACTED = '[REDACTED]';
 
 function normalKey(key: string): string {
-  return key.toLowerCase().replace(/[-_]/g, '');
+  return key.toLowerCase().replace(/[-_\s]/g, '');
+}
+
+function endsWithAny(key: string, suffixes: string[]): boolean {
+  return suffixes.some((suffix) => key.endsWith(suffix));
 }
 
 export function maskPhone(phone: string): string {
@@ -33,27 +54,40 @@ export function maskPhone(phone: string): string {
 }
 
 export function redactText(text: string): string {
-  return text.replace(PHONE_PATTERN, maskPhone);
+  return PHONE_PATTERNS.reduce((result, pattern) => result.replace(pattern, maskPhone), text);
 }
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (typeof value !== 'object' || value === null) return false;
-  const prototype = Object.getPrototypeOf(value) as unknown;
-  return prototype === Object.prototype || prototype === null;
-}
-
-// Walks plain objects and arrays only: requests, errors and other class
-// instances go through their own serializers.
-export function redact(value: unknown, key?: string): unknown {
+// `value` is parsed JSON, so it holds no cycles and no class instances.
+export function redact(value: unknown, key?: string, inError = false): unknown {
   if (key !== undefined) {
     const normal = normalKey(key);
-    if (SECRET_KEYS.has(normal)) return REDACTED;
-    if (PHONE_KEYS.has(normal) && typeof value === 'string') return maskPhone(value);
+    const keepErrorCode =
+      inError && normal === 'code' && typeof value === 'string' && ERROR_CODE.test(value);
+    if (endsWithAny(normal, SECRET_SUFFIXES) && !NOT_SECRET.has(normal) && !keepErrorCode) {
+      return REDACTED;
+    }
+    if (
+      endsWithAny(normal, PHONE_SUFFIXES) &&
+      (typeof value === 'string' || typeof value === 'number')
+    ) {
+      return maskPhone(String(value));
+    }
   }
   if (typeof value === 'string') return redactText(value);
-  if (Array.isArray(value)) return value.map((item) => redact(item));
-  if (isPlainObject(value)) {
-    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, redact(v, k)]));
+  if (Array.isArray(value)) return value.map((item) => redact(item, undefined, inError));
+  if (typeof value === 'object' && value !== null) {
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, redact(v, k, inError || k === 'err')]),
+    );
   }
   return value;
+}
+
+// Redacts one line as pino writes it.
+export function redactLine(line: string): string {
+  try {
+    return `${JSON.stringify(redact(JSON.parse(line)))}\n`;
+  } catch {
+    return redactText(line);
+  }
 }
