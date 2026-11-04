@@ -3,7 +3,8 @@
 > Part of the [admin panel spec](../README.md) (AP). A bare "§n" here means AP §n.
 
 - **Each event records:**
-  - time and actor (user, role)
+  - time and actor: its kind, id and role at that moment (D27)
+  - city, except for an action on the whole platform (D28)
   - action, target type and ID
   - values before and after (as a diff)
   - reason

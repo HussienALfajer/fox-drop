@@ -50,17 +50,22 @@ async function eventsFor(action: string) {
 
 describe('AuditService', () => {
   it('records a write with its actor, context and changed fields', async () => {
-    await withAudit((audit) =>
-      audit.recordWrite({
-        actor: owner,
-        context,
-        cityId: null,
-        action: 'setting.update',
-        target: { type: 'setting', id: 'dispatch.offer_seconds' },
-        before: { value: 30, scope: 'global' },
-        after: { value: 45, scope: 'global' },
-        reason: 'Captains need more time to read offers',
-      }),
+    await withAudit((audit, { db }) =>
+      db.transaction((tx) =>
+        audit.recordWrite(
+          {
+            actor: owner,
+            context,
+            cityId: null,
+            action: 'setting.update',
+            target: { type: 'setting', id: 'dispatch.offer_seconds' },
+            before: { value: 30, scope: 'global' },
+            after: { value: 45, scope: 'global' },
+            reason: 'Captains need more time to read offers',
+          },
+          tx,
+        ),
+      ),
     );
 
     expect(await eventsFor('setting.update')).toEqual([
@@ -121,14 +126,40 @@ describe('AuditService', () => {
 });
 
 describe('AuditWorkerModule', () => {
-  it('keeps a partition for this month and the next', async () => {
+  // Next month's partition, dropped by the migration role so the worker has to
+  // create it, as it will every month.
+  const next = new Date();
+  next.setUTCDate(1);
+  next.setUTCMonth(next.getUTCMonth() + 1);
+  const nextPartition = `audit.events_${next.toISOString().slice(0, 7).replace('-', '_')}`;
+
+  it('creates the next partition, append-only like the others', async () => {
+    const migrator = new pg.Client({ connectionString: database.migratorUrl });
+    await migrator.connect();
+    await migrator.query(`DROP TABLE ${nextPartition}`);
+    await migrator.end();
+
     const moduleRef = await Test.createTestingModule({ imports: [AuditWorkerModule] }).compile();
     await moduleRef.init();
     await moduleRef.close();
 
     const { rows } = await reader.query(
-      "SELECT count(*)::int AS count FROM pg_inherits WHERE inhparent = 'audit.events'::regclass",
+      `SELECT pg_get_userbyid(relowner) AS owner,
+              has_table_privilege('fox_drop_app', oid, 'INSERT') AS can_insert,
+              has_table_privilege('fox_drop_app', oid, 'UPDATE') AS can_update,
+              has_table_privilege('fox_drop_app', oid, 'DELETE') AS can_delete,
+              has_table_privilege('fox_drop_app', oid, 'TRUNCATE') AS can_truncate
+         FROM pg_class WHERE oid = $1::regclass`,
+      [nextPartition],
     );
-    expect(rows[0].count).toBe(2);
+    expect(rows).toEqual([
+      {
+        owner: 'fox_drop_migrator',
+        can_insert: true,
+        can_update: false,
+        can_delete: false,
+        can_truncate: false,
+      },
+    ]);
   });
 });

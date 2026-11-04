@@ -32,10 +32,17 @@ CREATE TABLE "audit"."events" (
 -- One partition per UTC month (architecture §5.4), for this month and the
 -- next. It runs as the migration role, which owns it, so the partitions it
 -- creates get the schema's default privileges; the application role may call
--- it but cannot create a partition itself. The audit module calls it at start
+-- it but cannot create a partition itself. The worker role calls it at start
 -- and every day.
 CREATE FUNCTION "audit"."create_month_partitions"() RETURNS void
-LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, pg_temp AS $$
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = pg_catalog, pg_temp
+SET "TimeZone" = 'UTC'
+SET "DateStyle" = 'ISO'
+-- Attaching a partition locks the log; give up rather than hold audited
+-- writes behind a long transaction. The daily call tries again.
+SET lock_timeout = '5s'
+AS $$
 DECLARE
 	month_start timestamp;
 BEGIN

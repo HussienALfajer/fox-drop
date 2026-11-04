@@ -110,6 +110,18 @@ describe('the audit log (AP §9.16)', () => {
   });
 
   it.each([
+    ['an admin without an id', "'admin', NULL, 'write', NULL"],
+    ['the system with an id', "'system', '0190f3a0-0000-7000-8000-000000000001', 'write', NULL"],
+    ['a view with changes', "'system', NULL, 'view', '{}'"],
+  ])('refuses %s', async (_, values) => {
+    await expect(
+      appQuery(
+        `INSERT INTO audit.events (actor_type, actor_id, kind, changes, action, target_type, target_id) VALUES (${values}, 'test.refused', 'city', 'AZ')`,
+      ),
+    ).rejects.toThrow(/violates check constraint/);
+  });
+
+  it.each([
     ['change an event', "UPDATE audit.events SET reason = 'x'"],
     ['change an event in its partition', `UPDATE ${currentPartition} SET reason = 'x'`],
     ['delete an event', 'DELETE FROM audit.events'],

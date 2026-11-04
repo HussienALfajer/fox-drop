@@ -26,10 +26,10 @@ export const events = audit.table(
       .notNull()
       .default(sql`uuidv7()`),
     occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
-    // Empty for an action on the whole platform (owner decision 2026-11-04).
+    // Empty for an action on the whole platform (AP D28).
     cityId: uuid('city_id'),
     // Who acted: the kind of account, its id and its role at that moment
-    // (owner decision 2026-11-04). The system acts without an id.
+    // (AP D27). The system acts without an id.
     actorType: text('actor_type', { enum: actorTypes }).notNull(),
     actorId: uuid('actor_id'),
     actorRole: text('actor_role'),

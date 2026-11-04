@@ -58,6 +58,7 @@ async function startDatabase() {
   );
   // The init scripts run on a server that listens on its socket only, so
   // TCP answers once the real server is up.
+  let ready = false;
   for (let attempt = 0; attempt < 60; attempt += 1) {
     try {
       docker(
@@ -69,11 +70,15 @@ async function startDatabase() {
         '--host',
         '127.0.0.1',
       );
+      ready = true;
       break;
     } catch {
       await pause(500);
     }
   }
+  if (!ready)
+    throw new Error(`PostGIS never started:
+${docker('logs', 'fox-drop-smoke-postgis')}`);
   docker(
     'run',
     '--rm',
@@ -87,11 +92,18 @@ async function startDatabase() {
   );
 }
 
+// Runs after a failure too, so a step that never happened is not an error
+// that would hide the real one.
 function stopDatabase() {
-  try {
-    docker('rm', '--force', '--volumes', 'fox-drop-smoke-postgis');
-  } finally {
-    docker('network', 'rm', network);
+  for (const args of [
+    ['rm', '--force', '--volumes', 'fox-drop-smoke-postgis'],
+    ['network', 'rm', network],
+  ]) {
+    try {
+      docker(...args);
+    } catch (error) {
+      console.error(`docker ${args.join(' ')} failed: ${error.message}`);
+    }
   }
 }
 

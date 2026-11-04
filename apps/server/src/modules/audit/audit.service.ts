@@ -48,7 +48,8 @@ export type AuditExecutor = Pick<NodePgDatabase, 'insert'>;
 export class AuditService {
   constructor(@Inject(DATABASE) private readonly database: Database) {}
 
-  async recordWrite(event: AuditWrite, executor?: AuditExecutor): Promise<void> {
+  // A write is recorded in its own transaction, never on its own.
+  async recordWrite(event: AuditWrite, executor: AuditExecutor): Promise<void> {
     await this.insert(event, 'write', changedFields(event.before, event.after), executor);
   }
 
