@@ -1,0 +1,13 @@
+# Only what an image build needs reaches the Docker build context.
+**/node_modules/
+**/dist/
+**/.turbo/
+**/coverage/
+**/.dart_tool/
+.git/
+.fvm/
+.claude/
+docs/
+**/.env
+**/.env.*
+!**/.env.example

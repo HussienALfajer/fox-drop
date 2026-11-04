@@ -43,3 +43,18 @@ jobs:
       - run: dart pub get --enforce-lockfile
 
       - run: pnpm verify
+
+  # Architecture §4.4: one image runs the four server roles.
+  server-image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+
+      - run: docker build --file apps/server/Dockerfile --tag fox-drop-server:ci .
+
+      - run: node apps/server/scripts/smoke-image.mjs fox-drop-server:ci

@@ -16,7 +16,7 @@ Phase 0, slice 0.2: server skeleton and module boundaries (`docs/roadmap.md`).
 - [x] HTTP layer: `/v1` prefix, the `/admin`, `/merchant`, `/captain` and `/customer` route groups, a `Server-Time` header on every response, Zod validation (`nestjs-zod`); tests for each.
 - [x] Structured logs (Pino) that redact codes, tokens and phone numbers, with a test.
 - [x] Module boundaries: the module folder layout of §4.2 (`src/modules/<name>/index.ts` as the public entry; each module folder is created by its first slice) and the ESLint boundary rule; a fixture proves a forbidden import fails.
-- [ ] Process roles: one entry point that starts `api`, `worker`, `dispatcher` or `otp-sender` from an environment variable; a Dockerfile for the single image.
+- [x] Process roles: one entry point that starts `api`, `worker`, `dispatcher` or `otp-sender` from `PROCESS_ROLE`; a Dockerfile for the single image and a CI job that starts each role from it.
 - [ ] Folder `CLAUDE.md` for `apps/server` and the rule for the module pattern.
 - [ ] Pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
 
