@@ -116,3 +116,47 @@ describe('the application role', () => {
     await expect(appQuery(statement)).rejects.toThrow(error);
   });
 });
+
+describe('the audit log (AP §9.16)', () => {
+  const currentPartition = `audit.events_${new Date().toISOString().slice(0, 7).replace('-', '_')}`;
+
+  it('has a partition for this month and the next', async () => {
+    const { rows } = await appQuery(
+      "SELECT inhrelid::regclass::text AS name FROM pg_inherits WHERE inhparent = 'audit.events'::regclass ORDER BY 1",
+    );
+    expect(rows).toHaveLength(2);
+    expect(rows[0].name).toBe(currentPartition);
+  });
+
+  it('takes an event from the application role and reads it back', async () => {
+    await appQuery(
+      "INSERT INTO audit.events (actor_type, kind, action, target_type, target_id) VALUES ('system', 'write', 'test.write', 'city', 'AZ')",
+    );
+
+    const { rows } = await appQuery(
+      `SELECT id, action FROM ${currentPartition} WHERE action = 'test.write'`,
+    );
+    expect(rows).toEqual([
+      { id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-7/), action: 'test.write' },
+    ]);
+  });
+
+  it('lets the application role create the coming partitions again', async () => {
+    await appQuery('SELECT audit.create_month_partitions()');
+  });
+
+  it.each([
+    ['change an event', "UPDATE audit.events SET reason = 'x'"],
+    ['change an event in its partition', `UPDATE ${currentPartition} SET reason = 'x'`],
+    ['delete an event', 'DELETE FROM audit.events'],
+    ['delete an event from its partition', `DELETE FROM ${currentPartition}`],
+    ['empty the log', 'TRUNCATE audit.events'],
+    ['empty a partition', `TRUNCATE ${currentPartition}`],
+    [
+      'create a partition',
+      "CREATE TABLE audit.events_2099_01 PARTITION OF audit.events FOR VALUES FROM ('2099-01-01') TO ('2099-02-01')",
+    ],
+  ])('refuses the application role to %s', async (_, statement) => {
+    await expect(appQuery(statement)).rejects.toThrow(/permission denied|must be owner/);
+  });
+});
