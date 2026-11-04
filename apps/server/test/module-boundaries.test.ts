@@ -21,7 +21,9 @@ async function boundaryErrors(file: string): Promise<string[]> {
     .map((message) => message.message);
 }
 
-describe('module boundaries', () => {
+// The first lint loads the TypeScript resolver, which takes seconds when the
+// database tests run beside it.
+describe('module boundaries', { timeout: 60_000 }, () => {
   it("allow a module's own files and another module's public entry", async () => {
     expect(await boundaryErrors('src/modules/ordering/allowed.ts')).toEqual([]);
   });
