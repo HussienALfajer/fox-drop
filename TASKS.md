@@ -4,25 +4,22 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 0, slice 0.1: workspace, single check command and CI (`docs/roadmap.md`).
+Phase 0, slice 0.2: server skeleton and module boundaries (`docs/roadmap.md`).
 
-- **Implements:** architecture §18.4 (gates), §19.1 (one repository, T6), §19.4 (pinned versions, Renovate), §11.1 (Flutter pinned with FVM); the agent checks of the build workflow.
-- **Branch:** `chore/workspace-and-ci`
-- **Done when:** `pnpm verify` passes locally and in GitHub Actions on the pull request, and `main` requires that check.
+- **Implements:** architecture §4 (modular monolith, modules, module rules, processes), §5.1 (TypeScript strict, Node LTS, NestJS on Fastify, Zod), §5.3 (`/v1`, the four route groups, `Server-Time`), §16 (structured logs without codes, tokens or full phone numbers).
+- **Branch:** `feat/server-skeleton`
+- **Done when:** `pnpm verify` runs the server's lint, type check and tests; a test import across a module boundary fails the boundary lint rule; the server starts in each of the four roles from one container image.
 
 ## Plan
 
-- [x] Root TypeScript workspace: `package.json` with the pinned pnpm (`packageManager`) and Node (`engines`, `.node-version`), `pnpm-workspace.yaml` (`apps/*`, `packages/*`, `tools/*`), `turbo.json` with `lint`, `typecheck` and `test` tasks, no cached build output.
-- [x] Root Dart workspace: root `pubspec.yaml` as a pub workspace, Melos scripts for analyze, format check and test, `.fvmrc` pinning the Flutter stable version.
-- [x] Shared tooling: ESLint flat config and Prettier at the root (0.2 adds the boundary rule), `analysis_options.yaml` for Dart, `.editorconfig`, `.gitattributes` with LF line endings.
-- [x] `scripts/verify.mjs` behind `pnpm verify`: format check, lint, type check and tests for TypeScript through Turborepo, then analyze, format check and tests for Dart through Melos; stops at the first failure and passes on the empty workspace.
-- [x] Claude Code layer: format hooks in `.claude/settings.json` (Prettier for TypeScript, JSON and Markdown; `dart format` for Dart), `checker` agent (Haiku) that runs `pnpm verify` and reports failures, `build-slice` skill for building one roadmap slice end to end.
-- [x] GitHub Actions `ci.yml`: on pull requests and pushes to `main`, sets up Node, pnpm and the pinned Flutter, then runs `pnpm verify`.
-- [x] `renovate.json`: grouped update pull requests, lockfiles pinned.
-- [x] `CLAUDE.md` Commands section: `pnpm install`, `pnpm verify`, the Melos bootstrap.
+- [ ] `apps/server`: NestJS on Fastify, strict TypeScript (shared `tsconfig` base), Vitest, `lint`, `typecheck` and `test` scripts picked up by Turborepo.
+- [ ] HTTP layer: `/v1` prefix, the `/admin`, `/merchant`, `/captain` and `/customer` route groups, a `Server-Time` header on every response, Zod validation (`nestjs-zod`); tests for each.
+- [ ] Structured logs (Pino) that redact codes, tokens and phone numbers, with a test.
+- [ ] Module boundaries: the module folder layout of §4.2 with a public entry per module, and the ESLint boundary rule; a fixture proves a forbidden import fails.
+- [ ] Process roles: one entry point that starts `api`, `worker`, `dispatcher` or `otp-sender` from an environment variable; a Dockerfile for the single image.
+- [ ] Folder `CLAUDE.md` for `apps/server` and the rule for the module pattern.
 - [ ] Pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
-- [ ] Branch protection on `main` requiring the CI check, through `gh` (owner approval, 2026-11-04).
 
 ## Next
 
-Slice 0.2, server skeleton and module boundaries (`docs/roadmap.md`).
+Slice 0.3, OpenAPI contract and generated clients (`docs/roadmap.md`).
