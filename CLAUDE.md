@@ -7,6 +7,7 @@ Food delivery platform for Syria, launching in Azaz: a customer app, a restauran
 - `docs/README.md`: the map of all documentation, the citation codes (AP, RA, CA, CU) and the decision ID prefixes. Start there, then read only the sections a task needs.
 - `docs/product/v1/<party>/`: the specs, one file per section. `docs/domain/`: the shared rules (AP §8). `docs/architecture/`: the stack and its rules.
 - `TASKS.md`: the current task, its branch, its plan, and where work stopped.
+- `apps/server/`: the server; its `CLAUDE.md` has the module, route, validation and logging rules.
 - The specs are the source of truth. Never guess an open item (`docs/open-questions.md`): ask the owner.
 
 ## Commands
