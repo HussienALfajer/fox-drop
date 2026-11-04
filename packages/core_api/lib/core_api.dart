@@ -15,4 +15,11 @@ export 'package:core_api/src/api/captain_api.dart';
 export 'package:core_api/src/api/customer_api.dart';
 export 'package:core_api/src/api/merchant_api.dart';
 
+export 'package:core_api/src/model/admin_session_dto_output.dart';
+export 'package:core_api/src/model/backup_codes_dto_output.dart';
+export 'package:core_api/src/model/complete_setup_dto.dart';
+export 'package:core_api/src/model/setup_token_dto.dart';
+export 'package:core_api/src/model/sign_in_dto.dart';
+export 'package:core_api/src/model/signed_out_dto_output.dart';
 export 'package:core_api/src/model/status_dto_output.dart';
+export 'package:core_api/src/model/totp_enrolment_dto_output.dart';

@@ -68,6 +68,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/auth/setup/totp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminAuthStartTotpEnrolment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/auth/setup/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminAuthCompleteSetup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/auth/sign-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminAuthSignIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/auth/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminAuthCurrent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/auth/sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminAuthSignOut"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -77,6 +157,48 @@ export interface components {
             status: "ok";
             /** @description The server clock in Unix milliseconds. */
             serverTime: number;
+        };
+        SetupTokenDto: {
+            token: string;
+        };
+        TotpEnrolmentDto_Output: {
+            /** @description The TOTP secret in base32, for typing it in by hand. */
+            secret: string;
+            /** @description The otpauth:// URI the panel shows as a QR code. */
+            otpauthUri: string;
+        };
+        CompleteSetupDto: {
+            token: string;
+            password: string;
+            /** @description A TOTP code from the secret just enrolled. */
+            code: string;
+        };
+        BackupCodesDto_Output: {
+            /** @description The 10 single-use backup codes, shown this once only (AP §5.1). */
+            backupCodes: string[];
+        };
+        SignInDto: {
+            /** @description The email, or the phone in international form. */
+            login: string;
+            password: string;
+            /** @description A 6-digit TOTP code or a backup code. */
+            code: string;
+        };
+        AdminSessionDto_Output: {
+            /** Format: uuid */
+            accountId: string;
+            roles: string[];
+            /** Format: date-time */
+            signedInAt: string;
+            /**
+             * Format: date-time
+             * @description When the session ends unless used again before (AP §5.2).
+             */
+            expiresAt: string;
+        };
+        SignedOutDto_Output: {
+            /** @constant */
+            status: "signed_out";
         };
     };
     responses: never;
@@ -166,6 +288,118 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StatusDto_Output"];
+                };
+            };
+        };
+    };
+    adminAuthStartTotpEnrolment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetupTokenDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TotpEnrolmentDto_Output"];
+                };
+            };
+        };
+    };
+    adminAuthCompleteSetup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompleteSetupDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupCodesDto_Output"];
+                };
+            };
+        };
+    };
+    adminAuthSignIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignInDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSessionDto_Output"];
+                };
+            };
+        };
+    };
+    adminAuthCurrent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSessionDto_Output"];
+                };
+            };
+        };
+    };
+    adminAuthSignOut: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignedOutDto_Output"];
                 };
             };
         };
