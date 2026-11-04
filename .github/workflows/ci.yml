@@ -38,7 +38,19 @@ jobs:
           flutter-version: ${{ steps.flutter.outputs.version }}
           cache: true
 
+      # openapi-generator, which generates the Dart client, runs on Java.
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
       - run: pnpm install --frozen-lockfile
+
+      # The generator jar, version pinned in openapitools.json, downloads once.
+      - uses: actions/cache@v5
+        with:
+          path: node_modules/@openapitools/openapi-generator-cli/versions
+          key: openapi-generator-${{ hashFiles('openapitools.json') }}
 
       - run: dart pub get --enforce-lockfile
 

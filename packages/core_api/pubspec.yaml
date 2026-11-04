@@ -1,0 +1,19 @@
+name: core_api
+description: The Dart client of the FOX DROP API, generated from packages/api-schema/openapi.json.
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+
+resolution: workspace
+
+dependencies:
+  built_collection: 5.1.2
+  built_value: 8.13.0
+  dio: 5.11.1
+  one_of_serializer: 1.5.0
+
+dev_dependencies:
+  build_runner: 2.16.2
+  built_value_generator: 8.13.0
+  test: 1.33.0
