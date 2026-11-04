@@ -74,13 +74,23 @@ const money = z
   .refine((value) => value.currency !== null || value.amountMinor === 0, {
     message: 'a non-zero amount needs its currency',
   });
-const text = z.string().trim().min(1);
+const text = z.string().trim().min(1).max(500);
 const version = z.string().regex(/^\d+\.\d+\.\d+$/, 'expected a version such as 1.4.0');
-// A weekly schedule: the open intervals of each weekday; close 24:00 is the
-// end of the day.
+// A weekly schedule: the open intervals of each weekday, in order and apart,
+// each closing after it opens; close 24:00 is the end of the day. Hours past
+// midnight belong to the next day. HH:MM strings compare in time order.
 const schedule = z.record(
   z.enum(weekdays),
-  z.array(z.object({ open: time, close: z.union([time, z.literal('24:00')]) })),
+  z
+    .array(z.object({ open: time, close: z.union([time, z.literal('24:00')]) }))
+    .refine(
+      (intervals) =>
+        intervals.every(
+          (interval, i) =>
+            interval.open < interval.close && (i === 0 || intervals[i - 1]!.close <= interval.open),
+        ),
+      { message: 'intervals must close after they open, in order, without overlapping' },
+    ),
 );
 const allDay = Object.fromEntries(
   weekdays.map((day) => [day, [{ open: '00:00', close: '24:00' }]]),

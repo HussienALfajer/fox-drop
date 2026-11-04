@@ -181,7 +181,7 @@ describe('the cache', () => {
   it('never takes an older value over a newer one', async () => {
     await settings.update('customer.late_cancel_strikes', { cityId: azaz }, 3, by(['OWN']));
     await settings.update('customer.late_cancel_strikes', { cityId: azaz }, 4, by(['OWN']));
-    const cacheKey = `settings:${azaz}:customer.late_cancel_strikes`;
+    const [cacheKey = ''] = await valkey.keys(`settings:*:${azaz}:customer.late_cancel_strikes`);
     expect(await valkey.get(cacheKey)).toBe('2:{"value":4}');
 
     // A read that loaded version 1 before the change finishes after it.
@@ -257,6 +257,31 @@ describe('the refusals', () => {
           parameter: 'truck',
         }),
     ],
+    [
+      'a money setting reset without a reason',
+      'reason_required',
+      () => settings.reset('merchant.default_commission_pct', { cityId: azaz }, by(['OWN'])),
+    ],
+    [
+      'a reset of a value entered before launch, which has no default',
+      'no_default',
+      () => settings.reset('merchant.default_min_order', { cityId: azaz }, by(['OWN'], 'Mistake')),
+    ],
+    [
+      'a reason longer than 500 characters',
+      'invalid_value',
+      () => settings.update('captain.min_age', {}, 19, by(['OWN'], 'x'.repeat(501))),
+    ],
+    [
+      'a key outside the catalogue',
+      'unknown_key',
+      () => settings.get('toString' as 'otp.validity_min'),
+    ],
+    [
+      'a city that is not a city id',
+      'wrong_scope',
+      () => settings.get('dispatch.mode', { cityId: 'AZ' }),
+    ],
   ])('refuse %s', async (_, refusal, attempt) => {
     await expect(attempt()).rejects.toMatchObject({
       constructor: SettingRefusedError,
@@ -267,5 +292,63 @@ describe('the refusals', () => {
   it('write nothing when they refuse', async () => {
     expect(await history('dispatch.offer_timeout_sec')).toHaveLength(1);
     expect(await history('merchant.default_commission_pct')).toEqual([]);
+  });
+});
+
+describe('one transaction per change', () => {
+  it('keeps a global change without a city in its history and audit event', async () => {
+    await settings.update('admin.lockout_min', {}, 20, by(['OWN']));
+
+    expect(await history('admin.lockout_min')).toMatchObject([{ city_id: null, after: 20 }]);
+    expect(await auditEvents('admin.lockout_min')).toMatchObject([{ city_id: null }]);
+  });
+
+  it('records the value each of two concurrent changes replaced', async () => {
+    await Promise.all([
+      settings.update('captain.acceptance_window_offers', { cityId: azaz }, 60, by(['OWN'])),
+      settings.update('captain.acceptance_window_offers', { cityId: azaz }, 70, by(['OWN'])),
+    ]);
+
+    const [first, second] = await history('captain.acceptance_window_offers');
+    expect(first.before).toBe(50);
+    expect(second.before).toBe(first.after);
+    expect(await settings.get('captain.acceptance_window_offers', { cityId: azaz })).toBe(
+      second.after,
+    );
+  });
+
+  it('undoes the value and its history when the audit event fails', async () => {
+    const change = { ...by(['OWN']), context: { ipAddress: 'not an address', device: null } };
+
+    await expect(
+      settings.update('captain.probation_days', { cityId: azaz }, 45, change),
+    ).rejects.toThrow();
+
+    expect(await history('captain.probation_days')).toEqual([]);
+    expect(await settings.get('captain.probation_days', { cityId: azaz })).toBe(30);
+  });
+
+  it('records nothing for the value already in effect', async () => {
+    await settings.update('merchant.busy_mode_reminder_min', { cityId: azaz }, 60, by(['OWN']));
+
+    expect(await history('merchant.busy_mode_reminder_min')).toEqual([]);
+  });
+});
+
+describe('without Valkey', () => {
+  it('reads and changes settings from PostgreSQL at once', async () => {
+    process.env.VALKEY_URL = 'redis://127.0.0.1:1';
+    const offline = await Test.createTestingModule({ imports: [SettingsModule] }).compile();
+    await offline.init();
+    process.env.VALKEY_URL = cache.url;
+    try {
+      const service = offline.get(SettingsService);
+      const started = Date.now();
+      await service.update('customer.far_pin_warn_m', { cityId: azaz }, 800, by(['OWN']));
+      expect(await service.get('customer.far_pin_warn_m', { cityId: azaz })).toBe(800);
+      expect(Date.now() - started).toBeLessThan(3000);
+    } finally {
+      await offline.close();
+    }
   });
 });

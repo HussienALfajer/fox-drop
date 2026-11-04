@@ -7,7 +7,13 @@ export const VALKEY = Symbol('VALKEY');
 function valkeyFromEnvironment(): Valkey {
   const url = process.env.VALKEY_URL;
   if (!url) throw new Error('VALKEY_URL is not set');
-  const valkey = new Valkey(url);
+  // A command fails at once while the connection is down, instead of waiting
+  // through the reconnects, so callers fall back to PostgreSQL quickly.
+  const valkey = new Valkey(url, {
+    enableOfflineQueue: false,
+    maxRetriesPerRequest: 1,
+    commandTimeout: 1000,
+  });
   // A lost connection emits an error; without a listener it would crash the
   // process. The client reconnects on its own.
   const logger = new Logger('Valkey');
@@ -20,7 +26,10 @@ class ValkeyShutdown implements OnApplicationShutdown {
   constructor(@Inject(VALKEY) private readonly valkey: Valkey) {}
 
   async onApplicationShutdown(): Promise<void> {
-    await this.valkey.quit();
+    // quit() waits for the pending replies, which never come while the
+    // connection is down.
+    if (this.valkey.status === 'ready') await this.valkey.quit();
+    else this.valkey.disconnect();
   }
 }
 

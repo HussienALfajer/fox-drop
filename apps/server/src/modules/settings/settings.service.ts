@@ -1,8 +1,10 @@
+import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { and, eq, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Valkey } from 'iovalkey';
+import { z } from 'zod';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { VALKEY } from '../../valkey/valkey.module.js';
@@ -33,7 +35,13 @@ export interface SettingChange {
 }
 
 export type SettingRefusal =
-  'wrong_scope' | 'wrong_parameter' | 'invalid_value' | 'role_may_not_edit' | 'reason_required';
+  | 'unknown_key'
+  | 'wrong_scope'
+  | 'wrong_parameter'
+  | 'invalid_value'
+  | 'role_may_not_edit'
+  | 'reason_required'
+  | 'no_default';
 
 export class SettingRefusedError extends Error {
   constructor(
@@ -47,8 +55,10 @@ export class SettingRefusedError extends Error {
 }
 
 interface ResolvedSetting {
-  // The concrete key, such as currency.TRY.rounding_unit.
+  // The concrete key, such as currency.TRY.rounding_unit, and its catalogue
+  // entry's key, such as currency.<code>.rounding_unit.
   key: string;
+  template: SettingKey;
   cityId: string | null;
   definition: SettingDefinition;
 }
@@ -62,6 +72,9 @@ interface StoredState {
 // A cached value is kept this long, a bound on a value left stale when Valkey
 // could not be reached during a change.
 const CACHE_SECONDS = 600;
+
+// The longest reason a change keeps.
+const REASON_MAX_LENGTH = 500;
 
 // Sets the cached value only over an older version, so a read that raced a
 // change never puts back the value the change replaced. The value is stored
@@ -119,14 +132,26 @@ export class SettingsService {
     await this.change(setting, { value: parsed.data, isDefault: false }, change);
   }
 
-  // «استعادة القيمة الافتراضية»: the setting follows its default again.
+  // «استعادة القيمة الافتراضية»: the setting follows its default again. A
+  // value entered before launch has no default to go back to.
   async reset(key: SettingKey, target: SettingTarget, change: SettingChange): Promise<void> {
-    await this.change(this.resolve(key, target), { value: null, isDefault: true }, change);
+    const setting = this.resolve(key, target);
+    if (setting.definition.beforeLaunch) {
+      throw new SettingRefusedError('no_default', setting.key, 'this setting has no default');
+    }
+    await this.change(setting, { value: null, isDefault: true }, change);
   }
 
   private resolve(key: SettingKey, target: SettingTarget): ResolvedSetting {
+    // Callers pass keys from requests too; the type alone does not prove one.
+    if (!Object.hasOwn(catalogue, key)) {
+      throw new SettingRefusedError('unknown_key', key, 'not in the settings catalogue');
+    }
     const definition: SettingDefinition = catalogue[key];
     const cityId = target.cityId ?? null;
+    if (cityId !== null && !z.uuid().safeParse(cityId).success) {
+      throw new SettingRefusedError('wrong_scope', key, 'the city is not a city id');
+    }
     if ((definition.scope === 'city') !== (cityId !== null)) {
       throw new SettingRefusedError(
         'wrong_scope',
@@ -141,13 +166,18 @@ export class SettingsService {
       if (target.parameter !== undefined) {
         throw new SettingRefusedError('wrong_parameter', key, 'this key takes no parameter');
       }
-      return { key, cityId, definition };
+      return { key, template: key, cityId, definition };
     }
     const value = keyParameters[parameter].safeParse(target.parameter);
     if (!value.success) {
       throw new SettingRefusedError('wrong_parameter', key, `expected a ${parameter}`);
     }
-    return { key: key.replace(`<${parameter}>`, value.data), cityId, definition };
+    return {
+      key: key.replace(`<${parameter}>`, value.data),
+      template: key,
+      cityId,
+      definition,
+    };
   }
 
   private async change(
@@ -166,6 +196,13 @@ export class SettingsService {
     if (setting.definition.reasonRequired && givenReason === null) {
       throw new SettingRefusedError('reason_required', setting.key, 'a change needs a reason');
     }
+    if (givenReason !== null && givenReason.length > REASON_MAX_LENGTH) {
+      throw new SettingRefusedError(
+        'invalid_value',
+        setting.key,
+        `the reason is longer than ${REASON_MAX_LENGTH} characters`,
+      );
+    }
 
     const saved = await this.database.db.transaction(async (tx) => {
       // Changes of one setting take turns, so each records the value it replaced.
@@ -173,10 +210,12 @@ export class SettingsService {
         sql`SELECT pg_advisory_xact_lock(hashtextextended(${`settings:${setting.key}:${setting.cityId ?? 'global'}`}, 0))`,
       );
       const before = await this.stored(tx, setting);
-      if (before.isDefault === next.isDefault && isDeepStrictEqual(before.value, next.value)) {
-        return null;
-      }
       const after: StoredState = { ...next, version: before.version + 1 };
+      const beforeValue = this.effective(setting, before);
+      const afterValue = this.effective(setting, after);
+      // Setting the value in effect, or resetting a setting at its default,
+      // changes nothing.
+      if (isDeepStrictEqual(beforeValue, afterValue)) return null;
       if (before.version === 0) {
         await tx.insert(values).values({ key: setting.key, cityId: setting.cityId, ...next });
       } else {
@@ -186,8 +225,6 @@ export class SettingsService {
           .where(this.row(setting));
       }
 
-      const beforeValue = this.effective(setting, before);
-      const afterValue = this.effective(setting, after);
       const action = next.isDefault ? 'reset' : 'update';
       await tx.insert(changes).values({
         key: setting.key,
@@ -237,12 +274,20 @@ export class SettingsService {
     );
   }
 
+  // A stored value the catalogue no longer accepts, after a deploy that
+  // tightened its schema, gives way to the default.
   private effective(setting: ResolvedSetting, state: StoredState): unknown {
-    return state.isDefault ? setting.definition.default : state.value;
+    if (state.isDefault) return setting.definition.default;
+    const parsed = setting.definition.schema.safeParse(state.value);
+    if (parsed.success) return parsed.data;
+    this.logger.warn({ setting: setting.key }, 'stored setting no longer valid, default used');
+    return setting.definition.default;
   }
 
+  // The key holds a fingerprint of the catalogue entry, so a deploy that
+  // changes a default or a schema never reads a value cached before it.
   private cacheKey(setting: ResolvedSetting): string {
-    return `settings:${setting.cityId ?? 'global'}:${setting.key}`;
+    return `settings:${fingerprint(setting.template)}:${setting.cityId ?? 'global'}:${setting.key}`;
   }
 
   // Valkey is a cache here: when it cannot be reached, reads go to PostgreSQL.
@@ -271,4 +316,20 @@ export class SettingsService {
       this.logger.warn({ err: error, cacheKey }, 'settings cache write failed');
     }
   }
+}
+
+const fingerprints = new Map<SettingKey, string>();
+
+function fingerprint(key: SettingKey): string {
+  let found = fingerprints.get(key);
+  if (found === undefined) {
+    const definition: SettingDefinition = catalogue[key];
+    const schema = z.toJSONSchema(definition.schema, { unrepresentable: 'any' });
+    found = createHash('sha256')
+      .update(JSON.stringify({ default: definition.default, schema }))
+      .digest('hex')
+      .slice(0, 12);
+    fingerprints.set(key, found);
+  }
+  return found;
 }

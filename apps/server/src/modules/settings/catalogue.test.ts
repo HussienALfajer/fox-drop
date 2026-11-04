@@ -35,6 +35,7 @@ const rows: AppendixRow[] = appendix
     };
   });
 
+const allDay = catalogue['platform.hours'].default;
 const entries = Object.entries(catalogue) as [string, SettingDefinition][];
 
 describe('the settings catalogue', () => {
@@ -47,6 +48,30 @@ describe('the settings catalogue', () => {
     const definition: SettingDefinition = catalogue[row.key as keyof typeof catalogue];
     expect(definition.scope).toBe(row.scope);
     expect(definition.editRoles).toEqual(row.editRoles);
+  });
+
+  it('has the defaults of Appendix A', () => {
+    // The defaults written as one plain value or a list; the rest (24/7, 1–4,
+    // a list ending in full) are checked by hand.
+    const plain = (value: unknown): string | null => {
+      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+        return String(value);
+      }
+      if (Array.isArray(value)) return value.join(', ');
+      if (value !== null && typeof value === 'object' && 'amountMinor' in value) {
+        return String(value.amountMinor);
+      }
+      return null;
+    };
+    const compared = rows.filter((row) => {
+      const value = plain(catalogue[row.key as keyof typeof catalogue].default);
+      if (value === null) return false;
+      expect(value.toLowerCase(), row.key).toBe(
+        row.default.replace(/^«(.*)»$/, '$1').toLowerCase(),
+      );
+      return true;
+    });
+    expect(compared.length).toBeGreaterThan(90);
   });
 
   it('leaves the values marked "Before launch" without a default', () => {
@@ -102,6 +127,22 @@ describe('the settings catalogue', () => {
     ['a time of day out of range', 'finance.business_day_cutoff', '25:00'],
     ['a schedule missing a weekday', 'platform.hours', { saturday: [] }],
     ['a malformed version', 'app.<app>.min_version', '1.4'],
+    [
+      'an interval closing before it opens',
+      'platform.hours',
+      { ...allDay, friday: [{ open: '10:00', close: '09:00' }] },
+    ],
+    [
+      'overlapping intervals',
+      'platform.hours',
+      {
+        ...allDay,
+        friday: [
+          { open: '08:00', close: '12:00' },
+          { open: '11:00', close: '20:00' },
+        ],
+      },
+    ],
   ])('refuses %s', (_, key, value) => {
     const definition: SettingDefinition = catalogue[key as keyof typeof catalogue];
     expect(definition.schema.safeParse(value).success).toBe(false);
