@@ -13,7 +13,7 @@
     },
     {
       "description": "Runtimes move once a quarter, on staging first (architecture §19.4).",
-      "matchPackageNames": ["node", "flutter"],
+      "matchDepNames": ["node", "flutter", "dart"],
       "groupName": "runtimes",
       "schedule": ["* 0-6 1 1,4,7,10 *"]
     }

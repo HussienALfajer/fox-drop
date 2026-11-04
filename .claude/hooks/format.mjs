@@ -7,13 +7,18 @@ import path from 'node:path';
 const input = JSON.parse(readFileSync(0, 'utf8'));
 const file = input.tool_input?.file_path;
 const root = process.env.CLAUDE_PROJECT_DIR ?? input.cwd;
-if (!file || !existsSync(file) || path.relative(root, file).startsWith('..')) process.exit(0);
+if (!file || !existsSync(file)) process.exit(0);
+const relative = path.relative(root, path.resolve(file));
+if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) process.exit(0);
 
 const prettier = path.join(root, 'node_modules', 'prettier', 'bin', 'prettier.cjs');
 const options = { cwd: root, encoding: 'utf8' };
 let result;
 if (file.endsWith('.dart')) {
-  result = spawnSync(`dart format "${file}"`, { ...options, shell: true });
+  // On Windows `dart` is a .bat file and needs a shell; refuse paths the shell would interpret.
+  if (process.platform !== 'win32') result = spawnSync('dart', ['format', file], options);
+  else if (/[%"^&|<>!]/.test(file)) process.exit(0);
+  else result = spawnSync(`dart format "${file}"`, { ...options, shell: true });
 } else if (existsSync(prettier)) {
   const args = [prettier, '--write', '--ignore-unknown', '--log-level', 'warn', file];
   result = spawnSync(process.execPath, args, options);

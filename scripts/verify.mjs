@@ -1,7 +1,8 @@
 // The single check command (architecture §18.4): TypeScript through Turborepo,
 // then Dart through Melos. Stops at the first failing step.
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 
 function run(command) {
   const result = spawnSync(command, { shell: true, stdio: 'inherit' });
@@ -33,18 +34,44 @@ function dartPackagesWithTests(flutterFlag) {
   return read(`dart run melos list --parsable --dir-exists=test ${flutterFlag}`).trim();
 }
 
-function warnOnFlutterMismatch() {
+// A mismatch only warns locally, but fails in CI, which must run the pinned version.
+function checkFlutterVersion() {
   const pinned = JSON.parse(readFileSync('.fvmrc', 'utf8')).flutter;
   const installed = JSON.parse(read('flutter --version --machine')).frameworkVersion;
-  if (installed !== pinned) {
-    console.warn(`\nverify: warning: Flutter ${installed} is installed, .fvmrc pins ${pinned}.`);
+  if (installed === pinned) return;
+  const message = `Flutter ${installed} is installed, .fvmrc pins ${pinned}.`;
+  if (process.env.CI) {
+    console.error(`\n${message}`);
+    fail('Flutter version');
+  }
+  console.warn(`\nverify: warning: ${message}`);
+}
+
+// Melos sees only the packages listed in the root pubspec.yaml `workspace:`,
+// so a Dart package missing from that list would never be checked.
+function checkDartWorkspace() {
+  const normal = (dir) => {
+    const resolved = path.resolve(dir);
+    return process.platform === 'win32' ? resolved.toLowerCase() : resolved;
+  };
+  const listed = new Set(
+    read('dart run melos list --parsable').split(/\r?\n/).filter(Boolean).map(normal),
+  );
+  const missing = ['apps', 'packages', 'tools']
+    .filter((dir) => existsSync(dir))
+    .flatMap((dir) => readdirSync(dir).map((name) => path.join(dir, name)))
+    .filter((dir) => existsSync(path.join(dir, 'pubspec.yaml')) && !listed.has(normal(dir)));
+  if (missing.length > 0) {
+    console.error(`\nNot in the root pubspec.yaml workspace: ${missing.join(', ')}`);
+    fail('Dart workspace');
   }
 }
 
 step('Prettier', 'pnpm exec prettier --check .');
 step('Lint, type check and test (Turborepo)', 'pnpm exec turbo run lint:root lint typecheck test');
 
-warnOnFlutterMismatch();
+checkFlutterVersion();
+checkDartWorkspace();
 step('Dart analyze', 'dart run melos run analyze --no-select');
 step('Dart format', 'dart run melos run format:check --no-select');
 if (dartPackagesWithTests('--no-flutter'))

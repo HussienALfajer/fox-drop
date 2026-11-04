@@ -1,9 +1,9 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "tasks": {
-    "//#lint:root": {},
-    "lint": {},
-    "typecheck": {},
-    "test": {}
+    "//#lint:root": { "cache": false },
+    "lint": { "cache": false },
+    "typecheck": { "cache": false },
+    "test": { "cache": false }
   }
 }
