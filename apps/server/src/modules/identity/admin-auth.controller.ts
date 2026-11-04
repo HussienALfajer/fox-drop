@@ -3,7 +3,6 @@ import {
   Body,
   Get,
   HttpCode,
-  HttpException,
   HttpStatus,
   Post,
   Req,
@@ -161,11 +160,10 @@ export class AdminAuthController {
       return sessionBody(session);
     } catch (error) {
       if (!(error instanceof SignInRefusedError)) throw error;
-      // A locked account says so; anything else gets one answer, so a wrong
-      // password, code or sign-in name cannot be told apart.
-      throw error.refusal === 'locked'
-        ? new HttpException({ statusCode: HttpStatus.LOCKED, error: 'locked' }, HttpStatus.LOCKED)
-        : new UnauthorizedException();
+      // Every refusal, a locked account included, gets one answer, so a wrong
+      // password, code or sign-in name and a lock cannot be told apart (owner
+      // decision 2026-11-05).
+      throw new UnauthorizedException();
     }
   }
 
