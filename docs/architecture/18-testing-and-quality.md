@@ -4,7 +4,7 @@
 
 ## 18.1 Server
 
-- **Vitest** for unit tests; **Testcontainers** with real PostgreSQL, Valkey and Centrifugo for integration tests.
+- **Vitest** for unit tests; **Testcontainers** with real PostgreSQL, Valkey and Centrifugo for integration tests. They run inside `pnpm verify`, locally and in CI, so the check needs Docker (owner decision, 2026-11-04).
 - State machine tests cover every transition and every timer in AP §8.3, including late and repeated timer jobs.
 - Ledger property tests: every journal balances per currency; every flow in AP §8.9 produces the expected entries.
 - Permission tests for every role on every route.
