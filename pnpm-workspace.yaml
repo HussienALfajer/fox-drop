@@ -7,5 +7,9 @@ allowBuilds:
   '@openapitools/openapi-generator-cli': false
   '@scarf/scarf': false
   '@swc/core': false
+  cpu-features: false
+  esbuild: false
+  protobufjs: false
+  ssh2: false
 
 engineStrict: true

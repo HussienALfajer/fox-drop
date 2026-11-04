@@ -15,7 +15,8 @@ Food delivery platform for Syria, launching in Azaz: a customer app, a restauran
 Node and Flutter versions are pinned in `.node-version` and `.fvmrc`; pnpm comes from `packageManager` in `package.json`. `fvm install` installs the pinned Flutter and links it at `.fvm/flutter_sdk`, which `pnpm verify` and the format hook use before any Flutter on PATH.
 
 - `pnpm install`, then `dart pub get`: install the TypeScript and Dart dependencies (the pub workspace replaces `melos bootstrap`).
-- `pnpm verify`: the single check (it first regenerates the API contract and clients and fails when the committed ones are stale, so it needs Java 11 or later; then Prettier, ESLint, type checks and tests through Turborepo, then Dart analyze, format and tests through Melos). CI runs the same command, and `main` requires it. The `checker` agent runs it for you.
+- `pnpm verify`: the single check (it first regenerates the API contract and clients and fails when the committed ones are stale, so it needs Java 11 or later; then Prettier, ESLint, type checks and tests through Turborepo, then Dart analyze, format and tests through Melos). The database tests start PostGIS with Testcontainers, so Docker must be running. CI runs the same command, and `main` requires it. The `checker` agent runs it for you.
+- `docker compose up --detach`: the local PostGIS, Valkey and Centrifugo, after copying `.env.example` to `.env`; then `pnpm --filter @fox-drop/server db:migrate`.
 - `pnpm generate:api`: regenerate the OpenAPI document and the TypeScript and Dart clients after a route or schema change (needs Java 11 or later); `pnpm verify` fails when the committed ones are stale.
 - `pnpm format`: format every file with Prettier. Edits made by Claude are formatted by a hook.
 - `dart run melos run <script>`: one Dart step on its own (`analyze`, `format:check`, `test:dart`, `test:flutter`).
