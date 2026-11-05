@@ -95,8 +95,9 @@ rm -f "$sudoers"
 
 step "nginx"
 # The site relies on the server's own `general` and `perip` zones.
+nginx_config=$(nginx -T 2>/dev/null)
 for zone in 'zone=general:' 'zone=perip:'; do
-  nginx -T 2>/dev/null | grep -q "$zone" || die "the nginx ${zone%:} zone is not defined"
+  grep -q "$zone" <<<"$nginx_config" || die "the nginx ${zone%:} zone is not defined"
 done
 # Only these variables are replaced; nginx's own $variables stay as they are.
 # shellcheck disable=SC2016
