@@ -4,19 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 0, slice 0.13: the hosting decision, docs only (`docs/roadmap.md`).
+Phase 0, slice 0.14: staging on Contabo (`docs/roadmap.md`).
 
-- **Implements:** architecture §22 item 9 (hosting without Cloudflare): record the decision, and update architecture §3, §5.8, §15, §16 and §17 that depend on it.
-- **Branch:** `docs/hosting-decision`
-- **Done when:** a decision row records hosting on the owner's Contabo server without Cloudflare (owner, 2026-11-04), with the ID the owner confirms (§22 item 9 names it T7, which already holds the local object storage decision); §3, §5.8, §15.5, §16 and §17.2 name what replaces DigitalOcean and each Cloudflare service (DNS, CDN, WAF, R2, rate limits); the notes below that name Cloudflare are updated; §22 item 9 says which of Sentry, PostHog, Doppler and Firebase are reachable from Syria, or what the owner must check; Prettier passes.
+- **Implements:** architecture §17.2 and §17.3 (hosting and deployment, T9), §15.4 and §15.5 (secrets and edge protection), §16 (error tracking through FOX DROP's domain), E8.
+- **Branch:** `chore/staging-deploy`
+- **Done when:** a merge to `main` builds the images, pushes them to the GitHub container registry and deploys the staging Compose project on the owner's Contabo server over SSH; staging runs as its own system user, Compose project, database and environment file, with every container on `127.0.0.1` or a Docker network only; nginx serves the panel and the portal with `index.html` for unknown paths outside `/v1`, routes `/v1` on each web app's host to the API, and limits the sign-in routes per IP; the API trusts exactly one proxy hop; migrations run before the new version starts; the database is backed up off the server; server errors reach Sentry; a `deploy` skill explains the deploy and the rollback; `pnpm verify` passes.
 
 ## Plan
 
-- [ ] Read architecture §2, §3, §5.8, §15, §16, §17 and §22, and the notes below that name Cloudflare or the deploy slice; ask the owner what the specs leave open (the decision ID, the replacement for each Cloudflare service, object storage on the server, the DNS provider, and whether the outside services are reachable from Syria).
-- [ ] Record the decision in §2 and update §3, §5.8, §15, §16, §17 and §22 item 9.
-- [ ] Update the notes in this file that name Cloudflare, the pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
+- [ ] Read `/root/SERVER.md` on the server (the `vertex-server` skill) and architecture §15, §16 and §17; ask the owner what is still open: the staging host names while the domain is not bought, the off-server backup destination, the Sentry account, and the deploy user's access.
+- [ ] Add the production images and the staging Compose file in `infra/`.
+- [ ] Add the nginx site, TLS and the per-IP limits, and set the API's trusted proxy hop.
+- [ ] Add the GitHub Actions deploy job, the migrations step and the server-side environment file.
+- [ ] Add the off-server database backup and the Sentry error tracking on the server.
+- [ ] Add the `deploy` skill; pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
 
 ## Notes from earlier slices
+
+- Slice 0.13 recorded T9 (architecture §2; owner decisions 2026-11-05): staging and production both run on the owner's shared Contabo server (`vertex-server` skill) as Docker Compose projects behind its nginx, with no Cloudflare, no CDN, no Kamal, no Terraform and no Doppler; PostgreSQL, Valkey and an S3-compatible storage run as containers; secrets live in an environment file on the server; the apps reach Sentry and PostHog only through a relay on FOX DROP's domain. The domain is not bought yet.
+- The server already runs other sites with their own PostgreSQL and Redis; FOX DROP never uses them. Docker bypasses `ufw`, so never publish a port on `0.0.0.0` (`/root/SERVER.md`).
+- Architecture §22 item 9: the owner checks Firebase Cloud Messaging, App Check and the store installs on phones in Azaz before launch; item 10 records the shared-server risk.
 
 - Slice 0.12 added the Flutter app shells (`apps/customer/CLAUDE.md`, `packages/core_l10n/CLAUDE.md`; owner decisions 2026-11-05): app IDs `com.foxdrop.customer`, `.captain` and `.merchant`; the launcher names «تطبيق الزبون», «تطبيق الكابتن» and «تطبيق المطعم», placeholders until the design; a debug build reaches the server at `10.0.2.2:3000` on the Android emulator and `localhost:3000` elsewhere, or at `--dart-define=API_BASE_URL`; a release build refuses to start without it.
 - The deploy slice adds the flavors (development, staging, production; architecture §11.4) with their app ID suffix and API address, and the release slice the signing keys: every Android release build is still signed with the debug key (`android/app/build.gradle.kts`), so none may be distributed.
@@ -39,9 +46,9 @@ Phase 0, slice 0.13: the hosting decision, docs only (`docs/roadmap.md`).
 - Slice 0.3 added `GET /v1/<group>/status` in the four route groups, open without sign-in (owner decision 2026-11-04); slice 0.8 marks them `@Public()`.
 - `pnpm verify` regenerates the API contract first and needs Java 11 or later, and runs the database tests with Testcontainers, so Docker must be running (owner decision 2026-11-04).
 - Slice 0.4 left out of `geo.cities` what needs other modules or open items: the base currency (`fx`, open item AP §13 item 4), accepted currencies, the office location and desk hours. The business-day cutoff is now the setting `finance.business_day_cutoff`.
-- MinIO no longer publishes images: the slice that first stores a file picks the local S3-compatible storage (T7).
+- MinIO no longer publishes images: the slice that first stores a file picks the S3-compatible storage (T7), the same software on the server (T9, architecture §5.8).
 - The `audit` module (slice 0.5): record writes with `recordWrite` inside their transaction (`apps/server/src/modules/audit/CLAUDE.md`). The `api` role does not import any database module yet; the first one makes `DATABASE_URL` (and `VALKEY_URL` with `SettingsModule`) required for the OpenAPI generation (`apps/server/scripts/write-openapi.mjs` and `src/http/openapi.test.ts` build the API module) and for the image smoke test, so solve that in the same step.
-- Only the `worker` creates the monthly audit partitions (a daily timer until the worker gets pg-boss). A worker down for about a month would make every audited write fail: slice 0.13 (observability) should alert when next month's partition is missing.
+- Only the `worker` creates the monthly audit partitions (a daily timer until the worker gets pg-boss). A worker down for about a month would make every audited write fail: the observability slice should alert when next month's partition is missing.
 - The audit log has no indexes beyond its key; the audit-log list (AP §9.16 filters: actor, action, target, date range) adds them.
 - Slice 0.6 added the `settings` module (`apps/server/src/modules/settings/CLAUDE.md`): read `admin.*` with `SettingsService.get`. `AdminRole` in its catalogue must stay equal to `identity.admin_roles` (a test in `admin-team.test.ts`). Owner decision 2026-11-05: the settings with money impact require a reason.
 - Slice 0.9 added the settings routes `/v1/admin/settings` (owner decisions 2026-11-05: groups by key prefix; the Appendix A edit roles decide who reads and edits each key, so OPS sees only `dispatch.mode` and FIN only `currency.<code>.*`; a currency key is also listed with no currency, the panel's «أضف عملة»). The compensation cap per role is `support.compensation_cap_pct.*` on these routes; the role matrix screen of AP §9.15 calls them.
@@ -57,10 +64,10 @@ Phase 0, slice 0.13: the hosting decision, docs only (`docs/roadmap.md`).
 - `admin_accounts.roles` is deprecated and empty since migration 0004; a later migration drops it (expand, then contract).
 - The first OWN created by the server command has no name (`admin_accounts.name` is null); the command takes no `--name` yet.
 - Owner decision 2026-11-05: a locked admin account answers `401` like every other sign-in refusal, never `423`.
-- The API has no `trustProxy` yet, so behind Cloudflare and the proxy every session and audit event would record the proxy's IP. The deploy slice sets the trusted hops or reads `CF-Connecting-IP` from a trusted hop, never `trustProxy: true`.
-- Sign-in and setup cost an Argon2 hash per request; nothing limits their rate yet. The deploy slice (Cloudflare rate limits, architecture §15.5) or a per-IP limit in Valkey must cover `/v1/admin/auth/*`.
+- The API has no `trustProxy` yet, so behind nginx every session and audit event would record the proxy's IP. The deploy slice makes nginx replace `X-Forwarded-For` with the client address and the API trust exactly that one hop, never `trustProxy: true` (architecture §15.5).
+- Sign-in and setup cost an Argon2 hash per request; nothing limits their rate yet. The deploy slice's per-IP limits in nginx (architecture §15.5), or a per-IP limit in Valkey, must cover `/v1/admin/auth/*`.
 - The session cookie is `__Host-` and `SameSite=Strict`. Owner decision 2026-11-05: the panel and the portal call `/v1` on their own origin; Vite forwards it to the server in development, and the deploy slice routes `/v1` on each web app's host to the API. Development sign-in relies on the browser accepting a `Secure` cookie over `http://localhost` (Chrome, Edge and Firefox do).
 
 ## Next
 
-Slice 0.14, staging on Contabo (`docs/roadmap.md`).
+Slice 0.15 is not on the roadmap yet: after 0.14, Phase 0 waits for the owner's answer on the design system and for the real WhatsApp sender (`docs/roadmap.md`).

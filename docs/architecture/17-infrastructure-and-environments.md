@@ -7,31 +7,30 @@
 | Environment   | Purpose                                                                                                                                                                           |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `development` | Local, with Docker Compose: PostgreSQL with PostGIS, Valkey, Centrifugo (`compose.yaml`). OSRM (small extract) and an S3-compatible object storage join with their first use (T7) |
-| `staging`     | A smaller copy of production, used for the definition-of-done demonstrations in the four specs                                                                                    |
+| `staging`     | A smaller copy of production on the same server (T9), used for the definition-of-done demonstrations in the four specs                                                            |
 | `production`  | Live                                                                                                                                                                              |
 
 Each environment has its own database, Firebase project, storage buckets, secrets and WhatsApp sender numbers (staging uses one test number).
 
-## 17.2 Hosting
+## 17.2 Hosting (T9)
 
-- **Region:** Frankfurt, close to the Turkish networks that serve Azaz.
-- **Provider: DigitalOcean (FRA1)** for V1:
-  - application droplets running the containers (`api`, `worker`, `dispatcher`, `otp-sender`, Centrifugo, imgproxy)
-  - a separate droplet for OSRM (memory-heavy)
-  - **managed PostgreSQL** with a standby node and a read replica, PostGIS enabled
-  - **managed Valkey**
-- **Cloudflare:** DNS, CDN, WAF, R2 storage.
-- Alternative if needed: Hetzner (Germany) with self-managed PostgreSQL (Patroni and pgBackRest). The containers and Terraform make the move a redeployment.
+- **Server:** the owner's existing Contabo server (Ubuntu 24.04, 6 vCPU, about 12 GB of memory, about 200 GB of disk, in Contabo's EU region), shared with the owner's other sites. Cloudflare is blocked in Syria, so every client reaches this server directly.
+- **Staging and production both run there**, isolated from each other and from the other sites: one system user, one Docker Compose project and network, one database, one set of buckets and one environment file each.
+- **Containers per environment:** `api`, `worker`, `dispatcher`, `otp-sender`, Centrifugo, imgproxy, the object storage (§5.8), PostgreSQL with PostGIS, and Valkey. OSRM (memory-heavy, map data only) runs once and serves both environments.
+- **nginx**, already on the server, is the only public gateway, with Let's Encrypt certificates (§15.5). It serves each web app's static files with its `index.html` for every unknown path outside `/v1`, routes `/v1` on each web app's host to the API (so the session cookie stays on its own origin), and routes the API, the real-time connections and the media to their containers.
+- **PostgreSQL** is self-managed in its container, with no standby node and no read replica in V1. Continuous WAL archiving and nightly base backups (pgBackRest), encrypted, go to a destination off the server, reached from the server only; a restore is tested before launch. Valkey holds nothing that cannot be rebuilt (E2).
+- **DNS:** the domain is not bought yet. Its provider is chosen when it is bought; it needs `A` records for the API, the panel, the portal and the media hosts, and a `CAA` record for Let's Encrypt.
+- **Moving later:** when load, a second city (§20) or the shared server's limits require it, the same images and Compose files move to a dedicated server; the containers make the move a redeployment.
 
 ## 17.3 Deployment
 
-- **V1–V2: Kamal** deploys the containers to the droplets with zero-downtime rolling restarts; GitHub Actions runs it on every merge to `main` (staging) and on a release tag (production).
-- **From V3 (several cities): managed Kubernetes** (DOKS), with the same images, Helm charts and horizontal autoscaling of `api` and `worker`.
-- **Terraform** describes every cloud resource, DNS record and bucket from the start.
+- **V1: Docker Compose over SSH.** GitHub Actions builds the images, pushes them to the GitHub container registry, then on the server pulls them and restarts the environment's Compose project: on every merge to `main` (staging) and on a release tag (production). A deploy restarts each container briefly, so production deploys happen outside peak hours.
+- The Compose files, the nginx configuration and the deploy scripts live in `infra/`. No Terraform in V1: the only resources are the one server and the DNS records, which `infra/` documents.
 - **Database migrations** run as a separate step before the new version starts; every migration is backward compatible with the running version (expand, then contract).
 - Forced app updates are published outside peak hours (RA §4.2).
+- Hosting is revisited before several cities run (V3, §20): dedicated servers or a managed Kubernetes, with the same images.
 
 ## 17.4 Capacity
 
-- V1 load in one city is small (hundreds of captains send a few hundred position updates per minute). The design targets the multi-city future: stateless API, connections in Centrifugo, positions in Valkey, partitioned tables, a read replica for reports.
+- V1 load in one city is small (hundreds of captains send a few hundred position updates per minute). The design targets the multi-city future: stateless API, connections in Centrifugo, positions in Valkey, partitioned tables, and a read replica for reports once one is needed (none in V1, §17.2).
 - A **load test with k6** and the **captain simulator** (§18.3) before launch, at five times the expected peak.

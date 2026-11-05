@@ -30,11 +30,17 @@
 
 ## 15.4 Secrets (E7)
 
-- Secrets live in a secret manager (**Doppler**, or Infisical self-hosted) and reach containers as environment variables.
+- Secrets live in one environment file per environment on the server, outside the repository, readable only by that environment's system user, and reach containers as environment variables (T9). CI secrets, such as the deploy key, are GitHub Actions secrets.
 - No secret in an app or a web bundle: routing, maps, WhatsApp and other keys are used only by the server (research §11 item 1).
 - Provider keys entered in the panel are write-only (AP §5.4).
 
 ## 15.5 Edge protection
 
-- **Cloudflare** in front of the API, the panel and the portal: DNS, CDN, WAF, DDoS protection, bot rules and rate limits.
-- The admin panel MAY be restricted further with Cloudflare Access.
+No Cloudflare (blocked in Syria) and no CDN in V1 (T9):
+
+- **nginx** on the server is the only public gateway for the API, the panel, the portal and the media. Every container listens on `127.0.0.1` or a Docker network only, never on a public address (Docker bypasses the host firewall).
+- TLS from Let's Encrypt, with a `CAA` record that allows only it; HSTS on the web (§15.3).
+- **Rate limits** in two layers: per-IP limits in nginx (`limit_req`) on the sign-in and code routes, and the server's limits in Valkey (§5.7).
+- nginx sets `X-Forwarded-For` to the client address it sees (replacing, never appending), and the API trusts exactly that one hop, so sessions, limits and the audit log record the real client address.
+- fail2ban on SSH and on repeated refusals in the nginx logs; the provider's network-level DDoS protection.
+- The admin panel MAY be restricted further with an IP allow-list in nginx.

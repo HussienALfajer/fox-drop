@@ -3,6 +3,7 @@
 > Part of the [technology stack](README.md). A bare "§n" here means §n of the technology stack.
 
 - **Errors:** Sentry on the server, both web apps and the three Flutter apps, with release and device tags.
+- **Reached through FOX DROP's domain (T9):** networks in Syria may not reach Sentry or PostHog, so the web apps and the Flutter apps send their events to a relay path on FOX DROP's domain (Sentry's `tunnel` option, and a reverse proxy for PostHog), which the server forwards. No phone calls Sentry, PostHog or Grafana Cloud directly; the server reaches them from the hosting region.
 - **Metrics, logs, traces:** OpenTelemetry in the server; Grafana with Prometheus (metrics), Loki (logs) and Tempo (traces), hosted (Grafana Cloud) in V1.
 - **Business health dashboards and alerts for the technical team:**
   - time from `placed` to accepted, and from ready to pickup
