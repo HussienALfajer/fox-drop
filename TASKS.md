@@ -27,6 +27,12 @@ Phase 0, slice 0.10: phone sign-in for the apps, server side (`docs/roadmap.md`)
 
 ## Notes from earlier slices
 
+- Slice 0.10 added app phone sign-in (`apps/server/src/modules/identity/CLAUDE.md`), customer routes only. The restaurant and captain apps add a party, their account table and routes on the same engine.
+- The app code request limits key on the request IP. Without `trustProxy` set for the real proxy hops, every user shares the proxy's IP and the platform gets `otp.ip_hourly_max` (30) code requests per hour: the deploy slice must set the trusted hop before anyone signs in on staging.
+- A reused refresh token ends its session with no grace window (architecture §15.1). A refresh whose answer is lost on a weak network, retried with the same token, signs the device out and costs a new WhatsApp code; ask the owner whether to allow a few seconds of grace before the apps ship.
+- The code is sent before the transaction commits (a direct call). When the `otp-sender` queue arrives, the send request goes through the outbox in the same transaction (E3, E4).
+- `identity.app_refresh_tokens` gains a row per refresh (about 96 a day per active device) and the application role cannot delete; plan partitions or a migrator-run purge of ended families before launch.
+
 - Slice 0.3 added `GET /v1/<group>/status` in the four route groups, open without sign-in (owner decision 2026-11-04); slice 0.8 marks them `@Public()`.
 - `pnpm verify` regenerates the API contract first and needs Java 11 or later, and runs the database tests with Testcontainers, so Docker must be running (owner decision 2026-11-04).
 - Slice 0.4 left out of `geo.cities` what needs other modules or open items: the base currency (`fx`, open item AP §13 item 4), accepted currencies, the office location and desk hours. The business-day cutoff is now the setting `finance.business_day_cutoff`.

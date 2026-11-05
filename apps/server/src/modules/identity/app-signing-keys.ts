@@ -5,7 +5,7 @@ import {
   type KeyObject,
 } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { desc, eq, sql } from 'drizzle-orm';
+import { desc, sql } from 'drizzle-orm';
 import { errors, jwtVerify, SignJWT } from 'jose';
 import { z } from 'zod';
 import { DATABASE } from '../../database/database.module.js';
@@ -30,7 +30,7 @@ export interface AccessClaims {
   party: string;
 }
 
-interface SigningKey {
+export interface SigningKey {
   id: string;
   privateKey: KeyObject;
   createdAt: Date;
@@ -42,15 +42,24 @@ interface SigningKey {
 @Injectable()
 export class AppSigningKeys {
   private current: SigningKey | undefined;
+  // The load in flight, shared by every caller that finds no current key.
+  private loading: Promise<SigningKey> | undefined;
   private readonly publicKeys = new Map<string, { key: KeyObject; createdAt: Date }>();
+  // When the keys were last read, so unknown kids read them at most every 10
+  // seconds rather than once per request; another process's new key is
+  // found within that time.
+  private keysReadAt = 0;
 
   constructor(
     @Inject(DATABASE) private readonly database: Database,
     @Inject(IDENTITY_SECRETS) private readonly secrets: IdentitySecrets,
   ) {}
 
-  async sign(claims: AccessClaims, now: Date): Promise<{ token: string; expiresAt: Date }> {
-    const key = await this.signingKey(now);
+  async sign(
+    key: SigningKey,
+    claims: AccessClaims,
+    now: Date,
+  ): Promise<{ token: string; expiresAt: Date }> {
     const issuedAt = Math.floor(now.getTime() / 1000);
     const expiresAt = issuedAt + ACCESS_TOKEN_MINUTES * 60;
     const token = await new SignJWT({ sid: claims.sessionId })
@@ -89,9 +98,19 @@ export class AppSigningKeys {
   }
 
   // The newest key while it is younger than the rotation period; otherwise a
-  // new one, created by one process at a time.
-  private async signingKey(now: Date): Promise<SigningKey> {
+  // new one, created by one process at a time. Callers resolve it before
+  // opening a transaction of their own: loading it takes a pool connection.
+  async signingKey(now: Date): Promise<SigningKey> {
     if (this.current && this.isCurrent(this.current.createdAt, now)) return this.current;
+    this.loading ??= this.loadSigningKey(now).finally(() => {
+      this.loading = undefined;
+    });
+    const key = await this.loading;
+    // A load started for an earlier time may return a key already too old.
+    return this.isCurrent(key.createdAt, now) ? key : this.signingKey(now);
+  }
+
+  private async loadSigningKey(now: Date): Promise<SigningKey> {
     this.current = await this.database.db.transaction(async (tx) => {
       await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('identity.app_signing_keys'))`);
       const [newest] = await tx
@@ -120,22 +139,36 @@ export class AppSigningKeys {
       if (!row) throw new Error('the signing key was not created');
       return { id: row.id, privateKey: pair.privateKey, createdAt: now };
     });
+    this.publicKeys.set(this.current.id, {
+      key: createPublicKey(this.current.privateKey),
+      createdAt: this.current.createdAt,
+    });
     return this.current;
   }
 
   // A key verifies until the last token it could have signed has expired.
   private async verificationKey(id: string | undefined, now: Date): Promise<KeyObject | null> {
     if (!kid.safeParse(id).success) return null;
-    let known = this.publicKeys.get(id!);
-    if (!known) {
-      const [row] = await this.database.db
-        .select({ publicKey: appSigningKeys.publicKey, createdAt: appSigningKeys.createdAt })
-        .from(appSigningKeys)
-        .where(eq(appSigningKeys.id, id!));
-      if (!row) return null;
-      known = { key: createPublicKey(row.publicKey), createdAt: row.createdAt };
-      this.publicKeys.set(id!, known);
+    if (!this.publicKeys.has(id!) && Date.now() - this.keysReadAt >= 10_000) {
+      this.keysReadAt = Date.now();
+      const rows = await this.database.db
+        .select({
+          id: appSigningKeys.id,
+          publicKey: appSigningKeys.publicKey,
+          createdAt: appSigningKeys.createdAt,
+        })
+        .from(appSigningKeys);
+      for (const row of rows) {
+        if (!this.publicKeys.has(row.id)) {
+          this.publicKeys.set(row.id, {
+            key: createPublicKey(row.publicKey),
+            createdAt: row.createdAt,
+          });
+        }
+      }
     }
+    const known = this.publicKeys.get(id!);
+    if (!known) return null;
     const retiredAt =
       known.createdAt.getTime() + KEY_ROTATION_DAYS * DAY_MS + ACCESS_TOKEN_MINUTES * 60_000;
     return now.getTime() <= retiredAt ? known.key : null;

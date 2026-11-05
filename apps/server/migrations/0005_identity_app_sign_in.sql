@@ -60,6 +60,6 @@ ALTER TABLE "identity"."app_refresh_tokens" ADD CONSTRAINT "app_refresh_tokens_s
 CREATE INDEX "app_refresh_tokens_session" ON "identity"."app_refresh_tokens" USING btree ("session_id");--> statement-breakpoint
 CREATE INDEX "app_sessions_open_account" ON "identity"."app_sessions" USING btree ("party","account_id") WHERE "identity"."app_sessions"."ended_at" IS NULL;--> statement-breakpoint
 CREATE INDEX "app_sessions_open_device" ON "identity"."app_sessions" USING btree ("party","device_id") WHERE "identity"."app_sessions"."ended_at" IS NULL;--> statement-breakpoint
-CREATE UNIQUE INDEX "app_sign_in_codes_open_per_number" ON "identity"."app_sign_in_codes" USING btree ("phone_hash") WHERE "identity"."app_sign_in_codes"."ended_at" IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "app_sign_in_codes_open_per_number" ON "identity"."app_sign_in_codes" USING btree ("party","phone_hash") WHERE "identity"."app_sign_in_codes"."ended_at" IS NULL;--> statement-breakpoint
 CREATE INDEX "app_sign_in_codes_number_created" ON "identity"."app_sign_in_codes" USING btree ("phone_hash","created_at");--> statement-breakpoint
 CREATE UNIQUE INDEX "customer_accounts_active_phone" ON "identity"."customer_accounts" USING btree ("phone_hash") WHERE "identity"."customer_accounts"."status" = 'active';

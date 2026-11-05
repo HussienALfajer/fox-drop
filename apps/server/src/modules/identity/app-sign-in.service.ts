@@ -9,7 +9,7 @@ import type { AuditRequestContext } from '../audit/index.js';
 import { SettingsService } from '../settings/index.js';
 import { type AppParty, AppSessionsService, type AppTokens } from './app-sessions.service.js';
 import { CODE_SENDER, type CodeSender } from './code-sender.js';
-import { DAY_MS, HOUR_MS, RequestLimits } from './request-limits.js';
+import { DAY_MS, HOUR_MS, type Limit, RequestLimits } from './request-limits.js';
 import { appSignInCodes, customerAccounts } from './schema.js';
 import { IDENTITY_SECRETS, IdentitySecrets, newSignInCode } from './secrets.js';
 
@@ -80,24 +80,41 @@ export class AppSignInService {
     now = new Date(),
   ): Promise<{ channel: 'whatsapp'; resendAfterSec: number; expiresAt: Date }> {
     const phoneHash = this.secrets.phoneHash(request.phone);
-    const keys = {
-      ip: `identity:otp:ip:${context.ipAddress ?? 'unknown'}`,
-      number: `identity:otp:number:${phoneHash}`,
-      device: `identity:otp:device:${request.deviceId}`,
-    };
-
-    // Every request counts towards its IP address, refused ones included.
-    const ip = await this.limits.count(keys.ip, HOUR_MS, now);
-    await this.limits.add(keys.ip, HOUR_MS, now);
-    if (ip.count >= (await this.settings.get('otp.ip_hourly_max'))) {
-      throw new CodeRequestRefusedError('ip_limit', ip.retryAfterSec);
-    }
-
+    // Read before the transaction, so a settings cache miss never waits for a
+    // second pool connection while this one is held.
+    const ipHourlyMax = await this.settings.get('otp.ip_hourly_max');
     const resendAfterSec = await this.settings.get('otp.resend_after_sec');
     const validityMin = await this.settings.get('otp.validity_min');
+    const numberKey = `identity:otp:number:${phoneHash}`;
+    const requesterLimits: Limit[] = [
+      { key: numberKey, windowMs: DAY_MS, max: await this.settings.get('otp.number_daily_max') },
+      {
+        key: `identity:otp:device:${request.deviceId}`,
+        windowMs: DAY_MS,
+        max: await this.settings.get('otp.device_daily_max'),
+      },
+      { key: numberKey, windowMs: HOUR_MS, max: await this.settings.get('otp.number_hourly_max') },
+    ];
+
+    // Every request the IP limit lets through counts towards it, those
+    // refused later included; one it refuses does not, so a client that waits
+    // for Retry-After gets through.
+    const ip = await this.limits.reserve(
+      [
+        {
+          key: `identity:otp:ip:${context.ipAddress ?? 'unknown'}`,
+          windowMs: HOUR_MS,
+          max: ipHourlyMax,
+        },
+      ],
+      now,
+    );
+    if (!ip.reserved) throw new CodeRequestRefusedError('ip_limit', ip.retryAfterSec);
+
     return this.database.db.transaction(async (tx) => {
       // One request per number at a time, so the resend wait and the one open
-      // code hold under concurrent requests.
+      // code hold under concurrent requests. The wait is per number whatever
+      // the app, since it protects the sending numbers (architecture §8.3.3).
       await tx.execute(
         sql`SELECT pg_advisory_xact_lock(hashtextextended(${`identity.app_code:${phoneHash}`}, 0))`,
       );
@@ -112,39 +129,45 @@ export class AppSignInService {
         throw new CodeRequestRefusedError('resend_wait', Math.ceil(waitMs / 1000));
       }
 
-      const hourly = await this.limits.count(keys.number, HOUR_MS, now);
-      const daily = await this.limits.count(keys.number, DAY_MS, now);
-      const device = await this.limits.count(keys.device, DAY_MS, now);
-      if (daily.count >= (await this.settings.get('otp.number_daily_max'))) {
-        throw new CodeRequestRefusedError('daily_limit', daily.retryAfterSec);
+      const reservation = await this.limits.reserve(requesterLimits, now);
+      if (!reservation.reserved) {
+        throw new CodeRequestRefusedError(
+          reservation.limit.windowMs === HOUR_MS ? 'hourly_limit' : 'daily_limit',
+          reservation.retryAfterSec,
+        );
       }
-      if (device.count >= (await this.settings.get('otp.device_daily_max'))) {
-        throw new CodeRequestRefusedError('daily_limit', device.retryAfterSec);
+      try {
+        const code = newSignInCode();
+        const expiresAt = new Date(now.getTime() + validityMin * 60_000);
+        await tx
+          .update(appSignInCodes)
+          .set({ endedAt: now, endReason: 'replaced' })
+          .where(
+            and(
+              eq(appSignInCodes.party, request.party),
+              eq(appSignInCodes.phoneHash, phoneHash),
+              isNull(appSignInCodes.endedAt),
+            ),
+          );
+        await tx.insert(appSignInCodes).values({
+          party: request.party,
+          phoneHash,
+          deviceId: request.deviceId,
+          codeHash: this.secrets.signInCodeHash(request.phone, code),
+          expiresAt,
+          createdAt: now,
+        });
+        // Sent last, so a refusal rolls the new code back and keeps the old.
+        // The otp-sender queue will take the request through the outbox in
+        // this transaction instead (architecture §8.3.1, E3).
+        const sent = await this.sender.send(request.phone, code);
+        if (sent !== 'sent') throw new CodeRequestRefusedError(sent);
+        return { channel: 'whatsapp' as const, resendAfterSec, expiresAt };
+      } catch (error) {
+        // Nothing was sent: the code does not count towards the limits.
+        await reservation.release();
+        throw error;
       }
-      if (hourly.count >= (await this.settings.get('otp.number_hourly_max'))) {
-        throw new CodeRequestRefusedError('hourly_limit', hourly.retryAfterSec);
-      }
-
-      const code = newSignInCode();
-      const expiresAt = new Date(now.getTime() + validityMin * 60_000);
-      await tx
-        .update(appSignInCodes)
-        .set({ endedAt: now, endReason: 'replaced' })
-        .where(and(eq(appSignInCodes.phoneHash, phoneHash), isNull(appSignInCodes.endedAt)));
-      await tx.insert(appSignInCodes).values({
-        party: request.party,
-        phoneHash,
-        deviceId: request.deviceId,
-        codeHash: this.secrets.signInCodeHash(request.phone, code),
-        expiresAt,
-        createdAt: now,
-      });
-      // Sent last, so a refusal rolls the new code back and keeps the old.
-      const sent = await this.sender.send(request.phone, code);
-      if (sent !== 'sent') throw new CodeRequestRefusedError(sent);
-      await this.limits.add(keys.number, DAY_MS, now);
-      await this.limits.add(keys.device, DAY_MS, now);
-      return { channel: 'whatsapp' as const, resendAfterSec, expiresAt };
     });
   }
 
@@ -157,15 +180,23 @@ export class AppSignInService {
   ): Promise<AppSignIn> {
     const phoneHash = this.secrets.phoneHash(request.phone);
     const maxAttempts = await this.settings.get('otp.max_attempts');
+    // Before the transaction, so loading or creating the key never waits for
+    // a second pool connection while this one is held.
+    const signingKey = await this.sessions.signingKey(now);
     const result = await this.database.db.transaction(async (tx) => {
       const [code] = await tx
         .select()
         .from(appSignInCodes)
-        .where(and(eq(appSignInCodes.phoneHash, phoneHash), isNull(appSignInCodes.endedAt)))
+        .where(
+          and(
+            eq(appSignInCodes.party, request.party),
+            eq(appSignInCodes.phoneHash, phoneHash),
+            isNull(appSignInCodes.endedAt),
+          ),
+        )
         .for('update');
       if (
         !code ||
-        code.party !== request.party ||
         code.deviceId !== request.deviceId ||
         now.getTime() >= code.expiresAt.getTime() ||
         code.attempts >= maxAttempts
@@ -192,13 +223,20 @@ export class AppSignInService {
         .set({ endedAt: now, endReason: 'used' })
         .where(eq(appSignInCodes.id, code.id));
 
-      const account = await this.findOrCreateAccount(tx, request.party, request.phone, phoneHash);
+      const account = await this.findOrCreateAccount(
+        tx,
+        request.party,
+        request.phone,
+        phoneHash,
+        now,
+      );
       const tokens = await this.sessions.start(
         tx,
         request.party,
         account.id,
         request.deviceId,
         context,
+        signingKey,
         now,
       );
       return { accountId: account.id, newAccount: account.created, ...tokens };
@@ -212,6 +250,7 @@ export class AppSignInService {
     party: AppParty,
     phone: string,
     phoneHash: string,
+    now: Date,
   ): Promise<{ id: string; created: boolean }> {
     switch (party) {
       case 'customer': {
@@ -226,7 +265,12 @@ export class AppSignInService {
         if (existing) return { id: existing.id, created: false };
         const [created] = await tx
           .insert(customerAccounts)
-          .values({ phoneEncrypted: this.secrets.encrypt(phone), phoneHash })
+          .values({
+            phoneEncrypted: this.secrets.encrypt(phone),
+            phoneHash,
+            createdAt: now,
+            updatedAt: now,
+          })
           .returning({ id: customerAccounts.id });
         if (!created) throw new Error('the account was not created');
         return { id: created.id, created: true };

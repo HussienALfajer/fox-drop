@@ -3,7 +3,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import type { AuditRequestContext } from '../audit/index.js';
-import { AppSigningKeys } from './app-signing-keys.js';
+import { AppSigningKeys, type SigningKey } from './app-signing-keys.js';
 import {
   appParties,
   appRefreshTokens,
@@ -57,6 +57,7 @@ export class AppSessionsService {
     accountId: string,
     deviceId: string,
     context: AuditRequestContext,
+    signingKey: SigningKey,
     now: Date,
   ): Promise<AppTokens> {
     await tx
@@ -82,11 +83,12 @@ export class AppSessionsService {
       })
       .returning({ id: appSessions.id });
     if (!session) throw new Error('the session was not created');
-    return this.issue(tx, { id: session.id, party, accountId }, now);
+    return this.issue(tx, { id: session.id, party, accountId }, signingKey, now);
   }
 
   // A new token pair for an unused refresh token of an open session.
   async refresh(refreshToken: string, now = new Date()): Promise<AppTokens> {
+    const signingKey = await this.keys.signingKey(now);
     const result = await this.database.db.transaction(async (tx) => {
       const [row] = await tx
         .select({
@@ -117,22 +119,34 @@ export class AppSessionsService {
         .update(appSessions)
         .set({ lastRefreshedAt: now })
         .where(eq(appSessions.id, session.id));
-      return this.issue(tx, session, now);
+      return this.issue(tx, session, signingKey, now);
     });
     if (!result) throw new RefreshRefusedError();
     return result;
   }
 
   // The session of an access token for this party's routes, or null. The
-  // token alone decides, so it stays valid until it expires, at most 15
-  // minutes after its session ends (architecture §15.1).
+  // session must still be open, so sign-out everywhere, a reused refresh
+  // token, blocking or closing apply at once on every device (CU §5.4–5.5).
   async authenticate(
     party: AppParty,
     accessToken: string,
     now = new Date(),
   ): Promise<AppSession | null> {
     const claims = await this.keys.verify(accessToken, party, now);
-    return claims ? { id: claims.sessionId, party, accountId: claims.accountId } : null;
+    if (!claims) return null;
+    const [open] = await this.database.db
+      .select({ id: appSessions.id })
+      .from(appSessions)
+      .where(
+        and(
+          eq(appSessions.id, claims.sessionId),
+          eq(appSessions.party, party),
+          eq(appSessions.accountId, claims.accountId),
+          isNull(appSessions.endedAt),
+        ),
+      );
+    return open ? { id: claims.sessionId, party, accountId: claims.accountId } : null;
   }
 
   async signOut(session: AppSession, now = new Date()): Promise<void> {
@@ -174,12 +188,24 @@ export class AppSessionsService {
     return ended.length;
   }
 
-  private async issue(tx: Executor, session: AppSession, now: Date): Promise<AppTokens> {
+  // The key to sign with now. Callers resolve it before opening their
+  // transaction, since loading it may take a pool connection of its own.
+  signingKey(now: Date): Promise<SigningKey> {
+    return this.keys.signingKey(now);
+  }
+
+  private async issue(
+    tx: Executor,
+    session: AppSession,
+    signingKey: SigningKey,
+    now: Date,
+  ): Promise<AppTokens> {
     const refreshToken = newToken();
     await tx
       .insert(appRefreshTokens)
       .values({ sessionId: session.id, tokenHash: tokenHash(refreshToken), createdAt: now });
     const access = await this.keys.sign(
+      signingKey,
       { accountId: session.accountId, sessionId: session.id, party: session.party },
       now,
     );

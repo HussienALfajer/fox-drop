@@ -73,7 +73,9 @@ class CustomerSignedInDto extends createZodDto(
   }),
 ) {}
 
-class CustomerRefreshDto extends createZodDto(z.object({ refreshToken: z.string().min(1).max(200) })) {}
+class CustomerRefreshDto extends createZodDto(
+  z.object({ refreshToken: z.string().min(1).max(200) }),
+) {}
 
 class CustomerTokensDto extends createZodDto(z.object(tokens)) {}
 

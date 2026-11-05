@@ -29,7 +29,7 @@ export class DevelopmentCodeSender implements CodeSender {
     if (!isDevelopment()) throw new Error('the development code sender runs only in development');
   }
 
-  send(phone: string, code: string): Promise<'sent'> {
+  send(phone: string, code: string): Promise<SendResult> {
     this.lastCodes.set(phone, code);
     process.stdout.write(`[development code sender] ${phone}: ${code}\n`);
     return Promise.resolve('sent');

@@ -237,7 +237,7 @@ export const appSignInCodeEndReasons = ['used', 'replaced', 'attempts_exhausted'
 
 // An app sign-in code (architecture §8.3.2): only its keyed hash, with the
 // number (by its keyed hash), the device and the expiry. One open code per
-// number: a new request ends the old one.
+// number and app: a new request ends the old one.
 export const appSignInCodes = identity.table(
   'app_sign_in_codes',
   {
@@ -258,7 +258,7 @@ export const appSignInCodes = identity.table(
   },
   (table) => [
     uniqueIndex('app_sign_in_codes_open_per_number')
-      .on(table.phoneHash)
+      .on(table.party, table.phoneHash)
       .where(sql`${table.endedAt} IS NULL`),
     index('app_sign_in_codes_number_created').on(table.phoneHash, table.createdAt),
     check('app_sign_in_codes_party_values', sql`${table.party} IN ('customer')`),

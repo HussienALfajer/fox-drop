@@ -3,7 +3,7 @@ import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { decodeProtectedHeader } from 'jose';
 import pg from 'pg';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Valkey } from 'iovalkey';
 import { ApiModule } from '../../api.module.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
@@ -323,6 +323,88 @@ describe('the request limits (architecture §8.3.3 item 2, AP Appendix A)', () =
   });
 });
 
+describe('the request limits under parallel requests', () => {
+  it('let no more than otp.ip_hourly_max through at once', async () => {
+    await changeSetting('otp.ip_hourly_max', 3);
+    try {
+      const now = new Date();
+      const answers = await Promise.all(
+        Array.from({ length: 8 }, () =>
+          refusal(request(newPhone(), randomUUID(), now, '198.51.100.8')),
+        ),
+      );
+      expect(answers.filter((answer) => answer === 'accepted')).toHaveLength(3);
+    } finally {
+      await changeSetting('otp.ip_hourly_max', 30);
+    }
+  });
+
+  it('let no more than otp.device_daily_max through for one device at once', async () => {
+    const deviceId = randomUUID();
+    const now = new Date();
+    const answers = await Promise.all(
+      Array.from({ length: 10 }, () => refusal(request(newPhone(), deviceId, now))),
+    );
+    expect(answers.filter((answer) => answer === 'accepted')).toHaveLength(6);
+  });
+
+  it('count no code that was not sent, and keep the open one', async () => {
+    const phone = newPhone();
+    const deviceId = randomUUID();
+    const start = new Date();
+    await request(phone, deviceId, start);
+    const first = sender.lastCode(phone)!;
+    const send = vi.spyOn(sender, 'send');
+    send.mockResolvedValueOnce('not_on_whatsapp');
+    send.mockResolvedValueOnce('unavailable');
+    expect(await refusal(request(phone, deviceId, new Date(start.getTime() + MINUTE)))).toEqual({
+      refusal: 'not_on_whatsapp',
+      retryAfterSec: undefined,
+    });
+    expect(await refusal(request(phone, deviceId, new Date(start.getTime() + 2 * MINUTE)))).toEqual(
+      { refusal: 'unavailable', retryAfterSec: undefined },
+    );
+    send.mockRestore();
+    // Two more codes fit in the hour: the two refused sends did not count.
+    for (const minutes of [3, 4]) {
+      expect(
+        await refusal(request(phone, deviceId, new Date(start.getTime() + minutes * MINUTE))),
+      ).toBe('accepted');
+    }
+    // The first code stayed open until the next one was sent.
+    const { rows } = await sql.query(
+      "SELECT count(*)::int AS replaced FROM identity.app_sign_in_codes WHERE device_id = $1 AND end_reason = 'replaced'",
+      [deviceId],
+    );
+    expect(rows[0].replaced).toBe(2);
+    expect(first).toMatch(/^\d{6}$/);
+  });
+
+  it('answer a refused send on the route', async () => {
+    const send = vi.spyOn(sender, 'send');
+    try {
+      send.mockResolvedValueOnce('not_on_whatsapp');
+      const notOnWhatsApp = await app.inject({
+        method: 'POST',
+        url: '/v1/customer/auth/code',
+        payload: { phone: newPhone(), deviceId: randomUUID() },
+      });
+      expect(notOnWhatsApp.statusCode).toBe(400);
+      expect(notOnWhatsApp.json()).toMatchObject({ error: 'not_on_whatsapp' });
+      send.mockResolvedValueOnce('unavailable');
+      const unavailable = await app.inject({
+        method: 'POST',
+        url: '/v1/customer/auth/code',
+        payload: { phone: newPhone(), deviceId: randomUUID() },
+      });
+      expect(unavailable.statusCode).toBe(503);
+      expect(unavailable.json()).toMatchObject({ error: 'unavailable' });
+    } finally {
+      send.mockRestore();
+    }
+  });
+});
+
 describe('the tokens (architecture §15.1)', () => {
   it('gives a 15-minute access token signed with the current key', async () => {
     const now = new Date();
@@ -342,9 +424,7 @@ describe('the tokens (architecture §15.1)', () => {
     const { rows: keys } = await sql.query(
       'SELECT max(created_at) AS created_at FROM identity.app_signing_keys',
     );
-    const rotation = new Date(
-      keys[0].created_at.getTime() + KEY_ROTATION_DAYS * 24 * 60 * MINUTE,
-    );
+    const rotation = new Date(keys[0].created_at.getTime() + KEY_ROTATION_DAYS * 24 * 60 * MINUTE);
     const late = await signedIn(newPhone(), randomUUID(), new Date(rotation.getTime() - 1000));
     const after = await sessions.refresh(late.refreshToken, rotation);
     expect(decodeProtectedHeader(after.accessToken).kid).not.toBe(
@@ -376,6 +456,24 @@ describe('the tokens (architecture §15.1)', () => {
     for (const token of [first, second, third]) expect(stored).not.toContain(token.refreshToken);
   });
 
+  it('lets one of two concurrent refreshes with one token through, and ends the session', async () => {
+    const now = new Date();
+    const first = await signedIn(newPhone(), randomUUID(), now);
+    const answers = await Promise.allSettled([
+      sessions.refresh(first.refreshToken, now),
+      sessions.refresh(first.refreshToken, now),
+    ]);
+    const passed = answers.filter((answer) => answer.status === 'fulfilled');
+    expect(passed).toHaveLength(1);
+    const tokens = (
+      passed[0] as PromiseFulfilledResult<{ refreshToken: string; accessToken: string }>
+    ).value;
+    expect(await refusal(sessions.refresh(tokens.refreshToken, now))).toEqual({
+      refusal: 'refresh',
+    });
+    expect(await sessions.authenticate('customer', tokens.accessToken, now)).toBeNull();
+  });
+
   it('signs out one device, or every device of the account', async () => {
     const phone = newPhone();
     const now = new Date();
@@ -388,11 +486,14 @@ describe('the tokens (architecture §15.1)', () => {
       refusal: 'refresh',
     });
     const sessionB = (await sessions.authenticate('customer', phoneB.accessToken, now))!;
+    expect(await sessions.authenticate('customer', phoneA.accessToken, now)).toBeNull();
     expect(await sessions.signOutEverywhere(sessionB, now)).toBe(2);
     for (const device of [phoneB, phoneC]) {
       expect(await refusal(sessions.refresh(device.refreshToken, now))).toEqual({
         refusal: 'refresh',
       });
+      // At once, not when the access token expires (CU §5.4).
+      expect(await sessions.authenticate('customer', device.accessToken, now)).toBeNull();
     }
   });
 
@@ -457,6 +558,12 @@ describe('the customer sign-in routes', () => {
       headers: { authorization: `Bearer ${next.accessToken}` },
     });
     expect(everywhere.statusCode).toBe(200);
+    const ended = await app.inject({
+      method: 'GET',
+      url: '/v1/customer/auth/session',
+      headers: { authorization: `Bearer ${next.accessToken}` },
+    });
+    expect(ended.statusCode).toBe(401);
     const after = await app.inject({
       method: 'POST',
       url: '/v1/customer/auth/refresh',
@@ -465,7 +572,7 @@ describe('the customer sign-in routes', () => {
     expect(after.statusCode).toBe(401);
   });
 
-  it('refuses an admin or missing token, and a number outside Syria and Turkey', async () => {
+  it('refuses a missing or malformed token, and a number outside Syria and Turkey', async () => {
     const none = await app.inject({ method: 'GET', url: '/v1/customer/auth/session' });
     expect(none.statusCode).toBe(401);
     const junk = await app.inject({

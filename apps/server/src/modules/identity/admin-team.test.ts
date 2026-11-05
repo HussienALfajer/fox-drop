@@ -291,12 +291,7 @@ describe('roles and permissions as data (AP §6.1–6.3)', () => {
 // and the list with any setting (OWN, OPS for dispatch.mode, FIN for the
 // currencies). An app route needs the app's bearer token, which no admin has.
 type Access =
-  | 'public'
-  | 'session'
-  | 'app_session'
-  | 'undeclared'
-  | AdminPermission
-  | { editRoles: string[] };
+  'public' | 'session' | 'app_session' | 'undeclared' | AdminPermission | { editRoles: string[] };
 const settingRoles = { editRoles: ['OWN', 'OPS'] };
 const routeAccess: Record<string, Access> = {
   'GET /v1/admin/status': 'public',

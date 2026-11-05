@@ -1,5 +1,5 @@
 {
-  "id": "bf625143-d1cb-45fa-a1de-20becd0b74d3",
+  "id": "6916a736-9a68-459e-a457-b687c92a5049",
   "prevId": "c5fd0d09-db03-4779-9de1-c102c723d5b3",
   "version": "7",
   "dialect": "postgresql",
@@ -1212,6 +1212,12 @@
         "app_sign_in_codes_open_per_number": {
           "name": "app_sign_in_codes_open_per_number",
           "columns": [
+            {
+              "expression": "party",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
             {
               "expression": "phone_hash",
               "isExpression": false,
