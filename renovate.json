@@ -20,9 +20,9 @@
       "schedule": ["* 0-6 1 1,4,7,10 *"]
     },
     {
-      "description": "The Flutter SDK pins test_api, so test, and build_runner through test's analyzer range, move with Flutter (packages/core_api/CLAUDE.md).",
+      "description": "The Flutter SDK pins test_api and intl, so test, build_runner (through test's analyzer range) and intl move with Flutter (packages/core_api/CLAUDE.md).",
       "matchManagers": ["pub"],
-      "matchPackageNames": ["test", "build_runner"],
+      "matchPackageNames": ["test", "build_runner", "intl"],
       "groupName": "runtimes",
       "schedule": ["* 0-6 1 1,4,7,10 *"]
     },

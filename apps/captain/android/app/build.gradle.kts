@@ -15,7 +15,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // Owner decision 2026-11-05; flavors add their suffix with the deploy slice.
         applicationId = "com.foxdrop.captain"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
@@ -31,8 +31,8 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // The debug key until the release slice adds the app's own key
+            // (architecture §11.4); never distribute a build signed with it.
             signingConfig = signingConfigs.getByName("debug")
         }
     }

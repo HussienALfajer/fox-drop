@@ -8,3 +8,4 @@ The Arabic strings of the three Flutter apps (architecture §11.2, AP §4.7).
 - Arabic is the only locale. Strings use Western digits; `test/western_digits_test.dart` fails an ARB value with Arabic-Indic digits, and proves that intl formats numbers and dates in the apps' locale with Western digits. A placeholder that formats a value (a number, a date, money) adds its case to that test.
 - A string that belongs to one app is prefixed with the app (`customerAppName`); shared strings have no prefix.
 - The money, date, duration and distance formatters of §11.2 come with the first screen that shows such a value.
+- `intl` takes the version the pinned Flutter's `flutter_localizations` pins, and moves with Flutter (`renovate.json`).
