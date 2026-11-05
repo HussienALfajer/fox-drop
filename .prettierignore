@@ -8,3 +8,7 @@ packages/api-schema/openapi.json
 packages/api-schema/src/schema.ts
 # Written by drizzle-kit generate.
 apps/server/migrations/meta/
+# Written by `flutter create` and the Flutter tool.
+apps/*/android/
+apps/*/ios/
+apps/*/windows/
