@@ -1,6 +1,6 @@
 import { Injectable, Logger, Module } from '@nestjs/common';
 import { FxModule, FxService } from '../modules/fx/index.js';
-import { GeoModule, GeoService } from '../modules/geo/index.js';
+import { GeoModule, GeoRefusedError, GeoService } from '../modules/geo/index.js';
 import { SettingsModule, SettingsService } from '../modules/settings/index.js';
 
 // The environments that get the placeholder values. Production never does:
@@ -23,6 +23,29 @@ const currencies = [
   { currency: 'USD', displayOrder: 2, enabled: false, roundingUnitMinor: 50 },
   { currency: 'SYP', displayOrder: 3, enabled: false, roundingUnitMinor: 50_000 },
 ];
+
+// One placeholder zone around Azaz's town centre, until the owner draws the
+// neighbourhoods (AP §9.12.2).
+const azazZone = {
+  name: 'أعزاز',
+  area: [
+    { latitude: 36.57, longitude: 37.025 },
+    { latitude: 36.57, longitude: 37.07 },
+    { latitude: 36.605, longitude: 37.07 },
+    { latitude: 36.605, longitude: 37.025 },
+  ],
+  active: true,
+};
+
+// The placeholder delivery fee: 40 TRY flat, with no minimum and no
+// free-delivery threshold (owner decision 2026-11-06), until AP §13 item 5.
+const azazFee = {
+  kind: 'flat',
+  currency: 'TRY',
+  flatFee: 4000n,
+  minimumFee: null,
+  freeDeliveryFrom: null,
+} as const;
 
 // The placeholder data of development and staging, set by the API at start
 // (src/roles/start-role.ts), never by a migration. Each value is set only
@@ -71,6 +94,26 @@ export class PlaceholderSeed {
           reason: 'Placeholder for development and staging (AP §13 item 5)',
         },
       );
+    }
+    if ((await this.geo.zones(cityId)).length === 0) {
+      // Another server starting at the same time may have added it.
+      await this.geo
+        .createZone(cityId, azazZone, {
+          actor: system,
+          context: noRequest,
+          reason: 'Placeholder for development and staging',
+        })
+        .catch((error: unknown) => {
+          if (!(error instanceof GeoRefusedError && error.refusal === 'zone_name_taken'))
+            throw error;
+        });
+    }
+    if ((await this.geo.deliveryFeeRule(cityId)) === null) {
+      await this.geo.setDeliveryFeeRule(cityId, azazFee, {
+        actor: system,
+        context: noRequest,
+        reason: 'Placeholder for development and staging (AP §13 item 5)',
+      });
     }
     this.logger.log('placeholder data in place');
   }

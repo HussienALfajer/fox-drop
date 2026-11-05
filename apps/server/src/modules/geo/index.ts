@@ -1,18 +1,28 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
+import { AuditModule } from '../audit/index.js';
+import { FxModule } from '../fx/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { ROAD_DISTANCES } from './distance.js';
 import { GeoService } from './geo.service.js';
 import { roadDistancesFromEnvironment } from './osrm-road-distances.js';
 
-// The geo module (architecture §4.2): cities and distances, and later zones.
-// Other modules read them through GeoService only.
+// The geo module (architecture §4.2): cities, distances, service zones and
+// the delivery fee. Other modules read them through GeoService only.
 @Module({
-  imports: [DatabaseModule, SettingsModule],
+  imports: [DatabaseModule, SettingsModule, FxModule, AuditModule],
   providers: [GeoService, { provide: ROAD_DISTANCES, useFactory: roadDistancesFromEnvironment }],
   exports: [GeoService],
 })
 export class GeoModule {}
 
+export type { DeliveryFeeRule, DistanceBand } from './delivery-fee.js';
 export type { Distance, DistanceMethod, Point } from './distance.js';
-export { GeoService } from './geo.service.js';
+export {
+  type DeliveryFee,
+  type GeoChange,
+  type GeoRefusal,
+  GeoRefusedError,
+  GeoService,
+  type Zone,
+} from './geo.service.js';

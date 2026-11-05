@@ -312,6 +312,43 @@ describe('the settings tables (AP §4.4)', () => {
   });
 });
 
+describe('the zones and fee tables (AP §9.12.2–9.12.3)', () => {
+  const azaz = "(SELECT id FROM geo.cities WHERE code = 'AZ')";
+
+  it('take a zone polygon and refuse one that crosses itself', async () => {
+    await appQuery(
+      `INSERT INTO geo.zones (city_id, name, area, active) VALUES (${azaz}, 'test square', ST_GeomFromText('POLYGON((37 36, 37.01 36, 37.01 36.01, 37 36.01, 37 36))', 4326), true)`,
+    );
+    await expect(
+      appQuery(
+        `INSERT INTO geo.zones (city_id, name, area, active) VALUES (${azaz}, 'test bow tie', ST_GeomFromText('POLYGON((37 36, 37.01 36.01, 37.01 36, 37 36.01, 37 36))', 4326), true)`,
+      ),
+    ).rejects.toThrow(/zones_area_valid/);
+  });
+
+  it('take a fee rule with its bands and refuse a flat rule without its fee', async () => {
+    const { rows } = await appQuery(
+      `INSERT INTO geo.fee_rules (city_id, kind, currency) VALUES (${azaz}, 'distance_bands', 'TRY') RETURNING id`,
+    );
+    await appQuery(
+      `INSERT INTO geo.fee_bands (rule_id, position, up_to_metres, fee) VALUES ('${rows[0].id}', 0, NULL, 4000)`,
+    );
+    await expect(
+      appQuery(
+        `INSERT INTO geo.fee_rules (city_id, kind, currency) VALUES (${azaz}, 'flat', 'TRY')`,
+      ),
+    ).rejects.toThrow(/fee_rules_flat_fee/);
+  });
+
+  it.each([
+    ['change a fee rule', "UPDATE geo.fee_rules SET reason = 'x'"],
+    ['change a fee band', 'UPDATE geo.fee_bands SET fee = 1'],
+    ['delete a zone', 'DELETE FROM geo.zones'],
+  ])('refuse the application role to %s', async (_, statement) => {
+    await expect(appQuery(statement)).rejects.toThrow(/permission denied/);
+  });
+});
+
 describe('the identity tables (AP §5.1–5.2)', () => {
   it('refuse an admin account without an email or a phone', async () => {
     await expect(

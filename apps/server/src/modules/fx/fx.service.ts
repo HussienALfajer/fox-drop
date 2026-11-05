@@ -76,6 +76,13 @@ export interface FxChange {
   reason?: string | null;
 }
 
+// Another module's amounts of a city that are in its base currency, such as
+// the delivery fee rule (AP §8.6), read in the transaction of a base change.
+export type CityAmountSource = (
+  cityId: string,
+  executor: FxExecutor,
+) => Promise<{ key: string; currency: string }[]>;
+
 // The database, or the open transaction of the caller's change.
 export type FxExecutor = Pick<NodePgDatabase, 'select' | 'selectDistinctOn' | 'update' | 'execute'>;
 
@@ -85,6 +92,8 @@ export type FxExecutor = Pick<NodePgDatabase, 'select' | 'selectDistinctOn' | 'u
 // currency.<code>.rounding_unit and rounding_mode (Appendix A), read here.
 @Injectable()
 export class FxService implements OnModuleInit {
+  private readonly amountSources: CityAmountSource[] = [];
+
   constructor(
     @Inject(DATABASE) private readonly database: Database,
     private readonly settings: SettingsService,
@@ -102,12 +111,28 @@ export class FxService implements OnModuleInit {
     });
   }
 
+  // A module that keeps a city's amounts in its base currency registers them
+  // here when it starts, so a base change waits until they are in the new
+  // base. Its changes take lockCityCurrencies, as the settings do.
+  useCityAmounts(source: CityAmountSource): void {
+    this.amountSources.push(source);
+  }
+
   async currencies(): Promise<Currency[]> {
     return this.database.db.select().from(currencies).orderBy(asc(currencies.code));
   }
 
   async baseCurrency(cityId: string, executor: FxExecutor = this.database.db) {
     return (await this.base(cityId, executor))?.currency ?? null;
+  }
+
+  // Whether the city's first order has locked its base currency (D25).
+  async baseLocked(cityId: string, executor: FxExecutor = this.database.db): Promise<boolean> {
+    const [row] = await executor
+      .select({ lockedAt: cityBases.lockedAt })
+      .from(cityBases)
+      .where(eq(cityBases.cityId, cityId));
+    return row?.lockedAt != null;
   }
 
   // The city's currencies in display order, enabled or not.
@@ -244,11 +269,13 @@ export class FxService implements OnModuleInit {
       if (!accepted) {
         throw new FxRefusedError('not_city_currency', `${currency} is not a currency of the city`);
       }
-      // The city's money settings are in its base currency (AP §8.6). A
-      // settings change takes the same lock, so none slips in meanwhile.
-      const amounts = (await this.settings.cityAmounts(cityId)).filter(
-        (amount) => amount.currency !== currency,
-      );
+      // The city's money settings and the other modules' amounts are in its
+      // base currency (AP §8.6). Their changes take the same lock, so none
+      // slips in meanwhile.
+      const amounts = [
+        ...(await this.settings.cityAmounts(cityId)),
+        ...(await Promise.all(this.amountSources.map((source) => source(cityId, tx)))).flat(),
+      ].filter((amount) => amount.currency !== currency);
       if (amounts.length > 0) {
         throw new FxRefusedError(
           'amounts_in_other_currency',

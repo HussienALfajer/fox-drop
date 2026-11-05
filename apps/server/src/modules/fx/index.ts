@@ -25,6 +25,7 @@ export {
   toBase,
 } from './conversion.js';
 export {
+  type CityAmountSource,
   type CityCurrency,
   type Currency,
   type CurrentRate,

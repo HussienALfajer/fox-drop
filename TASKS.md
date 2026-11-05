@@ -4,19 +4,25 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 1.4, zones and delivery fees (`docs/roadmap.md`, Phase 1).
+Slice 1.5, restaurant, menu and restaurant sign-in (`docs/roadmap.md`, Phase 1).
 
-- **Specs:** AP §9.12.2 (service zones: polygons, a name per neighbourhood, active or not; votes from outside the zones), §9.12.3 (delivery fees: «ثابت» flat or «شرائح مسافة» distance bands, a minimum fee, an optional free-delivery threshold on the items value, per-restaurant overrides, the preview calculator, published fees), CU §7.1 (the zone check of a point: inside a zone, inside but no restaurant covers it, outside every zone), CU §7.2 (the vote), architecture §4.2 (`geo` owns zones, zone checks and votes), `docs/domain/` for money (integer minor units in the city's base currency).
-- **Branch:** `feat/zones-and-fees`.
-- **Ask the owner first:** which module owns the fee rules (architecture §4.2 names none: `geo` with the zones of AP §9.12, or `ordering` with the quote); which vehicle's road distance the fee uses before a captain is known (`GeoService.distance` needs one); whether the votes of CU §7.2 belong in this slice; and the placeholder fee rule for Azaz (TASKS notes: delivery fee 40, flat, until AP §13 item 5 is decided).
+- **Specs:** RA §5 (accounts, owner phone sign-in, sessions and devices, roles, the account status of AP §9.6.1), RA §9 (menu: categories, items, option groups, availability, prices; what publishes at once and what needs review), RA §10 (status and hours), AP §9.6 (the restaurant record, its states, hours, coverage, minimum order and commission; the menu editor), architecture §4.2 (`merchants` owns restaurants, hours, states, devices and the menu), and AP §9.12.3 for the per-restaurant fee override.
+- **Branch:** `feat/restaurant-and-menu`.
+- **Ask the owner first:** how the restaurant's coverage is drawn (a radius, a polygon, or a list of zones) and how it relates to the zones of slice 1.4; whether the per-restaurant delivery fee override (AP §9.12.3) belongs in this slice; which of RA §5's roles and RA §9.5's menu change requests are in the walking skeleton; the demo restaurant's placeholder hours, minimum order and commission (15%); and a split into pull requests if the slice is larger than one.
 - **Plan:**
-  - [ ] Write the failing tests first: a point inside an active zone, inside an inactive one, outside every zone; a flat fee; distance bands with their edges; the minimum fee; the free-delivery threshold compared with the items value; amounts in integer minor units of the base currency.
-  - [ ] The `geo.zones` table (a PostGIS polygon in SRID 4326, its name, active or not, its city) through the `db-migration` skill, with a GiST index; `GeoService.zoneAt(cityId, point)`.
-  - [ ] The fee rule and its calculation behind the owning module's public service, using `GeoService.distance` (slice 1.3) for the distance bands.
-  - [ ] Azaz's placeholder zone and fee in `src/seed/placeholder-seed.ts` (development and staging only).
+  - [ ] Write the failing tests first: the restaurant states of AP §9.6.1, hours open and closed in the city's time zone, coverage of a point, the minimum order in integer minor units of the base currency, the commission percentage.
+  - [ ] The `merchants` schema (restaurant, hours, coverage, menu) through the `db-migration` skill; `MerchantsService`.
+  - [ ] The restaurant party on the app sign-in engine (`identity`, slice 0.10): its account table and the merchant routes.
+  - [ ] The demo restaurant and its menu in `src/seed/placeholder-seed.ts` (development and staging only).
   - [ ] The module's `CLAUDE.md`, `pnpm verify` through `checker`, the `reviewer`, then the pull request.
 
 ## Notes from earlier slices
+
+- Slice 1.4 added zones and delivery fees to `geo` (`apps/server/src/modules/geo/CLAUDE.md`; owner decisions 2026-11-06): geo owns the fee rule; a distance-band fee uses the motorbike's distance (`GeoService.distance`, so `pricing.distance_method` applies); a distance on a band's edge takes the lower band; free delivery pays 0 whatever the minimum fee; the free-delivery threshold compares the items value after the restaurant's item discounts; active zones never overlap. Fee rules are append-only versions, and `deliveryFee` returns the version it priced with (`ruleId`) for the quote.
+- `zoneAt(cityId, point)` answers inside a zone or outside every zone; the third case of CU §7.1 («لا توجد مطاعم توصل إلى موقعك حالياً») needs the restaurants' coverage (slice 1.5) and the customer's browsing (slice 1.7).
+- Placeholders in development and staging: one active zone «أعزاز» around the town centre and a flat 40 TRY fee with no minimum and no threshold.
+- fx now also refuses a base change while a module's registered amounts (`FxService.useCityAmounts`, today geo's fee rule) are in another currency; until the first order a fee rule may be entered in any of the city's currencies, so the owner enters it in the new base first. A process that changes a base currency imports `GeoModule` (the API does).
+- Not built yet: the per-restaurant fee override (slice 1.5 asks the owner), the votes of CU §7.2 (slice 1.7), editing a zone's outline or name, the zones and pricing screen with its preview calculator and vote map. For slice 1.8: `deliveryFee` reads through the pool; give it the order's transaction for the atomic re-check, and compare the quote's `ruleId` with the current rule.
 
 - Slice 1.3 added road distances (`apps/server/src/modules/geo/CLAUDE.md`; owner decisions 2026-11-06): `GeoService.distance(from, to, { vehicle })` returns whole metres and `road` or `straight_x1.3`; the straight line × 1.3 when OSRM fails, times out (1 s), answers no route or has no server, and always when `pricing.distance_method` is `straight_line`. OSRM covers Azaz's region only (about 20 km, `infra/osrm/cut.sh`), with the car, motorbike (car profile with placeholder speeds), bicycle and walking profiles.
 - Locally: `docker compose run --rm osrm-build`, then `docker compose --profile osrm up --detach`; without it every distance falls back. On staging one shared project, `foxdrop-osrm`, serves every environment on its own `foxdrop-osrm-<env>` network and rebuilds weekly (`infra/CLAUDE.md`, the `deploy` skill). Production adds its network to `infra/osrm/compose.yaml` (a test) and runs `provision.sh` twice.
@@ -94,4 +100,4 @@ Slice 1.4, zones and delivery fees (`docs/roadmap.md`, Phase 1).
 
 ## Next
 
-Build slice 1.4 (`docs/roadmap.md`).
+Build slice 1.5 (`docs/roadmap.md`).

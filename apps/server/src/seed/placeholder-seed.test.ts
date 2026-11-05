@@ -4,6 +4,7 @@ import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { startTestDatabase, type TestDatabase } from '../database/test-database.js';
 import { FxService } from '../modules/fx/index.js';
+import { GeoService } from '../modules/geo/index.js';
 import { SettingsService } from '../modules/settings/index.js';
 import { startTestValkey, type TestValkey } from '../valkey/test-valkey.js';
 import { PlaceholderSeed, PlaceholderSeedModule, seedsPlaceholders } from './placeholder-seed.js';
@@ -69,6 +70,28 @@ describe('the placeholder seed', () => {
       [azaz],
     );
     expect(added.map((row) => row.target_id)).toEqual(['SYP', 'TRY', 'USD']);
+  });
+
+  it('gives Azaz one active zone and a flat delivery fee of 40 TRY', async () => {
+    const geo = moduleRef.get(GeoService);
+    expect(await geo.zones(azaz)).toEqual([
+      { id: expect.any(String), name: 'أعزاز', active: true },
+    ]);
+    await expect(
+      geo.zoneAt(azaz, { latitude: 36.5866, longitude: 37.0463 }),
+    ).resolves.toMatchObject({ name: 'أعزاز' });
+    await expect(geo.deliveryFeeRule(azaz)).resolves.toMatchObject({
+      kind: 'flat',
+      currency: 'TRY',
+      flatFee: 4000n,
+      minimumFee: null,
+      freeDeliveryFrom: null,
+    });
+    const { rows } = await sql.query(
+      "SELECT count(*)::int AS n FROM audit.events WHERE action = 'delivery_fee_rule.set' AND city_id = $1",
+      [azaz],
+    );
+    expect(rows).toEqual([{ n: 1 }]);
   });
 
   it('never replaces a value someone entered, and changes nothing when run again', async () => {
