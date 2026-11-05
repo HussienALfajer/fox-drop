@@ -125,6 +125,15 @@ describe('MerchantsService.createRestaurant (AP §9.6.3)', () => {
     ]);
   });
 
+  it('refuses a prep time outside the chooser limits', async () => {
+    const { cityId } = await city();
+    for (const defaultPrepMin of [4, 91, 40_000]) {
+      await expect(
+        merchants.createRestaurant(cityId, { ...restaurant, defaultPrepMin }, change),
+      ).rejects.toEqual(refusal('invalid_restaurant'));
+    }
+  });
+
   it('refuses a minimum order outside the city currencies, an empty name and a bad commission', async () => {
     const { cityId } = await city();
     await expect(
@@ -221,16 +230,32 @@ describe('MerchantsService.setAccountStatus (AP §9.6.1)', () => {
     );
     await merchants.setAccountStatus(id, 'test', change);
     await merchants.setAccountStatus(id, 'active', change);
+    await expect(merchants.setAccountStatus(id, 'suspended', change)).rejects.toEqual(
+      refusal('reason_required'),
+    );
     await merchants.setAccountStatus(id, 'suspended', { ...change, reason: 'price parity' });
+    await expect(
+      merchants.setAccountStatus(id, 'active', { ...change, reason: ' ' }),
+    ).rejects.toEqual(refusal('reason_required'));
     const { rows } = await sql.query(
       'SELECT account_status, suspension_reason FROM merchants.restaurants WHERE id = $1',
       [id],
     );
     expect(rows).toEqual([{ account_status: 'suspended', suspension_reason: 'price parity' }]);
-    await merchants.setAccountStatus(id, 'terminated', { ...change, reason: 'contract ended' });
-    await expect(merchants.setAccountStatus(id, 'active', change)).rejects.toEqual(
-      refusal('status_change_not_allowed'),
+    await expect(merchants.setAccountStatus(id, 'terminated', change)).rejects.toEqual(
+      refusal('reason_required'),
     );
+    await merchants.setAccountStatus(id, 'terminated', { ...change, reason: 'contract ended' });
+    await expect(
+      merchants.setAccountStatus(id, 'active', { ...change, reason: 'back' }),
+    ).rejects.toEqual(refusal('status_change_not_allowed'));
+  });
+
+  it('activates a draft directly, as the seed does', async () => {
+    const { cityId } = await city();
+    const id = await merchants.createRestaurant(cityId, restaurant, change);
+    await merchants.setAccountStatus(id, 'active', change);
+    expect((await merchants.restaurant(id))?.accountStatus).toBe('active');
   });
 });
 
@@ -317,9 +342,33 @@ describe('MerchantsService.setCommission (AP §9.6.5, D16)', () => {
     const { cityId } = await city();
     const id = await merchants.createRestaurant(cityId, restaurant, change);
     const from = new Date(Date.now() + 86_400_000);
-    await merchants.setCommission(id, { rateBp: 1000, effectiveFrom: from }, change);
+    await merchants.setCommission(
+      id,
+      { rateBp: 1000, effectiveFrom: from },
+      { ...change, reason: 'launch offer' },
+    );
     expect((await merchants.restaurant(id))?.commissionBp).toBe(1500);
     expect((await merchants.restaurant(id, new Date(from.getTime() + 1)))?.commissionBp).toBe(1000);
+    const { rows } = await sql.query(
+      "SELECT changes FROM audit.events WHERE target_id = $1 AND action = 'restaurant.commission'",
+      [id],
+    );
+    expect(rows[0].changes.rateBp).toEqual({ before: 1500, after: 1000 });
+  });
+
+  it('refuses a change without a reason or from a moment already past', async () => {
+    const { cityId } = await city();
+    const id = await merchants.createRestaurant(cityId, restaurant, change);
+    await expect(merchants.setCommission(id, { rateBp: 1000 }, change)).rejects.toEqual(
+      refusal('reason_required'),
+    );
+    await expect(
+      merchants.setCommission(
+        id,
+        { rateBp: 1000, effectiveFrom: new Date(Date.now() - 60_000) },
+        { ...change, reason: 'backdated' },
+      ),
+    ).rejects.toEqual(refusal('invalid_commission'));
   });
 });
 
@@ -363,27 +412,28 @@ describe('MerchantsService menu (AP §9.6.6, RA §9)', () => {
       change,
     );
     const menu = await merchants.menu(id);
-    expect(menu.currency).toBe('TRY');
     expect(menu.categories.map((category) => category.name)).toEqual(['وجبات', 'مشروبات']);
     expect(menu.categories[0]!.items).toMatchObject([
       {
         code: 'I0001',
         name: 'شاورما',
-        price: 12_000n,
+        price: { amount: 12_000n, currency: 'TRY' },
         available: true,
         optionGroups: [
           {
             name: 'الحجم',
             minChoices: 1,
             options: [
-              { name: 'وسط', priceDelta: 0n },
-              { name: 'كبير', priceDelta: 2_000n },
+              { name: 'وسط', priceDelta: { amount: 0n, currency: 'TRY' } },
+              { name: 'كبير', priceDelta: { amount: 2_000n, currency: 'TRY' } },
             ],
           },
         ],
       },
     ]);
-    expect(menu.categories[1]!.items).toMatchObject([{ code: 'AYRAN', price: 2_500n }]);
+    expect(menu.categories[1]!.items).toMatchObject([
+      { code: 'AYRAN', price: { amount: 2_500n, currency: 'TRY' } },
+    ]);
   });
 
   it('makes an item unavailable when its category or every option of a required group is', async () => {
@@ -412,6 +462,35 @@ describe('MerchantsService menu (AP §9.6.6, RA §9)', () => {
     );
     await sql.query('UPDATE merchants.options SET available = false WHERE group_id = $1', [group]);
     expect((await merchants.menu(id)).categories[0]!.items[0]!.available).toBe(false);
+  });
+
+  it('reads each amount with its own currency, and generates codes past the ones entered', async () => {
+    const { cityId } = await city();
+    const id = await merchants.createRestaurant(cityId, restaurant, change);
+    const category = await merchants.addCategory(id, { name: 'وجبات' }, change);
+    await merchants.addItem(
+      id,
+      { categoryId: category, code: 'I0001', name: 'a', price: { amount: 500n, currency: 'USD' } },
+      change,
+    );
+    await merchants.addItem(
+      id,
+      { categoryId: category, name: 'b', price: { amount: 100n, currency: 'TRY' } },
+      change,
+    );
+    const items = (await merchants.menu(id)).categories[0]!.items;
+    expect(items.map((item) => [item.code, item.price])).toEqual([
+      ['I0001', { amount: 500n, currency: 'USD' }],
+      ['I0002', { amount: 100n, currency: 'TRY' }],
+    ]);
+  });
+
+  it('refuses a category window outside the day', async () => {
+    const { cityId } = await city();
+    const id = await merchants.createRestaurant(cityId, restaurant, change);
+    await expect(
+      merchants.addCategory(id, { name: 'فطور', window: { startsAt: 0, endsAt: 1500 } }, change),
+    ).rejects.toEqual(refusal('invalid_menu'));
   });
 
   it('refuses a price of 0, a negative delta, a repeated code and another currency', async () => {

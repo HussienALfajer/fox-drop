@@ -17,7 +17,8 @@ Slice 1.5, restaurant, menu and restaurant sign-in (`docs/roadmap.md`, Phase 1).
   - [x] Write the failing tests first: the operating state's precedence (RA §7.1), hours open and closed in the city's time zone with periods crossing midnight, the weekly schedule's rules (RA §10), coverage of a point, the commission in effect.
   - [x] The `merchants` schema through the `db-migration` skill; `MerchantsService` for the restaurant record, account status, hours, coverage, minimum order, commission and the menu.
   - [x] The demo restaurant and its menu in `src/seed/placeholder-seed.ts` (development and staging only).
-  - [ ] The module's `CLAUDE.md`, `pnpm verify` through `checker`, the `reviewer`, then the pull request.
+  - [x] The module's `CLAUDE.md`, `pnpm verify` through `checker`, the `reviewer`, then the pull request.
+- **Stopped at:** pull request 1 is done; start pull request 2 in a new session.
 - **Plan, pull request 2 (its own session):**
   - [ ] The restaurant party on the app sign-in engine (`identity`, slice 0.10): owner and cashier accounts, one phone per restaurant (S6), the sign-in refusals of RA §5.2 and §5.5, devices.
   - [ ] Merchant routes: the restaurant and its menu, availability switches (RA §9.3) by owners and cashiers.
@@ -107,4 +108,4 @@ Slice 1.5, restaurant, menu and restaurant sign-in (`docs/roadmap.md`, Phase 1).
 
 ## Next
 
-Build slice 1.5 (`docs/roadmap.md`).
+Build pull request 2 of slice 1.5: restaurant sign-in, the merchant routes and the availability switches (the plan above). The `merchants` module of pull request 1 is described in `apps/server/src/modules/merchants/CLAUDE.md`.

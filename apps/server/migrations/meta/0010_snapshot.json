@@ -1,5 +1,5 @@
 {
-  "id": "053438c3-0a4c-4b86-a3ea-ae42fb28f4a1",
+  "id": "8bed22e4-bc2c-4dcd-9de5-b1a42c7af7ce",
   "prevId": "f9052886-4cae-4e37-b767-f8c3a9f20843",
   "version": "7",
   "dialect": "postgresql",
@@ -2734,6 +2734,27 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "change_requests_restaurant": {
+          "name": "change_requests_restaurant",
+          "columns": [
+            {
+              "expression": "restaurant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -2903,7 +2924,23 @@
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "coverage_zones_zone": {
+          "name": "coverage_zones_zone",
+          "columns": [
+            {
+              "expression": "zone_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "coverage_zones_restaurant_id_restaurants_id_fk": {
           "name": "coverage_zones_restaurant_id_restaurants_id_fk",
@@ -3104,7 +3141,23 @@
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "item_option_groups_group": {
+          "name": "item_option_groups_group",
+          "columns": [
+            {
+              "expression": "group_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "item_option_groups_item_id_items_id_fk": {
           "name": "item_option_groups_item_id_items_id_fk",
@@ -3785,6 +3838,10 @@
           "name": "pauses_period",
           "value": "\"merchants\".\"pauses\".\"ends_at\" > \"merchants\".\"pauses\".\"starts_at\""
         },
+        "pauses_restaurant_ends": {
+          "name": "pauses_restaurant_ends",
+          "value": "\"merchants\".\"pauses\".\"source\" <> 'restaurant' OR \"merchants\".\"pauses\".\"ends_at\" IS NOT NULL"
+        },
         "pauses_ended_by_type_values": {
           "name": "pauses_ended_by_type_values",
           "value": "\"merchants\".\"pauses\".\"ended_by_type\" IN ('admin', 'merchant', 'system')"
@@ -3873,6 +3930,36 @@
               "expression": "id",
               "isExpression": false,
               "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "price_changes_item": {
+          "name": "price_changes_item",
+          "columns": [
+            {
+              "expression": "item_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "price_changes_option": {
+          "name": "price_changes_option",
+          "columns": [
+            {
+              "expression": "option_id",
+              "isExpression": false,
+              "asc": true,
               "nulls": "last"
             }
           ],

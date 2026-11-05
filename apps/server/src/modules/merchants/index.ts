@@ -3,13 +3,14 @@ import { DatabaseModule } from '../../database/database.module.js';
 import { AuditModule } from '../audit/index.js';
 import { FxModule } from '../fx/index.js';
 import { GeoModule } from '../geo/index.js';
+import { SettingsModule } from '../settings/index.js';
 import { MerchantsService } from './merchants.service.js';
 
 // The merchants module (architecture §4.2): restaurants, their hours, states,
 // coverage, commission and menu. Other modules read them through
 // MerchantsService only.
 @Module({
-  imports: [DatabaseModule, FxModule, GeoModule, AuditModule],
+  imports: [DatabaseModule, SettingsModule, FxModule, GeoModule, AuditModule],
   providers: [MerchantsService],
   exports: [MerchantsService],
 })

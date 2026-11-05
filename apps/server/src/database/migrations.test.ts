@@ -367,6 +367,18 @@ describe('the merchants tables (AP §9.6, RA §9–10)', () => {
     );
   });
 
+  it('refuse a restaurant pause without an end', async () => {
+    const { rows } = await appQuery(restaurant("'radius', 3000"));
+    await expect(
+      appQuery(
+        `INSERT INTO merchants.pauses (restaurant_id, source, starts_at) VALUES ('${rows[0].id}', 'restaurant', now())`,
+      ),
+    ).rejects.toThrow(/pauses_restaurant_ends/);
+    await appQuery(
+      `INSERT INTO merchants.pauses (restaurant_id, source, starts_at) VALUES ('${rows[0].id}', 'ops', now())`,
+    );
+  });
+
   it('refuse a second pending change request for the same field', async () => {
     const { rows } = await appQuery(restaurant("'radius', 3000"));
     const request = `INSERT INTO merchants.change_requests (restaurant_id, target_type, target_id, field, pending_value, requested_by_id) VALUES ('${rows[0].id}', 'item', '0190f3a0-0000-7000-8000-0000000000b1', 'name', '"x"', '0190f3a0-0000-7000-8000-0000000000b2')`;

@@ -169,6 +169,7 @@ CREATE TABLE "merchants"."pauses" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "pauses_source_values" CHECK ("merchants"."pauses"."source" IN ('restaurant', 'ops', 'auto')),
 	CONSTRAINT "pauses_period" CHECK ("merchants"."pauses"."ends_at" > "merchants"."pauses"."starts_at"),
+	CONSTRAINT "pauses_restaurant_ends" CHECK ("merchants"."pauses"."source" <> 'restaurant' OR "merchants"."pauses"."ends_at" IS NOT NULL),
 	CONSTRAINT "pauses_ended_by_type_values" CHECK ("merchants"."pauses"."ended_by_type" IN ('admin', 'merchant', 'system'))
 );
 --> statement-breakpoint
@@ -251,13 +252,18 @@ ALTER TABLE "merchants"."weekly_schedules" ADD CONSTRAINT "weekly_schedules_rest
 CREATE INDEX "categories_restaurant" ON "merchants"."categories" USING btree ("restaurant_id","position");--> statement-breakpoint
 CREATE UNIQUE INDEX "change_requests_one_pending" ON "merchants"."change_requests" USING btree ("target_type","target_id","field") WHERE "merchants"."change_requests"."status" = 'pending';--> statement-breakpoint
 CREATE INDEX "change_requests_queue" ON "merchants"."change_requests" USING btree ("status","created_at");--> statement-breakpoint
+CREATE INDEX "change_requests_restaurant" ON "merchants"."change_requests" USING btree ("restaurant_id","status");--> statement-breakpoint
 CREATE INDEX "commission_rates_restaurant" ON "merchants"."commission_rates" USING btree ("restaurant_id","effective_from");--> statement-breakpoint
+CREATE INDEX "coverage_zones_zone" ON "merchants"."coverage_zones" USING btree ("zone_id");--> statement-breakpoint
 CREATE INDEX "holiday_closes_restaurant" ON "merchants"."holiday_closes" USING btree ("restaurant_id","ends_at");--> statement-breakpoint
+CREATE INDEX "item_option_groups_group" ON "merchants"."item_option_groups" USING btree ("group_id");--> statement-breakpoint
 CREATE INDEX "items_category" ON "merchants"."items" USING btree ("category_id","position");--> statement-breakpoint
 CREATE INDEX "option_groups_restaurant" ON "merchants"."option_groups" USING btree ("restaurant_id");--> statement-breakpoint
 CREATE INDEX "options_group" ON "merchants"."options" USING btree ("group_id","position");--> statement-breakpoint
 CREATE INDEX "pauses_restaurant" ON "merchants"."pauses" USING btree ("restaurant_id","starts_at" DESC NULLS LAST);--> statement-breakpoint
 CREATE INDEX "price_changes_restaurant" ON "merchants"."price_changes" USING btree ("restaurant_id","id" DESC NULLS LAST);--> statement-breakpoint
+CREATE INDEX "price_changes_item" ON "merchants"."price_changes" USING btree ("item_id");--> statement-breakpoint
+CREATE INDEX "price_changes_option" ON "merchants"."price_changes" USING btree ("option_id");--> statement-breakpoint
 CREATE INDEX "restaurants_city" ON "merchants"."restaurants" USING btree ("city_id");--> statement-breakpoint
 CREATE INDEX "restaurants_location" ON "merchants"."restaurants" USING gist ("location");--> statement-breakpoint
 CREATE INDEX "weekly_schedules_current" ON "merchants"."weekly_schedules" USING btree ("restaurant_id","id" DESC NULLS LAST);--> statement-breakpoint

@@ -7,7 +7,7 @@ import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService, type Point } from '../geo/index.js';
-import { lockCityCurrencies } from '../settings/index.js';
+import { lockCityCurrencies, SettingsService } from '../settings/index.js';
 import { commissionAt } from './commission.js';
 import { checkWeeklySchedule, currentPeriod, type OpeningPeriod } from './hours.js';
 import { type AccountStatus, type OperatingState, operatingState } from './operating-state.js';
@@ -35,7 +35,8 @@ export type MerchantsRefusal =
   | 'not_in_base_currency'
   | 'status_change_not_allowed'
   | 'invalid_menu'
-  | 'item_code_taken';
+  | 'item_code_taken'
+  | 'reason_required';
 
 // A change the merchants module refuses, with the reason the routes map to
 // their own answers.
@@ -101,7 +102,7 @@ export interface Restaurant {
 export interface MenuOption {
   id: string;
   name: string;
-  priceDelta: bigint;
+  priceDelta: Money;
   available: boolean;
 }
 
@@ -118,7 +119,7 @@ export interface MenuItem {
   code: string;
   name: string;
   description: string | null;
-  price: bigint;
+  price: Money;
   available: boolean;
   hidden: boolean;
   optionGroups: MenuOptionGroup[];
@@ -133,7 +134,6 @@ export interface MenuCategory {
 }
 
 export interface Menu {
-  currency: string | null;
   categories: MenuCategory[];
 }
 
@@ -159,23 +159,26 @@ export class MerchantsService implements OnModuleInit {
     private readonly geo: GeoService,
     private readonly fx: FxService,
     private readonly audit: AuditService,
+    private readonly settings: SettingsService,
   ) {}
 
   // The minimum orders and menu prices are in the city's base currency
-  // (AP §8.6), so fx refuses a base change while one is in another.
+  // (AP §8.6), so fx refuses a base change while one is in another. A
+  // terminated restaurant takes no more orders and does not count.
   onModuleInit(): void {
     this.fx.useCityAmounts(async (cityId, executor) => {
       const { rows } = await executor.execute<{ currency: string }>(sql`
-        SELECT minimum_order_currency AS currency FROM merchants.restaurants WHERE city_id = ${cityId}
+        SELECT minimum_order_currency AS currency FROM merchants.restaurants
+          WHERE city_id = ${cityId} AND account_status <> 'terminated'
         UNION
         SELECT i.currency FROM merchants.items i
           JOIN merchants.restaurants r ON r.id = i.restaurant_id
-          WHERE r.city_id = ${cityId} AND i.deleted_at IS NULL
+          WHERE r.city_id = ${cityId} AND r.account_status <> 'terminated' AND i.deleted_at IS NULL
         UNION
         SELECT o.currency FROM merchants.options o
           JOIN merchants.option_groups g ON g.id = o.group_id
           JOIN merchants.restaurants r ON r.id = g.restaurant_id
-          WHERE r.city_id = ${cityId} AND o.deleted_at IS NULL`);
+          WHERE r.city_id = ${cityId} AND r.account_status <> 'terminated' AND o.deleted_at IS NULL`);
       return rows.map(({ currency }) => ({ key: 'merchant_amounts', currency }));
     });
   }
@@ -202,8 +205,18 @@ export class MerchantsService implements OnModuleInit {
     if (!validPoint(restaurant.location)) {
       throw new MerchantsRefusedError('invalid_restaurant', 'the pin is not on the map');
     }
-    if (!Number.isInteger(restaurant.defaultPrepMin) || restaurant.defaultPrepMin <= 0) {
-      throw new MerchantsRefusedError('invalid_restaurant', 'the prep time is whole minutes');
+    // RA §10: within the prep-time chooser's limits.
+    const floor = await this.settings.get('merchant.prep_time_floor_min', { cityId });
+    const ceiling = await this.settings.get('merchant.prep_time_ceiling_min', { cityId });
+    if (
+      !Number.isInteger(restaurant.defaultPrepMin) ||
+      restaurant.defaultPrepMin < floor ||
+      restaurant.defaultPrepMin > ceiling
+    ) {
+      throw new MerchantsRefusedError(
+        'invalid_restaurant',
+        `the prep time is whole minutes from ${floor} to ${ceiling}`,
+      );
     }
     checkCommission(restaurant.commissionBp);
     if (restaurant.minimumOrder.amount < 0n) {
@@ -313,7 +326,8 @@ export class MerchantsService implements OnModuleInit {
   }
 
   // AP §9.6.1, §9.6.5: the account status, along the allowed changes.
-  // Suspending keeps its reason for the restaurant app (RA §5.5).
+  // Suspending, reactivating and terminating need a reason; a suspension
+  // keeps it for the restaurant app (RA §5.5).
   async setAccountStatus(
     restaurantId: string,
     status: AccountStatus,
@@ -328,11 +342,19 @@ export class MerchantsService implements OnModuleInit {
           `a ${row.accountStatus} restaurant cannot become ${status}`,
         );
       }
+      if (
+        (status === 'suspended' ||
+          status === 'terminated' ||
+          (row.accountStatus === 'suspended' && status === 'active')) &&
+        !hasReason(change)
+      ) {
+        throw new MerchantsRefusedError('reason_required', `becoming ${status} needs a reason`);
+      }
       await tx
         .update(restaurants)
         .set({
           accountStatus: status,
-          suspensionReason: status === 'suspended' ? (change.reason ?? null) : null,
+          suspensionReason: status === 'suspended' ? change.reason!.trim() : null,
           updatedAt: sql`now()`,
         })
         .where(eq(restaurants.id, restaurantId));
@@ -395,8 +417,30 @@ export class MerchantsService implements OnModuleInit {
     change: MerchantChange,
   ): Promise<void> {
     checkCommission(rateBp);
+    if (!hasReason(change)) {
+      throw new MerchantsRefusedError('reason_required', 'a commission change needs a reason');
+    }
     await this.database.db.transaction(async (tx) => {
       const row = await this.lockRestaurant(tx, restaurantId);
+      // New orders only (D16): never from a moment already past.
+      const [{ now }] = (await tx
+        .execute<{ now: Date }>(sql`SELECT now() AS now`)
+        .then((result) => result.rows)) as [{ now: Date }];
+      if (effectiveFrom !== undefined && effectiveFrom.getTime() < new Date(now).getTime()) {
+        throw new MerchantsRefusedError(
+          'invalid_commission',
+          'a commission change takes effect now or later',
+        );
+      }
+      const rates = await tx
+        .select({
+          id: commissionRates.id,
+          rateBp: commissionRates.rateBp,
+          effectiveFrom: commissionRates.effectiveFrom,
+        })
+        .from(commissionRates)
+        .where(eq(commissionRates.restaurantId, restaurantId));
+      const before = commissionAt(rates, new Date(now));
       await tx.insert(commissionRates).values({
         restaurantId,
         rateBp,
@@ -411,7 +455,7 @@ export class MerchantsService implements OnModuleInit {
           cityId: row.cityId,
           action: 'restaurant.commission',
           target: { type: 'restaurant', id: restaurantId },
-          before: null,
+          before: before === null ? null : { rateBp: before.rateBp },
           after: { rateBp, effectiveFrom: effectiveFrom?.toISOString() ?? 'now' },
           reason: change.reason ?? null,
         },
@@ -435,7 +479,8 @@ export class MerchantsService implements OnModuleInit {
       .from(restaurants)
       .where(eq(restaurants.id, restaurantId));
     if (!row) throw new MerchantsRefusedError('unknown_restaurant', 'no such restaurant');
-    const timeZone = (await this.geo.cityTimeZone(row.cityId)) ?? 'Asia/Damascus';
+    const timeZone = await this.geo.cityTimeZone(row.cityId);
+    if (timeZone === null) throw new Error(`restaurant ${restaurantId} is in an unknown city`);
     const [holiday] = await db
       .select({ endsAt: holidayCloses.endsAt })
       .from(holidayCloses)
@@ -508,6 +553,18 @@ export class MerchantsService implements OnModuleInit {
     const name = category.name.trim();
     if (name.length === 0)
       throw new MerchantsRefusedError('invalid_menu', 'a category needs a name');
+    const { window } = category;
+    if (
+      window != null &&
+      (!Number.isInteger(window.startsAt) ||
+        !Number.isInteger(window.endsAt) ||
+        window.startsAt < 0 ||
+        window.startsAt > 1439 ||
+        window.endsAt < 0 ||
+        window.endsAt > 1440)
+    ) {
+      throw new MerchantsRefusedError('invalid_menu', 'a window is two whole minutes of the day');
+    }
     return this.database.db.transaction(async (tx) => {
       const row = await this.lockRestaurant(tx, restaurantId);
       const [{ count }] = (await tx
@@ -585,12 +642,25 @@ export class MerchantsService implements OnModuleInit {
         .select({ count: sql<number>`count(*)::int` })
         .from(items)
         .where(eq(items.restaurantId, restaurantId))) as [{ count: number }];
-      const code = item.code?.trim() || `I${String(count + 1).padStart(4, '0')}`;
-      const [taken] = await tx
-        .select({ id: items.id })
-        .from(items)
-        .where(and(eq(items.restaurantId, restaurantId), eq(items.code, code)));
-      if (taken) throw new MerchantsRefusedError('item_code_taken', `the code ${code} is taken`);
+      const codeTaken = async (code: string) =>
+        (
+          await tx
+            .select({ id: items.id })
+            .from(items)
+            .where(and(eq(items.restaurantId, restaurantId), eq(items.code, code)))
+        ).length > 0;
+      let code = item.code?.trim() ?? '';
+      if (code.length > 0) {
+        if (await codeTaken(code)) {
+          throw new MerchantsRefusedError('item_code_taken', `the code ${code} is taken`);
+        }
+      } else {
+        // A generated code skips the ones entered by hand.
+        for (let next = count + 1; ; next += 1) {
+          code = `I${String(next).padStart(4, '0')}`;
+          if (!(await codeTaken(code))) break;
+        }
+      }
       const [{ id }] = (await tx
         .insert(items)
         .values({
@@ -700,7 +770,7 @@ export class MerchantsService implements OnModuleInit {
   async menu(restaurantId: string): Promise<Menu> {
     const db = this.database.db;
     const [restaurant] = await db
-      .select({ currency: restaurants.minimumOrderCurrency })
+      .select({ id: restaurants.id })
       .from(restaurants)
       .where(eq(restaurants.id, restaurantId));
     if (!restaurant) throw new MerchantsRefusedError('unknown_restaurant', 'no such restaurant');
@@ -759,14 +829,13 @@ export class MerchantsService implements OnModuleInit {
             .map((option) => ({
               id: option.id,
               name: option.name,
-              priceDelta: option.priceDelta,
+              priceDelta: { amount: option.priceDelta, currency: option.currency },
               available: option.available,
             })),
         },
       ]),
     );
     return {
-      currency: restaurant.currency,
       categories: categoryRows.map((category) => ({
         id: category.id,
         name: category.name,
@@ -788,7 +857,7 @@ export class MerchantsService implements OnModuleInit {
               code: item.code,
               name: item.name,
               description: item.description,
-              price: item.price,
+              price: { amount: item.price, currency: item.currency },
               available: item.available && category.available && !requiredGroupOut,
               hidden: item.hidden,
               optionGroups: groups,
@@ -882,6 +951,10 @@ function validPoint({ latitude, longitude }: Point): boolean {
     Math.abs(latitude) <= 90 &&
     Math.abs(longitude) <= 180
   );
+}
+
+function hasReason(change: MerchantChange): boolean {
+  return (change.reason ?? '').trim().length > 0;
 }
 
 function checkCommission(rateBp: number): void {

@@ -113,7 +113,10 @@ export const coverageZones = merchants.table(
     zoneId: uuid('zone_id').notNull(),
     removedAt: timestamp('removed_at', { withTimezone: true }),
   },
-  (table) => [primaryKey({ columns: [table.restaurantId, table.zoneId] })],
+  (table) => [
+    primaryKey({ columns: [table.restaurantId, table.zoneId] }),
+    index('coverage_zones_zone').on(table.zoneId),
+  ],
 );
 
 // RA §10: a version of the weekly schedule, never changed; the newest is in
@@ -189,7 +192,9 @@ export const holidayCloses = merchants.table(
 );
 
 // RA §7.1, AP §9.6.5: a pause, by the restaurant, operations or the
-// auto-pause rule. No end means until resumed. Ending it sets ended_at.
+// auto-pause rule. No end means until operations resume it; a restaurant
+// pause always ends, at the latest when its opening period does (S3).
+// Ending it early sets ended_at.
 export const pauses = merchants.table(
   'pauses',
   {
@@ -215,6 +220,10 @@ export const pauses = merchants.table(
     index('pauses_restaurant').on(table.restaurantId, table.startsAt.desc()),
     check('pauses_source_values', sql`${table.source} IN ('restaurant', 'ops', 'auto')`),
     check('pauses_period', sql`${table.endsAt} > ${table.startsAt}`),
+    check(
+      'pauses_restaurant_ends',
+      sql`${table.source} <> 'restaurant' OR ${table.endsAt} IS NOT NULL`,
+    ),
     changedByValues('pauses_ended_by_type_values', table.endedByType),
   ],
 );
@@ -384,7 +393,10 @@ export const itemOptionGroups = merchants.table(
     position: integer('position').notNull(),
     removedAt: timestamp('removed_at', { withTimezone: true }),
   },
-  (table) => [primaryKey({ columns: [table.itemId, table.groupId] })],
+  (table) => [
+    primaryKey({ columns: [table.itemId, table.groupId] }),
+    index('item_option_groups_group').on(table.groupId),
+  ],
 );
 
 // AP §9.6.6, RA §9.4: «سجل الأسعار», every change of an item price or an
@@ -409,6 +421,8 @@ export const priceChanges = merchants.table(
   },
   (table) => [
     index('price_changes_restaurant').on(table.restaurantId, table.id.desc()),
+    index('price_changes_item').on(table.itemId),
+    index('price_changes_option').on(table.optionId),
     check('price_changes_target', sql`num_nonnulls(${table.itemId}, ${table.optionId}) = 1`),
     changedByValues('price_changes_changed_by_type_values', table.changedByType),
   ],
@@ -449,6 +463,7 @@ export const changeRequests = merchants.table(
       .on(table.targetType, table.targetId, table.field)
       .where(sql`${table.status} = 'pending'`),
     index('change_requests_queue').on(table.status, table.createdAt),
+    index('change_requests_restaurant').on(table.restaurantId, table.status),
     check(
       'change_requests_target_type_values',
       sql`${table.targetType} IN ('category', 'item', 'option_group', 'option')`,

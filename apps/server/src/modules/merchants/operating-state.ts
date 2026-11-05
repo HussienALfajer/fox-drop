@@ -13,7 +13,7 @@ export interface OperatingInput {
   accountStatus: AccountStatus;
   holiday: { endsAt: Date } | null;
   period: { endsAt: Date } | null;
-  // A pause without an end lasts until someone resumes the restaurant.
+  // An operations or auto pause without an end lasts until resumed.
   pause: { source: PauseSource; endsAt: Date | null } | null;
   busyMode: { extraMin: number; endsAt: Date } | null;
   // Orders in placed, accepted or ready (RA §7.4).

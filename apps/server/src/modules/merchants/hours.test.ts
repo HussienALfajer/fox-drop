@@ -97,6 +97,15 @@ describe('currentPeriod', () => {
     expect(currentPeriod(schedule, new Date('2026-11-06T12:00:00Z'), timeZone)).toBeNull();
   });
 
+  it('keeps a Saturday night period open into Sunday morning', () => {
+    // 2026-11-07 is a Saturday.
+    const saturday = [period(6, '20:00', '03:00')];
+    expect(currentPeriod(saturday, at('2026-11-08T02:30:00'), timeZone)).toEqual({
+      endsAt: at('2026-11-08T03:00:00'),
+    });
+    expect(currentPeriod(saturday, at('2026-11-08T03:00:00'), timeZone)).toBeNull();
+  });
+
   it('is open all day for a whole-day period', () => {
     expect(
       currentPeriod([period(5, '00:00', '00:00')], at('2026-11-06T23:59:00'), timeZone),
