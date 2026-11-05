@@ -9,12 +9,12 @@ Slice 1.1, the ledger (`docs/roadmap.md`, Phase 1). Phase 2's slice list is plan
 - **Specs:** AP §8.4 (order money and the worked example), §8.5 (captain custody and earnings), §8.7 (restaurant account), §8.11 (platform accounts); architecture §4.3 (only `ledger` moves money), §5.2 (money as `bigint` minor units with a currency code), §5.6 (ledger), E3.
 - **Branch:** `feat/ledger`.
 - **Plan:**
-  - [ ] Write the failing tests first: a journal that does not balance to zero per currency is refused; amounts are integers in minor units with a currency code; every entry type of AP §8.5, §8.7 and §8.11 exists and no other; a balance is the sum of its entries; the application role cannot update or delete a ledger row.
-  - [ ] Decide each entry type's counter-account from AP §8.4–§8.11 (for example `custody.pay_merchant` against the restaurant account). Where the specs leave one open, ask the owner; never guess.
-  - [ ] The `ledger` schema through the `db-migration` skill: accounts (per city, party, purpose and currency, with the owning record's id and no foreign key into another module), journals (type, city, actor, reason, the source record such as an order), entries; grants `SELECT` and `INSERT` only.
-  - [ ] The public `LedgerService`: open an account, post a journal inside the caller's transaction, read a balance. No cached balances yet, so no reconciliation job (architecture §5.6 adds it with the first cache).
-  - [ ] A test that posts the money of AP §8.4's worked example and checks every balance, for a restaurant in `active` status (a `test` restaurant posts no commission, AP §9.6.3).
-  - [ ] The module's `CLAUDE.md` (how other modules post money) and the module boundary rule.
+  - [x] Write the failing tests first: a journal that does not balance to zero per currency is refused; amounts are integers in minor units with a currency code; every entry type of AP §8.5, §8.7 and §8.11 exists and no other; a balance is the sum of its entries; the application role cannot update or delete a ledger row.
+  - [x] Decide each entry type's counter-account from AP §8.4–§8.11. Owner decisions 2026-11-05: a new `platform.order_clearing` «طلبات قيد التسليم» for the order's cash and exceptions, `platform.adjustments` «القيود التصحيحية» for manual corrections, and a `captain.deposit` account per captain (`apps/server/src/modules/ledger/CLAUDE.md`).
+  - [x] The `ledger` schema through the `db-migration` skill: accounts (per city, party, purpose and currency, with the owning record's id and no foreign key into another module), journals (type, city, actor, reason, the source record such as an order), entries; grants `SELECT` and `INSERT` only.
+  - [x] The public `LedgerService`: open an account, post a journal inside the caller's transaction, read a balance. No cached balances yet, so no reconciliation job (architecture §5.6 adds it with the first cache).
+  - [x] A test that posts the money of AP §8.4's worked example and checks every balance, for a restaurant in `active` status (a `test` restaurant posts no commission, AP §9.6.3).
+  - [x] The module's `CLAUDE.md` (how other modules post money) and the module boundary rule.
   - [ ] `pnpm verify` through the `checker` agent, the `reviewer` agent, then the pull request.
 
 ## Notes from earlier slices
