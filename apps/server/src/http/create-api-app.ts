@@ -1,16 +1,27 @@
 import fastifyCookie from '@fastify/cookie';
 import { Module, type Type } from '@nestjs/common';
-import { NestFactory, Reflector } from '@nestjs/core';
+import { APP_FILTER, NestFactory, Reflector } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
+import { SentryGlobalFilter } from '@sentry/nestjs/setup';
 import { Logger } from 'nestjs-pino';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { LoggingModule } from '../logging/logging.module.js';
 
 export async function createApiApp(module: Type): Promise<NestFastifyApplication> {
-  @Module({ imports: [LoggingModule, module] })
+  @Module({
+    imports: [LoggingModule, module],
+    // Reports every error that is not an HttpException (the 500s) to Sentry,
+    // then answers as Nest's own filter does (architecture §16).
+    providers: [{ provide: APP_FILTER, useClass: SentryGlobalFilter }],
+  })
   class RootModule {}
 
-  const app = await NestFactory.create<NestFastifyApplication>(RootModule, new FastifyAdapter(), {
+  // nginx replaces X-Forwarded-For with the client address it sees, and only
+  // nginx reaches the API, so exactly one hop is trusted (architecture §15.5).
+  // Never `true`: a client could then pick its own address for the limits,
+  // the sessions and the audit log.
+  const adapter = new FastifyAdapter({ trustProxy: 1 });
+  const app = await NestFactory.create<NestFastifyApplication>(RootModule, adapter, {
     bufferLogs: true,
     abortOnError: false,
   });

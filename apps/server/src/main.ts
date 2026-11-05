@@ -1,14 +1,17 @@
 import 'reflect-metadata';
 import { createLogger } from './logging/logger-options.js';
+import { reportFatal, startErrorTracking } from './observability/error-tracking.js';
 import { parseProcessRole } from './roles/process-role.js';
 import { startRole } from './roles/start-role.js';
+
+startErrorTracking();
 
 // Failures outside Nest still go through the redacting logger.
 const logger = createLogger();
 
 function exitOnError(error: unknown, msg: string): void {
   logger.fatal({ err: error }, msg);
-  process.exit(1);
+  void reportFatal(error).finally(() => process.exit(1));
 }
 
 process.on('uncaughtException', (error) => exitOnError(error, 'uncaught exception'));

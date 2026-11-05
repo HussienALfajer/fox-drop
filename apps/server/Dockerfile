@@ -15,7 +15,10 @@ RUN pnpm --filter @fox-drop/server build \
   && cp -r apps/server/dist /out/dist
 
 FROM node:26.13.0-trixie-slim
-ENV NODE_ENV=production
+LABEL org.opencontainers.image.source=https://github.com/HussienALfajer/fox-drop
+# The commit the image is built from: Sentry's release (architecture §16).
+ARG FOX_DROP_RELEASE=unknown
+ENV NODE_ENV=production FOX_DROP_RELEASE=$FOX_DROP_RELEASE
 WORKDIR /app
 COPY --from=build /out/package.json ./
 COPY --from=build /out/node_modules node_modules
