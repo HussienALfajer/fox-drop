@@ -323,6 +323,8 @@ export const appSessions = identity.table(
     ipAddress: inet('ip_address'),
     signedInAt: timestamp('signed_in_at', { withTimezone: true }).notNull(),
     lastRefreshedAt: timestamp('last_refreshed_at', { withTimezone: true }).notNull(),
+    // The refresh token used last, the only one a retry may present again.
+    lastUsedTokenId: uuid('last_used_token_id'),
     endedAt: timestamp('ended_at', { withTimezone: true }),
     endReason: text('end_reason', { enum: appSessionEndReasons }),
   },
@@ -359,6 +361,8 @@ export const appRefreshTokens = identity.table(
     tokenHash: text('token_hash').notNull().unique(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     usedAt: timestamp('used_at', { withTimezone: true }),
+    // Set when a retry within the grace replaced it before it was used.
+    supersededAt: timestamp('superseded_at', { withTimezone: true }),
   },
   (table) => [index('app_refresh_tokens_session').on(table.sessionId)],
 );

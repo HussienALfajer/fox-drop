@@ -12,7 +12,7 @@
 | Captain app    | Phone and WhatsApp code; one device (CA §4.9)                           |
 | Customer app   | Phone and WhatsApp code at «تأكيد الطلب» (CU §5.1–5.2)                  |
 
-- Apps receive a short-lived access token (15 minutes, JWT signed with a rotating key) and a refresh token. Refresh tokens are stored hashed, rotated on every use, and revoked on reuse.
+- Apps receive a short-lived access token (15 minutes, JWT signed with a rotating key) and a refresh token. Refresh tokens are stored hashed, rotated on every use, and revoked on reuse. A retry within 10 seconds of a token's first use, before its successor is used, is not a reuse: it gets a new pair that replaces the one whose answer was lost (owner decision, 2026-11-05).
 - Blocking, closing an account or forcing sign-out revokes every refresh token at once (CU §5.4).
 
 ## 15.2 Authorisation

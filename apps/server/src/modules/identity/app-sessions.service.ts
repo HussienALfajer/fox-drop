@@ -29,6 +29,10 @@ export interface AppTokens {
   refreshToken: string;
 }
 
+// Owner decision 2026-11-05: a used refresh token presented again within this
+// many seconds of its first use is a retry whose answer was lost, not a reuse.
+export const REFRESH_RETRY_GRACE_SECONDS = 10;
+
 // Any refusal of a refresh token: unknown, already used, or its session ended.
 export class RefreshRefusedError extends Error {
   constructor() {
@@ -40,8 +44,9 @@ type Executor = Pick<Database['db'], 'select' | 'insert' | 'update'>;
 
 // Architecture §15.1: a 15-minute access token and a refresh token stored as
 // its SHA-256, rotated on every use. A used token presented again ends its
-// session, so a stolen copy and the real one cannot both live. Sessions do not
-// expire with inactivity (CU §5.4).
+// session, so a stolen copy and the real one cannot both live, except a retry
+// within the grace, which replaces the token its lost answer carried. Sessions
+// do not expire with inactivity (CU §5.4).
 @Injectable()
 export class AppSessionsService {
   constructor(
@@ -86,40 +91,79 @@ export class AppSessionsService {
     return this.issue(tx, { id: session.id, party, accountId }, signingKey, now);
   }
 
-  // A new token pair for an unused refresh token of an open session.
+  // A new token pair for an unused refresh token of an open session, or for a
+  // retry within the grace of the last token used.
   async refresh(refreshToken: string, now = new Date()): Promise<AppTokens> {
     const signingKey = await this.keys.signingKey(now);
+    const hash = tokenHash(refreshToken);
     const result = await this.database.db.transaction(async (tx) => {
-      const [row] = await tx
+      // The session row first, then the token: every refresh of a session
+      // takes turns on the session row, so none can deadlock another.
+      const [session] = await tx
         .select({
-          tokenId: appRefreshTokens.id,
-          usedAt: appRefreshTokens.usedAt,
-          sessionId: appSessions.id,
+          id: appSessions.id,
           party: appSessions.party,
           accountId: appSessions.accountId,
           endedAt: appSessions.endedAt,
+          lastUsedTokenId: appSessions.lastUsedTokenId,
+        })
+        .from(appSessions)
+        .where(
+          eq(
+            appSessions.id,
+            tx
+              .select({ id: appRefreshTokens.sessionId })
+              .from(appRefreshTokens)
+              .where(eq(appRefreshTokens.tokenHash, hash)),
+          ),
+        )
+        .for('update');
+      if (!session || session.endedAt) return null;
+      const [token] = await tx
+        .select({
+          id: appRefreshTokens.id,
+          usedAt: appRefreshTokens.usedAt,
+          supersededAt: appRefreshTokens.supersededAt,
         })
         .from(appRefreshTokens)
-        .innerJoin(appSessions, eq(appSessions.id, appRefreshTokens.sessionId))
-        .where(eq(appRefreshTokens.tokenHash, tokenHash(refreshToken)))
+        .where(eq(appRefreshTokens.tokenHash, hash))
         .for('update');
-      if (!row || row.endedAt) return null;
-      const session = { id: row.sessionId, party: row.party, accountId: row.accountId };
-      if (row.usedAt) {
+      if (!token) return null;
+      // A retry: the session's last used token, within the grace of its use.
+      const retry =
+        token.usedAt !== null &&
+        token.id === session.lastUsedTokenId &&
+        now.getTime() - token.usedAt.getTime() <= REFRESH_RETRY_GRACE_SECONDS * 1000;
+      if (token.supersededAt || (token.usedAt && !retry)) {
         // Reuse: end the whole family, and commit it.
         await this.end(tx, session.id, 'refresh_reuse', now);
         return null;
       }
       if (!(await this.accountIsActive(tx, session.party, session.accountId))) return null;
-      await tx
-        .update(appRefreshTokens)
-        .set({ usedAt: now })
-        .where(eq(appRefreshTokens.id, row.tokenId));
+      if (retry) {
+        // The retry's pair replaces the one whose answer was lost.
+        await tx
+          .update(appRefreshTokens)
+          .set({ supersededAt: now })
+          .where(
+            and(
+              eq(appRefreshTokens.sessionId, session.id),
+              isNull(appRefreshTokens.usedAt),
+              isNull(appRefreshTokens.supersededAt),
+            ),
+          );
+      } else {
+        await tx
+          .update(appRefreshTokens)
+          .set({ usedAt: now })
+          .where(eq(appRefreshTokens.id, token.id));
+      }
       await tx
         .update(appSessions)
-        .set({ lastRefreshedAt: now })
+        .set({ lastRefreshedAt: now, lastUsedTokenId: token.id })
         .where(eq(appSessions.id, session.id));
-      return this.issue(tx, session, signingKey, now);
+      const { id, party, accountId } = session;
+      return this.issue(tx, { id, party, accountId }, signingKey, now);
     });
     if (!result) throw new RefreshRefusedError();
     return result;
