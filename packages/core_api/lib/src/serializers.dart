@@ -19,6 +19,14 @@ import 'package:core_api/src/model/backup_codes_dto_output.dart';
 import 'package:core_api/src/model/change_roles_dto.dart';
 import 'package:core_api/src/model/complete_setup_dto.dart';
 import 'package:core_api/src/model/create_user_dto.dart';
+import 'package:core_api/src/model/customer_code_request_dto.dart';
+import 'package:core_api/src/model/customer_code_sent_dto_output.dart';
+import 'package:core_api/src/model/customer_refresh_dto.dart';
+import 'package:core_api/src/model/customer_session_dto_output.dart';
+import 'package:core_api/src/model/customer_sign_in_dto.dart';
+import 'package:core_api/src/model/customer_signed_in_dto_output.dart';
+import 'package:core_api/src/model/customer_signed_out_dto_output.dart';
+import 'package:core_api/src/model/customer_tokens_dto_output.dart';
 import 'package:core_api/src/model/done_dto_output.dart';
 import 'package:core_api/src/model/reset_setting_dto.dart';
 import 'package:core_api/src/model/role_matrix_dto_output.dart';
@@ -47,6 +55,14 @@ part 'serializers.g.dart';
   ChangeRolesDto,
   CompleteSetupDto,
   CreateUserDto,
+  CustomerCodeRequestDto,
+  CustomerCodeSentDtoOutput,
+  CustomerRefreshDto,
+  CustomerSessionDtoOutput,
+  CustomerSignInDto,
+  CustomerSignedInDtoOutput,
+  CustomerSignedOutDtoOutput,
+  CustomerTokensDtoOutput,
   DoneDtoOutput,
   ResetSettingDto,
   RoleMatrixDtoOutput,

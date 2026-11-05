@@ -22,6 +22,7 @@ export class IdentitySecrets {
   private readonly encryptionKey: Buffer;
   private readonly phoneKey: Buffer;
   private readonly backupCodeKey: Buffer;
+  private readonly signInCodeKey: Buffer;
 
   constructor(masterKey: Buffer) {
     if (masterKey.length !== KEY_BYTES) {
@@ -32,6 +33,7 @@ export class IdentitySecrets {
     this.encryptionKey = derive('fox-drop identity encryption');
     this.phoneKey = derive('fox-drop identity phone hash');
     this.backupCodeKey = derive('fox-drop identity backup code hash');
+    this.signInCodeKey = derive('fox-drop identity sign-in code hash');
   }
 
   // AES-256-GCM, as v1.<iv>.<tag>.<ciphertext> in base64url.
@@ -64,6 +66,12 @@ export class IdentitySecrets {
   // Takes an E.164 phone from normalizePhone.
   phoneHash(phone: string): string {
     return createHmac('sha256', this.phoneKey).update(phone).digest('hex');
+  }
+
+  // An app sign-in code (architecture §8.3.2), bound to its E.164 number. Keyed,
+  // so the stored hashes of a million possible codes cannot be reversed.
+  signInCodeHash(phone: string, code: string): string {
+    return createHmac('sha256', this.signInCodeKey).update(`${phone}:${code}`).digest('hex');
   }
 
   // Takes a code from normalizeBackupCode.
@@ -106,6 +114,11 @@ export async function verifyNoPassword(password: string): Promise<false> {
   unknownAccountHash ??= hash(randomBytes(16).toString('hex'), ARGON2_OPTIONS);
   await verify(await unknownAccountHash, password);
   return false;
+}
+
+// Architecture §8.3.2: 6 digits from a cryptographic random generator.
+export function newSignInCode(): string {
+  return randomInt(1_000_000).toString().padStart(6, '0');
 }
 
 // Backup codes: ten characters without look-alikes (50 bits), shown as

@@ -215,7 +215,39 @@ describe('the identity tables (AP §5.1–5.2)', () => {
     ['delete a session', 'DELETE FROM identity.admin_sessions'],
     ['delete a backup code', 'DELETE FROM identity.admin_backup_codes'],
     ['delete a setup link', 'DELETE FROM identity.admin_setup_links'],
+    ['delete a sign-in code', 'DELETE FROM identity.app_sign_in_codes'],
+    ['delete a customer account', 'DELETE FROM identity.customer_accounts'],
+    ['delete an app session', 'DELETE FROM identity.app_sessions'],
+    ['delete a refresh token', 'DELETE FROM identity.app_refresh_tokens'],
+    ['delete a signing key', 'DELETE FROM identity.app_signing_keys'],
   ])('refuse the application role to %s', async (_, statement) => {
     await expect(appQuery(statement)).rejects.toThrow(/permission denied/);
+  });
+});
+
+describe('the app sign-in tables (architecture §8.3.2, §15.1)', () => {
+  const code = (phoneHash: string) =>
+    `INSERT INTO identity.app_sign_in_codes (party, phone_hash, device_id, code_hash, expires_at) VALUES ('customer', '${phoneHash}', 'd1', 'c1', now())`;
+
+  it('keep one open code per number', async () => {
+    await appQuery(code('p1'));
+    await expect(appQuery(code('p1'))).rejects.toThrow(/app_sign_in_codes_open_per_number/);
+    await appQuery(
+      "UPDATE identity.app_sign_in_codes SET ended_at = now(), end_reason = 'replaced' WHERE phone_hash = 'p1'",
+    );
+    await appQuery(code('p1'));
+  });
+
+  it('keep one active customer account per number', async () => {
+    const account =
+      "INSERT INTO identity.customer_accounts (phone_encrypted, phone_hash) VALUES ('e', 'p2')";
+    await appQuery(account);
+    await expect(appQuery(account)).rejects.toThrow(/customer_accounts_active_phone/);
+  });
+
+  it('refuse a party no app signs in with yet', async () => {
+    await expect(appQuery(code('p3').replace("'customer'", "'courier'"))).rejects.toThrow(
+      /app_sign_in_codes_party_values/,
+    );
   });
 });

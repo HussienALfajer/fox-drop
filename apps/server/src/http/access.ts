@@ -1,14 +1,18 @@
 import { createParamDecorator, type ExecutionContext, SetMetadata } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
-import type { AdminPermission, AdminSession } from '../modules/identity/index.js';
+import type { AdminPermission, AdminSession, AppSession } from '../modules/identity/index.js';
 
 // Architecture §15.2: every route says who may call it, and a route that says
 // nothing is refused (the identity module's RouteAccessGuard). The decorators
 // live here, outside the identity module, so any module's routes can use them,
 // the settings module's included, which the identity module imports. A route is
-// public, needs a signed-in admin, or needs an admin permission.
+// public, needs a signed-in admin, needs an admin permission, or needs a
+// signed-in user of the route group's app.
 export type RouteAccess =
-  { kind: 'public' } | { kind: 'admin_session' } | { kind: 'admin_permission'; permission: string };
+  | { kind: 'public' }
+  | { kind: 'admin_session' }
+  | { kind: 'admin_permission'; permission: string }
+  | { kind: 'app_session' };
 
 export const ROUTE_ACCESS = 'fox_drop:route_access';
 
@@ -18,6 +22,7 @@ export const Public = () => SetMetadata(ROUTE_ACCESS, { kind: 'public' } satisfi
 declare module 'fastify' {
   interface FastifyRequest {
     adminSession?: AdminSession;
+    appSession?: AppSession;
   }
 }
 
@@ -35,6 +40,20 @@ export const CurrentAdminSession = createParamDecorator(
   (_data: unknown, context: ExecutionContext): AdminSession => {
     const session = context.switchToHttp().getRequest<FastifyRequest>().adminSession;
     if (!session) throw new Error('the route is not @SignedIn() or @RequirePermission()');
+    return session;
+  },
+);
+
+// An app route (customer so far) that needs the bearer access token of a
+// signed-in user of that app (architecture §15.1).
+export const AppSignedIn = () =>
+  SetMetadata(ROUTE_ACCESS, { kind: 'app_session' } satisfies RouteAccess);
+
+// The app session RouteAccessGuard checked for this request.
+export const CurrentAppSession = createParamDecorator(
+  (_data: unknown, context: ExecutionContext): AppSession => {
+    const session = context.switchToHttp().getRequest<FastifyRequest>().appSession;
+    if (!session) throw new Error('the route is not @AppSignedIn()');
     return session;
   },
 );

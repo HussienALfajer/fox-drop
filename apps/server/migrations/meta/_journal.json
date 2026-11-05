@@ -36,6 +36,13 @@
       "when": 1793832632570,
       "tag": "0004_identity_admin_roles",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793860230817,
+      "tag": "0005_identity_app_sign_in",
+      "breakpoints": true
     }
   ]
 }

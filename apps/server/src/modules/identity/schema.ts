@@ -227,3 +227,150 @@ export const adminSessions = identity.table(
     ),
   ],
 );
+
+// The apps whose users sign in with a phone and a WhatsApp code (architecture
+// §8.3, §15.1). Only the customer app so far (owner decision 2026-11-05); the
+// restaurant and captain apps join with their accounts.
+export const appParties = ['customer'] as const;
+
+export const appSignInCodeEndReasons = ['used', 'replaced', 'attempts_exhausted'] as const;
+
+// An app sign-in code (architecture §8.3.2): only its keyed hash, with the
+// number (by its keyed hash), the device and the expiry. One open code per
+// number and app: a new request ends the old one.
+export const appSignInCodes = identity.table(
+  'app_sign_in_codes',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    party: text('party', { enum: appParties }).notNull(),
+    phoneHash: text('phone_hash').notNull(),
+    // The app installation that asked for it; only it can use the code.
+    deviceId: text('device_id').notNull(),
+    codeHash: text('code_hash').notNull(),
+    // Wrong codes entered so far (otp.max_attempts).
+    attempts: integer('attempts').notNull().default(0),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+    endReason: text('end_reason', { enum: appSignInCodeEndReasons }),
+  },
+  (table) => [
+    uniqueIndex('app_sign_in_codes_open_per_number')
+      .on(table.party, table.phoneHash)
+      .where(sql`${table.endedAt} IS NULL`),
+    index('app_sign_in_codes_number_created').on(table.phoneHash, table.createdAt),
+    check('app_sign_in_codes_party_values', sql`${table.party} IN ('customer')`),
+    check(
+      'app_sign_in_codes_end_reason_values',
+      sql`${table.endReason} IN ('used', 'replaced', 'attempts_exhausted')`,
+    ),
+    check(
+      'app_sign_in_codes_ended_with_reason',
+      sql`(${table.endedAt} IS NULL) = (${table.endReason} IS NULL)`,
+    ),
+  ],
+);
+
+// A customer (CU §5). The first sign-in of a number creates it; the details
+// screen (CU §5.3) fills the rest later. One active account per number: a
+// closed account (CU §5.5) leaves its number free for a new one.
+export const customerAccountStatuses = ['active'] as const;
+
+export const customerAccounts = identity.table(
+  'customer_accounts',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    // The E.164 phone, encrypted, and its keyed hash to find it by.
+    phoneEncrypted: text('phone_encrypted').notNull(),
+    phoneHash: text('phone_hash').notNull(),
+    status: text('status', { enum: customerAccountStatuses }).notNull().default('active'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('customer_accounts_active_phone')
+      .on(table.phoneHash)
+      .where(sql`${table.status} = 'active'`),
+    check('customer_accounts_status_values', sql`${table.status} IN ('active')`),
+  ],
+);
+
+export const appSessionEndReasons = [
+  'sign_out',
+  'sign_out_everywhere',
+  'refresh_reuse',
+  'new_sign_in',
+] as const;
+
+// A signed-in app installation (architecture §15.1): one refresh token family.
+// It does not expire with inactivity (CU §5.4); it ends on sign-out, sign-out
+// everywhere, a reused refresh token, or a new sign-in on the same device.
+export const appSessions = identity.table(
+  'app_sessions',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    party: text('party', { enum: appParties }).notNull(),
+    // The party's account, such as a customer_accounts row.
+    accountId: uuid('account_id').notNull(),
+    deviceId: text('device_id').notNull(),
+    userAgent: text('user_agent'),
+    ipAddress: inet('ip_address'),
+    signedInAt: timestamp('signed_in_at', { withTimezone: true }).notNull(),
+    lastRefreshedAt: timestamp('last_refreshed_at', { withTimezone: true }).notNull(),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+    endReason: text('end_reason', { enum: appSessionEndReasons }),
+  },
+  (table) => [
+    index('app_sessions_open_account')
+      .on(table.party, table.accountId)
+      .where(sql`${table.endedAt} IS NULL`),
+    index('app_sessions_open_device')
+      .on(table.party, table.deviceId)
+      .where(sql`${table.endedAt} IS NULL`),
+    check('app_sessions_party_values', sql`${table.party} IN ('customer')`),
+    check(
+      'app_sessions_end_reason_values',
+      sql`${table.endReason} IN ('sign_out', 'sign_out_everywhere', 'refresh_reuse', 'new_sign_in')`,
+    ),
+    check(
+      'app_sessions_ended_with_reason',
+      sql`(${table.endedAt} IS NULL) = (${table.endReason} IS NULL)`,
+    ),
+  ],
+);
+
+// A refresh token of a session (architecture §15.1): stored as SHA-256, used
+// once. Presenting a used one again ends its session.
+export const appRefreshTokens = identity.table(
+  'app_refresh_tokens',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => appSessions.id),
+    tokenHash: text('token_hash').notNull().unique(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    usedAt: timestamp('used_at', { withTimezone: true }),
+  },
+  (table) => [index('app_refresh_tokens_session').on(table.sessionId)],
+);
+
+// The Ed25519 keys that sign the apps' access tokens (architecture §15.1). A
+// new key every 30 days (owner decision 2026-11-05); an old one still verifies
+// until the last token it signed has expired. The private key is encrypted.
+export const appSigningKeys = identity.table('app_signing_keys', {
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
+  privateKeyEncrypted: text('private_key_encrypted').notNull(),
+  publicKey: text('public_key').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+});

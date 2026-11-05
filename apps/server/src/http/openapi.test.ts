@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { readdirSync, readFileSync } from 'node:fs';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import type { OpenAPIObject } from '@nestjs/swagger';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -32,6 +33,23 @@ function operations() {
 }
 
 describe('OpenAPI document', () => {
+  // A DTO class's name is its schema's name in the document, and two classes
+  // with one name silently become one schema, the second replacing the first.
+  it('has one DTO class per name', () => {
+    const source = new URL('..', import.meta.url);
+    const names = readdirSync(source, { recursive: true, encoding: 'utf8' })
+      .filter((file) => file.endsWith('.ts') && !file.endsWith('.test.ts'))
+      .flatMap((file) =>
+        [
+          ...readFileSync(new URL(file.replaceAll('\\', '/'), source), 'utf8').matchAll(
+            /class (\w+) extends createZodDto/g,
+          ),
+        ].map((match) => match[1]),
+      );
+    expect(names.length).toBeGreaterThan(10);
+    expect(names.filter((name, index) => names.indexOf(name) !== index)).toEqual([]);
+  });
+
   it('is OpenAPI 3.1', () => {
     expect(document.openapi).toMatch(/^3\.1\./);
   });

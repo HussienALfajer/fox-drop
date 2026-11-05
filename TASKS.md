@@ -4,21 +4,27 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 0, slice 0.10: phone sign-in for the apps, server side (`docs/roadmap.md`).
+Phase 0, slice 0.11: web app shells, unstyled (`docs/roadmap.md`).
 
-- **Implements:** architecture §8.3.1 (the `CodeSender` port; V1's adapter runs in the `otp-sender` process; a development-only sender here), §8.3.2 (6-digit code, stored hashed with number, device and expiry, compared in constant time, one active code per number, `otp.validity_min`, `otp.max_attempts`, `otp.resend_after_sec`, the same answer whether the number has an account or not), §15.1 (15-minute JWT access tokens signed with a rotating key, refresh tokens stored hashed, rotated on every use and revoked on reuse; blocking, closing or forced sign-out revokes them all), the request limits of Appendix A (`otp.number_hourly_max`, `otp.number_daily_max`, `otp.device_daily_max`, `otp.ip_hourly_max`) in Valkey, devices, sign out everywhere.
-- **Branch:** `feat/app-phone-sign-in`
-- **Done when:** a phone requests a code and signs in with it, getting an access and a refresh token; every code rule and request limit is enforced and tested; a refresh token rotates and its reuse revokes the family; sign out everywhere revokes every refresh token; the development sender never runs outside development; every new route is in the route-access matrix; tests cover each rule.
+- **Implements:** architecture §10.1 (Vite, React, TypeScript strict, TanStack Router and Query, i18next with Arabic only, the generated API client), §10.2 (static single-page apps), AP §4.7 and the Arabic right-to-left rule of `CLAUDE.md` (translation files, start and end, Western digits).
+- **Branch:** `feat/web-app-shells`
+- **Done when:** `apps/admin` and `apps/merchant-portal` build and serve an unstyled Arabic RTL page through their router, call `GET /v1/<group>/status` through the generated TypeScript client with TanStack Query, keep every user-facing string in a translation file, and pass a Playwright smoke test inside `pnpm verify` and CI; no design tokens, shared UI package or styling (the design stop); folder `CLAUDE.md` rules for the web apps.
 
 ## Plan
 
-- [ ] Read architecture §8.3–8.3.4, §15.1, §4.4 (the `otp-sender` role), the sign-in sections of the three app specs (CU §5, RA §5.2, CA §4.9) and `apps/server/src/modules/identity/CLAUDE.md`; ask the owner what the specs leave open (such as which app routes this slice serves, the JWT key rotation period and where the keys live, and whether the customer, merchant and captain accounts are one table or three).
-- [ ] The `CodeSender` port and the development-only sender, and the queue to the `otp-sender` role (or a direct call until pg-boss arrives, if the owner agrees).
-- [ ] Codes: request and verify, with the code rules and the Valkey request limits (failing test first).
-- [ ] Access and refresh tokens, rotation, reuse detection, devices and sign out everywhere (failing test first).
-- [ ] The app route guard (`RouteAccessGuard` serves only the admin group so far), the route-access matrix entries, `pnpm generate:api`, folder `CLAUDE.md` rules, and the pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
+- [ ] Read architecture §10, §18 (tests), §19 (repository), `packages/api-schema` and the root `CLAUDE.md`; ask the owner what the specs leave open (such as the dev server ports, how the panel reaches the API in development given the `__Host-` cookie, and whether the Playwright browsers run in CI on every pull request).
+- [ ] `apps/admin`: Vite, React, TanStack Router and Query, i18next in Arabic with `dir="rtl"`, the generated client calling `/v1/admin/status`.
+- [ ] `apps/merchant-portal`: the same shell for the owner portal, calling `/v1/merchant/status`.
+- [ ] Turborepo and `pnpm verify` wiring (lint, type check, build, unit tests), a Playwright smoke test for each app, CI.
+- [ ] Folder `CLAUDE.md` rules, the pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
 
 ## Notes from earlier slices
+
+- Slice 0.10 added app phone sign-in (`apps/server/src/modules/identity/CLAUDE.md`), customer routes only (owner decisions 2026-11-05: one engine over the app party, one account table per party, JWT keys in the database rotated every 30 days, a direct call to the development sender until the WhatsApp sender arrives). The restaurant and captain apps add a party, their account table and routes on the same engine. Outside `FOX_DROP_ENVIRONMENT=development` every code request answers `503` until the real sender exists.
+- The app code request limits key on the request IP. Without `trustProxy` set for the real proxy hops, every user shares the proxy's IP and the platform gets `otp.ip_hourly_max` (30) code requests per hour: the deploy slice must set the trusted hop before anyone signs in on staging.
+- A reused refresh token ends its session with no grace window (architecture §15.1). A refresh whose answer is lost on a weak network, retried with the same token, signs the device out and costs a new WhatsApp code; ask the owner whether to allow a few seconds of grace before the apps ship.
+- The code is sent before the transaction commits (a direct call). When the `otp-sender` queue arrives, the send request goes through the outbox in the same transaction (E3, E4).
+- `identity.app_refresh_tokens` gains a row per refresh (about 96 a day per active device) and the application role cannot delete; plan partitions or a migrator-run purge of ended families before launch.
 
 - Slice 0.3 added `GET /v1/<group>/status` in the four route groups, open without sign-in (owner decision 2026-11-04); slice 0.8 marks them `@Public()`.
 - `pnpm verify` regenerates the API contract first and needs Java 11 or later, and runs the database tests with Testcontainers, so Docker must be running (owner decision 2026-11-04).
@@ -47,4 +53,4 @@ Phase 0, slice 0.10: phone sign-in for the apps, server side (`docs/roadmap.md`)
 
 ## Next
 
-Slice 0.11, web app shells, unstyled (`docs/roadmap.md`).
+Slice 0.12, Flutter app shells, unstyled (`docs/roadmap.md`).
