@@ -8,13 +8,20 @@ Slice 1.5, restaurant, menu and restaurant sign-in (`docs/roadmap.md`, Phase 1).
 
 - **Specs:** RA §5 (accounts, owner phone sign-in, sessions and devices, roles, the account status of AP §9.6.1), RA §9 (menu: categories, items, option groups, availability, prices; what publishes at once and what needs review), RA §10 (status and hours), AP §9.6 (the restaurant record, its states, hours, coverage, minimum order and commission; the menu editor), architecture §4.2 (`merchants` owns restaurants, hours, states, devices and the menu), and AP §9.12.3 for the per-restaurant fee override.
 - **Branch:** `feat/restaurant-and-menu`.
-- **Ask the owner first:** how the restaurant's coverage is drawn (a radius, a polygon, or a list of zones) and how it relates to the zones of slice 1.4; whether the per-restaurant delivery fee override (AP §9.12.3) belongs in this slice; which of RA §5's roles and RA §9.5's menu change requests are in the walking skeleton; the demo restaurant's placeholder hours, minimum order and commission (15%); and a split into pull requests if the slice is larger than one.
-- **Plan:**
-  - [ ] Write the failing tests first: the restaurant states of AP §9.6.1, hours open and closed in the city's time zone, coverage of a point, the minimum order in integer minor units of the base currency, the commission percentage.
-  - [ ] The `merchants` schema (restaurant, hours, coverage, menu) through the `db-migration` skill; `MerchantsService`.
-  - [ ] The restaurant party on the app sign-in engine (`identity`, slice 0.10): its account table and the merchant routes.
+- **Owner decisions 2026-11-06:**
+  - Coverage is either a radius in metres around the restaurant's pin or a list of the city's service zones, chosen per restaurant (AP §9.6.3 step 3). Either way the point must also be inside an active service zone (slice 1.4).
+  - The per-restaurant delivery fee override (AP §9.12.3) waits for Phase 2; the walking skeleton prices with the city's rule.
+  - Two pull requests: the first builds the full data model (restaurant, states, hours, holiday closes, pauses, coverage, minimum order, commission versions, the menu with option groups, the price log and the menu change requests as tables) with `MerchantsService` and the demo restaurant; the second adds owner and cashier phone sign-in, reading the restaurant and its menu, and availability switches. The change-request routes and their review wait for Phase 2.
+  - The demo restaurant (development and staging only): open every day 10:00–02:00, minimum order 100 TRY, coverage a 3 km radius, commission 15%, default prep time 20 minutes, `active` and visible.
+- **Plan, pull request 1:**
+  - [x] Write the failing tests first: the operating state's precedence (RA §7.1), hours open and closed in the city's time zone with periods crossing midnight, the weekly schedule's rules (RA §10), coverage of a point, the commission in effect.
+  - [ ] The `merchants` schema through the `db-migration` skill; `MerchantsService` for the restaurant record, account status, hours, coverage, minimum order, commission and the menu.
   - [ ] The demo restaurant and its menu in `src/seed/placeholder-seed.ts` (development and staging only).
   - [ ] The module's `CLAUDE.md`, `pnpm verify` through `checker`, the `reviewer`, then the pull request.
+- **Plan, pull request 2 (its own session):**
+  - [ ] The restaurant party on the app sign-in engine (`identity`, slice 0.10): owner and cashier accounts, one phone per restaurant (S6), the sign-in refusals of RA §5.2 and §5.5, devices.
+  - [ ] Merchant routes: the restaurant and its menu, availability switches (RA §9.3) by owners and cashiers.
+  - [ ] `checker`, the `reviewer`, the pull request, the handover to slice 1.6.
 
 ## Notes from earlier slices
 
