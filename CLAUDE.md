@@ -9,6 +9,7 @@ Food delivery platform for Syria, launching in Azaz: a customer app, a restauran
 - `TASKS.md`: the current task, its branch, its plan, and where work stopped.
 - `apps/server/`: the server; its `CLAUDE.md` has the module, route, validation and logging rules.
 - `apps/admin/` and `apps/merchant-portal/`: the web apps; `apps/admin/CLAUDE.md` has their API, translation and test rules.
+- `apps/customer/`, `apps/captain/` and `apps/merchant/`: the Flutter apps; `apps/customer/CLAUDE.md` has their rules, `packages/core_l10n/CLAUDE.md` the strings' rules.
 - The specs are the source of truth. Never guess an open item (`docs/open-questions.md`): ask the owner.
 
 ## Commands
