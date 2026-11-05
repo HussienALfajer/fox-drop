@@ -71,6 +71,13 @@
       "when": 1793918371709,
       "tag": "0009_geo_zones_fee_rules",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793920338616,
+      "tag": "0010_merchants_restaurants_menu",
+      "breakpoints": true
     }
   ]
 }

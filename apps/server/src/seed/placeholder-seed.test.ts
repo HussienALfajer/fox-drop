@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { startTestDatabase, type TestDatabase } from '../database/test-database.js';
 import { FxService } from '../modules/fx/index.js';
 import { GeoService } from '../modules/geo/index.js';
+import { MerchantsService } from '../modules/merchants/index.js';
 import { SettingsService } from '../modules/settings/index.js';
 import { startTestValkey, type TestValkey } from '../valkey/test-valkey.js';
 import { PlaceholderSeed, PlaceholderSeedModule, seedsPlaceholders } from './placeholder-seed.js';
@@ -92,6 +93,32 @@ describe('the placeholder seed', () => {
       [azaz],
     );
     expect(rows).toEqual([{ n: 1 }]);
+  });
+
+  it('gives Azaz one active demo restaurant with its hours, coverage and menu', async () => {
+    const merchants = moduleRef.get(MerchantsService);
+    const restaurants = await merchants.restaurantIds(azaz);
+    expect(restaurants).toHaveLength(1);
+    const id = restaurants[0]!.id;
+    const restaurant = await merchants.restaurant(id);
+    expect(restaurant).toMatchObject({
+      accountStatus: 'active',
+      visible: true,
+      coverage: { kind: 'radius', radiusMetres: 3000 },
+      minimumOrder: { amount: 10_000n, currency: 'TRY' },
+      commissionBp: 1500,
+      defaultPrepMin: 20,
+    });
+    expect(restaurant?.schedule).toHaveLength(7);
+    await expect(
+      merchants.operatingState(id, new Date('2026-11-07T01:00:00+03:00')),
+    ).resolves.toMatchObject({ state: 'open' });
+    await expect(
+      merchants.operatingState(id, new Date('2026-11-07T03:00:00+03:00')),
+    ).resolves.toEqual({ state: 'closed' });
+    await expect(merchants.covers(id, { latitude: 36.59, longitude: 37.05 })).resolves.toBe(true);
+    const menu = await merchants.menu(id);
+    expect(menu.categories.map((category) => category.items.length)).toEqual([2, 2]);
   });
 
   it('never replaces a value someone entered, and changes nothing when run again', async () => {

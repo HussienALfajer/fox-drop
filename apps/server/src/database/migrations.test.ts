@@ -349,6 +349,42 @@ describe('the zones and fee tables (AP §9.12.2–9.12.3)', () => {
   });
 });
 
+describe('the merchants tables (AP §9.6, RA §9–10)', () => {
+  const azaz = "(SELECT id FROM geo.cities WHERE code = 'AZ')";
+  const restaurant = (coverage: string) =>
+    `INSERT INTO merchants.restaurants (city_id, name_ar, location, coverage_kind, coverage_radius_metres, minimum_order, minimum_order_currency, default_prep_min) VALUES (${azaz}, 'test', ST_SetSRID(ST_MakePoint(37.05, 36.59), 4326), ${coverage}, 10000, 'TRY', 20) RETURNING id`;
+
+  it('take a restaurant with its commission and refuse a radius coverage without its radius', async () => {
+    const { rows } = await appQuery(restaurant("'radius', 3000"));
+    await appQuery(
+      `INSERT INTO merchants.commission_rates (restaurant_id, rate_bp, effective_from, changed_by_type) VALUES ('${rows[0].id}', 1500, now(), 'system')`,
+    );
+    await expect(appQuery(restaurant("'radius', NULL"))).rejects.toThrow(
+      /restaurants_coverage_radius/,
+    );
+    await expect(appQuery(restaurant("'zones', 3000"))).rejects.toThrow(
+      /restaurants_coverage_radius/,
+    );
+  });
+
+  it('refuse a second pending change request for the same field', async () => {
+    const { rows } = await appQuery(restaurant("'radius', 3000"));
+    const request = `INSERT INTO merchants.change_requests (restaurant_id, target_type, target_id, field, pending_value, requested_by_id) VALUES ('${rows[0].id}', 'item', '0190f3a0-0000-7000-8000-0000000000b1', 'name', '"x"', '0190f3a0-0000-7000-8000-0000000000b2')`;
+    await appQuery(request);
+    await expect(appQuery(request)).rejects.toThrow(/change_requests_one_pending/);
+  });
+
+  it.each([
+    ['change a commission version', 'UPDATE merchants.commission_rates SET rate_bp = 1'],
+    ['change a schedule version', 'UPDATE merchants.weekly_schedules SET changed_by_id = NULL'],
+    ['change an opening period', 'UPDATE merchants.opening_periods SET opens_at = 0'],
+    ['change the price log', 'UPDATE merchants.price_changes SET new_price = 1'],
+    ['delete a restaurant', 'DELETE FROM merchants.restaurants'],
+  ])('refuse the application role to %s', async (_, statement) => {
+    await expect(appQuery(statement)).rejects.toThrow(/permission denied/);
+  });
+});
+
 describe('the identity tables (AP §5.1–5.2)', () => {
   it('refuse an admin account without an email or a phone', async () => {
     await expect(

@@ -99,6 +99,16 @@ export class GeoService implements OnModuleInit {
     return row?.id ?? null;
   }
 
+  // The city's time zone, such as Asia/Damascus, the clock of its restaurants'
+  // hours; null for an unknown city.
+  async cityTimeZone(cityId: string): Promise<string | null> {
+    const [row] = await this.database.db
+      .select({ timeZone: cities.timeZone })
+      .from(cities)
+      .where(eq(cities.id, cityId));
+    return row?.timeZone ?? null;
+  }
+
   // The distance between two points for a vehicle, in whole metres: by road
   // through OSRM, or the straight line × 1.3 when OSRM does not answer or
   // pricing.distance_method is straight_line (AP §9.12.3).

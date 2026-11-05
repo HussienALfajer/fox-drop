@@ -15,8 +15,8 @@ Slice 1.5, restaurant, menu and restaurant sign-in (`docs/roadmap.md`, Phase 1).
   - The demo restaurant (development and staging only): open every day 10:00–02:00, minimum order 100 TRY, coverage a 3 km radius, commission 15%, default prep time 20 minutes, `active` and visible.
 - **Plan, pull request 1:**
   - [x] Write the failing tests first: the operating state's precedence (RA §7.1), hours open and closed in the city's time zone with periods crossing midnight, the weekly schedule's rules (RA §10), coverage of a point, the commission in effect.
-  - [ ] The `merchants` schema through the `db-migration` skill; `MerchantsService` for the restaurant record, account status, hours, coverage, minimum order, commission and the menu.
-  - [ ] The demo restaurant and its menu in `src/seed/placeholder-seed.ts` (development and staging only).
+  - [x] The `merchants` schema through the `db-migration` skill; `MerchantsService` for the restaurant record, account status, hours, coverage, minimum order, commission and the menu.
+  - [x] The demo restaurant and its menu in `src/seed/placeholder-seed.ts` (development and staging only).
   - [ ] The module's `CLAUDE.md`, `pnpm verify` through `checker`, the `reviewer`, then the pull request.
 - **Plan, pull request 2 (its own session):**
   - [ ] The restaurant party on the app sign-in engine (`identity`, slice 0.10): owner and cashier accounts, one phone per restaurant (S6), the sign-in refusals of RA §5.2 and §5.5, devices.
