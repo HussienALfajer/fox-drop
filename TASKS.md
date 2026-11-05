@@ -4,20 +4,25 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 1.2, currencies and the city's base currency (`docs/roadmap.md`, Phase 1). Slice 1.3 (OSRM) may run in parallel, in its own worktree and branch; the other Phase 1 slices run in order.
+Slice 1.3, road distances (`docs/roadmap.md`, Phase 1).
 
-- **Specs:** AP §8.6 (currencies and exchange rates, D14, D25), §9.10.4 (the exchange rates screen's data), Appendix A (`currency.<code>.rounding_unit`, `currency.<code>.rounding_mode`, `fx.large_change_confirm_pct`, `fx.stale_alert_hours`), §13 item 4 (the Azaz base currency is open: a placeholder in development and staging only); architecture §4.2 (`fx` owns rates and rounding), §5.2 (money in minor units, the minor unit per currency from `fx`), §5.6.
-- **Branch:** `feat/fx`.
+- **Specs:** architecture §7.1 (self-hosted OSRM with the OpenStreetMap extract for Syria; car and motorbike on the car profile with adjusted speeds, bicycle, walking; reached only through the server; the straight line × 1.3 when OSRM does not answer), §17 (OSRM joins the Compose files with its first use; one OSRM serves staging and production on the server), §4.2 (`geo` owns distances); AP §9.12.3 (`pricing.distance_method`, default `road`, the fixed × 1.3 fallback), Appendix A (`pricing.distance_method`); AP §13 item 8 (closed by architecture §7.1).
+- **Branch:** `feat/road-distances`.
 - **Plan:**
-  - [x] Write the failing tests first: rounding to a currency's unit in each mode (`nearest`, `up`, `down`) in integer minor units; conversion between currencies through a rate version without floating point; a rate change is a new version and never an update; the base currency cannot change after the city's first order.
-  - [x] Decide how the rate is stored (AP §8.6: "one canonical value with high precision"; an exact integer form, never a float) and whether the rounding settings stay in `settings` (`currency.<code>.*`) or are read there by `fx`. Ask the owner only where a business rule is open.
-  - [x] The `fx` schema through the `db-migration` skill: currency rows (code, Arabic name, symbol, decimals, status) seeding TRY «ليرة تركية», USD «دولار أمريكي» and SYP «ليرة سورية»; the city's base and accepted currencies with display order and enabled flag; append-only rate versions with editor, time and reason.
-  - [x] The public `FxService`: the city's base currency, its accepted currencies, the current rates, a rate snapshot an order keeps, conversion and rounding with a snapshot. The base currency lock reads "the city has an order" through an argument or an event, since `ordering` does not exist yet.
-  - [x] Development and staging seed: TRY as the Azaz base currency, marked as a placeholder (AP §13 item 4), never in a production migration.
-  - [x] Tie the settings' money values to the currencies where 0.9 left them open: `currency.<code>.*` and `captain.remit_tolerance` accept only a city's currencies.
-  - [ ] The module's `CLAUDE.md`, `pnpm verify` through `checker`, the `reviewer`, then the pull request.
+  - [ ] Write the failing tests first: the straight-line distance between two points in metres, × 1.3 when OSRM fails or times out; a road distance read from an OSRM answer; `pricing.distance_method` = `straight_line` never calls OSRM.
+  - [ ] OSRM in the root `compose.yaml` for development with a small extract (Azaz and its surroundings, cut from the Syria extract), built by a script, with the data outside the repository; ask the owner which profiles development needs before downloading anything large.
+  - [ ] The `geo` distance service behind a port (`RoadDistances`), so tests use a fake and the server calls OSRM over HTTP with a short timeout; `GeoService.distance(from, to, { vehicle })` returns metres and how they were measured (`road` or `straight_x1.3`).
+  - [ ] Staging: OSRM in `infra/compose.yaml` with the memory limit the shared server allows (architecture §22 item 10), the extract rebuilt weekly; ask the owner before changing anything under `infra/server` (it needs `provision.sh` again).
+  - [ ] The `geo` module's `CLAUDE.md`, `pnpm verify` through `checker`, the `reviewer`, then the pull request.
 
 ## Notes from earlier slices
+
+- Slice 1.2 added the `fx` module (`apps/server/src/modules/fx/CLAUDE.md`; owner decisions 2026-11-05): TRY, USD and SYP with ISO decimals (2); a city's currencies, base and append-only rate versions as exact fractions; the order's `RateSnapshot` from `FxService.snapshotForOrder(cityId, tx)`, which locks the base from the first order and is refused while a currency has no rounding unit. The rounding units and modes stay settings. Only the service exists; the exchange rates routes come with the finance screen.
+- The API seeds placeholder data at start in development and staging (`apps/server/src/seed/placeholder-seed.ts`): TRY as Azaz's base (AP §13 item 4), USD and SYP disabled, rounding units TRY 5, USD 0.5, SYP 500. Later slices add their placeholders there (commission, fees, captain pay, cash limit, minimum order), set only while missing.
+- A city money setting must be in the city's base currency, and a base change is refused while one is in another (`amounts_in_other_currency`).
+- For slice 1.8: place the order inside one transaction that calls `snapshotForOrder` and compares its rate versions with the quote's (refuse and requote on any change, CU §10.7); keep the snapshot with the order, its bigints as strings.
+- Not built yet in `fx`: the stale-rate alert (`fx.stale_alert_hours`) and a rate version on cross-currency ledger journals; `LedgerService.openAccount` still takes any currency code.
+- `geo` has a public `GeoService` with `cityIdByCode` (used by the seed); slice 1.3 extends it.
 
 - Slice 1.1 added the `ledger` module (`apps/server/src/modules/ledger/CLAUDE.md`; owner decisions 2026-11-05 in `docs/domain/05` and `11`): `platform.order_clearing` takes the other side of an order's cash and exceptions and returns to zero per order, `platform.adjustments` the other side of every manual correction, and `captain.deposit` holds a captain's kit deposit. On a non-normal outcome the commission is booked against the clearing account, not as revenue (AP §8.9 rule 3). Two database triggers keep every journal balanced at commit and closed after its transaction.
 - For slice 1.2: a cross-currency journal (`custody.fx_convert`, a payout or settlement in another currency) records no rate, so `platform.fx_rounding` holds currency positions, not the base-currency gain the daily report shows. Add a nullable rate version (or the base equivalent) on journals in an expand migration.
@@ -84,4 +89,4 @@ Slice 1.2, currencies and the city's base currency (`docs/roadmap.md`, Phase 1).
 
 ## Next
 
-Build slice 1.2, and slice 1.3 in parallel if the owner wants (`docs/roadmap.md`).
+Build slice 1.3 (`docs/roadmap.md`).
