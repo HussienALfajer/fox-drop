@@ -1,0 +1,23 @@
+name: core_l10n
+description: The Arabic strings of the FOX DROP Flutter apps (architecture §11.2, AP §4.7).
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+
+resolution: workspace
+
+dependencies:
+  intl: 0.20.3
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: 6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  generate: true

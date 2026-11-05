@@ -20,6 +20,13 @@
       "schedule": ["* 0-6 1 1,4,7,10 *"]
     },
     {
+      "description": "The Flutter SDK pins test_api, so test, and build_runner through test's analyzer range, move with Flutter (packages/core_api/CLAUDE.md).",
+      "matchManagers": ["pub"],
+      "matchPackageNames": ["test", "build_runner"],
+      "groupName": "runtimes",
+      "schedule": ["* 0-6 1 1,4,7,10 *"]
+    },
+    {
       "description": "NestJS stays on 11.x until nestjs-zod supports NestJS 12 (apps/server/CLAUDE.md).",
       "matchPackageNames": ["@nestjs/**"],
       "matchUpdateTypes": ["major"],
