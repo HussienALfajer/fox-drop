@@ -60,7 +60,8 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - run: pnpm --filter @fox-drop/admin --filter @fox-drop/merchant-portal exec playwright install --with-deps chromium
+      # Chromium's system libraries, once; pnpm verify installs the browser for each app.
+      - run: pnpm --filter @fox-drop/admin exec playwright install-deps chromium
 
       - run: pnpm verify
 

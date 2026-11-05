@@ -110,7 +110,8 @@ step('Prettier', 'pnpm exec prettier --check .');
 // The web apps' smoke tests run in Chromium; this downloads it once.
 step(
   'Playwright browser',
-  'pnpm --filter @fox-drop/admin --filter @fox-drop/merchant-portal exec playwright install chromium',
+  // One app at a time: two installs at once race on the shared browser cache.
+  'pnpm --workspace-concurrency=1 --filter @fox-drop/admin --filter @fox-drop/merchant-portal exec playwright install chromium',
 );
 step(
   'Lint, type check, test, build and smoke test (Turborepo)',
