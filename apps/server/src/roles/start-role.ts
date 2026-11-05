@@ -5,6 +5,7 @@ import { ApiModule } from '../api.module.js';
 import { createApiApp } from '../http/create-api-app.js';
 import { LoggingModule } from '../logging/logging.module.js';
 import { AuditWorkerModule } from '../modules/audit/index.js';
+import { LedgerWorkerModule } from '../modules/ledger/index.js';
 import type { ProcessRole } from './process-role.js';
 
 type BackgroundRole = Exclude<ProcessRole, 'api'>;
@@ -12,7 +13,7 @@ type BackgroundRole = Exclude<ProcessRole, 'api'>;
 // The worker, dispatcher and otp-sender roles have no HTTP server. Their jobs,
 // loops and queues join their role here in the slices that build them.
 const BACKGROUND_MODULES: Record<BackgroundRole, Type[]> = {
-  worker: [AuditWorkerModule],
+  worker: [AuditWorkerModule, LedgerWorkerModule],
   dispatcher: [],
   'otp-sender': [],
 };

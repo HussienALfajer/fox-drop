@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDatabase, type Database } from './database.js';
 import { runMigrations } from './migrate.js';
@@ -131,6 +132,142 @@ describe('the audit log (AP §9.16)', () => {
     [
       'create a partition',
       "CREATE TABLE audit.events_2099_01 PARTITION OF audit.events FOR VALUES FROM ('2099-01-01') TO ('2099-02-01')",
+    ],
+  ])('refuses the application role to %s', async (_, statement) => {
+    await expect(appQuery(statement)).rejects.toThrow(/permission denied|must be owner/);
+  });
+});
+
+describe('the ledger (architecture §5.6)', () => {
+  const currentPartition = `ledger.entries_${new Date().toISOString().slice(0, 7).replace('-', '_')}`;
+  const city = "'0190f3a0-0000-7000-8000-0000000000c1'";
+
+  it('has an entries partition for this month and the next', async () => {
+    const { rows } = await appQuery(
+      "SELECT inhrelid::regclass::text AS name FROM pg_inherits WHERE inhparent = 'ledger.entries'::regclass ORDER BY 1",
+    );
+    expect(rows).toHaveLength(2);
+    expect(rows[0].name).toBe(currentPartition);
+  });
+
+  // A journal and its entries, posted in one transaction as LedgerService posts them.
+  const delivery = `(SELECT id FROM ledger.accounts WHERE city_id = ${city} AND purpose = 'platform.revenue_delivery')`;
+  const clearing = `(SELECT id FROM ledger.accounts WHERE city_id = ${city} AND purpose = 'platform.order_clearing')`;
+  const journal = (id: string) =>
+    `INSERT INTO ledger.journals (id, city_id, type, source_kind, source_id, actor_type)
+       VALUES ('${id}', ${city}, 'platform.revenue_delivery', 'order', uuidv7(), 'system')`;
+  const entry = (journalId: string, account: string, amount: number, currency = 'TRY') =>
+    `INSERT INTO ledger.entries (journal_id, city_id, account_id, currency, amount)
+       VALUES ('${journalId}', ${city}, ${account}, '${currency}', ${amount})`;
+
+  async function inTransaction(...statements: string[]): Promise<void> {
+    const client = await app.pool.connect();
+    try {
+      await client.query('BEGIN');
+      for (const statement of statements) await client.query(statement);
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  it('takes an account, a journal and its entries from the application role', async () => {
+    await appQuery(
+      `INSERT INTO ledger.accounts (city_id, purpose, currency)
+         VALUES (${city}, 'platform.revenue_delivery', 'TRY'), (${city}, 'platform.order_clearing', 'TRY')`,
+    );
+    const id = randomUUID();
+    await inTransaction(journal(id), entry(id, delivery, -40), entry(id, clearing, 40));
+
+    const { rows } = await appQuery(
+      `SELECT sum(amount)::int AS total, count(*)::int AS lines FROM ${currentPartition} WHERE journal_id = '${id}'`,
+    );
+    expect(rows[0]).toEqual({ total: 0, lines: 2 });
+  });
+
+  it('refuses at commit a journal that does not balance to zero', async () => {
+    const id = randomUUID();
+    await expect(
+      inTransaction(journal(id), entry(id, delivery, -40), entry(id, clearing, 30)),
+    ).rejects.toThrow(/does not balance to zero/);
+  });
+
+  it('refuses at commit a journal without two entries', async () => {
+    await expect(inTransaction(journal(randomUUID()))).rejects.toThrow(/fewer than two entries/);
+  });
+
+  it('refuses an entry on a journal posted in an earlier transaction', async () => {
+    const id = randomUUID();
+    await inTransaction(journal(id), entry(id, delivery, -40), entry(id, clearing, 40));
+
+    await expect(inTransaction(entry(id, delivery, -5), entry(id, clearing, 5))).rejects.toThrow(
+      /joins only a journal posted in its transaction/,
+    );
+  });
+
+  it('refuses an entry in another currency than its account', async () => {
+    const id = randomUUID();
+    await expect(
+      inTransaction(journal(id), entry(id, delivery, -40, 'USD'), entry(id, clearing, 40, 'USD')),
+    ).rejects.toThrow(/entries_account/);
+  });
+
+  it('lets the application role create the coming partitions again', async () => {
+    await appQuery('SELECT ledger.create_month_partitions()');
+  });
+
+  it.each([
+    [
+      'an unknown account purpose',
+      "INSERT INTO ledger.accounts (city_id, purpose, currency) VALUES (CITY, 'platform.wallet', 'TRY')",
+    ],
+    [
+      'a captain account without its captain',
+      "INSERT INTO ledger.accounts (city_id, purpose, currency) VALUES (CITY, 'captain.custody', 'TRY')",
+    ],
+    [
+      'a currency that is not a code',
+      "INSERT INTO ledger.accounts (city_id, purpose, currency) VALUES (CITY, 'platform.test_cost', 'lira')",
+    ],
+    [
+      'an unknown journal type',
+      "INSERT INTO ledger.journals (city_id, type, actor_type) VALUES (CITY, 'custody.gift', 'system')",
+    ],
+    [
+      'a manual correction without a reason',
+      "INSERT INTO ledger.journals (city_id, type, actor_type, actor_id) VALUES (CITY, 'earn.adjustment', 'admin', uuidv7())",
+    ],
+    [
+      'a manual bonus without a reason',
+      "INSERT INTO ledger.journals (city_id, type, actor_type, actor_id) VALUES (CITY, 'earn.bonus', 'admin', uuidv7())",
+    ],
+    [
+      'a source without its id',
+      "INSERT INTO ledger.journals (city_id, type, source_kind, actor_type) VALUES (CITY, 'earn.order_pay', 'order', 'system')",
+    ],
+  ])('refuses %s', async (_, statement) => {
+    await expect(appQuery(statement.replace('CITY', city))).rejects.toThrow(
+      /violates check constraint/,
+    );
+  });
+
+  it.each([
+    ['change an account', "UPDATE ledger.accounts SET currency = 'USD'"],
+    ['delete an account', 'DELETE FROM ledger.accounts'],
+    ['change a journal', "UPDATE ledger.journals SET reason = 'x'"],
+    ['delete a journal', 'DELETE FROM ledger.journals'],
+    ['change an entry', 'UPDATE ledger.entries SET amount = 1'],
+    ['change an entry in its partition', `UPDATE ${currentPartition} SET amount = 1`],
+    ['delete an entry', 'DELETE FROM ledger.entries'],
+    ['delete an entry from its partition', `DELETE FROM ${currentPartition}`],
+    ['empty the entries', 'TRUNCATE ledger.entries'],
+    ['empty a partition', `TRUNCATE ${currentPartition}`],
+    [
+      'create a partition',
+      "CREATE TABLE ledger.entries_2099_01 PARTITION OF ledger.entries FOR VALUES FROM ('2099-01-01') TO ('2099-02-01')",
     ],
   ])('refuses the application role to %s', async (_, statement) => {
     await expect(appQuery(statement)).rejects.toThrow(/permission denied|must be owner/);

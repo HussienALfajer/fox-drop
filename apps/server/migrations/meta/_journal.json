@@ -50,6 +50,13 @@
       "when": 1793866131675,
       "tag": "0006_identity_refresh_token_grace",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793910103705,
+      "tag": "0007_ledger_accounts_journals_entries",
+      "breakpoints": true
     }
   ]
 }
