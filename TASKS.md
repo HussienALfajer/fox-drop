@@ -4,7 +4,7 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 1.1, the ledger (`docs/roadmap.md`, Phase 1). The roadmap plans Phase 2's slice list before Phase 1 starts: plan it with the `slice-plan` skill first, in its own session, unless the owner says otherwise.
+Slice 1.1, the ledger (`docs/roadmap.md`, Phase 1). Phase 2's slice list is planned after Phase 1 (owner decision 2026-11-05). Slice 1.3 (OSRM) may run in parallel with this slice, in its own worktree and branch, since it touches neither the money modules nor the migrations; the other Phase 1 slices run in order.
 
 - **Specs:** AP §8.4 (order money and the worked example), §8.5 (captain custody and earnings), §8.7 (restaurant account), §8.11 (platform accounts); architecture §4.3 (only `ledger` moves money), §5.2 (money as `bigint` minor units with a currency code), §5.6 (ledger), E3.
 - **Branch:** `feat/ledger`.
@@ -78,4 +78,4 @@ Slice 1.1, the ledger (`docs/roadmap.md`, Phase 1). The roadmap plans Phase 2's 
 
 ## Next
 
-Plan Phase 2's slice list (`docs/roadmap.md`), then build slice 1.1.
+Build slice 1.1, and slice 1.3 in parallel if the owner wants (`docs/roadmap.md`).
