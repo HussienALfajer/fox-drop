@@ -4,21 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 0, slice 0.12: Flutter app shells, unstyled (`docs/roadmap.md`).
+Phase 0, slice 0.13: the hosting decision, docs only (`docs/roadmap.md`).
 
-- **Implements:** architecture §11.1 (pub workspace and Melos, the three apps and their platforms: `apps/merchant` Android and Windows, `apps/captain` and `apps/customer` Android and iOS, one pinned Flutter), §11.2 (`core_l10n`: Arabic ARB files, Western digits), §11.3 (Riverpod, go_router), AP §4.7 and the Arabic right-to-left rule of `CLAUDE.md`.
-- **Branch:** `feat/flutter-app-shells`
-- **Done when:** the three apps build and run an unstyled Arabic RTL screen through go_router and Riverpod, call `GET /v1/<group>/status` through the generated `core_api` client, keep every user-facing string in `core_l10n` ARB files with Western digits, and pass analyze and widget tests inside `pnpm verify` and CI; no `core_ui`, theme or styling (the design stop); Flutter rules for Claude in the apps' `CLAUDE.md`.
+- **Implements:** architecture §22 item 9 (hosting without Cloudflare): record the decision, and update architecture §3, §5.8, §15, §16 and §17 that depend on it.
+- **Branch:** `docs/hosting-decision`
+- **Done when:** a decision row records hosting on the owner's Contabo server without Cloudflare (owner, 2026-11-04), with the ID the owner confirms (§22 item 9 names it T7, which already holds the local object storage decision); §3, §5.8, §15.5, §16 and §17.2 name what replaces DigitalOcean and each Cloudflare service (DNS, CDN, WAF, R2, rate limits); the notes below that name Cloudflare are updated; §22 item 9 says which of Sentry, PostHog, Doppler and Firebase are reachable from Syria, or what the owner must check; Prettier passes.
 
 ## Plan
 
-- [ ] Read architecture §11, §18.3, §19, `packages/core_api` and the root `CLAUDE.md`; ask the owner what the specs leave open (such as the app IDs and package names, the API address each app uses in development on an emulator and a device, and whether flavors start now or with the deploy slice).
-- [ ] `packages/core_l10n`: Arabic ARB files, generated localizations, Western digits, with a test.
-- [ ] `apps/customer`: Flutter app (Android, iOS), go_router, Riverpod, the `core_api` client calling `/v1/customer/status`, a widget test.
-- [ ] `apps/captain` (Android, iOS) and `apps/merchant` (Android, Windows): the same shell on their route groups.
-- [ ] Melos and `pnpm verify` wiring, CI, the Flutter rules in `CLAUDE.md`, the pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
+- [ ] Read architecture §2, §3, §5.8, §15, §16, §17 and §22, and the notes below that name Cloudflare or the deploy slice; ask the owner what the specs leave open (the decision ID, the replacement for each Cloudflare service, object storage on the server, the DNS provider, and whether the outside services are reachable from Syria).
+- [ ] Record the decision in §2 and update §3, §5.8, §15, §16, §17 and §22 item 9.
+- [ ] Update the notes in this file that name Cloudflare, the pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
 
 ## Notes from earlier slices
+
+- Slice 0.12 added the Flutter app shells (`apps/customer/CLAUDE.md`, `packages/core_l10n/CLAUDE.md`; owner decisions 2026-11-05): app IDs `com.foxdrop.customer`, `.captain` and `.merchant`; the launcher names «تطبيق الزبون», «تطبيق الكابتن» and «تطبيق المطعم», placeholders until the design; a debug build reaches the server at `10.0.2.2:3000` on the Android emulator and `localhost:3000` elsewhere, or at `--dart-define=API_BASE_URL`; a release build refuses to start without it.
+- The deploy slice adds the flavors (development, staging, production; architecture §11.4) with their app ID suffix and API address, and the release slice the signing keys: every Android release build is still signed with the debug key (`android/app/build.gradle.kts`), so none may be distributed.
+- iOS allows plain HTTP to the local network in every build (`NSAllowsLocalNetworking` in `Info.plist`); the flavors slice moves it into a debug-only configuration, as Android does with its debug manifest.
+- CI analyzes and tests the apps but builds none of them; the three Android APKs and the Windows app were built by hand on 2026-11-05, and iOS was not built (no Mac). The release pipeline (architecture §11.4) adds the builds.
+- The Flutter SDK pins `test_api` and `intl`, so `test` (1.31.1), `build_runner` (2.16.1) and `intl` (0.20.3) move with Flutter (`renovate.json`, `packages/core_api/CLAUDE.md`).
+- In this sandbox the Dart analysis server crashes when its usage report to Google Analytics is blocked; `CI=true` turns the report off (`CI=true pnpm verify`).
 
 - Slice 0.11 added the web app shells (`apps/admin/CLAUDE.md`): the panel on port 5173 and the portal on 5174 in development, the shared web lint rules in `eslint.web.mjs`, and a Playwright smoke test against `vite preview` with a fake API in `pnpm verify` and CI (owner decisions 2026-11-05).
 - The deploy slice must serve each web app's `index.html` for every unknown path outside `/v1` (browser history routing), or a reload on a deep link answers 404.
@@ -58,4 +63,4 @@ Phase 0, slice 0.12: Flutter app shells, unstyled (`docs/roadmap.md`).
 
 ## Next
 
-Slice 0.13, the hosting decision (docs) (`docs/roadmap.md`).
+Slice 0.14, staging on Contabo (`docs/roadmap.md`).
