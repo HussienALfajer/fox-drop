@@ -4,21 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 0, slice 0.11: web app shells, unstyled (`docs/roadmap.md`).
+Phase 0, slice 0.12: Flutter app shells, unstyled (`docs/roadmap.md`).
 
-- **Implements:** architecture §10.1 (Vite, React, TypeScript strict, TanStack Router and Query, i18next with Arabic only, the generated API client), §10.2 (static single-page apps), AP §4.7 and the Arabic right-to-left rule of `CLAUDE.md` (translation files, start and end, Western digits).
-- **Branch:** `feat/web-app-shells`
-- **Done when:** `apps/admin` and `apps/merchant-portal` build and serve an unstyled Arabic RTL page through their router, call `GET /v1/<group>/status` through the generated TypeScript client with TanStack Query, keep every user-facing string in a translation file, and pass a Playwright smoke test inside `pnpm verify` and CI; no design tokens, shared UI package or styling (the design stop); folder `CLAUDE.md` rules for the web apps.
+- **Implements:** architecture §11.1 (pub workspace and Melos, the three apps and their platforms: `apps/merchant` Android and Windows, `apps/captain` and `apps/customer` Android and iOS, one pinned Flutter), §11.2 (`core_l10n`: Arabic ARB files, Western digits), §11.3 (Riverpod, go_router), AP §4.7 and the Arabic right-to-left rule of `CLAUDE.md`.
+- **Branch:** `feat/flutter-app-shells`
+- **Done when:** the three apps build and run an unstyled Arabic RTL screen through go_router and Riverpod, call `GET /v1/<group>/status` through the generated `core_api` client, keep every user-facing string in `core_l10n` ARB files with Western digits, and pass analyze and widget tests inside `pnpm verify` and CI; no `core_ui`, theme or styling (the design stop); Flutter rules for Claude in the apps' `CLAUDE.md`.
 
 ## Plan
 
-- [ ] Read architecture §10, §18 (tests), §19 (repository), `packages/api-schema` and the root `CLAUDE.md`; ask the owner what the specs leave open (such as the dev server ports, how the panel reaches the API in development given the `__Host-` cookie, and whether the Playwright browsers run in CI on every pull request).
-- [ ] `apps/admin`: Vite, React, TanStack Router and Query, i18next in Arabic with `dir="rtl"`, the generated client calling `/v1/admin/status`.
-- [ ] `apps/merchant-portal`: the same shell for the owner portal, calling `/v1/merchant/status`.
-- [ ] Turborepo and `pnpm verify` wiring (lint, type check, build, unit tests), a Playwright smoke test for each app, CI.
-- [ ] Folder `CLAUDE.md` rules, the pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
+- [ ] Read architecture §11, §18.3, §19, `packages/core_api` and the root `CLAUDE.md`; ask the owner what the specs leave open (such as the app IDs and package names, the API address each app uses in development on an emulator and a device, and whether flavors start now or with the deploy slice).
+- [ ] `packages/core_l10n`: Arabic ARB files, generated localizations, Western digits, with a test.
+- [ ] `apps/customer`: Flutter app (Android, iOS), go_router, Riverpod, the `core_api` client calling `/v1/customer/status`, a widget test.
+- [ ] `apps/captain` (Android, iOS) and `apps/merchant` (Android, Windows): the same shell on their route groups.
+- [ ] Melos and `pnpm verify` wiring, CI, the Flutter rules in `CLAUDE.md`, the pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
 
 ## Notes from earlier slices
+
+- Slice 0.11 added the web app shells (`apps/admin/CLAUDE.md`): the panel on port 5173 and the portal on 5174 in development, the shared web lint rules in `eslint.web.mjs`, and a Playwright smoke test against `vite preview` with a fake API in `pnpm verify` and CI (owner decisions 2026-11-05).
+- The deploy slice must serve each web app's `index.html` for every unknown path outside `/v1` (browser history routing), or a reload on a deep link answers 404.
+- The panel's Arabic name «لوحة الإدارة» and the portal's «بوابة المطعم» are the spec terms (AP component table, RA §17); they are placeholders until the design.
+- i18next formats interpolated numbers and dates with its `lng`, `ar`, which gives Arabic-Indic digits: the first translation that formats a value sets an `ar-u-nu-latn` formatter (AP §4.7).
 
 - Slice 0.10 added app phone sign-in (`apps/server/src/modules/identity/CLAUDE.md`), customer routes only (owner decisions 2026-11-05: one engine over the app party, one account table per party, JWT keys in the database rotated every 30 days, a direct call to the development sender until the WhatsApp sender arrives). The restaurant and captain apps add a party, their account table and routes on the same engine. Outside `FOX_DROP_ENVIRONMENT=development` every code request answers `503` until the real sender exists.
 - The app code request limits key on the request IP. Without `trustProxy` set for the real proxy hops, every user shares the proxy's IP and the platform gets `otp.ip_hourly_max` (30) code requests per hour: the deploy slice must set the trusted hop before anyone signs in on staging.
@@ -49,8 +54,8 @@ Phase 0, slice 0.11: web app shells, unstyled (`docs/roadmap.md`).
 - Owner decision 2026-11-05: a locked admin account answers `401` like every other sign-in refusal, never `423`.
 - The API has no `trustProxy` yet, so behind Cloudflare and the proxy every session and audit event would record the proxy's IP. The deploy slice sets the trusted hops or reads `CF-Connecting-IP` from a trusted hop, never `trustProxy: true`.
 - Sign-in and setup cost an Argon2 hash per request; nothing limits their rate yet. The deploy slice (Cloudflare rate limits, architecture §15.5) or a per-IP limit in Valkey must cover `/v1/admin/auth/*`.
-- The session cookie is `__Host-` and `SameSite=Strict`, so the panel and the API must be served from the same site; the panel slice decides the origin (or adds CORS with credentials).
+- The session cookie is `__Host-` and `SameSite=Strict`. Owner decision 2026-11-05: the panel and the portal call `/v1` on their own origin; Vite forwards it to the server in development, and the deploy slice routes `/v1` on each web app's host to the API. Development sign-in relies on the browser accepting a `Secure` cookie over `http://localhost` (Chrome, Edge and Firefox do).
 
 ## Next
 
-Slice 0.12, Flutter app shells, unstyled (`docs/roadmap.md`).
+Slice 0.13, the hosting decision (docs) (`docs/roadmap.md`).

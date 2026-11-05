@@ -1,9 +1,15 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "tasks": {
-    "//#lint:root": { "cache": false },
-    "lint": { "cache": false },
-    "typecheck": { "cache": false },
+    "//#lint:root": {
+      "cache": false
+    },
+    "lint": {
+      "cache": false
+    },
+    "typecheck": {
+      "cache": false
+    },
     "test": {
       "cache": false,
       "passThroughEnv": [
@@ -13,6 +19,14 @@
         "DOCKER_CONTEXT",
         "TESTCONTAINERS_*"
       ]
+    },
+    "build": {
+      "cache": false,
+      "outputs": ["dist/**"]
+    },
+    "test:e2e": {
+      "cache": false,
+      "dependsOn": ["build"]
     }
   }
 }

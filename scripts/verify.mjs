@@ -107,7 +107,16 @@ function checkApiContract() {
 
 checkApiContract();
 step('Prettier', 'pnpm exec prettier --check .');
-step('Lint, type check and test (Turborepo)', 'pnpm exec turbo run lint:root lint typecheck test');
+// The web apps' smoke tests run in Chromium; this downloads it once.
+step(
+  'Playwright browser',
+  // One app at a time: two installs at once race on the shared browser cache.
+  'pnpm --workspace-concurrency=1 --filter @fox-drop/admin --filter @fox-drop/merchant-portal exec playwright install chromium',
+);
+step(
+  'Lint, type check, test, build and smoke test (Turborepo)',
+  'pnpm exec turbo run lint:root lint typecheck test build test:e2e',
+);
 
 checkFlutterVersion();
 checkDartWorkspace();

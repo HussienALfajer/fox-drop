@@ -54,7 +54,24 @@ jobs:
 
       - run: dart pub get --enforce-lockfile
 
+      # The web apps' smoke tests run in Chromium (architecture §18.2).
+      - uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('pnpm-lock.yaml') }}
+
+      # Chromium's system libraries, once; pnpm verify installs the browser for each app.
+      - run: pnpm --filter @fox-drop/admin exec playwright install-deps chromium
+
       - run: pnpm verify
+
+      # The traces of a failed smoke test (playwright.config.ts).
+      - if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright-results
+          path: apps/*/test-results/
+          if-no-files-found: ignore
 
   # Architecture §4.4: one image runs the four server roles.
   server-image:
