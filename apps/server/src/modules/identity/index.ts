@@ -29,11 +29,6 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
 })
 export class IdentityModule {}
 
-export {
-  CurrentAdminSession,
-  RequirePermission,
-  RouteAccessGuard,
-  SignedIn,
-} from './route-access.guard.js';
+export { ADMIN_SESSION_COOKIE, RouteAccessGuard } from './route-access.guard.js';
 export { AdminSessionsService, type AdminSession } from './admin-sessions.service.js';
 export { adminPermissions, type AdminPermission } from './permissions.js';
