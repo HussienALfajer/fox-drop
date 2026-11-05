@@ -4,20 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 1.1, the ledger (`docs/roadmap.md`, Phase 1). Phase 2's slice list is planned after Phase 1 (owner decision 2026-11-05). Slice 1.3 (OSRM) may run in parallel with this slice, in its own worktree and branch, since it touches neither the money modules nor the migrations; the other Phase 1 slices run in order.
+Slice 1.2, currencies and the city's base currency (`docs/roadmap.md`, Phase 1). Slice 1.3 (OSRM) may run in parallel, in its own worktree and branch; the other Phase 1 slices run in order.
 
-- **Specs:** AP §8.4 (order money and the worked example), §8.5 (captain custody and earnings), §8.7 (restaurant account), §8.11 (platform accounts); architecture §4.3 (only `ledger` moves money), §5.2 (money as `bigint` minor units with a currency code), §5.6 (ledger), E3.
-- **Branch:** `feat/ledger`.
+- **Specs:** AP §8.6 (currencies and exchange rates, D14, D25), §9.10.4 (the exchange rates screen's data), Appendix A (`currency.<code>.rounding_unit`, `currency.<code>.rounding_mode`, `fx.large_change_confirm_pct`, `fx.stale_alert_hours`), §13 item 4 (the Azaz base currency is open: a placeholder in development and staging only); architecture §4.2 (`fx` owns rates and rounding), §5.2 (money in minor units, the minor unit per currency from `fx`), §5.6.
+- **Branch:** `feat/fx`.
 - **Plan:**
-  - [x] Write the failing tests first: a journal that does not balance to zero per currency is refused; amounts are integers in minor units with a currency code; every entry type of AP §8.5, §8.7 and §8.11 exists and no other; a balance is the sum of its entries; the application role cannot update or delete a ledger row.
-  - [x] Decide each entry type's counter-account from AP §8.4–§8.11. Owner decisions 2026-11-05: a new `platform.order_clearing` «طلبات قيد التسليم» for the order's cash and exceptions, `platform.adjustments` «القيود التصحيحية» for manual corrections, and a `captain.deposit` account per captain (`apps/server/src/modules/ledger/CLAUDE.md`).
-  - [x] The `ledger` schema through the `db-migration` skill: accounts (per city, party, purpose and currency, with the owning record's id and no foreign key into another module), journals (type, city, actor, reason, the source record such as an order), entries; grants `SELECT` and `INSERT` only.
-  - [x] The public `LedgerService`: open an account, post a journal inside the caller's transaction, read a balance. No cached balances yet, so no reconciliation job (architecture §5.6 adds it with the first cache).
-  - [x] A test that posts the money of AP §8.4's worked example and checks every balance, for a restaurant in `active` status (a `test` restaurant posts no commission, AP §9.6.3).
-  - [x] The module's `CLAUDE.md` (how other modules post money) and the module boundary rule.
-  - [ ] `pnpm verify` through the `checker` agent, the `reviewer` agent, then the pull request.
+  - [ ] Write the failing tests first: rounding to a currency's unit in each mode (`nearest`, `up`, `down`) in integer minor units; conversion between currencies through a rate version without floating point; a rate change is a new version and never an update; the base currency cannot change after the city's first order.
+  - [ ] Decide how the rate is stored (AP §8.6: "one canonical value with high precision"; an exact integer form, never a float) and whether the rounding settings stay in `settings` (`currency.<code>.*`) or are read there by `fx`. Ask the owner only where a business rule is open.
+  - [ ] The `fx` schema through the `db-migration` skill: currency rows (code, Arabic name, symbol, decimals, status) seeding TRY «ليرة تركية», USD «دولار أمريكي» and SYP «ليرة سورية»; the city's base and accepted currencies with display order and enabled flag; append-only rate versions with editor, time and reason.
+  - [ ] The public `FxService`: the city's base currency, its accepted currencies, the current rates, a rate snapshot an order keeps, conversion and rounding with a snapshot. The base currency lock reads "the city has an order" through an argument or an event, since `ordering` does not exist yet.
+  - [ ] Development and staging seed: TRY as the Azaz base currency, marked as a placeholder (AP §13 item 4), never in a production migration.
+  - [ ] Tie the settings' money values to the currencies where 0.9 left them open: `currency.<code>.*` and `captain.remit_tolerance` accept only a city's currencies.
+  - [ ] The module's `CLAUDE.md`, `pnpm verify` through `checker`, the `reviewer`, then the pull request.
 
 ## Notes from earlier slices
+
+- Slice 1.1 added the `ledger` module (`apps/server/src/modules/ledger/CLAUDE.md`; owner decisions 2026-11-05 in `docs/domain/05` and `11`): `platform.order_clearing` takes the other side of an order's cash and exceptions and returns to zero per order, `platform.adjustments` the other side of every manual correction, and `captain.deposit` holds a captain's kit deposit. On a non-normal outcome the commission is booked against the clearing account, not as revenue (AP §8.9 rule 3). Two database triggers keep every journal balanced at commit and closed after its transaction.
+- For slice 1.2: a cross-currency journal (`custody.fx_convert`, a payout or settlement in another currency) records no rate, so `platform.fx_rounding` holds currency positions, not the base-currency gain the daily report shows. Add a nullable rate version (or the base equivalent) on journals in an expand migration.
+- For the cash-desk slice: no journal type moves `platform.cash` alone, so a drawer variance at close, a field session handed to the office, an opening float and a deposit refund at termination need owner decisions and new types.
+- For the delivery and pickup slices (1.12, 1.13): `LedgerService.post` is not idempotent and takes no lock; the order's version stops a second post, and a post whose amount comes from a balance locks the owning record first.
+- The customer dues ledger (AP §8.8: `dues.charge`, `dues.payment`, `dues.adjustment`) is not in the ledger yet; its slice adds the account purpose, the types and the `CHECK`s.
 
 - Phase 1 owner decisions 2026-11-05 (`docs/roadmap.md`): the screens are functional and unstyled, with logic kept apart from presentation, so the design can replace the presentation alone; manual dispatch only (D6); payments at pickup and at the door in the base currency only; road distances through self-hosted OSRM from slice 1.3, with the straight line × 1.3 only as the fallback; restaurants and captains come from seed data and a minimal admin API; the demo restaurant is `active` with a test customer, so commission entries are proved.
 - Placeholder values for development and staging only, never production (AP §13 items 4 and 5 stay open until the owner decides them before launch): base currency TRY for Azaz; commission 15%; delivery fee 40; captain pay 25 for the first 3 km plus 5 per extra km; a placeholder cash limit and minimum order.
@@ -78,4 +84,4 @@ Slice 1.1, the ledger (`docs/roadmap.md`, Phase 1). Phase 2's slice list is plan
 
 ## Next
 
-Build slice 1.1, and slice 1.3 in parallel if the owner wants (`docs/roadmap.md`).
+Build slice 1.2, and slice 1.3 in parallel if the owner wants (`docs/roadmap.md`).
