@@ -276,6 +276,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/auth/code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerAuthRequestCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/auth/sign-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerAuthSignIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerAuthRefresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/auth/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerAuthCurrent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/auth/sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerAuthSignOut"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/auth/sign-out-everywhere": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerAuthSignOutEverywhere"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/settings": {
         parameters: {
             query?: never;
@@ -447,6 +543,69 @@ export interface components {
                 role: string;
                 permissions: string[];
             }[];
+        };
+        CustomerCodeRequestDto: {
+            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            phone: string;
+            /**
+             * Format: uuid
+             * @description The app installation, generated once by the app and kept until it is removed.
+             */
+            deviceId: string;
+        };
+        CustomerCodeSentDto_Output: {
+            /**
+             * @description Where the code went (architecture §8.3.4).
+             * @constant
+             */
+            channel: "whatsapp";
+            /** @description When the app may offer «إعادة الإرسال». */
+            resendAfterSec: number;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        CustomerSignInDto: {
+            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            phone: string;
+            /**
+             * Format: uuid
+             * @description The app installation, generated once by the app and kept until it is removed.
+             */
+            deviceId: string;
+            code: string;
+        };
+        CustomerSignedInDto_Output: {
+            /** Format: uuid */
+            accountId: string;
+            /** @description The app shows «أكمل بياناتك» (CU §5.3). */
+            newAccount: boolean;
+            /** @description A JWT for the Authorization header, valid 15 minutes. */
+            accessToken: string;
+            /** Format: date-time */
+            accessTokenExpiresAt: string;
+            /** @description Used once at /refresh for a new pair; using it twice signs the device out. */
+            refreshToken: string;
+        };
+        CustomerRefreshDto: {
+            refreshToken: string;
+        };
+        CustomerTokensDto_Output: {
+            /** @description A JWT for the Authorization header, valid 15 minutes. */
+            accessToken: string;
+            /** Format: date-time */
+            accessTokenExpiresAt: string;
+            /** @description Used once at /refresh for a new pair; using it twice signs the device out. */
+            refreshToken: string;
+        };
+        CustomerSessionDto_Output: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: uuid */
+            sessionId: string;
+        };
+        CustomerSignedOutDto_Output: {
+            /** @constant */
+            status: "signed_out";
         };
         SettingListDto_Output: {
             settings: {
@@ -918,6 +1077,138 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RoleMatrixDto_Output"];
+                };
+            };
+        };
+    };
+    customerAuthRequestCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerCodeRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerCodeSentDto_Output"];
+                };
+            };
+        };
+    };
+    customerAuthSignIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerSignInDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSignedInDto_Output"];
+                };
+            };
+        };
+    };
+    customerAuthRefresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerRefreshDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerTokensDto_Output"];
+                };
+            };
+        };
+    };
+    customerAuthCurrent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSessionDto_Output"];
+                };
+            };
+        };
+    };
+    customerAuthSignOut: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSignedOutDto_Output"];
+                };
+            };
+        };
+    };
+    customerAuthSignOutEverywhere: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSignedOutDto_Output"];
                 };
             };
         };

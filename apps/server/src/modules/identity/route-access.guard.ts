@@ -11,6 +11,7 @@ import type { FastifyRequest } from 'fastify';
 import { ROUTE_ACCESS, type RouteAccess } from '../../http/access.js';
 import { ROUTE_GROUP, type RouteGroup } from '../../http/route-groups.js';
 import { AdminSessionsService } from './admin-sessions.service.js';
+import { type AppParty, AppSessionsService } from './app-sessions.service.js';
 
 // Architecture §10.3: an HTTP-only, secure, same-site cookie. The __Host-
 // prefix makes the browser refuse it unless it is secure, has no domain and
@@ -20,12 +21,14 @@ export const ADMIN_SESSION_COOKIE = '__Host-fox_drop_admin';
 // Architecture §15.2, deny by default: every route of every group passes here.
 // A route that declares nothing is refused; an admin route checks the session
 // and the permission it names against the union of the admin's roles, read at
-// every request so a role change applies at once.
+// every request so a role change applies at once; an app route checks the
+// bearer access token of its group's app.
 @Injectable()
 export class RouteAccessGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly sessions: AdminSessionsService,
+    private readonly appSessions: AppSessionsService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -33,12 +36,22 @@ export class RouteAccessGuard implements CanActivate {
     const access = this.reflector.getAllAndOverride<RouteAccess | undefined>(ROUTE_ACCESS, targets);
     if (!access) throw new ForbiddenException();
     if (access.kind === 'public') return true;
-    // Only the admin group has sessions so far; the apps' guards come with
-    // their sign-in.
     const group = this.reflector.get<RouteGroup | undefined>(ROUTE_GROUP, context.getClass());
+    const request = context.switchToHttp().getRequest<FastifyRequest>();
+    if (access.kind === 'app_session') {
+      // The app of the route's group; the restaurant and captain apps join
+      // with their sign-in.
+      const party: AppParty | undefined = group === 'customer' ? 'customer' : undefined;
+      if (!party) throw new ForbiddenException();
+      const header = request.headers.authorization;
+      const accessToken = header?.startsWith('Bearer ') ? header.slice('Bearer '.length) : '';
+      const session = accessToken ? await this.appSessions.authenticate(party, accessToken) : null;
+      if (!session) throw new UnauthorizedException();
+      request.appSession = session;
+      return true;
+    }
     if (group !== 'admin') throw new ForbiddenException();
 
-    const request = context.switchToHttp().getRequest<FastifyRequest>();
     const token = request.cookies[ADMIN_SESSION_COOKIE];
     const session = token ? await this.sessions.authenticate(token) : null;
     if (!session) throw new UnauthorizedException();

@@ -289,8 +289,14 @@ describe('roles and permissions as data (AP §6.1–6.3)', () => {
 // route needs a session and one of the setting's Appendix A edit roles (owner
 // decision 2026-11-05); the matrix calls them with dispatch.mode (OWN, OPS),
 // and the list with any setting (OWN, OPS for dispatch.mode, FIN for the
-// currencies).
-type Access = 'public' | 'session' | 'undeclared' | AdminPermission | { editRoles: string[] };
+// currencies). An app route needs the app's bearer token, which no admin has.
+type Access =
+  | 'public'
+  | 'session'
+  | 'app_session'
+  | 'undeclared'
+  | AdminPermission
+  | { editRoles: string[] };
 const settingRoles = { editRoles: ['OWN', 'OPS'] };
 const routeAccess: Record<string, Access> = {
   'GET /v1/admin/status': 'public',
@@ -315,6 +321,12 @@ const routeAccess: Record<string, Access> = {
   'PUT /v1/admin/settings/{key}': settingRoles,
   'POST /v1/admin/settings/{key}/reset': settingRoles,
   'GET /v1/admin/settings/{key}/history': settingRoles,
+  'POST /v1/customer/auth/code': 'public',
+  'POST /v1/customer/auth/sign-in': 'public',
+  'POST /v1/customer/auth/refresh': 'public',
+  'GET /v1/customer/auth/session': 'app_session',
+  'POST /v1/customer/auth/sign-out': 'app_session',
+  'POST /v1/customer/auth/sign-out-everywhere': 'app_session',
   'GET /v1/admin/test-access/undeclared': 'undeclared',
   'GET /v1/admin/test-access/operations': 'operations.manage',
   'GET /v1/admin/test-access/finance': 'finance.manage',
@@ -383,7 +395,7 @@ describe('every route with every role (architecture §15.2, AP §14 item 2)', ()
             ? 'through'
             : access === 'undeclared'
               ? '403'
-              : !roles
+              : !roles || access === 'app_session'
                 ? '401'
                 : typeof access === 'object'
                   ? roles.some((role) => access.editRoles.includes(role))

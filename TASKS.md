@@ -12,11 +12,18 @@ Phase 0, slice 0.10: phone sign-in for the apps, server side (`docs/roadmap.md`)
 
 ## Plan
 
-- [ ] Read architecture §8.3–8.3.4, §15.1, §4.4 (the `otp-sender` role), the sign-in sections of the three app specs (CU §5, RA §5.2, CA §4.9) and `apps/server/src/modules/identity/CLAUDE.md`; ask the owner what the specs leave open (such as which app routes this slice serves, the JWT key rotation period and where the keys live, and whether the customer, merchant and captain accounts are one table or three).
-- [ ] The `CodeSender` port and the development-only sender, and the queue to the `otp-sender` role (or a direct call until pg-boss arrives, if the owner agrees).
-- [ ] Codes: request and verify, with the code rules and the Valkey request limits (failing test first).
-- [ ] Access and refresh tokens, rotation, reuse detection, devices and sign out everywhere (failing test first).
+- [x] Read architecture §8.3–8.3.4, §15.1, §4.4 (the `otp-sender` role), the sign-in sections of the three app specs (CU §5, RA §5.2, CA §4.9) and `apps/server/src/modules/identity/CLAUDE.md`; ask the owner what the specs leave open (such as which app routes this slice serves, the JWT key rotation period and where the keys live, and whether the customer, merchant and captain accounts are one table or three).
+- [x] The `CodeSender` port and the development-only sender, and the queue to the `otp-sender` role (or a direct call until pg-boss arrives, if the owner agrees).
+- [x] Codes: request and verify, with the code rules and the Valkey request limits (failing test first).
+- [x] Access and refresh tokens, rotation, reuse detection, devices and sign out everywhere (failing test first).
 - [ ] The app route guard (`RouteAccessGuard` serves only the admin group so far), the route-access matrix entries, `pnpm generate:api`, folder `CLAUDE.md` rules, and the pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
+
+## Owner decisions for this slice (2026-11-05)
+
+- The engine is generic over the app party; this slice serves the customer app only (`/v1/customer/auth/*`). The restaurant and captain apps add their routes on the same engine when their accounts exist.
+- One account table per party (`customer_accounts` now); codes, sessions, refresh tokens and signing keys are shared, with a `party` column.
+- JWT signing keys live in the database, encrypted with the identity key, and rotate every 30 days.
+- The API calls the development code sender directly until the real WhatsApp sender and its `otp-sender` queue arrive.
 
 ## Notes from earlier slices
 
