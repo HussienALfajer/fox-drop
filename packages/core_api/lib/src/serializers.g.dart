@@ -17,8 +17,21 @@ Serializers _$serializers =
           ..add(CreateUserDtoRolesEnum.serializer)
           ..add(DoneDtoOutput.serializer)
           ..add(DoneDtoOutputStatusEnum.serializer)
+          ..add(ResetSettingDto.serializer)
           ..add(RoleMatrixDtoOutput.serializer)
           ..add(RoleMatrixDtoOutputRolesInner.serializer)
+          ..add(SettingEntryDtoOutput.serializer)
+          ..add(SettingEntryDtoOutputEditRolesEnum.serializer)
+          ..add(SettingEntryDtoOutputGroupEnum.serializer)
+          ..add(SettingEntryDtoOutputScopeEnum.serializer)
+          ..add(SettingHistoryDtoOutput.serializer)
+          ..add(SettingHistoryDtoOutputChangesInner.serializer)
+          ..add(SettingHistoryDtoOutputChangesInnerActionEnum.serializer)
+          ..add(SettingListDtoOutput.serializer)
+          ..add(SettingListDtoOutputSettingsInner.serializer)
+          ..add(SettingListDtoOutputSettingsInnerEditRolesEnum.serializer)
+          ..add(SettingListDtoOutputSettingsInnerGroupEnum.serializer)
+          ..add(SettingListDtoOutputSettingsInnerScopeEnum.serializer)
           ..add(SetupLinkDtoOutput.serializer)
           ..add(SetupTokenDto.serializer)
           ..add(SignInDto.serializer)
@@ -31,6 +44,7 @@ Serializers _$serializers =
           ..add(TeamUsersDtoOutputUsersInnerOpenSessionsInner.serializer)
           ..add(TeamUsersDtoOutputUsersInnerStatusEnum.serializer)
           ..add(TotpEnrolmentDtoOutput.serializer)
+          ..add(UpdateSettingDto.serializer)
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(ChangeRolesDtoRolesEnum),
@@ -50,6 +64,32 @@ Serializers _$serializers =
             () => ListBuilder<RoleMatrixDtoOutputRolesInner>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(SettingHistoryDtoOutputChangesInner),
+            ]),
+            () => ListBuilder<SettingHistoryDtoOutputChangesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(SettingListDtoOutputSettingsInner),
+            ]),
+            () => ListBuilder<SettingListDtoOutputSettingsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
+            ]),
+            () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),
             () => ListBuilder<String>(),
           )
@@ -64,6 +104,16 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),
             () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(SettingEntryDtoOutputEditRolesEnum),
+            ]),
+            () => ListBuilder<SettingEntryDtoOutputEditRolesEnum>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

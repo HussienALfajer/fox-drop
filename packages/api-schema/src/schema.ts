@@ -276,6 +276,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["settingsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/settings/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["settingsUpdate"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/settings/{key}/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["settingsReset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/settings/{key}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["settingsHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -382,6 +446,76 @@ export interface components {
             roles: {
                 role: string;
                 permissions: string[];
+            }[];
+        };
+        SettingListDto_Output: {
+            settings: {
+                key: string;
+                /** @description The Appendix A key, such as currency.<code>.rounding_unit. */
+                template: string;
+                parameter: string | null;
+                /** @enum {string} */
+                group: "timers_limits" | "dispatch" | "customers" | "captains" | "restaurants" | "support" | "finance" | "security" | "apps";
+                type: string;
+                unit: string | null;
+                /** @enum {string} */
+                scope: "global" | "city";
+                cityId: string | null;
+                editRoles: ("OWN" | "OPS" | "SUP" | "FIN" | "DATA")[];
+                reasonRequired: boolean;
+                /** @description No default: the owner enters the value before launch. */
+                beforeLaunch: boolean;
+                default: unknown;
+                /** @description The value in effect: the stored one, or the default. */
+                value: unknown;
+                isDefault: boolean;
+            }[];
+        };
+        UpdateSettingDto: {
+            cityId?: string | null;
+            /** @description The new value, in the shape of its setting; null where the setting allows it. */
+            value: unknown;
+            /** @description Required for the settings with money impact (reasonRequired). */
+            reason?: string | null;
+        };
+        SettingEntryDto_Output: {
+            key: string;
+            /** @description The Appendix A key, such as currency.<code>.rounding_unit. */
+            template: string;
+            parameter: string[];
+            /** @enum {string} */
+            group: "timers_limits" | "dispatch" | "customers" | "captains" | "restaurants" | "support" | "finance" | "security" | "apps";
+            type: string;
+            unit: string[];
+            /** @enum {string} */
+            scope: "global" | "city";
+            cityId: string | null;
+            editRoles: ("OWN" | "OPS" | "SUP" | "FIN" | "DATA")[];
+            reasonRequired: boolean;
+            /** @description No default: the owner enters the value before launch. */
+            beforeLaunch: boolean;
+            default: unknown;
+            /** @description The value in effect: the stored one, or the default. */
+            value: unknown;
+            isDefault: boolean;
+        };
+        ResetSettingDto: {
+            cityId?: string | null;
+            /** @description Required for the settings with money impact (reasonRequired). */
+            reason?: string | null;
+        };
+        SettingHistoryDto_Output: {
+            changes: {
+                /** @enum {string} */
+                action: "update" | "reset";
+                before: unknown;
+                after: unknown;
+                /** Format: uuid */
+                editorId: string;
+                editorRoles: string[];
+                reason: string | null;
+                /** Format: date-time */
+                changedAt: string;
             }[];
         };
     };
@@ -784,6 +918,109 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RoleMatrixDto_Output"];
+                };
+            };
+        };
+    };
+    settingsList: {
+        parameters: {
+            query: {
+                /** @description The city of a city setting; none for a global one. */
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingListDto_Output"];
+                };
+            };
+        };
+    };
+    settingsUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The concrete key, such as dispatch.mode or currency.TRY.rounding_unit. */
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSettingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingEntryDto_Output"];
+                };
+            };
+        };
+    };
+    settingsReset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The concrete key, such as dispatch.mode or currency.TRY.rounding_unit. */
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetSettingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingEntryDto_Output"];
+                };
+            };
+        };
+    };
+    settingsHistory: {
+        parameters: {
+            query?: {
+                /** @description The city of a city setting; none for a global one. */
+                cityId?: string;
+            };
+            header?: never;
+            path: {
+                /** @description The concrete key, such as dispatch.mode or currency.TRY.rounding_unit. */
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingHistoryDto_Output"];
                 };
             };
         };

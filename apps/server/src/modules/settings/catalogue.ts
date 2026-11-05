@@ -623,3 +623,42 @@ export function keyParameter(key: SettingKey): keyof typeof keyParameters | null
   const match = /<(\w+)>/.exec(key);
   return match ? (match[1] as keyof typeof keyParameters) : null;
 }
+
+// The group screens of AP §9.14, in their order. Owner decision 2026-11-05:
+// each key's group follows its prefix, as settingGroupOf maps it.
+export const settingGroups = [
+  'timers_limits',
+  'dispatch',
+  'customers',
+  'captains',
+  'restaurants',
+  'support',
+  'finance',
+  'security',
+  'apps',
+] as const;
+export type SettingGroup = (typeof settingGroups)[number];
+
+const groupByPrefix: Record<string, SettingGroup> = {
+  platform: 'timers_limits',
+  order: 'timers_limits',
+  dispatch: 'dispatch',
+  pricing: 'dispatch',
+  customer: 'customers',
+  push: 'customers',
+  captain: 'captains',
+  merchant: 'restaurants',
+  support: 'support',
+  finance: 'finance',
+  fx: 'finance',
+  currency: 'finance',
+  admin: 'security',
+  otp: 'security',
+  app: 'apps',
+};
+
+export function settingGroupOf(key: SettingKey): SettingGroup {
+  const group = groupByPrefix[key.slice(0, key.indexOf('.'))];
+  if (!group) throw new Error(`${key} has no settings group`);
+  return group;
+}

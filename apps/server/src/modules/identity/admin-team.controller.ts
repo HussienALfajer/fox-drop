@@ -14,12 +14,12 @@ import {
 import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
+import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
 import { AdminController } from '../../http/route-groups.js';
 import { adminRoles } from '../settings/index.js';
 import type { AdminSession } from './admin-sessions.service.js';
 import { type IssuedLink, AdminTeamService, TeamRefusedError } from './admin-team.service.js';
-import { requestContext } from './request-context.js';
-import { CurrentAdminSession, RequirePermission } from './route-access.guard.js';
+import { requestContext } from '../../http/request-context.js';
 import { adminAccountStatuses } from './schema.js';
 import { normalizeEmail, normalizePhone } from './sign-in-name.js';
 

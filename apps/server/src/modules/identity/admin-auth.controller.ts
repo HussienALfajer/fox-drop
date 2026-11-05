@@ -12,13 +12,13 @@ import {
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
-import { Public } from '../../http/access.js';
+import { CurrentAdminSession, Public, SignedIn } from '../../http/access.js';
 import { AdminController } from '../../http/route-groups.js';
 import { type AdminSession, AdminSessionsService } from './admin-sessions.service.js';
 import { AdminSetupService, SetupRefusedError } from './admin-setup.service.js';
 import { AdminSignInService, SignInRefusedError } from './admin-sign-in.service.js';
-import { requestContext } from './request-context.js';
-import { ADMIN_SESSION_COOKIE, CurrentAdminSession, SignedIn } from './route-access.guard.js';
+import { requestContext } from '../../http/request-context.js';
+import { ADMIN_SESSION_COOKIE } from './route-access.guard.js';
 
 // Bounds that keep a request cheap; the password rule itself is a setting.
 const token = z.string().min(1).max(200);

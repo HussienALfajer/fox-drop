@@ -1,5 +1,5 @@
 import type { FastifyRequest } from 'fastify';
-import type { AuditRequestContext } from '../audit/index.js';
+import type { AuditRequestContext } from '../modules/audit/index.js';
 
 // Where a request came from, for the audit and the sessions.
 export function requestContext(request: FastifyRequest): AuditRequestContext {

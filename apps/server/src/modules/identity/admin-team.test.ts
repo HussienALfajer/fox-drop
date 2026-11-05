@@ -9,6 +9,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { ApiModule } from '../../api.module.js';
 import { createDatabase, type Database } from '../../database/database.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
+import { RequirePermission } from '../../http/access.js';
 import { createApiApp } from '../../http/create-api-app.js';
 import { createOpenApiDocument } from '../../http/openapi.js';
 import { AdminController, ROUTE_GROUPS } from '../../http/route-groups.js';
@@ -19,7 +20,7 @@ import { AdminSetupService } from './admin-setup.service.js';
 import { AdminSignInService } from './admin-sign-in.service.js';
 import { AdminTeamService } from './admin-team.service.js';
 import { type AdminPermission, adminPermissions } from './permissions.js';
-import { ADMIN_SESSION_COOKIE, RequirePermission } from './route-access.guard.js';
+import { ADMIN_SESSION_COOKIE } from './route-access.guard.js';
 import { adminAccountRoles, adminAccounts } from './schema.js';
 import { hashPassword, IdentitySecrets } from './secrets.js';
 
@@ -284,8 +285,14 @@ describe('roles and permissions as data (AP §6.1–6.3)', () => {
 });
 
 // What each route needs. A route missing here fails the matrix, so every new
-// route declares its access in this test too (architecture §15.2).
-const routeAccess: Record<string, 'public' | 'session' | 'undeclared' | AdminPermission> = {
+// route declares its access in this test too (architecture §15.2). A settings
+// route needs a session and one of the setting's Appendix A edit roles (owner
+// decision 2026-11-05); the matrix calls them with dispatch.mode (OWN, OPS),
+// and the list with any setting (OWN, OPS for dispatch.mode, FIN for the
+// currencies).
+type Access = 'public' | 'session' | 'undeclared' | AdminPermission | { editRoles: string[] };
+const settingRoles = { editRoles: ['OWN', 'OPS'] };
+const routeAccess: Record<string, Access> = {
   'GET /v1/admin/status': 'public',
   'GET /v1/merchant/status': 'public',
   'GET /v1/captain/status': 'public',
@@ -304,12 +311,23 @@ const routeAccess: Record<string, 'public' | 'session' | 'undeclared' | AdminPer
   'POST /v1/admin/team/users/{accountId}/totp-reset': 'admin_team.manage',
   'POST /v1/admin/team/users/{accountId}/setup-link': 'admin_team.manage',
   'GET /v1/admin/team/roles': 'admin_team.manage',
+  'GET /v1/admin/settings': { editRoles: ['OWN', 'OPS', 'FIN'] },
+  'PUT /v1/admin/settings/{key}': settingRoles,
+  'POST /v1/admin/settings/{key}/reset': settingRoles,
+  'GET /v1/admin/settings/{key}/history': settingRoles,
   'GET /v1/admin/test-access/undeclared': 'undeclared',
   'GET /v1/admin/test-access/operations': 'operations.manage',
   'GET /v1/admin/test-access/finance': 'finance.manage',
 };
 
-function routes(): { method: string; path: string; url: string }[] {
+// Each call is valid, so only its access can refuse it: an account that does
+// not exist, and dispatch.mode set to its default, which changes nothing.
+function routes(cityId: string = randomUUID()): {
+  method: string;
+  path: string;
+  url: string;
+  payload: object;
+}[] {
   const document = createOpenApiDocument(app);
   return Object.entries(document.paths).flatMap(([path, item]) =>
     (['get', 'put', 'post', 'delete', 'patch'] as const).flatMap((method) =>
@@ -318,8 +336,14 @@ function routes(): { method: string; path: string; url: string }[] {
             {
               method: method.toUpperCase(),
               path,
-              // An account that does not exist, so an allowed call changes nothing.
-              url: path.replace('{accountId}', randomUUID()),
+              url:
+                path.replace('{accountId}', randomUUID()).replace('{key}', 'dispatch.mode') +
+                (path.startsWith('/v1/admin/settings') && method === 'get'
+                  ? `?cityId=${cityId}`
+                  : ''),
+              payload: path.startsWith('/v1/admin/settings')
+                ? { cityId, ...(method === 'put' && { value: 'manual' }) }
+                : {},
             },
           ]
         : [],
@@ -338,10 +362,12 @@ describe('every route with every role (architecture §15.2, AP §14 item 2)', ()
 
   it('answers 401 without a session, 403 without the permission, and lets the rest through', async () => {
     const callers = [null, ...adminRoles.map((role) => [role]), ['OPS', 'FIN']];
+    const azaz: string = (await sql.query("SELECT id FROM geo.cities WHERE code = 'AZ'")).rows[0]
+      .id;
     const outcomes: string[] = [];
     const expected: string[] = [];
     for (const roles of callers) {
-      for (const route of routes()) {
+      for (const route of routes(azaz)) {
         const access = routeAccess[`${route.method} ${route.path}`]!;
         // A fresh session per call, so a sign-out route ends only its own.
         const cookies = roles ? (await signedIn((await activeUser(roles)).accountId)).cookies : {};
@@ -349,7 +375,7 @@ describe('every route with every role (architecture §15.2, AP §14 item 2)', ()
           method: route.method as 'GET',
           url: route.url,
           cookies,
-          ...(route.method === 'GET' ? {} : { payload: {} }),
+          ...(route.method === 'GET' ? {} : { payload: route.payload }),
         });
         const permissions = (roles ?? []).flatMap(grantsOf);
         const want =
@@ -359,9 +385,13 @@ describe('every route with every role (architecture §15.2, AP §14 item 2)', ()
               ? '403'
               : !roles
                 ? '401'
-                : access === 'session' || permissions.includes(access)
-                  ? 'through'
-                  : '403';
+                : typeof access === 'object'
+                  ? roles.some((role) => access.editRoles.includes(role))
+                    ? 'through'
+                    : '403'
+                  : access === 'session' || permissions.includes(access)
+                    ? 'through'
+                    : '403';
         const got =
           response.statusCode === 401 ? '401' : response.statusCode === 403 ? '403' : 'through';
         const caller = roles?.join('+') ?? 'nobody';

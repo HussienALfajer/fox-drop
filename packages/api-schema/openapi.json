@@ -582,6 +582,189 @@
           "admin"
         ]
       }
+    },
+    "/v1/admin/settings": {
+      "get": {
+        "operationId": "settingsList",
+        "parameters": [
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "query",
+            "description": "The city of a city setting; none for a global one.",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingListDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/settings/{key}": {
+      "put": {
+        "operationId": "settingsUpdate",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "description": "The concrete key, such as dispatch.mode or currency.TRY.rounding_unit.",
+            "schema": {
+              "maxLength": 100,
+              "pattern": "^[A-Za-z0-9_.]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSettingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingEntryDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/settings/{key}/reset": {
+      "post": {
+        "operationId": "settingsReset",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "description": "The concrete key, such as dispatch.mode or currency.TRY.rounding_unit.",
+            "schema": {
+              "maxLength": 100,
+              "pattern": "^[A-Za-z0-9_.]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetSettingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingEntryDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/settings/{key}/history": {
+      "get": {
+        "operationId": "settingsHistory",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "description": "The concrete key, such as dispatch.mode or currency.TRY.rounding_unit.",
+            "schema": {
+              "maxLength": 100,
+              "pattern": "^[A-Za-z0-9_.]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cityId",
+            "required": false,
+            "in": "query",
+            "description": "The city of a city setting; none for a global one.",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingHistoryDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
     }
   },
   "info": {
@@ -1038,6 +1221,350 @@
         },
         "required": [
           "roles"
+        ],
+        "additionalProperties": false
+      },
+      "SettingListDto_Output": {
+        "type": "object",
+        "properties": {
+          "settings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "template": {
+                  "type": "string",
+                  "description": "The Appendix A key, such as currency.<code>.rounding_unit."
+                },
+                "parameter": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "group": {
+                  "type": "string",
+                  "enum": [
+                    "timers_limits",
+                    "dispatch",
+                    "customers",
+                    "captains",
+                    "restaurants",
+                    "support",
+                    "finance",
+                    "security",
+                    "apps"
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "unit": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "scope": {
+                  "type": "string",
+                  "enum": [
+                    "global",
+                    "city"
+                  ]
+                },
+                "cityId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "editRoles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "OWN",
+                      "OPS",
+                      "SUP",
+                      "FIN",
+                      "DATA"
+                    ]
+                  }
+                },
+                "reasonRequired": {
+                  "type": "boolean"
+                },
+                "beforeLaunch": {
+                  "type": "boolean",
+                  "description": "No default: the owner enters the value before launch."
+                },
+                "default": {},
+                "value": {
+                  "description": "The value in effect: the stored one, or the default."
+                },
+                "isDefault": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "key",
+                "template",
+                "parameter",
+                "group",
+                "type",
+                "unit",
+                "scope",
+                "cityId",
+                "editRoles",
+                "reasonRequired",
+                "beforeLaunch",
+                "default",
+                "value",
+                "isDefault"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "settings"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateSettingDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "The city of a city setting; none for a global one."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "value": {
+            "description": "The new value, in the shape of its setting; null where the setting allows it."
+          },
+          "reason": {
+            "description": "Required for the settings with money impact (reasonRequired).",
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "SettingEntryDto_Output": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "template": {
+            "type": "string",
+            "description": "The Appendix A key, such as currency.<code>.rounding_unit."
+          },
+          "parameter": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "group": {
+            "type": "string",
+            "enum": [
+              "timers_limits",
+              "dispatch",
+              "customers",
+              "captains",
+              "restaurants",
+              "support",
+              "finance",
+              "security",
+              "apps"
+            ]
+          },
+          "type": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "global",
+              "city"
+            ]
+          },
+          "cityId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "editRoles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "OWN",
+                "OPS",
+                "SUP",
+                "FIN",
+                "DATA"
+              ]
+            }
+          },
+          "reasonRequired": {
+            "type": "boolean"
+          },
+          "beforeLaunch": {
+            "type": "boolean",
+            "description": "No default: the owner enters the value before launch."
+          },
+          "default": {},
+          "value": {
+            "description": "The value in effect: the stored one, or the default."
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "template",
+          "parameter",
+          "group",
+          "type",
+          "unit",
+          "scope",
+          "cityId",
+          "editRoles",
+          "reasonRequired",
+          "beforeLaunch",
+          "default",
+          "value",
+          "isDefault"
+        ],
+        "additionalProperties": false
+      },
+      "ResetSettingDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "The city of a city setting; none for a global one."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason": {
+            "description": "Required for the settings with money impact (reasonRequired).",
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "SettingHistoryDto_Output": {
+        "type": "object",
+        "properties": {
+          "changes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "action": {
+                  "type": "string",
+                  "enum": [
+                    "update",
+                    "reset"
+                  ]
+                },
+                "before": {},
+                "after": {},
+                "editorId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "editorRoles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "changedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "action",
+                "before",
+                "after",
+                "editorId",
+                "editorRoles",
+                "reason",
+                "changedAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "changes"
         ],
         "additionalProperties": false
       }

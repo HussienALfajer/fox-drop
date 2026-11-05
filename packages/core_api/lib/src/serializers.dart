@@ -20,8 +20,14 @@ import 'package:core_api/src/model/change_roles_dto.dart';
 import 'package:core_api/src/model/complete_setup_dto.dart';
 import 'package:core_api/src/model/create_user_dto.dart';
 import 'package:core_api/src/model/done_dto_output.dart';
+import 'package:core_api/src/model/reset_setting_dto.dart';
 import 'package:core_api/src/model/role_matrix_dto_output.dart';
 import 'package:core_api/src/model/role_matrix_dto_output_roles_inner.dart';
+import 'package:core_api/src/model/setting_entry_dto_output.dart';
+import 'package:core_api/src/model/setting_history_dto_output.dart';
+import 'package:core_api/src/model/setting_history_dto_output_changes_inner.dart';
+import 'package:core_api/src/model/setting_list_dto_output.dart';
+import 'package:core_api/src/model/setting_list_dto_output_settings_inner.dart';
 import 'package:core_api/src/model/setup_link_dto_output.dart';
 import 'package:core_api/src/model/setup_token_dto.dart';
 import 'package:core_api/src/model/sign_in_dto.dart';
@@ -31,6 +37,7 @@ import 'package:core_api/src/model/team_users_dto_output.dart';
 import 'package:core_api/src/model/team_users_dto_output_users_inner.dart';
 import 'package:core_api/src/model/team_users_dto_output_users_inner_open_sessions_inner.dart';
 import 'package:core_api/src/model/totp_enrolment_dto_output.dart';
+import 'package:core_api/src/model/update_setting_dto.dart';
 
 part 'serializers.g.dart';
 
@@ -41,8 +48,14 @@ part 'serializers.g.dart';
   CompleteSetupDto,
   CreateUserDto,
   DoneDtoOutput,
+  ResetSettingDto,
   RoleMatrixDtoOutput,
   RoleMatrixDtoOutputRolesInner,
+  SettingEntryDtoOutput,
+  SettingHistoryDtoOutput,
+  SettingHistoryDtoOutputChangesInner,
+  SettingListDtoOutput,
+  SettingListDtoOutputSettingsInner,
   SetupLinkDtoOutput,
   SetupTokenDto,
   SignInDto,
@@ -52,9 +65,16 @@ part 'serializers.g.dart';
   TeamUsersDtoOutputUsersInner,
   TeamUsersDtoOutputUsersInnerOpenSessionsInner,
   TotpEnrolmentDtoOutput,
+  UpdateSettingDto,
 ])
 Serializers serializers =
     (_$serializers.toBuilder()
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(SettingListDtoOutputSettingsInner),
+            ]),
+            () => ListBuilder<SettingListDtoOutputSettingsInner>(),
+          )
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(TeamUsersDtoOutputUsersInner)]),
             () => ListBuilder<TeamUsersDtoOutputUsersInner>(),
@@ -74,6 +94,12 @@ Serializers serializers =
               FullType(RoleMatrixDtoOutputRolesInner),
             ]),
             () => ListBuilder<RoleMatrixDtoOutputRolesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(SettingHistoryDtoOutputChangesInner),
+            ]),
+            () => ListBuilder<SettingHistoryDtoOutputChangesInner>(),
           )
           ..add(const OneOfSerializer())
           ..add(const AnyOfSerializer())
