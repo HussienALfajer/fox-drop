@@ -16,7 +16,7 @@ Read `infra/CLAUDE.md` for the layout and rules, and the `vertex-server` skill b
 | API for the apps | `https://foxdrop-staging-api.109-199-111-169.sslip.io/v1/`                                                                                           |
 | Files            | `/srv/foxdrop-staging/` (user `foxdrop-staging`): `repo.git`, `releases/<commit>`, `current`, `previous`, `shared/.env` (secrets, 600), `shared/db/` |
 | Compose project  | `foxdrop-staging` (`docker ps --filter label=com.docker.compose.project=foxdrop-staging`)                                                            |
-| Logs             | `docker logs foxdrop-staging-api-1`; nginx in `/var/log/nginx/foxdrop-staging.*.log`                                                                 |
+| Logs             | `docker logs foxdrop-staging-api-1`; a failed deploy's logs in `journalctl -t foxdrop-deploy`; nginx in `/var/log/nginx/foxdrop-staging.*.log`       |
 | Backups          | `/var/backups/foxdrop-staging/` (7 days), encrypted copies in B2 (30 days); `journalctl -t foxdrop-backup`                                           |
 
 ## Deploy

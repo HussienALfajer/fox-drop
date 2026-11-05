@@ -2,17 +2,17 @@ import fastifyCookie from '@fastify/cookie';
 import { Module, type Type } from '@nestjs/common';
 import { APP_FILTER, NestFactory, Reflector } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
-import { SentryGlobalFilter } from '@sentry/nestjs/setup';
 import { Logger } from 'nestjs-pino';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { LoggingModule } from '../logging/logging.module.js';
+import { ErrorTrackingFilter } from '../observability/error-tracking.js';
 
 export async function createApiApp(module: Type): Promise<NestFastifyApplication> {
   @Module({
     imports: [LoggingModule, module],
-    // Reports every error that is not an HttpException (the 500s) to Sentry,
-    // then answers as Nest's own filter does (architecture §16).
-    providers: [{ provide: APP_FILTER, useClass: SentryGlobalFilter }],
+    // Reports every 500 to Sentry, then answers as Nest's own filter does
+    // (architecture §16).
+    providers: [{ provide: APP_FILTER, useClass: ErrorTrackingFilter }],
   })
   class RootModule {}
 

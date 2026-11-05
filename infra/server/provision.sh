@@ -102,34 +102,63 @@ done
 # Only these variables are replaced; nginx's own $variables stay as they are.
 # shellcheck disable=SC2016
 render() { envsubst '${FOXDROP_ENV} ${ADMIN_HOST} ${PORTAL_HOST} ${API_HOST} ${API_PORT} ${ADMIN_PORT} ${PORTAL_PORT}' <"$1"; }
-install -m 644 "$infra/nginx/server-names.conf" /etc/nginx/conf.d/foxdrop-server-names.conf
-install -m 644 "$infra/nginx/proxy.conf" /etc/nginx/snippets/foxdrop-proxy.conf
-install -m 644 "$infra/nginx/headers.conf" /etc/nginx/snippets/foxdrop-headers.conf
-render "$infra/nginx/limits.conf.template" >"/etc/nginx/conf.d/foxdrop-$environment-limits.conf"
-render "$infra/nginx/api.conf.template" >"/etc/nginx/snippets/foxdrop-$environment-api.conf"
-render "$infra/nginx/server.conf.template" >"/etc/nginx/snippets/foxdrop-$environment-server.conf"
-
 available=/etc/nginx/sites-available/foxdrop-$environment
 enabled=/etc/nginx/sites-enabled/foxdrop-$environment
-# A file that fails `nginx -t` leaves sites-enabled at once: one broken file
-# there takes every site on the server down (SERVER.md rule 1).
-activate() {
+nginx_files=(
+  /etc/nginx/conf.d/foxdrop-server-names.conf
+  "/etc/nginx/conf.d/foxdrop-$environment-limits.conf"
+  /etc/nginx/snippets/foxdrop-proxy.conf
+  /etc/nginx/snippets/foxdrop-headers.conf
+  "/etc/nginx/snippets/foxdrop-$environment-api.conf"
+  "/etc/nginx/snippets/foxdrop-$environment-server.conf"
+  "$available"
+  "$enabled"
+)
+saved=$(mktemp -d)
+# Installs every FOX DROP nginx file with $1 as the site. If `nginx -t`
+# fails, every one of them is put back as it was: one broken file in conf.d or
+# sites-enabled takes every site on the server down at the next reload
+# (SERVER.md rule 1).
+apply_nginx() {
+  local file
+  rm -rf "${saved:?}"/*
+  for file in "${nginx_files[@]}"; do
+    if [ -e "$file" ] || [ -L "$file" ]; then cp -P --parents "$file" "$saved"; fi
+  done
+  install -m 644 "$infra/nginx/server-names.conf" /etc/nginx/conf.d/foxdrop-server-names.conf
+  install -m 644 "$infra/nginx/proxy.conf" /etc/nginx/snippets/foxdrop-proxy.conf
+  install -m 644 "$infra/nginx/headers.conf" /etc/nginx/snippets/foxdrop-headers.conf
+  render "$infra/nginx/limits.conf.template" >"/etc/nginx/conf.d/foxdrop-$environment-limits.conf"
+  render "$infra/nginx/api.conf.template" >"/etc/nginx/snippets/foxdrop-$environment-api.conf"
+  render "$infra/nginx/server.conf.template" >"/etc/nginx/snippets/foxdrop-$environment-server.conf"
   render "$1" >"$available"
   ln -sfn "$available" "$enabled"
   if ! nginx -t 2>/tmp/foxdrop-nginx-test; then
-    rm -f "$enabled"
+    for file in "${nginx_files[@]}"; do
+      rm -f "$file"
+      if [ -e "$saved$file" ] || [ -L "$saved$file" ]; then cp -P "$saved$file" "$file"; fi
+    done
     cat /tmp/foxdrop-nginx-test >&2
-    die "nginx rejected the configuration; the site was disabled again, other sites untouched"
+    die "nginx rejected the configuration; every FOX DROP nginx file was put back as it was"
   fi
   systemctl reload nginx
 }
-if [ ! -f "/etc/letsencrypt/live/foxdrop-$environment/fullchain.pem" ]; then
-  activate "$infra/nginx/bootstrap.conf.template"
+certificate() {
   certbot certonly --webroot -w "$acme" --cert-name "foxdrop-$environment" \
     -d "$ADMIN_HOST" -d "$PORTAL_HOST" -d "$API_HOST" \
-    --key-type ecdsa --non-interactive --keep-until-expiring
+    --key-type ecdsa --non-interactive --keep-until-expiring --expand
+}
+if [ ! -f "/etc/letsencrypt/live/foxdrop-$environment/fullchain.pem" ]; then
+  apply_nginx "$infra/nginx/bootstrap.conf.template"
+  certificate
 fi
-activate "$infra/nginx/site.conf.template"
+apply_nginx "$infra/nginx/site.conf.template"
+# Again with the site's port 80 serving the challenges: a no-op until the
+# host names change, such as when the domain is bought. The server's renewal
+# hook reloads nginx after a renewal; this run reloads it itself.
+certificate
+systemctl reload nginx
+rm -rf "$saved"
 echo "site enabled with TLS"
 
 step "fail2ban"

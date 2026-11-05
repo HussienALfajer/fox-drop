@@ -128,6 +128,15 @@ async function checkRole(role) {
   const container = docker(
     'run',
     '--detach',
+    // As infra/compose.yaml runs it: read-only, no capabilities, and the
+    // environment's own user instead of the image's.
+    '--read-only',
+    '--tmpfs',
+    '/tmp',
+    '--cap-drop',
+    'ALL',
+    '--user',
+    '12345:12345',
     '--network',
     network,
     '--env',

@@ -79,8 +79,10 @@ if [ "$migrate" = yes ]; then
 fi
 
 if ! compose "$target" up --detach --wait --wait-timeout 180 --remove-orphans; then
-  compose "$target" ps --all >&2 || true
-  compose "$target" logs --tail 50 api >&2 || true
+  # The states only: this output reaches the public GitHub Actions log, so
+  # the logs stay in the server's journal (journalctl -t foxdrop-deploy).
+  compose "$target" ps --all --format '{{.Service}} {{.State}} {{.Health}}' >&2 || true
+  compose "$target" logs --tail 100 2>&1 | logger -t foxdrop-deploy || true
   if [ -n "$current" ] && [ "$current" != "$target" ]; then
     echo "foxdrop-deploy: $target did not start healthy; starting $current again" >&2
     compose "$current" up --detach --wait --wait-timeout 180 --remove-orphans
@@ -98,19 +100,18 @@ echo "$environment runs $target"
 # only the images those releases use.
 current=$(release_of current)
 previous=$(release_of previous)
-mapfile -t keep < <(
-  {
-    printf '%s\n' "$current" "$previous"
-    find "$home/releases" -mindepth 1 -maxdepth 1 -type d -not -name '*.partial' -printf '%T@ %f\n' |
-      sort -rn | head -5 | cut -d' ' -f2
-  } | grep -v '^$' | sort -u
-)
+declare -A keep=()
+newest=$(find "$home/releases" -mindepth 1 -maxdepth 1 -type d -not -name '*.partial' -printf '%T@ %f\n' |
+  sort -rn | head -5 | cut -d' ' -f2)
+# shellcheck disable=SC2086 # one release per word
+for name in "$current" "$previous" $newest; do
+  [ -z "$name" ] || keep[$name]=1
+done
 for dir in "$home"/releases/*; do
-  name=$(basename "$dir")
-  printf '%s\n' "${keep[@]}" | grep -qx "$name" || rm -rf -- "$dir"
+  [[ -v keep[$(basename "$dir")] ]] || rm -rf -- "$dir"
 done
 docker image ls --format '{{.Repository}}:{{.Tag}}' |
   { grep -E '^ghcr\.io/hussienalfajer/fox-drop-(server|web):' || true; } |
   while read -r image; do
-    printf '%s\n' "${keep[@]}" | grep -qx "${image##*:}" || docker image rm "$image" >/dev/null || true
+    [[ -v keep[${image##*:}] ]] || docker image rm "$image" >/dev/null || true
   done

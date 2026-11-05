@@ -27,17 +27,24 @@ postgres=$(docker ps --quiet \
 
 umask 077
 name=fox_drop-$environment-$(date -u +%Y%m%dT%H%M%SZ).dump
+trap 'rm -f "$dir/$name.partial"' EXIT
 docker exec "$postgres" pg_dump --username postgres --dbname fox_drop --format custom >"$dir/$name.partial"
+# Reads the archive's table of contents: a truncated or corrupt file fails.
+# Only a restore proves the data (the deploy skill's restore test).
 docker exec --interactive "$postgres" pg_restore --list <"$dir/$name.partial" >/dev/null ||
   die "the dump does not read back"
 mv "$dir/$name.partial" "$dir/$name"
 find "$dir" -maxdepth 1 -name '*.dump' -mtime +7 -delete
 echo "saved $dir/$name ($(du -h "$dir/$name" | cut -f1))"
 
-B2_ACCOUNT_ID=$(sed -n 's/^B2_ACCOUNT_ID=//p' "$home/shared/.env")
-B2_APPLICATION_KEY=$(sed -n 's/^B2_APPLICATION_KEY=//p' "$home/shared/.env")
-B2_BUCKET=$(sed -n 's/^B2_BUCKET=//p' "$home/shared/.env")
-BACKUP_ENCRYPTION_PASSWORD=$(sed -n 's/^BACKUP_ENCRYPTION_PASSWORD=//p' "$home/shared/.env")
+# One value from the environment file, without the quotes Compose would strip.
+setting() {
+  sed -n "s/^$1=//p" "$home/shared/.env" | tail -1 | sed -e "s/^\"\(.*\)\"$/\1/" -e "s/^'\(.*\)'$/\1/"
+}
+B2_ACCOUNT_ID=$(setting B2_ACCOUNT_ID)
+B2_APPLICATION_KEY=$(setting B2_APPLICATION_KEY)
+B2_BUCKET=$(setting B2_BUCKET)
+BACKUP_ENCRYPTION_PASSWORD=$(setting BACKUP_ENCRYPTION_PASSWORD)
 if [ -z "$B2_ACCOUNT_ID" ] || [ -z "$B2_APPLICATION_KEY" ] || [ -z "$B2_BUCKET" ] ||
   [ -z "$BACKUP_ENCRYPTION_PASSWORD" ]; then
   die "no off-server copy: set B2_ACCOUNT_ID, B2_APPLICATION_KEY, B2_BUCKET and BACKUP_ENCRYPTION_PASSWORD in $home/shared/.env"

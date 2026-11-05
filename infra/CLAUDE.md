@@ -25,6 +25,8 @@ How FOX DROP runs on the owner's shared Contabo server (architecture §17, T9, E
 
 ## Not yet
 
+- **Trust boundary:** `foxdrop-deploy` runs, as root, the `compose.yaml` of a commit on `main` with images from ghcr.io. Whoever can merge to `main` or push those images can act as root on the shared server; the forced command limits which commit deploys, not what it does.
+- Staging's B2 key may delete, to prune copies older than 30 days. Production's key must not: a B2 lifecycle rule prunes instead, so root on the shared server cannot erase the off-site copies.
 - Staging backs up with a nightly `pg_dump`; production needs the continuous WAL archiving of §17.2 (pgBackRest) and a tested restore before launch.
 - Centrifugo, imgproxy, the object storage and OSRM join `compose.yaml` with their first use; the Sentry and PostHog relays for the apps (§16) with the apps' error tracking.
 - Production: its `environments/production.env`, a deploy on a release tag, and its own sudoers line.

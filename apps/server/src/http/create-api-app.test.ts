@@ -3,7 +3,7 @@ import { Body, Get, Module, Post, Req, type Type } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import type { FastifyRequest } from 'fastify';
 import * as Sentry from '@sentry/nestjs';
-import { createZodDto } from 'nestjs-zod';
+import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { createApiApp } from './create-api-app.js';
@@ -31,6 +31,12 @@ class AdminProbe {
   @Get('ip')
   ip(@Req() request: FastifyRequest) {
     return { ip: request.ip };
+  }
+
+  @Get('bad-response')
+  @ZodResponse({ status: 200, type: EchoDto })
+  badResponse() {
+    return { name: 42 } as unknown as EchoDto;
   }
 
   @Get('fail')
@@ -156,6 +162,16 @@ describe('error tracking', () => {
 
     expect(response.statusCode).toBe(500);
     expect(events.map((event) => event.exception?.values?.[0]?.value)).toEqual(['unexpected']);
+  });
+
+  it('reports a response that fails its own schema', async () => {
+    const api = await start(ProbeModule);
+
+    const response = await api.inject({ method: 'GET', url: '/v1/admin/probe/bad-response' });
+    await Sentry.flush();
+
+    expect(response.statusCode).toBe(500);
+    expect(events).toHaveLength(1);
   });
 
   it('does not report an HTTP error', async () => {

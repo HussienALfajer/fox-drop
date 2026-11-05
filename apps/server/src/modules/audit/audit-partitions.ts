@@ -8,6 +8,7 @@ import {
 import { sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
+import { reportError } from '../../observability/error-tracking.js';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -25,9 +26,10 @@ export class AuditPartitions implements OnModuleInit, OnModuleDestroy {
   async onModuleInit(): Promise<void> {
     await this.create();
     this.timer = setInterval(() => {
-      this.create().catch((error: unknown) =>
-        this.logger.error({ err: error }, 'creating the audit partitions failed'),
-      );
+      this.create().catch((error: unknown) => {
+        this.logger.error({ err: error }, 'creating the audit partitions failed');
+        reportError(error);
+      });
     }, DAY);
     this.timer.unref();
   }
