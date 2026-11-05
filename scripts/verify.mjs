@@ -10,8 +10,8 @@ import path from 'node:path';
 const fvmFlutter = path.resolve('.fvm', 'flutter_sdk', 'bin');
 if (existsSync(fvmFlutter)) process.env.PATH = `${fvmFlutter}${path.delimiter}${process.env.PATH}`;
 
-function run(command) {
-  const result = spawnSync(command, { shell: true, stdio: 'inherit' });
+function run(command, cwd = '.') {
+  const result = spawnSync(command, { shell: true, stdio: 'inherit', cwd });
   return result.status ?? 1;
 }
 
@@ -29,9 +29,9 @@ function fail(step) {
   process.exit(1);
 }
 
-function step(name, command) {
+function step(name, command, cwd = '.') {
   console.log(`\n=== ${name}`);
-  if (run(command) !== 0) fail(name);
+  if (run(command, cwd) !== 0) fail(name);
 }
 
 // Dart packages that have a test folder, split by whether they need Flutter.
@@ -73,14 +73,10 @@ function checkDartWorkspace() {
   }
 }
 
-// Architecture §5.3, E6: the committed OpenAPI document and both clients must
-// match the server. Regenerating changes no file when they do; otherwise the
-// regenerated files are left in place to review and commit.
-function contractFingerprint() {
+// A hash of the files under `paths`, to see whether a generator changed any.
+function fingerprint(paths) {
   const hash = createHash('sha256');
-  const files = read(
-    'git ls-files --cached --others --exclude-standard -- packages/api-schema packages/core_api',
-  )
+  const files = read(`git ls-files --cached --others --exclude-standard -- ${paths}`)
     .split(/\r?\n/)
     .filter(Boolean)
     .sort();
@@ -93,16 +89,33 @@ function contractFingerprint() {
   return hash.digest('hex');
 }
 
+// Architecture §5.3, E6: the committed OpenAPI document and both clients must
+// match the server. Regenerating changes no file when they do; otherwise the
+// regenerated files are left in place to review and commit.
+const contractPaths = 'packages/api-schema packages/core_api';
+
 function checkApiContract() {
-  const before = contractFingerprint();
+  const before = fingerprint(contractPaths);
   step('Generate the API contract and clients', 'pnpm generate:api');
-  if (contractFingerprint() === before) return;
+  if (fingerprint(contractPaths) === before) return;
   console.error(
     '\nThe committed OpenAPI document or a generated client was stale. It is regenerated' +
       ' now: review the changes in packages/api-schema and packages/core_api and commit them.' +
       ' A second run passes locally, but CI fails until they are committed.',
   );
   fail('API contract');
+}
+
+// Architecture §11.2: the committed localizations must match the ARB files.
+function checkLocalizations() {
+  const before = fingerprint('packages/core_l10n/lib');
+  step('Generate the Flutter localizations', 'flutter gen-l10n', 'packages/core_l10n');
+  if (fingerprint('packages/core_l10n/lib') === before) return;
+  console.error(
+    '\nThe committed localizations in packages/core_l10n/lib/src/generated were stale.' +
+      ' They are regenerated now: review and commit them.',
+  );
+  fail('Flutter localizations');
 }
 
 checkApiContract();
@@ -120,6 +133,7 @@ step(
 
 checkFlutterVersion();
 checkDartWorkspace();
+checkLocalizations();
 step('Dart analyze', 'dart run melos run analyze --no-select');
 step('Dart format', 'dart run melos run format:check --no-select');
 if (dartPackagesWithTests('--no-flutter'))

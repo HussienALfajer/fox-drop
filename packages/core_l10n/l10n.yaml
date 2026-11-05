@@ -1,0 +1,10 @@
+# `flutter gen-l10n` (run from this folder) writes lib/src/generated from the
+# ARB files; pnpm verify fails when the committed output is stale.
+arb-dir: lib/src/arb
+template-arb-file: app_ar.arb
+output-dir: lib/src/generated
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+preferred-supported-locales: [ar]
+nullable-getter: false
+format: true

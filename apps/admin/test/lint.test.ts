@@ -1,5 +1,5 @@
 import { ESLint } from 'eslint';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 // Proves the web lint rules of eslint.web.mjs fire (AP §4.7).
 const eslint = new ESLint({ cwd: `${import.meta.dirname}/..` });
@@ -10,6 +10,10 @@ async function errors(code: string) {
 }
 
 describe('web lint rules', () => {
+  // The first lint loads the config and the TypeScript program, which can
+  // take longer than a test's 5 seconds when every package tests at once.
+  beforeAll(() => errors(''), 60_000);
+
   it.each([
     ['text in JSX', 'export const X = () => <p>نص</p>;'],
     ['a literal in braces', "export function X() { return <p>{'نص'}</p>; }"],

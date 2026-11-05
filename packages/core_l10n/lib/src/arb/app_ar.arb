@@ -1,0 +1,17 @@
+{
+  "@@locale": "ar",
+  "customerAppName": "تطبيق الزبون",
+  "@customerAppName": { "description": "The customer app's name (CU README); a placeholder until the design." },
+  "captainAppName": "تطبيق الكابتن",
+  "@captainAppName": { "description": "The captain app's name (CA README); a placeholder until the design." },
+  "merchantAppName": "تطبيق المطعم",
+  "@merchantAppName": { "description": "The restaurant app's name (RA README); a placeholder until the design." },
+  "statusLoading": "جارٍ الاتصال بالخادم…",
+  "@statusLoading": { "description": "Shown while the app asks the server for its status." },
+  "statusOk": "الخادم يعمل",
+  "@statusOk": { "description": "Shown when the server answered its status." },
+  "statusError": "تعذّر الاتصال بالخادم",
+  "@statusError": { "description": "Shown when the status request failed." },
+  "notFound": "الصفحة غير موجودة",
+  "@notFound": { "description": "Shown for a route the app does not know." }
+}
