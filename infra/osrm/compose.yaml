@@ -46,7 +46,8 @@ services:
       dockerfile: cut.Dockerfile
     image: foxdrop-osrm-cut
     command: [sh, /osrm/cut.sh]
-    mem_limit: 512m
+    # osmium needs about 1.5 GB for the Syria extract (cut.sh).
+    mem_limit: 2g
 
   # Builds every profile from the cut (build.sh); `run --rm build` runs both.
   build:

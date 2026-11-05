@@ -14,6 +14,9 @@ curl --fail --silent --show-error --location --retry 3 \
   --output /data/source/syria.osm.pbf.part "$source_url"
 mv /data/source/syria.osm.pbf.part /data/source/syria.osm.pbf
 
-osmium extract --bbox "$region" --overwrite \
+# The simple strategy cuts the roads that cross the region's edge, 20 km
+# from Azaz, and needs about 1.5 GB instead of 2.6 GB: osmium keeps a bitmap
+# as large as the highest OpenStreetMap node id.
+osmium extract --strategy simple --bbox "$region" --overwrite \
   --output /data/source/region.osm.pbf /data/source/syria.osm.pbf
 echo "cut the region $region from the Syria extract"

@@ -10,9 +10,9 @@ Slice 1.3, road distances (`docs/roadmap.md`, Phase 1).
 - **Branch:** `feat/road-distances`.
 - **Plan:**
   - [x] Write the failing tests first: the straight-line distance between two points in metres, × 1.3 when OSRM fails or times out; a road distance read from an OSRM answer; `pricing.distance_method` = `straight_line` never calls OSRM.
-  - [ ] OSRM in the root `compose.yaml` for development with a small extract (Azaz and its surroundings, cut from the Syria extract), built by a script, with the data outside the repository; ask the owner which profiles development needs before downloading anything large.
+  - [x] OSRM in the root `compose.yaml` for development with a small extract (Azaz and its surroundings, cut from the Syria extract), built by a script, with the data outside the repository; ask the owner which profiles development needs before downloading anything large.
   - [x] The `geo` distance service behind a port (`RoadDistances`), so tests use a fake and the server calls OSRM over HTTP with a short timeout; `GeoService.distance(from, to, { vehicle })` returns metres and how they were measured (`road` or `straight_x1.3`).
-  - [ ] Staging: OSRM in `infra/compose.yaml` with the memory limit the shared server allows (architecture §22 item 10), the extract rebuilt weekly; ask the owner before changing anything under `infra/server` (it needs `provision.sh` again).
+  - [x] Staging: OSRM in `infra/compose.yaml` with the memory limit the shared server allows (architecture §22 item 10), the extract rebuilt weekly; ask the owner before changing anything under `infra/server` (it needs `provision.sh` again).
   - [ ] The `geo` module's `CLAUDE.md`, `pnpm verify` through `checker`, the `reviewer`, then the pull request.
 
 ## Notes from earlier slices
