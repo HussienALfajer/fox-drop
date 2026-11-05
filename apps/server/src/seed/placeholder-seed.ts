@@ -1,6 +1,15 @@
-import { Injectable, Logger, Module } from '@nestjs/common';
+import { Inject, Injectable, Logger, Module } from '@nestjs/common';
+import { DATABASE, DatabaseModule } from '../database/database.module.js';
+import type { Database } from '../database/database.js';
 import { FxModule, FxService } from '../modules/fx/index.js';
 import { GeoModule, GeoRefusedError, GeoService } from '../modules/geo/index.js';
+import {
+  type MerchantChange,
+  MerchantsModule,
+  MerchantsService,
+  type NewRestaurant,
+  type OpeningPeriod,
+} from '../modules/merchants/index.js';
 import { SettingsModule, SettingsService } from '../modules/settings/index.js';
 
 // The environments that get the placeholder values. Production never does:
@@ -47,6 +56,27 @@ const azazFee = {
   freeDeliveryFrom: null,
 } as const;
 
+// The demo restaurant (owner decisions 2026-11-05 and 2026-11-06): active
+// and visible, near the town centre, delivering within 3 km, a minimum order
+// of 100 TRY, a 15% commission and 20 minutes of prep, open every day from
+// 10:00 to 02:00.
+const demoRestaurant: NewRestaurant = {
+  nameAr: 'مطعم فوكس التجريبي',
+  nameEn: 'FOX DROP demo restaurant',
+  category: 'وجبات سريعة',
+  location: { latitude: 36.5866, longitude: 37.0463 },
+  coverage: { kind: 'radius', radiusMetres: 3000 },
+  minimumOrder: { amount: 10_000n, currency: 'TRY' },
+  commissionBp: 1500,
+  defaultPrepMin: 20,
+};
+const demoHours: OpeningPeriod[] = [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({
+  weekday,
+  opensAt: 10 * 60,
+  closesAt: 2 * 60,
+}));
+const try_ = (amount: bigint) => ({ amount, currency: 'TRY' });
+
 // The placeholder data of development and staging, set by the API at start
 // (src/roles/start-role.ts), never by a migration. Each value is set only
 // while it is missing, so a value someone entered is never replaced, and two
@@ -59,6 +89,8 @@ export class PlaceholderSeed {
     private readonly geo: GeoService,
     private readonly fx: FxService,
     private readonly settings: SettingsService,
+    private readonly merchants: MerchantsService,
+    @Inject(DATABASE) private readonly database: Database,
   ) {}
 
   async run(): Promise<void> {
@@ -115,12 +147,93 @@ export class PlaceholderSeed {
         reason: 'Placeholder for development and staging (AP §13 item 5)',
       });
     }
+    await this.demoRestaurant(cityId);
     this.logger.log('placeholder data in place');
+  }
+
+  // A restaurant has no natural key, so two servers starting together take
+  // turns on a session lock; the second finds the restaurant there. Each part
+  // (hours, menu, status) is added while missing, so a run that stopped
+  // halfway is finished by the next. A city whose restaurants someone else
+  // entered gets no demo.
+  private async demoRestaurant(cityId: string): Promise<void> {
+    const client = await this.database.pool.connect();
+    try {
+      await client.query("SELECT pg_advisory_lock(hashtextextended('seed:demo-restaurant', 0))");
+      const restaurants = await this.merchants.restaurantIds(cityId);
+      const demo = restaurants.find((entry) => entry.nameAr === demoRestaurant.nameAr);
+      if (demo === undefined && restaurants.length > 0) return;
+      const change = {
+        actor: system,
+        context: noRequest,
+        reason: 'Placeholder for development and staging',
+      };
+      const id =
+        demo?.id ?? (await this.merchants.createRestaurant(cityId, demoRestaurant, change));
+      const restaurant = await this.merchants.restaurant(id);
+      if (restaurant?.schedule.length === 0) {
+        await this.merchants.setWeeklySchedule(id, demoHours, change);
+      }
+      if ((await this.merchants.menu(id)).categories.length === 0) {
+        await this.demoMenu(id, change);
+      }
+      if (restaurant?.accountStatus === 'draft') {
+        await this.merchants.setAccountStatus(id, 'active', change);
+      }
+    } finally {
+      await client
+        .query("SELECT pg_advisory_unlock(hashtextextended('seed:demo-restaurant', 0))")
+        .finally(() => client.release());
+    }
+  }
+
+  // The demo menu: two categories, four items, a required size and add-ons.
+  private async demoMenu(id: string, change: MerchantChange): Promise<void> {
+    const size = await this.merchants.addOptionGroup(
+      id,
+      {
+        name: 'الحجم',
+        minChoices: 1,
+        maxChoices: 1,
+        options: [
+          { name: 'وسط', priceDelta: try_(0n) },
+          { name: 'كبير', priceDelta: try_(2_000n) },
+        ],
+      },
+      change,
+    );
+    const extras = await this.merchants.addOptionGroup(
+      id,
+      {
+        name: 'إضافات',
+        minChoices: 0,
+        maxChoices: 2,
+        options: [
+          { name: 'جبنة', priceDelta: try_(500n) },
+          { name: 'صوص حار', priceDelta: try_(0n) },
+        ],
+      },
+      change,
+    );
+    const meals = await this.merchants.addCategory(id, { name: 'وجبات' }, change);
+    const drinks = await this.merchants.addCategory(id, { name: 'مشروبات' }, change);
+    const items = [
+      {
+        categoryId: meals,
+        name: 'شاورما دجاج',
+        price: try_(12_000n),
+        optionGroupIds: [size, extras],
+      },
+      { categoryId: meals, name: 'بطاطا مقلية', price: try_(4_000n), optionGroupIds: [size] },
+      { categoryId: drinks, name: 'عيران', price: try_(2_500n) },
+      { categoryId: drinks, name: 'مياه', price: try_(1_000n) },
+    ];
+    for (const item of items) await this.merchants.addItem(id, item, change);
   }
 }
 
 @Module({
-  imports: [GeoModule, FxModule, SettingsModule],
+  imports: [DatabaseModule, GeoModule, FxModule, SettingsModule, MerchantsModule],
   providers: [PlaceholderSeed],
 })
 export class PlaceholderSeedModule {}
