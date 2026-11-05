@@ -1,0 +1,73 @@
+---
+name: deploy
+description: Deploy, roll back, provision or inspect a FOX DROP environment on the owner's Contabo server (staging now), and handle its secrets, backups and restores. Use for anything about staging, the deploy job, the server's FOX DROP containers, nginx site or backups.
+---
+
+# Deploy FOX DROP
+
+Read `infra/CLAUDE.md` for the layout and rules, and the `vertex-server` skill before touching the server (`ssh vertex`, root). Stop and ask the owner before any production deploy, anything destructive (a volume, a database, a release folder), or a change to another site on the server.
+
+## Staging at a glance
+
+| What             | Where                                                                                                                                                |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Panel            | `https://foxdrop-staging-admin.109-199-111-169.sslip.io`                                                                                             |
+| Portal           | `https://foxdrop-staging-portal.109-199-111-169.sslip.io`                                                                                            |
+| API for the apps | `https://foxdrop-staging-api.109-199-111-169.sslip.io/v1/`                                                                                           |
+| Files            | `/srv/foxdrop-staging/` (user `foxdrop-staging`): `repo.git`, `releases/<commit>`, `current`, `previous`, `shared/.env` (secrets, 600), `shared/db/` |
+| Compose project  | `foxdrop-staging` (`docker ps --filter label=com.docker.compose.project=foxdrop-staging`)                                                            |
+| Logs             | `docker logs foxdrop-staging-api-1`; nginx in `/var/log/nginx/foxdrop-staging.*.log`                                                                 |
+| Backups          | `/var/backups/foxdrop-staging/` (7 days), encrypted copies in B2 (30 days); `journalctl -t foxdrop-backup`                                           |
+
+## Deploy
+
+Every merge to `main` deploys staging: the `deploy-staging` job in `.github/workflows/ci.yml` builds and pushes both images tagged with the commit, then runs `ssh foxdrop-deploy@<host> "staging <commit>"`. The key (the `staging` GitHub environment, `main` only) can run nothing but `infra/server/deploy-ssh.sh`, which calls `foxdrop-deploy` through sudo.
+
+`foxdrop-deploy` (`infra/server/deploy.sh`) takes the commit's `infra/` and `apps/server/db/` from the mirror, pulls the images, starts the database, runs the migrations, starts the release and waits for it to be healthy. If it is not, it starts the previous release again and fails. By hand, as root on the server:
+
+```bash
+foxdrop-deploy staging <full commit on main>
+```
+
+## Roll back
+
+```bash
+foxdrop-deploy staging rollback
+```
+
+Starts the previous release without migrating. Migrations are never reversed, which is why each must be backward compatible (architecture §17.3).
+
+## Provision (first time, or after a change under `infra/nginx` or `infra/server`)
+
+From a commit on `main` (the provision script lives in the commit it installs):
+
+```bash
+commit=$(git rev-parse origin/main)
+git archive "$commit" infra | ssh vertex "rm -rf /root/foxdrop-provision && mkdir /root/foxdrop-provision && tar -x -C /root/foxdrop-provision && /root/foxdrop-provision/infra/server/provision.sh staging"
+```
+
+It creates the users, folders, mirror and secrets if missing, installs the scripts, the sudoers rule, the nginx site (tested with `nginx -t` and disabled again if it fails), the certificate and the backup timer. It never touches the database, the secrets or the releases. Record what changed in `/root/SERVER.md`.
+
+## Secrets
+
+`/srv/foxdrop-staging/shared/.env` holds the database, Valkey and encryption secrets that `provision.sh` generated; never print them. The owner fills in, by editing the file on the server (`nano`, as root):
+
+- `SENTRY_DSN`: the DSN of the Sentry project for the server (EU region). The next deploy or `docker compose ... up -d` picks it up.
+- `B2_ACCOUNT_ID`, `B2_APPLICATION_KEY`, `B2_BUCKET`: a Backblaze B2 application key limited to that bucket.
+- `BACKUP_ENCRYPTION_PASSWORD`: a long random password, also kept in the owner's password manager. Without it the backups in B2 cannot be read.
+
+After a change, check with `systemctl start foxdrop-backup@staging && journalctl -t foxdrop-backup -n 20`.
+
+## The first owner account
+
+```bash
+cd /srv/foxdrop-staging/current/infra && FOXDROP_RELEASE=$(basename "$(readlink /srv/foxdrop-staging/current)") FOXDROP_HOME=/srv/foxdrop-staging FOXDROP_UID=$(id -u foxdrop-staging) FOXDROP_GID=$(id -g foxdrop-staging) docker compose -p foxdrop-staging --env-file environments/staging.env --env-file /srv/foxdrop-staging/shared/.env run --rm api node dist/modules/identity/create-owner-command.js --email <owner email>
+```
+
+It prints a one-time setup link: give it to the owner only.
+
+## Restore a backup
+
+1. Copy the dump back, if it is not in `/var/backups/foxdrop-staging/`: set the `RCLONE_CONFIG_FOXDROP*` variables as `backup.sh` does, then `rclone copyto foxdropcrypt:<name> /var/backups/foxdrop-staging/<name>`.
+2. Try it on a throwaway database first: `docker run -d --name foxdrop-restore-test -e POSTGRES_PASSWORD=x <the postgis image>`, then `docker exec -i foxdrop-restore-test pg_restore --username postgres --dbname postgres --create --no-owner --no-privileges < <dump>` and check the tables; remove the container.
+3. Replacing staging's database stops staging and is destructive: ask the owner first.

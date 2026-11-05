@@ -12,11 +12,14 @@ Phase 0, slice 0.14: staging on Contabo (`docs/roadmap.md`).
 
 ## Plan
 
-- [ ] Read `/root/SERVER.md` on the server (the `vertex-server` skill) and architecture §15, §16 and §17; ask the owner what is still open: the staging host names while the domain is not bought, the off-server backup destination, the Sentry account, and the deploy user's access.
-- [ ] Add the production images and the staging Compose file in `infra/`.
-- [ ] Add the nginx site, TLS and the per-IP limits, and set the API's trusted proxy hop.
-- [ ] Add the GitHub Actions deploy job, the migrations step and the server-side environment file.
-- [ ] Add the off-server database backup and the Sentry error tracking on the server.
+Owner decisions 2026-11-05: staging on sslip.io names until the domain is bought; off-server backups to Backblaze B2; the owner creates the Sentry account and puts the DSN on the server; GitHub Actions deploys with a key whose `command=` allows only `infra/server/deploy-ssh.sh`.
+
+- [x] Read `/root/SERVER.md` on the server (the `vertex-server` skill) and architecture §15, §16 and §17; ask the owner what is still open: the staging host names while the domain is not bought, the off-server backup destination, the Sentry account, and the deploy user's access.
+- [x] Add the production images and the staging Compose file in `infra/`.
+- [x] Add the nginx site, TLS and the per-IP limits, and set the API's trusted proxy hop.
+- [x] Add the GitHub Actions deploy job, the migrations step and the server-side environment file.
+- [x] Add the off-server database backup and the Sentry error tracking on the server.
+- [ ] Provision staging on the server (`infra/server/provision.sh`).
 - [ ] Add the `deploy` skill; pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
 
 ## Notes from earlier slices
