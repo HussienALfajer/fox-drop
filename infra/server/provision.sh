@@ -101,6 +101,7 @@ done
 # Only these variables are replaced; nginx's own $variables stay as they are.
 # shellcheck disable=SC2016
 render() { envsubst '${FOXDROP_ENV} ${ADMIN_HOST} ${PORTAL_HOST} ${API_HOST} ${API_PORT} ${ADMIN_PORT} ${PORTAL_PORT}' <"$1"; }
+install -m 644 "$infra/nginx/server-names.conf" /etc/nginx/conf.d/foxdrop-server-names.conf
 install -m 644 "$infra/nginx/proxy.conf" /etc/nginx/snippets/foxdrop-proxy.conf
 install -m 644 "$infra/nginx/headers.conf" /etc/nginx/snippets/foxdrop-headers.conf
 render "$infra/nginx/limits.conf.template" >"/etc/nginx/conf.d/foxdrop-$environment-limits.conf"
