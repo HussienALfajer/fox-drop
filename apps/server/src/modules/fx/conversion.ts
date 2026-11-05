@@ -48,10 +48,10 @@ export class InvalidRateError extends Error {
   override readonly name = 'InvalidRateError';
 }
 
-// Eighteen digits keep the numerator and the denominator inside a PostgreSQL
-// bigint.
 const decimal = /^(\d+)(?:\.(\d+))?$/;
 const MAX_DIGITS = 18;
+// The largest PostgreSQL bigint, which holds each part of a stored rate.
+const MAX_PART = 9_223_372_036_854_775_807n;
 
 export function parseRate(input: RateInput): Rate {
   const match = decimal.exec(input.value);
@@ -64,7 +64,11 @@ export function parseRate(input: RateInput): Rate {
   const scaled = BigInt(whole! + fraction);
   if (scaled === 0n) throw new InvalidRateError('a rate is above zero');
   const scale = 10n ** BigInt(fraction.length);
-  return input.direction === 'base_per_unit' ? reduce(scaled, scale) : reduce(scale, scaled);
+  const rate = input.direction === 'base_per_unit' ? reduce(scaled, scale) : reduce(scale, scaled);
+  if (rate.numerator > MAX_PART || rate.denominator > MAX_PART) {
+    throw new InvalidRateError('the rate is too small or too large to store exactly');
+  }
+  return rate;
 }
 
 export function reduce(numerator: bigint, denominator: bigint): Rate {

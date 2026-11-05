@@ -40,7 +40,8 @@ describe('the placeholder seed', () => {
   });
 
   it("gives Azaz TRY as its base, USD and SYP disabled, and each currency's rounding unit", async () => {
-    await moduleRef.get(PlaceholderSeed).run();
+    // Two servers starting together.
+    await Promise.all([moduleRef.get(PlaceholderSeed).run(), moduleRef.get(PlaceholderSeed).run()]);
     const fx = moduleRef.get(FxService);
     const settings = moduleRef.get(SettingsService);
 
@@ -63,6 +64,11 @@ describe('the placeholder seed', () => {
     expect(rows).toEqual([
       { actor_type: 'system', reason: 'Placeholder until the field check (AP §13 item 4)' },
     ]);
+    const { rows: added } = await sql.query(
+      "SELECT target_id FROM audit.events WHERE action = 'city_currency.set' AND city_id = $1 ORDER BY target_id",
+      [azaz],
+    );
+    expect(added.map((row) => row.target_id)).toEqual(['SYP', 'TRY', 'USD']);
   });
 
   it('never replaces a value someone entered, and changes nothing when run again', async () => {

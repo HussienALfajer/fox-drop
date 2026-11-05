@@ -18,6 +18,7 @@ export class SettingsModule {}
 
 export { adminRoles, type AdminRole, type SettingKey, type SettingValue } from './catalogue.js';
 export {
+  lockCityCurrencies,
   SettingRefusedError,
   SettingsService,
   type CityCurrencySource,

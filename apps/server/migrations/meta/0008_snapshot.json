@@ -1,5 +1,5 @@
 {
-  "id": "016848cd-4932-4f62-b024-dd4d9ebdf22d",
+  "id": "a76d64e6-9ff2-41fb-8b2e-99b9c0ced00b",
   "prevId": "c64bd882-8362-43b1-8304-acbd36f937ac",
   "version": "7",
   "dialect": "postgresql",
@@ -144,6 +144,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "epoch": {
+          "name": "epoch",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
         "locked_at": {
           "name": "locked_at",
           "type": "timestamp with time zone",
@@ -226,7 +233,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "city_currencies_by_currency": {
+          "name": "city_currencies_by_currency",
+          "columns": [
+            {
+              "expression": "currency",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "city_currencies_currency_currencies_code_fk": {
           "name": "city_currencies_currency_currencies_code_fk",
@@ -350,6 +373,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "base_epoch": {
+          "name": "base_epoch",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
         "rate_numerator": {
           "name": "rate_numerator",
           "type": "bigint",
@@ -393,19 +422,34 @@
               "nulls": "last"
             },
             {
+              "expression": "base_epoch",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
               "expression": "currency",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
             },
             {
-              "expression": "base_currency",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
               "expression": "id",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "rate_versions_by_base_currency": {
+          "name": "rate_versions_by_base_currency",
+          "columns": [
+            {
+              "expression": "base_currency",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2154,7 +2198,7 @@
           "name": "editor_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "editor_roles": {
           "name": "editor_roles",
@@ -2213,6 +2257,10 @@
         "changes_action_values": {
           "name": "changes_action_values",
           "value": "\"settings\".\"changes\".\"action\" IN ('update', 'reset')"
+        },
+        "changes_system_has_no_roles": {
+          "name": "changes_system_has_no_roles",
+          "value": "\"settings\".\"changes\".\"editor_id\" IS NOT NULL OR cardinality(\"settings\".\"changes\".\"editor_roles\") = 0"
         }
       },
       "isRLSEnabled": false

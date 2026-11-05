@@ -1,10 +1,10 @@
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
-import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
-import { SettingsService } from '../settings/index.js';
+import { lockCityCurrencies, SettingsService } from '../settings/index.js';
 import {
   parseRate,
   type Rate,
@@ -26,7 +26,8 @@ export type FxRefusal =
   | 'rounding_unit_missing'
   | 'invalid_rate'
   | 'large_change_unconfirmed'
-  | 'editor_required';
+  | 'editor_required'
+  | 'amounts_in_other_currency';
 
 // A change or a snapshot fx refuses, with the reason the routes and the
 // ordering module map to their own answers.
@@ -106,11 +107,7 @@ export class FxService implements OnModuleInit {
   }
 
   async baseCurrency(cityId: string, executor: FxExecutor = this.database.db) {
-    const [row] = await executor
-      .select({ currency: cityBases.currency })
-      .from(cityBases)
-      .where(eq(cityBases.cityId, cityId));
-    return row?.currency ?? null;
+    return (await this.base(cityId, executor))?.currency ?? null;
   }
 
   // The city's currencies in display order, enabled or not.
@@ -135,25 +132,29 @@ export class FxService implements OnModuleInit {
     return rows.map(({ base, ...row }): CityCurrency => ({ ...row, isBase: base !== null }));
   }
 
-  // The newest rate of each of the city's other currencies against its
-  // current base.
+  // The newest rate of each of the city's other currencies, set since its
+  // base currency was last chosen.
   async currentRates(cityId: string, executor: FxExecutor = this.database.db) {
-    const base = await this.baseCurrency(cityId, executor);
+    const base = await this.base(cityId, executor);
     if (base === null) return [];
     const rows = await executor
       .selectDistinctOn([rateVersions.currency])
       .from(rateVersions)
-      .where(and(eq(rateVersions.cityId, cityId), eq(rateVersions.baseCurrency, base)))
+      .where(and(eq(rateVersions.cityId, cityId), eq(rateVersions.baseEpoch, base.epoch)))
       .orderBy(asc(rateVersions.currency), desc(rateVersions.id));
-    return rows.map((row): CurrentRate => ({
-      currency: row.currency,
-      baseCurrency: row.baseCurrency,
-      rate: { numerator: row.rateNumerator, denominator: row.rateDenominator },
-      versionId: row.id,
-      editorId: row.editorId,
-      reason: row.reason,
-      setAt: row.createdAt,
-    }));
+    return rows.map(rateOf);
+  }
+
+  // Every rate one currency of the city has had, newest first, for the
+  // exchange rates screen (AP §9.10.4).
+  async rateHistory(cityId: string, currency: string): Promise<CurrentRate[]> {
+    const rows = await this.database.db
+      .select()
+      .from(rateVersions)
+      .where(and(eq(rateVersions.cityId, cityId), eq(rateVersions.currency, currency)))
+      .orderBy(desc(rateVersions.id))
+      .limit(RATE_HISTORY_LIMIT);
+    return rows.map(rateOf);
   }
 
   // Adds a currency to the city or changes its order or enabled flag. The
@@ -191,6 +192,7 @@ export class FxService implements OnModuleInit {
         }
       }
       const after = { displayOrder: entry.displayOrder, enabled: entry.enabled };
+      if (before?.displayOrder === after.displayOrder && before.enabled === after.enabled) return;
       if (before) {
         await tx
           .update(cityCurrencies)
@@ -242,6 +244,17 @@ export class FxService implements OnModuleInit {
       if (!accepted) {
         throw new FxRefusedError('not_city_currency', `${currency} is not a currency of the city`);
       }
+      // The city's money settings are in its base currency (AP §8.6). A
+      // settings change takes the same lock, so none slips in meanwhile.
+      const amounts = (await this.settings.cityAmounts(cityId)).filter(
+        (amount) => amount.currency !== currency,
+      );
+      if (amounts.length > 0) {
+        throw new FxRefusedError(
+          'amounts_in_other_currency',
+          `set these settings in ${currency} first: ${amounts.map((amount) => amount.key).join(', ')}`,
+        );
+      }
       // The base is always enabled. Every rate is against the base, so the
       // other currencies have none against the new one: they are disabled
       // until each gets its rate.
@@ -265,7 +278,7 @@ export class FxService implements OnModuleInit {
       if (current) {
         await tx
           .update(cityBases)
-          .set({ currency, updatedAt: sql`now()` })
+          .set({ currency, epoch: current.epoch + 1, updatedAt: sql`now()` })
           .where(eq(cityBases.cityId, cityId));
       } else {
         await tx.insert(cityBases).values({ cityId, currency });
@@ -309,9 +322,11 @@ export class FxService implements OnModuleInit {
 
     return this.database.db.transaction(async (tx) => {
       await this.lockCity(tx, cityId);
-      const base = await this.baseCurrency(cityId, tx);
-      if (base === null)
+      const current = await this.base(cityId, tx);
+      if (current === null) {
         throw new FxRefusedError('no_base_currency', 'the city has no base currency');
+      }
+      const base = current.currency;
       const accepted = await this.cityCurrencies(cityId, tx);
       if (!accepted.some((entry) => entry.currency === currency)) {
         throw new FxRefusedError('not_city_currency', `${currency} is not a currency of the city`);
@@ -325,7 +340,7 @@ export class FxService implements OnModuleInit {
       if (
         previous &&
         !change.confirmLargeChange &&
-        isLargeChange(previous.rate, rate, confirmPct)
+        isLargeChange(previous.rate, rate, confirmPct, input.direction)
       ) {
         throw new FxRefusedError(
           'large_change_unconfirmed',
@@ -338,6 +353,7 @@ export class FxService implements OnModuleInit {
           cityId,
           currency,
           baseCurrency: base,
+          baseEpoch: current.epoch,
           rateNumerator: rate.numerator,
           rateDenominator: rate.denominator,
           editorId,
@@ -392,17 +408,20 @@ export class FxService implements OnModuleInit {
   }
 
   // The snapshot an order keeps, inside the transaction that places it: the
-  // city's base currency is locked from its first order on (AP §8.6), and a
-  // base change waits for this transaction or makes it wait.
+  // city's base currency is locked from its first order on (AP §8.6). The
+  // first order writes the lock; every order then holds a shared row lock,
+  // which other orders share and a base change waits for (or makes them wait).
   async snapshotForOrder(cityId: string, tx: FxExecutor): Promise<RateSnapshot> {
-    const locked = await tx
+    await tx
       .update(cityBases)
-      .set({ lockedAt: sql`coalesce(${cityBases.lockedAt}, now())` })
+      .set({ lockedAt: sql`now()` })
+      .where(and(eq(cityBases.cityId, cityId), isNull(cityBases.lockedAt)));
+    const [base] = await tx
+      .select({ currency: cityBases.currency })
+      .from(cityBases)
       .where(eq(cityBases.cityId, cityId))
-      .returning({ currency: cityBases.currency });
-    if (locked.length === 0) {
-      throw new FxRefusedError('no_base_currency', 'the city has no base currency');
-    }
+      .for('share');
+    if (!base) throw new FxRefusedError('no_base_currency', 'the city has no base currency');
     return this.snapshot(cityId, tx);
   }
 
@@ -426,22 +445,56 @@ export class FxService implements OnModuleInit {
     return row;
   }
 
-  // Changes of one city's currencies take turns, so each checks the state the
-  // other left.
-  private async lockCity(executor: FxExecutor, cityId: string): Promise<void> {
-    await executor.execute(
-      sql`SELECT pg_advisory_xact_lock(hashtextextended(${`fx:${cityId}`}, 0))`,
-    );
+  private async base(cityId: string, executor: FxExecutor) {
+    const [row] = await executor
+      .select({ currency: cityBases.currency, epoch: cityBases.epoch })
+      .from(cityBases)
+      .where(eq(cityBases.cityId, cityId));
+    return row ?? null;
+  }
+
+  // Changes of one city's currencies, and of its money settings, take turns,
+  // so each checks the state the other left.
+  private lockCity(executor: FxExecutor, cityId: string): Promise<void> {
+    return lockCityCurrencies(executor, cityId);
   }
 }
 
-// |new − old| / old > pct %, compared exactly: the percentage is taken to
-// millionths, which no rate decision needs finer.
-function isLargeChange(previous: Rate, next: Rate, pct: number): boolean {
+// The newest versions a history read returns.
+const RATE_HISTORY_LIMIT = 100;
+
+function rateOf(row: typeof rateVersions.$inferSelect): CurrentRate {
+  return {
+    currency: row.currency,
+    baseCurrency: row.baseCurrency,
+    rate: { numerator: row.rateNumerator, denominator: row.rateDenominator },
+    versionId: row.id,
+    editorId: row.editorId,
+    reason: row.reason,
+    setAt: row.createdAt,
+  };
+}
+
+// |new − old| / old > pct %, in the direction the editor entered the rate,
+// compared exactly: the percentage is taken to millionths, which no rate
+// decision needs finer.
+function isLargeChange(
+  previous: Rate,
+  next: Rate,
+  pct: number,
+  direction: RateInput['direction'],
+): boolean {
+  if (direction === 'units_per_base') {
+    return isLargeChange(invert(previous), invert(next), pct, 'base_per_unit');
+  }
   const scaledPct = BigInt(Math.round(pct * 1_000_000));
   const difference = next.numerator * previous.denominator - previous.numerator * next.denominator;
   const magnitude = difference < 0n ? -difference : difference;
   return magnitude * 100n * 1_000_000n > scaledPct * previous.numerator * next.denominator;
+}
+
+function invert(rate: Rate): Rate {
+  return { numerator: rate.denominator, denominator: rate.numerator };
 }
 
 function rateText(rate: Rate): string {

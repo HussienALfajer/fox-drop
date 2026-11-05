@@ -54,16 +54,22 @@ export const cityCurrencies = fx.table(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [primaryKey({ columns: [table.cityId, table.currency] })],
+  (table) => [
+    primaryKey({ columns: [table.cityId, table.currency] }),
+    index('city_currencies_by_currency').on(table.currency),
+  ],
 );
 
 // The city's base currency (AP §8.6, D25), one of its accepted currencies.
-// locked_at is set by the city's first order; from then on it never changes.
+// locked_at is set by the city's first order; from then on neither changes
+// (a trigger in the migration). Each base change starts a new epoch, and a
+// rate counts only in the epoch it was set in.
 export const cityBases = fx.table(
   'city_bases',
   {
     cityId: uuid('city_id').primaryKey(),
     currency: text('currency').notNull(),
+    epoch: integer('epoch').notNull().default(1),
     lockedAt: timestamp('locked_at', { withTimezone: true }),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -87,11 +93,12 @@ export const rateVersions = fx.table(
       .default(sql`uuidv7()`),
     cityId: uuid('city_id').notNull(),
     currency: text('currency').notNull(),
-    // The base the rate is against: a rate set before a base change never
-    // applies to the new base.
+    // The base the rate is against, and the base's epoch: a rate set before
+    // a base change never applies after it, even if the same base returns.
     baseCurrency: text('base_currency')
       .notNull()
       .references(() => currencies.code),
+    baseEpoch: integer('base_epoch').notNull(),
     rateNumerator: bigint('rate_numerator', { mode: 'bigint' }).notNull(),
     rateDenominator: bigint('rate_denominator', { mode: 'bigint' }).notNull(),
     // The admin account that set it.
@@ -106,7 +113,13 @@ export const rateVersions = fx.table(
       foreignColumns: [cityCurrencies.cityId, cityCurrencies.currency],
     }),
     // UUIDv7 ids are in time order, so the newest version is the largest id.
-    index('rate_versions_current').on(table.cityId, table.currency, table.baseCurrency, table.id),
+    index('rate_versions_current').on(
+      table.cityId,
+      table.baseEpoch,
+      table.currency,
+      table.id.desc(),
+    ),
+    index('rate_versions_by_base_currency').on(table.baseCurrency),
     check(
       'rate_versions_rate_positive',
       sql`${table.rateNumerator} > 0 AND ${table.rateDenominator} > 0`,

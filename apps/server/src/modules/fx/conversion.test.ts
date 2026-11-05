@@ -117,6 +117,7 @@ describe('a rate as entered', () => {
     '.5',
     '5.',
     '1234567890123456789',
+    '0.0000000000000000001',
   ])('refuses %j', (value) => {
     expect(() => parseRate({ value, direction: 'base_per_unit' })).toThrow();
   });

@@ -61,15 +61,8 @@
     {
       "idx": 8,
       "version": "7",
-      "when": 1793912279917,
+      "when": 1793913635442,
       "tag": "0008_fx_currencies_rates",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1793912421544,
-      "tag": "0009_settings_system_editor",
       "breakpoints": true
     }
   ]

@@ -48,12 +48,14 @@ const usdRate = { value: '41.20', direction: 'base_per_unit' } as const;
 
 let cities = 0;
 
+const letter = (n: number) => String.fromCharCode(65 + Math.floor(n));
+
 // A new city, so each test starts without currencies.
 async function city(): Promise<string> {
   cities += 1;
   const { rows } = await sql.query(
     'INSERT INTO geo.cities (code, name) VALUES ($1, $2) RETURNING id',
-    [`Q${String.fromCharCode(64 + cities)}`, `test city ${cities}`],
+    [`Q${letter(cities / 26)}${letter(cities % 26)}`, `test city ${cities}`],
   );
   return rows[0].id;
 }
@@ -136,8 +138,9 @@ describe("a city's currencies", () => {
     expect(await refusal(accept(await lira(), 'TRY', 1, false))).toBe('base_disabled');
   });
 
-  it('records each change in the audit log', async () => {
+  it('records each change in the audit log, and nothing for no change', async () => {
     const cityId = await lira();
+    await accept(cityId, 'TRY', 1, true);
     const { rows } = await sql.query(
       `SELECT action, actor_type, target_id FROM audit.events
         WHERE city_id = $1 ORDER BY occurred_at, id`,
@@ -217,6 +220,24 @@ describe('rates', () => {
     expect((await fx.currentRates(cityId))[0]!.rate).toEqual({ numerator: 30n, denominator: 1n });
   });
 
+  it('measures a large change in the direction the rate was entered', async () => {
+    const cityId = await lira();
+    await accept(cityId, 'SYP', 2, false);
+    await fx.setRate(cityId, 'SYP', { value: '290', direction: 'units_per_base' }, fin);
+    // 290 → 320 SYP per TRY moves 10.3 %, though the TRY per SYP moves 9.4 %.
+    const larger = { value: '320', direction: 'units_per_base' } as const;
+    expect(await refusal(fx.setRate(cityId, 'SYP', larger, fin))).toBe('large_change_unconfirmed');
+  });
+
+  it('keeps its history, newest first', async () => {
+    const cityId = await lira({ usd: true });
+    await fx.setRate(cityId, 'USD', { value: '41.50', direction: 'base_per_unit' }, fin);
+    expect((await fx.rateHistory(cityId, 'USD')).map((version) => version.rate)).toEqual([
+      { numerator: 83n, denominator: 2n },
+      { numerator: 206n, denominator: 5n },
+    ]);
+  });
+
   it('is refused for the base, outside the city, from the system and when malformed', async () => {
     const cityId = await lira();
     expect(await refusal(fx.setRate(cityId, 'TRY', usdRate, fin))).toBe('invalid_rate');
@@ -230,6 +251,31 @@ describe('rates', () => {
 });
 
 describe('the base currency', () => {
+  it('waits for the city amounts to be in the new base currency', async () => {
+    const cityId = await lira({ usd: true });
+    await settings.update(
+      'captain.remit_tolerance',
+      { cityId },
+      { amountMinor: 500, currency: 'TRY' },
+      { editor: { id: finId, roles: ['OWN'] }, context, reason: 'Small change' },
+    );
+    expect(await refusal(fx.setBaseCurrency(cityId, 'USD', system))).toBe(
+      'amounts_in_other_currency',
+    );
+    expect(await fx.baseCurrency(cityId)).toBe('TRY');
+  });
+
+  it('never brings back the rates of an earlier base', async () => {
+    const cityId = await lira({ usd: true });
+    await fx.setBaseCurrency(cityId, 'USD', system);
+    await fx.setBaseCurrency(cityId, 'TRY', system);
+
+    expect(await fx.currentRates(cityId)).toEqual([]);
+    expect(await refusal(accept(cityId, 'USD', 2, true))).toBe('rate_missing');
+    // The history keeps every version.
+    expect(await fx.rateHistory(cityId, 'USD')).toHaveLength(1);
+  });
+
   it('moves before the first order, leaving the old rates behind', async () => {
     const cityId = await lira({ usd: true });
     await fx.setBaseCurrency(cityId, 'USD', system);
@@ -275,6 +321,83 @@ describe('the base currency', () => {
 
     await fx.setBaseCurrency(cityId, 'SYP', system);
     expect(await fx.baseCurrency(cityId)).toBe('SYP');
+  });
+});
+
+describe('the rules the database keeps', () => {
+  it('never changes a locked base, whatever the caller', async () => {
+    const cityId = await lira();
+    await accept(cityId, 'SYP', 2, false);
+    await setRounding(cityId, 'TRY', 500);
+    await db.db.transaction((tx) => fx.snapshotForOrder(cityId, tx));
+
+    for (const change of ["currency = 'SYP'", 'locked_at = NULL', 'epoch = epoch + 1']) {
+      await expect(
+        sql.query(`UPDATE fx.city_bases SET ${change} WHERE city_id = $1`, [cityId]),
+      ).rejects.toThrow(/locked since its first order/);
+    }
+  });
+
+  it("never changes a currency's decimals, only its status", async () => {
+    await expect(
+      sql.query("UPDATE fx.currencies SET decimals = 0 WHERE code = 'SYP'"),
+    ).rejects.toThrow(/permission denied/);
+    await sql.query("UPDATE fx.currencies SET status = 'active' WHERE code = 'SYP'");
+  });
+});
+
+describe('changes running together', () => {
+  // A transaction held open until release() is called.
+  function heldOrder(cityId: string) {
+    let release!: () => void;
+    const released = new Promise<void>((resolve) => (release = resolve));
+    let snapshotTaken!: () => void;
+    const taken = new Promise<void>((resolve) => (snapshotTaken = resolve));
+    const done = db.db.transaction(async (tx) => {
+      await fx.snapshotForOrder(cityId, tx);
+      snapshotTaken();
+      await released;
+    });
+    return { taken, release, done };
+  }
+
+  async function settledWithin(promise: Promise<unknown>, ms: number): Promise<boolean> {
+    const timeout = new Promise<false>((resolve) => setTimeout(() => resolve(false), ms));
+    return Promise.race([
+      promise.then(
+        () => true,
+        () => true,
+      ),
+      timeout,
+    ]);
+  }
+
+  it('lets orders take their snapshot side by side', async () => {
+    const cityId = await lira();
+    await setRounding(cityId, 'TRY', 500);
+    // The city's first order writes the lock.
+    await db.db.transaction((tx) => fx.snapshotForOrder(cityId, tx));
+
+    const held = heldOrder(cityId);
+    await held.taken;
+    const second = db.db.transaction((tx) => fx.snapshotForOrder(cityId, tx));
+    expect(await settledWithin(second, 2_000)).toBe(true);
+    held.release();
+    await held.done;
+  });
+
+  it('makes a base change wait for an open order, then refuses it', async () => {
+    const cityId = await lira();
+    await accept(cityId, 'SYP', 2, false);
+    await setRounding(cityId, 'TRY', 500);
+    const order = heldOrder(cityId);
+    await order.taken;
+
+    const change = refusal(fx.setBaseCurrency(cityId, 'SYP', system));
+    expect(await settledWithin(change, 500)).toBe(false);
+    order.release();
+    await order.done;
+    expect(await change).toBe('base_locked');
   });
 });
 

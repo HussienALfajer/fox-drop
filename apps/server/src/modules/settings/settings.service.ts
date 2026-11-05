@@ -182,8 +182,9 @@ export class SettingsService {
     if (!parsed.success) {
       throw new SettingRefusedError('invalid_value', setting.key, parsed.error.message);
     }
-    await this.checkCurrencies(setting, target.parameter, parsed.data);
-    await this.change(setting, { value: parsed.data, isDefault: false }, change);
+    await this.change(setting, { value: parsed.data, isDefault: false }, change, (tx) =>
+      this.checkCurrencies(tx, setting, target.parameter, parsed.data),
+    );
   }
 
   // «استعادة القيمة الافتراضية»: the setting follows its default again. A
@@ -310,19 +311,35 @@ export class SettingsService {
     return [...cityCodes].sort();
   }
 
+  // The city's stored amounts and their currency, such as the remit
+  // tolerance in TRY: the fx module refuses a base change while one is in
+  // another currency (AP §8.6).
+  async cityAmounts(cityId: string): Promise<{ key: string; currency: string }[]> {
+    const rows = await this.database.db
+      .select({ key: values.key, value: values.value })
+      .from(values)
+      .where(and(eq(values.cityId, cityId), eq(values.isDefault, false)));
+    return rows.flatMap(({ key, value }) => {
+      const currency = currencyOf(value);
+      return currency === null ? [] : [{ key, currency }];
+    });
+  }
+
   // A city's money is in its base currency (AP §8.6), and a currency.<code>
   // key names one of its currencies, enabled or not, so its rounding can be
-  // set before the currency is enabled.
+  // set before the currency is enabled. Checked in the change's transaction,
+  // on the lock a base change takes.
   private async checkCurrencies(
+    tx: Pick<NodePgDatabase, 'execute'>,
     setting: ResolvedSetting,
     parameter: string | undefined,
     value: unknown,
   ): Promise<void> {
     if (setting.cityId === null) return;
-    const amountCurrency =
-      typeof value === 'object' && value !== null && 'currency' in value ? value.currency : null;
+    const amountCurrency = currencyOf(value);
     const isCurrencyKey = keyParameter(setting.template) === 'code';
     if (!isCurrencyKey && amountCurrency === null) return;
+    await lockCityCurrencies(tx, setting.cityId);
     const { base, codes } = await this.currenciesOfCity(setting.cityId);
     if (isCurrencyKey && !codes.includes(parameter!)) {
       throw new SettingRefusedError(
@@ -431,6 +448,7 @@ export class SettingsService {
     setting: ResolvedSetting,
     next: { value: unknown; isDefault: boolean },
     { editor, context, reason }: SettingChange,
+    check?: (tx: Pick<NodePgDatabase, 'execute'>) => Promise<void>,
   ): Promise<void> {
     const givenReason = reason?.trim() || null;
     if (setting.definition.reasonRequired && givenReason === null) {
@@ -445,6 +463,7 @@ export class SettingsService {
     }
 
     const saved = await this.database.db.transaction(async (tx) => {
+      await check?.(tx);
       // Changes of one setting take turns, so each records the value it replaced.
       await tx.execute(
         sql`SELECT pg_advisory_xact_lock(hashtextextended(${`settings:${setting.key}:${setting.cityId ?? 'global'}`}, 0))`,
@@ -559,6 +578,28 @@ export class SettingsService {
       this.logger.warn({ err: error, cacheKey }, 'settings cache write failed');
     }
   }
+}
+
+// The lock a city's currencies and its money settings take turns on: the fx
+// module takes it for every change of the city's currencies, and a settings
+// change that checks them takes it first (AP §8.6).
+export async function lockCityCurrencies(
+  executor: Pick<NodePgDatabase, 'execute'>,
+  cityId: string,
+): Promise<void> {
+  await executor.execute(
+    sql`SELECT pg_advisory_xact_lock(hashtextextended(${`currencies:${cityId}`}, 0))`,
+  );
+}
+
+// The currency of an amount value, such as { amountMinor, currency }.
+function currencyOf(value: unknown): string | null {
+  return typeof value === 'object' &&
+    value !== null &&
+    'currency' in value &&
+    typeof value.currency === 'string'
+    ? value.currency
+    : null;
 }
 
 function rolesOf(change: SettingChange): readonly AdminRole[] | null {
