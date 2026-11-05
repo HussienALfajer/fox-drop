@@ -1,19 +1,24 @@
 import 'reflect-metadata';
 import { Test, type TestingModule } from '@nestjs/testing';
+import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
+import { type FxChange, FxRefusedError, FxService } from '../fx/index.js';
 import { SettingsService } from '../settings/index.js';
 import { ROAD_DISTANCES, type RoadDistances } from './distance.js';
-import { GeoModule, GeoService } from './index.js';
+import { type GeoChange, GeoModule, GeoRefusedError, GeoService, type Point } from './index.js';
 
-// GeoService.distance on a fresh database and Valkey, with a fake routing
-// service in place of OSRM (architecture §7.1, AP §9.12.3).
+// GeoService's distances, zones and delivery fees on a fresh database and
+// Valkey, with a fake routing service in place of OSRM (architecture §7.1,
+// AP §9.12.2–9.12.3).
 let database: TestDatabase;
 let cache: TestValkey;
 let moduleRef: TestingModule;
 let geo: GeoService;
 let settings: SettingsService;
+let fx: FxService;
+let sql: pg.Pool;
 
 const calls: unknown[][] = [];
 const fakeRoad: RoadDistances = {
@@ -34,10 +39,13 @@ beforeAll(async () => {
   await moduleRef.init();
   geo = moduleRef.get(GeoService);
   settings = moduleRef.get(SettingsService);
+  fx = moduleRef.get(FxService);
+  sql = new pg.Pool({ connectionString: database.appUrl });
 }, 300_000);
 
 afterAll(async () => {
   await moduleRef?.close();
+  await sql?.end();
   await Promise.all([database?.stop(), cache?.stop()]);
 });
 
@@ -62,5 +70,226 @@ describe('GeoService.distance', () => {
     expect(distance.metres).toBeGreaterThan(700);
     expect(distance.metres).toBeLessThan(900);
     expect(calls).toEqual([]);
+  });
+});
+
+const change: GeoChange = {
+  actor: { type: 'admin', id: '0190f3a0-0000-7000-8000-0000000000a1', role: 'OWN' },
+  context: { ipAddress: '203.0.113.7', device: 'Firefox 140 on Windows' },
+};
+const fxSystem: FxChange = {
+  actor: { type: 'system', id: null, role: null },
+  context: system.context,
+};
+
+let cities = 0;
+
+// A new city with TRY as its base, so each test starts without zones or fees.
+async function city(): Promise<string> {
+  cities += 1;
+  const { rows } = await sql.query<{ id: string }>(
+    'INSERT INTO geo.cities (code, name) VALUES ($1, $2) RETURNING id',
+    [`G${String.fromCharCode(64 + cities)}`, `test city ${cities}`],
+  );
+  const cityId = rows[0]!.id;
+  await fx.setCityCurrency(cityId, { currency: 'TRY', displayOrder: 1, enabled: true }, fxSystem);
+  await fx.setBaseCurrency(cityId, 'TRY', fxSystem);
+  return cityId;
+}
+
+// A square around a centre, corner after corner; half = 0.005° is about 1 km
+// across.
+function square(latitude: number, longitude: number, half = 0.005): Point[] {
+  return [
+    { latitude: latitude - half, longitude: longitude - half },
+    { latitude: latitude - half, longitude: longitude + half },
+    { latitude: latitude + half, longitude: longitude + half },
+    { latitude: latitude + half, longitude: longitude - half },
+  ];
+}
+
+const centre = { latitude: 36.6, longitude: 37.05 };
+
+describe('GeoService.zoneAt (AP §9.12.2, CU §7.1)', () => {
+  it('names the active zone a point is inside, its edge included', async () => {
+    const cityId = await city();
+    const id = await geo.createZone(
+      cityId,
+      { name: 'north', area: square(36.6, 37.05), active: true },
+      change,
+    );
+    await expect(geo.zoneAt(cityId, centre)).resolves.toEqual({ id, name: 'north' });
+    await expect(geo.zoneAt(cityId, { latitude: 36.595, longitude: 37.05 })).resolves.toEqual({
+      id,
+      name: 'north',
+    });
+  });
+
+  it('finds no zone for a point inside an inactive zone or outside every zone', async () => {
+    const cityId = await city();
+    await geo.createZone(
+      cityId,
+      { name: 'closed', area: square(36.6, 37.05), active: false },
+      change,
+    );
+    await expect(geo.zoneAt(cityId, centre)).resolves.toBeNull();
+    await expect(geo.zoneAt(cityId, { latitude: 36.7, longitude: 37.2 })).resolves.toBeNull();
+  });
+
+  it('finds no zone of another city', async () => {
+    const cityId = await city();
+    await geo.createZone(cityId, { name: 'here', area: square(36.6, 37.05), active: true }, change);
+    await expect(geo.zoneAt(await city(), centre)).resolves.toBeNull();
+  });
+
+  it('picks the smallest of two active zones that hold the point', async () => {
+    const cityId = await city();
+    await geo.createZone(
+      cityId,
+      { name: 'town', area: square(36.6, 37.05, 0.02), active: true },
+      change,
+    );
+    const inner = await geo.createZone(
+      cityId,
+      { name: 'old town', area: square(36.6, 37.05), active: true },
+      change,
+    );
+    await expect(geo.zoneAt(cityId, centre)).resolves.toEqual({ id: inner, name: 'old town' });
+  });
+
+  it('refuses an area that crosses itself or has too few corners, and a repeated name', async () => {
+    const cityId = await city();
+    const [a, b, c, d] = square(36.6, 37.05) as [Point, Point, Point, Point];
+    const create = (area: Point[], name: string) =>
+      geo.createZone(cityId, { name, area, active: true }, change).catch((error: unknown) => error);
+    await expect(create([a, c, b, d], 'bow tie')).resolves.toMatchObject({
+      refusal: 'invalid_area',
+    });
+    await expect(create([a, b], 'line')).resolves.toMatchObject({ refusal: 'invalid_area' });
+    await expect(create([a, b, c, d], 'same')).resolves.toBeTypeOf('string');
+    const repeated = await create(square(36.7, 37.1), 'same');
+    expect(repeated).toBeInstanceOf(GeoRefusedError);
+    expect(repeated).toMatchObject({ refusal: 'zone_name_taken' });
+  });
+
+  it('records the new zone in the audit log', async () => {
+    const cityId = await city();
+    const id = await geo.createZone(
+      cityId,
+      { name: 'audited', area: square(36.6, 37.05), active: true },
+      change,
+    );
+    const { rows } = await sql.query(
+      "SELECT action, target_id FROM audit.events WHERE city_id = $1 AND action LIKE 'zone.%'",
+      [cityId],
+    );
+    expect(rows).toEqual([{ action: 'zone.create', target_id: id }]);
+  });
+});
+
+describe('GeoService.deliveryFee (AP §9.12.3)', () => {
+  const flat = {
+    kind: 'flat',
+    currency: 'TRY',
+    flatFee: 4000n,
+    minimumFee: null,
+    freeDeliveryFrom: null,
+  } as const;
+
+  it('charges the flat fee without measuring the distance', async () => {
+    const cityId = await city();
+    const ruleId = await geo.setDeliveryFeeRule(cityId, flat, change);
+    calls.length = 0;
+    await expect(geo.deliveryFee(cityId, { from, to, itemsValue: 20_000n })).resolves.toEqual({
+      fee: 4000n,
+      currency: 'TRY',
+      free: false,
+      ruleId,
+      distance: null,
+    });
+    expect(calls).toEqual([]);
+  });
+
+  it('charges the band of the motorbike road distance, and nothing from the threshold', async () => {
+    const cityId = await city();
+    await settings.update('pricing.distance_method', {}, 'road', system);
+    await geo.setDeliveryFeeRule(
+      cityId,
+      {
+        kind: 'distance_bands',
+        currency: 'TRY',
+        bands: [
+          { upToMetres: 1500, fee: 3000n },
+          { upToMetres: null, fee: 5000n },
+        ],
+        minimumFee: null,
+        freeDeliveryFrom: 50_000n,
+      },
+      change,
+    );
+    calls.length = 0;
+    await expect(geo.deliveryFee(cityId, { from, to, itemsValue: 20_000n })).resolves.toMatchObject(
+      {
+        fee: 3000n,
+        free: false,
+        distance: { metres: 1500, method: 'road' },
+      },
+    );
+    expect(calls).toEqual([[from, to, 'motorbike']]);
+    await expect(geo.deliveryFee(cityId, { from, to, itemsValue: 50_000n })).resolves.toMatchObject(
+      { fee: 0n, free: true },
+    );
+  });
+
+  it('uses the newest rule; a change is a new version', async () => {
+    const cityId = await city();
+    await geo.setDeliveryFeeRule(cityId, flat, change);
+    const newer = await geo.setDeliveryFeeRule(cityId, { ...flat, flatFee: 4500n }, change);
+    await expect(geo.deliveryFeeRule(cityId)).resolves.toMatchObject({
+      id: newer,
+      flatFee: 4500n,
+    });
+    await expect(geo.deliveryFee(cityId, { from, to, itemsValue: 1n })).resolves.toMatchObject({
+      fee: 4500n,
+      ruleId: newer,
+    });
+    const { rows } = await sql.query(
+      "SELECT count(*)::int AS n FROM audit.events WHERE city_id = $1 AND action = 'delivery_fee_rule.set'",
+      [cityId],
+    );
+    expect(rows).toEqual([{ n: 2 }]);
+  });
+
+  it('refuses a fee while the city has no rule', async () => {
+    const cityId = await city();
+    await expect(geo.deliveryFeeRule(cityId)).resolves.toBeNull();
+    await expect(geo.deliveryFee(cityId, { from, to, itemsValue: 1n })).rejects.toMatchObject({
+      refusal: 'no_fee_rule',
+    });
+  });
+
+  it('refuses a rule outside the base currency and a malformed one', async () => {
+    const cityId = await city();
+    await expect(
+      geo.setDeliveryFeeRule(cityId, { ...flat, currency: 'USD' }, change),
+    ).rejects.toMatchObject({ refusal: 'fee_not_in_base_currency' });
+    await expect(
+      geo.setDeliveryFeeRule(cityId, { ...flat, flatFee: -1n }, change),
+    ).rejects.toMatchObject({ refusal: 'invalid_fee_rule' });
+  });
+
+  it('keeps the base currency while the fee rule is in it (AP §8.6)', async () => {
+    const cityId = await city();
+    await geo.setDeliveryFeeRule(cityId, flat, change);
+    await fx.setCityCurrency(
+      cityId,
+      { currency: 'USD', displayOrder: 2, enabled: false },
+      fxSystem,
+    );
+    const refused = await fx
+      .setBaseCurrency(cityId, 'USD', fxSystem)
+      .catch((error: unknown) => error);
+    expect(refused).toBeInstanceOf(FxRefusedError);
+    expect(refused).toMatchObject({ refusal: 'amounts_in_other_currency' });
   });
 });

@@ -64,6 +64,13 @@
       "when": 1793913635442,
       "tag": "0008_fx_currencies_rates",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793918371709,
+      "tag": "0009_geo_zones_fee_rules",
+      "breakpoints": true
     }
   ]
 }
