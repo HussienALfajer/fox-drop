@@ -4,8 +4,8 @@
 --   export FOX_DROP_MIGRATOR_PASSWORD FOX_DROP_APP_PASSWORD
 --   psql --file bootstrap.sql
 -- The passwords come from the environment, so they stay out of the shell
--- history and the process list. Locally, init-development.sh runs it when the
--- container first starts.
+-- history and the process list. init-container.sh runs it when a PostGIS
+-- container first starts, locally and in each deployed environment.
 --
 -- fox_drop_migrator runs the migrations and owns every module schema.
 -- fox_drop_app is the role the server connects with: it reads and writes the

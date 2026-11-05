@@ -17,7 +17,7 @@ services:
     volumes:
       # Creates the migration and application roles on the first start of an
       # empty volume, after the image's own PostGIS script.
-      - ./apps/server/db/init-development.sh:/docker-entrypoint-initdb.d/20-fox-drop.sh:ro
+      - ./apps/server/db/init-container.sh:/docker-entrypoint-initdb.d/20-fox-drop.sh:ro
       - ./apps/server/db/bootstrap.sql:/fox-drop/bootstrap.sql:ro
       - postgres-data:/var/lib/postgresql
     ports:

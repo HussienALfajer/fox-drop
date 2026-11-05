@@ -2,6 +2,7 @@ packages:
   - apps/*
   - packages/*
   - tools/*
+  - infra
 
 allowBuilds:
   '@openapitools/openapi-generator-cli': false

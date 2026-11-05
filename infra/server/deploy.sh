@@ -48,7 +48,8 @@ fi
 
 release=$home/releases/$target
 if [ ! -d "$release" ]; then
-  as_user mkdir -p "$release.partial"
+  rm -rf -- "$release.partial"
+  as_user mkdir "$release.partial"
   as_user git -C "$home/repo.git" archive "$target" infra apps/server/db |
     as_user tar -x -C "$release.partial"
   as_user mv "$release.partial" "$release"

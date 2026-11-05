@@ -1,12 +1,13 @@
 #!/bin/sh
 # Runs inside the postgis container on the first start of an empty data
-# directory (docker-entrypoint-initdb.d), for compose.yaml and the database tests.
+# directory (docker-entrypoint-initdb.d), for compose.yaml, the database tests
+# and each deployed environment (infra/compose.yaml).
 # The entrypoint may source this file instead of running it, so it sets no
 # shell options; each psql call stops on the first error and so does the entrypoint.
 #
 # The image's own 10_postgis.sh also installs topology and the tiger geocoder,
-# which change the search path. Production has PostGIS only (bootstrap.sql),
-# so remove them first: what passes here must pass there.
+# which change the search path. FOX DROP uses PostGIS only (bootstrap.sql),
+# so remove them first.
 psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set ON_ERROR_STOP=on <<'EOSQL'
 DROP EXTENSION IF EXISTS postgis_tiger_geocoder, postgis_topology, fuzzystrmatch CASCADE;
 DROP SCHEMA IF EXISTS tiger, tiger_data, topology CASCADE;

@@ -21,7 +21,7 @@ infra=$(cd "$(dirname "$0")/.." && pwd)
 settings=$infra/environments/$environment.env
 [ -f "$settings" ] || die "no $settings"
 set -a
-# shellcheck source=../environments/staging.env
+# shellcheck source=/dev/null
 . "$settings"
 set +a
 
@@ -98,6 +98,8 @@ step "nginx"
 for zone in 'zone=general:' 'zone=perip:'; do
   nginx -T 2>/dev/null | grep -q "$zone" || die "the nginx ${zone%:} zone is not defined"
 done
+# Only these variables are replaced; nginx's own $variables stay as they are.
+# shellcheck disable=SC2016
 render() { envsubst '${FOXDROP_ENV} ${ADMIN_HOST} ${PORTAL_HOST} ${API_HOST} ${API_PORT} ${ADMIN_PORT} ${PORTAL_PORT}' <"$1"; }
 install -m 644 "$infra/nginx/proxy.conf" /etc/nginx/snippets/foxdrop-proxy.conf
 install -m 644 "$infra/nginx/headers.conf" /etc/nginx/snippets/foxdrop-headers.conf

@@ -3,6 +3,7 @@
 **/dist/
 **/.turbo/
 **/coverage/
+**/test-results/
 **/.dart_tool/
 .git/
 .fvm/

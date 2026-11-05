@@ -1,0 +1,8 @@
+# FOX DROP ${FOXDROP_ENV}: rate-limit zones, installed as
+# /etc/nginx/conf.d/foxdrop-${FOXDROP_ENV}-limits.conf by infra/server/provision.sh.
+# Edit infra/nginx/limits.conf.template in the repository, never on the server.
+#
+# The sign-in and code routes (architecture §15.5): each costs an Argon2 hash
+# or sends a code. 30 a minute per address, because mobile networks put many
+# phones behind one address; the server's own limits in Valkey come on top.
+limit_req_zone $binary_remote_addr zone=foxdrop_${FOXDROP_ENV}_signin:10m rate=30r/m;

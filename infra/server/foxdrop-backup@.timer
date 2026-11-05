@@ -1,0 +1,12 @@
+# Installed in /etc/systemd/system by infra/server/provision.sh; the server's
+# other sites back up between 03:25 and 03:35.
+[Unit]
+Description=Nightly FOX DROP %i database backup
+
+[Timer]
+OnCalendar=*-*-* 03:50
+RandomizedDelaySec=10m
+Persistent=true
+
+[Install]
+WantedBy=timers.target
