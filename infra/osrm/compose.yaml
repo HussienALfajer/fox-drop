@@ -1,0 +1,83 @@
+# The shared OSRM of the server (architecture §7.1, §17): one Compose
+# project, foxdrop-osrm, serves staging and later production, over Azaz's
+# region (owner decision 2026-11-06). provision.sh copies this folder to
+# /srv/foxdrop-osrm; foxdrop-osrm-build (server/osrm-build.sh) builds the data
+# weekly and restarts the routed services.
+#
+# The environments reach it on the foxdrop-osrm network, which each
+# environment's compose.yaml creates, as http://osrm-<vehicle>:5000. Nothing
+# is published on the host.
+name: foxdrop-osrm
+
+x-routed: &routed # The same image as the development compose.yaml (infra.test.mjs).
+  image: ghcr.io/project-osrm/osrm-backend:v6.0.0@sha256:729461bcc9ae9e6aafa92c0f93db9b060a32e85d5e72092c01ae4a4a9f1eb564
+  restart: unless-stopped
+  read_only: true
+  cap_drop: [ALL]
+  volumes:
+    - data:/data:ro
+  networks: [osrm]
+  mem_limit: 128m
+  healthcheck:
+    test:
+      - CMD
+      - wget
+      - --quiet
+      - --output-document=/dev/null
+      - http://127.0.0.1:5000/route/v1/driving/37.0463,36.5866;37.0518,36.5901?overview=false
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 30s
+
+x-build: &build
+  profiles: [build]
+  restart: 'no'
+  volumes:
+    - data:/data
+    - .:/osrm:ro
+
+services:
+  # Downloads the Syria extract and cuts the region (cut.sh).
+  cut:
+    <<: *build
+    build:
+      context: .
+      dockerfile: cut.Dockerfile
+    image: foxdrop-osrm-cut
+    command: [sh, /osrm/cut.sh]
+    mem_limit: 512m
+
+  # Builds every profile from the cut (build.sh); `run --rm build` runs both.
+  build:
+    <<: *build
+    image: ghcr.io/project-osrm/osrm-backend:v6.0.0@sha256:729461bcc9ae9e6aafa92c0f93db9b060a32e85d5e72092c01ae4a4a9f1eb564
+    depends_on:
+      cut:
+        condition: service_completed_successfully
+    command: [sh, /osrm/build.sh]
+    mem_limit: 1g
+
+  osrm-car:
+    <<: *routed
+    command: [osrm-routed, --algorithm, mld, /data/current/car/region.osrm]
+
+  osrm-motorbike:
+    <<: *routed
+    command: [osrm-routed, --algorithm, mld, /data/current/motorbike/region.osrm]
+
+  osrm-bicycle:
+    <<: *routed
+    command: [osrm-routed, --algorithm, mld, /data/current/bicycle/region.osrm]
+
+  osrm-walking:
+    <<: *routed
+    command: [osrm-routed, --algorithm, mld, /data/current/walking/region.osrm]
+
+networks:
+  osrm:
+    name: foxdrop-osrm
+    external: true
+
+volumes:
+  data:

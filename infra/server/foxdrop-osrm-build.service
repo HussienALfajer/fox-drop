@@ -1,0 +1,10 @@
+# Installed in /etc/systemd/system by infra/server/provision.sh.
+[Unit]
+Description=Weekly FOX DROP OSRM data rebuild
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/foxdrop-osrm-build
