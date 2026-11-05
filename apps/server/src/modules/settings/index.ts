@@ -16,7 +16,14 @@ import { SettingsService } from './settings.service.js';
 })
 export class SettingsModule {}
 
-export { adminRoles, type AdminRole, type SettingKey, type SettingValue } from './catalogue.js';
+export {
+  adminRoles,
+  type AdminRole,
+  type SettingKey,
+  type SettingValue,
+  type Vehicle,
+  vehicles,
+} from './catalogue.js';
 export {
   lockCityCurrencies,
   SettingRefusedError,

@@ -32,7 +32,7 @@ export interface SettingDefinition<Value = unknown> {
   // Parses a value an editor sets.
   schema: z.ZodType<Value>;
   // Null with beforeLaunch: the owner enters the value before going live.
-  default: Value | null;
+  default: NoInfer<Value> | null;
   beforeLaunch?: true;
   // Owner decision 2026-11-05: settings with money impact need a reason
   // (AP §9.14).
@@ -41,6 +41,7 @@ export interface SettingDefinition<Value = unknown> {
 
 // The parameters of the keys written with <...> in Appendix A.
 export const vehicles = ['walking', 'bicycle', 'motorbike', 'car'] as const;
+export type Vehicle = (typeof vehicles)[number];
 export const apps = ['customer', 'merchant', 'captain'] as const;
 export const keyParameters = {
   vehicle: z.enum(vehicles),
