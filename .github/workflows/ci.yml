@@ -60,9 +60,17 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - run: pnpm --filter @fox-drop/admin exec playwright install --with-deps chromium
+      - run: pnpm --filter @fox-drop/admin --filter @fox-drop/merchant-portal exec playwright install --with-deps chromium
 
       - run: pnpm verify
+
+      # The traces of a failed smoke test (playwright.config.ts).
+      - if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright-results
+          path: apps/*/test-results/
+          if-no-files-found: ignore
 
   # Architecture §4.4: one image runs the four server roles.
   server-image:

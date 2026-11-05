@@ -108,7 +108,10 @@ function checkApiContract() {
 checkApiContract();
 step('Prettier', 'pnpm exec prettier --check .');
 // The web apps' smoke tests run in Chromium; this downloads it once.
-step('Playwright browser', 'pnpm --filter @fox-drop/admin exec playwright install chromium');
+step(
+  'Playwright browser',
+  'pnpm --filter @fox-drop/admin --filter @fox-drop/merchant-portal exec playwright install chromium',
+);
 step(
   'Lint, type check, test, build and smoke test (Turborepo)',
   'pnpm exec turbo run lint:root lint typecheck test build test:e2e',

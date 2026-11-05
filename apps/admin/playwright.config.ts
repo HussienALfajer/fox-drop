@@ -7,7 +7,7 @@ export default defineConfig({
   testDir: 'e2e',
   forbidOnly: !!process.env.CI,
   reporter: process.env.CI ? 'github' : 'list',
-  use: { baseURL: 'http://localhost:4173', locale: 'ar' },
+  use: { baseURL: 'http://localhost:4173', locale: 'ar', trace: 'retain-on-failure' },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: { command: 'pnpm preview', url: 'http://localhost:4173', reuseExistingServer: false },
 });

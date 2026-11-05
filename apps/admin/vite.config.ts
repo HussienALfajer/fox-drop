@@ -11,5 +11,5 @@ export default defineConfig({
   server: { port: 5173, strictPort: true, proxy: api },
   preview: { port: 4173, strictPort: true, proxy: api },
   // e2e/ holds the Playwright tests.
-  test: { include: ['src/**/*.test.ts'] },
+  test: { include: ['src/**/*.test.ts', 'test/**/*.test.ts'] },
 });
