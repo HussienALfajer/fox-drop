@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
-import { and, asc, desc, eq, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, ne, type SQL, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -18,7 +18,10 @@ import { cities, feeBands, feeRules, zones } from './schema.js';
 
 export type GeoRefusal =
   | 'invalid_area'
+  | 'invalid_name'
   | 'zone_name_taken'
+  | 'zones_overlap'
+  | 'unknown_zone'
   | 'invalid_fee_rule'
   | 'fee_not_in_base_currency'
   | 'no_fee_rule';
@@ -120,12 +123,16 @@ export class GeoService implements OnModuleInit {
   }
 
   // A new zone: a neighbourhood's polygon, its corners in order (AP §9.12.2).
-  // The ring closes by itself; one that crosses itself is refused.
+  // The ring closes by itself; one that crosses itself is refused, and so is
+  // an active zone that overlaps another active one (owner decision
+  // 2026-11-06), so every point has one neighbourhood at most.
   async createZone(
     cityId: string,
     zone: { name: string; area: Point[]; active: boolean },
     change: GeoChange,
   ): Promise<string> {
+    const name = zone.name.trim();
+    if (name.length === 0) throw new GeoRefusedError('invalid_name', 'a zone needs a name');
     const corners = zone.area.map(({ latitude, longitude }) => [longitude, latitude]);
     if (
       new Set(corners.map((corner) => corner.join())).size < 3 ||
@@ -145,37 +152,108 @@ export class GeoService implements OnModuleInit {
       if (!valid) {
         throw new GeoRefusedError('invalid_area', 'the zone outline crosses itself');
       }
-      const [row] = await tx
-        .insert(zones)
-        .values({ cityId, name: zone.name, area, active: zone.active })
-        .onConflictDoNothing({ target: [zones.cityId, zones.name] })
-        .returning({ id: zones.id });
-      if (!row) {
-        throw new GeoRefusedError(
-          'zone_name_taken',
-          `the city already has a zone named ${zone.name}`,
-        );
+      await lockZones(tx, cityId);
+      const [taken] = await tx
+        .select({ id: zones.id })
+        .from(zones)
+        .where(and(eq(zones.cityId, cityId), eq(zones.name, name)));
+      if (taken) {
+        throw new GeoRefusedError('zone_name_taken', `the city already has a zone named ${name}`);
       }
+      if (zone.active) await this.refuseOverlap(tx, cityId, area, null);
+      const [{ id }] = (await tx
+        .insert(zones)
+        .values({ cityId, name, area, active: zone.active })
+        .returning({ id: zones.id })) as [{ id: string }];
       await this.audit.recordWrite(
         {
           actor: change.actor,
           context: change.context,
           cityId,
           action: 'zone.create',
-          target: { type: 'zone', id: row.id },
+          target: { type: 'zone', id },
           before: null,
-          after: { name: zone.name, active: zone.active, corners: corners.length },
+          after: { name, active: zone.active, area: zone.area },
           reason: change.reason ?? null,
         },
         tx,
       );
-      return row.id;
+      return id;
     });
   }
 
+  // Activates or deactivates one of the city's zones (AP §9.12.2). A zone
+  // that would overlap an active one stays inactive.
+  async setZoneActive(
+    cityId: string,
+    zoneId: string,
+    active: boolean,
+    change: GeoChange,
+  ): Promise<void> {
+    await this.database.db.transaction(async (tx) => {
+      await lockZones(tx, cityId);
+      const [zone] = await tx
+        .select({ active: zones.active })
+        .from(zones)
+        .where(and(eq(zones.cityId, cityId), eq(zones.id, zoneId)));
+      if (!zone) throw new GeoRefusedError('unknown_zone', 'the city has no such zone');
+      if (zone.active === active) return;
+      if (active) {
+        await this.refuseOverlap(
+          tx,
+          cityId,
+          sql`(SELECT area FROM geo.zones WHERE id = ${zoneId})`,
+          zoneId,
+        );
+      }
+      await tx
+        .update(zones)
+        .set({ active, updatedAt: sql`now()` })
+        .where(eq(zones.id, zoneId));
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId,
+          action: 'zone.update',
+          target: { type: 'zone', id: zoneId },
+          before: { active: zone.active },
+          after: { active },
+          reason: change.reason ?? null,
+        },
+        tx,
+      );
+    });
+  }
+
+  // Two zones overlap when their insides meet; sharing an edge is fine.
+  private async refuseOverlap(
+    tx: Pick<NodePgDatabase, 'select'>,
+    cityId: string,
+    area: SQL,
+    except: string | null,
+  ): Promise<void> {
+    const [other] = await tx
+      .select({ name: zones.name })
+      .from(zones)
+      .where(
+        and(
+          eq(zones.cityId, cityId),
+          eq(zones.active, true),
+          except === null ? undefined : ne(zones.id, except),
+          sql`ST_Intersects(${zones.area}, ${area})`,
+          sql`NOT ST_Touches(${zones.area}, ${area})`,
+        ),
+      )
+      .limit(1);
+    if (other) {
+      throw new GeoRefusedError('zones_overlap', `the zone overlaps the active zone ${other.name}`);
+    }
+  }
+
   // The active zone a point is inside, its edge included (CU §7.1); null
-  // outside every active zone. Where two overlap, the smaller one, the more
-  // precise neighbourhood.
+  // outside every active zone. Active zones never overlap; a point on an
+  // edge two of them share gets the older one.
   async zoneAt(
     cityId: string,
     { latitude, longitude }: Point,
@@ -191,7 +269,7 @@ export class GeoService implements OnModuleInit {
           sql`ST_Covers(${zones.area}, ${point})`,
         ),
       )
-      .orderBy(sql`ST_Area(${zones.area})`, asc(zones.id))
+      .orderBy(asc(zones.id))
       .limit(1);
     return row ?? null;
   }
@@ -237,8 +315,17 @@ export class GeoService implements OnModuleInit {
     return this.database.db.transaction(async (tx) => {
       // A base change takes the same lock, so it never passes this rule.
       await lockCityCurrencies(tx, cityId);
+      // The fee is charged in the base currency. Until the first order locks
+      // the base, the rule may be entered in another of the city's
+      // currencies, so the base can then change to it (AP §8.6, D25).
       const base = await this.fx.baseCurrency(cityId, tx);
-      if (rule.currency !== base) {
+      const allowed =
+        rule.currency === base ||
+        (!(await this.fx.baseLocked(cityId, tx)) &&
+          (await this.fx.cityCurrencies(cityId, tx)).some(
+            (entry) => entry.currency === rule.currency,
+          ));
+      if (!allowed) {
         throw new GeoRefusedError(
           'fee_not_in_base_currency',
           `the delivery fee is in the city's base currency, ${base ?? 'not chosen yet'}`,
@@ -284,12 +371,21 @@ export class GeoService implements OnModuleInit {
 
   // The fee a customer pays to have an order of this items value, in the
   // base currency, carried from the restaurant to the point (AP §9.12.3).
+  // The items value is after the restaurant's item discounts, the value the
+  // commission is on (owner decision 2026-11-06; docs/domain/04).
   async deliveryFee(
     cityId: string,
     { from, to, itemsValue }: { from: Point; to: Point; itemsValue: bigint },
   ): Promise<DeliveryFee> {
     const rule = await this.deliveryFeeRule(cityId);
     if (rule === null) throw new GeoRefusedError('no_fee_rule', 'the city has no delivery fee yet');
+    const base = await this.fx.baseCurrency(cityId);
+    if (rule.currency !== base) {
+      throw new GeoRefusedError(
+        'fee_not_in_base_currency',
+        `the delivery fee is in ${rule.currency}, not the base currency ${base ?? '(none)'}`,
+      );
+    }
     const distance =
       rule.kind === 'distance_bands'
         ? await this.distance(from, to, { vehicle: FEE_VEHICLE })
@@ -297,6 +393,14 @@ export class GeoService implements OnModuleInit {
     const { fee, free } = deliveryFeeFor(rule, { itemsValue, metres: distance?.metres });
     return { fee, currency: rule.currency, free, ruleId: rule.id, distance };
   }
+}
+
+// Changes of one city's zones take turns, so the overlap check of one sees
+// the zone the other added.
+async function lockZones(executor: Pick<NodePgDatabase, 'execute'>, cityId: string) {
+  await executor.execute(
+    sql`SELECT pg_advisory_xact_lock(hashtextextended(${`zones:${cityId}`}, 0))`,
+  );
 }
 
 // Whether two rules charge the same, field by field.

@@ -106,6 +106,19 @@ describe('checkDeliveryFeeRule', () => {
     expect(withBands([{ upToMetres: null, fee: -1n }])).not.toBeNull();
   });
 
+  it('refuses what the database cannot hold', () => {
+    expect(checkDeliveryFeeRule({ ...flat, flatFee: 2n ** 63n })).not.toBeNull();
+    expect(
+      checkDeliveryFeeRule({
+        ...bands,
+        bands: [
+          { upToMetres: 2 ** 31, fee: 1n },
+          { upToMetres: null, fee: 2n },
+        ],
+      }),
+    ).not.toBeNull();
+  });
+
   it('refuses a currency code that is not three capital letters', () => {
     expect(checkDeliveryFeeRule({ ...flat, currency: 'try' })).not.toBeNull();
   });

@@ -105,6 +105,7 @@ export const feeRules = geo.table(
 );
 
 // The bands of a distance-band rule, in order; the last has no upper edge.
+// A child row of its rule, which holds the city.
 export const feeBands = geo.table(
   'fee_bands',
   {

@@ -19,9 +19,22 @@ export type DeliveryFeeRule =
   | (RuleCommon & { kind: 'flat'; flatFee: bigint })
   | (RuleCommon & { kind: 'distance_bands'; bands: DistanceBand[] });
 
+// The largest amount a PostgreSQL bigint holds, and the largest band edge an
+// integer column holds.
+const MAX_AMOUNT = 2n ** 63n - 1n;
+const MAX_METRES = 2 ** 31 - 1;
+
 // Why a rule cannot be saved, or null when it can.
 export function checkDeliveryFeeRule(rule: DeliveryFeeRule): string | null {
   if (!/^[A-Z]{3}$/.test(rule.currency)) return 'the currency is a three-letter code';
+  const amounts = [
+    rule.minimumFee,
+    rule.freeDeliveryFrom,
+    ...(rule.kind === 'flat' ? [rule.flatFee] : rule.bands.map((band) => band.fee)),
+  ];
+  if (amounts.some((amount) => amount !== null && amount > MAX_AMOUNT)) {
+    return 'an amount is too large';
+  }
   if (rule.minimumFee !== null && rule.minimumFee < 0n) return 'the minimum fee is not negative';
   if (rule.freeDeliveryFrom !== null && rule.freeDeliveryFrom <= 0n) {
     return 'the free-delivery threshold is above zero';
@@ -37,7 +50,7 @@ export function checkDeliveryFeeRule(rule: DeliveryFeeRule): string | null {
     if (band.fee < 0n) return 'a band fee is not negative';
     if (index === bands.length - 1) break;
     const edge = band.upToMetres;
-    if (edge === null || !Number.isInteger(edge) || edge <= previous) {
+    if (edge === null || !Number.isInteger(edge) || edge <= previous || edge > MAX_METRES) {
       return 'the band edges are whole metres, above zero and increasing';
     }
     previous = edge;
@@ -46,7 +59,9 @@ export function checkDeliveryFeeRule(rule: DeliveryFeeRule): string | null {
 }
 
 // The fee for an order with this items value. A distance-band rule needs the
-// distance in metres; a flat rule ignores it.
+// distance in metres; a flat rule ignores it. A distance on a band's edge
+// takes that band, the lower fee; free delivery pays 0 whatever the minimum
+// fee (owner decisions 2026-11-06).
 export function deliveryFeeFor(
   rule: DeliveryFeeRule,
   { itemsValue, metres }: { itemsValue: bigint; metres?: number | undefined },

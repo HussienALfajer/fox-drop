@@ -126,6 +126,15 @@ export class FxService implements OnModuleInit {
     return (await this.base(cityId, executor))?.currency ?? null;
   }
 
+  // Whether the city's first order has locked its base currency (D25).
+  async baseLocked(cityId: string, executor: FxExecutor = this.database.db): Promise<boolean> {
+    const [row] = await executor
+      .select({ lockedAt: cityBases.lockedAt })
+      .from(cityBases)
+      .where(eq(cityBases.cityId, cityId));
+    return row?.lockedAt != null;
+  }
+
   // The city's currencies in display order, enabled or not.
   async cityCurrencies(cityId: string, executor: FxExecutor = this.database.db) {
     const rows = await executor

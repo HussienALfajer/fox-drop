@@ -142,19 +142,61 @@ describe('GeoService.zoneAt (AP §9.12.2, CU §7.1)', () => {
     await expect(geo.zoneAt(await city(), centre)).resolves.toBeNull();
   });
 
-  it('picks the smallest of two active zones that hold the point', async () => {
+  it('refuses an active zone that overlaps another active one, not one that shares its edge', async () => {
     const cityId = await city();
-    await geo.createZone(
+    await geo.createZone(cityId, { name: 'town', area: square(36.6, 37.05), active: true }, change);
+    await expect(
+      geo.createZone(
+        cityId,
+        { name: 'inside', area: square(36.6, 37.05, 0.002), active: true },
+        change,
+      ),
+    ).rejects.toMatchObject({ refusal: 'zones_overlap' });
+    await expect(
+      geo.createZone(
+        cityId,
+        { name: 'crossing', area: square(36.6, 37.058), active: true },
+        change,
+      ),
+    ).rejects.toMatchObject({ refusal: 'zones_overlap' });
+    // The square to the east shares the edge at longitude 37.055.
+    await expect(
+      geo.createZone(cityId, { name: 'east', area: square(36.6, 37.06), active: true }, change),
+    ).resolves.toBeTypeOf('string');
+    // An inactive zone may overlap, but stays inactive while it does.
+    const draft = await geo.createZone(
       cityId,
-      { name: 'town', area: square(36.6, 37.05, 0.02), active: true },
+      { name: 'draft', area: square(36.6, 37.05, 0.002), active: false },
       change,
     );
-    const inner = await geo.createZone(
+    await expect(geo.setZoneActive(cityId, draft, true, change)).rejects.toMatchObject({
+      refusal: 'zones_overlap',
+    });
+  });
+
+  it('activates and deactivates a zone, audited', async () => {
+    const cityId = await city();
+    const id = await geo.createZone(
       cityId,
-      { name: 'old town', area: square(36.6, 37.05), active: true },
+      { name: 'later', area: square(36.6, 37.05), active: false },
       change,
     );
-    await expect(geo.zoneAt(cityId, centre)).resolves.toEqual({ id: inner, name: 'old town' });
+    await geo.setZoneActive(cityId, id, true, change);
+    await expect(geo.zoneAt(cityId, centre)).resolves.toEqual({ id, name: 'later' });
+    await geo.setZoneActive(cityId, id, true, change);
+    await geo.setZoneActive(cityId, id, false, change);
+    await expect(geo.zoneAt(cityId, centre)).resolves.toBeNull();
+    const { rows } = await sql.query(
+      "SELECT changes FROM audit.events WHERE target_id = $1 AND action = 'zone.update' ORDER BY id",
+      [id],
+    );
+    expect(rows).toEqual([
+      { changes: { active: { before: false, after: true } } },
+      { changes: { active: { before: true, after: false } } },
+    ]);
+    await expect(geo.setZoneActive(await city(), id, true, change)).rejects.toMatchObject({
+      refusal: 'unknown_zone',
+    });
   });
 
   it('refuses an area that crosses itself or has too few corners, and a repeated name', async () => {
@@ -170,6 +212,9 @@ describe('GeoService.zoneAt (AP §9.12.2, CU §7.1)', () => {
     const repeated = await create(square(36.7, 37.1), 'same');
     expect(repeated).toBeInstanceOf(GeoRefusedError);
     expect(repeated).toMatchObject({ refusal: 'zone_name_taken' });
+    await expect(create(square(36.8, 37.2), '  ')).resolves.toMatchObject({
+      refusal: 'invalid_name',
+    });
   });
 
   it('records the new zone in the audit log', async () => {
@@ -180,10 +225,20 @@ describe('GeoService.zoneAt (AP §9.12.2, CU §7.1)', () => {
       change,
     );
     const { rows } = await sql.query(
-      "SELECT action, target_id FROM audit.events WHERE city_id = $1 AND action LIKE 'zone.%'",
+      "SELECT action, target_id, changes FROM audit.events WHERE city_id = $1 AND action LIKE 'zone.%'",
       [cityId],
     );
-    expect(rows).toEqual([{ action: 'zone.create', target_id: id }]);
+    expect(rows).toEqual([
+      {
+        action: 'zone.create',
+        target_id: id,
+        changes: {
+          name: { before: null, after: 'audited' },
+          active: { before: null, after: true },
+          area: { before: null, after: square(36.6, 37.05) },
+        },
+      },
+    ]);
   });
 });
 
@@ -260,6 +315,43 @@ describe('GeoService.deliveryFee (AP §9.12.3)', () => {
     expect(rows).toEqual([{ n: 2 }]);
   });
 
+  it('measures the bands by the straight line × 1.3 when the method says so', async () => {
+    const cityId = await city();
+    await settings.update('pricing.distance_method', {}, 'straight_line', system);
+    await geo.setDeliveryFeeRule(
+      cityId,
+      {
+        kind: 'distance_bands',
+        currency: 'TRY',
+        bands: [
+          { upToMetres: 500, fee: 2000n },
+          { upToMetres: null, fee: 3500n },
+        ],
+        minimumFee: null,
+        freeDeliveryFrom: null,
+      },
+      change,
+    );
+    calls.length = 0;
+    await expect(geo.deliveryFee(cityId, { from, to, itemsValue: 1n })).resolves.toMatchObject({
+      fee: 3500n,
+      distance: { method: 'straight_x1.3' },
+    });
+    expect(calls).toEqual([]);
+    await settings.update('pricing.distance_method', {}, 'road', system);
+  });
+
+  it('adds no version for a rule that charges the same', async () => {
+    const cityId = await city();
+    const id = await geo.setDeliveryFeeRule(cityId, flat, change);
+    await expect(geo.setDeliveryFeeRule(cityId, { ...flat }, change)).resolves.toBe(id);
+    const { rows } = await sql.query(
+      "SELECT count(*)::int AS n FROM audit.events WHERE city_id = $1 AND action = 'delivery_fee_rule.set'",
+      [cityId],
+    );
+    expect(rows).toEqual([{ n: 1 }]);
+  });
+
   it('refuses a fee while the city has no rule', async () => {
     const cityId = await city();
     await expect(geo.deliveryFeeRule(cityId)).resolves.toBeNull();
@@ -276,6 +368,40 @@ describe('GeoService.deliveryFee (AP §9.12.3)', () => {
     await expect(
       geo.setDeliveryFeeRule(cityId, { ...flat, flatFee: -1n }, change),
     ).rejects.toMatchObject({ refusal: 'invalid_fee_rule' });
+  });
+
+  it('refuses a rule in a city with no currencies', async () => {
+    const { rows } = await sql.query<{ id: string }>(
+      "INSERT INTO geo.cities (code, name) VALUES ('GZZ', 'no currencies') RETURNING id",
+    );
+    await expect(geo.setDeliveryFeeRule(rows[0]!.id, flat, change)).rejects.toMatchObject({
+      refusal: 'fee_not_in_base_currency',
+    });
+  });
+
+  it('lets the base change once the rule is entered in the new base, until the first order', async () => {
+    const cityId = await city();
+    await geo.setDeliveryFeeRule(cityId, flat, change);
+    await fx.setCityCurrency(
+      cityId,
+      { currency: 'USD', displayOrder: 2, enabled: false },
+      fxSystem,
+    );
+    await geo.setDeliveryFeeRule(cityId, { ...flat, currency: 'USD', flatFee: 100n }, change);
+    // Until the base follows, no fee is charged in another currency.
+    await expect(geo.deliveryFee(cityId, { from, to, itemsValue: 1n })).rejects.toMatchObject({
+      refusal: 'fee_not_in_base_currency',
+    });
+    await fx.setBaseCurrency(cityId, 'USD', fxSystem);
+    await expect(geo.deliveryFee(cityId, { from, to, itemsValue: 1n })).resolves.toMatchObject({
+      fee: 100n,
+      currency: 'USD',
+    });
+    // Once the first order locks the base, the rule stays in it.
+    await sql.query('UPDATE fx.city_bases SET locked_at = now() WHERE city_id = $1', [cityId]);
+    await expect(
+      geo.setDeliveryFeeRule(cityId, { ...flat, currency: 'TRY' }, change),
+    ).rejects.toMatchObject({ refusal: 'fee_not_in_base_currency' });
   });
 
   it('keeps the base currency while the fee rule is in it (AP §8.6)', async () => {
