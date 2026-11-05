@@ -1,0 +1,2 @@
+ALTER TABLE "settings"."changes" ALTER COLUMN "editor_id" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "settings"."changes" ADD CONSTRAINT "changes_system_has_no_roles" CHECK ("settings"."changes"."editor_id" IS NOT NULL OR cardinality("settings"."changes"."editor_roles") = 0);

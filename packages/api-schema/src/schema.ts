@@ -669,8 +669,7 @@ export interface components {
                 action: "update" | "reset";
                 before: unknown;
                 after: unknown;
-                /** Format: uuid */
-                editorId: string;
+                editorId: string | null;
                 editorRoles: string[];
                 reason: string | null;
                 /** Format: date-time */

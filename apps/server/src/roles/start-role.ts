@@ -6,6 +6,7 @@ import { createApiApp } from '../http/create-api-app.js';
 import { LoggingModule } from '../logging/logging.module.js';
 import { AuditWorkerModule } from '../modules/audit/index.js';
 import { LedgerWorkerModule } from '../modules/ledger/index.js';
+import { PlaceholderSeed, seedsPlaceholders } from '../seed/placeholder-seed.js';
 import type { ProcessRole } from './process-role.js';
 
 type BackgroundRole = Exclude<ProcessRole, 'api'>;
@@ -53,6 +54,10 @@ export async function startRole(role: ProcessRole): Promise<void> {
   let context: INestApplicationContext;
   if (role === 'api') {
     const app = await createApiApp(ApiModule);
+    if (seedsPlaceholders()) {
+      await app.init();
+      await app.get(PlaceholderSeed).run();
+    }
     await app.listen({ host: '0.0.0.0', port: Number(process.env.PORT ?? 3000) });
     context = app;
   } else {

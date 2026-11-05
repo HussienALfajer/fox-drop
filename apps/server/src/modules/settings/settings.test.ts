@@ -38,6 +38,12 @@ beforeAll(async () => {
   moduleRef = await Test.createTestingModule({ imports: [SettingsModule] }).compile();
   await moduleRef.init();
   settings = moduleRef.get(SettingsService);
+  // The fx module registers the cities' currencies in the server
+  // (fx.test.ts checks the settings against them); here every city has TRY
+  // as its base and USD.
+  settings.useCityCurrencies({
+    currenciesOfCity: () => Promise.resolve({ base: 'TRY', codes: ['TRY', 'USD'] }),
+  });
 }, 300_000);
 
 afterAll(async () => {
@@ -160,6 +166,24 @@ describe('changing a setting', () => {
     await settings.update('captain.waiting_threshold_min', { cityId: azaz }, 14, by(['OWN']));
 
     expect(await settings.get('captain.waiting_threshold_min', { cityId: azaz })).toBe(14);
+  });
+
+  it('takes a placeholder value from the system, with no editor and no roles', async () => {
+    await settings.update(
+      'currency.<code>.rounding_unit',
+      { cityId: otherCity, parameter: 'TRY' },
+      { amountMinor: 500 },
+      { editor: 'system', context: { ipAddress: null, device: null }, reason: 'Placeholder' },
+    );
+
+    const [change] = (await history('currency.TRY.rounding_unit')).filter(
+      (row) => row.city_id === otherCity,
+    );
+    expect(change).toMatchObject({ editor_id: null, editor_roles: [], reason: 'Placeholder' });
+    const [event] = (await auditEvents('currency.TRY.rounding_unit')).filter(
+      (row) => row.city_id === otherCity,
+    );
+    expect(event).toMatchObject({ actor_id: null, actor_role: null, action: 'setting.update' });
   });
 });
 

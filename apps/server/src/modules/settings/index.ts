@@ -20,6 +20,7 @@ export { adminRoles, type AdminRole, type SettingKey, type SettingValue } from '
 export {
   SettingRefusedError,
   SettingsService,
+  type CityCurrencySource,
   type SettingChange,
   type SettingRefusal,
   type SettingTarget,
