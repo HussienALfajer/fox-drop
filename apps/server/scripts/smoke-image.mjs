@@ -67,7 +67,7 @@ async function startDatabase() {
     '--env',
     'FOX_DROP_APP_PASSWORD=smoke-app-password',
     '--volume',
-    `${fileURLToPath(new URL('db/init-development.sh', serverDir))}:/docker-entrypoint-initdb.d/20-fox-drop.sh:ro`,
+    `${fileURLToPath(new URL('db/init-container.sh', serverDir))}:/docker-entrypoint-initdb.d/20-fox-drop.sh:ro`,
     '--volume',
     `${fileURLToPath(new URL('db/bootstrap.sql', serverDir))}:/fox-drop/bootstrap.sql:ro`,
     postgisImage,
@@ -128,6 +128,15 @@ async function checkRole(role) {
   const container = docker(
     'run',
     '--detach',
+    // As infra/compose.yaml runs it: read-only, no capabilities, and the
+    // environment's own user instead of the image's.
+    '--read-only',
+    '--tmpfs',
+    '/tmp',
+    '--cap-drop',
+    'ALL',
+    '--user',
+    '12345:12345',
     '--network',
     network,
     '--env',

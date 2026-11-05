@@ -1,0 +1,11 @@
+{
+  "name": "@fox-drop/infra",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "yaml": "2.9.1"
+  }
+}

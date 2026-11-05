@@ -1,0 +1,55 @@
+# FOX DROP ${FOXDROP_ENV}: the panel, the portal and the API host, installed as
+# /etc/nginx/sites-available/foxdrop-${FOXDROP_ENV} by infra/server/provision.sh.
+# Edit infra/nginx/site.conf.template in the repository, never on the server.
+#
+# nginx is the only public gateway (architecture §15.5). Every host sends /v1
+# to the API (snippets/foxdrop-${FOXDROP_ENV}-api.conf); the panel and the
+# portal send everything else to the web container, which answers unknown
+# paths with index.html. The limit zones `general` and `perip` are the
+# server's own (conf.d/rate-limits.conf).
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${ADMIN_HOST} ${PORTAL_HOST} ${API_HOST};
+    access_log /var/log/nginx/foxdrop-${FOXDROP_ENV}.access.log;
+    error_log /var/log/nginx/foxdrop-${FOXDROP_ENV}.error.log warn;
+    location ^~ /.well-known/acme-challenge/ { root /var/www/foxdrop-acme; }
+    location / { return 301 https://$host$request_uri; }
+}
+
+# The admin panel.
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name ${ADMIN_HOST};
+    include snippets/foxdrop-${FOXDROP_ENV}-server.conf;
+
+    location / {
+        proxy_pass http://127.0.0.1:${ADMIN_PORT};
+        include snippets/foxdrop-proxy.conf;
+    }
+}
+
+# The owner portal.
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name ${PORTAL_HOST};
+    include snippets/foxdrop-${FOXDROP_ENV}-server.conf;
+
+    location / {
+        proxy_pass http://127.0.0.1:${PORTAL_PORT};
+        include snippets/foxdrop-proxy.conf;
+    }
+}
+
+# The API for the apps: /v1 only.
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name ${API_HOST};
+    include snippets/foxdrop-${FOXDROP_ENV}-server.conf;
+
+    location / { return 404; }
+}

@@ -1,0 +1,10 @@
+# Installed in /etc/systemd/system by infra/server/provision.sh.
+[Unit]
+Description=FOX DROP %i database backup
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/foxdrop-backup %i
+SyslogIdentifier=foxdrop-backup

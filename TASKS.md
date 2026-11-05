@@ -4,22 +4,15 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 0, slice 0.14: staging on Contabo (`docs/roadmap.md`).
-
-- **Implements:** architecture §17.2 and §17.3 (hosting and deployment, T9), §15.4 and §15.5 (secrets and edge protection), §16 (error tracking through FOX DROP's domain), E8.
-- **Branch:** `chore/staging-deploy`
-- **Done when:** a merge to `main` builds the images, pushes them to the GitHub container registry and deploys the staging Compose project on the owner's Contabo server over SSH; staging runs as its own system user, Compose project, database and environment file, with every container on `127.0.0.1` or a Docker network only; nginx serves the panel and the portal with `index.html` for unknown paths outside `/v1`, routes `/v1` on each web app's host to the API, and limits the sign-in routes per IP; the API trusts exactly one proxy hop; migrations run before the new version starts; the database is backed up off the server; server errors reach Sentry; a `deploy` skill explains the deploy and the rollback; `pnpm verify` passes.
-
-## Plan
-
-- [ ] Read `/root/SERVER.md` on the server (the `vertex-server` skill) and architecture §15, §16 and §17; ask the owner what is still open: the staging host names while the domain is not bought, the off-server backup destination, the Sentry account, and the deploy user's access.
-- [ ] Add the production images and the staging Compose file in `infra/`.
-- [ ] Add the nginx site, TLS and the per-IP limits, and set the API's trusted proxy hop.
-- [ ] Add the GitHub Actions deploy job, the migrations step and the server-side environment file.
-- [ ] Add the off-server database backup and the Sentry error tracking on the server.
-- [ ] Add the `deploy` skill; pull request with `## Summary` and `## Test plan`, merged with a merge commit once CI passes.
+None. Phase 0's roadmap slices 0.1 to 0.14 are done. Phase 0 now waits for the owner: the answer on the UI/UX and the design system (the design stop in `CLAUDE.md`), and the real WhatsApp sender before the staging trials of Phase 1 (`docs/roadmap.md`). The next task is chosen with the owner; plan it with the `slice-plan` skill.
 
 ## Notes from earlier slices
+
+- Slice 0.14 put staging on the owner's Contabo server (`infra/CLAUDE.md`, the `deploy` skill; owner decisions 2026-11-05): sslip.io host names until the domain is bought (`infra/environments/staging.env`); a deploy on every merge to `main` through a key whose `command=` runs only `infra/server/deploy-ssh.sh`; secrets generated on the server in `/srv/foxdrop-staging/shared/.env`; nightly backups copied encrypted to Backblaze B2; server errors to Sentry when `SENTRY_DSN` is set. Changes under `infra/nginx` or `infra/server` reach the server only by running `provision.sh` again.
+- Waiting on the owner after 0.14: the Sentry DSN and the B2 key, bucket and encryption password in the server's `.env`; making the two GHCR packages public if a deploy cannot pull them.
+- Staging backs up with `pg_dump`; production needs pgBackRest with WAL archiving and a tested restore before launch (architecture §17.2), its own `environments/production.env`, a deploy on a release tag, and a B2 key that cannot delete (`infra/CLAUDE.md`).
+- Only the server reports to Sentry. The web apps and the Flutter apps add Sentry with their relay on FOX DROP's domain (architecture §16); background jobs report what they catch with `reportError` (`apps/server/src/observability/error-tracking.ts`).
+- When the domain is bought: change the host names in `infra/environments/staging.env`, run `provision.sh` (it expands the certificate), and point the apps' staging flavor at the new API host.
 
 - Slice 0.13 recorded T9 (architecture §2; owner decisions 2026-11-05): staging and production both run on the owner's shared Contabo server (`vertex-server` skill) as Docker Compose projects behind its nginx, with no Cloudflare, no CDN, no Kamal, no Terraform and no Doppler; PostgreSQL, Valkey and an S3-compatible storage run as containers; secrets live in an environment file on the server; the apps reach Sentry and PostHog only through a relay on FOX DROP's domain. The domain is not bought yet.
 - The server already runs other sites with their own PostgreSQL and Redis; FOX DROP never uses them. Docker bypasses `ufw`, so never publish a port on `0.0.0.0` (`/root/SERVER.md`).
@@ -70,4 +63,4 @@ Phase 0, slice 0.14: staging on Contabo (`docs/roadmap.md`).
 
 ## Next
 
-Slice 0.15 is not on the roadmap yet: after 0.14, Phase 0 waits for the owner's answer on the design system and for the real WhatsApp sender (`docs/roadmap.md`).
+No slice is planned: Phase 0 waits for the owner's answer on the design system and for the real WhatsApp sender (`docs/roadmap.md`).

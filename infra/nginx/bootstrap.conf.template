@@ -1,0 +1,11 @@
+# FOX DROP ${FOXDROP_ENV}: port 80 only, for the first Let's Encrypt request
+# before the certificate exists (infra/server/provision.sh).
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${ADMIN_HOST} ${PORTAL_HOST} ${API_HOST};
+    access_log /var/log/nginx/foxdrop-${FOXDROP_ENV}.access.log;
+    error_log /var/log/nginx/foxdrop-${FOXDROP_ENV}.error.log warn;
+    location ^~ /.well-known/acme-challenge/ { root /var/www/foxdrop-acme; }
+    location / { return 404; }
+}

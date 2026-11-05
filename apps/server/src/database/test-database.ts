@@ -32,7 +32,7 @@ export async function startTestDatabase(): Promise<TestDatabase> {
     })
     .withCopyFilesToContainer([
       {
-        source: fileURLToPath(new URL('db/init-development.sh', serverDir)),
+        source: fileURLToPath(new URL('db/init-container.sh', serverDir)),
         target: '/docker-entrypoint-initdb.d/20-fox-drop.sh',
         mode: 0o755,
       },

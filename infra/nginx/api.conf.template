@@ -1,0 +1,17 @@
+# FOX DROP ${FOXDROP_ENV}: the API under /v1, installed as
+# /etc/nginx/snippets/foxdrop-${FOXDROP_ENV}-api.conf by infra/server/provision.sh
+# and included in every server block of the site, so the panel and the portal
+# call /v1 on their own origin (architecture §17.2).
+
+# Sign-in, setup and code requests: the tight per-address limit.
+location ~ ^/v1/[a-z]+/auth/(sign-in|code|setup/) {
+    limit_req zone=foxdrop_${FOXDROP_ENV}_signin burst=10 nodelay;
+    limit_req_status 429;
+    proxy_pass http://127.0.0.1:${API_PORT};
+    include snippets/foxdrop-proxy.conf;
+}
+
+location /v1/ {
+    proxy_pass http://127.0.0.1:${API_PORT};
+    include snippets/foxdrop-proxy.conf;
+}

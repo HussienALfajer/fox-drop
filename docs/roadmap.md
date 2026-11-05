@@ -35,7 +35,7 @@ Markers: `[ ]` not started, `[~]` in progress, `[x]` done.
   - `[x]` 0.11 Web app shells, unstyled: `apps/admin` and `apps/merchant-portal` with Vite, TanStack Router and Query, i18next in Arabic RTL, the generated client, a Playwright smoke test (architecture §10.1).
   - `[x]` 0.12 Flutter app shells, unstyled: the three apps and their platforms, `core_l10n` (Arabic ARB, Western digits), Riverpod, go_router, Flutter rules for Claude; analyze and widget tests in `pnpm verify` (architecture §11).
   - `[x]` 0.13 Hosting decision (docs): record T9, hosting on the owner's Contabo server without Cloudflare, and update every architecture section that depends on it (architecture §3, §5.8, §15, §16, §17, §22 item 9).
-  - `[ ]` 0.14 Staging on Contabo: provisioning, deployment on every merge to `main`, server-side secrets, error tracking, `deploy` skill (architecture §17, E8). Waits for 0.13.
+  - `[x]` 0.14 Staging on Contabo: provisioning, deployment on every merge to `main`, server-side secrets, error tracking, `deploy` skill (architecture §17, E8). Waits for 0.13.
   - Waiting for the owner's answer on the UI/UX and design system: `packages/design-tokens`, `packages/ui-web` with Storybook, `packages/core_ui` with widgetbook, and the panel screens for sign-in, admin team and settings.
   - Later, before the staging trials of Phase 1: the real WhatsApp sender (`otp-sender`, sender pool, warm-up, App Check; architecture §8.3.3) and the emergency sign-in procedure (architecture §22 item 1).
 - `[ ]` Phase 1, walking skeleton: one order goes through its whole cycle (customer orders, restaurant accepts, dispatch offers, captain picks up and delivers, ledger entries) with minimal screens.

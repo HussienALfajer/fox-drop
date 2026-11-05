@@ -1,0 +1,142 @@
+# One FOX DROP environment on the shared server (architecture §17.2): staging
+# now, production later, each its own Compose project, network, database and
+# environment file. foxdrop-deploy (server/deploy.sh) runs it with
+# environments/<env>.env, the server's /srv/foxdrop-<env>/shared/.env, and
+# FOXDROP_RELEASE (the commit), FOXDROP_HOME, FOXDROP_UID and FOXDROP_GID set.
+#
+# Every published port is on 127.0.0.1: Docker bypasses the host firewall,
+# and nginx is the only public gateway (§15.5). infra.test.mjs checks it.
+# Centrifugo, imgproxy, the object storage and OSRM join with their first use.
+
+x-server: &server
+  image: ghcr.io/hussienalfajer/fox-drop-server:${FOXDROP_RELEASE:?}
+  # The environment's system user, which owns its files and its secrets.
+  user: ${FOXDROP_UID:?}:${FOXDROP_GID:?}
+  restart: unless-stopped
+  read_only: true
+  tmpfs: [/tmp]
+  cap_drop: [ALL]
+  depends_on:
+    postgres:
+      condition: service_healthy
+    valkey:
+      condition: service_started
+  mem_limit: 384m
+
+x-server-environment: &server-environment
+  FOX_DROP_ENVIRONMENT: ${FOXDROP_ENV:?}
+  # Sentry's release (§16); the image carries it too.
+  FOX_DROP_RELEASE: ${FOXDROP_RELEASE:?}
+  DATABASE_URL: postgres://fox_drop_app:${FOX_DROP_APP_PASSWORD:?}@postgres:5432/fox_drop
+  VALKEY_URL: redis://:${VALKEY_PASSWORD:?}@valkey:6379
+  IDENTITY_ENCRYPTION_KEY: ${IDENTITY_ENCRYPTION_KEY:?}
+  ADMIN_PANEL_URL: https://${ADMIN_HOST:?}
+  # Empty until the owner sets it: the server then sends nothing (§16).
+  SENTRY_DSN: ${SENTRY_DSN:-}
+
+services:
+  postgres:
+    # The same image as the development compose.yaml (infra.test.mjs).
+    image: postgis/postgis:18-3.6@sha256:4a43e3c3e5d55b9208240fc71db543b79c638766280c625a425bd0a2390989c4
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fox_drop
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      FOX_DROP_MIGRATOR_PASSWORD: ${FOX_DROP_MIGRATOR_PASSWORD:?}
+      FOX_DROP_APP_PASSWORD: ${FOX_DROP_APP_PASSWORD:?}
+    volumes:
+      # Run on the first start of an empty volume only. The deploy copies them
+      # to a fixed path, so a new release does not recreate the container.
+      - ${FOXDROP_HOME:?}/shared/db/init-container.sh:/docker-entrypoint-initdb.d/20-fox-drop.sh:ro
+      - ${FOXDROP_HOME:?}/shared/db/bootstrap.sql:/fox-drop/bootstrap.sql:ro
+      - postgres-data:/var/lib/postgresql
+    shm_size: 256m
+    mem_limit: 1g
+    healthcheck:
+      # Over TCP: on the first start the init scripts run on a server that
+      # listens on its socket only, and the migrations must wait for them.
+      test: [CMD-SHELL, pg_isready --host 127.0.0.1 --username postgres --dbname fox_drop]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  valkey:
+    image: valkey/valkey:9.1.3-alpine
+    restart: unless-stopped
+    # Holds nothing that cannot be rebuilt (E2), so nothing is saved to disk.
+    # At the limit writes fail instead of the container being killed.
+    command:
+      - valkey-server
+      - --requirepass
+      - ${VALKEY_PASSWORD:?}
+      - --save
+      - ''
+      - --appendonly
+      - 'no'
+      - --maxmemory
+      - 200mb
+    mem_limit: 256m
+
+  # Applies the migrations before a new release starts (§17.3); run by the
+  # deploy with `run --rm migrate`, never by `up`.
+  migrate:
+    <<: *server
+    profiles: [migrate]
+    restart: 'no'
+    command: [node, dist/database/migrate-command.js]
+    environment:
+      MIGRATION_DATABASE_URL: postgres://fox_drop_migrator:${FOX_DROP_MIGRATOR_PASSWORD:?}@postgres:5432/fox_drop
+
+  api:
+    <<: *server
+    environment:
+      <<: *server-environment
+      PROCESS_ROLE: api
+    ports:
+      - 127.0.0.1:${API_PORT:?}:3000
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - --eval
+        - "fetch('http://127.0.0.1:3000/v1/admin/status').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+
+  worker:
+    <<: *server
+    environment:
+      <<: *server-environment
+      PROCESS_ROLE: worker
+
+  dispatcher:
+    <<: *server
+    environment:
+      <<: *server-environment
+      PROCESS_ROLE: dispatcher
+    mem_limit: 256m
+
+  otp-sender:
+    <<: *server
+    environment:
+      <<: *server-environment
+      PROCESS_ROLE: otp-sender
+    mem_limit: 256m
+
+  # The panel on 8080 and the portal on 8081 (web/nginx.conf).
+  web:
+    image: ghcr.io/hussienalfajer/fox-drop-web:${FOXDROP_RELEASE:?}
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    ports:
+      - 127.0.0.1:${ADMIN_PORT:?}:8080
+      - 127.0.0.1:${PORTAL_PORT:?}:8081
+    mem_limit: 64m
+
+volumes:
+  postgres-data:

@@ -1,8 +1,10 @@
 import 'reflect-metadata';
-import { Body, Get, Module, Post, type Type } from '@nestjs/common';
+import { Body, Get, Module, Post, Req, type Type } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
-import { createZodDto } from 'nestjs-zod';
-import { afterEach, describe, expect, it } from 'vitest';
+import type { FastifyRequest } from 'fastify';
+import * as Sentry from '@sentry/nestjs';
+import { createZodDto, ZodResponse } from 'nestjs-zod';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { createApiApp } from './create-api-app.js';
 import {
@@ -24,6 +26,17 @@ class AdminProbe {
   @Post()
   echo(@Body() body: EchoDto) {
     return body;
+  }
+
+  @Get('ip')
+  ip(@Req() request: FastifyRequest) {
+    return { ip: request.ip };
+  }
+
+  @Get('bad-response')
+  @ZodResponse({ status: 200, type: EchoDto })
+  badResponse() {
+    return { name: 42 } as unknown as EchoDto;
   }
 
   @Get('fail')
@@ -89,6 +102,86 @@ describe('route groups', () => {
     const response = await api.inject({ method: 'GET', url: '/admin/probe' });
 
     expect(response.statusCode).toBe(404);
+  });
+});
+
+// nginx replaces X-Forwarded-For with the address it sees, and the API trusts
+// exactly that one hop (architecture §15.5).
+describe('client address', () => {
+  it('is the address the proxy forwards', async () => {
+    const api = await start(ProbeModule);
+
+    const response = await api.inject({
+      method: 'GET',
+      url: '/v1/admin/probe/ip',
+      headers: { 'x-forwarded-for': '203.0.113.7' },
+    });
+
+    expect(response.json()).toEqual({ ip: '203.0.113.7' });
+  });
+
+  it('ignores addresses a client adds before the proxy', async () => {
+    const api = await start(ProbeModule);
+
+    const response = await api.inject({
+      method: 'GET',
+      url: '/v1/admin/probe/ip',
+      headers: { 'x-forwarded-for': '198.51.100.1, 203.0.113.7' },
+    });
+
+    expect(response.json()).toEqual({ ip: '203.0.113.7' });
+  });
+});
+
+describe('error tracking', () => {
+  const events: Sentry.ErrorEvent[] = [];
+
+  beforeAll(() => {
+    Sentry.init({
+      dsn: 'https://public@sentry.example.test/1',
+      beforeSend: (event) => {
+        events.push(event);
+        return null;
+      },
+    });
+  });
+
+  afterAll(async () => {
+    await Sentry.close();
+  });
+
+  beforeEach(() => {
+    events.length = 0;
+  });
+
+  it('reports an unexpected error and answers 500', async () => {
+    const api = await start(ProbeModule);
+
+    const response = await api.inject({ method: 'GET', url: '/v1/admin/probe/fail' });
+    await Sentry.flush();
+
+    expect(response.statusCode).toBe(500);
+    expect(events.map((event) => event.exception?.values?.[0]?.value)).toEqual(['unexpected']);
+  });
+
+  it('reports a response that fails its own schema', async () => {
+    const api = await start(ProbeModule);
+
+    const response = await api.inject({ method: 'GET', url: '/v1/admin/probe/bad-response' });
+    await Sentry.flush();
+
+    expect(response.statusCode).toBe(500);
+    expect(events).toHaveLength(1);
+  });
+
+  it('does not report an HTTP error', async () => {
+    const api = await start(ProbeModule);
+
+    const response = await api.inject({ method: 'GET', url: '/v1/admin/probe/missing' });
+    await Sentry.flush();
+
+    expect(response.statusCode).toBe(404);
+    expect(events).toEqual([]);
   });
 });
 

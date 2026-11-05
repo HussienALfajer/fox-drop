@@ -87,3 +87,67 @@ jobs:
       - run: docker build --file apps/server/Dockerfile --tag fox-drop-server:ci .
 
       - run: node apps/server/scripts/smoke-image.mjs fox-drop-server:ci
+
+  # The panel and the portal in one image (infra/web), checked as it runs on the server.
+  web-image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+
+      - run: docker build --file infra/web/Dockerfile --tag fox-drop-web:ci .
+
+      - run: node infra/web/smoke-image.mjs fox-drop-web:ci
+
+  # Architecture §17.3: every merge to main builds the images, pushes them to
+  # the GitHub container registry and deploys staging over SSH. The key can
+  # only run infra/server/deploy-ssh.sh on the server (the deploy skill); it
+  # is a secret of the staging environment, which only main may use.
+  deploy-staging:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [verify, server-image, web-image]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    environment:
+      name: staging
+      url: https://foxdrop-staging-admin.109-199-111-169.sslip.io
+    # One deploy at a time; a newer merge waits instead of cancelling one midway.
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Log in to the GitHub container registry
+        run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push the images
+        run: |
+          registry=ghcr.io/hussienalfajer
+          docker build --file apps/server/Dockerfile --build-arg "FOX_DROP_RELEASE=$GITHUB_SHA" \
+            --tag "$registry/fox-drop-server:$GITHUB_SHA" .
+          docker build --file infra/web/Dockerfile --tag "$registry/fox-drop-web:$GITHUB_SHA" .
+          docker push --quiet "$registry/fox-drop-server:$GITHUB_SHA"
+          docker push --quiet "$registry/fox-drop-web:$GITHUB_SHA"
+
+      - name: Deploy
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "foxdrop-deploy@$SSH_HOST" "staging $GITHUB_SHA"
+        env:
+          SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+          SSH_HOST: ${{ vars.STAGING_SSH_HOST }}
+          SSH_KNOWN_HOSTS: ${{ vars.STAGING_SSH_KNOWN_HOSTS }}
