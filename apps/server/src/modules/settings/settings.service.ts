@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, isNull, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Valkey } from 'iovalkey';
 import { z } from 'zod';
@@ -15,7 +15,12 @@ import {
   keyParameter,
   keyParameters,
   type SettingDefinition,
+  type SettingGroup,
+  settingGroupOf,
+  settingGroups,
   type SettingKey,
+  type SettingType,
+  type SettingUnit,
   type SettingValue,
 } from './catalogue.js';
 import { changes, values } from './schema.js';
@@ -24,7 +29,7 @@ import { changes, values } from './schema.js';
 // written with <...>, such as TRY for currency.<code>.rounding_unit.
 export interface SettingTarget {
   cityId?: string | null;
-  parameter?: string;
+  parameter?: string | undefined;
 }
 
 export interface SettingChange {
@@ -32,6 +37,36 @@ export interface SettingChange {
   editor: { id: string; roles: readonly AdminRole[] };
   context: AuditRequestContext;
   reason?: string | null;
+}
+
+// A setting as the group screens of AP §9.14 show it: the concrete key, its
+// catalogue entry, the default and the value in effect.
+export interface SettingEntry {
+  key: string;
+  template: SettingKey;
+  parameter: string | null;
+  group: SettingGroup;
+  type: SettingType;
+  unit: SettingUnit | null;
+  scope: 'global' | 'city';
+  cityId: string | null;
+  editRoles: readonly AdminRole[];
+  reasonRequired: boolean;
+  beforeLaunch: boolean;
+  default: unknown;
+  value: unknown;
+  isDefault: boolean;
+}
+
+// One row of a setting's change history (AP §4.4).
+export interface SettingHistoryEntry {
+  action: 'update' | 'reset';
+  before: unknown;
+  after: unknown;
+  editorId: string;
+  editorRoles: string[];
+  reason: string | null;
+  changedAt: Date;
 }
 
 export type SettingRefusal =
@@ -75,6 +110,9 @@ const CACHE_SECONDS = 600;
 
 // The longest reason a change keeps.
 const REASON_MAX_LENGTH = 500;
+
+// The most recent changes a history read returns.
+const HISTORY_LIMIT = 100;
 
 // Sets the cached value only over an older version, so a read that raced a
 // change never puts back the value the change replaced. The value is stored
@@ -124,7 +162,7 @@ export class SettingsService {
     value: unknown,
     change: SettingChange,
   ): Promise<void> {
-    const setting = this.resolve(key, target);
+    const setting = this.resolveFor(key, target, change.editor.roles);
     const parsed = setting.definition.schema.safeParse(value);
     if (!parsed.success) {
       throw new SettingRefusedError('invalid_value', setting.key, parsed.error.message);
@@ -135,11 +173,184 @@ export class SettingsService {
   // «استعادة القيمة الافتراضية»: the setting follows its default again. A
   // value entered before launch has no default to go back to.
   async reset(key: SettingKey, target: SettingTarget, change: SettingChange): Promise<void> {
-    const setting = this.resolve(key, target);
+    const setting = this.resolveFor(key, target, change.editor.roles);
     if (setting.definition.beforeLaunch) {
       throw new SettingRefusedError('no_default', setting.key, 'this setting has no default');
     }
     await this.change(setting, { value: null, isDefault: true }, change);
+  }
+
+  // The concrete key of a request, such as currency.TRY.rounding_unit, as
+  // its catalogue key and parameter.
+  parseKey(key: string): { key: SettingKey; parameter?: string } {
+    if (Object.hasOwn(catalogue, key)) return { key: key as SettingKey };
+    for (const template of Object.keys(catalogue) as SettingKey[]) {
+      const parameter = keyParameter(template);
+      if (parameter === null) continue;
+      const [prefix, suffix] = keyEnds(template, parameter);
+      if (
+        key.length > prefix.length + suffix.length &&
+        key.startsWith(prefix) &&
+        key.endsWith(suffix)
+      ) {
+        return { key: template, parameter: key.slice(prefix.length, key.length - suffix.length) };
+      }
+    }
+    throw new SettingRefusedError('unknown_key', key, 'not in the settings catalogue');
+  }
+
+  // The settings these roles may edit, global and of the city, in the order
+  // of the group screens of AP §9.14 (owner decision 2026-11-05: each role
+  // sees the settings it edits). A key with <vehicle> or <app> is one entry
+  // per value; currency.<code>.* is listed once as itself, to add a
+  // currency, and once per currency already stored for the city, since the
+  // city's currencies are not data yet (AP §13 item 4).
+  async list(cityId: string, roles: readonly AdminRole[]): Promise<SettingEntry[]> {
+    if (!z.uuid().safeParse(cityId).success) {
+      throw new SettingRefusedError('wrong_scope', 'settings', 'the city is not a city id');
+    }
+    const keys = (Object.keys(catalogue) as SettingKey[]).filter((key) =>
+      mayEdit(catalogue[key], roles),
+    );
+    if (keys.length === 0) {
+      throw new SettingRefusedError('role_may_not_edit', 'settings', 'no setting for these roles');
+    }
+    const rows = await this.database.db
+      .select({
+        key: values.key,
+        cityId: values.cityId,
+        value: values.value,
+        isDefault: values.isDefault,
+        version: values.version,
+      })
+      .from(values)
+      .where(or(isNull(values.cityId), eq(values.cityId, cityId)));
+    const stored = new Map(rows.map((row) => [`${row.cityId ?? 'global'}:${row.key}`, row]));
+    const never: StoredState = { value: null, isDefault: true, version: 0 };
+
+    const entries = keys.flatMap((key) => {
+      const target = catalogue[key].scope === 'city' ? cityId : null;
+      const listed = this.parametersOf(key, rows, target).map((parameter) => {
+        const setting = this.resolve(key, { cityId: target, parameter });
+        const state = stored.get(`${target ?? 'global'}:${setting.key}`) ?? never;
+        return this.entry(setting, state, parameter ?? null);
+      });
+      if (keyParameter(key) !== 'code') return listed;
+      // Owner decision 2026-11-05: the key itself, with no currency, is the
+      // panel's «أضف عملة», so every Appendix A setting is always listed.
+      const template = { key, template: key, cityId: target, definition: catalogue[key] };
+      return [this.entry(template, never, null), ...listed];
+    });
+    const order = (entry: SettingEntry) => settingGroups.indexOf(entry.group);
+    return entries.sort((a, b) => order(a) - order(b));
+  }
+
+  // One setting as its group screen shows it, for a role that may edit it.
+  async read(
+    key: SettingKey,
+    target: SettingTarget,
+    roles: readonly AdminRole[],
+  ): Promise<SettingEntry> {
+    const setting = this.resolveFor(key, target, roles);
+    const state = await this.stored(this.database.db, setting);
+    return this.entry(setting, state, target.parameter ?? null);
+  }
+
+  // The most recent changes of one setting, newest first, for a role that
+  // may edit it.
+  async history(
+    key: SettingKey,
+    target: SettingTarget,
+    roles: readonly AdminRole[],
+  ): Promise<SettingHistoryEntry[]> {
+    const setting = this.resolveFor(key, target, roles);
+    return this.database.db
+      .select({
+        action: changes.action,
+        before: changes.before,
+        after: changes.after,
+        editorId: changes.editorId,
+        editorRoles: changes.editorRoles,
+        reason: changes.reason,
+        changedAt: changes.changedAt,
+      })
+      .from(changes)
+      .where(
+        and(
+          eq(changes.key, setting.key),
+          // Not IS NOT DISTINCT FROM, which the (key, city, time) index cannot serve.
+          setting.cityId === null ? isNull(changes.cityId) : eq(changes.cityId, setting.cityId),
+        ),
+      )
+      .orderBy(desc(changes.changedAt), desc(changes.id))
+      .limit(HISTORY_LIMIT);
+  }
+
+  // The parameters a key is listed with; undefined for a key without one.
+  private parametersOf(
+    key: SettingKey,
+    rows: { key: string; cityId: string | null }[],
+    cityId: string | null,
+  ): (string | undefined)[] {
+    const parameter = keyParameter(key);
+    if (parameter === null) return [undefined];
+    if (parameter !== 'code') return [...keyParameters[parameter].options];
+    // A currency stored under one <code> key lists every <code> key.
+    const codes = new Set<string>();
+    for (const template of Object.keys(catalogue) as SettingKey[]) {
+      if (keyParameter(template) !== 'code') continue;
+      const [prefix, suffix] = keyEnds(template, 'code');
+      for (const row of rows) {
+        if (row.cityId !== cityId || !row.key.startsWith(prefix) || !row.key.endsWith(suffix)) {
+          continue;
+        }
+        const code = row.key.slice(prefix.length, row.key.length - suffix.length);
+        if (keyParameters.code.safeParse(code).success) codes.add(code);
+      }
+    }
+    return [...codes].sort();
+  }
+
+  private entry(
+    setting: ResolvedSetting,
+    state: StoredState,
+    parameter: string | null,
+  ): SettingEntry {
+    const definition = setting.definition;
+    return {
+      key: setting.key,
+      template: setting.template,
+      parameter,
+      group: settingGroupOf(setting.template),
+      type: definition.type,
+      unit: definition.unit ?? null,
+      scope: definition.scope,
+      cityId: setting.cityId,
+      editRoles: definition.editRoles,
+      reasonRequired: definition.reasonRequired ?? false,
+      beforeLaunch: definition.beforeLaunch ?? false,
+      default: definition.default,
+      value: this.effective(setting, state),
+      isDefault: state.isDefault,
+    };
+  }
+
+  // The setting, for roles that may edit it. The roles are checked before
+  // anything else, so a role that may not edit a key learns nothing more
+  // about it than 403 (architecture §15.2).
+  private resolveFor(
+    key: SettingKey,
+    target: SettingTarget,
+    roles: readonly AdminRole[],
+  ): ResolvedSetting {
+    if (Object.hasOwn(catalogue, key) && !mayEdit(catalogue[key], roles)) {
+      throw new SettingRefusedError(
+        'role_may_not_edit',
+        key,
+        `only ${catalogue[key].editRoles.join(', ')} may edit it`,
+      );
+    }
+    return this.resolve(key, target);
   }
 
   private resolve(key: SettingKey, target: SettingTarget): ResolvedSetting {
@@ -185,13 +396,6 @@ export class SettingsService {
     next: { value: unknown; isDefault: boolean },
     { editor, context, reason }: SettingChange,
   ): Promise<void> {
-    if (!editor.roles.some((role) => setting.definition.editRoles.includes(role))) {
-      throw new SettingRefusedError(
-        'role_may_not_edit',
-        setting.key,
-        `only ${setting.definition.editRoles.join(', ')} may edit it`,
-      );
-    }
     const givenReason = reason?.trim() || null;
     if (setting.definition.reasonRequired && givenReason === null) {
       throw new SettingRefusedError('reason_required', setting.key, 'a change needs a reason');
@@ -316,6 +520,15 @@ export class SettingsService {
       this.logger.warn({ err: error, cacheKey }, 'settings cache write failed');
     }
   }
+}
+
+function mayEdit(definition: SettingDefinition, roles: readonly AdminRole[]): boolean {
+  return roles.some((role) => definition.editRoles.includes(role));
+}
+
+// The two ends of a key around its <parameter>.
+function keyEnds(key: SettingKey, parameter: string): [string, string] {
+  return key.split(`<${parameter}>`) as [string, string];
 }
 
 const fingerprints = new Map<SettingKey, string>();

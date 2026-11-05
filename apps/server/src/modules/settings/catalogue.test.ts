@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { catalogue, type SettingDefinition } from './catalogue.js';
+import { catalogue, type SettingDefinition, type SettingKey, settingGroupOf } from './catalogue.js';
 
 // AP Appendix A is the source of truth: every key in its table is in the
 // catalogue with the same scope and edit roles, and nothing else is.
@@ -146,5 +146,28 @@ describe('the settings catalogue', () => {
   ])('refuses %s', (_, key, value) => {
     const definition: SettingDefinition = catalogue[key as keyof typeof catalogue];
     expect(definition.schema.safeParse(value).success).toBe(false);
+  });
+});
+
+describe('the group screens (AP §9.14, owner decision 2026-11-05)', () => {
+  it('put every key on one group screen, by its prefix', () => {
+    const keys = Object.keys(catalogue) as SettingKey[];
+    const byGroup = Object.groupBy(keys, (key) => settingGroupOf(key));
+    expect(Object.keys(byGroup)).toEqual([
+      'timers_limits',
+      'restaurants',
+      'dispatch',
+      'captains',
+      'customers',
+      'security',
+      'support',
+      'finance',
+      'apps',
+    ]);
+    expect(byGroup.security).toContain('otp.validity_min');
+    expect(byGroup.timers_limits).toContain('platform.hours');
+    expect(byGroup.dispatch).toContain('pricing.distance_method');
+    expect(byGroup.customers).toContain('push.daily_limit');
+    expect(byGroup.finance).toContain('currency.<code>.rounding_mode');
   });
 });
