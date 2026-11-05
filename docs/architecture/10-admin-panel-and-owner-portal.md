@@ -20,7 +20,7 @@
 
 ## 10.2 Why a single-page app
 
-The panel and the portal are behind sign-in and need no SEO or server rendering. A static single-page app is simpler to run, is served from the CDN, and keeps all logic on the server API.
+The panel and the portal are behind sign-in and need no SEO or server rendering. A static single-page app is simpler to run, is served as static files by nginx (§17.2), and keeps all logic on the server API.
 
 ## 10.3 Panel specifics
 

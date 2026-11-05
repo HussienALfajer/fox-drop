@@ -71,10 +71,11 @@
 
 ## 5.8 Files and images
 
-- **Cloudflare R2** (S3 API), two buckets:
-  - `public-media`: menu photos, logos, banners. Served through the Cloudflare CDN and **imgproxy**, which resizes and converts to WebP or AVIF per screen size (CU §4.5).
+- **S3-compatible object storage self-hosted on the server** (T9), the same software as in development (T7), chosen in the slice that first stores a file. It listens only on the server and is reached through nginx on FOX DROP's domain, so phones in Syria reach it without any outside provider. Two buckets per environment:
+  - `public-media`: menu photos, logos, banners. Served by nginx through **imgproxy**, which resizes and converts to WebP or AVIF per screen size (CU §4.5); nginx caches the results, in place of a CDN in V1.
   - `private-docs`: captain documents, contracts, report photos. Encrypted at rest, never public, opened with short-lived signed URLs, every view audited.
 - Uploads go directly from the app to storage with a pre-signed URL. The server checks type and size before linking the file to a record.
+- Both buckets are copied every night, encrypted, to a destination off the server (§17.2).
 
 ## 5.9 Exports
 
