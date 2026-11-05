@@ -6,7 +6,8 @@ import { parse } from 'yaml';
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8');
 const compose = parse(read('compose.yaml'), { merge: true });
-const services = Object.entries(compose.services);
+const osrm = parse(read('osrm/compose.yaml'), { merge: true });
+const services = [compose, osrm].flatMap((file) => Object.entries(file.services));
 
 test('every published port listens on 127.0.0.1 only', () => {
   // Docker bypasses the host firewall: a port on 0.0.0.0 is public.
@@ -27,6 +28,31 @@ test('every container has a memory limit', () => {
 test('the database image is the one development and the tests use', () => {
   const development = parse(read('../compose.yaml'));
   assert.equal(compose.services.postgres.image, development.services.postgres.image);
+});
+
+test('OSRM runs the image development uses, for every vehicle', () => {
+  const development = parse(read('../compose.yaml'), { merge: true });
+  const routed = ['osrm-car', 'osrm-motorbike', 'osrm-bicycle', 'osrm-walking'];
+  for (const name of [...routed, 'build']) {
+    assert.equal(osrm.services[name].image, development.services['osrm-car'].image, name);
+  }
+  // The server's OSRM_<VEHICLE>_URL names a routed service, which joins
+  // every environment's own network to OSRM (§17.2: staging never reaches
+  // production's containers).
+  const environment = compose['x-server-environment'];
+  const environments = readdirSync(new URL('environments/', import.meta.url)).map((file) =>
+    file.replace(/\.env$/, ''),
+  );
+  for (const name of routed) {
+    const vehicle = name.replace('osrm-', '').toUpperCase();
+    assert.equal(environment[`OSRM_${vehicle}_URL`], `http://${name}:5000`);
+    assert.deepEqual(osrm.services[name].networks.toSorted(), environments.toSorted(), name);
+  }
+  for (const env of environments) {
+    assert.deepEqual(osrm.networks[env], { name: `foxdrop-osrm-${env}`, external: true });
+  }
+  // Frozen: Compose refuses an existing network whose declaration changed.
+  assert.deepEqual(compose.networks.osrm, { name: 'foxdrop-osrm-${FOXDROP_ENV:?}' });
 });
 
 test('nginx replaces X-Forwarded-For with the address it sees', () => {

@@ -1,0 +1,12 @@
+# Installed in /etc/systemd/system by infra/server/provision.sh; after the
+# nightly backups (03:25 to 04:00).
+[Unit]
+Description=Weekly FOX DROP OSRM data rebuild
+
+[Timer]
+OnCalendar=Mon *-*-* 04:30
+RandomizedDelaySec=15m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

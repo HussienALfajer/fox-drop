@@ -11,6 +11,10 @@ export default tseslint.config(
       '**/coverage/',
       '**/.turbo/',
       '**/.dart_tool/',
+      // Playwright's output, which a parallel test:e2e creates and deletes
+      // while lint scans the folder.
+      '**/test-results/',
+      '**/playwright-report/',
     ],
   },
   js.configs.recommended,

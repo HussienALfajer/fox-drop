@@ -46,7 +46,17 @@ commit=$(git rev-parse origin/main)
 git archive "$commit" infra | ssh vertex "rm -rf /root/foxdrop-provision && mkdir /root/foxdrop-provision && tar -x -C /root/foxdrop-provision && /root/foxdrop-provision/infra/server/provision.sh staging"
 ```
 
-It creates the users, folders, mirror and secrets if missing, installs the scripts, the sudoers rule, the nginx site (tested with `nginx -t` and disabled again if it fails), the certificate and the backup timer. It never touches the database, the secrets or the releases. Record what changed in `/root/SERVER.md`.
+It creates the users, folders, mirror and secrets if missing, installs the scripts, the sudoers rule, the nginx site (tested with `nginx -t` and disabled again if it fails), the certificate, the backup timer and the shared OSRM. It never touches the database, the secrets or the releases. Record what changed in `/root/SERVER.md`.
+
+A new environment needs two runs: the first ends at the OSRM step ("skipped"), because its `foxdrop-osrm-<env>` network appears only with its first deploy; deploy, then run it again.
+
+## OSRM (shared by every environment)
+
+One Compose project, `foxdrop-osrm`, in `/srv/foxdrop-osrm` (copied from `infra/osrm/` by `provision.sh`): four routed services over Azaz's region, about 15 MB each. Each environment's server containers reach them on that environment's `foxdrop-osrm-<env>` network as `http://osrm-<vehicle>:5000`; while they are down, the API measures the straight line × 1.3.
+
+- **Build:** `provision.sh` builds the data on its first run (several minutes: the 82 MB Syria extract, the cut, four profiles); `foxdrop-osrm-build.timer` rebuilds it every Monday at 04:30 and restarts the services. By hand, as root: `foxdrop-osrm-build`. The cut peaks at about 1.5 GB of memory for a minute.
+- **Status and logs:** `docker ps --filter label=com.docker.compose.project=foxdrop-osrm`; `journalctl -u foxdrop-osrm-build`; `docker logs foxdrop-osrm-osrm-car-1`.
+- **A failed build** leaves the running data in place (the new data is swapped in only after all four profiles build).
 
 ## Secrets
 
@@ -70,4 +80,4 @@ It prints a one-time setup link: give it to the owner only.
 
 1. Copy the dump back, if it is not in `/var/backups/foxdrop-staging/`: set the `RCLONE_CONFIG_FOXDROP*` variables as `backup.sh` does, then `rclone copyto foxdropcrypt:<name> /var/backups/foxdrop-staging/<name>`.
 2. Try it on a throwaway database first: `docker run -d --name foxdrop-restore-test -e POSTGRES_PASSWORD=x <the postgis image>`, then `docker exec -i foxdrop-restore-test pg_restore --username postgres --dbname postgres --create --no-owner --no-privileges < <dump>` and check the tables; remove the container.
-3. Replacing staging's database stops staging and is destructive: ask the owner first.
+3. Replacing staging's database stops staging and is destructive: ask the owner first. Stop OSRM before `docker compose down` on an environment (`docker compose --project-name foxdrop-osrm --project-directory /srv/foxdrop-osrm stop`, then `up --detach` after): `down` tries to remove the environment's OSRM network.

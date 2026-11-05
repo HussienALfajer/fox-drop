@@ -87,6 +87,7 @@ step "Scripts"
 install -m 755 "$infra/server/deploy.sh" /usr/local/bin/foxdrop-deploy
 install -m 755 "$infra/server/deploy-ssh.sh" /usr/local/bin/foxdrop-deploy-ssh
 install -m 755 "$infra/server/backup.sh" /usr/local/bin/foxdrop-backup
+install -m 755 "$infra/server/osrm-build.sh" /usr/local/bin/foxdrop-osrm-build
 sudoers=$(mktemp)
 echo "foxdrop-deploy ALL=(root) NOPASSWD: /usr/local/bin/foxdrop-deploy staging *" >"$sudoers"
 visudo --check --quiet --file "$sudoers" || die "the sudoers rule does not parse"
@@ -174,3 +175,22 @@ install -m 644 "$infra/server/foxdrop-backup@.service" "$infra/server/foxdrop-ba
 systemctl daemon-reload
 systemctl enable --now "foxdrop-backup@$environment.timer"
 systemctl list-timers "foxdrop-backup@$environment.timer" --no-pager
+
+step "OSRM"
+# One OSRM serves every environment (architecture §7.1, §17), on each
+# environment's foxdrop-osrm-<env> network, which its first deploy creates.
+# A new environment is provisioned before its first deploy, so its first run
+# stops here; run it again after that deploy.
+if ! docker network inspect "foxdrop-osrm-$environment" >/dev/null 2>&1; then
+  echo "skipped: deploy $environment once, then run this again to start OSRM"
+  exit 0
+fi
+install -d -m 755 /srv/foxdrop-osrm
+install -m 644 "$infra/osrm/compose.yaml" "$infra/osrm/cut.Dockerfile" "$infra/osrm/cut.sh" \
+  "$infra/osrm/build.sh" "$infra/osrm/motorbike.lua" /srv/foxdrop-osrm/
+install -m 644 "$infra/server/foxdrop-osrm-build.service" "$infra/server/foxdrop-osrm-build.timer" \
+  /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable --now foxdrop-osrm-build.timer
+foxdrop-osrm-build --if-missing
+systemctl list-timers foxdrop-osrm-build.timer --no-pager

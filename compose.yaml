@@ -1,8 +1,16 @@
 # The local development services (architecture §17.1). Copy .env.example to
 # .env first; every value there is fake and only for this machine.
 #   docker compose up --detach
-# OSRM and the S3-compatible object storage join with their first use (T7).
+# OSRM starts only with its profile (below); the S3-compatible object storage
+# joins with its first use (T7).
 name: fox-drop
+
+# The OSRM image, the same as infra/osrm/compose.yaml's (infra.test.mjs).
+x-osrm: &osrm
+  image: ghcr.io/project-osrm/osrm-backend:v6.0.0@sha256:729461bcc9ae9e6aafa92c0f93db9b060a32e85d5e72092c01ae4a4a9f1eb564
+  profiles: [osrm]
+  volumes:
+    - osrm-data:/data:ro
 
 services:
   postgres:
@@ -43,5 +51,59 @@ services:
     ports:
       - 127.0.0.1:${CENTRIFUGO_PORT:-8000}:8000
 
+  # OSRM (architecture §7.1): one osrm-routed per vehicle profile over Azaz's
+  # region, as on staging. Build the data once (it downloads the 82 MB Syria
+  # extract into the osrm-data volume, never into the repository), and again
+  # for fresher map data:
+  #   docker compose run --rm osrm-build
+  # then start it with `docker compose --profile osrm up --detach`. Without
+  # it the server measures the straight line × 1.3.
+  osrm-cut:
+    profiles: [osrm-build]
+    build:
+      context: infra/osrm
+      dockerfile: cut.Dockerfile
+    image: fox-drop-osrm-cut
+    command: [sh, /osrm/cut.sh]
+    volumes:
+      - osrm-data:/data
+      - ./infra/osrm:/osrm:ro
+
+  osrm-build:
+    <<: *osrm
+    profiles: [osrm-build]
+    depends_on:
+      osrm-cut:
+        condition: service_completed_successfully
+    command: [sh, /osrm/build.sh]
+    volumes:
+      - osrm-data:/data
+      - ./infra/osrm:/osrm:ro
+
+  osrm-car:
+    <<: *osrm
+    command: [osrm-routed, --algorithm, mld, /data/current/car/region.osrm]
+    ports:
+      - 127.0.0.1:5001:5000
+
+  osrm-motorbike:
+    <<: *osrm
+    command: [osrm-routed, --algorithm, mld, /data/current/motorbike/region.osrm]
+    ports:
+      - 127.0.0.1:5002:5000
+
+  osrm-bicycle:
+    <<: *osrm
+    command: [osrm-routed, --algorithm, mld, /data/current/bicycle/region.osrm]
+    ports:
+      - 127.0.0.1:5003:5000
+
+  osrm-walking:
+    <<: *osrm
+    command: [osrm-routed, --algorithm, mld, /data/current/walking/region.osrm]
+    ports:
+      - 127.0.0.1:5004:5000
+
 volumes:
   postgres-data:
+  osrm-data:

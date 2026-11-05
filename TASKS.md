@@ -4,18 +4,23 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 1.3, road distances (`docs/roadmap.md`, Phase 1).
+Slice 1.4, zones and delivery fees (`docs/roadmap.md`, Phase 1).
 
-- **Specs:** architecture §7.1 (self-hosted OSRM with the OpenStreetMap extract for Syria; car and motorbike on the car profile with adjusted speeds, bicycle, walking; reached only through the server; the straight line × 1.3 when OSRM does not answer), §17 (OSRM joins the Compose files with its first use; one OSRM serves staging and production on the server), §4.2 (`geo` owns distances); AP §9.12.3 (`pricing.distance_method`, default `road`, the fixed × 1.3 fallback), Appendix A (`pricing.distance_method`); AP §13 item 8 (closed by architecture §7.1).
-- **Branch:** `feat/road-distances`.
+- **Specs:** AP §9.12.2 (service zones: polygons, a name per neighbourhood, active or not; votes from outside the zones), §9.12.3 (delivery fees: «ثابت» flat or «شرائح مسافة» distance bands, a minimum fee, an optional free-delivery threshold on the items value, per-restaurant overrides, the preview calculator, published fees), CU §7.1 (the zone check of a point: inside a zone, inside but no restaurant covers it, outside every zone), CU §7.2 (the vote), architecture §4.2 (`geo` owns zones, zone checks and votes), `docs/domain/` for money (integer minor units in the city's base currency).
+- **Branch:** `feat/zones-and-fees`.
+- **Ask the owner first:** which module owns the fee rules (architecture §4.2 names none: `geo` with the zones of AP §9.12, or `ordering` with the quote); which vehicle's road distance the fee uses before a captain is known (`GeoService.distance` needs one); whether the votes of CU §7.2 belong in this slice; and the placeholder fee rule for Azaz (TASKS notes: delivery fee 40, flat, until AP §13 item 5 is decided).
 - **Plan:**
-  - [ ] Write the failing tests first: the straight-line distance between two points in metres, × 1.3 when OSRM fails or times out; a road distance read from an OSRM answer; `pricing.distance_method` = `straight_line` never calls OSRM.
-  - [ ] OSRM in the root `compose.yaml` for development with a small extract (Azaz and its surroundings, cut from the Syria extract), built by a script, with the data outside the repository; ask the owner which profiles development needs before downloading anything large.
-  - [ ] The `geo` distance service behind a port (`RoadDistances`), so tests use a fake and the server calls OSRM over HTTP with a short timeout; `GeoService.distance(from, to, { vehicle })` returns metres and how they were measured (`road` or `straight_x1.3`).
-  - [ ] Staging: OSRM in `infra/compose.yaml` with the memory limit the shared server allows (architecture §22 item 10), the extract rebuilt weekly; ask the owner before changing anything under `infra/server` (it needs `provision.sh` again).
-  - [ ] The `geo` module's `CLAUDE.md`, `pnpm verify` through `checker`, the `reviewer`, then the pull request.
+  - [ ] Write the failing tests first: a point inside an active zone, inside an inactive one, outside every zone; a flat fee; distance bands with their edges; the minimum fee; the free-delivery threshold compared with the items value; amounts in integer minor units of the base currency.
+  - [ ] The `geo.zones` table (a PostGIS polygon in SRID 4326, its name, active or not, its city) through the `db-migration` skill, with a GiST index; `GeoService.zoneAt(cityId, point)`.
+  - [ ] The fee rule and its calculation behind the owning module's public service, using `GeoService.distance` (slice 1.3) for the distance bands.
+  - [ ] Azaz's placeholder zone and fee in `src/seed/placeholder-seed.ts` (development and staging only).
+  - [ ] The module's `CLAUDE.md`, `pnpm verify` through `checker`, the `reviewer`, then the pull request.
 
 ## Notes from earlier slices
+
+- Slice 1.3 added road distances (`apps/server/src/modules/geo/CLAUDE.md`; owner decisions 2026-11-06): `GeoService.distance(from, to, { vehicle })` returns whole metres and `road` or `straight_x1.3`; the straight line × 1.3 when OSRM fails, times out (1 s), answers no route or has no server, and always when `pricing.distance_method` is `straight_line`. OSRM covers Azaz's region only (about 20 km, `infra/osrm/cut.sh`), with the car, motorbike (car profile with placeholder speeds), bicycle and walking profiles.
+- Locally: `docker compose run --rm osrm-build`, then `docker compose --profile osrm up --detach`; without it every distance falls back. On staging one shared project, `foxdrop-osrm`, serves every environment on its own `foxdrop-osrm-<env>` network and rebuilds weekly (`infra/CLAUDE.md`, the `deploy` skill). Production adds its network to `infra/osrm/compose.yaml` (a test) and runs `provision.sh` twice.
+- Not built yet in `geo`: durations (the ETA), the route line and the OSRM `table` matrix for dispatch. Whether dispatch's distances follow `pricing.distance_method` is the owner's call; the delivery estimate follows it (`docs/domain/03-timers.md`).
 
 - Slice 1.2 added the `fx` module (`apps/server/src/modules/fx/CLAUDE.md`; owner decisions 2026-11-05): TRY, USD and SYP with ISO decimals (2); a city's currencies, base and append-only rate versions as exact fractions; the order's `RateSnapshot` from `FxService.snapshotForOrder(cityId, tx)`, which locks the base from the first order and is refused while a currency has no rounding unit. The rounding units and modes stay settings. Only the service exists; the exchange rates routes come with the finance screen.
 - The API seeds placeholder data at start in development and staging (`apps/server/src/seed/placeholder-seed.ts`): TRY as Azaz's base (AP §13 item 4), USD and SYP disabled, rounding units TRY 5, USD 0.5, SYP 500. Later slices add their placeholders there (commission, fees, captain pay, cash limit, minimum order), set only while missing.
@@ -89,4 +94,4 @@ Slice 1.3, road distances (`docs/roadmap.md`, Phase 1).
 
 ## Next
 
-Build slice 1.3 (`docs/roadmap.md`).
+Build slice 1.4 (`docs/roadmap.md`).

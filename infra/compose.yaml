@@ -6,7 +6,7 @@
 #
 # Every published port is on 127.0.0.1: Docker bypasses the host firewall,
 # and nginx is the only public gateway (§15.5). infra.test.mjs checks it.
-# Centrifugo, imgproxy, the object storage and OSRM join with their first use.
+# Centrifugo, imgproxy and the object storage join with their first use.
 
 x-server: &server
   image: ghcr.io/hussienalfajer/fox-drop-server:${FOXDROP_RELEASE:?}
@@ -21,6 +21,7 @@ x-server: &server
       condition: service_healthy
     valkey:
       condition: service_started
+  networks: [default, osrm]
   mem_limit: 384m
 
 x-server-environment: &server-environment
@@ -33,6 +34,12 @@ x-server-environment: &server-environment
   ADMIN_PANEL_URL: https://${ADMIN_HOST:?}
   # Empty until the owner sets it: the server then sends nothing (§16).
   SENTRY_DSN: ${SENTRY_DSN:-}
+  # The shared OSRM (osrm/compose.yaml, §7.1). While it is down, distances
+  # are the straight line × 1.3.
+  OSRM_CAR_URL: http://osrm-car:5000
+  OSRM_MOTORBIKE_URL: http://osrm-motorbike:5000
+  OSRM_BICYCLE_URL: http://osrm-bicycle:5000
+  OSRM_WALKING_URL: http://osrm-walking:5000
 
 services:
   postgres:
@@ -137,6 +144,16 @@ services:
       - 127.0.0.1:${ADMIN_PORT:?}:8080
       - 127.0.0.1:${PORTAL_PORT:?}:8081
     mem_limit: 64m
+
+networks:
+  # This environment's network to the shared OSRM (osrm/compose.yaml), which
+  # joins it as external. The first deploy creates it, so a deploy never
+  # waits for OSRM, and each environment has its own, so staging never
+  # reaches production's containers (§17.2). Never change this declaration:
+  # Compose would refuse the existing network while OSRM is attached to it
+  # (infra.test.mjs).
+  osrm:
+    name: foxdrop-osrm-${FOXDROP_ENV:?}
 
 volumes:
   postgres-data:
