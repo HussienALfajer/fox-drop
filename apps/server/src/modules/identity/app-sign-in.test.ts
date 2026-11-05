@@ -456,22 +456,96 @@ describe('the tokens (architecture §15.1)', () => {
     for (const token of [first, second, third]) expect(stored).not.toContain(token.refreshToken);
   });
 
-  it('lets one of two concurrent refreshes with one token through, and ends the session', async () => {
+  // Owner decision 2026-11-05: a refresh whose answer was lost on a weak
+  // network may be retried with the same token for 10 seconds.
+  it('answers a retried refresh within 10 seconds, and replaces the lost token', async () => {
     const now = new Date();
     const first = await signedIn(newPhone(), randomUUID(), now);
-    const answers = await Promise.allSettled([
+    const lost = await sessions.refresh(first.refreshToken, now);
+    const retried = await sessions.refresh(first.refreshToken, new Date(now.getTime() + 5_000));
+    const again = await sessions.refresh(first.refreshToken, new Date(now.getTime() + 10_000));
+    expect(new Set([lost, retried, again].map((tokens) => tokens.refreshToken)).size).toBe(3);
+    const next = await sessions.refresh(again.refreshToken, new Date(now.getTime() + 10_000));
+    expect(await sessions.authenticate('customer', next.accessToken, now)).not.toBeNull();
+    // Past the grace, the same retry is a reuse and ends the session.
+    expect(
+      await refusal(sessions.refresh(first.refreshToken, new Date(now.getTime() + 20_000))),
+    ).toEqual({ refusal: 'refresh' });
+    expect(await refusal(sessions.refresh(next.refreshToken, now))).toEqual({
+      refusal: 'refresh',
+    });
+  });
+
+  it('ends the session when a used token comes back after 10 seconds', async () => {
+    const now = new Date();
+    const first = await signedIn(newPhone(), randomUUID(), now);
+    const second = await sessions.refresh(first.refreshToken, now);
+    expect(
+      await refusal(sessions.refresh(first.refreshToken, new Date(now.getTime() + 10_001))),
+    ).toEqual({ refusal: 'refresh' });
+    expect(await refusal(sessions.refresh(second.refreshToken, now))).toEqual({
+      refusal: 'refresh',
+    });
+  });
+
+  it('gives no grace to a token whose successor was used', async () => {
+    const now = new Date();
+    const first = await signedIn(newPhone(), randomUUID(), now);
+    const second = await sessions.refresh(first.refreshToken, now);
+    const third = await sessions.refresh(second.refreshToken, new Date(now.getTime() + 1_000));
+    expect(
+      await refusal(sessions.refresh(first.refreshToken, new Date(now.getTime() + 2_000))),
+    ).toEqual({ refusal: 'refresh' });
+    expect(await sessions.authenticate('customer', third.accessToken, now)).toBeNull();
+  });
+
+  it('ends the session when a token replaced by a retry is presented', async () => {
+    const now = new Date();
+    const first = await signedIn(newPhone(), randomUUID(), now);
+    const lost = await sessions.refresh(first.refreshToken, now);
+    const retried = await sessions.refresh(first.refreshToken, new Date(now.getTime() + 1_000));
+    const session = (await sessions.authenticate('customer', retried.accessToken, now))!;
+    expect(await refusal(sessions.refresh(lost.refreshToken, now))).toEqual({
+      refusal: 'refresh',
+    });
+    expect(await refusal(sessions.refresh(retried.refreshToken, now))).toEqual({
+      refusal: 'refresh',
+    });
+    const { rows } = await sql.query('SELECT end_reason FROM identity.app_sessions WHERE id = $1', [
+      session.id,
+    ]);
+    expect(rows[0].end_reason).toBe('refresh_reuse');
+  });
+
+  it('takes a retry and a refresh with the lost token in turns, never failing', async () => {
+    const now = new Date();
+    const first = await signedIn(newPhone(), randomUUID(), now);
+    const lost = await sessions.refresh(first.refreshToken, now);
+    const later = new Date(now.getTime() + 1_000);
+    const answers = await Promise.all([
+      refusal(sessions.refresh(first.refreshToken, later)),
+      refusal(sessions.refresh(lost.refreshToken, later)),
+    ]);
+    // Either order is valid: the lost token was used first, so the retry is a
+    // reuse; or the retry replaced it, so it is presented superseded.
+    expect(answers.filter((answer) => answer === 'accepted')).toHaveLength(1);
+    expect(answers).toContainEqual({ refusal: 'refresh' });
+  });
+
+  it('answers two concurrent refreshes with one token, leaving one live token', async () => {
+    const now = new Date();
+    const first = await signedIn(newPhone(), randomUUID(), now);
+    const answers = await Promise.all([
       sessions.refresh(first.refreshToken, now),
       sessions.refresh(first.refreshToken, now),
     ]);
-    const passed = answers.filter((answer) => answer.status === 'fulfilled');
-    expect(passed).toHaveLength(1);
-    const tokens = (
-      passed[0] as PromiseFulfilledResult<{ refreshToken: string; accessToken: string }>
-    ).value;
-    expect(await refusal(sessions.refresh(tokens.refreshToken, now))).toEqual({
-      refusal: 'refresh',
-    });
-    expect(await sessions.authenticate('customer', tokens.accessToken, now)).toBeNull();
+    expect(answers[0].refreshToken).not.toBe(answers[1].refreshToken);
+    const session = (await sessions.authenticate('customer', answers[0].accessToken, now))!;
+    const { rows } = await sql.query(
+      'SELECT count(*)::int AS live FROM identity.app_refresh_tokens WHERE session_id = $1 AND used_at IS NULL AND superseded_at IS NULL',
+      [session.id],
+    );
+    expect(rows[0].live).toBe(1);
   });
 
   it('signs out one device, or every device of the account', async () => {
