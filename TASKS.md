@@ -4,9 +4,24 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-None. Phase 0's roadmap slices 0.1 to 0.14 are done. Phase 0 now waits for the owner: the answer on the UI/UX and the design system (the design stop in `CLAUDE.md`), and the real WhatsApp sender before the staging trials of Phase 1 (`docs/roadmap.md`). The next task is chosen with the owner; plan it with the `slice-plan` skill.
+Slice 1.1, the ledger (`docs/roadmap.md`, Phase 1). The roadmap plans Phase 2's slice list before Phase 1 starts: plan it with the `slice-plan` skill first, in its own session, unless the owner says otherwise.
+
+- **Specs:** AP §8.4 (order money and the worked example), §8.5 (captain custody and earnings), §8.7 (restaurant account), §8.11 (platform accounts); architecture §4.3 (only `ledger` moves money), §5.2 (money as `bigint` minor units with a currency code), §5.6 (ledger), E3.
+- **Branch:** `feat/ledger`.
+- **Plan:**
+  - [ ] Write the failing tests first: a journal that does not balance to zero per currency is refused; amounts are integers in minor units with a currency code; every entry type of AP §8.5, §8.7 and §8.11 exists and no other; a balance is the sum of its entries; the application role cannot update or delete a ledger row.
+  - [ ] Decide each entry type's counter-account from AP §8.4–§8.11 (for example `custody.pay_merchant` against the restaurant account). Where the specs leave one open, ask the owner; never guess.
+  - [ ] The `ledger` schema through the `db-migration` skill: accounts (per city, party, purpose and currency, with the owning record's id and no foreign key into another module), journals (type, city, actor, reason, the source record such as an order), entries; grants `SELECT` and `INSERT` only.
+  - [ ] The public `LedgerService`: open an account, post a journal inside the caller's transaction, read a balance. No cached balances yet, so no reconciliation job (architecture §5.6 adds it with the first cache).
+  - [ ] A test that posts the money of AP §8.4's worked example and checks every balance, for a restaurant in `active` status (a `test` restaurant posts no commission, AP §9.6.3).
+  - [ ] The module's `CLAUDE.md` (how other modules post money) and the module boundary rule.
+  - [ ] `pnpm verify` through the `checker` agent, the `reviewer` agent, then the pull request.
 
 ## Notes from earlier slices
+
+- Phase 1 owner decisions 2026-11-05 (`docs/roadmap.md`): the screens are functional and unstyled, with logic kept apart from presentation, so the design can replace the presentation alone; manual dispatch only (D6); payments at pickup and at the door in the base currency only; road distances through self-hosted OSRM from slice 1.3, with the straight line × 1.3 only as the fallback; restaurants and captains come from seed data and a minimal admin API; the demo restaurant is `active` with a test customer, so commission entries are proved.
+- Placeholder values for development and staging only, never production (AP §13 items 4 and 5 stay open until the owner decides them before launch): base currency TRY for Azaz; commission 15%; delivery fee 40; captain pay 25 for the first 3 km plus 5 per extra km; a placeholder cash limit and minimum order.
+- Slice 1.14 (staging trial) waits for the real WhatsApp sender: outside development every code request answers `503`.
 
 - Slice 0.14 put staging on the owner's Contabo server (`infra/CLAUDE.md`, the `deploy` skill; owner decisions 2026-11-05): sslip.io host names until the domain is bought (`infra/environments/staging.env`); a deploy on every merge to `main` through a key whose `command=` runs only `infra/server/deploy-ssh.sh`; secrets generated on the server in `/srv/foxdrop-staging/shared/.env`; nightly backups copied encrypted to Backblaze B2; server errors to Sentry when `SENTRY_DSN` is set. Changes under `infra/nginx` or `infra/server` reach the server only by running `provision.sh` again.
 - Waiting on the owner after 0.14: the Sentry DSN and the B2 key, bucket and encryption password in the server's `.env`; making the two GHCR packages public if a deploy cannot pull them.
@@ -63,4 +78,4 @@ None. Phase 0's roadmap slices 0.1 to 0.14 are done. Phase 0 now waits for the o
 
 ## Next
 
-No slice is planned: Phase 0 waits for the owner's answer on the design system and for the real WhatsApp sender (`docs/roadmap.md`).
+Plan Phase 2's slice list (`docs/roadmap.md`), then build slice 1.1.
