@@ -7,6 +7,7 @@ import { createDatabase, type Database } from '../../database/database.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
 import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
+import { FxService } from '../fx/index.js';
 import { ADMIN_SESSION_COOKIE, AdminSessionsService } from '../identity/index.js';
 
 // The settings routes of AP §9.14 through the whole API, as each role calls
@@ -32,6 +33,11 @@ beforeAll(async () => {
   azaz = (await sql.query("SELECT id FROM geo.cities WHERE code = 'AZ'")).rows[0].id;
   app = await createApiApp(ApiModule);
   await app.init();
+  // Azaz's currencies (AP §8.6): TRY as its base.
+  const fx = app.get(FxService);
+  const system = { actor: { type: 'system', id: null, role: null }, context } as const;
+  await fx.setCityCurrency(azaz, { currency: 'TRY', displayOrder: 1, enabled: true }, system);
+  await fx.setBaseCurrency(azaz, 'TRY', system);
   await app.getHttpAdapter().getInstance().ready();
   sessions = app.get(AdminSessionsService);
 }, 300_000);
@@ -121,14 +127,16 @@ describe('the grouped settings (AP §9.14)', () => {
       scope: 'global',
       cityId: null,
     });
-    // One entry per vehicle and per app; none yet for a currency not stored.
+    // One entry per vehicle, per app and per currency of the city.
     const keys = settings.map((entry) => entry.key);
     expect(keys).toContain('captain.custody_limit_suggested.car');
     expect(keys).toContain('app.captain.maintenance');
-    // A currency key with no currency yet: the panel's «أضف عملة».
+    // A currency key with no currency, the panel's «أضف عملة», then the city's.
     expect(keys.filter((key) => key.startsWith('currency.'))).toEqual([
       'currency.<code>.rounding_unit',
+      'currency.TRY.rounding_unit',
       'currency.<code>.rounding_mode',
+      'currency.TRY.rounding_mode',
     ]);
     expect(settings.find((entry) => entry.key === 'currency.<code>.rounding_unit')).toMatchObject({
       parameter: null,

@@ -92,7 +92,8 @@ class SettingHistoryDto extends createZodDto(
         action: z.enum(['update', 'reset']),
         before: settingValue,
         after: settingValue,
-        editorId: z.uuid(),
+        // Null for the placeholder values the system seeds in development and staging.
+        editorId: z.uuid().nullable(),
         editorRoles: z.array(z.string()),
         reason: z.string().nullable(),
         changedAt: z.iso.datetime(),

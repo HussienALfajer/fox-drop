@@ -38,7 +38,7 @@ abstract class SettingHistoryDtoOutputChangesInner
   JsonObject? get after;
 
   @BuiltValueField(wireName: r'editorId')
-  String get editorId;
+  String? get editorId;
 
   @BuiltValueField(wireName: r'editorRoles')
   BuiltList<String> get editorRoles;
@@ -101,10 +101,12 @@ class _$SettingHistoryDtoOutputChangesInnerSerializer
             specifiedType: const FullType.nullable(JsonObject),
           );
     yield r'editorId';
-    yield serializers.serialize(
-      object.editorId,
-      specifiedType: const FullType(String),
-    );
+    yield object.editorId == null
+        ? null
+        : serializers.serialize(
+            object.editorId,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'editorRoles';
     yield serializers.serialize(
       object.editorRoles,
@@ -184,9 +186,10 @@ class _$SettingHistoryDtoOutputChangesInnerSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(String),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as String;
+                  as String?;
+          if (valueDes == null) continue;
           result.editorId = valueDes;
           break;
         case r'editorRoles':

@@ -33,8 +33,9 @@ export interface SettingTarget {
 }
 
 export interface SettingChange {
-  // An admin account and the roles it holds now (AP §6.1).
-  editor: { id: string; roles: readonly AdminRole[] };
+  // An admin account and the roles it holds now (AP §6.1), or the system for
+  // the placeholder values of development and staging (src/seed).
+  editor: { id: string; roles: readonly AdminRole[] } | 'system';
   context: AuditRequestContext;
   reason?: string | null;
 }
@@ -63,7 +64,8 @@ export interface SettingHistoryEntry {
   action: 'update' | 'reset';
   before: unknown;
   after: unknown;
-  editorId: string;
+  // Null for the system.
+  editorId: string | null;
   editorRoles: string[];
   reason: string | null;
   changedAt: Date;
@@ -76,7 +78,15 @@ export type SettingRefusal =
   | 'invalid_value'
   | 'role_may_not_edit'
   | 'reason_required'
-  | 'no_default';
+  | 'no_default'
+  | 'wrong_currency';
+
+// A city's currencies and its base currency (AP §8.6). The fx module owns
+// them and registers itself with useCityCurrencies, since it reads its
+// rounding settings here and settings cannot import it back.
+export interface CityCurrencySource {
+  currenciesOfCity(cityId: string): Promise<{ base: string | null; codes: string[] }>;
+}
 
 export class SettingRefusedError extends Error {
   constructor(
@@ -131,12 +141,17 @@ return 1`;
 @Injectable()
 export class SettingsService {
   private readonly logger = new Logger(SettingsService.name);
+  private cityCurrencySource: CityCurrencySource | null = null;
 
   constructor(
     @Inject(DATABASE) private readonly database: Database,
     @Inject(VALKEY) private readonly valkey: Valkey,
     private readonly audit: AuditService,
   ) {}
+
+  useCityCurrencies(source: CityCurrencySource): void {
+    this.cityCurrencySource = source;
+  }
 
   // The value in effect: the stored one, or the default. Null for a value
   // still to be entered before launch.
@@ -162,18 +177,20 @@ export class SettingsService {
     value: unknown,
     change: SettingChange,
   ): Promise<void> {
-    const setting = this.resolveFor(key, target, change.editor.roles);
+    const setting = this.resolveFor(key, target, rolesOf(change));
     const parsed = setting.definition.schema.safeParse(value);
     if (!parsed.success) {
       throw new SettingRefusedError('invalid_value', setting.key, parsed.error.message);
     }
-    await this.change(setting, { value: parsed.data, isDefault: false }, change);
+    await this.change(setting, { value: parsed.data, isDefault: false }, change, (tx) =>
+      this.checkCurrencies(tx, setting, target.parameter, parsed.data),
+    );
   }
 
   // «استعادة القيمة الافتراضية»: the setting follows its default again. A
   // value entered before launch has no default to go back to.
   async reset(key: SettingKey, target: SettingTarget, change: SettingChange): Promise<void> {
-    const setting = this.resolveFor(key, target, change.editor.roles);
+    const setting = this.resolveFor(key, target, rolesOf(change));
     if (setting.definition.beforeLaunch) {
       throw new SettingRefusedError('no_default', setting.key, 'this setting has no default');
     }
@@ -203,8 +220,7 @@ export class SettingsService {
   // of the group screens of AP §9.14 (owner decision 2026-11-05: each role
   // sees the settings it edits). A key with <vehicle> or <app> is one entry
   // per value; currency.<code>.* is listed once as itself, to add a
-  // currency, and once per currency already stored for the city, since the
-  // city's currencies are not data yet (AP §13 item 4).
+  // currency, and once per currency of the city (AP §8.6).
   async list(cityId: string, roles: readonly AdminRole[]): Promise<SettingEntry[]> {
     if (!z.uuid().safeParse(cityId).success) {
       throw new SettingRefusedError('wrong_scope', 'settings', 'the city is not a city id');
@@ -226,11 +242,12 @@ export class SettingsService {
       .from(values)
       .where(or(isNull(values.cityId), eq(values.cityId, cityId)));
     const stored = new Map(rows.map((row) => [`${row.cityId ?? 'global'}:${row.key}`, row]));
+    const { codes } = await this.currenciesOfCity(cityId);
     const never: StoredState = { value: null, isDefault: true, version: 0 };
 
     const entries = keys.flatMap((key) => {
       const target = catalogue[key].scope === 'city' ? cityId : null;
-      const listed = this.parametersOf(key, rows, target).map((parameter) => {
+      const listed = this.parametersOf(key, codes).map((parameter) => {
         const setting = this.resolve(key, { cityId: target, parameter });
         const state = stored.get(`${target ?? 'global'}:${setting.key}`) ?? never;
         return this.entry(setting, state, parameter ?? null);
@@ -287,28 +304,64 @@ export class SettingsService {
   }
 
   // The parameters a key is listed with; undefined for a key without one.
-  private parametersOf(
-    key: SettingKey,
-    rows: { key: string; cityId: string | null }[],
-    cityId: string | null,
-  ): (string | undefined)[] {
+  private parametersOf(key: SettingKey, cityCodes: string[]): (string | undefined)[] {
     const parameter = keyParameter(key);
     if (parameter === null) return [undefined];
     if (parameter !== 'code') return [...keyParameters[parameter].options];
-    // A currency stored under one <code> key lists every <code> key.
-    const codes = new Set<string>();
-    for (const template of Object.keys(catalogue) as SettingKey[]) {
-      if (keyParameter(template) !== 'code') continue;
-      const [prefix, suffix] = keyEnds(template, 'code');
-      for (const row of rows) {
-        if (row.cityId !== cityId || !row.key.startsWith(prefix) || !row.key.endsWith(suffix)) {
-          continue;
-        }
-        const code = row.key.slice(prefix.length, row.key.length - suffix.length);
-        if (keyParameters.code.safeParse(code).success) codes.add(code);
-      }
+    return [...cityCodes].sort();
+  }
+
+  // The city's stored amounts and their currency, such as the remit
+  // tolerance in TRY: the fx module refuses a base change while one is in
+  // another currency (AP §8.6).
+  async cityAmounts(cityId: string): Promise<{ key: string; currency: string }[]> {
+    const rows = await this.database.db
+      .select({ key: values.key, value: values.value })
+      .from(values)
+      .where(and(eq(values.cityId, cityId), eq(values.isDefault, false)));
+    return rows.flatMap(({ key, value }) => {
+      const currency = currencyOf(value);
+      return currency === null ? [] : [{ key, currency }];
+    });
+  }
+
+  // A city's money is in its base currency (AP §8.6), and a currency.<code>
+  // key names one of its currencies, enabled or not, so its rounding can be
+  // set before the currency is enabled. Checked in the change's transaction,
+  // on the lock a base change takes.
+  private async checkCurrencies(
+    tx: Pick<NodePgDatabase, 'execute'>,
+    setting: ResolvedSetting,
+    parameter: string | undefined,
+    value: unknown,
+  ): Promise<void> {
+    if (setting.cityId === null) return;
+    const amountCurrency = currencyOf(value);
+    const isCurrencyKey = keyParameter(setting.template) === 'code';
+    if (!isCurrencyKey && amountCurrency === null) return;
+    await lockCityCurrencies(tx, setting.cityId);
+    const { base, codes } = await this.currenciesOfCity(setting.cityId);
+    if (isCurrencyKey && !codes.includes(parameter!)) {
+      throw new SettingRefusedError(
+        'wrong_currency',
+        setting.key,
+        `${parameter} is not a currency of the city`,
+      );
     }
-    return [...codes].sort();
+    if (amountCurrency !== null && amountCurrency !== base) {
+      throw new SettingRefusedError(
+        'wrong_currency',
+        setting.key,
+        base === null
+          ? 'the city has no base currency yet'
+          : `an amount is in the base currency, ${base}`,
+      );
+    }
+  }
+
+  private currenciesOfCity(cityId: string) {
+    if (!this.cityCurrencySource) throw new Error('the fx module has not registered');
+    return this.cityCurrencySource.currenciesOfCity(cityId);
   }
 
   private entry(
@@ -335,15 +388,15 @@ export class SettingsService {
     };
   }
 
-  // The setting, for roles that may edit it. The roles are checked before
-  // anything else, so a role that may not edit a key learns nothing more
-  // about it than 403 (architecture §15.2).
+  // The setting, for roles that may edit it, or for the system (null). The
+  // roles are checked before anything else, so a role that may not edit a
+  // key learns nothing more about it than 403 (architecture §15.2).
   private resolveFor(
     key: SettingKey,
     target: SettingTarget,
-    roles: readonly AdminRole[],
+    roles: readonly AdminRole[] | null,
   ): ResolvedSetting {
-    if (Object.hasOwn(catalogue, key) && !mayEdit(catalogue[key], roles)) {
+    if (roles !== null && Object.hasOwn(catalogue, key) && !mayEdit(catalogue[key], roles)) {
       throw new SettingRefusedError(
         'role_may_not_edit',
         key,
@@ -395,6 +448,7 @@ export class SettingsService {
     setting: ResolvedSetting,
     next: { value: unknown; isDefault: boolean },
     { editor, context, reason }: SettingChange,
+    check?: (tx: Pick<NodePgDatabase, 'execute'>) => Promise<void>,
   ): Promise<void> {
     const givenReason = reason?.trim() || null;
     if (setting.definition.reasonRequired && givenReason === null) {
@@ -409,6 +463,7 @@ export class SettingsService {
     }
 
     const saved = await this.database.db.transaction(async (tx) => {
+      await check?.(tx);
       // Changes of one setting take turns, so each records the value it replaced.
       await tx.execute(
         sql`SELECT pg_advisory_xact_lock(hashtextextended(${`settings:${setting.key}:${setting.cityId ?? 'global'}`}, 0))`,
@@ -436,13 +491,16 @@ export class SettingsService {
         action,
         before: beforeValue,
         after: afterValue,
-        editorId: editor.id,
-        editorRoles: [...editor.roles],
+        editorId: editor === 'system' ? null : editor.id,
+        editorRoles: editor === 'system' ? [] : [...editor.roles],
         reason: givenReason,
       });
       await this.audit.recordWrite(
         {
-          actor: { type: 'admin', id: editor.id, role: editor.roles.join(',') },
+          actor:
+            editor === 'system'
+              ? { type: 'system', id: null, role: null }
+              : { type: 'admin', id: editor.id, role: editor.roles.join(',') },
           context,
           cityId: setting.cityId,
           action: `setting.${action}`,
@@ -520,6 +578,32 @@ export class SettingsService {
       this.logger.warn({ err: error, cacheKey }, 'settings cache write failed');
     }
   }
+}
+
+// The lock a city's currencies and its money settings take turns on: the fx
+// module takes it for every change of the city's currencies, and a settings
+// change that checks them takes it first (AP §8.6).
+export async function lockCityCurrencies(
+  executor: Pick<NodePgDatabase, 'execute'>,
+  cityId: string,
+): Promise<void> {
+  await executor.execute(
+    sql`SELECT pg_advisory_xact_lock(hashtextextended(${`currencies:${cityId}`}, 0))`,
+  );
+}
+
+// The currency of an amount value, such as { amountMinor, currency }.
+function currencyOf(value: unknown): string | null {
+  return typeof value === 'object' &&
+    value !== null &&
+    'currency' in value &&
+    typeof value.currency === 'string'
+    ? value.currency
+    : null;
+}
+
+function rolesOf(change: SettingChange): readonly AdminRole[] | null {
+  return change.editor === 'system' ? null : change.editor.roles;
 }
 
 function mayEdit(definition: SettingDefinition, roles: readonly AdminRole[]): boolean {

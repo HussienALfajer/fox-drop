@@ -59,8 +59,9 @@ export const changes = settings.table(
     action: text('action', { enum: changeActions }).notNull(),
     before: jsonb('before'),
     after: jsonb('after'),
-    // An admin account (slice 0.7) and the roles it held at that moment.
-    editorId: uuid('editor_id').notNull(),
+    // An admin account (slice 0.7) and the roles it held at that moment; no
+    // account and no roles for the system.
+    editorId: uuid('editor_id'),
     editorRoles: text('editor_roles').array().notNull(),
     reason: text('reason'),
     changedAt: timestamp('changed_at', { withTimezone: true }).notNull().defaultNow(),
@@ -68,5 +69,9 @@ export const changes = settings.table(
   (table) => [
     index('changes_key_city_changed_at').on(table.key, table.cityId, table.changedAt),
     check('changes_action_values', sql`${table.action} IN ('update', 'reset')`),
+    check(
+      'changes_system_has_no_roles',
+      sql`${table.editorId} IS NOT NULL OR cardinality(${table.editorRoles}) = 0`,
+    ),
   ],
 );

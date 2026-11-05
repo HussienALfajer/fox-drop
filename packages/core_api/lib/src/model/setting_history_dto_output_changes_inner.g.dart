@@ -83,7 +83,7 @@ class _$SettingHistoryDtoOutputChangesInner
   @override
   final JsonObject? after;
   @override
-  final String editorId;
+  final String? editorId;
   @override
   final BuiltList<String> editorRoles;
   @override
@@ -100,7 +100,7 @@ class _$SettingHistoryDtoOutputChangesInner
     required this.action,
     this.before,
     this.after,
-    required this.editorId,
+    this.editorId,
     required this.editorRoles,
     this.reason,
     required this.changedAt,
@@ -241,11 +241,7 @@ class SettingHistoryDtoOutputChangesInnerBuilder
             ),
             before: before,
             after: after,
-            editorId: BuiltValueNullFieldError.checkNotNull(
-              editorId,
-              r'SettingHistoryDtoOutputChangesInner',
-              'editorId',
-            ),
+            editorId: editorId,
             editorRoles: editorRoles.build(),
             reason: reason,
             changedAt: BuiltValueNullFieldError.checkNotNull(

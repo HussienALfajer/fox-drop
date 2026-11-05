@@ -23,7 +23,7 @@ Why not microservices in V1: they would put the money flows behind distributed t
 | `customers`     | Profiles, addresses, trust, strikes, dues                                         |
 | `ledger`        | Accounts and append-only double-entry ledger entries in every currency            |
 | `cashdesk`      | Drawer sessions, receipts, hand-ins, payouts, restaurant settlements              |
-| `fx`            | Exchange rates and rounding per currency                                          |
+| `fx`            | Exchange rates and rounding per currency (the units and modes are settings)       |
 | `support`       | Tickets, compensation, approvals                                                  |
 | `marketing`     | Promo codes, banners, home sections, mass push                                    |
 | `notifications` | Push, in-app messages, real-time publishing, sound levels                         |
