@@ -146,11 +146,14 @@ services:
     mem_limit: 64m
 
 networks:
-  # Shared with the OSRM project, which joins it as external. Created by the
-  # first environment deployed, so a deploy never waits for OSRM; Compose
-  # only warns when another environment finds it already there.
+  # This environment's network to the shared OSRM (osrm/compose.yaml), which
+  # joins it as external. The first deploy creates it, so a deploy never
+  # waits for OSRM, and each environment has its own, so staging never
+  # reaches production's containers (§17.2). Never change this declaration:
+  # Compose would refuse the existing network while OSRM is attached to it
+  # (infra.test.mjs).
   osrm:
-    name: foxdrop-osrm
+    name: foxdrop-osrm-${FOXDROP_ENV:?}
 
 volumes:
   postgres-data:

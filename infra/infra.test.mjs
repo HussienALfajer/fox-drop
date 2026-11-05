@@ -36,15 +36,23 @@ test('OSRM runs the image development uses, for every vehicle', () => {
   for (const name of [...routed, 'build']) {
     assert.equal(osrm.services[name].image, development.services['osrm-car'].image, name);
   }
-  // The server's OSRM_<VEHICLE>_URL names a routed service on the shared network.
+  // The server's OSRM_<VEHICLE>_URL names a routed service, which joins
+  // every environment's own network to OSRM (§17.2: staging never reaches
+  // production's containers).
   const environment = compose['x-server-environment'];
+  const environments = readdirSync(new URL('environments/', import.meta.url)).map((file) =>
+    file.replace(/\.env$/, ''),
+  );
   for (const name of routed) {
     const vehicle = name.replace('osrm-', '').toUpperCase();
     assert.equal(environment[`OSRM_${vehicle}_URL`], `http://${name}:5000`);
-    assert.deepEqual(osrm.services[name].networks, ['osrm']);
+    assert.deepEqual(osrm.services[name].networks.toSorted(), environments.toSorted(), name);
   }
-  assert.equal(compose.networks.osrm.name, osrm.networks.osrm.name);
-  assert.equal(osrm.networks.osrm.external, true);
+  for (const env of environments) {
+    assert.deepEqual(osrm.networks[env], { name: `foxdrop-osrm-${env}`, external: true });
+  }
+  // Frozen: Compose refuses an existing network whose declaration changed.
+  assert.deepEqual(compose.networks.osrm, { name: 'foxdrop-osrm-${FOXDROP_ENV:?}' });
 });
 
 test('nginx replaces X-Forwarded-For with the address it sees', () => {

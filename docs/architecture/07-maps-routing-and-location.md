@@ -4,10 +4,10 @@
 
 ## 7.1 Routing: OSRM, self-hosted
 
-- **OSRM** with the OpenStreetMap extract for Syria, rebuilt weekly from fresh OSM data.
+- **OSRM** with the OpenStreetMap extract for Syria, rebuilt weekly from fresh OSM data. V1 routes over Azaz's region only, about 20 km around the city, cut from that extract (owner decision 2026-11-06, `infra/osrm/cut.sh`); widen the region before adding a city.
 - Used for: road distance for the delivery fee (AP §9.12.3), the ETA, the captain route line, and the distance matrix in dispatch.
 - Profiles: car and motorbike (on the car profile with adjusted speeds), bicycle, walking.
-- Fallback when OSRM does not answer: straight line × 1.3 (fixed, AP §9.12.3).
+- Fallback when OSRM does not answer: straight line × 1.3 (fixed, AP §9.12.3). The same fallback when OSRM answers that there is no route between the points (owner decision 2026-11-06).
 - OSRM is reached only through the server, never from an app.
 - This closes AP §13 item 8.
 

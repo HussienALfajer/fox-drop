@@ -4,9 +4,10 @@
 # /srv/foxdrop-osrm; foxdrop-osrm-build (server/osrm-build.sh) builds the data
 # weekly and restarts the routed services.
 #
-# The environments reach it on the foxdrop-osrm network, which each
-# environment's compose.yaml creates, as http://osrm-<vehicle>:5000. Nothing
-# is published on the host.
+# Each environment reaches it as http://osrm-<vehicle>:5000 on its own
+# network, foxdrop-osrm-<env>, which that environment's compose.yaml creates;
+# the routed services join every one of them. Nothing is published on the
+# host.
 name: foxdrop-osrm
 
 x-routed: &routed # The same image as the development compose.yaml (infra.test.mjs).
@@ -16,7 +17,7 @@ x-routed: &routed # The same image as the development compose.yaml (infra.test.m
   cap_drop: [ALL]
   volumes:
     - data:/data:ro
-  networks: [osrm]
+  networks: [staging]
   mem_limit: 128m
   healthcheck:
     test:
@@ -48,6 +49,7 @@ services:
     command: [sh, /osrm/cut.sh]
     # osmium needs about 1.5 GB for the Syria extract (cut.sh).
     mem_limit: 2g
+    cpus: 1
 
   # Builds every profile from the cut (build.sh); `run --rm build` runs both.
   build:
@@ -58,6 +60,7 @@ services:
         condition: service_completed_successfully
     command: [sh, /osrm/build.sh]
     mem_limit: 1g
+    cpus: 1
 
   osrm-car:
     <<: *routed
@@ -75,9 +78,10 @@ services:
     <<: *routed
     command: [osrm-routed, --algorithm, mld, /data/current/walking/region.osrm]
 
+# One per environment (infra.test.mjs); production's joins with it.
 networks:
-  osrm:
-    name: foxdrop-osrm
+  staging:
+    name: foxdrop-osrm-staging
     external: true
 
 volumes:

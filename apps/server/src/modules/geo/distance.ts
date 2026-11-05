@@ -42,6 +42,14 @@ export interface RoadDistances {
   metres(from: Point, to: Point, vehicle: Vehicle): Promise<number>;
 }
 
+// A programming error, not a refusal: the routes validate the points they
+// receive.
+function assertCoordinate({ latitude, longitude }: Point): void {
+  if (!(Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180)) {
+    throw new RangeError('a point needs a latitude within ±90 and a longitude within ±180');
+  }
+}
+
 // The distance between two points in whole metres, by pricing.distance_method.
 export async function measureDistance(
   from: Point,
@@ -51,6 +59,8 @@ export async function measureDistance(
   road: RoadDistances,
   onFallback: (error: unknown) => void = () => {},
 ): Promise<Distance> {
+  assertCoordinate(from);
+  assertCoordinate(to);
   if (method === 'road') {
     try {
       return { metres: Math.round(await road.metres(from, to, vehicle)), method: 'road' };

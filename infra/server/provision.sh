@@ -177,10 +177,14 @@ systemctl enable --now "foxdrop-backup@$environment.timer"
 systemctl list-timers "foxdrop-backup@$environment.timer" --no-pager
 
 step "OSRM"
-# One OSRM serves every environment (architecture §7.1, §17), on the
-# foxdrop-osrm network the first deployed environment creates.
-docker network inspect foxdrop-osrm >/dev/null 2>&1 ||
-  die "the foxdrop-osrm network is missing: deploy $environment once, then run this again"
+# One OSRM serves every environment (architecture §7.1, §17), on each
+# environment's foxdrop-osrm-<env> network, which its first deploy creates.
+# A new environment is provisioned before its first deploy, so its first run
+# stops here; run it again after that deploy.
+if ! docker network inspect "foxdrop-osrm-$environment" >/dev/null 2>&1; then
+  echo "skipped: deploy $environment once, then run this again to start OSRM"
+  exit 0
+fi
 install -d -m 755 /srv/foxdrop-osrm
 install -m 644 "$infra/osrm/compose.yaml" "$infra/osrm/cut.Dockerfile" "$infra/osrm/cut.sh" \
   "$infra/osrm/build.sh" "$infra/osrm/motorbike.lua" /srv/foxdrop-osrm/

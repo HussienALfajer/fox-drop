@@ -51,6 +51,20 @@ describe('measureDistance', () => {
     expect(onFallback).toHaveBeenCalledWith(new Error('timed out'));
   });
 
+  it('refuses a point that is not a coordinate, without asking', async () => {
+    const osrm = road(() => Promise.resolve(2345.6));
+    for (const point of [
+      { latitude: Number.NaN, longitude: 37 },
+      { latitude: 91, longitude: 37 },
+      { latitude: 36, longitude: -180.5 },
+      { latitude: 36, longitude: Number.POSITIVE_INFINITY },
+    ]) {
+      await expect(measureDistance(point, market, 'car', 'road', osrm)).rejects.toThrow(RangeError);
+      await expect(measureDistance(azaz, point, 'car', 'road', osrm)).rejects.toThrow(RangeError);
+    }
+    expect(osrm.calls).toEqual([]);
+  });
+
   it('never calls the routing service when pricing.distance_method is straight_line', async () => {
     const osrm = road(() => Promise.resolve(2345.6));
     await expect(measureDistance(azaz, market, 'walking', 'straight_line', osrm)).resolves.toEqual({
