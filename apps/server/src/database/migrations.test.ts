@@ -555,8 +555,13 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
   });
 
   it("install pg-boss as the migration role, with the application role's rows only", async () => {
-    const { rows } = await appQuery("SELECT name FROM pgboss.queue WHERE name LIKE 'ordering-%'");
-    expect(rows).toEqual([{ name: 'ordering-merchant-auto-cancel' }]);
+    const { rows } = await appQuery(
+      "SELECT name FROM pgboss.queue WHERE name LIKE 'ordering-%' ORDER BY name",
+    );
+    expect(rows).toEqual([
+      { name: 'ordering-merchant-auto-cancel' },
+      { name: 'ordering-outbox-relay' },
+    ]);
     await expect(appQuery('CREATE TABLE pgboss.extra (id int)')).rejects.toThrow(
       /permission denied/,
     );

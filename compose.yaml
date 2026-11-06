@@ -42,12 +42,25 @@ services:
     ports:
       - 127.0.0.1:${VALKEY_PORT:-6379}:6379
 
+  # Real time (architecture §6): the channels are infra/centrifugo/config.yaml;
+  # the subscription proxies call the API running on this machine on port 3000.
   centrifugo:
     image: centrifugo/centrifugo:v6.10.2
-    command: [centrifugo]
+    command: [centrifugo, --config, /centrifugo/config.yaml]
     environment:
       CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY: ${CENTRIFUGO_TOKEN_SECRET:?copy .env.example to .env}
       CENTRIFUGO_HTTP_API_KEY: ${CENTRIFUGO_API_KEY:?copy .env.example to .env}
+      CENTRIFUGO_PROXIES: >-
+        [{"name": "merchant", "endpoint": "http://host.docker.internal:3000/v1/merchant/realtime/subscribe",
+          "timeout": "3s", "include_connection_meta": true,
+          "http": {"static_headers": {"X-Centrifugo-Proxy-Secret": "${CENTRIFUGO_PROXY_SECRET:?copy .env.example to .env}"}}},
+         {"name": "customer", "endpoint": "http://host.docker.internal:3000/v1/customer/realtime/subscribe",
+          "timeout": "3s", "include_connection_meta": true,
+          "http": {"static_headers": {"X-Centrifugo-Proxy-Secret": "${CENTRIFUGO_PROXY_SECRET:?copy .env.example to .env}"}}}]
+    volumes:
+      - ./infra/centrifugo/config.yaml:/centrifugo/config.yaml:ro
+    extra_hosts:
+      - host.docker.internal:host-gateway
     ports:
       - 127.0.0.1:${CENTRIFUGO_PORT:-8000}:8000
 

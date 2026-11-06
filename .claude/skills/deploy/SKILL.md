@@ -46,7 +46,7 @@ commit=$(git rev-parse origin/main)
 git archive "$commit" infra | ssh vertex "rm -rf /root/foxdrop-provision && mkdir /root/foxdrop-provision && tar -x -C /root/foxdrop-provision && /root/foxdrop-provision/infra/server/provision.sh staging"
 ```
 
-It creates the users, folders, mirror and secrets if missing, installs the scripts, the sudoers rule, the nginx site (tested with `nginx -t` and disabled again if it fails), the certificate, the backup timer and the shared OSRM. It never touches the database, the secrets or the releases. Record what changed in `/root/SERVER.md`.
+It creates the users, folders, mirror and secrets if missing, installs the scripts, the sudoers rule, the nginx site (tested with `nginx -t` and disabled again if it fails), the certificate, the backup timer and the shared OSRM. It never touches the database, the releases or a secret already there; it appends a secret a later commit added, such as the Centrifugo ones. Record what changed in `/root/SERVER.md`.
 
 A new environment needs two runs: the first ends at the OSRM step ("skipped"), because its `foxdrop-osrm-<env>` network appears only with its first deploy; deploy, then run it again.
 

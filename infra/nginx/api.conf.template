@@ -11,6 +11,25 @@ location ~ ^/v1/[a-z]+/auth/(sign-in|code|setup/) {
     include snippets/foxdrop-proxy.conf;
 }
 
+# Centrifugo's WebSocket (architecture §6.1). The connection stays open, so
+# it is proxied with its upgrade and a long read timeout; Centrifugo pings
+# every 25 seconds.
+location = /connection/websocket {
+    proxy_pass http://127.0.0.1:${CENTRIFUGO_PORT};
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_read_timeout 120s;
+}
+
+# Centrifugo's subscription proxy reaches the API directly on the
+# environment's network, never through nginx.
+location ~ ^/v1/[a-z]+/realtime/subscribe$ {
+    return 404;
+}
+
 location /v1/ {
     proxy_pass http://127.0.0.1:${API_PORT};
     include snippets/foxdrop-proxy.conf;

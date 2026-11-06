@@ -73,6 +73,7 @@ test('every environment names the settings compose.yaml and nginx need', () => {
     'API_PORT',
     'ADMIN_PORT',
     'PORTAL_PORT',
+    'CENTRIFUGO_PORT',
   ];
   for (const file of readdirSync(new URL('environments/', import.meta.url))) {
     const keys = read(`environments/${file}`)

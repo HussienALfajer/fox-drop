@@ -1,9 +1,13 @@
 import 'reflect-metadata';
 import { readdirSync, readFileSync } from 'node:fs';
+import { RequestMethod } from '@nestjs/common';
+import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants.js';
+import { ModulesContainer } from '@nestjs/core';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import type { OpenAPIObject } from '@nestjs/swagger';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ApiModule } from '../api.module.js';
+import { ROUTE_ACCESS, type RouteAccess } from './access.js';
 import { createApiApp } from './create-api-app.js';
 import { createOpenApiDocument, setOpenApiPlaceholderEnvironment } from './openapi.js';
 import { ROUTE_GROUPS } from './route-groups.js';
@@ -27,12 +31,56 @@ function operations() {
   return Object.entries(document.paths).flatMap(([path, item]) =>
     (['get', 'put', 'post', 'delete', 'patch'] as const).flatMap((method) => {
       const operation = item[method];
-      return operation ? [{ path, operation }] : [];
+      return operation ? [{ path, method, operation }] : [];
     }),
   );
 }
 
+// Every route the app serves, from its controllers' metadata, with its access.
+function servedRoutes(): { route: string; access: RouteAccess['kind'] | undefined }[] {
+  const controllers = new Set<object>();
+  for (const module of app.get(ModulesContainer).values()) {
+    for (const wrapper of module.controllers.values()) controllers.add(wrapper.metatype as object);
+  }
+  return [...controllers].flatMap((controller) => {
+    const base = Reflect.getMetadata(PATH_METADATA, controller) as string;
+    const prototype = (controller as { prototype: Record<string, unknown> }).prototype;
+    return Object.getOwnPropertyNames(prototype).flatMap((name) => {
+      const handler = prototype[name] as object;
+      const path = Reflect.getMetadata(PATH_METADATA, handler) as string | undefined;
+      if (name === 'constructor' || path === undefined) return [];
+      const method = RequestMethod[Reflect.getMetadata(METHOD_METADATA, handler) as number];
+      const access =
+        (Reflect.getMetadata(ROUTE_ACCESS, handler) as RouteAccess | undefined) ??
+        (Reflect.getMetadata(ROUTE_ACCESS, controller) as RouteAccess | undefined);
+      const full = ['/v1', base, path]
+        .join('/')
+        .replace(/\/+/g, '/')
+        .replace(/\/$/, '')
+        .replace(/:(\w+)/g, '{$1}');
+      return [{ route: `${method} ${full}`, access: access?.kind }];
+    });
+  });
+}
+
 describe('OpenAPI document', () => {
+  // Architecture §15.2, E6: the document lists every route, so the clients
+  // and the route table of admin-team.test.ts see them all, except the routes
+  // only Centrifugo calls, which must then be @RealtimeProxy().
+  it('lists every route the app serves but the ones only Centrifugo calls', () => {
+    const documented = new Set(
+      operations().map(({ path, method }) => `${method.toUpperCase()} ${path}`),
+    );
+    const left = servedRoutes().filter(({ route }) => !documented.has(route));
+    expect(left.map(({ route }) => route).sort()).toEqual([
+      'POST /v1/customer/realtime/subscribe',
+      'POST /v1/merchant/realtime/subscribe',
+    ]);
+    expect(left.every(({ access }) => access === 'realtime_proxy')).toBe(true);
+    const proxied = servedRoutes().filter(({ access }) => access === 'realtime_proxy');
+    expect(proxied.every(({ route }) => !documented.has(route))).toBe(true);
+  });
+
   // A DTO class's name is its schema's name in the document, and two classes
   // with one name silently become one schema, the second replacing the first.
   it('has one DTO class per name', () => {

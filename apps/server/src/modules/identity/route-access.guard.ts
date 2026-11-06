@@ -1,4 +1,5 @@
 import '@fastify/cookie';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import {
   type CanActivate,
   type ExecutionContext,
@@ -9,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { FastifyRequest } from 'fastify';
-import { ROUTE_ACCESS, type RouteAccess } from '../../http/access.js';
+import { REALTIME_PROXY_SECRET_HEADER, ROUTE_ACCESS, type RouteAccess } from '../../http/access.js';
 import { ROUTE_GROUP, type RouteGroup } from '../../http/route-groups.js';
 import { AdminSessionsService } from './admin-sessions.service.js';
 import {
@@ -41,6 +42,13 @@ export class RouteAccessGuard implements CanActivate {
     const access = this.reflector.getAllAndOverride<RouteAccess | undefined>(ROUTE_ACCESS, targets);
     if (!access) throw new ForbiddenException();
     if (access.kind === 'public') return true;
+    if (access.kind === 'realtime_proxy') {
+      const given = context.switchToHttp().getRequest<FastifyRequest>().headers[
+        REALTIME_PROXY_SECRET_HEADER
+      ];
+      if (!sameSecret(given, process.env.CENTRIFUGO_PROXY_SECRET)) throw new ForbiddenException();
+      return true;
+    }
     const group = this.reflector.get<RouteGroup | undefined>(ROUTE_GROUP, context.getClass());
     const request = context.switchToHttp().getRequest<FastifyRequest>();
     // A guest's call has no token; a token that fails is 401 as on any app
@@ -80,4 +88,11 @@ export class RouteAccessGuard implements CanActivate {
     }
     return true;
   }
+}
+
+// Compared in constant time; refused while the secret is not configured.
+function sameSecret(given: string | string[] | undefined, secret: string | undefined): boolean {
+  if (!secret || typeof given !== 'string') return false;
+  const digest = (value: string) => createHash('sha256').update(value).digest();
+  return timingSafeEqual(digest(given), digest(secret));
 }

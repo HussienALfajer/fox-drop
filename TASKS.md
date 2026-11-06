@@ -8,15 +8,20 @@ Slice 1.9, real time (`docs/roadmap.md`, Phase 1): the outbox relay, Centrifugo 
 
 - **Specs:** architecture §5.5 (the outbox relay, at least once), §6.1–6.3 (Centrifugo, channels, heartbeats and fallbacks), §4.4 (the worker), E4; RA §4.3 (real-time connection and waking up; clients ignore events older than the version they show), RA §4.4 and §16 (the new order's ring), RA §8 (the incoming order); CU §4.3 (real time and polling), CU §11 (the order screen); AP §8.3 (the apology when the system cancels).
 - **Branch:** `feat/realtime`.
-- **Ask the owner first:** the split into pull requests; whether this slice builds the restaurant app's incoming-order screen and ring and the customer's order screen as functional, unstyled Flutter screens (the Phase 1 decision), or the server and API only, as slices 1.7 and 1.8 did; push notifications (Firebase Cloud Messaging needs `google-services.json`, which never enters the repository, architecture §22 item 9) now or with a later slice; whether presence and the heartbeats of RA §4.3 and architecture §6.3 (20 s, disconnected after 60 s; polling every 30 s as the fallback) are in this slice.
-- **Plan (draft, to confirm with the owner):**
-  - [ ] The failing tests first: the relay publishes each unpublished outbox row at least once and marks it, in id order but never by a «last id» mark (ids are taken at insert); a failed publish is retried.
-  - [ ] Centrifugo in the API: connection tokens per party (`CENTRIFUGO_TOKEN_SECRET`, never in an app) and the subscription proxy that checks each channel (architecture §6.1); the channels of §6.2: `merchant:{merchant_id}` for the restaurant, `order:{order_id}` for the customer's order (`customer:{customer_id}` carries account state, codes and banners).
-  - [ ] The relay in the worker (a pg-boss queue), publishing `order.placed` and `order.cancelled` to `merchant:` and `order:` channels.
-  - [ ] Presence and heartbeats, as the owner decides.
-  - [ ] The order reads for the polling fallback: the restaurant's incoming orders and the customer's order (CU §11), with the order version.
-  - [ ] The apps' part, as the owner decides.
-  - [ ] `checker`, the `reviewer`, the pull requests, the handover to slice 1.10.
+- **Owner decisions 2026-11-06:** server and API only, as slices 1.7 and 1.8 (the Flutter screens wait for the apps' sign-in screens and the design); two pull requests; push (FCM) in a later slice; presence and the heartbeats (RA §4.3, §4.6, architecture §6.3) later, with the receiving-device rule.
+- **Plan:**
+  - Pull request 1, `feat/realtime`: the relay, the tokens and the proxy.
+    - [x] The failing tests first (`outbox-relay.test.ts`): each unpublished row published at least once and marked, in id order but never by a «last id» mark; a row committed late still published; a failed publish kept for a later run; relays side by side never publish a row twice at once.
+    - [x] The `notifications` module: connection tokens per app (`POST /v1/{merchant,customer}/realtime/token`), the subscription proxy (`@RealtimeProxy()`, `X-Centrifugo-Proxy-Secret`) checking the session and the channel (`merchant:{restaurant_id}`, `order:{order_id}`), the publisher; Centrifugo's channels in `infra/centrifugo/config.yaml`, the local `compose.yaml` and `.env.example`.
+    - [x] The relay in the worker: a pg-boss job with every transition, a run at start; end to end through a real Centrifugo to a `centrifuge` client (`order-realtime.test.ts`).
+    - [x] Staging prepared: `provision.sh` adds the Centrifugo secrets, nginx proxies `/connection/websocket` to port 3113.
+    - [x] `checker` and the `reviewer` (no blocking finding; the seven should-fix ones fixed in `fix(realtime): the review…`).
+    - [ ] Pull request 42 merged (GitHub auto-merge with a merge commit once CI passes); then `provision.sh` on staging from `main` (the `deploy` skill), which adds the Centrifugo secrets and the nginx route.
+  - **Stopped at:** pull request 42 open with auto-merge on, waiting for CI. Next: once it is merged, provision staging, then pull request 2 from an up-to-date `main`.
+  - Pull request 2, `feat/realtime-reads`: the polling fallback and Centrifugo on staging.
+    - [ ] The order reads for the polling fallback with the order version: the restaurant's incoming orders (RA §8) and the customer's order (CU §11).
+    - [ ] Centrifugo in `infra/compose.yaml` with the server's `CENTRIFUGO_*` (its proxies call `http://api:3000` on the environment's network); deploy and check a connection on staging. Staging's outbox has rows from before real time: the first run would publish old `order.placed` events to restaurant devices, so decide first whether to mark the rows older than the channels' history (10 minutes) published without sending them.
+    - [ ] `checker`, the `reviewer`, the pull request, the handover to slice 1.10.
 
 ## Notes from earlier slices
 
