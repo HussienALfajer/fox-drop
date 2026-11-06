@@ -111,9 +111,20 @@ export function orderedSession(
 // A session WhatsApp ended (401, the device unlinked) or refused (403, a ban)
 // only comes back with a new pairing; anything else reconnects.
 export function closedReason(statusCode: number | undefined): WhatsAppClosedReason {
-  return statusCode === DisconnectReason.loggedOut || statusCode === DisconnectReason.forbidden
-    ? 'logged_out'
-    : 'lost';
+  if (statusCode === DisconnectReason.loggedOut) return 'logged_out';
+  if (statusCode === DisconnectReason.forbidden) return 'banned';
+  return 'lost';
+}
+
+// The receipt a message status update carries, for a message the number sent.
+export function receiptOf(
+  fromMe: boolean | null | undefined,
+  status: number | null | undefined,
+): 'delivered' | 'read' | null {
+  if (!fromMe || status === null || status === undefined) return null;
+  if (status >= proto.WebMessageInfo.Status.READ) return 'read';
+  if (status === proto.WebMessageInfo.Status.DELIVERY_ACK) return 'delivered';
+  return null;
 }
 
 // The kinds of message a person writes, as opposed to receipts, reactions,
@@ -179,13 +190,21 @@ export const baileysConnect: WhatsAppConnect = async (stored, events) => {
     }
   });
 
+  socket.ev.on('messages.update', (updates) => {
+    for (const { key, update } of updates) {
+      const receipt = receiptOf(key.fromMe, update.status);
+      if (receipt && key.id) events.receipt(key.id, receipt);
+    }
+  });
+
   return {
     isOnWhatsApp: async (phone) => {
       const [result] = (await socket.onWhatsApp(jidOf(phone))) ?? [];
       return result?.exists === true;
     },
     sendText: async (phone, text) => {
-      await socket.sendMessage(jidOf(phone), { text });
+      const sent = await socket.sendMessage(jidOf(phone), { text });
+      return sent?.key.id ?? null;
     },
     reply: async (chat, text) => {
       await socket.sendMessage(chat, { text });

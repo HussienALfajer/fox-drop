@@ -14,9 +14,9 @@ Slice W2, the sender pool (`docs/roadmap.md`, Phase 1, before slice 1.14). App C
 - **Plan:**
   - [x] Ask the owner the open items above.
   - [x] Migration (`db-migration` skill): the states `warming`, `active`, `standby`, `throttled`, `disconnected`, `banned`; the warm-up start; daily counts per number (sent, failed) in the owning schema.
-  - [ ] Several sessions at once in `OtpSenderService`, rotation over the active numbers, failover to the next on a disconnect, throttle or ban. Failing tests first.
-  - [ ] Pacing per number (per minute, per day, warm-up cap) and the jitter between sends, with a short queue; the API's 10-second timeout still holds.
-  - [ ] Health counts and automatic throttling; the library's delivery and read receipts where Baileys exposes them.
+  - [x] Several sessions at once in `OtpSenderService`, rotation over the active numbers, failover to the next on a disconnect, throttle or ban. Failing tests first.
+  - [x] Pacing per number (per minute, per day, warm-up cap) and the jitter between sends, with a short queue; the API's 10-second timeout still holds.
+  - [x] Health counts and automatic throttling; the library's delivery and read receipts where Baileys exposes them.
   - [ ] The admin API of «أرقام إرسال الرموز» (OWN): list with state and daily counts, set active or standby, disable; pairing stays the command until the panel screen (design stop). Route table in `admin-team.test.ts`; `pnpm generate:api`.
   - [ ] The two alerts in the pool's read and to Sentry.
   - [ ] Update `apps/server/src/modules/identity/CLAUDE.md` and the `deploy` skill.

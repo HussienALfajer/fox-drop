@@ -513,6 +513,13 @@ export const catalogue = {
     schema: z.array(z.union([positiveInt, z.literal('full')])).min(1),
     default: [50, 100, 200, 400, 800, 'full'],
   }),
+  'otp.sender_warmup_step_days': define({
+    type: 'duration',
+    unit: 'days',
+    scope: 'global',
+    schema: positiveInt,
+    default: 3,
+  }),
   'support.first_response_active_min': minutes(15, 1),
   'support.resolution_post_delivery_hours': define({
     type: 'duration',

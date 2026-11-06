@@ -4,7 +4,8 @@
 // the session encrypted. Run with DATABASE_URL and IDENTITY_ENCRYPTION_KEY
 // set, in a terminal:
 //   node dist/modules/identity/otp-sender-pair-command.js
-// The running otp-sender picks the new number up within 10 seconds.
+// The running otp-sender picks the new number up within 10 seconds. A new
+// number starts warming (§8.3.3 item 6); one paired again resumes its state.
 import QRCode from 'qrcode';
 import { createDatabase } from '../../database/database.js';
 import { maskPhone } from '../../logging/redact.js';
@@ -69,6 +70,7 @@ const paired = await new Promise<string>((resolve, reject) => {
         }
       },
       incoming: () => undefined,
+      receipt: () => undefined,
     });
   };
   void start().catch(reject);
@@ -80,7 +82,7 @@ try {
     session.entries,
     new Date(),
   );
-  process.stdout.write(`Paired ${maskPhone(paired)} as sending number ${number.id}.\n`);
+  process.stdout.write(`Paired ${maskPhone(paired)} as sending number ${number.id} (${number.status}).\n`);
 } finally {
   await database.pool.end();
 }
