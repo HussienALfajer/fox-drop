@@ -14,7 +14,7 @@ import {
   ROAD_DISTANCES,
   type RoadDistances,
 } from './distance.js';
-import { cities, feeBands, feeRules, zones } from './schema.js';
+import { cities, feeBands, feeRules, zones, zoneVotes } from './schema.js';
 
 export type GeoRefusal =
   | 'invalid_area'
@@ -24,7 +24,8 @@ export type GeoRefusal =
   | 'unknown_zone'
   | 'invalid_fee_rule'
   | 'fee_not_in_base_currency'
-  | 'no_fee_rule';
+  | 'no_fee_rule'
+  | 'inside_zone';
 
 // A change or a fee geo refuses, with the reason the routes and the ordering
 // module map to their own answers.
@@ -64,6 +65,11 @@ export interface DeliveryFee {
 // Owner decision 2026-11-06: the fee is priced before a captain is known, by
 // the motorbike's road distance, whoever delivers.
 const FEE_VEHICLE: Vehicle = 'motorbike';
+
+// Owner decisions 2026-11-06 (CU §7.2): one vote per device within 500 m,
+// and a vote over 50 km from every active zone belongs to no city.
+export const VOTE_RADIUS_METRES = 500;
+export const VOTE_CITY_METRES = 50_000;
 
 type Executor = Pick<NodePgDatabase, 'select'>;
 
@@ -284,6 +290,92 @@ export class GeoService implements OnModuleInit {
     return row ?? null;
   }
 
+  // Where a point is (CU §7.1): the active zone of an active city that covers
+  // it, as zoneAt picks it, or, outside every one, the city whose active zones
+  // are nearest with no zone; null while no city has an active zone. The
+  // customer app knows no city, so its routes find it here.
+  async locate(
+    point: Point,
+  ): Promise<{ cityId: string; zone: { id: string; name: string } | null } | null> {
+    const covering = await this.coveringZone(point);
+    if (covering !== null) {
+      return { cityId: covering.cityId, zone: { id: covering.id, name: covering.name } };
+    }
+    const nearest = await this.nearestZone(point);
+    return nearest === null ? null : { cityId: nearest.cityId, zone: null };
+  }
+
+  // CU §7.2: «صوّت لمنطقتك» for a point outside every active zone. Owner
+  // decisions 2026-11-06: a device votes once within VOTE_RADIUS_METRES of
+  // its earlier votes, and a repeat records nothing and answers
+  // already_voted, so the app thanks the customer either way; a vote farther
+  // than VOTE_CITY_METRES from every active zone is kept with no city.
+  async castVote(deviceId: string, point: Point): Promise<'recorded' | 'already_voted'> {
+    if ((await this.coveringZone(point)) !== null) {
+      throw new GeoRefusedError('inside_zone', 'the point is inside an active zone');
+    }
+    const nearest = await this.nearestZone(point);
+    const cityId = nearest !== null && nearest.metres <= VOTE_CITY_METRES ? nearest.cityId : null;
+    const at = pointSql(point);
+    return this.database.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtextextended(${`zone_votes:${deviceId}`}, 0))`,
+      );
+      const [earlier] = await tx
+        .select({ id: zoneVotes.id })
+        .from(zoneVotes)
+        .where(
+          and(
+            eq(zoneVotes.deviceId, deviceId),
+            sql`ST_DWithin(${zoneVotes.location}::geography, ${at}::geography, ${VOTE_RADIUS_METRES})`,
+          ),
+        )
+        .limit(1);
+      if (earlier) return 'already_voted';
+      await tx.insert(zoneVotes).values({ cityId, deviceId, location: at });
+      return 'recorded';
+    });
+  }
+
+  // The active zone of an active city that covers the point, its edge
+  // included; of two sharing an edge, the older (as zoneAt).
+  private async coveringZone(
+    point: Point,
+  ): Promise<{ cityId: string; id: string; name: string } | null> {
+    const [row] = await this.database.db
+      .select({ cityId: zones.cityId, id: zones.id, name: zones.name })
+      .from(zones)
+      .innerJoin(cities, eq(cities.id, zones.cityId))
+      .where(
+        and(
+          eq(zones.active, true),
+          eq(cities.status, 'active'),
+          sql`ST_Covers(${zones.area}, ${pointSql(point)})`,
+        ),
+      )
+      .orderBy(asc(zones.id))
+      .limit(1);
+    return row ?? null;
+  }
+
+  // The nearest active zone of an active city and its distance in metres.
+  private async nearestZone(point: Point): Promise<{ cityId: string; metres: number } | null> {
+    const at = pointSql(point);
+    const [row] = await this.database.db
+      .select({
+        cityId: zones.cityId,
+        metres: sql<number>`ST_Distance(${zones.area}::geography, ${at}::geography)`.mapWith(
+          Number,
+        ),
+      })
+      .from(zones)
+      .innerJoin(cities, eq(cities.id, zones.cityId))
+      .where(and(eq(zones.active, true), eq(cities.status, 'active')))
+      .orderBy(sql`${zones.area} <-> ${at}`, asc(zones.id))
+      .limit(1);
+    return row ?? null;
+  }
+
   // The city's delivery fee rule in effect, the newest version; null before
   // the first.
   async deliveryFeeRule(
@@ -436,4 +528,9 @@ function forAudit(rule: DeliveryFeeRule & { id: string }): Record<string, unknow
       typeof value === 'bigint' ? value.toString() : value,
     ),
   ) as Record<string, unknown>;
+}
+
+// A point as a PostGIS geometry in WGS 84.
+function pointSql({ latitude, longitude }: Point): SQL {
+  return sql`ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)`;
 }

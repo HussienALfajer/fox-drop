@@ -122,3 +122,30 @@ export const feeBands = geo.table(
     check('fee_bands_fee', sql`${table.fee} >= 0`),
   ],
 );
+
+// A PostGIS point in WGS 84, written and read through SQL only.
+const point = customType<{ data: string; driverData: string }>({
+  dataType: () => 'geometry(Point,4326)',
+});
+
+// CU §7.2, AP §9.12.2: a vote for a point outside every active zone, for the
+// panel's vote map and the lost-demand report (AP §9.17). Owner decisions
+// 2026-11-06: a device votes once within 500 m, and the city is the one whose
+// active zones are nearest, or none beyond 50 km of every active zone.
+export const zoneVotes = geo.table(
+  'zone_votes',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').references(() => cities.id),
+    deviceId: uuid('device_id').notNull(),
+    location: point('location').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('zone_votes_city').on(table.cityId, table.createdAt),
+    index('zone_votes_device').on(table.deviceId),
+    index('zone_votes_location').using('gist', table.location),
+  ],
+);

@@ -1519,6 +1519,326 @@
           "captain"
         ]
       }
+    },
+    "/v1/customer/location": {
+      "get": {
+        "operationId": "customerProfileLocation",
+        "parameters": [
+          {
+            "name": "latitude",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "longitude",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerLocationDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/v1/customer/zone-votes": {
+      "post": {
+        "operationId": "customerProfileVote",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerZoneVoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerZoneVotedDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/v1/customer/profile": {
+      "get": {
+        "operationId": "customerProfileProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerProfileDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      },
+      "put": {
+        "operationId": "customerProfileSaveProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerSaveProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerProfileDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/v1/customer/addresses": {
+      "get": {
+        "operationId": "customerProfileAddresses",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAddressListDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      },
+      "post": {
+        "operationId": "customerProfileAddAddress",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerNewAddressDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAddressDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/v1/customer/addresses/{addressId}": {
+      "put": {
+        "operationId": "customerProfileUpdateAddress",
+        "parameters": [
+          {
+            "name": "addressId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerAddressFieldsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAddressDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      },
+      "delete": {
+        "operationId": "customerProfileDeleteAddress",
+        "parameters": [
+          {
+            "name": "addressId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAddressDeletedDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/v1/customer/addresses/{addressId}/default": {
+      "put": {
+        "operationId": "customerProfileSetDefaultAddress",
+        "parameters": [
+          {
+            "name": "addressId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAddressDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
     }
   },
   "info": {
@@ -3650,6 +3970,797 @@
         },
         "required": [
           "accepted"
+        ],
+        "additionalProperties": false
+      },
+      "CustomerLocationDto_Output": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "served",
+              "no_restaurants",
+              "outside_zones"
+            ],
+            "description": "CU §7.1: the home screen; «لا توجد مطاعم توصل إلى موقعك حالياً»; «قريباً في منطقتك» with the vote."
+          },
+          "zone": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The zone the point is in, the neighbourhood of an unsaved point."
+          }
+        },
+        "required": [
+          "state",
+          "zone"
+        ],
+        "additionalProperties": false
+      },
+      "CustomerZoneVoteDto": {
+        "type": "object",
+        "properties": {
+          "deviceId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "The app installation, generated once by the app and kept until it is removed."
+          },
+          "location": {
+            "type": "object",
+            "properties": {
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              }
+            },
+            "required": [
+              "latitude",
+              "longitude"
+            ]
+          }
+        },
+        "required": [
+          "deviceId",
+          "location"
+        ]
+      },
+      "CustomerZoneVotedDto_Output": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "already_voted"
+            ],
+            "description": "Either way the app shows «شكراً، سنخبرك عندما نصل إلى منطقتك»."
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "CustomerProfileDto_Output": {
+        "type": "object",
+        "properties": {
+          "completed": {
+            "type": "boolean",
+            "description": "false until «أكمل بياناتك» is sent (CU §5.3)."
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 30,
+                    "pattern": "^(?:[A-Za-z -]|(?=\\p{Script_Extensions=Arabic})[\\p{L}\\p{M}])+$",
+                    "description": "«الاسم»: 2 to 30 Arabic or Latin letters, spaces and «-»."
+                  },
+                  "lastName": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 30,
+                        "pattern": "^(?:[A-Za-z -]|(?=\\p{Script_Extensions=Arabic})[\\p{L}\\p{M}])+$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«الكنية», optional, the same rule."
+                  },
+                  "gender": {
+                    "type": "string",
+                    "enum": [
+                      "male",
+                      "female"
+                    ],
+                    "description": "«ذكر» male or «أنثى» female."
+                  },
+                  "birthday": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«تاريخ الميلاد», optional, a past date."
+                  }
+                },
+                "required": [
+                  "firstName",
+                  "lastName",
+                  "gender",
+                  "birthday"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "completed",
+          "profile"
+        ],
+        "additionalProperties": false
+      },
+      "CustomerSaveProfileDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 30,
+            "pattern": "^(?:[A-Za-z -]|(?=\\p{Script_Extensions=Arabic})[\\p{L}\\p{M}])+$",
+            "description": "«الاسم»: 2 to 30 Arabic or Latin letters, spaces and «-»."
+          },
+          "lastName": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 30,
+                "pattern": "^(?:[A-Za-z -]|(?=\\p{Script_Extensions=Arabic})[\\p{L}\\p{M}])+$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«الكنية», optional, the same rule."
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "male",
+              "female"
+            ],
+            "description": "«ذكر» male or «أنثى» female."
+          },
+          "birthday": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«تاريخ الميلاد», optional, a past date."
+          },
+          "acceptTerms": {
+            "type": "boolean",
+            "description": "«أوافق على الشروط وسياسة الخصوصية»: needed the first time only."
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName",
+          "gender",
+          "birthday",
+          "acceptTerms"
+        ]
+      },
+      "CustomerAddressListDto_Output": {
+        "type": "object",
+        "properties": {
+          "addresses": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "location": {
+                  "type": "object",
+                  "properties": {
+                    "latitude": {
+                      "type": "number",
+                      "minimum": -90,
+                      "maximum": 90
+                    },
+                    "longitude": {
+                      "type": "number",
+                      "minimum": -180,
+                      "maximum": 180
+                    }
+                  },
+                  "required": [
+                    "latitude",
+                    "longitude"
+                  ],
+                  "additionalProperties": false,
+                  "description": "The pin, inside an active zone (CU §7.1)."
+                },
+                "label": {
+                  "type": "string",
+                  "enum": [
+                    "home",
+                    "work",
+                    "other"
+                  ],
+                  "description": "«البيت», «العمل» or «آخر»."
+                },
+                "customLabel": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 30
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The name of an «آخر» address; null otherwise."
+                },
+                "street": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 100,
+                  "description": "«الشارع والبناء»."
+                },
+                "floor": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«الطابق والشقة», optional."
+                },
+                "landmark": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 100,
+                  "description": "«بالقرب من»."
+                },
+                "contactPhone": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
+                      "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«رقم التواصل»; null is the account's own number."
+                },
+                "recipientName": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 60,
+                      "pattern": "^(?:[A-Za-z -]|(?=\\p{Script_Extensions=Arabic})[\\p{L}\\p{M}])+$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«اسم المستلم», needed with another contact number (Q5)."
+                },
+                "directions": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«توجيهات للكابتن», optional."
+                },
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "isDefault": {
+                  "type": "boolean"
+                },
+                "neighbourhood": {
+                  "description": "«الحي», the zone name; null is «خارج منطقة التوصيل حالياً» (Q6).",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "location",
+                "label",
+                "customLabel",
+                "street",
+                "floor",
+                "landmark",
+                "contactPhone",
+                "recipientName",
+                "directions",
+                "id",
+                "isDefault",
+                "neighbourhood"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "addresses"
+        ],
+        "additionalProperties": false
+      },
+      "CustomerNewAddressDto": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "object",
+            "properties": {
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              }
+            },
+            "required": [
+              "latitude",
+              "longitude"
+            ],
+            "description": "The pin, inside an active zone (CU §7.1)."
+          },
+          "label": {
+            "type": "string",
+            "enum": [
+              "home",
+              "work",
+              "other"
+            ],
+            "description": "«البيت», «العمل» or «آخر»."
+          },
+          "customLabel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 30
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The name of an «آخر» address; null otherwise."
+          },
+          "street": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100,
+            "description": "«الشارع والبناء»."
+          },
+          "floor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«الطابق والشقة», optional."
+          },
+          "landmark": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100,
+            "description": "«بالقرب من»."
+          },
+          "contactPhone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
+                "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«رقم التواصل»; null is the account's own number."
+          },
+          "recipientName": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 60,
+                "pattern": "^(?:[A-Za-z -]|(?=\\p{Script_Extensions=Arabic})[\\p{L}\\p{M}])+$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«اسم المستلم», needed with another contact number (Q5)."
+          },
+          "directions": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«توجيهات للكابتن», optional."
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "Make it the default; the first address always is."
+          }
+        },
+        "required": [
+          "location",
+          "label",
+          "customLabel",
+          "street",
+          "floor",
+          "landmark",
+          "contactPhone",
+          "recipientName",
+          "directions",
+          "isDefault"
+        ]
+      },
+      "CustomerAddressDto_Output": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "object",
+            "properties": {
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              }
+            },
+            "required": [
+              "latitude",
+              "longitude"
+            ],
+            "additionalProperties": false,
+            "description": "The pin, inside an active zone (CU §7.1)."
+          },
+          "label": {
+            "type": "string",
+            "enum": [
+              "home",
+              "work",
+              "other"
+            ],
+            "description": "«البيت», «العمل» or «آخر»."
+          },
+          "customLabel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 30
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The name of an «آخر» address; null otherwise."
+          },
+          "street": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100,
+            "description": "«الشارع والبناء»."
+          },
+          "floor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«الطابق والشقة», optional."
+          },
+          "landmark": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100,
+            "description": "«بالقرب من»."
+          },
+          "contactPhone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
+                "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«رقم التواصل»; null is the account's own number."
+          },
+          "recipientName": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 60,
+                "pattern": "^(?:[A-Za-z -]|(?=\\p{Script_Extensions=Arabic})[\\p{L}\\p{M}])+$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«اسم المستلم», needed with another contact number (Q5)."
+          },
+          "directions": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«توجيهات للكابتن», optional."
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "neighbourhood": {
+            "description": "«الحي», the zone name; null is «خارج منطقة التوصيل حالياً» (Q6).",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "location",
+          "label",
+          "customLabel",
+          "street",
+          "floor",
+          "landmark",
+          "contactPhone",
+          "recipientName",
+          "directions",
+          "id",
+          "isDefault",
+          "neighbourhood"
+        ],
+        "additionalProperties": false
+      },
+      "CustomerAddressFieldsDto": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "object",
+            "properties": {
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              }
+            },
+            "required": [
+              "latitude",
+              "longitude"
+            ],
+            "description": "The pin, inside an active zone (CU §7.1)."
+          },
+          "label": {
+            "type": "string",
+            "enum": [
+              "home",
+              "work",
+              "other"
+            ],
+            "description": "«البيت», «العمل» or «آخر»."
+          },
+          "customLabel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 30
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The name of an «آخر» address; null otherwise."
+          },
+          "street": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100,
+            "description": "«الشارع والبناء»."
+          },
+          "floor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«الطابق والشقة», optional."
+          },
+          "landmark": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100,
+            "description": "«بالقرب من»."
+          },
+          "contactPhone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
+                "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«رقم التواصل»; null is the account's own number."
+          },
+          "recipientName": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 60,
+                "pattern": "^(?:[A-Za-z -]|(?=\\p{Script_Extensions=Arabic})[\\p{L}\\p{M}])+$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«اسم المستلم», needed with another contact number (Q5)."
+          },
+          "directions": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«توجيهات للكابتن», optional."
+          }
+        },
+        "required": [
+          "location",
+          "label",
+          "customLabel",
+          "street",
+          "floor",
+          "landmark",
+          "contactPhone",
+          "recipientName",
+          "directions"
+        ]
+      },
+      "CustomerAddressDeletedDto_Output": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "deleted"
+          }
+        },
+        "required": [
+          "status"
         ],
         "additionalProperties": false
       }

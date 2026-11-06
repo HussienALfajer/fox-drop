@@ -576,6 +576,33 @@ export class MerchantsService implements OnModuleInit {
     return (await this.coveredZoneIds(this.database.db, restaurantId)).includes(zone.id);
   }
 
+  // The restaurants a customer at the point sees (CU §8.2): active and
+  // visible, covering it as covers() does, whatever their operating state.
+  // Test-mode restaurants are left out until admin test accounts exist
+  // (AP §9.8).
+  async coveringRestaurants(cityId: string, point: Point): Promise<string[]> {
+    if (!validPoint(point)) return [];
+    const zone = await this.geo.zoneAt(cityId, point);
+    if (zone === null) return [];
+    const at = sql`ST_SetSRID(ST_MakePoint(${point.longitude}, ${point.latitude}), 4326)::geography`;
+    const rows = await this.database.db
+      .select({ id: restaurants.id })
+      .from(restaurants)
+      .where(
+        and(
+          eq(restaurants.cityId, cityId),
+          eq(restaurants.accountStatus, 'active'),
+          eq(restaurants.visible, true),
+          sql`CASE ${restaurants.coverageKind}
+            WHEN 'radius' THEN ST_DWithin(${restaurants.location}::geography, ${at}, ${restaurants.coverageRadiusMetres})
+            ELSE EXISTS (SELECT 1 FROM ${coverageZones} WHERE ${coverageZones.restaurantId} = ${restaurants.id} AND ${coverageZones.zoneId} = ${zone.id} AND ${coverageZones.removedAt} IS NULL)
+          END`,
+        ),
+      )
+      .orderBy(desc(restaurants.sortWeight), asc(restaurants.id));
+    return rows.map((row) => row.id);
+  }
+
   // AP §9.6.6: a category, published at once when an admin adds it.
   async addCategory(
     restaurantId: string,

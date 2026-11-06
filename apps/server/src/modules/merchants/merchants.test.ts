@@ -221,6 +221,29 @@ describe('MerchantsService.covers (RA R13, owner decision 2026-11-06)', () => {
   });
 });
 
+describe('MerchantsService.coveringRestaurants (CU §8.2)', () => {
+  it('lists the active, visible restaurants that cover the point, by radius or zone', async () => {
+    const { cityId, zoneId } = await city();
+    const create = async (coverage: NewRestaurant['coverage'], status?: 'active') => {
+      const id = await merchants.createRestaurant(cityId, { ...restaurant, coverage }, change);
+      if (status) await merchants.setAccountStatus(id, status, change);
+      return id;
+    };
+    const byRadius = await create({ kind: 'radius', radiusMetres: 1000 }, 'active');
+    const byZone = await create({ kind: 'zones', zoneIds: [zoneId] }, 'active');
+    const tooSmall = await create({ kind: 'radius', radiusMetres: 100 }, 'active');
+    await create({ kind: 'radius', radiusMetres: 1000 });
+    // About 500 m from the pin, inside the zone.
+    const point = { latitude: pin.latitude + 0.0045, longitude: pin.longitude };
+    const covering = await merchants.coveringRestaurants(cityId, point);
+    expect(covering.sort()).toEqual([byRadius, byZone].sort());
+    expect(covering).not.toContain(tooSmall);
+    await expect(
+      merchants.coveringRestaurants(cityId, { latitude: 36.607, longitude: 37.046 }),
+    ).resolves.toEqual([]);
+  });
+});
+
 describe('MerchantsService.setAccountStatus (AP §9.6.1)', () => {
   it('moves along the allowed changes and refuses the others', async () => {
     const { cityId } = await city();

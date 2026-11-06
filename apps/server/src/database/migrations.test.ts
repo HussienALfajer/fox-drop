@@ -449,6 +449,48 @@ describe('the captains tables (AP §9.7, §9.12.5; CA §7)', () => {
   });
 });
 
+describe('the customers tables and the zone votes (CU §5.3, §7.2–7.3)', () => {
+  const azaz = "(SELECT id FROM geo.cities WHERE code = 'AZ')";
+  const address = (accountId: string, extra: string) =>
+    `INSERT INTO customers.addresses (account_id, city_id, location, label, custom_label, street, landmark, contact_phone_encrypted, recipient_name, is_default) VALUES ('${accountId}', ${azaz}, ST_SetSRID(ST_MakePoint(37.05, 36.59), 4326), ${extra})`;
+
+  it('take a profile and refuse another gender value', async () => {
+    const profile = (gender: string) =>
+      `INSERT INTO customers.profiles (account_id, first_name, gender, terms_accepted_at) VALUES ('${randomUUID()}', 'أحمد', '${gender}', now())`;
+    await appQuery(profile('male'));
+    await expect(appQuery(profile('other'))).rejects.toThrow(/profiles_gender_values/);
+  });
+
+  it('keep one default address per account, a custom name with «آخر» and a recipient with another number', async () => {
+    const accountId = randomUUID();
+    await appQuery(address(accountId, "'home', NULL, 'شارع', 'جامع', NULL, NULL, true"));
+    await expect(
+      appQuery(address(accountId, "'work', NULL, 'شارع', 'جامع', NULL, NULL, true")),
+    ).rejects.toThrow(/addresses_one_default/);
+    await expect(
+      appQuery(address(accountId, "'other', NULL, 'شارع', 'جامع', NULL, NULL, false")),
+    ).rejects.toThrow(/addresses_custom_label/);
+    await expect(
+      appQuery(address(accountId, "'home', NULL, 'شارع', 'جامع', 'v1.x', NULL, false")),
+    ).rejects.toThrow(/addresses_recipient/);
+  });
+
+  it('take a vote with or without a city', async () => {
+    const vote = (city: string) =>
+      `INSERT INTO geo.zone_votes (city_id, device_id, location) VALUES (${city}, '${randomUUID()}', ST_SetSRID(ST_MakePoint(37.1, 36.6), 4326))`;
+    await appQuery(vote(azaz));
+    await appQuery(vote('NULL'));
+  });
+
+  it.each([
+    ['delete an address', 'DELETE FROM customers.addresses'],
+    ['delete a profile', 'DELETE FROM customers.profiles'],
+    ['delete a vote', 'DELETE FROM geo.zone_votes'],
+  ])('refuse the application role to %s', async (_, statement) => {
+    await expect(appQuery(statement)).rejects.toThrow(/permission denied/);
+  });
+});
+
 describe('the identity tables (AP §5.1–5.2)', () => {
   it('refuse an admin account without an email or a phone', async () => {
     await expect(
