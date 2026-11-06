@@ -1,6 +1,12 @@
 import { Inject, Injectable, Logger, Module } from '@nestjs/common';
 import { DATABASE, DatabaseModule } from '../database/database.module.js';
 import type { Database } from '../database/database.js';
+import {
+  CaptainsModule,
+  CaptainsService,
+  type NewCaptain,
+  type PayRate,
+} from '../modules/captains/index.js';
 import { FxModule, FxService } from '../modules/fx/index.js';
 import { GeoModule, GeoRefusedError, GeoService } from '../modules/geo/index.js';
 import { IdentityModule, MerchantAccountsService } from '../modules/identity/index.js';
@@ -11,7 +17,12 @@ import {
   type NewRestaurant,
   type OpeningPeriod,
 } from '../modules/merchants/index.js';
-import { SettingsModule, SettingsService } from '../modules/settings/index.js';
+import {
+  SettingsModule,
+  SettingsService,
+  type Vehicle,
+  vehicles,
+} from '../modules/settings/index.js';
 
 // The environments that get the placeholder values. Production never does:
 // the owner enters its values before launch (AP §13 items 4 and 5).
@@ -84,6 +95,27 @@ const demoAccounts = [
 ] as const;
 const try_ = (amount: bigint) => ({ amount, currency: 'TRY' });
 
+// The placeholder captain pay, the same for every vehicle (owner decisions
+// 2026-11-05 and 2026-11-06): 25 TRY including the first 3 km, 5 TRY per
+// extra km pro rata, no waiting pay, a minimum of 25 TRY. The maximum
+// distance stays dispatch.max_distance_km.<vehicle>.
+const azazPay: PayRate = {
+  basePay: 2_500n,
+  includedMetres: 3_000,
+  perExtraKm: 500n,
+  waitingPerMinute: 0n,
+  minimumPay: 2_500n,
+};
+
+// The demo captain (owner decision 2026-11-06): an activated motorbike
+// captain with a cash limit of 3000 TRY.
+const demoCaptain: NewCaptain = {
+  name: 'كابتن فوكس التجريبي',
+  vehicle: 'motorbike',
+  plateNumber: 'DEMO-1',
+  custodyLimit: try_(300_000n),
+};
+
 // The placeholder data of development and staging, set by the API at start
 // (src/roles/start-role.ts), never by a migration. Each value is set only
 // while it is missing, so a value someone entered is never replaced, and two
@@ -98,6 +130,7 @@ export class PlaceholderSeed {
     private readonly settings: SettingsService,
     private readonly merchants: MerchantsService,
     private readonly merchantAccounts: MerchantAccountsService,
+    private readonly captains: CaptainsService,
     @Inject(DATABASE) private readonly database: Database,
   ) {}
 
@@ -156,6 +189,7 @@ export class PlaceholderSeed {
       });
     }
     await this.demoRestaurant(cityId);
+    await this.demoCaptain(cityId);
     this.logger.log('placeholder data in place');
   }
 
@@ -198,6 +232,35 @@ export class PlaceholderSeed {
     } finally {
       await client
         .query("SELECT pg_advisory_unlock(hashtextextended('seed:demo-restaurant', 0))")
+        .finally(() => client.release());
+    }
+  }
+
+  // The pay table and the demo captain, on a session lock as the demo
+  // restaurant: a second pay table would be a new version 7 days on. No demo
+  // captain when someone else entered the city's captains.
+  private async demoCaptain(cityId: string): Promise<void> {
+    const client = await this.database.pool.connect();
+    try {
+      await client.query("SELECT pg_advisory_lock(hashtextextended('seed:demo-captain', 0))");
+      const change = {
+        actor: system,
+        context: noRequest,
+        reason: 'Placeholder for development and staging (AP §13 item 5)',
+      };
+      if ((await this.captains.payTable(cityId, new Date())) === null) {
+        const rates = Object.fromEntries(vehicles.map((vehicle) => [vehicle, azazPay]));
+        await this.captains.setPayTable(
+          cityId,
+          { currency: 'TRY', rates: rates as Record<Vehicle, PayRate> },
+          change,
+        );
+      }
+      if ((await this.captains.captainIds(cityId)).length > 0) return;
+      await this.captains.createCaptain(cityId, demoCaptain, change);
+    } finally {
+      await client
+        .query("SELECT pg_advisory_unlock(hashtextextended('seed:demo-captain', 0))")
         .finally(() => client.release());
     }
   }
@@ -248,7 +311,15 @@ export class PlaceholderSeed {
 }
 
 @Module({
-  imports: [DatabaseModule, GeoModule, FxModule, SettingsModule, MerchantsModule, IdentityModule],
+  imports: [
+    DatabaseModule,
+    GeoModule,
+    FxModule,
+    SettingsModule,
+    MerchantsModule,
+    IdentityModule,
+    CaptainsModule,
+  ],
   providers: [PlaceholderSeed],
 })
 export class PlaceholderSeedModule {}

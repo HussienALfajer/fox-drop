@@ -272,10 +272,10 @@ export class FxService implements OnModuleInit {
       // The city's money settings and the other modules' amounts are in its
       // base currency (AP §8.6). Their changes take the same lock, so none
       // slips in meanwhile.
-      const amounts = [
-        ...(await this.settings.cityAmounts(cityId)),
-        ...(await Promise.all(this.amountSources.map((source) => source(cityId, tx)))).flat(),
-      ].filter((amount) => amount.currency !== currency);
+      const registered = await this.settings.cityAmounts(cityId);
+      // One at a time: the sources share the transaction's connection.
+      for (const source of this.amountSources) registered.push(...(await source(cityId, tx)));
+      const amounts = registered.filter((amount) => amount.currency !== currency);
       if (amounts.length > 0) {
         throw new FxRefusedError(
           'amounts_in_other_currency',

@@ -1,0 +1,659 @@
+import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
+import { and, desc, eq, isNull, lte, sql } from 'drizzle-orm';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { DATABASE } from '../../database/database.module.js';
+import type { Database } from '../../database/database.js';
+import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
+import { FxService, type RateSnapshot, toBase } from '../fx/index.js';
+import { GeoService, lastCutoff } from '../geo/index.js';
+import { type JournalType, LedgerService } from '../ledger/index.js';
+import { lockCityCurrencies, SettingsService, type Vehicle, vehicles } from '../settings/index.js';
+import {
+  type Availability,
+  availability,
+  type AvailabilityInput,
+  type CaptainStatus,
+  type OnlineBlock,
+  onlineBlocks,
+} from './availability.js';
+import { checkPayRate, type PayRate } from './pay.js';
+import { captainRecords, onlinePeriods, payRates, payTables } from './schema.js';
+
+export type CaptainsRefusal =
+  | 'unknown_captain'
+  | 'invalid_captain'
+  | 'invalid_pay_table'
+  | 'not_in_base_currency'
+  | 'status_change_not_allowed'
+  | 'reason_required'
+  | 'online_blocked';
+
+// A change the captains module refuses, with the reason the routes map to
+// their own answers; going online carries its blocks (CA §7.2).
+export class CaptainsRefusedError extends Error {
+  override readonly name = 'CaptainsRefusedError';
+  constructor(
+    readonly refusal: CaptainsRefusal,
+    message: string,
+    readonly blocks: OnlineBlock[] = [],
+  ) {
+    super(message);
+  }
+}
+
+// Who changes a captain or a pay table and why, for the audit log.
+export interface CaptainChange {
+  actor: AuditActor;
+  context: AuditRequestContext;
+  reason?: string | null;
+}
+
+// Integer minor units with their currency (AP §8.6).
+export interface Money {
+  amount: bigint;
+  currency: string;
+}
+
+export interface NewCaptain {
+  name: string;
+  vehicle: Vehicle;
+  plateNumber?: string | null;
+  // D10: required before activation, in the city's base currency.
+  custodyLimit: Money;
+}
+
+export interface Captain {
+  id: string;
+  cityId: string;
+  name: string;
+  vehicle: Vehicle;
+  plateNumber: string | null;
+  status: CaptainStatus;
+  suspension: { reason: string; until: Date | null } | null;
+  custodyLimit: Money;
+}
+
+export interface PayTable {
+  id: string;
+  currency: string;
+  effectiveFrom: Date;
+  rates: Record<Vehicle, PayRate>;
+}
+
+// A captain's cash now (AP §8.5.3–8.5.4), in the city's base currency.
+export interface Custody {
+  // The positive custody positions, converted at current rates.
+  usage: Money;
+  limit: Money;
+  // At captain.custody_warn_pct of the limit or more.
+  warn: boolean;
+  // Counted at the last business-day cutoff.
+  closedDue: Money;
+  lastCutoff: Date;
+}
+
+export interface CaptainState {
+  availability: Availability;
+  custody: Custody;
+}
+
+type Executor = Pick<NodePgDatabase, 'select' | 'execute'>;
+type Tx = Parameters<Parameters<Database['db']['transaction']>[0]>[0];
+
+// AP §8.5.4: the desk entries posted after the cutoff settle the closed days.
+const deskTypes: JournalType[] = [
+  'custody.hand_in',
+  'custody.reimburse',
+  'custody.fx_convert',
+  'custody.adjustment',
+];
+
+// AP §9.7.5: the status changes allowed; every one needs a reason.
+const statusChanges: Record<CaptainStatus, CaptainStatus[]> = {
+  active: ['suspended', 'terminated'],
+  suspended: ['active', 'terminated'],
+  terminated: [],
+};
+
+// AP §9.12.5: a change to the pay table takes effect 7 days or more after it
+// is published (fixed); a city's first table takes effect when published
+// (owner decision 2026-11-06).
+const PAY_TABLE_NOTICE_MS = 7 * 86_400_000;
+
+// The captain record, its cash limit, its availability and the city's pay
+// table (architecture §4.2; AP §9.7, §9.12.5; CA §7). Money is read through
+// LedgerService only.
+@Injectable()
+export class CaptainsService implements OnModuleInit {
+  constructor(
+    @Inject(DATABASE) private readonly database: Database,
+    private readonly settings: SettingsService,
+    private readonly fx: FxService,
+    private readonly geo: GeoService,
+    private readonly ledger: LedgerService,
+    private readonly audit: AuditService,
+  ) {}
+
+  // The cash limits and the pay tables in force or to come are in the city's
+  // base currency, so fx refuses a base change while one is in another.
+  onModuleInit(): void {
+    this.fx.useCityAmounts(async (cityId, executor) => {
+      const { rows } = await executor.execute<{ key: string; currency: string }>(sql`
+        SELECT 'captain.custody_limit' AS key, custody_limit_currency AS currency
+          FROM captains.captains WHERE city_id = ${cityId} AND status <> 'terminated'
+        UNION
+        SELECT 'captain.pay_table' AS key, currency FROM captains.pay_tables
+          WHERE city_id = ${cityId} AND (effective_from > now() OR id = (
+            SELECT id FROM captains.pay_tables WHERE city_id = ${cityId} AND effective_from <= now()
+              ORDER BY effective_from DESC, id DESC LIMIT 1))`);
+      return rows;
+    });
+  }
+
+  // AP §9.7.1: an activated captain, with the vehicle and the cash limit the
+  // activation needs. The pipeline before it comes with its slice.
+  async createCaptain(cityId: string, captain: NewCaptain, change: CaptainChange) {
+    const name = captain.name.trim();
+    const plateNumber = captain.plateNumber?.trim() || null;
+    if (name.length === 0) throw new CaptainsRefusedError('invalid_captain', 'a name is required');
+    if (!vehicles.includes(captain.vehicle)) {
+      throw new CaptainsRefusedError('invalid_captain', `${captain.vehicle} is not a vehicle`);
+    }
+    if ((captain.vehicle === 'motorbike' || captain.vehicle === 'car') && plateNumber === null) {
+      throw new CaptainsRefusedError('invalid_captain', 'a motor vehicle needs its plate number');
+    }
+    checkLimit(captain.custodyLimit);
+    return this.database.db.transaction(async (tx) => {
+      await this.checkBaseCurrency(tx, cityId, captain.custodyLimit.currency);
+      const [{ id }] = (await tx
+        .insert(captainRecords)
+        .values({
+          cityId,
+          name,
+          vehicle: captain.vehicle,
+          plateNumber,
+          custodyLimit: captain.custodyLimit.amount,
+          custodyLimitCurrency: captain.custodyLimit.currency,
+        })
+        .returning({ id: captainRecords.id })) as [{ id: string }];
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId,
+          action: 'captain.create',
+          target: { type: 'captain', id },
+          before: null,
+          after: {
+            name,
+            vehicle: captain.vehicle,
+            plateNumber,
+            custodyLimit: moneyOf(captain.custodyLimit),
+          },
+          reason: change.reason ?? null,
+        },
+        tx,
+      );
+      return id;
+    });
+  }
+
+  async captain(captainId: string): Promise<Captain | null> {
+    const [row] = await this.database.db
+      .select()
+      .from(captainRecords)
+      .where(eq(captainRecords.id, captainId));
+    return row ? captainOf(row) : null;
+  }
+
+  // The captains of a city by name, for the seed.
+  async captainIds(cityId: string): Promise<{ id: string; name: string }[]> {
+    return this.database.db
+      .select({ id: captainRecords.id, name: captainRecords.name })
+      .from(captainRecords)
+      .where(eq(captainRecords.cityId, cityId));
+  }
+
+  // AP §9.7.5: suspend (until a moment or further notice), reactivate or
+  // terminate, each with a reason. An online captain goes offline at once; an
+  // active order would keep them in last-order mode (K18), which comes with
+  // the ordering slices.
+  async setStatus(
+    captainId: string,
+    status: CaptainStatus,
+    change: CaptainChange & { until?: Date | null },
+    now: Date,
+  ): Promise<void> {
+    if (!hasReason(change)) {
+      throw new CaptainsRefusedError('reason_required', `becoming ${status} needs a reason`);
+    }
+    if (status !== 'suspended' && change.until != null) {
+      throw new CaptainsRefusedError('invalid_captain', 'only a suspension has an end');
+    }
+    if (change.until != null && change.until <= now) {
+      throw new CaptainsRefusedError('invalid_captain', 'a suspension ends after now');
+    }
+    await this.database.db.transaction(async (tx) => {
+      const row = await this.lockCaptain(tx, captainId);
+      if (!statusChanges[row.status].includes(status)) {
+        throw new CaptainsRefusedError(
+          'status_change_not_allowed',
+          `a ${row.status} captain cannot become ${status}`,
+        );
+      }
+      const until = change.until ?? null;
+      await tx
+        .update(captainRecords)
+        .set({
+          status,
+          suspensionReason: status === 'suspended' ? change.reason!.trim() : null,
+          suspendedUntil: until,
+          updatedAt: sql`now()`,
+        })
+        .where(eq(captainRecords.id, captainId));
+      if (status !== 'active') {
+        await this.endOnline(
+          tx,
+          captainId,
+          status === 'suspended' ? 'suspended' : 'terminated',
+          now,
+        );
+      }
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId: row.cityId,
+          action: 'captain.status',
+          target: { type: 'captain', id: captainId },
+          before: { status: row.status },
+          after: { status, ...(until === null ? {} : { suspendedUntil: until.toISOString() }) },
+          reason: change.reason ?? null,
+        },
+        tx,
+      );
+    });
+  }
+
+  // AP §9.7.5: a new cash limit, effective immediately, with a reason.
+  async setCustodyLimit(captainId: string, limit: Money, change: CaptainChange): Promise<void> {
+    if (!hasReason(change)) {
+      throw new CaptainsRefusedError('reason_required', 'a cash limit change needs a reason');
+    }
+    checkLimit(limit);
+    await this.database.db.transaction(async (tx) => {
+      const row = await this.lockCaptain(tx, captainId);
+      await this.checkBaseCurrency(tx, row.cityId, limit.currency);
+      await tx
+        .update(captainRecords)
+        .set({
+          custodyLimit: limit.amount,
+          custodyLimitCurrency: limit.currency,
+          updatedAt: sql`now()`,
+        })
+        .where(eq(captainRecords.id, captainId));
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId: row.cityId,
+          action: 'captain.custody_limit',
+          target: { type: 'captain', id: captainId },
+          before: {
+            custodyLimit: moneyOf({ amount: row.custodyLimit, currency: row.custodyLimitCurrency }),
+          },
+          after: { custodyLimit: moneyOf(limit) },
+          reason: change.reason ?? null,
+        },
+        tx,
+      );
+    });
+  }
+
+  // AP §9.12.5: a new version of the city's pay table, one rate per vehicle,
+  // never changed. The first takes effect now (or later); every later one 7
+  // days or more after it is published, from that moment by default.
+  async setPayTable(
+    cityId: string,
+    table: { currency: string; rates: Record<Vehicle, PayRate>; effectiveFrom?: Date },
+    change: CaptainChange,
+  ): Promise<string> {
+    if (!hasReason(change)) {
+      throw new CaptainsRefusedError('reason_required', 'a pay table needs a reason');
+    }
+    for (const vehicle of vehicles) {
+      const rate = table.rates[vehicle];
+      const problem = rate === undefined ? `${vehicle} has no rate` : checkPayRate(rate);
+      if (problem !== null) throw new CaptainsRefusedError('invalid_pay_table', problem);
+    }
+    if (Object.keys(table.rates).some((key) => !vehicles.includes(key as Vehicle))) {
+      throw new CaptainsRefusedError('invalid_pay_table', 'a rate is for an unknown vehicle');
+    }
+    const editor = change.actor;
+    if (editor.type !== 'admin' && editor.type !== 'system') {
+      throw new Error(`a ${editor.type} does not set a pay table`);
+    }
+    const editorType = editor.type;
+    return this.database.db.transaction(async (tx) => {
+      // Two versions of one city take turns.
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtextextended(${`pay-table:${cityId}`}, 0))`,
+      );
+      await this.checkBaseCurrency(tx, cityId, table.currency);
+      const [{ now }] = (await tx
+        .execute<{ now: Date }>(sql`SELECT now() AS now`)
+        .then((result) => result.rows)) as [{ now: Date }];
+      const published = new Date(now).getTime();
+      const [{ count }] = (await tx
+        .select({ count: sql<number>`count(*)::int` })
+        .from(payTables)
+        .where(eq(payTables.cityId, cityId))) as [{ count: number }];
+      const earliest = count === 0 ? published : published + PAY_TABLE_NOTICE_MS;
+      const effectiveFrom = table.effectiveFrom ?? new Date(earliest);
+      if (effectiveFrom.getTime() < earliest) {
+        throw new CaptainsRefusedError(
+          'invalid_pay_table',
+          count === 0
+            ? 'a pay table takes effect now or later'
+            : 'a pay table change takes effect 7 days or more after it is published',
+        );
+      }
+      const [{ id }] = (await tx
+        .insert(payTables)
+        .values({
+          cityId,
+          currency: table.currency,
+          effectiveFrom,
+          editorType,
+          editorId: editor.id,
+          reason: change.reason!.trim(),
+        })
+        .returning({ id: payTables.id })) as [{ id: string }];
+      await tx
+        .insert(payRates)
+        .values(vehicles.map((vehicle) => ({ tableId: id, vehicle, ...table.rates[vehicle] })));
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId,
+          action: 'pay_table.create',
+          target: { type: 'pay_table', id },
+          before: null,
+          after: {
+            currency: table.currency,
+            effectiveFrom: effectiveFrom.toISOString(),
+            rates: Object.fromEntries(
+              vehicles.map((vehicle) => [vehicle, rateOf(table.rates[vehicle])]),
+            ),
+          },
+          reason: change.reason ?? null,
+        },
+        tx,
+      );
+      return id;
+    });
+  }
+
+  // The version in force at a moment: the latest start reached; of two with
+  // the same start, the later version.
+  async payTable(cityId: string, at: Date): Promise<PayTable | null> {
+    const [table] = await this.database.db
+      .select()
+      .from(payTables)
+      .where(and(eq(payTables.cityId, cityId), lte(payTables.effectiveFrom, at)))
+      .orderBy(desc(payTables.effectiveFrom), desc(payTables.id))
+      .limit(1);
+    if (!table) return null;
+    const rows = await this.database.db
+      .select()
+      .from(payRates)
+      .where(eq(payRates.tableId, table.id));
+    const rates = Object.fromEntries(
+      rows.map((row) => [
+        row.vehicle,
+        {
+          basePay: row.basePay,
+          includedMetres: row.includedMetres,
+          perExtraKm: row.perExtraKm,
+          waitingPerMinute: row.waitingPerMinute,
+          minimumPay: row.minimumPay,
+        },
+      ]),
+    ) as Record<Vehicle, PayRate>;
+    return { id: table.id, currency: table.currency, effectiveFrom: table.effectiveFrom, rates };
+  }
+
+  // The captain's state and cash now (CA §7.1, AP §8.5.3–8.5.4).
+  async state(captainId: string, now: Date): Promise<CaptainState> {
+    const row = await this.row(this.database.db, captainId);
+    const rules = await this.cityRules(row.cityId, now);
+    const input = await this.input(this.database.db, row, rules);
+    return { availability: availability(input.availability, now), custody: input.custody };
+  }
+
+  // CA §7.2: going online, refused with every block that applies. Already
+  // online answers the state as it is.
+  async goOnline(
+    captainId: string,
+    device: { appVersion: string | null; simulatedLocation: boolean },
+    now: Date,
+  ): Promise<CaptainState> {
+    const cityId = (await this.row(this.database.db, captainId)).cityId;
+    const rules = await this.cityRules(cityId, now);
+    return this.database.db.transaction(async (tx) => {
+      const row = await this.lockCaptain(tx, captainId);
+      const input = await this.input(tx, row, rules);
+      if (input.availability.onlineSince === null) {
+        const blocks = onlineBlocks(
+          {
+            ...input.availability,
+            appVersion: device.appVersion,
+            simulatedLocation: device.simulatedLocation,
+          },
+          now,
+        );
+        if (blocks.length > 0) {
+          throw new CaptainsRefusedError('online_blocked', 'the captain cannot go online', blocks);
+        }
+        await tx
+          .insert(onlinePeriods)
+          .values({ captainId, startedAt: now, appVersion: device.appVersion });
+        input.availability.onlineSince = now;
+      }
+      return { availability: availability(input.availability, now), custody: input.custody };
+    });
+  }
+
+  // CA §7.5: one tap with no active order. The answer carries the cash to
+  // hand in above captain.remit_tolerance, for the reminder, or null.
+  async goOffline(captainId: string, now: Date): Promise<{ handIn: Money | null }> {
+    const cityId = (await this.row(this.database.db, captainId)).cityId;
+    const rules = await this.cityRules(cityId, now);
+    return this.database.db.transaction(async (tx) => {
+      const row = await this.lockCaptain(tx, captainId);
+      await this.endOnline(tx, captainId, 'captain', now);
+      const { custody } = await this.input(tx, row, rules);
+      const held = custody.usage.amount;
+      return { handIn: held > rules.remitTolerance ? { ...custody.usage } : null };
+    });
+  }
+
+  // The city's rules the state reads, outside any transaction: settings take
+  // a pool connection of their own.
+  private async cityRules(cityId: string, now: Date) {
+    const timeZone = await this.geo.cityTimeZone(cityId);
+    if (timeZone === null) throw new Error(`city ${cityId} does not exist`);
+    const [cutoff, tolerance, graceHours, warnPct, minVersion] = await Promise.all([
+      this.settings.get('finance.business_day_cutoff', { cityId }),
+      this.settings.get('captain.remit_tolerance', { cityId }),
+      this.settings.get('captain.remit_online_grace_hours', { cityId }),
+      this.settings.get('captain.custody_warn_pct', { cityId }),
+      this.settings.get('app.<app>.min_version', { parameter: 'captain' }),
+    ]);
+    const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
+    return {
+      lastCutoff: lastCutoff(now, hours * 60 + minutes, timeZone),
+      remitTolerance: BigInt(tolerance.amountMinor),
+      graceHours,
+      warnPct,
+      minVersion,
+    };
+  }
+
+  private async input(
+    executor: Tx | Database['db'],
+    row: typeof captainRecords.$inferSelect,
+    rules: Awaited<ReturnType<CaptainsService['cityRules']>>,
+  ): Promise<{ availability: AvailabilityInput; custody: Custody }> {
+    const [open] = await executor
+      .select({ startedAt: onlinePeriods.startedAt, appVersion: onlinePeriods.appVersion })
+      .from(onlinePeriods)
+      .where(and(eq(onlinePeriods.captainId, row.id), isNull(onlinePeriods.endedAt)));
+    const custody = await this.custody(executor, row, rules.lastCutoff, rules.warnPct);
+    const captain = captainOf(row);
+    return {
+      availability: {
+        status: captain.status,
+        suspension: captain.suspension,
+        onlineSince: open?.startedAt ?? null,
+        custodyUsage: custody.usage.amount,
+        custodyLimit: custody.limit.amount,
+        closedDue: custody.closedDue.amount,
+        remitTolerance: rules.remitTolerance,
+        lastCutoff: rules.lastCutoff,
+        remitOnlineGraceHours: rules.graceHours,
+        appVersion: open?.appVersion ?? null,
+        minVersion: rules.minVersion,
+        // Reported with the location (CA §4.3), from the location routes.
+        simulatedLocation: false,
+      },
+      custody,
+    };
+  }
+
+  // AP §8.5.3: usage is the sum of the positive positions; AP §8.5.4: the
+  // closed days' due nets every currency. Both at current rates, in base.
+  private async custody(
+    executor: Tx | Database['db'],
+    row: typeof captainRecords.$inferSelect,
+    cutoff: Date,
+    warnPct: number,
+  ): Promise<Custody> {
+    const base = row.custodyLimitCurrency;
+    const accounts = await this.ledger.ownerAccounts(row.id, 'captain.custody', executor);
+    let snapshot: RateSnapshot | null = null;
+    const inBase = async (amount: bigint, currency: string) => {
+      if (currency === base || amount === 0n) return amount;
+      snapshot ??= await this.fx.snapshot(row.cityId, executor);
+      return toBase(snapshot, amount, currency);
+    };
+    let usage = 0n;
+    let closedDue = 0n;
+    for (const account of accounts) {
+      const balance = await this.ledger.balance(account.id, executor);
+      if (balance.amount > 0n) usage += await inBase(balance.amount, account.currency);
+      const closed = await this.ledger.balanceAt(account.id, cutoff, deskTypes, executor);
+      closedDue += await inBase(closed.amount, account.currency);
+    }
+    return {
+      usage: { amount: usage, currency: base },
+      limit: { amount: row.custodyLimit, currency: base },
+      warn: usage * 100n >= row.custodyLimit * BigInt(warnPct),
+      closedDue: { amount: closedDue, currency: base },
+      lastCutoff: cutoff,
+    };
+  }
+
+  private async endOnline(
+    tx: Tx,
+    captainId: string,
+    reason: 'captain' | 'suspended' | 'terminated',
+    now: Date,
+  ): Promise<void> {
+    await tx
+      .update(onlinePeriods)
+      .set({
+        endedAt: sql`greatest(${now.toISOString()}::timestamptz, started_at)`,
+        endReason: reason,
+      })
+      .where(and(eq(onlinePeriods.captainId, captainId), isNull(onlinePeriods.endedAt)));
+  }
+
+  private async row(executor: Executor, captainId: string) {
+    const [row] = await executor
+      .select()
+      .from(captainRecords)
+      .where(eq(captainRecords.id, captainId));
+    if (!row) throw new CaptainsRefusedError('unknown_captain', 'no such captain');
+    return row;
+  }
+
+  private async lockCaptain(tx: Tx, captainId: string) {
+    const [row] = await tx
+      .select()
+      .from(captainRecords)
+      .where(eq(captainRecords.id, captainId))
+      .for('update');
+    if (!row) throw new CaptainsRefusedError('unknown_captain', 'no such captain');
+    return row;
+  }
+
+  // As the merchants' amounts: the base, or until the first order locks it,
+  // another of the city's currencies.
+  private async checkBaseCurrency(tx: Tx, cityId: string, currency: string): Promise<void> {
+    await lockCityCurrencies(tx, cityId);
+    const base = await this.fx.baseCurrency(cityId, tx);
+    const allowed =
+      currency === base ||
+      (!(await this.fx.baseLocked(cityId, tx)) &&
+        (await this.fx.cityCurrencies(cityId, tx)).some((entry) => entry.currency === currency));
+    if (!allowed) {
+      throw new CaptainsRefusedError(
+        'not_in_base_currency',
+        `amounts are in the city's base currency, ${base ?? 'not chosen yet'}`,
+      );
+    }
+  }
+}
+
+function captainOf(row: typeof captainRecords.$inferSelect): Captain {
+  return {
+    id: row.id,
+    cityId: row.cityId,
+    name: row.name,
+    vehicle: row.vehicle,
+    plateNumber: row.plateNumber,
+    status: row.status,
+    suspension:
+      row.status === 'suspended'
+        ? { reason: row.suspensionReason!, until: row.suspendedUntil }
+        : null,
+    custodyLimit: { amount: row.custodyLimit, currency: row.custodyLimitCurrency },
+  };
+}
+
+function checkLimit(limit: Money): void {
+  if (limit.amount <= 0n || limit.amount > 2n ** 63n - 1n) {
+    throw new CaptainsRefusedError('invalid_captain', 'the cash limit is above zero');
+  }
+}
+
+function hasReason(change: CaptainChange): boolean {
+  return (change.reason ?? '').trim().length > 0;
+}
+
+// The audit log keeps amounts as strings.
+function moneyOf(money: Money) {
+  return { amount: money.amount.toString(), currency: money.currency };
+}
+
+function rateOf(rate: PayRate) {
+  return {
+    basePay: rate.basePay.toString(),
+    includedMetres: rate.includedMetres,
+    perExtraKm: rate.perExtraKm.toString(),
+    waitingPerMinute: rate.waitingPerMinute.toString(),
+    minimumPay: rate.minimumPay.toString(),
+  };
+}

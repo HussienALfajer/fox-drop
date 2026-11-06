@@ -12,7 +12,7 @@ Slice 1.6, captain (`docs/roadmap.md`, Phase 1): an activated captain with vehic
 - **Plan, pull request 1 (`feat/captain`):**
   - [x] The failing tests first: the pay for a distance, the checks before going online and the availability state, the previous business-day cutoff.
   - [x] The `captains` schema through the `db-migration` skill: the captain record, vehicle, states, cash limit, online periods, pay table versions.
-  - [ ] `CaptainsService`: create, status, cash limit, pay table, custody usage and the cash due from closed days through `LedgerService`, going online and offline; the demo captain in the seed.
+  - [x] `CaptainsService`: create, status, cash limit, pay table, custody usage and the cash due from closed days through `LedgerService`, going online and offline; the demo captain in the seed.
   - [ ] `checker`, the `reviewer`, the pull request.
 - **Plan, pull request 2 (`feat/captain-sign-in`):**
   - [ ] The `captain` party on the app sign-in engine (`identity`), as the `merchant` party of slice 1.5: accounts never created by sign-in, refusals before sending a code, one device (CA §4.9).

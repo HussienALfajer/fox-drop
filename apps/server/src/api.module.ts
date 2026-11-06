@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { STATUS_CONTROLLERS } from './http/status.js';
+import { CaptainsModule } from './modules/captains/index.js';
 import { FxModule } from './modules/fx/index.js';
 import { GeoModule } from './modules/geo/index.js';
 import { IdentityModule, RouteAccessGuard } from './modules/identity/index.js';
@@ -11,8 +12,9 @@ import { PlaceholderSeedModule } from './seed/placeholder-seed.js';
 // Architecture §15.2: RouteAccessGuard sees every route of every group and
 // refuses one that does not declare its access. Each module with routes is
 // imported here, with FxModule, through which the settings routes check a
-// city's currencies, and GeoModule and MerchantsModule, whose fee rule,
-// minimum orders and menu prices a base change checks.
+// city's currencies, and GeoModule, MerchantsModule and CaptainsModule, whose
+// fee rule, minimum orders, menu prices, cash limits and pay tables a base
+// change checks.
 // The placeholder seed runs only when start-role.ts asks.
 @Module({
   imports: [
@@ -21,6 +23,7 @@ import { PlaceholderSeedModule } from './seed/placeholder-seed.js';
     FxModule,
     GeoModule,
     MerchantsModule,
+    CaptainsModule,
     PlaceholderSeedModule,
   ],
   controllers: STATUS_CONTROLLERS,
