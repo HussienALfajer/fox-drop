@@ -12,6 +12,7 @@ import { QUEUES } from '../../jobs/job-queue.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { reportError } from '../../observability/error-tracking.js';
 import {
+  captainChannel,
   merchantChannel,
   orderChannel,
   PublishFailedError,
@@ -40,6 +41,10 @@ interface OutboxPayload {
   version: number;
   reason: string | null;
   at: string;
+  // From slice 1.11: the captain track (AP §8.2) and the captain the event is
+  // about (an offer's, or the one assigned); absent before.
+  captainTrack?: string | null;
+  captainId?: string | null;
 }
 
 // What the apps receive (RA §4.3, CU §4.3): the event's type and the order's
@@ -47,7 +52,8 @@ interface OutboxPayload {
 // ignore an event whose version is not newer than the one they show.
 function publication(type: string, payload: OutboxPayload) {
   const { schema, orderId, number, restaurantId, status, version, reason, at } = payload;
-  return { type, schema, orderId, number, restaurantId, status, version, reason, at };
+  const captainTrack = payload.captainTrack ?? null;
+  return { type, schema, orderId, number, restaurantId, status, version, reason, at, captainTrack };
 }
 
 // Architecture §5.5, E4: publishes the committed outbox rows to Centrifugo,
@@ -94,7 +100,12 @@ export class OutboxRelay {
           const payload = row.payload as OutboxPayload;
           try {
             await this.publisher.broadcast(
-              [merchantChannel(payload.restaurantId), orderChannel(payload.orderId)],
+              [
+                merchantChannel(payload.restaurantId),
+                orderChannel(payload.orderId),
+                // CA §15: the offer's captain, or the order's once assigned.
+                ...(payload.captainId ? [captainChannel(payload.captainId)] : []),
+              ],
               publication(row.type, payload),
               `outbox:${row.id}`,
             );

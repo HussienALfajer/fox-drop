@@ -2268,6 +2268,32 @@
         ]
       }
     },
+    "/v1/captain/realtime/token": {
+      "post": {
+        "operationId": "captainRealtimeToken",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RealtimeTokenDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
     "/v1/admin/orders/{orderId}/assign": {
       "post": {
         "operationId": "adminDispatchAssign",

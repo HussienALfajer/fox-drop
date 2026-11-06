@@ -9,7 +9,7 @@ export type ChannelCheck = (session: AppSession, id: string) => Promise<boolean>
 
 // The namespaces of architecture §6.2 served so far, and the app whose
 // sessions subscribe to each.
-const NAMESPACE_PARTY = { merchant: 'merchant', order: 'customer' } as const;
+const NAMESPACE_PARTY = { merchant: 'merchant', order: 'customer', captain: 'captain' } as const;
 type Namespace = keyof typeof NAMESPACE_PARTY;
 
 // What Centrifugo sends to the subscription proxy: user is the connection
@@ -47,6 +47,8 @@ export class RealtimeAccess {
       async (session, id) =>
         session.merchant?.restaurantId === id && !(await this.terminated(session)),
     ],
+    // The captain's own channel, on the one device signed in (CA §4.9).
+    ['captain', (session, id) => Promise.resolve(session.captain?.captainId === id)],
   ]);
 
   constructor(

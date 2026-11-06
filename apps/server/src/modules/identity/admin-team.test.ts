@@ -361,6 +361,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/captain/availability/offline': 'app_session',
   'POST /v1/captain/location': 'app_session',
   'GET /v1/captain/offers/current': 'app_session',
+  'POST /v1/captain/realtime/token': 'app_session',
   'POST /v1/captain/offers/{offerId}/accept': 'app_session',
   'POST /v1/captain/offers/{offerId}/decline': 'app_session',
   'POST /v1/admin/orders/{orderId}/assign': 'operations.manage',

@@ -55,6 +55,7 @@ export async function startTestCentrifugo(
       CENTRIFUGO_PROXIES: JSON.stringify([
         proxy('merchant', 'merchant'),
         proxy('customer', 'customer'),
+        proxy('captain', 'captain'),
       ]),
     })
     .withExposedPorts(8000)

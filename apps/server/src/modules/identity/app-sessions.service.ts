@@ -84,7 +84,8 @@ export class AppSessionsService {
   // Called by the sign-in inside its transaction. A device holds one session
   // per app: an earlier one on the same device ends. A captain is signed in
   // on one device at a time (CA §4.9, K5): the sessions of their other
-  // devices end, and those devices show «سُجّل دخولك من جهاز آخر».
+  // devices end, and those devices show «سُجّل دخولك من جهاز آخر»; the
+  // caller passes their ids to notifyEnded once it commits.
   async start(
     tx: Executor,
     party: AppParty,
@@ -93,7 +94,7 @@ export class AppSessionsService {
     context: AuditRequestContext,
     signingKey: SigningKey,
     now: Date,
-  ): Promise<AppTokens> {
+  ): Promise<{ tokens: AppTokens; ended: string[] }> {
     await tx
       .update(appSessions)
       .set({ endedAt: now, endReason: 'new_sign_in' })
@@ -104,9 +105,8 @@ export class AppSessionsService {
           isNull(appSessions.endedAt),
         ),
       );
-    if (party === 'captain') {
-      await this.endAll(tx, party, accountId, 'other_device', now);
-    }
+    const ended =
+      party === 'captain' ? await this.endAll(tx, party, accountId, 'other_device', now) : [];
     const [session] = await tx
       .insert(appSessions)
       .values({
@@ -120,7 +120,8 @@ export class AppSessionsService {
       })
       .returning({ id: appSessions.id });
     if (!session) throw new Error('the session was not created');
-    return this.issue(tx, { id: session.id, party, accountId }, signingKey, now);
+    const tokens = await this.issue(tx, { id: session.id, party, accountId }, signingKey, now);
+    return { tokens, ended };
   }
 
   // A new token pair for an unused refresh token of an open session, or for a

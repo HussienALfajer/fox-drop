@@ -13,7 +13,7 @@ Slice 1.11, manual dispatch (`docs/roadmap.md`, Phase 1): «بحاجة لتعي�
   - [x] «بحاجة لتعيين» at the search start: the order's captain and captain track (AP §8.2), the event type on `order_events`, the search-start job acting under the order's lock with the no-captain moment.
   - [x] Busy captains: a captain with an active order is «مشغول» (CA §7.1) and out of the capacity check and the search start; every captain near a restaurant with the reasons the picker greys out (AP §9.3.2).
   - [x] The `dispatch` module: operations' manual offer or direct assignment (`POST /v1/admin/orders/{orderId}/assign`), the 45-second expiry, the captain's offer, accept and decline (CA §8, §15), C3.
-  - [ ] The captain channel: `POST /v1/captain/realtime/token`, the `captain` namespace, offers and assignments published to `captain:{captain_id}` (architecture §6.2).
+  - [x] The captain channel: `POST /v1/captain/realtime/token`, the `captain` namespace, offers and assignments published to `captain:{captain_id}` (architecture §6.2).
   - [ ] The operations board, order detail and assignment picker reads (AP §9.2, §9.3.1–9.3.2), with the alerts' moments.
 
 ## Notes from earlier slices

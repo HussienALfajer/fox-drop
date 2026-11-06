@@ -226,6 +226,7 @@ export class AppSignInService {
       request.party === 'merchant' ? await this.merchantAccounts.signInAccount(phoneHash) : null;
     const captain =
       request.party === 'captain' ? await this.captainAccounts.signInAccount(phoneHash, now) : null;
+    let endedElsewhere: string[] = [];
     const result = await this.database.db.transaction(async (tx) => {
       const [code] = await tx
         .select()
@@ -277,7 +278,7 @@ export class AppSignInService {
       } else {
         account = await this.findOrCreateCustomer(tx, request.phone, phoneHash, now);
       }
-      const tokens = await this.sessions.start(
+      const { tokens, ended } = await this.sessions.start(
         tx,
         request.party,
         account.id,
@@ -286,6 +287,7 @@ export class AppSignInService {
         signingKey,
         now,
       );
+      endedElsewhere = ended;
       return {
         accountId: account.id,
         newAccount: account.created,
@@ -294,6 +296,8 @@ export class AppSignInService {
         ...tokens,
       };
     });
+    // The other devices' connections end once their sessions' end committed.
+    if (endedElsewhere.length > 0) this.sessions.notifyEnded(endedElsewhere);
     if (
       result instanceof SignInCodeRefusedError ||
       result instanceof MerchantSignInRefusedError ||
