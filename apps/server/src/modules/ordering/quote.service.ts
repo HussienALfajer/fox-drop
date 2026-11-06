@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { CaptainsService } from '../captains/index.js';
 import { equivalent, FxRefusedError, FxService, type RateSnapshot } from '../fx/index.js';
 import {
   type Distance,
@@ -41,6 +42,8 @@ export type QuoteProblemCode =
   // account, «وصلت إلى الحد الأقصى للطلبات الجارية» for a trusted one.
   | 'one_order_at_a_time'
   | 'active_order_limit'
+  // AP §9.12.6: «الضغط عالٍ الآن، جرّب بعد دقائق».
+  | 'no_captain_nearby'
   | LineProblem;
 
 export interface QuoteProblem {
@@ -113,8 +116,9 @@ const TRIP_VEHICLE = 'motorbike';
 
 // CU §10.6: the versioned quote of a cart for a delivery point. Every check
 // with data is run (owner decision 2026-11-06), the signed-in customer's
-// active-order limit included; the capacity check, account states, the terms
-// version, the emergency stop and codes (Phase 2) pass until their slices.
+// active-order limit and the capacity check included; account states, the
+// terms version, the emergency stop and codes (Phase 2) pass until their
+// slices.
 @Injectable()
 export class QuoteService {
   constructor(
@@ -123,6 +127,7 @@ export class QuoteService {
     private readonly geo: GeoService,
     private readonly merchants: MerchantsService,
     private readonly activeOrders: ActiveOrders,
+    private readonly captains: CaptainsService,
   ) {}
 
   async quote(request: QuoteRequest, now: Date): Promise<Quote> {
@@ -232,6 +237,16 @@ export class QuoteService {
     const distance =
       fee?.distance ??
       (await this.geo.distance(restaurant.location, point, { vehicle: TRIP_VEHICLE }));
+    // AP §9.12.6: no order without an eligible captain near the restaurant.
+    // It costs a few reads per nearby captain, so it runs only when nothing
+    // else blocks the order.
+    if (
+      problems.length === 0 &&
+      (await this.settings.get('dispatch.capacity_check', { cityId })) &&
+      !(await this.captains.eligibleNear(cityId, restaurant.location, distance.metres, now))
+    ) {
+      problem('no_captain_nearby');
+    }
 
     const quote: Quote = {
       version: quoteVersion({

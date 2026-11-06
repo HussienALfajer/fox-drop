@@ -1,11 +1,11 @@
-import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { and, desc, eq, gte, isNull, lte, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { FxService } from '../fx/index.js';
-import { GeoService, lastCutoff } from '../geo/index.js';
+import { GeoService, lastCutoff, type Point } from '../geo/index.js';
 import { type JournalType, LedgerService } from '../ledger/index.js';
 import { lockCityCurrencies, SettingsService, type Vehicle, vehicles } from '../settings/index.js';
 import {
@@ -16,7 +16,7 @@ import {
   type OnlineBlock,
   onlineBlocks,
 } from './availability.js';
-import { LivePositions } from './live-positions.js';
+import { LIVE_POSITION_MAX_AGE_MS, LivePositions } from './live-positions.js';
 import { checkPayRate, type PayRate } from './pay.js';
 import { captainRecords, locations, onlinePeriods, payRates, payTables } from './schema.js';
 
@@ -141,6 +141,8 @@ const PAY_TABLE_NOTICE_MS = 7 * 86_400_000;
 // LedgerService only.
 @Injectable()
 export class CaptainsService implements OnModuleInit {
+  private readonly logger = new Logger('CaptainsService');
+
   constructor(
     @Inject(DATABASE) private readonly database: Database,
     private readonly settings: SettingsService,
@@ -455,6 +457,73 @@ export class CaptainsService implements OnModuleInit {
       ]),
     ) as Record<Vehicle, PayRate>;
     return { id: table.id, currency: table.currency, effectiveFrom: table.effectiveFrom, rates };
+  }
+
+  // AP §9.12.6, the capacity check: whether an eligible captain is within
+  // dispatch.search_radius_km of the restaurant now, nearest first. Eligible
+  // is online and receiving offers (active, under the cash limit, not blocked
+  // for unhanded cash: `availability`), with a vehicle allowed for the trip.
+  // No active order passes until orders are assigned (slice 1.11); the
+  // maximum pickup amount is ignored, as the rule says. The live positions
+  // come from Valkey, or from the locations table when Valkey cannot answer
+  // (architecture §5.7). A captain whose state cannot be read is skipped.
+  async eligibleNear(
+    cityId: string,
+    restaurant: Point,
+    tripMetres: number,
+    now: Date,
+  ): Promise<boolean> {
+    const radiusMetres = (await this.settings.get('dispatch.search_radius_km', { cityId })) * 1000;
+    const nearby =
+      (await this.positions.near(cityId, restaurant, radiusMetres, now)) ??
+      (await this.nearFromLocations(cityId, restaurant, radiusMetres, now));
+    if (nearby.length === 0) return false;
+    const rules = await this.cityRules(cityId, now);
+    const allowed = new Map<Vehicle, boolean>();
+    for (const captainId of nearby) {
+      try {
+        const row = await this.row(this.database.db, captainId);
+        if (row.cityId !== cityId) continue;
+        if (!allowed.has(row.vehicle)) {
+          const maxKm = await this.settings.get(`dispatch.max_distance_km.${row.vehicle}`, {
+            cityId,
+          });
+          allowed.set(row.vehicle, tripMetres <= maxKm * 1000);
+        }
+        if (!allowed.get(row.vehicle)) continue;
+        const input = await this.input(this.database.db, row, rules);
+        if (availability(input.availability, now).state === 'online_available') return true;
+      } catch (error) {
+        this.logger.warn({ err: error, captainId }, 'a nearby captain was left out');
+      }
+    }
+    return false;
+  }
+
+  // The newest real point of each open online period within the radius, no
+  // older than the live position may be (LIVE_POSITION_MAX_AGE_MS), nearest
+  // first: what Valkey holds, read from PostgreSQL.
+  private async nearFromLocations(
+    cityId: string,
+    point: Point,
+    radiusMetres: number,
+    now: Date,
+  ): Promise<string[]> {
+    const at = sql`ST_SetSRID(ST_MakePoint(${point.longitude}, ${point.latitude}), 4326)::geography`;
+    const since = new Date(now.getTime() - LIVE_POSITION_MAX_AGE_MS).toISOString();
+    const { rows } = await this.database.db.execute<{ captain_id: string }>(sql`
+      SELECT p.captain_id FROM ${onlinePeriods} p
+        JOIN ${captainRecords} c ON c.id = p.captain_id
+        CROSS JOIN LATERAL (
+          SELECT l.location FROM ${locations} l
+            WHERE l.captain_id = p.captain_id AND l.recorded_at >= p.started_at
+              AND l.recorded_at >= ${since} AND NOT l.simulated
+            ORDER BY l.recorded_at DESC LIMIT 1
+        ) newest
+        WHERE p.ended_at IS NULL AND c.city_id = ${cityId}
+          AND ST_DWithin(newest.location::geography, ${at}, ${radiusMetres})
+        ORDER BY ST_Distance(newest.location::geography, ${at})`);
+    return rows.map((row) => row.captain_id);
   }
 
   // The captain's state and cash now (CA §7.1, AP §8.5.3–8.5.4).

@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Valkey } from 'iovalkey';
 import { VALKEY } from '../../valkey/valkey.module.js';
+import type { Point } from '../geo/index.js';
 
 export interface LivePosition {
   latitude: number;
@@ -12,6 +13,10 @@ export interface LivePosition {
 // The hash outlives the last point by this many seconds, so an app that died
 // online leaves no position for long.
 const POSITION_TTL_SECONDS = 600;
+
+// A reader leaves out a position recorded longer ago than this, as old as the
+// hash may live: a late batch refreshes the hash's expiry, not its point.
+export const LIVE_POSITION_MAX_AGE_MS = POSITION_TTL_SECONDS * 1000;
 // How long an ended online period refuses a late write.
 const ENDED_TTL_SECONDS = 86_400;
 
@@ -62,6 +67,41 @@ export class LivePositions {
       );
     } catch (error) {
       this.logger.warn({ err: error }, 'the live position was not written');
+    }
+  }
+
+  // The captains whose live position is within the radius, nearest first;
+  // one whose hash expired or whose point is older than
+  // LIVE_POSITION_MAX_AGE_MS is left out. Null when Valkey cannot answer.
+  async near(
+    cityId: string,
+    point: Point,
+    radiusMetres: number,
+    now: Date,
+  ): Promise<string[] | null> {
+    try {
+      const members = (await this.valkey.geosearch(
+        cityKey(cityId),
+        'FROMLONLAT',
+        point.longitude,
+        point.latitude,
+        'BYRADIUS',
+        radiusMetres,
+        'm',
+        'ASC',
+      )) as string[];
+      if (members.length === 0) return [];
+      const pipeline = this.valkey.pipeline();
+      for (const captainId of members) pipeline.hget(captainKey(captainId), 'recordedAt');
+      const recorded = (await pipeline.exec()) ?? [];
+      const since = now.getTime() - LIVE_POSITION_MAX_AGE_MS;
+      return members.filter((_, index) => {
+        const value = recorded[index]?.[1];
+        return typeof value === 'string' && Number(value) >= since;
+      });
+    } catch (error) {
+      this.logger.warn({ err: error }, 'the live positions could not be read');
+      return null;
     }
   }
 
