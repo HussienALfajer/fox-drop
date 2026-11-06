@@ -400,8 +400,12 @@ describe('the order reaches the apps through Centrifugo (RA §4.3, CU §4.3)', (
 
       const customer = await signedIn('customer');
       const orderId = await place(customer);
-      await eventually(() => cashier.received.length > 0);
-      expect(cashier.received[0]).toMatchObject({
+      // The restaurant's events of this order, in the order they came; an
+      // earlier test's order may still arrive.
+      const ofOrder = () =>
+        cashier.received.filter((data) => (data as { orderId: string }).orderId === orderId);
+      await eventually(() => ofOrder().length > 0);
+      expect(ofOrder()[0]).toMatchObject({
         type: 'order.placed',
         schema: 1,
         orderId,
@@ -411,7 +415,7 @@ describe('the order reaches the apps through Centrifugo (RA §4.3, CU §4.3)', (
         version: 1,
       });
       // Only what the apps need (RA §4.3).
-      expect(cashier.received[0]).not.toHaveProperty('customerAccountId');
+      expect(ofOrder()[0]).not.toHaveProperty('customerAccountId');
 
       const screen = subscribed(await realtimeToken('customer', customer), `order:${orderId}`);
       try {
@@ -434,8 +438,8 @@ describe('the order reaches the apps through Centrifugo (RA §4.3, CU §4.3)', (
           version: 2,
           reason: 'merchant_auto_cancel',
         });
-        await eventually(() => cashier.received.length > 1);
-        expect(cashier.received[1]).toMatchObject({ orderId, status: 'cancelled', version: 2 });
+        await eventually(() => ofOrder().length > 1);
+        expect(ofOrder()[1]).toMatchObject({ orderId, status: 'cancelled', version: 2 });
       } finally {
         screen.client.disconnect();
       }
