@@ -1,10 +1,12 @@
 import 'reflect-metadata';
 import { Test, type TestingModule } from '@nestjs/testing';
+import { randomBytes } from 'node:crypto';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { startTestDatabase, type TestDatabase } from '../database/test-database.js';
 import { FxService } from '../modules/fx/index.js';
 import { GeoService } from '../modules/geo/index.js';
+import { MerchantAccountsService } from '../modules/identity/index.js';
 import { MerchantsService } from '../modules/merchants/index.js';
 import { SettingsService } from '../modules/settings/index.js';
 import { startTestValkey, type TestValkey } from '../valkey/test-valkey.js';
@@ -21,6 +23,7 @@ beforeAll(async () => {
   [database, cache] = await Promise.all([startTestDatabase(), startTestValkey()]);
   process.env.DATABASE_URL = database.appUrl;
   process.env.VALKEY_URL = cache.url;
+  process.env.IDENTITY_ENCRYPTION_KEY = randomBytes(32).toString('base64');
   sql = new pg.Pool({ connectionString: database.appUrl });
   azaz = (await sql.query("SELECT id FROM geo.cities WHERE code = 'AZ'")).rows[0].id;
   moduleRef = await Test.createTestingModule({ imports: [PlaceholderSeedModule] }).compile();
@@ -119,6 +122,10 @@ describe('the placeholder seed', () => {
     await expect(merchants.covers(id, { latitude: 36.59, longitude: 37.05 })).resolves.toBe(true);
     const menu = await merchants.menu(id);
     expect(menu.categories.map((category) => category.items.length)).toEqual([2, 2]);
+    await expect(moduleRef.get(MerchantAccountsService).accounts(id)).resolves.toEqual([
+      { id: expect.any(String), restaurantId: id, role: 'owner', name: 'مالك تجريبي' },
+      { id: expect.any(String), restaurantId: id, role: 'cashier', name: 'كاشير تجريبي' },
+    ]);
   });
 
   it('never replaces a value someone entered, and changes nothing when run again', async () => {

@@ -229,9 +229,9 @@ export const adminSessions = identity.table(
 );
 
 // The apps whose users sign in with a phone and a WhatsApp code (architecture
-// §8.3, §15.1). Only the customer app so far (owner decision 2026-11-05); the
-// restaurant and captain apps join with their accounts.
-export const appParties = ['customer'] as const;
+// §8.3, §15.1): the customer app and the restaurant app so far (owner decision
+// 2026-11-05); the captain app joins with its accounts.
+export const appParties = ['customer', 'merchant'] as const;
 
 export const appSignInCodeEndReasons = ['used', 'replaced', 'attempts_exhausted'] as const;
 
@@ -261,7 +261,7 @@ export const appSignInCodes = identity.table(
       .on(table.party, table.phoneHash)
       .where(sql`${table.endedAt} IS NULL`),
     index('app_sign_in_codes_number_created').on(table.phoneHash, table.createdAt),
-    check('app_sign_in_codes_party_values', sql`${table.party} IN ('customer')`),
+    check('app_sign_in_codes_party_values', sql`${table.party} IN ('customer', 'merchant')`),
     check(
       'app_sign_in_codes_end_reason_values',
       sql`${table.endReason} IN ('used', 'replaced', 'attempts_exhausted')`,
@@ -296,6 +296,38 @@ export const customerAccounts = identity.table(
       .on(table.phoneHash)
       .where(sql`${table.status} = 'active'`),
     check('customer_accounts_status_values', sql`${table.status} IN ('active')`),
+  ],
+);
+
+export const merchantRoles = ['owner', 'cashier'] as const;
+
+// A restaurant's owner «مالك» or cashier «كاشير» (RA §5.1). There is no
+// self-signup: OPS adds owners and owners add cashiers. In V1 a number belongs
+// to at most one restaurant (S6), so it has one account not removed. A removed
+// account keeps its row with removed_at. The restaurant and its city belong to
+// merchants and geo: plain columns here.
+export const merchantAccounts = identity.table(
+  'merchant_accounts',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    restaurantId: uuid('restaurant_id').notNull(),
+    role: text('role', { enum: merchantRoles }).notNull(),
+    name: text('name').notNull(),
+    // The E.164 phone, encrypted, and its keyed hash to find it by.
+    phoneEncrypted: text('phone_encrypted').notNull(),
+    phoneHash: text('phone_hash').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    removedAt: timestamp('removed_at', { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex('merchant_accounts_phone')
+      .on(table.phoneHash)
+      .where(sql`${table.removedAt} IS NULL`),
+    index('merchant_accounts_restaurant').on(table.restaurantId),
+    check('merchant_accounts_role_values', sql`${table.role} IN ('owner', 'cashier')`),
   ],
 );
 
@@ -335,7 +367,7 @@ export const appSessions = identity.table(
     index('app_sessions_open_device')
       .on(table.party, table.deviceId)
       .where(sql`${table.endedAt} IS NULL`),
-    check('app_sessions_party_values', sql`${table.party} IN ('customer')`),
+    check('app_sessions_party_values', sql`${table.party} IN ('customer', 'merchant')`),
     check(
       'app_sessions_end_reason_values',
       sql`${table.endReason} IN ('sign_out', 'sign_out_everywhere', 'refresh_reuse', 'new_sign_in')`,

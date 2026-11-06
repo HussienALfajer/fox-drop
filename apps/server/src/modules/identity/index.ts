@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
 import { ValkeyModule } from '../../valkey/valkey.module.js';
 import { AuditModule } from '../audit/index.js';
+import { MerchantsModule } from '../merchants/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminAuthController } from './admin-auth.controller.js';
 import { AdminSessionsService } from './admin-sessions.service.js';
@@ -14,16 +15,24 @@ import { AppSignInService } from './app-sign-in.service.js';
 import { AppSigningKeys } from './app-signing-keys.js';
 import { CODE_SENDER, codeSenderFromEnvironment } from './code-sender.js';
 import { CustomerAuthController } from './customer-auth.controller.js';
+import { MerchantAccountsService } from './merchant-accounts.service.js';
+import { MerchantAuthController } from './merchant-auth.controller.js';
 import { RouteAccessGuard } from './route-access.guard.js';
 import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
 
 // The identity module (architecture §4.2). So far: the admin panel's
 // accounts, first sign-in, sign-in, sessions, roles and permissions, and the
 // admin team (AP §5.1–5.3, §6, §9.15); the apps' phone sign-in, tokens and
-// sessions (architecture §8.3, §15.1).
+// sessions (architecture §8.3, §15.1), and the restaurants' owners, cashiers
+// and devices (RA §5).
 @Module({
-  imports: [DatabaseModule, ValkeyModule, AuditModule, SettingsModule],
-  controllers: [AdminAuthController, AdminTeamController, CustomerAuthController],
+  imports: [DatabaseModule, ValkeyModule, AuditModule, SettingsModule, MerchantsModule],
+  controllers: [
+    AdminAuthController,
+    AdminTeamController,
+    CustomerAuthController,
+    MerchantAuthController,
+  ],
   providers: [
     { provide: IDENTITY_SECRETS, useFactory: identitySecretsFromEnvironment },
     AdminSetupService,
@@ -34,9 +43,10 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
     AppSigningKeys,
     AppSessionsService,
     AppSignInService,
+    MerchantAccountsService,
     RouteAccessGuard,
   ],
-  exports: [AdminSessionsService, AppSessionsService, RouteAccessGuard],
+  exports: [AdminSessionsService, AppSessionsService, MerchantAccountsService, RouteAccessGuard],
 })
 export class IdentityModule {}
 
@@ -44,3 +54,11 @@ export { ADMIN_SESSION_COOKIE, RouteAccessGuard } from './route-access.guard.js'
 export { AdminSessionsService, type AdminSession } from './admin-sessions.service.js';
 export { AppSessionsService, type AppParty, type AppSession } from './app-sessions.service.js';
 export { adminPermissions, type AdminPermission } from './permissions.js';
+// For the tests of other modules that sign an app user in.
+export { CODE_SENDER, type DevelopmentCodeSender } from './code-sender.js';
+export {
+  type MerchantAccount,
+  MerchantAccountRefusedError,
+  MerchantAccountsService,
+  type MerchantRole,
+} from './merchant-accounts.service.js';

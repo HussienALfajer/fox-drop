@@ -39,9 +39,9 @@ export class RouteAccessGuard implements CanActivate {
     const group = this.reflector.get<RouteGroup | undefined>(ROUTE_GROUP, context.getClass());
     const request = context.switchToHttp().getRequest<FastifyRequest>();
     if (access.kind === 'app_session') {
-      // The app of the route's group; the restaurant and captain apps join
-      // with their sign-in.
-      const party: AppParty | undefined = group === 'customer' ? 'customer' : undefined;
+      // The app of the route's group; the captain app joins with its sign-in.
+      const party: AppParty | undefined =
+        group === 'customer' || group === 'merchant' ? group : undefined;
       if (!party) throw new ForbiddenException();
       const header = request.headers.authorization;
       const accessToken = header?.startsWith('Bearer ') ? header.slice('Bearer '.length) : '';

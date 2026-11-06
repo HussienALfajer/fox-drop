@@ -8,12 +8,15 @@ import { type AuditActor, type AuditRequestContext, AuditService } from '../audi
 import { FxService } from '../fx/index.js';
 import { GeoService, type Point } from '../geo/index.js';
 import { lockCityCurrencies, SettingsService } from '../settings/index.js';
+import { nextCutoff } from './business-day.js';
 import { commissionAt } from './commission.js';
 import { checkWeeklySchedule, currentPeriod, type OpeningPeriod } from './hours.js';
 import { type AccountStatus, type OperatingState, operatingState } from './operating-state.js';
 import {
   categories,
   commissionRates,
+  devicePlatforms,
+  devices,
   coverageZones,
   holidayCloses,
   itemOptionGroups,
@@ -36,6 +39,10 @@ export type MerchantsRefusal =
   | 'status_change_not_allowed'
   | 'invalid_menu'
   | 'item_code_taken'
+  | 'unknown_menu_row'
+  | 'restaurant_terminated'
+  | 'invalid_device'
+  | 'device_rename_not_allowed'
   | 'reason_required';
 
 // A change the merchants module refuses, with the reason the routes map to
@@ -88,6 +95,8 @@ export interface Restaurant {
   nameAr: string;
   nameEn: string | null;
   accountStatus: AccountStatus;
+  // The reason of a suspension, for the restaurant app's banner (RA §5.5).
+  suspensionReason: string | null;
   visible: boolean;
   location: Point;
   coverage: Coverage;
@@ -99,11 +108,19 @@ export interface Restaurant {
   schedule: OpeningPeriod[];
 }
 
+// A row's own availability switch (RA §9.3): null while on; off until a
+// time («حتى الغد», the next business-day cutoff) or, with null, until turned
+// back on («حتى أعيده»).
+export type SwitchedOff = { until: Date | null } | null;
+
+export type DevicePlatform = (typeof devicePlatforms)[number];
+
 export interface MenuOption {
   id: string;
   name: string;
   priceDelta: Money;
   available: boolean;
+  switchedOff: SwitchedOff;
 }
 
 export interface MenuOptionGroup {
@@ -120,7 +137,10 @@ export interface MenuItem {
   name: string;
   description: string | null;
   price: Money;
+  // Whether a customer can order it now: its switch, its category's, and its
+  // required groups' options (RA §9.3).
   available: boolean;
+  switchedOff: SwitchedOff;
   hidden: boolean;
   optionGroups: MenuOptionGroup[];
 }
@@ -130,6 +150,7 @@ export interface MenuCategory {
   name: string;
   hidden: boolean;
   available: boolean;
+  switchedOff: SwitchedOff;
   items: MenuItem[];
 }
 
@@ -283,6 +304,7 @@ export class MerchantsService implements OnModuleInit {
         nameAr: restaurants.nameAr,
         nameEn: restaurants.nameEn,
         accountStatus: restaurants.accountStatus,
+        suspensionReason: restaurants.suspensionReason,
         visible: restaurants.visible,
         latitude: sql<number>`ST_Y(${restaurants.location})`,
         longitude: sql<number>`ST_X(${restaurants.location})`,
@@ -314,6 +336,7 @@ export class MerchantsService implements OnModuleInit {
       nameAr: row.nameAr,
       nameEn: row.nameEn,
       accountStatus: row.accountStatus,
+      suspensionReason: row.suspensionReason,
       visible: row.visible,
       location: { latitude: row.latitude, longitude: row.longitude },
       coverage,
@@ -323,6 +346,16 @@ export class MerchantsService implements OnModuleInit {
       commissionBp: commissionAt(rates, at)?.rateBp ?? null,
       schedule: await this.schedule(this.database.db, restaurantId),
     };
+  }
+
+  // AP §9.6.1: the restaurant's account status now, or null for no such
+  // restaurant (RA §5.5, for the restaurant users' sign-in).
+  async accountStatus(restaurantId: string): Promise<AccountStatus | null> {
+    const [row] = await this.database.db
+      .select({ accountStatus: restaurants.accountStatus })
+      .from(restaurants)
+      .where(eq(restaurants.id, restaurantId));
+    return row?.accountStatus ?? null;
   }
 
   // AP §9.6.1, §9.6.5: the account status, along the allowed changes.
@@ -765,9 +798,10 @@ export class MerchantsService implements OnModuleInit {
   }
 
   // The published menu, in order, with what is hidden or unavailable now
-  // marked; deleted rows are left out. Availability windows and «حتى الغد»
-  // join with the customer's menu (slice 1.7) and the switches (RA §9.3).
-  async menu(restaurantId: string): Promise<Menu> {
+  // marked; deleted rows are left out. A switch off «حتى الغد» is on again
+  // from its time. Availability windows join with the customer's menu
+  // (slice 1.7).
+  async menu(restaurantId: string, now = new Date()): Promise<Menu> {
     const db = this.database.db;
     const [restaurant] = await db
       .select({ id: restaurants.id })
@@ -830,7 +864,8 @@ export class MerchantsService implements OnModuleInit {
               id: option.id,
               name: option.name,
               priceDelta: { amount: option.priceDelta, currency: option.currency },
-              available: option.available,
+              available: switchedOff(option, now) === null,
+              switchedOff: switchedOff(option, now),
             })),
         },
       ]),
@@ -840,7 +875,8 @@ export class MerchantsService implements OnModuleInit {
         id: category.id,
         name: category.name,
         hidden: category.hidden,
-        available: category.available,
+        available: switchedOff(category, now) === null,
+        switchedOff: switchedOff(category, now),
         items: itemRows
           .filter((item) => item.categoryId === category.id)
           .map((item) => {
@@ -858,13 +894,161 @@ export class MerchantsService implements OnModuleInit {
               name: item.name,
               description: item.description,
               price: { amount: item.price, currency: item.currency },
-              available: item.available && category.available && !requiredGroupOut,
+              available:
+                switchedOff(item, now) === null &&
+                switchedOff(category, now) === null &&
+                !requiredGroupOut,
+              switchedOff: switchedOff(item, now),
               hidden: item.hidden,
               optionGroups: groups,
             };
           }),
       })),
     };
+  }
+
+  // Whether this app installation has its name in the restaurant (RA §5.2
+  // item 5).
+  async deviceNamed(restaurantId: string, deviceId: string): Promise<boolean> {
+    const [device] = await this.database.db
+      .select({ id: devices.id })
+      .from(devices)
+      .where(and(eq(devices.restaurantId, restaurantId), eq(devices.deviceId, deviceId)));
+    return device !== undefined;
+  }
+
+  // RA §5.2 item 5, §5.3: names a device on its first sign-in, with its
+  // platform and app version. Renaming it is managing devices, an owner's
+  // capability (RA §5.4), so a cashier may only name it the first time.
+  async nameDevice(
+    restaurantId: string,
+    deviceId: string,
+    device: { name: string; platform: DevicePlatform; appVersion: string },
+    by: { accountId: string; role: 'owner' | 'cashier' },
+    now = new Date(),
+  ): Promise<void> {
+    const name = device.name.trim();
+    if (name.length === 0)
+      throw new MerchantsRefusedError('invalid_device', 'a device needs a name');
+    const values = {
+      name,
+      platform: device.platform,
+      appVersion: device.appVersion,
+      namedById: by.accountId,
+      updatedAt: now,
+    };
+    await this.database.db.transaction(async (tx) => {
+      await this.lockRestaurant(tx, restaurantId);
+      const [named] = await tx
+        .select({ id: devices.id })
+        .from(devices)
+        .where(and(eq(devices.restaurantId, restaurantId), eq(devices.deviceId, deviceId)));
+      if (named && by.role !== 'owner') {
+        throw new MerchantsRefusedError(
+          'device_rename_not_allowed',
+          'only an owner renames a device',
+        );
+      }
+      if (named) {
+        await tx.update(devices).set(values).where(eq(devices.id, named.id));
+      } else {
+        await tx.insert(devices).values({ restaurantId, deviceId, createdAt: now, ...values });
+      }
+    });
+  }
+
+  // RA §9.3: switches a category, an item or an option of the restaurant on,
+  // or off «حتى الغد» (until the next business-day cutoff on the city's
+  // clock, RA §4.9) or «حتى أعيده». A category's switch leaves its items' own
+  // switches as they are. Audited with the user and the device.
+  async setAvailability(
+    restaurantId: string,
+    target: { type: 'category' | 'item' | 'option'; id: string },
+    availability: { available: true } | { available: false; until: 'tomorrow' | 'turned_back_on' },
+    change: MerchantChange,
+    now = new Date(),
+  ): Promise<SwitchedOff> {
+    const [city] = await this.database.db
+      .select({ cityId: restaurants.cityId })
+      .from(restaurants)
+      .where(eq(restaurants.id, restaurantId));
+    if (!city) throw new MerchantsRefusedError('unknown_restaurant', 'no such restaurant');
+    let until: Date | null = null;
+    if (!availability.available && availability.until === 'tomorrow') {
+      const timeZone = await this.geo.cityTimeZone(city.cityId);
+      if (timeZone === null) throw new Error(`restaurant ${restaurantId} is in an unknown city`);
+      const cutoff = await this.settings.get('finance.business_day_cutoff', {
+        cityId: city.cityId,
+      });
+      const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
+      until = nextCutoff(now, hours * 60 + minutes, timeZone);
+    }
+    const table = { category: categories, item: items, option: options }[target.type];
+    return this.database.db.transaction(async (tx) => {
+      const row = await this.lockRestaurant(tx, restaurantId);
+      // RA §5.5: a terminated restaurant keeps only its money section.
+      if (row.accountStatus === 'terminated') {
+        throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
+      }
+      const [found] =
+        target.type === 'option'
+          ? await tx
+              .select({ id: options.id })
+              .from(options)
+              .innerJoin(optionGroups, eq(optionGroups.id, options.groupId))
+              .where(
+                and(
+                  eq(options.id, target.id),
+                  eq(optionGroups.restaurantId, restaurantId),
+                  isNull(options.deletedAt),
+                  isNull(optionGroups.deletedAt),
+                ),
+              )
+          : await this.ownRow(
+              tx,
+              target.type === 'item' ? items : categories,
+              restaurantId,
+              target.id,
+            );
+      if (!found) {
+        throw new MerchantsRefusedError('unknown_menu_row', `no such ${target.type} here`);
+      }
+      const [before] = await tx
+        .select({ available: table.available, unavailableUntil: table.unavailableUntil })
+        .from(table)
+        .where(eq(table.id, target.id));
+      await tx
+        .update(table)
+        .set({ available: availability.available, unavailableUntil: until, updatedAt: now })
+        .where(eq(table.id, target.id));
+      const after: SwitchedOff = availability.available ? null : { until };
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId: row.cityId,
+          action: `menu.${target.type}.availability`,
+          target: { type: `menu_${target.type}`, id: target.id },
+          before: { switchedOff: before ? switchedOff(before, now) : null },
+          after: { switchedOff: after },
+          reason: change.reason ?? null,
+        },
+        tx,
+      );
+      return after;
+    });
+  }
+
+  private ownRow(
+    tx: Tx,
+    table: typeof items | typeof categories,
+    restaurantId: string,
+    id: string,
+  ) {
+    return tx
+      .select({ id: table.id })
+      .from(table)
+      .where(and(eq(table.id, id), eq(table.restaurantId, restaurantId), isNull(table.deletedAt)));
   }
 
   private async lockRestaurant(tx: Tx, restaurantId: string) {
@@ -942,6 +1126,16 @@ export class MerchantsService implements OnModuleInit {
       );
     }
   }
+}
+
+// A row's switch at a moment: off «حتى الغد» is on again from its time.
+function switchedOff(
+  row: { available: boolean; unavailableUntil: Date | null },
+  now: Date,
+): SwitchedOff {
+  if (row.available) return null;
+  if (row.unavailableUntil === null) return { until: null };
+  return now.getTime() < row.unavailableUntil.getTime() ? { until: row.unavailableUntil } : null;
 }
 
 function validPoint({ latitude, longitude }: Point): boolean {

@@ -442,6 +442,8 @@ describe('the identity tables (AP §5.1–5.2)', () => {
     ['delete an app session', 'DELETE FROM identity.app_sessions'],
     ['delete a refresh token', 'DELETE FROM identity.app_refresh_tokens'],
     ['delete a signing key', 'DELETE FROM identity.app_signing_keys'],
+    ['delete a restaurant user', 'DELETE FROM identity.merchant_accounts'],
+    ['delete a restaurant device', 'DELETE FROM merchants.devices'],
   ])('refuse the application role to %s', async (_, statement) => {
     await expect(appQuery(statement)).rejects.toThrow(/permission denied/);
   });

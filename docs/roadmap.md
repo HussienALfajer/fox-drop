@@ -43,7 +43,7 @@ Markers: `[ ]` not started, `[~]` in progress, `[x]` done.
   - `[x]` 1.2 Currencies and the city's base currency (`fx`): currency rows, base and accepted currencies per city, rate versions, rounding unit and mode, the rate snapshot an order keeps (AP §8.6, §9.10.4).
   - `[x]` 1.3 Road distances: self-hosted OSRM with the Syria extract in development and staging, the `geo` distance service, the straight line × 1.3 fallback (architecture §7.1, AP §9.12.3).
   - `[x]` 1.4 Zones and delivery fees: zone polygons, the zone check of a point, flat and distance-band fees, minimum fee, free-delivery threshold, the Azaz seed (AP §9.12.2–9.12.3, CU §7.1).
-  - `[ ]` 1.5 Restaurant, menu and restaurant sign-in: the restaurant record, hours, coverage, minimum order and commission; categories, items and option groups; owner phone sign-in in the restaurant app (RA §5, §9, §10, AP §9.6).
+  - `[x]` 1.5 Restaurant, menu and restaurant sign-in: the restaurant record, hours, coverage, minimum order and commission; categories, items and option groups; owner phone sign-in in the restaurant app (RA §5, §9, §10, AP §9.6).
   - `[ ]` 1.6 Captain: an activated captain with vehicle, cash limit and pay table; phone sign-in, going online and offline, location every 10 seconds (CA §4.3, §7, AP §9.7, §9.12.5).
   - `[ ]` 1.7 Customer browsing and the quote: account completion, the delivery point, restaurants that cover it, the restaurant page and item options, the cart, the versioned quote (CU §5.3, §7–§10.6).
   - `[ ]` 1.8 Placing the order: the atomic re-check, the rate snapshot, the order number, idempotency, the capacity check, the automatic cancellation timer through pg-boss (CU §10.7, AP §8.1, §8.3).

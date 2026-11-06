@@ -28,6 +28,26 @@ import 'package:core_api/src/model/customer_signed_in_dto_output.dart';
 import 'package:core_api/src/model/customer_signed_out_dto_output.dart';
 import 'package:core_api/src/model/customer_tokens_dto_output.dart';
 import 'package:core_api/src/model/done_dto_output.dart';
+import 'package:core_api/src/model/merchant_availability_dto.dart';
+import 'package:core_api/src/model/merchant_availability_saved_dto_output.dart';
+import 'package:core_api/src/model/merchant_code_request_dto.dart';
+import 'package:core_api/src/model/merchant_code_sent_dto_output.dart';
+import 'package:core_api/src/model/merchant_device_dto.dart';
+import 'package:core_api/src/model/merchant_device_saved_dto_output.dart';
+import 'package:core_api/src/model/merchant_menu_dto_output.dart';
+import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner.dart';
+import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner.dart';
+import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_option_groups_inner.dart';
+import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_option_groups_inner_options_inner.dart';
+import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_price.dart';
+import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_switched_off.dart';
+import 'package:core_api/src/model/merchant_refresh_dto.dart';
+import 'package:core_api/src/model/merchant_restaurant_dto_output.dart';
+import 'package:core_api/src/model/merchant_session_dto_output.dart';
+import 'package:core_api/src/model/merchant_sign_in_dto.dart';
+import 'package:core_api/src/model/merchant_signed_in_dto_output.dart';
+import 'package:core_api/src/model/merchant_signed_out_dto_output.dart';
+import 'package:core_api/src/model/merchant_tokens_dto_output.dart';
 import 'package:core_api/src/model/reset_setting_dto.dart';
 import 'package:core_api/src/model/role_matrix_dto_output.dart';
 import 'package:core_api/src/model/role_matrix_dto_output_roles_inner.dart';
@@ -64,6 +84,26 @@ part 'serializers.g.dart';
   CustomerSignedOutDtoOutput,
   CustomerTokensDtoOutput,
   DoneDtoOutput,
+  MerchantAvailabilityDto,
+  MerchantAvailabilitySavedDtoOutput,
+  MerchantCodeRequestDto,
+  MerchantCodeSentDtoOutput,
+  MerchantDeviceDto,
+  MerchantDeviceSavedDtoOutput,
+  MerchantMenuDtoOutput,
+  MerchantMenuDtoOutputCategoriesInner,
+  MerchantMenuDtoOutputCategoriesInnerItemsInner,
+  MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInner,
+  MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner,
+  MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice,
+  MerchantMenuDtoOutputCategoriesInnerSwitchedOff,
+  MerchantRefreshDto,
+  MerchantRestaurantDtoOutput,
+  MerchantSessionDtoOutput,
+  MerchantSignInDto,
+  MerchantSignedInDtoOutput,
+  MerchantSignedOutDtoOutput,
+  MerchantTokensDtoOutput,
   ResetSettingDto,
   RoleMatrixDtoOutput,
   RoleMatrixDtoOutputRolesInner,
@@ -97,9 +137,43 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(
+                MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantMenuDtoOutputCategoriesInnerItemsInner),
+            ]),
+            () => ListBuilder<MerchantMenuDtoOutputCategoriesInnerItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantMenuDtoOutputCategoriesInner),
+            ]),
+            () => ListBuilder<MerchantMenuDtoOutputCategoriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(TeamUsersDtoOutputUsersInnerOpenSessionsInner),
             ]),
             () => ListBuilder<TeamUsersDtoOutputUsersInnerOpenSessionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(
+                MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(String)]),
