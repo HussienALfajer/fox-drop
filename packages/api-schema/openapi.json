@@ -15118,24 +15118,13 @@
         "type": "object",
         "properties": {
           "phone": {
-            "description": "The support phone number in E.164, or null.",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string"
           },
           "whatsapp": {
-            "description": "The support WhatsApp number in E.164, or null.",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string"
           }
         },
-        "required": [
-          "phone",
-          "whatsapp"
-        ],
+        "description": "The support phone and WhatsApp numbers in E.164, when set (AP §9.13).",
         "additionalProperties": false
       }
     },

@@ -3,27 +3,24 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'contact_dto_output.g.dart';
 
-/// ContactDtoOutput
+/// The support phone and WhatsApp numbers in E.164, when set (AP §9.13).
 ///
 /// Properties:
-/// * [phone] - The support phone number in E.164, or null.
-/// * [whatsapp] - The support WhatsApp number in E.164, or null.
+/// * [phone]
+/// * [whatsapp]
 @BuiltValue()
 abstract class ContactDtoOutput
     implements Built<ContactDtoOutput, ContactDtoOutputBuilder> {
-  /// The support phone number in E.164, or null.
   @BuiltValueField(wireName: r'phone')
-  BuiltList<String> get phone;
+  String? get phone;
 
-  /// The support WhatsApp number in E.164, or null.
   @BuiltValueField(wireName: r'whatsapp')
-  BuiltList<String> get whatsapp;
+  String? get whatsapp;
 
   ContactDtoOutput._();
 
@@ -51,16 +48,20 @@ class _$ContactDtoOutputSerializer
     ContactDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'phone';
-    yield serializers.serialize(
-      object.phone,
-      specifiedType: const FullType(BuiltList, [FullType(String)]),
-    );
-    yield r'whatsapp';
-    yield serializers.serialize(
-      object.whatsapp,
-      specifiedType: const FullType(BuiltList, [FullType(String)]),
-    );
+    if (object.phone != null) {
+      yield r'phone';
+      yield serializers.serialize(
+        object.phone,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.whatsapp != null) {
+      yield r'whatsapp';
+      yield serializers.serialize(
+        object.whatsapp,
+        specifiedType: const FullType(String),
+      );
+    }
   }
 
   @override
@@ -92,23 +93,21 @@ class _$ContactDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(String),
-                    ]),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as BuiltList<String>;
-          result.phone.replace(valueDes);
+                  as String?;
+          if (valueDes == null) continue;
+          result.phone = valueDes;
           break;
         case r'whatsapp':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(String),
-                    ]),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as BuiltList<String>;
-          result.whatsapp.replace(valueDes);
+                  as String?;
+          if (valueDes == null) continue;
+          result.whatsapp = valueDes;
           break;
         default:
           unhandled.add(key);

@@ -135,6 +135,228 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'الصفحة غير موجودة'**
   String get notFound;
+
+  /// The sign-in screen's title (CA Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل الدخول'**
+  String get signInTitle;
+
+  /// The Syrian choice of the number's country picker (CU §5.2 item 1).
+  ///
+  /// In ar, this message translates to:
+  /// **'سوريا +963'**
+  String get signInCountrySyria;
+
+  /// The Turkish choice of the number's country picker (CU §5.2 item 1).
+  ///
+  /// In ar, this message translates to:
+  /// **'تركيا +90'**
+  String get signInCountryTurkey;
+
+  /// The phone number field (CU Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الهاتف'**
+  String get signInPhoneLabel;
+
+  /// Shown under the number when it is not a mobile of the chosen country.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الهاتف غير صحيح'**
+  String get signInInvalidPhone;
+
+  /// Asks the server to send the code over WhatsApp.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال الرمز'**
+  String get signInSendCode;
+
+  /// Says where the code went (CU §5.2 item 2).
+  ///
+  /// In ar, this message translates to:
+  /// **'أرسلنا الرمز إلى واتساب على الرقم {phone}'**
+  String signInCodeSent(String phone);
+
+  /// The code step opened from «لديّ رمز من العمليات», with no code sent (architecture §8.3.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل رمز الدخول الذي أعطتك إياه العمليات للرقم {phone}'**
+  String signInOperationsCodeHint(String phone);
+
+  /// The 6-digit code field.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرمز'**
+  String get signInCodeLabel;
+
+  /// Signs in with the code.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد'**
+  String get signInConfirm;
+
+  /// Pastes a 6-digit code from the clipboard (CU §5.2 item 2).
+  ///
+  /// In ar, this message translates to:
+  /// **'لصق الرمز'**
+  String get signInPasteCode;
+
+  /// Sends a new code (CU §5.2 item 2).
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة الإرسال'**
+  String get signInResend;
+
+  /// The wait before «إعادة الإرسال».
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة الإرسال بعد {seconds} ث'**
+  String signInResendIn(int seconds);
+
+  /// Back to the number (CU §5.2 item 2).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل الرقم'**
+  String get signInEditPhone;
+
+  /// The number has no WhatsApp (CU §5.2, CA §4.9).
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الرقم غير مسجّل على واتساب'**
+  String get signInNotOnWhatsapp;
+
+  /// Past the daily limit of codes (CU §5.2 item 2).
+  ///
+  /// In ar, this message translates to:
+  /// **'تجاوزت عدد المحاولات المسموح، حاول غداً أو تواصل مع الدعم'**
+  String get signInDailyLimit;
+
+  /// Past the hourly limit of the number or the network.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبات كثيرة، حاول بعد {minutes} دقيقة'**
+  String signInTryLater(int minutes);
+
+  /// A code is still open for the number.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتظر {seconds} ث قبل طلب رمز جديد'**
+  String signInResendWait(int seconds);
+
+  /// No code can be sent now (customer app).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر إرسال الرمز الآن، حاول بعد قليل.'**
+  String get signInUnavailable;
+
+  /// No code can be sent now, in the captain and restaurant apps (owner decision 2026-11-07).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر إرسال الرمز الآن. اتصل بالعمليات ليعطوك رمز دخول، أو حاول بعد قليل.'**
+  String get signInUnavailableOperations;
+
+  /// Opens the code step for an emergency code from operations (RA §5.2, CA §4.9).
+  ///
+  /// In ar, this message translates to:
+  /// **'لديّ رمز من العمليات'**
+  String get signInOperationsCode;
+
+  /// Calls the support phone number (AP §9.13 contact info).
+  ///
+  /// In ar, this message translates to:
+  /// **'اتصال بالعمليات'**
+  String get signInCallOperations;
+
+  /// Opens WhatsApp with the support number (AP §9.13 contact info).
+  ///
+  /// In ar, this message translates to:
+  /// **'واتساب العمليات'**
+  String get signInWhatsappOperations;
+
+  /// A wrong code, with the tries left.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرمز غير صحيح. المحاولات المتبقية: {attempts}'**
+  String signInWrongCode(int attempts);
+
+  /// No usable code: expired, used up or replaced.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهت صلاحية الرمز، اطلب رمزاً جديداً'**
+  String get signInCodeExpired;
+
+  /// Any other failure of a sign-in call.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الاتصال بالخادم، حاول مرة أخرى'**
+  String get signInError;
+
+  /// Ends the session on this device.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل الخروج'**
+  String get signOut;
+
+  /// Shown on the placeholder home screen while signed in.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تسجيل الدخول'**
+  String get signedIn;
+
+  /// Saves a form.
+  ///
+  /// In ar, this message translates to:
+  /// **'حفظ'**
+  String get save;
+
+  /// The number belongs to no restaurant (RA §5.2 item 3).
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الرقم غير مسجّل لدى أي مطعم في FOX DROP'**
+  String get merchantNotRegistered;
+
+  /// The restaurant is still a draft (RA §5.2 item 4).
+  ///
+  /// In ar, this message translates to:
+  /// **'حساب مطعمك قيد الإعداد. سنتواصل معك عند جاهزيته.'**
+  String get merchantRestaurantDraft;
+
+  /// A cashier of a terminated restaurant (RA §5.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهى تعاقد مطعمك مع FOX DROP، ولا يمكن للكاشير الدخول.'**
+  String get merchantRestaurantTerminated;
+
+  /// The first sign-in of a device names it (RA §5.2 item 5).
+  ///
+  /// In ar, this message translates to:
+  /// **'سمِّ هذا الجهاز'**
+  String get merchantDeviceNameTitle;
+
+  /// Examples of a device name (RA §5.2 item 5).
+  ///
+  /// In ar, this message translates to:
+  /// **'مثل «كاشير 1» أو «تابلت المطبخ»'**
+  String get merchantDeviceNameHint;
+
+  /// The captain signed in on another device (CA §4.9, CA Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'سُجّل دخولك من جهاز آخر'**
+  String get captainSignedInElsewhere;
+
+  /// The captain's contract ended (CA §4.9).
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهى تعاقدك مع FOX DROP.'**
+  String get captainContractEnded;
+
+  /// The number stopped belonging to a captain since the code was sent.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الرقم غير مسجّل ككابتن في FOX DROP'**
+  String get captainNotRegistered;
 }
 
 class _AppLocalizationsDelegate

@@ -1,0 +1,23 @@
+name: core_auth
+description: Phone sign-in and the app session of the FOX DROP Flutter apps (architecture §11.2).
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+
+resolution: workspace
+
+dependencies:
+  core_api: any
+  core_l10n: any
+  core_storage: any
+  dio: 5.11.1
+  flutter:
+    sdk: flutter
+  flutter_riverpod: 3.4.3
+  url_launcher: 6.3.3
+
+dev_dependencies:
+  flutter_lints: 6.0.0
+  flutter_test:
+    sdk: flutter

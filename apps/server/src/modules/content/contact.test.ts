@@ -11,10 +11,10 @@ describe('supportContact', () => {
     ).toEqual({ phone: '+963944000000', whatsapp: '+905321234567' });
   });
 
-  it('gives null for a missing, empty or malformed number', () => {
+  it('leaves out a missing, empty or malformed number', () => {
     expect(
       supportContact({ SUPPORT_PHONE_NUMBER: '', SUPPORT_WHATSAPP_NUMBER: '0944000000' }),
-    ).toEqual({ phone: null, whatsapp: null });
-    expect(supportContact({})).toEqual({ phone: null, whatsapp: null });
+    ).toEqual({});
+    expect(supportContact({})).toEqual({});
   });
 });

@@ -12,7 +12,7 @@
 
 | Package              | Contains                                                                                                                                                |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `core_api`           | The Dart client generated from OpenAPI, auth interceptors, `Idempotency-Key` and app-version headers                                                    |
+| `core_api`           | The Dart client generated from OpenAPI, `Idempotency-Key` and app-version headers                                                                       |
 | `core_realtime`      | The Centrifugo client, subscription management, recovery, full re-fetch after reconnect, version ordering of events                                     |
 | `core_commands`      | The outgoing command queue in SQLite: idempotency keys, retries with exponential backoff and jitter, «جارٍ الإرسال…» state, conflict handling (RA §4.7) |
 | `core_time`          | Server clock offset from `Server-Time`; every countdown uses it                                                                                         |
@@ -23,7 +23,7 @@
 | `core_device_check`  | The device-check framework and the per-brand guides with screenshots (RA §4.5, CA §4.5)                                                                 |
 | `core_alerts`        | The native ringing layer: alarm audio stream, full-screen intents, foreground services, Windows tray and window control (§12, §14)                      |
 | `core_push`          | FCM registration, token refresh, notification channels                                                                                                  |
-| `core_auth`          | Phone input for +963 and +90, the WhatsApp code screen, session handling                                                                                |
+| `core_auth`          | Phone input for +963 and +90, the WhatsApp code screen, session handling and the auth interceptor                                                       |
 | `core_observability` | Sentry setup, PostHog events, structured logs                                                                                                           |
 
 ## 11.3 Libraries

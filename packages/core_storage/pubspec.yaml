@@ -1,0 +1,18 @@
+name: core_storage
+description: Device storage of the FOX DROP Flutter apps (architecture §11.2).
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_secure_storage: 11.2.0
+
+dev_dependencies:
+  flutter_lints: 6.0.0
+  flutter_test:
+    sdk: flutter

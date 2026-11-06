@@ -9,7 +9,9 @@ workspace:
   - apps/customer
   - apps/merchant
   - packages/core_api
+  - packages/core_auth
   - packages/core_l10n
+  - packages/core_storage
 
 dev_dependencies:
   lints: 6.1.0

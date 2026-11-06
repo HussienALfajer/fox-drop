@@ -4179,11 +4179,10 @@ export interface components {
                 };
             };
         };
+        /** @description The support phone and WhatsApp numbers in E.164, when set (AP §9.13). */
         ContactDto_Output: {
-            /** @description The support phone number in E.164, or null. */
-            phone: string[];
-            /** @description The support WhatsApp number in E.164, or null. */
-            whatsapp: string[];
+            phone?: string;
+            whatsapp?: string;
         };
     };
     responses: never;

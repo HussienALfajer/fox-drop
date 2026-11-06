@@ -8,16 +8,15 @@ part of 'contact_dto_output.dart';
 
 class _$ContactDtoOutput extends ContactDtoOutput {
   @override
-  final BuiltList<String> phone;
+  final String? phone;
   @override
-  final BuiltList<String> whatsapp;
+  final String? whatsapp;
 
   factory _$ContactDtoOutput([
     void Function(ContactDtoOutputBuilder)? updates,
   ]) => (ContactDtoOutputBuilder()..update(updates))._build();
 
-  _$ContactDtoOutput._({required this.phone, required this.whatsapp})
-    : super._();
+  _$ContactDtoOutput._({this.phone, this.whatsapp}) : super._();
   @override
   ContactDtoOutput rebuild(void Function(ContactDtoOutputBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -56,14 +55,13 @@ class ContactDtoOutputBuilder
     implements Builder<ContactDtoOutput, ContactDtoOutputBuilder> {
   _$ContactDtoOutput? _$v;
 
-  ListBuilder<String>? _phone;
-  ListBuilder<String> get phone => _$this._phone ??= ListBuilder<String>();
-  set phone(ListBuilder<String>? phone) => _$this._phone = phone;
+  String? _phone;
+  String? get phone => _$this._phone;
+  set phone(String? phone) => _$this._phone = phone;
 
-  ListBuilder<String>? _whatsapp;
-  ListBuilder<String> get whatsapp =>
-      _$this._whatsapp ??= ListBuilder<String>();
-  set whatsapp(ListBuilder<String>? whatsapp) => _$this._whatsapp = whatsapp;
+  String? _whatsapp;
+  String? get whatsapp => _$this._whatsapp;
+  set whatsapp(String? whatsapp) => _$this._whatsapp = whatsapp;
 
   ContactDtoOutputBuilder() {
     ContactDtoOutput._defaults(this);
@@ -72,8 +70,8 @@ class ContactDtoOutputBuilder
   ContactDtoOutputBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _phone = $v.phone.toBuilder();
-      _whatsapp = $v.whatsapp.toBuilder();
+      _phone = $v.phone;
+      _whatsapp = $v.whatsapp;
       _$v = null;
     }
     return this;
@@ -93,30 +91,8 @@ class ContactDtoOutputBuilder
   ContactDtoOutput build() => _build();
 
   _$ContactDtoOutput _build() {
-    _$ContactDtoOutput _$result;
-    try {
-      _$result =
-          _$v ??
-          _$ContactDtoOutput._(
-            phone: phone.build(),
-            whatsapp: whatsapp.build(),
-          );
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'phone';
-        phone.build();
-        _$failedField = 'whatsapp';
-        whatsapp.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-          r'ContactDtoOutput',
-          _$failedField,
-          e.toString(),
-        );
-      }
-      rethrow;
-    }
+    final _$result =
+        _$v ?? _$ContactDtoOutput._(phone: phone, whatsapp: whatsapp);
     replace(_$result);
     return _$result;
   }
