@@ -14,13 +14,18 @@ part 'captain_availability_dto_output_custody.g.dart';
 /// CaptainAvailabilityDtoOutputCustody
 ///
 /// Properties:
-/// * [usage] 
-/// * [limit] 
+/// * [usage]
+/// * [limit]
 /// * [warn] - At captain.custody_warn_pct of the limit or more.
-/// * [closedDue] 
-/// * [lastCutoff] 
+/// * [closedDue]
+/// * [lastCutoff]
 @BuiltValue()
-abstract class CaptainAvailabilityDtoOutputCustody implements Built<CaptainAvailabilityDtoOutputCustody, CaptainAvailabilityDtoOutputCustodyBuilder> {
+abstract class CaptainAvailabilityDtoOutputCustody
+    implements
+        Built<
+          CaptainAvailabilityDtoOutputCustody,
+          CaptainAvailabilityDtoOutputCustodyBuilder
+        > {
   @BuiltValueField(wireName: r'usage')
   CaptainAvailabilityDtoOutputCustodyUsage get usage;
 
@@ -39,18 +44,25 @@ abstract class CaptainAvailabilityDtoOutputCustody implements Built<CaptainAvail
 
   CaptainAvailabilityDtoOutputCustody._();
 
-  factory CaptainAvailabilityDtoOutputCustody([void updates(CaptainAvailabilityDtoOutputCustodyBuilder b)]) = _$CaptainAvailabilityDtoOutputCustody;
+  factory CaptainAvailabilityDtoOutputCustody([
+    void updates(CaptainAvailabilityDtoOutputCustodyBuilder b),
+  ]) = _$CaptainAvailabilityDtoOutputCustody;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainAvailabilityDtoOutputCustodyBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainAvailabilityDtoOutputCustody> get serializer => _$CaptainAvailabilityDtoOutputCustodySerializer();
+  static Serializer<CaptainAvailabilityDtoOutputCustody> get serializer =>
+      _$CaptainAvailabilityDtoOutputCustodySerializer();
 }
 
-class _$CaptainAvailabilityDtoOutputCustodySerializer implements PrimitiveSerializer<CaptainAvailabilityDtoOutputCustody> {
+class _$CaptainAvailabilityDtoOutputCustodySerializer
+    implements PrimitiveSerializer<CaptainAvailabilityDtoOutputCustody> {
   @override
-  final Iterable<Type> types = const [CaptainAvailabilityDtoOutputCustody, _$CaptainAvailabilityDtoOutputCustody];
+  final Iterable<Type> types = const [
+    CaptainAvailabilityDtoOutputCustody,
+    _$CaptainAvailabilityDtoOutputCustody,
+  ];
 
   @override
   final String wireName = r'CaptainAvailabilityDtoOutputCustody';
@@ -78,7 +90,9 @@ class _$CaptainAvailabilityDtoOutputCustodySerializer implements PrimitiveSerial
     yield r'closedDue';
     yield serializers.serialize(
       object.closedDue,
-      specifiedType: const FullType(CaptainAvailabilityDtoOutputCustodyClosedDue),
+      specifiedType: const FullType(
+        CaptainAvailabilityDtoOutputCustodyClosedDue,
+      ),
     );
     yield r'lastCutoff';
     yield serializers.serialize(
@@ -93,7 +107,11 @@ class _$CaptainAvailabilityDtoOutputCustodySerializer implements PrimitiveSerial
     CaptainAvailabilityDtoOutputCustody object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -109,38 +127,54 @@ class _$CaptainAvailabilityDtoOutputCustodySerializer implements PrimitiveSerial
       final value = serializedList[i + 1];
       switch (key) {
         case r'usage':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainAvailabilityDtoOutputCustodyUsage),
-          ) as CaptainAvailabilityDtoOutputCustodyUsage;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainAvailabilityDtoOutputCustodyUsage,
+                    ),
+                  )
+                  as CaptainAvailabilityDtoOutputCustodyUsage;
           result.usage.replace(valueDes);
           break;
         case r'limit':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
-          ) as CaptainAvailabilityDtoOutputCustodyLimit;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainAvailabilityDtoOutputCustodyLimit,
+                    ),
+                  )
+                  as CaptainAvailabilityDtoOutputCustodyLimit;
           result.limit.replace(valueDes);
           break;
         case r'warn':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.warn = valueDes;
           break;
         case r'closedDue':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainAvailabilityDtoOutputCustodyClosedDue),
-          ) as CaptainAvailabilityDtoOutputCustodyClosedDue;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainAvailabilityDtoOutputCustodyClosedDue,
+                    ),
+                  )
+                  as CaptainAvailabilityDtoOutputCustodyClosedDue;
           result.closedDue.replace(valueDes);
           break;
         case r'lastCutoff':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.lastCutoff = valueDes;
           break;
         default:
@@ -171,5 +205,3 @@ class _$CaptainAvailabilityDtoOutputCustodySerializer implements PrimitiveSerial
     return result.build();
   }
 }
-
-

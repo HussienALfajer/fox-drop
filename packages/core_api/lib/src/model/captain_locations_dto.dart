@@ -15,25 +15,32 @@ part 'captain_locations_dto.g.dart';
 /// Properties:
 /// * [points] - Every 10 seconds, or the points queued without a signal (CA §4.3).
 @BuiltValue()
-abstract class CaptainLocationsDto implements Built<CaptainLocationsDto, CaptainLocationsDtoBuilder> {
+abstract class CaptainLocationsDto
+    implements Built<CaptainLocationsDto, CaptainLocationsDtoBuilder> {
   /// Every 10 seconds, or the points queued without a signal (CA §4.3).
   @BuiltValueField(wireName: r'points')
   BuiltList<CaptainLocationsDtoPointsInner> get points;
 
   CaptainLocationsDto._();
 
-  factory CaptainLocationsDto([void updates(CaptainLocationsDtoBuilder b)]) = _$CaptainLocationsDto;
+  factory CaptainLocationsDto([void updates(CaptainLocationsDtoBuilder b)]) =
+      _$CaptainLocationsDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainLocationsDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainLocationsDto> get serializer => _$CaptainLocationsDtoSerializer();
+  static Serializer<CaptainLocationsDto> get serializer =>
+      _$CaptainLocationsDtoSerializer();
 }
 
-class _$CaptainLocationsDtoSerializer implements PrimitiveSerializer<CaptainLocationsDto> {
+class _$CaptainLocationsDtoSerializer
+    implements PrimitiveSerializer<CaptainLocationsDto> {
   @override
-  final Iterable<Type> types = const [CaptainLocationsDto, _$CaptainLocationsDto];
+  final Iterable<Type> types = const [
+    CaptainLocationsDto,
+    _$CaptainLocationsDto,
+  ];
 
   @override
   final String wireName = r'CaptainLocationsDto';
@@ -46,7 +53,9 @@ class _$CaptainLocationsDtoSerializer implements PrimitiveSerializer<CaptainLoca
     yield r'points';
     yield serializers.serialize(
       object.points,
-      specifiedType: const FullType(BuiltList, [FullType(CaptainLocationsDtoPointsInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(CaptainLocationsDtoPointsInner),
+      ]),
     );
   }
 
@@ -56,7 +65,11 @@ class _$CaptainLocationsDtoSerializer implements PrimitiveSerializer<CaptainLoca
     CaptainLocationsDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -72,10 +85,14 @@ class _$CaptainLocationsDtoSerializer implements PrimitiveSerializer<CaptainLoca
       final value = serializedList[i + 1];
       switch (key) {
         case r'points':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CaptainLocationsDtoPointsInner)]),
-          ) as BuiltList<CaptainLocationsDtoPointsInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CaptainLocationsDtoPointsInner),
+                    ]),
+                  )
+                  as BuiltList<CaptainLocationsDtoPointsInner>;
           result.points.replace(valueDes);
           break;
         default:
@@ -106,5 +123,3 @@ class _$CaptainLocationsDtoSerializer implements PrimitiveSerializer<CaptainLoca
     return result.build();
   }
 }
-
-

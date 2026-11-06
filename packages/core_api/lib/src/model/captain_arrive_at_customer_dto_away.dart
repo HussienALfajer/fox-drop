@@ -12,10 +12,15 @@ part 'captain_arrive_at_customer_dto_away.g.dart';
 /// Needed beyond captain.customer_radius_m of the pin: «الزبون طلب مكاناً آخر», «موقع الزبون على الخريطة غير دقيق», «أخرى».
 ///
 /// Properties:
-/// * [reason] 
+/// * [reason]
 /// * [note] - The text of «أخرى» only.
 @BuiltValue()
-abstract class CaptainArriveAtCustomerDtoAway implements Built<CaptainArriveAtCustomerDtoAway, CaptainArriveAtCustomerDtoAwayBuilder> {
+abstract class CaptainArriveAtCustomerDtoAway
+    implements
+        Built<
+          CaptainArriveAtCustomerDtoAway,
+          CaptainArriveAtCustomerDtoAwayBuilder
+        > {
   @BuiltValueField(wireName: r'reason')
   CaptainArriveAtCustomerDtoAwayReasonEnum get reason;
   // enum reasonEnum {  customer_requested_other_place,  pin_inaccurate,  other,  };
@@ -26,18 +31,25 @@ abstract class CaptainArriveAtCustomerDtoAway implements Built<CaptainArriveAtCu
 
   CaptainArriveAtCustomerDtoAway._();
 
-  factory CaptainArriveAtCustomerDtoAway([void updates(CaptainArriveAtCustomerDtoAwayBuilder b)]) = _$CaptainArriveAtCustomerDtoAway;
+  factory CaptainArriveAtCustomerDtoAway([
+    void updates(CaptainArriveAtCustomerDtoAwayBuilder b),
+  ]) = _$CaptainArriveAtCustomerDtoAway;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainArriveAtCustomerDtoAwayBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainArriveAtCustomerDtoAway> get serializer => _$CaptainArriveAtCustomerDtoAwaySerializer();
+  static Serializer<CaptainArriveAtCustomerDtoAway> get serializer =>
+      _$CaptainArriveAtCustomerDtoAwaySerializer();
 }
 
-class _$CaptainArriveAtCustomerDtoAwaySerializer implements PrimitiveSerializer<CaptainArriveAtCustomerDtoAway> {
+class _$CaptainArriveAtCustomerDtoAwaySerializer
+    implements PrimitiveSerializer<CaptainArriveAtCustomerDtoAway> {
   @override
-  final Iterable<Type> types = const [CaptainArriveAtCustomerDtoAway, _$CaptainArriveAtCustomerDtoAway];
+  final Iterable<Type> types = const [
+    CaptainArriveAtCustomerDtoAway,
+    _$CaptainArriveAtCustomerDtoAway,
+  ];
 
   @override
   final String wireName = r'CaptainArriveAtCustomerDtoAway';
@@ -53,10 +65,12 @@ class _$CaptainArriveAtCustomerDtoAwaySerializer implements PrimitiveSerializer<
       specifiedType: const FullType(CaptainArriveAtCustomerDtoAwayReasonEnum),
     );
     yield r'note';
-    yield object.note == null ? null : serializers.serialize(
-      object.note,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.note == null
+        ? null
+        : serializers.serialize(
+            object.note,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -65,7 +79,11 @@ class _$CaptainArriveAtCustomerDtoAwaySerializer implements PrimitiveSerializer<
     CaptainArriveAtCustomerDtoAway object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -81,17 +99,23 @@ class _$CaptainArriveAtCustomerDtoAwaySerializer implements PrimitiveSerializer<
       final value = serializedList[i + 1];
       switch (key) {
         case r'reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainArriveAtCustomerDtoAwayReasonEnum),
-          ) as CaptainArriveAtCustomerDtoAwayReasonEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainArriveAtCustomerDtoAwayReasonEnum,
+                    ),
+                  )
+                  as CaptainArriveAtCustomerDtoAwayReasonEnum;
           result.reason = valueDes;
           break;
         case r'note':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.note = valueDes;
           break;
@@ -124,21 +148,25 @@ class _$CaptainArriveAtCustomerDtoAwaySerializer implements PrimitiveSerializer<
   }
 }
 
-
 class CaptainArriveAtCustomerDtoAwayReasonEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'customer_requested_other_place')
-  static const CaptainArriveAtCustomerDtoAwayReasonEnum customerRequestedOtherPlace = _$captainArriveAtCustomerDtoAwayReasonEnum_customerRequestedOtherPlace;
+  static const CaptainArriveAtCustomerDtoAwayReasonEnum
+  customerRequestedOtherPlace =
+      _$captainArriveAtCustomerDtoAwayReasonEnum_customerRequestedOtherPlace;
   @BuiltValueEnumConst(wireName: r'pin_inaccurate')
-  static const CaptainArriveAtCustomerDtoAwayReasonEnum pinInaccurate = _$captainArriveAtCustomerDtoAwayReasonEnum_pinInaccurate;
+  static const CaptainArriveAtCustomerDtoAwayReasonEnum pinInaccurate =
+      _$captainArriveAtCustomerDtoAwayReasonEnum_pinInaccurate;
   @BuiltValueEnumConst(wireName: r'other')
-  static const CaptainArriveAtCustomerDtoAwayReasonEnum other = _$captainArriveAtCustomerDtoAwayReasonEnum_other;
+  static const CaptainArriveAtCustomerDtoAwayReasonEnum other =
+      _$captainArriveAtCustomerDtoAwayReasonEnum_other;
 
-  static Serializer<CaptainArriveAtCustomerDtoAwayReasonEnum> get serializer => _$captainArriveAtCustomerDtoAwayReasonEnumSerializer;
+  static Serializer<CaptainArriveAtCustomerDtoAwayReasonEnum> get serializer =>
+      _$captainArriveAtCustomerDtoAwayReasonEnumSerializer;
 
-  const CaptainArriveAtCustomerDtoAwayReasonEnum._(String name): super(name);
+  const CaptainArriveAtCustomerDtoAwayReasonEnum._(String name) : super(name);
 
-  static BuiltSet<CaptainArriveAtCustomerDtoAwayReasonEnum> get values => _$captainArriveAtCustomerDtoAwayReasonEnumValues;
-  static CaptainArriveAtCustomerDtoAwayReasonEnum valueOf(String name) => _$captainArriveAtCustomerDtoAwayReasonEnumValueOf(name);
+  static BuiltSet<CaptainArriveAtCustomerDtoAwayReasonEnum> get values =>
+      _$captainArriveAtCustomerDtoAwayReasonEnumValues;
+  static CaptainArriveAtCustomerDtoAwayReasonEnum valueOf(String name) =>
+      _$captainArriveAtCustomerDtoAwayReasonEnumValueOf(name);
 }
-
