@@ -85,6 +85,13 @@
       "when": 1793934872295,
       "tag": "0011_merchant_accounts_and_devices",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793950848685,
+      "tag": "0012_captains_record_pay_tables",
+      "breakpoints": true
     }
   ]
 }

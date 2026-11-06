@@ -397,6 +397,40 @@ describe('the merchants tables (AP §9.6, RA §9–10)', () => {
   });
 });
 
+describe('the captains tables (AP §9.7, §9.12.5; CA §7)', () => {
+  const azaz = "(SELECT id FROM geo.cities WHERE code = 'AZ')";
+  const captain = (vehicle: string, plate: string) =>
+    `INSERT INTO captains.captains (city_id, name, vehicle, plate_number, custody_limit, custody_limit_currency) VALUES (${azaz}, 'كابتن اختبار', '${vehicle}', ${plate}, 300000, 'TRY') RETURNING id`;
+
+  it('take a captain and refuse a motor vehicle without its plate', async () => {
+    await appQuery(captain('motorbike', "'12345'"));
+    await appQuery(captain('walking', 'NULL'));
+    await expect(appQuery(captain('car', 'NULL'))).rejects.toThrow(/captains_plate_number/);
+  });
+
+  it('refuse a suspension without its reason', async () => {
+    const { rows } = await appQuery(captain('walking', 'NULL'));
+    await expect(
+      appQuery(`UPDATE captains.captains SET status = 'suspended' WHERE id = '${rows[0].id}'`),
+    ).rejects.toThrow(/captains_suspension/);
+  });
+
+  it('keep one open online period per captain', async () => {
+    const { rows } = await appQuery(captain('walking', 'NULL'));
+    const open = `INSERT INTO captains.online_periods (captain_id, started_at) VALUES ('${rows[0].id}', now())`;
+    await appQuery(open);
+    await expect(appQuery(open)).rejects.toThrow(/online_periods_one_open/);
+  });
+
+  it.each([
+    ['change a pay table version', "UPDATE captains.pay_tables SET reason = 'x'"],
+    ['change a pay rate', 'UPDATE captains.pay_rates SET base_pay = 1'],
+    ['delete a captain', 'DELETE FROM captains.captains'],
+  ])('refuse the application role to %s', async (_, statement) => {
+    await expect(appQuery(statement)).rejects.toThrow(/permission denied/);
+  });
+});
+
 describe('the identity tables (AP §5.1–5.2)', () => {
   it('refuse an admin account without an email or a phone', async () => {
     await expect(
