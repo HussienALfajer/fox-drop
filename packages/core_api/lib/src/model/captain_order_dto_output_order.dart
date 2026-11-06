@@ -7,6 +7,7 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_prepara
 import 'package:core_api/src/model/captain_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/captain_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_payment.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
@@ -16,14 +17,14 @@ import 'package:built_value/serializer.dart';
 
 part 'captain_order_dto_output_order.g.dart';
 
-/// The active order (CA §9); the customer block joins with the delivery slice.
+/// The active order (CA §9).
 ///
 /// Properties:
 /// * [id]
 /// * [number] - Shown as #10423 (AP §4.8).
 /// * [status]
 /// * [version] - Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown.
-/// * [captainTrack] - The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».
+/// * [captainTrack] - The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».
 /// * [restaurant]
 /// * [preparation]
 /// * [arrival]
@@ -33,6 +34,7 @@ part 'captain_order_dto_output_order.g.dart';
 /// * [pickupPayment]
 /// * [collect]
 /// * [pickup]
+/// * [customer]
 @BuiltValue()
 abstract class CaptainOrderDtoOutputOrder
     implements
@@ -52,7 +54,7 @@ abstract class CaptainOrderDtoOutputOrder
   @BuiltValueField(wireName: r'version')
   int get version;
 
-  /// The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».
+  /// The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».
   @BuiltValueField(wireName: r'captainTrack')
   CaptainOrderDtoOutputOrderCaptainTrackEnum get captainTrack;
   // enum captainTrackEnum {  searching,  offered,  assigned,  at_merchant,  pickup_pending,  picked_up,  at_customer,  done,  };
@@ -85,6 +87,9 @@ abstract class CaptainOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'pickup')
   CaptainOrderDtoOutputOrderPickup get pickup;
+
+  @BuiltValueField(wireName: r'customer')
+  CaptainOrderDtoOutputOrderCustomer get customer;
 
   CaptainOrderDtoOutputOrder._();
 
@@ -197,6 +202,11 @@ class _$CaptainOrderDtoOutputOrderSerializer
     yield serializers.serialize(
       object.pickup,
       specifiedType: const FullType(CaptainOrderDtoOutputOrderPickup),
+    );
+    yield r'customer';
+    yield serializers.serialize(
+      object.customer,
+      specifiedType: const FullType(CaptainOrderDtoOutputOrderCustomer),
     );
   }
 
@@ -365,6 +375,17 @@ class _$CaptainOrderDtoOutputOrderSerializer
                   as CaptainOrderDtoOutputOrderPickup;
           result.pickup.replace(valueDes);
           break;
+        case r'customer':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainOrderDtoOutputOrderCustomer,
+                    ),
+                  )
+                  as CaptainOrderDtoOutputOrderCustomer;
+          result.customer.replace(valueDes);
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -434,7 +455,7 @@ class CaptainOrderDtoOutputOrderStatusEnum extends EnumClass {
       _$captainOrderDtoOutputOrderStatusEnumValueOf(name);
 }
 
-/// The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».
+/// The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».
 class CaptainOrderDtoOutputOrderCaptainTrackEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'searching')
   static const CaptainOrderDtoOutputOrderCaptainTrackEnum searching =

@@ -33,7 +33,10 @@ export type OperationsAlert =
   // «خلاف على مبلغ الاستلام» (critical): the restaurant answered the latest
   // pickup request with «المبلغ غير صحيح»; it resolves itself once the
   // pickup completes or the order ends (RA §8.10 item 6).
-  | 'pickup_disputed';
+  | 'pickup_disputed'
+  // «تسليم بعيد عن العنوان» (information): the captain arrived or delivered
+  // beyond captain.customer_radius_m of the pin, with a reason (CA §9.6, §9.8).
+  | 'away_from_address';
 
 // An order as the operations board shows it (AP §9.2.1) and the detail's
 // header (AP §9.3.1).
@@ -203,6 +206,9 @@ export class OperationsViews {
         (request) => request.outcome === 'amount_incorrect',
       );
       if (waiting && amountDisputed) alerts.push('pickup_disputed');
+      if (view.away !== null && UNTIL_ENDED.includes(view.status)) {
+        alerts.push('away_from_address');
+      }
       return {
         order: view,
         restaurantName: names.get(view.restaurantId)?.nameAr ?? '',
@@ -213,9 +219,13 @@ export class OperationsViews {
             ? view.acceptance.at
             : view.status === 'ready' && view.readyAt
               ? view.readyAt
-              : view.status === 'cancelled' && view.cancellation
-                ? view.cancellation.at
-                : view.placedAt,
+              : view.status === 'picked_up' && view.pickup
+                ? view.pickup.at
+                : view.status === 'arrived' && view.customerArrival
+                  ? view.customerArrival.at
+                  : view.status === 'cancelled' && view.cancellation
+                    ? view.cancellation.at
+                    : view.placedAt,
         // AP §9.2.1: the acceptance alert, the prep time, the no-captain-after-
         // ready limit; the promised time and the no-answer window with their
         // slices.

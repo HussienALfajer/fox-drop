@@ -16,6 +16,8 @@ class _$AdminOrderDtoOutputOrderCustomer
   final String? recipientName;
   @override
   final String? payIn;
+  @override
+  final AdminOrderDtoOutputOrderCustomerArrival? arrival;
 
   factory _$AdminOrderDtoOutputOrderCustomer([
     void Function(AdminOrderDtoOutputOrderCustomerBuilder)? updates,
@@ -26,6 +28,7 @@ class _$AdminOrderDtoOutputOrderCustomer
     required this.address,
     this.recipientName,
     this.payIn,
+    this.arrival,
   }) : super._();
   @override
   AdminOrderDtoOutputOrderCustomer rebuild(
@@ -43,7 +46,8 @@ class _$AdminOrderDtoOutputOrderCustomer
         name == other.name &&
         address == other.address &&
         recipientName == other.recipientName &&
-        payIn == other.payIn;
+        payIn == other.payIn &&
+        arrival == other.arrival;
   }
 
   @override
@@ -53,6 +57,7 @@ class _$AdminOrderDtoOutputOrderCustomer
     _$hash = $jc(_$hash, address.hashCode);
     _$hash = $jc(_$hash, recipientName.hashCode);
     _$hash = $jc(_$hash, payIn.hashCode);
+    _$hash = $jc(_$hash, arrival.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -63,7 +68,8 @@ class _$AdminOrderDtoOutputOrderCustomer
           ..add('name', name)
           ..add('address', address)
           ..add('recipientName', recipientName)
-          ..add('payIn', payIn))
+          ..add('payIn', payIn)
+          ..add('arrival', arrival))
         .toString();
   }
 }
@@ -95,6 +101,12 @@ class AdminOrderDtoOutputOrderCustomerBuilder
   String? get payIn => _$this._payIn;
   set payIn(String? payIn) => _$this._payIn = payIn;
 
+  AdminOrderDtoOutputOrderCustomerArrivalBuilder? _arrival;
+  AdminOrderDtoOutputOrderCustomerArrivalBuilder get arrival =>
+      _$this._arrival ??= AdminOrderDtoOutputOrderCustomerArrivalBuilder();
+  set arrival(AdminOrderDtoOutputOrderCustomerArrivalBuilder? arrival) =>
+      _$this._arrival = arrival;
+
   AdminOrderDtoOutputOrderCustomerBuilder() {
     AdminOrderDtoOutputOrderCustomer._defaults(this);
   }
@@ -106,6 +118,7 @@ class AdminOrderDtoOutputOrderCustomerBuilder
       _address = $v.address.toBuilder();
       _recipientName = $v.recipientName;
       _payIn = $v.payIn;
+      _arrival = $v.arrival?.toBuilder();
       _$v = null;
     }
     return this;
@@ -134,12 +147,16 @@ class AdminOrderDtoOutputOrderCustomerBuilder
             address: address.build(),
             recipientName: recipientName,
             payIn: payIn,
+            arrival: _arrival?.build(),
           );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'address';
         address.build();
+
+        _$failedField = 'arrival';
+        _arrival?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminOrderDtoOutputOrderCustomer',

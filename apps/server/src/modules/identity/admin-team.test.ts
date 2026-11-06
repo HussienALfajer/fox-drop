@@ -366,6 +366,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/captain/offers/{offerId}/decline': 'app_session',
   'GET /v1/captain/orders/active': 'app_session',
   'POST /v1/captain/orders/{orderId}/arrive': 'app_session',
+  'POST /v1/captain/orders/{orderId}/arrive-at-customer': 'app_session',
   'POST /v1/admin/orders/{orderId}/record-arrival': 'operations.manage',
   'POST /v1/captain/orders/{orderId}/pickup-request': 'app_session',
   'POST /v1/merchant/orders/{orderId}/pickup/confirm': 'app_session',

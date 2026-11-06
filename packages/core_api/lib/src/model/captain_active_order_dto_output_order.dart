@@ -11,19 +11,20 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_lines_i
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_customer.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'captain_active_order_dto_output_order.g.dart';
 
-/// The active order (CA §9); the customer block joins with the delivery slice.
+/// The active order (CA §9).
 ///
 /// Properties:
 /// * [id]
 /// * [number] - Shown as #10423 (AP §4.8).
 /// * [status]
 /// * [version] - Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown.
-/// * [captainTrack] - The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».
+/// * [captainTrack] - The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».
 /// * [restaurant]
 /// * [preparation]
 /// * [arrival]
@@ -33,6 +34,7 @@ part 'captain_active_order_dto_output_order.g.dart';
 /// * [pickupPayment]
 /// * [collect]
 /// * [pickup]
+/// * [customer]
 @BuiltValue()
 abstract class CaptainActiveOrderDtoOutputOrder
     implements
@@ -55,7 +57,7 @@ abstract class CaptainActiveOrderDtoOutputOrder
   @BuiltValueField(wireName: r'version')
   int get version;
 
-  /// The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».
+  /// The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».
   @BuiltValueField(wireName: r'captainTrack')
   CaptainActiveOrderDtoOutputOrderCaptainTrackEnum get captainTrack;
   // enum captainTrackEnum {  searching,  offered,  assigned,  at_merchant,  pickup_pending,  picked_up,  at_customer,  done,  };
@@ -88,6 +90,9 @@ abstract class CaptainActiveOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'pickup')
   CaptainActiveOrderDtoOutputOrderPickup get pickup;
+
+  @BuiltValueField(wireName: r'customer')
+  CaptainActiveOrderDtoOutputOrderCustomer get customer;
 
   CaptainActiveOrderDtoOutputOrder._();
 
@@ -202,6 +207,11 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
     yield serializers.serialize(
       object.pickup,
       specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderPickup),
+    );
+    yield r'customer';
+    yield serializers.serialize(
+      object.customer,
+      specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderCustomer),
     );
   }
 
@@ -370,6 +380,17 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
                   as CaptainActiveOrderDtoOutputOrderPickup;
           result.pickup.replace(valueDes);
           break;
+        case r'customer':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainActiveOrderDtoOutputOrderCustomer,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderCustomer;
+          result.customer.replace(valueDes);
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -439,7 +460,7 @@ class CaptainActiveOrderDtoOutputOrderStatusEnum extends EnumClass {
       _$captainActiveOrderDtoOutputOrderStatusEnumValueOf(name);
 }
 
-/// The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».
+/// The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».
 class CaptainActiveOrderDtoOutputOrderCaptainTrackEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'searching')
   static const CaptainActiveOrderDtoOutputOrderCaptainTrackEnum searching =

@@ -33,6 +33,8 @@ import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart'
 import 'package:core_api/src/model/admin_order_dto_output_order_cancellation.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer_address.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_customer_arrival.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_customer_arrival_away.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner_options_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_money.dart';
@@ -54,6 +56,10 @@ import 'package:core_api/src/model/captain_active_order_dto_output.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_customer.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_customer_address.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_customer_arrival.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_customer_location.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_payment.dart';
@@ -62,6 +68,8 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_
 import 'package:core_api/src/model/captain_active_order_dto_output_order_preparation.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant_location.dart';
+import 'package:core_api/src/model/captain_arrive_at_customer_dto.dart';
+import 'package:core_api/src/model/captain_arrive_at_customer_dto_away.dart';
 import 'package:core_api/src/model/captain_arrive_dto.dart';
 import 'package:core_api/src/model/captain_arrive_dto_location.dart';
 import 'package:core_api/src/model/captain_availability_dto_output.dart';
@@ -87,6 +95,7 @@ import 'package:core_api/src/model/captain_offer_dto_output.dart';
 import 'package:core_api/src/model/captain_offer_dto_output_offer.dart';
 import 'package:core_api/src/model/captain_order_dto_output.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order.dart';
+import 'package:core_api/src/model/captain_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order_pickup_request.dart';
 import 'package:core_api/src/model/captain_pickup_request_dto.dart';
@@ -245,6 +254,8 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderCancellation,
   AdminOrderDtoOutputOrderCustomer,
   AdminOrderDtoOutputOrderCustomerAddress,
+  AdminOrderDtoOutputOrderCustomerArrival,
+  AdminOrderDtoOutputOrderCustomerArrivalAway,
   AdminOrderDtoOutputOrderLinesInner,
   AdminOrderDtoOutputOrderLinesInnerOptionsInner,
   AdminOrderDtoOutputOrderMoney,
@@ -266,6 +277,10 @@ part 'serializers.g.dart';
   CaptainActiveOrderDtoOutputOrder,
   CaptainActiveOrderDtoOutputOrderArrival,
   CaptainActiveOrderDtoOutputOrderCollect,
+  CaptainActiveOrderDtoOutputOrderCustomer,
+  CaptainActiveOrderDtoOutputOrderCustomerAddress,
+  CaptainActiveOrderDtoOutputOrderCustomerArrival,
+  CaptainActiveOrderDtoOutputOrderCustomerLocation,
   CaptainActiveOrderDtoOutputOrderLinesInner,
   CaptainActiveOrderDtoOutputOrderPickup,
   CaptainActiveOrderDtoOutputOrderPickupPayment,
@@ -274,6 +289,8 @@ part 'serializers.g.dart';
   CaptainActiveOrderDtoOutputOrderPreparation,
   CaptainActiveOrderDtoOutputOrderRestaurant,
   CaptainActiveOrderDtoOutputOrderRestaurantLocation,
+  CaptainArriveAtCustomerDto,
+  CaptainArriveAtCustomerDtoAway,
   CaptainArriveDto,
   CaptainArriveDtoLocation,
   CaptainAvailabilityDtoOutput,
@@ -299,6 +316,7 @@ part 'serializers.g.dart';
   CaptainOfferDtoOutputOffer,
   CaptainOrderDtoOutput,
   CaptainOrderDtoOutputOrder,
+  CaptainOrderDtoOutputOrderCustomer,
   CaptainOrderDtoOutputOrderPickup,
   CaptainOrderDtoOutputOrderPickupRequest,
   CaptainPickupRequestDto,

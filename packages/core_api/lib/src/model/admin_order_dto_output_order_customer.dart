@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_order_dto_output_order_customer_arrival.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer_address.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -16,6 +17,7 @@ part 'admin_order_dto_output_order_customer.g.dart';
 /// * [address]
 /// * [recipientName]
 /// * [payIn] - «سأدفع بـ».
+/// * [arrival]
 @BuiltValue()
 abstract class AdminOrderDtoOutputOrderCustomer
     implements
@@ -36,6 +38,9 @@ abstract class AdminOrderDtoOutputOrderCustomer
   /// «سأدفع بـ».
   @BuiltValueField(wireName: r'payIn')
   String? get payIn;
+
+  @BuiltValueField(wireName: r'arrival')
+  AdminOrderDtoOutputOrderCustomerArrival? get arrival;
 
   AdminOrderDtoOutputOrderCustomer._();
 
@@ -92,6 +97,15 @@ class _$AdminOrderDtoOutputOrderCustomerSerializer
         : serializers.serialize(
             object.payIn,
             specifiedType: const FullType.nullable(String),
+          );
+    yield r'arrival';
+    yield object.arrival == null
+        ? null
+        : serializers.serialize(
+            object.arrival,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderCustomerArrival,
+            ),
           );
   }
 
@@ -160,6 +174,18 @@ class _$AdminOrderDtoOutputOrderCustomerSerializer
                   as String?;
           if (valueDes == null) continue;
           result.payIn = valueDes;
+          break;
+        case r'arrival':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderCustomerArrival,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderCustomerArrival?;
+          if (valueDes == null) continue;
+          result.arrival.replace(valueDes);
           break;
         default:
           unhandled.add(key);

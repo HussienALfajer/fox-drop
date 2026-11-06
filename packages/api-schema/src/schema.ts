@@ -1108,6 +1108,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/orders/{orderId}/arrive-at-customer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainOrdersArriveAtCustomer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/orders/{orderId}/pickup-request": {
         parameters: {
             query?: never;
@@ -2850,8 +2866,8 @@ export interface components {
                     captainArrivedAt: string | null;
                     captainWaitingAlertAt: string | null;
                 };
-                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام». */
-                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting" | "pickup_disputed")[];
+                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام», «تسليم بعيد عن العنوان». */
+                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting" | "pickup_disputed" | "away_from_address")[];
             };
         };
         AdminRecordArrivalDto: {
@@ -2923,8 +2939,8 @@ export interface components {
                     captainArrivedAt: string | null;
                     captainWaitingAlertAt: string | null;
                 };
-                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام». */
-                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting" | "pickup_disputed")[];
+                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام», «تسليم بعيد عن العنوان». */
+                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting" | "pickup_disputed" | "away_from_address")[];
             }[];
         };
         AdminOrderDto_Output: {
@@ -2991,8 +3007,8 @@ export interface components {
                     captainArrivedAt: string | null;
                     captainWaitingAlertAt: string | null;
                 };
-                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام». */
-                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting" | "pickup_disputed")[];
+                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام», «تسليم بعيد عن العنوان». */
+                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting" | "pickup_disputed" | "away_from_address")[];
                 promisedAt: string | null;
                 acceptance: {
                     /** Format: date-time */
@@ -3025,6 +3041,17 @@ export interface components {
                     recipientName: string | null;
                     /** @description «سأدفع بـ». */
                     payIn: string | null;
+                    /** @description The captain at the customer (CA §9.6). */
+                    arrival: {
+                        /** Format: date-time */
+                        at: string;
+                        /** @description The reason given beyond captain.customer_radius_m (CA §9.6). */
+                        away: {
+                            /** @enum {string} */
+                            reason: "customer_requested_other_place" | "pin_inaccurate" | "other";
+                            note: string | null;
+                        } | null;
+                    } | null;
                 };
                 note: string | null;
                 lines: {
@@ -3145,7 +3172,7 @@ export interface components {
                 /** @description Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown. */
                 version: number;
                 /**
-                 * @description The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».
+                 * @description The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».
                  * @enum {string}
                  */
                 captainTrack: "searching" | "offered" | "assigned" | "at_merchant" | "pickup_pending" | "picked_up" | "at_customer" | "done";
@@ -3248,6 +3275,47 @@ export interface components {
                     pickedUpAt: string | null;
                     /** @description «فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات». */
                     disputedAt: string | null;
+                };
+                /** @description Steps 3 and 4, to and at the customer (CA §9.5–9.6). */
+                customer: {
+                    /** @description The recipient's name when the order is for someone else, else the customer's. */
+                    name: string | null;
+                    /** @description «اتصال بالزبون» and «واتساب الزبون» (C10) open it; the app shows it nowhere else. */
+                    phone: string | null;
+                    /** @description The exact pin, with the route and «ابدأ الملاحة». */
+                    location: {
+                        latitude: number;
+                        longitude: number;
+                    };
+                    address: {
+                        /** @description «الحي». */
+                        neighbourhood: string;
+                        street: string;
+                        floor: string | null;
+                        landmark: string;
+                        /** @description The customer's directions. */
+                        directions: string | null;
+                    };
+                    /** @description «الزبون سيدفع بـ {العملة}», an indication only (CU U10). */
+                    payIn: string | null;
+                    /** @description «تقبض من الزبون» in the other accepted currencies, each by its rounding. */
+                    collectEquivalents: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    }[];
+                    /**
+                     * Format: date-time
+                     * @description «التسليم المتوقع قبل {الساعة}».
+                     */
+                    promisedAt: string;
+                    /** @description Null until «وصلت» at the customer (CA §9.6). */
+                    arrival: {
+                        /** Format: date-time */
+                        at: string;
+                        /** @description The reason given away from the pin; it covers the delivery too (K4). */
+                        awayReason: ("customer_requested_other_place" | "pin_inaccurate" | "other") | null;
+                    } | null;
                 };
             } | null;
         };
@@ -3264,7 +3332,7 @@ export interface components {
             };
         };
         CaptainOrderDto_Output: {
-            /** @description The active order (CA §9); the customer block joins with the delivery slice. */
+            /** @description The active order (CA §9). */
             order: {
                 /** Format: uuid */
                 id: string;
@@ -3275,7 +3343,7 @@ export interface components {
                 /** @description Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown. */
                 version: number;
                 /**
-                 * @description The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».
+                 * @description The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».
                  * @enum {string}
                  */
                 captainTrack: "searching" | "offered" | "assigned" | "at_merchant" | "pickup_pending" | "picked_up" | "at_customer" | "done";
@@ -3379,7 +3447,67 @@ export interface components {
                     /** @description «فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات». */
                     disputedAt: string | null;
                 };
+                /** @description Steps 3 and 4, to and at the customer (CA §9.5–9.6). */
+                customer: {
+                    /** @description The recipient's name when the order is for someone else, else the customer's. */
+                    name: string | null;
+                    /** @description «اتصال بالزبون» and «واتساب الزبون» (C10) open it; the app shows it nowhere else. */
+                    phone: string | null;
+                    /** @description The exact pin, with the route and «ابدأ الملاحة». */
+                    location: {
+                        latitude: number;
+                        longitude: number;
+                    };
+                    address: {
+                        /** @description «الحي». */
+                        neighbourhood: string;
+                        street: string;
+                        floor: string | null;
+                        landmark: string;
+                        /** @description The customer's directions. */
+                        directions: string | null;
+                    };
+                    /** @description «الزبون سيدفع بـ {العملة}», an indication only (CU U10). */
+                    payIn: string | null;
+                    /** @description «تقبض من الزبون» in the other accepted currencies, each by its rounding. */
+                    collectEquivalents: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    }[];
+                    /**
+                     * Format: date-time
+                     * @description «التسليم المتوقع قبل {الساعة}».
+                     */
+                    promisedAt: string;
+                    /** @description Null until «وصلت» at the customer (CA §9.6). */
+                    arrival: {
+                        /** Format: date-time */
+                        at: string;
+                        /** @description The reason given away from the pin; it covers the delivery too (K4). */
+                        awayReason: ("customer_requested_other_place" | "pin_inaccurate" | "other") | null;
+                    } | null;
+                };
             };
+        };
+        CaptainArriveAtCustomerDto: {
+            /** @description The latest GPS fix. */
+            location: {
+                latitude: number;
+                longitude: number;
+                accuracyMetres: number;
+                /** Format: date-time */
+                recordedAt: string;
+                /** @description The device reports a mock location. */
+                simulated: boolean;
+            };
+            /** @description Needed beyond captain.customer_radius_m of the pin: «الزبون طلب مكاناً آخر», «موقع الزبون على الخريطة غير دقيق», «أخرى». */
+            away: {
+                /** @enum {string} */
+                reason: "customer_requested_other_place" | "pin_inaccurate" | "other";
+                /** @description The text of «أخرى» only. */
+                note: string | null;
+            } | null;
         };
         CaptainPickupRequestDto: {
             /** @description The currency lines paid, the proposed ones or the own split. */
@@ -5263,6 +5391,35 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["CaptainArriveDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainOrderDto_Output"];
+                };
+            };
+        };
+    };
+    captainOrdersArriveAtCustomer: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainArriveAtCustomerDto"];
             };
         };
         responses: {

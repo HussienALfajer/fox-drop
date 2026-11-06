@@ -17,6 +17,7 @@ import { AppSigningKeys } from './app-signing-keys.js';
 import { CaptainAccountsService } from './captain-accounts.service.js';
 import { CaptainAuthController } from './captain-auth.controller.js';
 import { CODE_SENDER, codeSenderFromEnvironment } from './code-sender.js';
+import { CustomerAccountsService } from './customer-accounts.service.js';
 import { CustomerAuthController } from './customer-auth.controller.js';
 import { MerchantAccountsService } from './merchant-accounts.service.js';
 import { MerchantAuthController } from './merchant-auth.controller.js';
@@ -57,6 +58,7 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
     AppSignInService,
     MerchantAccountsService,
     CaptainAccountsService,
+    CustomerAccountsService,
     PhoneCipher,
     RouteAccessGuard,
   ],
@@ -65,6 +67,7 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
     AppSessionsService,
     MerchantAccountsService,
     CaptainAccountsService,
+    CustomerAccountsService,
     PhoneCipher,
     RouteAccessGuard,
   ],
@@ -77,6 +80,7 @@ export { AppSessionsService, type AppParty, type AppSession } from './app-sessio
 export { adminPermissions, type AdminPermission } from './permissions.js';
 export { deviceId, phone } from './app-auth.js';
 export { PhoneCipher } from './phone-cipher.js';
+export { CustomerAccountsService } from './customer-accounts.service.js';
 // For the tests of other modules that sign an app user in.
 export { CODE_SENDER, type DevelopmentCodeSender } from './code-sender.js';
 export {

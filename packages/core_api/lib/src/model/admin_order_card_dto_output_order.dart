@@ -31,7 +31,7 @@ part 'admin_order_card_dto_output_order.g.dart';
 /// * [total]
 /// * [badges]
 /// * [moments]
-/// * [alerts] - AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام».
+/// * [alerts] - AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام», «تسليم بعيد عن العنوان».
 @BuiltValue()
 abstract class AdminOrderCardDtoOutputOrder
     implements
@@ -89,10 +89,10 @@ abstract class AdminOrderCardDtoOutputOrder
   @BuiltValueField(wireName: r'moments')
   AdminOrderCardDtoOutputOrderMoments get moments;
 
-  /// AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام».
+  /// AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام», «تسليم بعيد عن العنوان».
   @BuiltValueField(wireName: r'alerts')
   BuiltList<AdminOrderCardDtoOutputOrderAlertsEnum> get alerts;
-  // enum alertsEnum {  restaurant_not_accepted,  prep_late,  no_captain,  no_captain_after_ready,  captain_waiting,  pickup_disputed,  };
+  // enum alertsEnum {  restaurant_not_accepted,  prep_late,  no_captain,  no_captain_after_ready,  captain_waiting,  pickup_disputed,  away_from_address,  };
 
   AdminOrderCardDtoOutputOrder._();
 
@@ -517,6 +517,9 @@ class AdminOrderCardDtoOutputOrderAlertsEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'pickup_disputed')
   static const AdminOrderCardDtoOutputOrderAlertsEnum pickupDisputed =
       _$adminOrderCardDtoOutputOrderAlertsEnum_pickupDisputed;
+  @BuiltValueEnumConst(wireName: r'away_from_address')
+  static const AdminOrderCardDtoOutputOrderAlertsEnum awayFromAddress =
+      _$adminOrderCardDtoOutputOrderAlertsEnum_awayFromAddress;
 
   static Serializer<AdminOrderCardDtoOutputOrderAlertsEnum> get serializer =>
       _$adminOrderCardDtoOutputOrderAlertsEnumSerializer;

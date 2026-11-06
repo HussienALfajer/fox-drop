@@ -34,6 +34,11 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderCaptainTrackEnum.serializer)
           ..add(AdminOrderDtoOutputOrderCustomer.serializer)
           ..add(AdminOrderDtoOutputOrderCustomerAddress.serializer)
+          ..add(AdminOrderDtoOutputOrderCustomerArrival.serializer)
+          ..add(AdminOrderDtoOutputOrderCustomerArrivalAway.serializer)
+          ..add(
+            AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum.serializer,
+          )
           ..add(AdminOrderDtoOutputOrderLinesInner.serializer)
           ..add(AdminOrderDtoOutputOrderLinesInnerOptionsInner.serializer)
           ..add(AdminOrderDtoOutputOrderMoney.serializer)
@@ -67,6 +72,14 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputOrderArrival.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderCaptainTrackEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderCollect.serializer)
+          ..add(CaptainActiveOrderDtoOutputOrderCustomer.serializer)
+          ..add(CaptainActiveOrderDtoOutputOrderCustomerAddress.serializer)
+          ..add(CaptainActiveOrderDtoOutputOrderCustomerArrival.serializer)
+          ..add(
+            CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
+                .serializer,
+          )
+          ..add(CaptainActiveOrderDtoOutputOrderCustomerLocation.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderLinesInner.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderPickup.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderPickupPayment.serializer)
@@ -82,6 +95,9 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputOrderRestaurant.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderRestaurantLocation.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderStatusEnum.serializer)
+          ..add(CaptainArriveAtCustomerDto.serializer)
+          ..add(CaptainArriveAtCustomerDtoAway.serializer)
+          ..add(CaptainArriveAtCustomerDtoAwayReasonEnum.serializer)
           ..add(CaptainArriveDto.serializer)
           ..add(CaptainArriveDtoLocation.serializer)
           ..add(CaptainAvailabilityDtoOutput.serializer)
@@ -113,6 +129,7 @@ Serializers _$serializers =
           ..add(CaptainOrderDtoOutput.serializer)
           ..add(CaptainOrderDtoOutputOrder.serializer)
           ..add(CaptainOrderDtoOutputOrderCaptainTrackEnum.serializer)
+          ..add(CaptainOrderDtoOutputOrderCustomer.serializer)
           ..add(CaptainOrderDtoOutputOrderPickup.serializer)
           ..add(CaptainOrderDtoOutputOrderPickupRequest.serializer)
           ..add(CaptainOrderDtoOutputOrderPickupRequestOutcomeEnum.serializer)
@@ -413,6 +430,12 @@ Serializers _$serializers =
                 ListBuilder<
                   CaptainAvailabilityDtoOutputAvailabilityReasonsEnum
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+            ]),
+            () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -794,6 +817,12 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(int)]),
             () => ListBuilder<int>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+            ]),
+            () => ListBuilder<CaptainWentOfflineDtoOutputHandIn?>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

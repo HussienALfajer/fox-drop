@@ -25,7 +25,7 @@ import {
   WEAK_GPS_METRES,
 } from './captain-orders.js';
 import { minor } from './customer-quote.controller.js';
-import { captainTracks, orderStatuses } from './schema.js';
+import { awayReasons, captainTracks, orderStatuses } from './schema.js';
 
 const money = z.object({ amount: minor, currency: z.string().length(3) });
 // RA §8.10: one line per currency, the amounts in minor units.
@@ -97,7 +97,7 @@ const activeOrder = z
     captainTrack: z
       .enum(captainTracks)
       .describe(
-        'The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».',
+        'The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».',
       ),
     restaurant: z.object({
       name: z.string(),
@@ -145,8 +145,50 @@ const activeOrder = z
           .describe('«فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات».'),
       })
       .describe('Step 2 and the pickup request (CA §9.3–9.4).'),
+    customer: z
+      .object({
+        name: z
+          .string()
+          .nullable()
+          .describe(
+            "The recipient's name when the order is for someone else, else the customer's.",
+          ),
+        phone: z
+          .string()
+          .nullable()
+          .describe(
+            '«اتصال بالزبون» and «واتساب الزبون» (C10) open it; the app shows it nowhere else.',
+          ),
+        location: point.describe('The exact pin, with the route and «ابدأ الملاحة».'),
+        address: z.object({
+          neighbourhood: z.string().describe('«الحي».'),
+          street: z.string(),
+          floor: z.string().nullable(),
+          landmark: z.string(),
+          directions: z.string().nullable().describe("The customer's directions."),
+        }),
+        payIn: z
+          .string()
+          .nullable()
+          .describe('«الزبون سيدفع بـ {العملة}», an indication only (CU U10).'),
+        collectEquivalents: z
+          .array(money)
+          .describe('«تقبض من الزبون» in the other accepted currencies, each by its rounding.'),
+        promisedAt: z.iso.datetime().describe('«التسليم المتوقع قبل {الساعة}».'),
+        arrival: z
+          .object({
+            at: z.iso.datetime(),
+            awayReason: z
+              .enum(awayReasons)
+              .nullable()
+              .describe('The reason given away from the pin; it covers the delivery too (K4).'),
+          })
+          .nullable()
+          .describe('Null until «وصلت» at the customer (CA §9.6).'),
+      })
+      .describe('Steps 3 and 4, to and at the customer (CA §9.5–9.6).'),
   })
-  .describe('The active order (CA §9); the customer block joins with the delivery slice.');
+  .describe('The active order (CA §9).');
 
 class CaptainActiveOrderDto extends createZodDto(
   z.object({ order: activeOrder.nullable().describe('Null without an active order.') }),
@@ -176,7 +218,34 @@ class CaptainPickupRequestDto extends createZodDto(
 
 class CaptainArriveDto extends createZodDto(z.object({ location: commandLocation })) {}
 
-function activeOrderBody({ order, restaurant, pickupRequest, pickupDispute }: CaptainActiveOrder) {
+// CA Appendix C: arrival or delivery away from the pin (K4, C9).
+export const awayGiven = z
+  .object({
+    reason: z.enum(awayReasons),
+    note: z.string().trim().min(1).max(200).nullable().describe('The text of «أخرى» only.'),
+  })
+  .refine((away) => (away.reason === 'other') === (away.note !== null), {
+    message: 'a note goes with «أخرى» and only with it',
+  });
+
+class CaptainArriveAtCustomerDto extends createZodDto(
+  z.object({
+    location: commandLocation,
+    away: awayGiven
+      .nullable()
+      .describe(
+        'Needed beyond captain.customer_radius_m of the pin: «الزبون طلب مكاناً آخر», «موقع الزبون على الخريطة غير دقيق», «أخرى».',
+      ),
+  }),
+) {}
+
+function activeOrderBody({
+  order,
+  restaurant,
+  customer,
+  pickupRequest,
+  pickupDispute,
+}: CaptainActiveOrder) {
   if (order.captainTrack === null) throw new Error(`order ${order.id} has no captain track`);
   if (order.acceptance === null) throw new Error(`order ${order.id} was never accepted`);
   const money = (amount: bigint) => ({ amount: amount.toString(), currency: order.currency });
@@ -210,6 +279,28 @@ function activeOrderBody({ order, restaurant, pickupRequest, pickupDispute }: Ca
       request: pickupRequest && pickupRequestBody(pickupRequest),
       pickedUpAt: order.pickup?.at.toISOString() ?? null,
       disputedAt: pickupDispute?.at.toISOString() ?? null,
+    },
+    customer: {
+      name: customer.name,
+      phone: customer.phone,
+      location: order.address.location,
+      address: {
+        neighbourhood: order.address.neighbourhood,
+        street: order.address.street,
+        floor: order.address.floor,
+        landmark: order.address.landmark,
+        directions: order.address.directions,
+      },
+      payIn: order.payIn,
+      collectEquivalents: order.equivalents.map((each) => ({
+        amount: each.amount.toString(),
+        currency: each.currency,
+      })),
+      promisedAt: order.acceptance.promisedAt.toISOString(),
+      arrival: order.customerArrival && {
+        at: order.customerArrival.at.toISOString(),
+        awayReason: order.away?.reason ?? null,
+      },
     },
   };
 }
@@ -258,6 +349,41 @@ export class CaptainOrdersController {
             deviceId: session.deviceId,
             idempotencyKey,
             location: { ...body.location, recordedAt: new Date(body.location.recordedAt) },
+          },
+          new Date(),
+        ),
+      ),
+    }));
+  }
+
+  // CA §9.6 «وصلت» at the customer: the customer sees «الكابتن عند الباب».
+  // 409 too_far_from_customer with the distance (send a reason, `away`),
+  // weak_location, simulated_location, stale_location, not_online,
+  // order_state_changed; 404 unknown_order; 400 invalid_location; 422
+  // idempotency_key_reused.
+  @Post(':orderId/arrive-at-customer')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CaptainOrderDto })
+  async arriveAtCustomer(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: CaptainOrderParamsDto,
+    @Body() body: CaptainArriveAtCustomerDto,
+  ) {
+    const captainId = captainOf(session);
+    return refusalsAsHttp(captainId, this.orders, async () => ({
+      order: activeOrderBody(
+        await this.orders.arriveAtCustomer(
+          {
+            orderId: params.orderId,
+            captainId,
+            accountId: session.accountId,
+            deviceId: session.deviceId,
+            idempotencyKey,
+            location: { ...body.location, recordedAt: new Date(body.location.recordedAt) },
+            away: body.away,
           },
           new Date(),
         ),
@@ -341,7 +467,9 @@ async function refusalsAsHttp<T>(
     throw new ConflictException({
       statusCode: HttpStatus.CONFLICT,
       error: refusal,
-      ...(refusal === 'too_far_from_restaurant' ? { distanceMetres: error.distanceMetres } : {}),
+      ...(refusal === 'too_far_from_restaurant' || refusal === 'too_far_from_customer'
+        ? { distanceMetres: error.distanceMetres }
+        : {}),
       ...(refusal === 'weak_location' ? { accuracyLimitMetres: WEAK_GPS_METRES } : {}),
     });
   }

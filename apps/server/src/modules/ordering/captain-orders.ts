@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -7,13 +7,21 @@ import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { type AuditRequestContext, AuditService } from '../audit/index.js';
 import { CaptainsRefusedError, CaptainsService } from '../captains/index.js';
+import { CustomersService } from '../customers/index.js';
 import { type Point, straightLineMetres } from '../geo/index.js';
+import { CustomerAccountsService, PhoneCipher } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 import { CAPTAIN_ACTIVE } from './order-assignments.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
 import { lockOrder, type OrderRow, recordTransition } from './order-events.js';
-import { orderKey, readOrders, snapshotOf, type OrderView } from './order-views.js';
+import {
+  type AwayReason,
+  orderKey,
+  readOrders,
+  snapshotOf,
+  type OrderView,
+} from './order-views.js';
 import {
   checkLines,
   lockForPickup,
@@ -43,6 +51,7 @@ export type CaptainOrderRefusal =
   | 'unknown_order'
   | 'order_state_changed'
   | 'too_far_from_restaurant'
+  | 'too_far_from_customer'
   | 'weak_location'
   | 'simulated_location'
   | 'stale_location'
@@ -55,7 +64,7 @@ export type CaptainOrderRefusal =
 
 // A command on an order that the order or the captain refuses;
 // order_state_changed carries the order as it is now, too_far_from_restaurant
-// the distance measured.
+// and too_far_from_customer the distance measured.
 export class CaptainOrderRefusedError extends Error {
   override readonly name = 'CaptainOrderRefusedError';
   constructor(
@@ -101,6 +110,8 @@ export interface AdminOrderCommand {
 // from.
 export interface CaptainActiveOrder {
   order: OrderView;
+  // CA §9.5: who to deliver to and the number the call button dials.
+  customer: { name: string | null; phone: string | null };
   // CA §9.4: the latest pickup request and the restaurant's dispute after
   // the pickup, if any.
   pickupRequest: PickupRequestView | null;
@@ -121,6 +132,9 @@ export class CaptainOrders {
     private readonly captains: CaptainsService,
     private readonly settings: SettingsService,
     private readonly audit: AuditService,
+    private readonly customers: CustomersService,
+    private readonly customerAccounts: CustomerAccountsService,
+    private readonly phones: PhoneCipher,
   ) {}
 
   // CA §9: the order assigned to the captain until it ends, or null (no
@@ -131,7 +145,7 @@ export class CaptainOrders {
       and(eq(orders.captainId, captainId), inArray(orders.status, CAPTAIN_ACTIVE)),
       { newestFirst: true },
     );
-    return order ? this.withRestaurant(order, now) : null;
+    return order ? this.withRestaurant(order, captainId, now) : null;
   }
 
   // CA §9.2 (C6): «وصلت إلى المطعم», only within
@@ -145,7 +159,7 @@ export class CaptainOrders {
     // The fix is not part of the command: a retry sends a newer one.
     const requestHash = commandHash({ verb: 'arrive', orderId: command.orderId });
     const earlier = await this.replay(command.accountId, command, requestHash, now);
-    if (earlier !== null) return this.answer(earlier, now);
+    if (earlier !== null) return this.answer(earlier, command.captainId, now);
     const order = await this.captainsOrder(command);
     if (!arrivable(order, command.captainId)) {
       throw await this.refusedState(order, command.accountId, command, requestHash, now);
@@ -157,15 +171,7 @@ export class CaptainOrders {
       this.settings.get('captain.waiting_threshold_min', { cityId: order.cityId }),
     ]);
     await this.recordLocation(command.captainId, command.location, now);
-    if (command.location.simulated) {
-      throw new CaptainOrderRefusedError('simulated_location', 'a simulated location');
-    }
-    if (now.getTime() - command.location.recordedAt.getTime() > FIX_MAX_AGE_MS) {
-      throw new CaptainOrderRefusedError('stale_location', 'the fix is not recent');
-    }
-    if (command.location.accuracyMetres > WEAK_GPS_METRES) {
-      throw new CaptainOrderRefusedError('weak_location', 'the location is not accurate enough');
-    }
+    checkFix(command.location, now);
     const distanceMetres = Math.round(straightLineMetres(command.location, restaurant.location));
     if (distanceMetres > radius) {
       throw new CaptainOrderRefusedError(
@@ -191,7 +197,83 @@ export class CaptainOrders {
       return true;
     });
     if (!done) throw await this.stateChanged(order);
-    return this.answer(order, now);
+    return this.answer(order, command.captainId, now);
+  }
+
+  // CA §9.6 (K4): «وصلت» at the customer, after the pickup. Within
+  // captain.customer_radius_m of the pin by the fix sent; farther away only
+  // with a reason (Appendix C), which also covers the delivery and gives
+  // operations «تسليم بعيد عن العنوان». The fix follows the arrival at the
+  // restaurant's rules (owner decision 2026-11-06): recent, accurate and not
+  // simulated. The order becomes arrived (track at_customer) and the
+  // customer sees «الكابتن عند الباب».
+  async arriveAtCustomer(
+    command: CaptainOrderCommand & { location: CommandLocation; away: AwayGiven | null },
+    now: Date,
+  ): Promise<CaptainActiveOrder> {
+    const requestHash = commandHash({
+      verb: 'arrive_at_customer',
+      orderId: command.orderId,
+      away: command.away,
+    });
+    const earlier = await this.replay(command.accountId, command, requestHash, now);
+    if (earlier !== null) return this.answer(earlier, command.captainId, now);
+    const order = await this.captainsOrder(command);
+    if (!customerArrivable(order, command.captainId)) {
+      throw await this.refusedState(order, command.accountId, command, requestHash, now);
+    }
+    const radius = await this.settings.get('captain.customer_radius_m', { cityId: order.cityId });
+    await this.recordLocation(command.captainId, command.location, now);
+    checkFix(command.location, now);
+    const distanceMetres = Math.round(straightLineMetres(command.location, order.location));
+    const far = distanceMetres > radius;
+    if (far && command.away === null) {
+      throw new CaptainOrderRefusedError(
+        'too_far_from_customer',
+        `${distanceMetres} m from the customer, more than ${radius} m`,
+        null,
+        distanceMetres,
+      );
+    }
+    // Within the radius no reason is needed, and none is kept.
+    const away = far ? command.away : null;
+    await this.jobs.ready();
+    const done = await this.database.db.transaction(async (tx) => {
+      const locked = await lockOrder(tx, order.id, order.placedAt);
+      if (!locked) throw new Error(`order ${order.id} not found`);
+      if ((await this.replay(command.accountId, command, requestHash, now, tx)) !== null) {
+        return true;
+      }
+      if (!customerArrivable(locked, command.captainId)) return false;
+      const version = locked.version + 1;
+      await tx
+        .update(orders)
+        .set({
+          status: 'arrived',
+          version,
+          captainTrack: 'at_customer',
+          arrivedAtCustomerAt: now,
+          awayReason: away?.reason ?? null,
+          awayNote: away?.note ?? null,
+        })
+        .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
+      await recordTransition(tx, this.jobs, locked, {
+        type: 'order.arrived_at_customer',
+        from: locked.status,
+        to: 'arrived',
+        version,
+        actor: { type: 'captain', id: command.captainId, device: command.deviceId },
+        reason: away?.reason ?? null,
+        // The customer sees «الكابتن عند الباب» only, never the reason.
+        publicReason: null,
+        at: now,
+        captainTrack: 'at_customer',
+      });
+      await keepKey(tx, command.accountId, command.idempotencyKey, requestHash, order, now);
+      return true;
+    });
+    if (!done) throw await this.stateChanged(order);
+    return this.answer(order, command.captainId, now);
   }
 
   // CA §9.4, RA §8.10 items 1-2: «دفعت للمطعم واستلمت الطلب» with the lines
@@ -210,7 +292,7 @@ export class CaptainOrders {
       lines: storedLines(command.lines),
     });
     const earlier = await this.replay(command.accountId, command, requestHash, now);
-    if (earlier !== null) return this.answer(earlier, now);
+    if (earlier !== null) return this.answer(earlier, command.captainId, now);
     const order = await this.captainsOrder(command);
     if (!requestable(order, command.captainId)) {
       throw await this.refusedState(order, command.accountId, command, requestHash, now);
@@ -276,7 +358,7 @@ export class CaptainOrders {
       return true;
     });
     if (!done) throw await this.stateChanged(order);
-    return this.answer(order, now);
+    return this.answer(order, command.captainId, now);
   }
 
   // AP §9.3.2 «تسجيل وصول الكابتن»: when GPS fails at the restaurant, OPS set
@@ -397,11 +479,14 @@ export class CaptainOrders {
         captainId: orders.captainId,
         itemsValue: orders.itemsValue,
         rateSnapshot: orders.rateSnapshot,
+        latitude: sql<number>`ST_Y(${orders.location})`.mapWith(Number),
+        longitude: sql<number>`ST_X(${orders.location})`.mapWith(Number),
       })
       .from(orders)
       .where(eq(orders.id, orderId));
     if (!order) throw new CaptainOrderRefusedError('unknown_order', 'no such order');
-    return order;
+    const { latitude, longitude, ...rest } = order;
+    return { ...rest, location: { latitude, longitude } };
   }
 
   // A repeat sent with the first may read the order after the first
@@ -434,20 +519,27 @@ export class CaptainOrders {
 
   private async answer(
     key: { id: string; placedAt: Date },
+    captainId: string,
     now: Date,
   ): Promise<CaptainActiveOrder> {
-    return this.withRestaurant(await this.read(key), now);
+    return this.withRestaurant(await this.read(key), captainId, now);
   }
 
-  private async withRestaurant(order: OrderView, now: Date): Promise<CaptainActiveOrder> {
+  private async withRestaurant(
+    order: OrderView,
+    captainId: string,
+    now: Date,
+  ): Promise<CaptainActiveOrder> {
     const restaurant = await this.merchants.restaurant(order.restaurantId, now);
     if (!restaurant) throw new Error(`restaurant ${order.restaurantId} not found`);
-    const [requests, disputes] = await Promise.all([
+    const [requests, disputes, customer] = await Promise.all([
       pickupRequestsOf(this.database.db, [order]),
       pickupDisputesOf(this.database.db, [order]),
+      this.customerOf(order, captainId),
     ]);
     return {
       order,
+      customer,
       pickupRequest: requests.get(order.id)?.[0] ?? null,
       pickupDispute: disputes.get(order.id) ?? null,
       restaurant: {
@@ -456,6 +548,35 @@ export class CaptainOrders {
         phone: restaurant.phone,
         location: restaurant.location,
       },
+    };
+  }
+
+  // CA §9.5 (C2, C10): the recipient's name when the order is for someone
+  // else, else the customer's first name; the address's contact number, else
+  // the account's own, for «اتصال بالزبون» and «واتساب الزبون».
+  // C10: the buttons work only while the order is active, so a command
+  // replayed once the order ended or left the captain answers no number.
+  private async customerOf(
+    order: OrderView,
+    captainId: string,
+  ): Promise<CaptainActiveOrder['customer']> {
+    const [row] = await this.database.db
+      .select({ contactPhoneEncrypted: orders.contactPhoneEncrypted })
+      .from(orders)
+      .where(orderKey(order.id, order.placedAt));
+    const [names, phone] = await Promise.all([
+      order.address.recipientName === null
+        ? this.customers.firstNames([order.customerAccountId])
+        : null,
+      order.captainId !== captainId || !CAPTAIN_ACTIVE.includes(order.status)
+        ? null
+        : row?.contactPhoneEncrypted
+          ? this.phones.decrypt(row.contactPhoneEncrypted)
+          : this.customerAccounts.phone(order.customerAccountId),
+    ]);
+    return {
+      name: order.address.recipientName ?? names?.get(order.customerAccountId) ?? null,
+      phone,
     };
   }
 
@@ -519,4 +640,39 @@ type OrderAtStart = {
   captainId: string | null;
   itemsValue: bigint;
   rateSnapshot: unknown;
+  // The customer's pin.
+  location: Point;
 };
+
+// The reason given away from the customer's pin (CA Appendix C), with its
+// text for «أخرى».
+export interface AwayGiven {
+  reason: AwayReason;
+  note: string | null;
+}
+
+// CA §9.6: the order's captain on the way to the customer, after the pickup.
+function customerArrivable(
+  order: Pick<OrderAtStart, 'status' | 'captainTrack' | 'captainId'>,
+  captainId: string,
+): boolean {
+  return (
+    order.status === 'picked_up' &&
+    order.captainTrack === 'picked_up' &&
+    order.captainId === captainId
+  );
+}
+
+// C6, K3, CA §9.6: a fix proves where the captain is only when it is real,
+// recent and accurate enough; otherwise operations record the step.
+function checkFix(location: CommandLocation, now: Date): void {
+  if (location.simulated) {
+    throw new CaptainOrderRefusedError('simulated_location', 'a simulated location');
+  }
+  if (now.getTime() - location.recordedAt.getTime() > FIX_MAX_AGE_MS) {
+    throw new CaptainOrderRefusedError('stale_location', 'the fix is not recent');
+  }
+  if (location.accuracyMetres > WEAK_GPS_METRES) {
+    throw new CaptainOrderRefusedError('weak_location', 'the location is not accurate enough');
+  }
+}
