@@ -4,11 +4,11 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_collect.dart';
+import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_limit.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_customer.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_restaurant.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_pickup_payment.dart';
-import 'package:core_api/src/model/captain_current_offer_dto_output_offer_pay.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_preparation.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -60,7 +60,7 @@ abstract class CaptainOfferDtoOutputOffer
   DateTime get expiresAt;
 
   @BuiltValueField(wireName: r'pay')
-  CaptainCurrentOfferDtoOutputOfferPay? get pay;
+  AdminPickerDtoOutputCaptainsInnerCustodyLimit? get pay;
 
   @BuiltValueField(wireName: r'restaurant')
   CaptainCurrentOfferDtoOutputOfferRestaurant get restaurant;
@@ -148,7 +148,7 @@ class _$CaptainOfferDtoOutputOfferSerializer
         : serializers.serialize(
             object.pay,
             specifiedType: const FullType.nullable(
-              CaptainCurrentOfferDtoOutputOfferPay,
+              AdminPickerDtoOutputCaptainsInnerCustodyLimit,
             ),
           );
     yield r'restaurant';
@@ -279,10 +279,10 @@ class _$CaptainOfferDtoOutputOfferSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      CaptainCurrentOfferDtoOutputOfferPay,
+                      AdminPickerDtoOutputCaptainsInnerCustodyLimit,
                     ),
                   )
-                  as CaptainCurrentOfferDtoOutputOfferPay?;
+                  as AdminPickerDtoOutputCaptainsInnerCustodyLimit?;
           if (valueDes == null) continue;
           result.pay.replace(valueDes);
           break;

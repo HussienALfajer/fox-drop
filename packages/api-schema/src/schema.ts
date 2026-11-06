@@ -964,6 +964,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminOrdersBoard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminOrdersOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/realtime/token": {
         parameters: {
             query?: never;
@@ -1006,6 +1038,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["captainRealtimeToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/captains": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminDispatchPicker"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2468,11 +2516,250 @@ export interface components {
                 itemsValue: string;
             };
         };
+        AdminBoardDto_Output: {
+            /** @description Every live order, oldest first. */
+            orders: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as #10423 (AP §4.8). */
+                number: string;
+                /**
+                 * @description The board column (AP §9.2.1).
+                 * @enum {string}
+                 */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description Increases with every change (architecture §5.3). */
+                version: number;
+                /** Format: date-time */
+                placedAt: string;
+                restaurant: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                };
+                neighbourhood: string;
+                /**
+                 * Format: date-time
+                 * @description The time in the current state counts from it.
+                 */
+                statusSince: string;
+                /** @description The column's limit (AP §9.2.1): green before 80% of it, amber from 80%, red past it; null where it is not built yet. */
+                limitAt: string | null;
+                /** @description AP §8.2; null before the search starts and before any offer. */
+                captainTrack: ("searching" | "offered" | "assigned" | "at_merchant" | "pickup_pending" | "picked_up" | "at_customer" | "done") | null;
+                /** @description Null shows a red «بلا كابتن». */
+                captain: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    vehicle: string;
+                } | null;
+                /** @description The customer total in the base currency. */
+                total: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+                badges: {
+                    /** @description «بحاجة لتعيين» (AP §8.3). */
+                    needsAssignment: boolean;
+                    /** @description «ملاحظة». */
+                    note: boolean;
+                    /** @description «زبون جديد»: no delivered order yet. */
+                    newCustomer: boolean;
+                };
+                /** @description The alerts' moments, so the panel raises each when it passes. */
+                moments: {
+                    acceptAlertAt: string | null;
+                    prepLateAlertAt: string | null;
+                    searchStartedAt: string | null;
+                    searchAlertAt: string | null;
+                    noCaptainAlertAt: string | null;
+                };
+                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready. */
+                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready")[];
+            }[];
+        };
+        AdminOrderDto_Output: {
+            order: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as #10423 (AP §4.8). */
+                number: string;
+                /**
+                 * @description The board column (AP §9.2.1).
+                 * @enum {string}
+                 */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description Increases with every change (architecture §5.3). */
+                version: number;
+                /** Format: date-time */
+                placedAt: string;
+                restaurant: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                };
+                neighbourhood: string;
+                /**
+                 * Format: date-time
+                 * @description The time in the current state counts from it.
+                 */
+                statusSince: string;
+                /** @description The column's limit (AP §9.2.1): green before 80% of it, amber from 80%, red past it; null where it is not built yet. */
+                limitAt: string | null;
+                /** @description AP §8.2; null before the search starts and before any offer. */
+                captainTrack: ("searching" | "offered" | "assigned" | "at_merchant" | "pickup_pending" | "picked_up" | "at_customer" | "done") | null;
+                /** @description Null shows a red «بلا كابتن». */
+                captain: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    vehicle: string;
+                } | null;
+                /** @description The customer total in the base currency. */
+                total: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+                badges: {
+                    /** @description «بحاجة لتعيين» (AP §8.3). */
+                    needsAssignment: boolean;
+                    /** @description «ملاحظة». */
+                    note: boolean;
+                    /** @description «زبون جديد»: no delivered order yet. */
+                    newCustomer: boolean;
+                };
+                /** @description The alerts' moments, so the panel raises each when it passes. */
+                moments: {
+                    acceptAlertAt: string | null;
+                    prepLateAlertAt: string | null;
+                    searchStartedAt: string | null;
+                    searchAlertAt: string | null;
+                    noCaptainAlertAt: string | null;
+                };
+                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready. */
+                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready")[];
+                promisedAt: string | null;
+                acceptance: {
+                    /** Format: date-time */
+                    at: string;
+                    prepMin: number;
+                    /** Format: date-time */
+                    prepDueAt: string;
+                } | null;
+                readyAt: string | null;
+                cancellation: {
+                    /** Format: date-time */
+                    at: string;
+                    reason: string;
+                } | null;
+                /** @description The phone, masked and revealed with a log (AP §5.4), comes with its slice. */
+                customer: {
+                    /** @description Null before «أكمل بياناتك» (CU §5.3). */
+                    name: string | null;
+                    address: {
+                        location: {
+                            latitude: number;
+                            longitude: number;
+                        };
+                        neighbourhood: string;
+                        street: string;
+                        floor: string | null;
+                        landmark: string;
+                        directions: string | null;
+                    };
+                    recipientName: string | null;
+                    /** @description «سأدفع بـ». */
+                    payIn: string | null;
+                };
+                note: string | null;
+                lines: {
+                    name: string;
+                    quantity: number;
+                    options: {
+                        name: string;
+                        /** @description Integer minor units (AP §8.6). */
+                        priceDelta: string;
+                    }[];
+                    note: string | null;
+                    /** @description Integer minor units (AP §8.6). */
+                    unitPrice: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    lineTotal: string;
+                }[];
+                money: {
+                    currency: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    itemsValue: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    deliveryFee: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    discount: string;
+                    rounding: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    total: string;
+                    /** @description Paid by the captain at pickup (D26: the items value). */
+                    pickupPayment: string;
+                };
+                timeline: {
+                    version: number;
+                    /** Format: date-time */
+                    at: string;
+                    /** @description Such as order.accepted or order.offered. */
+                    type: string | null;
+                    from: ("placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed") | null;
+                    /** @enum {string} */
+                    to: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                    actor: {
+                        type: string;
+                        id: string | null;
+                    };
+                    /** @description The offer's captain, or the one assigned. */
+                    captainId: string | null;
+                    reason: string | null;
+                }[];
+            };
+        };
         RealtimeTokenDto_Output: {
             /** @description Centrifugo's connection token, valid 15 minutes; ask again when it expires. */
             token: string;
             /** Format: date-time */
             expiresAt: string;
+        };
+        AdminPickerDto_Output: {
+            /** @description Every online captain of the city, nearest to the restaurant first (AP §9.3.2). */
+            captains: {
+                /** Format: uuid */
+                captainId: string;
+                name: string;
+                /** @enum {string} */
+                vehicle: "walking" | "bicycle" | "motorbike" | "car";
+                eligible: boolean;
+                /** @description Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed. */
+                reasons: ("busy" | "cash_limit" | "closed_due" | "simulated_location" | "out_of_range" | "vehicle_not_allowed")[];
+                /** @description To the restaurant: by road within the search radius, else the straight line. */
+                distanceMetres: number;
+                /** @description To the restaurant; null beyond the search radius. */
+                etaMin: number | null;
+                ordersToday: number;
+                /** @description Cash-limit usage. */
+                custody: {
+                    usage: {
+                        /** @description Minor units of the currency, as a string. */
+                        amount: string;
+                        currency: string;
+                    };
+                    limit: {
+                        /** @description Minor units of the currency, as a string. */
+                        amount: string;
+                        currency: string;
+                    };
+                };
+                /** @description A percentage over the last offers answered (CA §11.1); null without one. */
+                acceptanceRate: number | null;
+            }[];
         };
         AdminAssignDto: {
             /**
@@ -4083,6 +4370,50 @@ export interface operations {
             };
         };
     };
+    adminOrdersBoard: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBoardDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderDto_Output"];
+                };
+            };
+        };
+    };
     merchantRealtimeToken: {
         parameters: {
             query?: never;
@@ -4139,6 +4470,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RealtimeTokenDto_Output"];
+                };
+            };
+        };
+    };
+    adminDispatchPicker: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPickerDto_Output"];
                 };
             };
         };

@@ -1,40 +1,40 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'captain_current_offer_dto_output_offer_pay.dart';
+part of 'admin_board_dto_output_orders_inner_total.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$CaptainCurrentOfferDtoOutputOfferPay
-    extends CaptainCurrentOfferDtoOutputOfferPay {
+class _$AdminBoardDtoOutputOrdersInnerTotal
+    extends AdminBoardDtoOutputOrdersInnerTotal {
   @override
   final String amount;
   @override
   final String currency;
 
-  factory _$CaptainCurrentOfferDtoOutputOfferPay([
-    void Function(CaptainCurrentOfferDtoOutputOfferPayBuilder)? updates,
+  factory _$AdminBoardDtoOutputOrdersInnerTotal([
+    void Function(AdminBoardDtoOutputOrdersInnerTotalBuilder)? updates,
   ]) =>
-      (CaptainCurrentOfferDtoOutputOfferPayBuilder()..update(updates))._build();
+      (AdminBoardDtoOutputOrdersInnerTotalBuilder()..update(updates))._build();
 
-  _$CaptainCurrentOfferDtoOutputOfferPay._({
+  _$AdminBoardDtoOutputOrdersInnerTotal._({
     required this.amount,
     required this.currency,
   }) : super._();
   @override
-  CaptainCurrentOfferDtoOutputOfferPay rebuild(
-    void Function(CaptainCurrentOfferDtoOutputOfferPayBuilder) updates,
+  AdminBoardDtoOutputOrdersInnerTotal rebuild(
+    void Function(AdminBoardDtoOutputOrdersInnerTotalBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  CaptainCurrentOfferDtoOutputOfferPayBuilder toBuilder() =>
-      CaptainCurrentOfferDtoOutputOfferPayBuilder()..replace(this);
+  AdminBoardDtoOutputOrdersInnerTotalBuilder toBuilder() =>
+      AdminBoardDtoOutputOrdersInnerTotalBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is CaptainCurrentOfferDtoOutputOfferPay &&
+    return other is AdminBoardDtoOutputOrdersInnerTotal &&
         amount == other.amount &&
         currency == other.currency;
   }
@@ -50,20 +50,20 @@ class _$CaptainCurrentOfferDtoOutputOfferPay
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'CaptainCurrentOfferDtoOutputOfferPay')
+    return (newBuiltValueToStringHelper(r'AdminBoardDtoOutputOrdersInnerTotal')
           ..add('amount', amount)
           ..add('currency', currency))
         .toString();
   }
 }
 
-class CaptainCurrentOfferDtoOutputOfferPayBuilder
+class AdminBoardDtoOutputOrdersInnerTotalBuilder
     implements
         Builder<
-          CaptainCurrentOfferDtoOutputOfferPay,
-          CaptainCurrentOfferDtoOutputOfferPayBuilder
+          AdminBoardDtoOutputOrdersInnerTotal,
+          AdminBoardDtoOutputOrdersInnerTotalBuilder
         > {
-  _$CaptainCurrentOfferDtoOutputOfferPay? _$v;
+  _$AdminBoardDtoOutputOrdersInnerTotal? _$v;
 
   String? _amount;
   String? get amount => _$this._amount;
@@ -73,11 +73,11 @@ class CaptainCurrentOfferDtoOutputOfferPayBuilder
   String? get currency => _$this._currency;
   set currency(String? currency) => _$this._currency = currency;
 
-  CaptainCurrentOfferDtoOutputOfferPayBuilder() {
-    CaptainCurrentOfferDtoOutputOfferPay._defaults(this);
+  AdminBoardDtoOutputOrdersInnerTotalBuilder() {
+    AdminBoardDtoOutputOrdersInnerTotal._defaults(this);
   }
 
-  CaptainCurrentOfferDtoOutputOfferPayBuilder get _$this {
+  AdminBoardDtoOutputOrdersInnerTotalBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _amount = $v.amount;
@@ -88,32 +88,32 @@ class CaptainCurrentOfferDtoOutputOfferPayBuilder
   }
 
   @override
-  void replace(CaptainCurrentOfferDtoOutputOfferPay other) {
-    _$v = other as _$CaptainCurrentOfferDtoOutputOfferPay;
+  void replace(AdminBoardDtoOutputOrdersInnerTotal other) {
+    _$v = other as _$AdminBoardDtoOutputOrdersInnerTotal;
   }
 
   @override
   void update(
-    void Function(CaptainCurrentOfferDtoOutputOfferPayBuilder)? updates,
+    void Function(AdminBoardDtoOutputOrdersInnerTotalBuilder)? updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  CaptainCurrentOfferDtoOutputOfferPay build() => _build();
+  AdminBoardDtoOutputOrdersInnerTotal build() => _build();
 
-  _$CaptainCurrentOfferDtoOutputOfferPay _build() {
+  _$AdminBoardDtoOutputOrdersInnerTotal _build() {
     final _$result =
         _$v ??
-        _$CaptainCurrentOfferDtoOutputOfferPay._(
+        _$AdminBoardDtoOutputOrdersInnerTotal._(
           amount: BuiltValueNullFieldError.checkNotNull(
             amount,
-            r'CaptainCurrentOfferDtoOutputOfferPay',
+            r'AdminBoardDtoOutputOrdersInnerTotal',
             'amount',
           ),
           currency: BuiltValueNullFieldError.checkNotNull(
             currency,
-            r'CaptainCurrentOfferDtoOutputOfferPay',
+            r'AdminBoardDtoOutputOrdersInnerTotal',
             'currency',
           ),
         );

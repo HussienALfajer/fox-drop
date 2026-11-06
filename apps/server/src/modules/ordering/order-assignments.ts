@@ -1,5 +1,5 @@
 import { Inject, Injectable, Module, type OnModuleInit } from '@nestjs/common';
-import { and, eq, inArray, type SQL, sql } from 'drizzle-orm';
+import { and, count, eq, gte, inArray, type SQL, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DatabaseModule, DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -94,6 +94,18 @@ export class OrderAssignments implements OnModuleInit {
       true,
     );
     return order ?? null;
+  }
+
+  // AP §9.3.2: each captain's orders assigned since the moment (the
+  // picker's «طلبات اليوم»), whatever became of them.
+  async assignedSince(captainIds: string[], since: Date): Promise<Map<string, number>> {
+    if (captainIds.length === 0) return new Map();
+    const rows = await this.database.db
+      .select({ captainId: orders.captainId, n: count() })
+      .from(orders)
+      .where(and(inArray(orders.captainId, captainIds), gte(orders.assignedAt, since)))
+      .groupBy(orders.captainId);
+    return new Map(rows.map((row) => [row.captainId!, row.n]));
   }
 
   // AP §9.3.2 «تعيين كابتن»: accepted or ready, no captain and no open offer.

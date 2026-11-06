@@ -105,7 +105,7 @@ class _$CaptainOfferDtoOutputOffer extends CaptainOfferDtoOutputOffer {
   @override
   final DateTime expiresAt;
   @override
-  final CaptainCurrentOfferDtoOutputOfferPay? pay;
+  final AdminPickerDtoOutputCaptainsInnerCustodyLimit? pay;
   @override
   final CaptainCurrentOfferDtoOutputOfferRestaurant restaurant;
   @override
@@ -239,10 +239,10 @@ class CaptainOfferDtoOutputOfferBuilder
   DateTime? get expiresAt => _$this._expiresAt;
   set expiresAt(DateTime? expiresAt) => _$this._expiresAt = expiresAt;
 
-  CaptainCurrentOfferDtoOutputOfferPayBuilder? _pay;
-  CaptainCurrentOfferDtoOutputOfferPayBuilder get pay =>
-      _$this._pay ??= CaptainCurrentOfferDtoOutputOfferPayBuilder();
-  set pay(CaptainCurrentOfferDtoOutputOfferPayBuilder? pay) =>
+  AdminPickerDtoOutputCaptainsInnerCustodyLimitBuilder? _pay;
+  AdminPickerDtoOutputCaptainsInnerCustodyLimitBuilder get pay =>
+      _$this._pay ??= AdminPickerDtoOutputCaptainsInnerCustodyLimitBuilder();
+  set pay(AdminPickerDtoOutputCaptainsInnerCustodyLimitBuilder? pay) =>
       _$this._pay = pay;
 
   CaptainCurrentOfferDtoOutputOfferRestaurantBuilder? _restaurant;

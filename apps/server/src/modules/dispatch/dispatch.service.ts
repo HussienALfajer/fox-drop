@@ -7,8 +7,14 @@ import type { Database } from '../../database/database.js';
 import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { type AuditRequestContext, AuditService } from '../audit/index.js';
-import { type Availability, CaptainsService, type IneligibleReason } from '../captains/index.js';
-import { GeoService, type Point } from '../geo/index.js';
+import {
+  type Availability,
+  CaptainsService,
+  type IneligibleReason,
+  type Money,
+} from '../captains/index.js';
+import type { Vehicle } from '../settings/index.js';
+import { GeoService, lastCutoff, type Point, tripMinutes } from '../geo/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { type DispatchOrder, OrderAssignments } from '../ordering/index.js';
 import { SettingsService } from '../settings/index.js';
@@ -86,6 +92,24 @@ export interface CaptainOffer {
   collect: { amount: bigint; currency: string };
   // «جاهز» or «قيد التحضير — جاهز بعد {د} د تقريباً».
   preparation: { ready: boolean; readyAt: Date | null };
+}
+
+// A captain in the assignment picker (AP §9.3.2).
+export interface PickerCaptain {
+  captainId: string;
+  name: string;
+  vehicle: Vehicle;
+  // Greyed out with its reasons when not eligible.
+  eligible: boolean;
+  reasons: IneligibleReason[];
+  // To the restaurant: by road within the search radius, else the straight
+  // line; the ETA at order.eta_speed_kmh, null beyond the radius.
+  distanceMetres: number;
+  etaMin: number | null;
+  ordersToday: number;
+  custody: { usage: Money; limit: Money };
+  // The last captain.acceptance_window_offers offers answered (CA §11.1).
+  acceptanceRate: number | null;
 }
 
 export interface AdminCommand {
@@ -278,6 +302,89 @@ export class DispatchService {
       this.logger.log({ captainId: expired.captainId }, 'offline after unanswered offers (C3)');
     }
     return true;
+  }
+
+  // AP §9.3.2, the assignment picker: every online captain of the city with
+  // a live position, nearest to the restaurant first, eligible or greyed out
+  // with its reasons; for each, the distance and ETA to the restaurant (by
+  // road for its vehicle within the search radius, owner decision
+  // 2026-11-06), its vehicle, its orders today, its cash-limit usage and its
+  // acceptance rate over its last captain.acceptance_window_offers offers
+  // (CA §11.1).
+  async picker(orderId: string, now: Date): Promise<PickerCaptain[]> {
+    const order = await this.assignments.find(orderId);
+    if (order === null) throw new DispatchRefusedError('unknown_order', 'no such order');
+    const restaurant = await this.merchants.restaurant(order.restaurantId, now);
+    if (!restaurant) throw new Error(`restaurant ${order.restaurantId} not found`);
+    const candidates = await this.captains.candidates(
+      order.cityId,
+      restaurant.location,
+      order.tripMetres,
+      now,
+    );
+    if (candidates.length === 0) return [];
+    const [speedKmh, window, cutoff, timeZone] = await Promise.all([
+      this.settings.get('order.eta_speed_kmh', { cityId: order.cityId }),
+      this.settings.get('captain.acceptance_window_offers', { cityId: order.cityId }),
+      this.settings.get('finance.business_day_cutoff', { cityId: order.cityId }),
+      this.geo.cityTimeZone(order.cityId),
+    ]);
+    // «طلبات اليوم»: since the business day began (finance.business_day_cutoff).
+    const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
+    const dayStart = lastCutoff(now, hours * 60 + minutes, timeZone ?? 'UTC');
+    const ids = candidates.map((candidate) => candidate.captainId);
+    const [today, rates] = await Promise.all([
+      this.assignments.assignedSince(ids, dayStart),
+      this.acceptanceRates(ids, window),
+    ]);
+    return Promise.all(
+      candidates.map(async (candidate) => {
+        const inRange = !candidate.reasons.includes('out_of_range');
+        const distance = inRange
+          ? await this.geo.distance(candidate.position, restaurant.location, {
+              vehicle: candidate.vehicle,
+            })
+          : null;
+        return {
+          captainId: candidate.captainId,
+          name: candidate.name,
+          vehicle: candidate.vehicle,
+          eligible: candidate.reasons.length === 0,
+          reasons: candidate.reasons,
+          distanceMetres: distance?.metres ?? candidate.straightMetres,
+          etaMin: distance === null ? null : Math.ceil(tripMinutes(distance.metres, speedKmh)),
+          ordersToday: today.get(candidate.captainId) ?? 0,
+          custody: { usage: candidate.custody.usage, limit: candidate.custody.limit },
+          acceptanceRate: rates.get(candidate.captainId) ?? null,
+        };
+      }),
+    );
+  }
+
+  // CA §11.1: each captain's acceptance rate over its last offers answered,
+  // as a whole percentage; null without one.
+  private async acceptanceRates(
+    captainIds: string[],
+    window: number,
+  ): Promise<Map<string, number | null>> {
+    const rates = new Map<string, number | null>();
+    for (const captainId of captainIds) {
+      const last = await this.database.db
+        .select({ status: offers.status })
+        .from(offers)
+        .where(and(eq(offers.captainId, captainId), ne(offers.status, 'open')))
+        .orderBy(desc(offers.offeredAt))
+        .limit(window);
+      rates.set(
+        captainId,
+        last.length === 0
+          ? null
+          : Math.round(
+              (last.filter((each) => each.status === 'accepted').length * 100) / last.length,
+            ),
+      );
+    }
+    return rates;
   }
 
   // CA §8: the captain's open offer still in time, or null.

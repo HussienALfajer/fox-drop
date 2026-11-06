@@ -171,6 +171,7 @@ async function admin(roles: string[]) {
   const cookies = { [ADMIN_SESSION_COOKIE]: token };
   return {
     accountId,
+    get: (url: string) => app.inject({ method: 'GET', url, cookies }),
     assign: (orderId: string, captainId: string, key: string = randomUUID()) =>
       app.inject({
         method: 'POST',
@@ -508,5 +509,111 @@ describe('a direct assignment (dispatch.manual_assign_requires_accept off, CA §
         bySystem,
       );
     }
+  });
+});
+
+describe('the assignment picker (AP §9.3.2)', () => {
+  it('lists the eligible captains with their distance, ETA and cash, and greys out the rest', async () => {
+    const order = await acceptedOrder();
+    const near = await onlineCaptain();
+    const far = await onlineCaptain({ latitude: 36.587, longitude: 37.108 });
+    const ops = await admin(['OPS']);
+    const answer = await ops.get(`/v1/admin/orders/${order.id}/captains`);
+    expect(answer.statusCode).toBe(200);
+    const listed = new Map(
+      (
+        answer.json().captains as { captainId: string; distanceMetres: number; etaMin: number }[]
+      ).map((each) => [each.captainId, each]),
+    );
+    expect(listed.get(near.captainId)).toMatchObject({
+      name: 'كابتن التوزيع',
+      vehicle: 'motorbike',
+      eligible: true,
+      reasons: [],
+      ordersToday: 0,
+      custody: { usage: { amount: '0', currency: 'TRY' }, limit: { amount: '300000' } },
+      acceptanceRate: null,
+    });
+    const nearDistance = listed.get(near.captainId)!.distanceMetres;
+    expect(nearDistance).toBeGreaterThan(1000);
+    expect(listed.get(near.captainId)!.etaMin).toBeGreaterThan(0);
+    expect(listed.get(far.captainId)).toMatchObject({
+      eligible: false,
+      reasons: ['out_of_range'],
+      etaMin: null,
+    });
+    // Nearest first.
+    const order_ = [...listed.keys()];
+    expect(order_.indexOf(near.captainId)).toBeLessThan(order_.indexOf(far.captainId));
+    expect((await ops.get(`/v1/admin/orders/${randomUUID()}/captains`)).statusCode).toBe(404);
+    expect(
+      (await (await admin(['SUP'])).get(`/v1/admin/orders/${order.id}/captains`)).statusCode,
+    ).toBe(403);
+  });
+});
+
+describe('the operations board and order detail (AP §9.2, §9.3.1)', () => {
+  it('shows every live order of the city with its captain, badges and passed alerts', async () => {
+    const order = await acceptedOrder();
+    const sup = await admin(['SUP']);
+    const board = await sup.get(`/v1/admin/orders?cityId=${azaz}`);
+    expect(board.statusCode).toBe(200);
+    const card = (board.json().orders as { id: string }[]).find((each) => each.id === order.id);
+    expect(card).toMatchObject({
+      status: 'accepted',
+      restaurant: { id: restaurant, name: 'مطعم التوزيع' },
+      neighbourhood: 'المركز',
+      captainTrack: null,
+      captain: null,
+      total: { amount: '16000', currency: 'TRY' },
+      badges: { needsAssignment: false, note: false, newCustomer: true },
+      alerts: [],
+    });
+    // The search started 6 minutes ago (dispatch.no_captain_alert_min is 5).
+    await sql.query(
+      "UPDATE ordering.orders SET captain_track = 'searching', search_started_at = now() - interval '6 minutes', search_alert_at = now() - interval '1 minute' WHERE id = $1",
+      [order.id],
+    );
+    const later = (
+      (await sup.get(`/v1/admin/orders?cityId=${azaz}`)).json().orders as { id: string }[]
+    ).find((each) => each.id === order.id);
+    expect(later).toMatchObject({
+      captainTrack: 'searching',
+      badges: { needsAssignment: true },
+      alerts: ['no_captain'],
+    });
+
+    // Assigned: the captain on the card, the alert gone, the timeline told.
+    const captain = await onlineCaptain();
+    const assigned = await (await admin(['OPS'])).assign(order.id, captain.captainId);
+    const offerId = assigned.json().order.offer.id;
+    expect((await captain.call('POST', `/v1/captain/offers/${offerId}/accept`)).statusCode).toBe(
+      200,
+    );
+    const detail = await sup.get(`/v1/admin/orders/${order.id}`);
+    expect(detail.statusCode).toBe(200);
+    const shown = detail.json().order;
+    expect(shown).toMatchObject({
+      captainTrack: 'assigned',
+      captain: { id: captain.captainId, name: 'كابتن التوزيع', vehicle: 'motorbike' },
+      alerts: [],
+      customer: { address: { street: 'شارع السوق', landmark: 'قرب الجامع' } },
+      money: { itemsValue: '12000', total: '16000', pickupPayment: '12000' },
+      lines: [{ name: 'شاورما', quantity: 1, lineTotal: '12000' }],
+    });
+    expect((shown.timeline as { type: string }[]).map((event) => event.type)).toEqual([
+      'order.placed',
+      'order.accepted',
+      'order.offered',
+      'order.assigned',
+    ]);
+    expect(shown.timeline[3]).toMatchObject({
+      actor: { type: 'captain', id: captain.captainId },
+      captainId: captain.captainId,
+    });
+    expect((await sup.get(`/v1/admin/orders/${randomUUID()}`)).statusCode).toBe(404);
+    expect((await (await admin(['DATA'])).get(`/v1/admin/orders?cityId=${azaz}`)).statusCode).toBe(
+      403,
+    );
   });
 });

@@ -6,55 +6,55 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'captain_current_offer_dto_output_offer_pay.g.dart';
+part 'admin_board_dto_output_orders_inner_total.g.dart';
 
-/// The order pay, the largest text; «قد يُضاف أجر انتظار». Null without a pay table.
+/// The customer total in the base currency.
 ///
 /// Properties:
-/// * [amount] - Minor units of the currency, as a string.
+/// * [amount] - Integer minor units (AP §8.6).
 /// * [currency]
 @BuiltValue()
-abstract class CaptainCurrentOfferDtoOutputOfferPay
+abstract class AdminBoardDtoOutputOrdersInnerTotal
     implements
         Built<
-          CaptainCurrentOfferDtoOutputOfferPay,
-          CaptainCurrentOfferDtoOutputOfferPayBuilder
+          AdminBoardDtoOutputOrdersInnerTotal,
+          AdminBoardDtoOutputOrdersInnerTotalBuilder
         > {
-  /// Minor units of the currency, as a string.
+  /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
   @BuiltValueField(wireName: r'currency')
   String get currency;
 
-  CaptainCurrentOfferDtoOutputOfferPay._();
+  AdminBoardDtoOutputOrdersInnerTotal._();
 
-  factory CaptainCurrentOfferDtoOutputOfferPay([
-    void updates(CaptainCurrentOfferDtoOutputOfferPayBuilder b),
-  ]) = _$CaptainCurrentOfferDtoOutputOfferPay;
+  factory AdminBoardDtoOutputOrdersInnerTotal([
+    void updates(AdminBoardDtoOutputOrdersInnerTotalBuilder b),
+  ]) = _$AdminBoardDtoOutputOrdersInnerTotal;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CaptainCurrentOfferDtoOutputOfferPayBuilder b) => b;
+  static void _defaults(AdminBoardDtoOutputOrdersInnerTotalBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainCurrentOfferDtoOutputOfferPay> get serializer =>
-      _$CaptainCurrentOfferDtoOutputOfferPaySerializer();
+  static Serializer<AdminBoardDtoOutputOrdersInnerTotal> get serializer =>
+      _$AdminBoardDtoOutputOrdersInnerTotalSerializer();
 }
 
-class _$CaptainCurrentOfferDtoOutputOfferPaySerializer
-    implements PrimitiveSerializer<CaptainCurrentOfferDtoOutputOfferPay> {
+class _$AdminBoardDtoOutputOrdersInnerTotalSerializer
+    implements PrimitiveSerializer<AdminBoardDtoOutputOrdersInnerTotal> {
   @override
   final Iterable<Type> types = const [
-    CaptainCurrentOfferDtoOutputOfferPay,
-    _$CaptainCurrentOfferDtoOutputOfferPay,
+    AdminBoardDtoOutputOrdersInnerTotal,
+    _$AdminBoardDtoOutputOrdersInnerTotal,
   ];
 
   @override
-  final String wireName = r'CaptainCurrentOfferDtoOutputOfferPay';
+  final String wireName = r'AdminBoardDtoOutputOrdersInnerTotal';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CaptainCurrentOfferDtoOutputOfferPay object, {
+    AdminBoardDtoOutputOrdersInnerTotal object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'amount';
@@ -72,7 +72,7 @@ class _$CaptainCurrentOfferDtoOutputOfferPaySerializer
   @override
   Object serialize(
     Serializers serializers,
-    CaptainCurrentOfferDtoOutputOfferPay object, {
+    AdminBoardDtoOutputOrdersInnerTotal object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -87,7 +87,7 @@ class _$CaptainCurrentOfferDtoOutputOfferPaySerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CaptainCurrentOfferDtoOutputOfferPayBuilder result,
+    required AdminBoardDtoOutputOrdersInnerTotalBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -121,12 +121,12 @@ class _$CaptainCurrentOfferDtoOutputOfferPaySerializer
   }
 
   @override
-  CaptainCurrentOfferDtoOutputOfferPay deserialize(
+  AdminBoardDtoOutputOrdersInnerTotal deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = CaptainCurrentOfferDtoOutputOfferPayBuilder();
+    final result = AdminBoardDtoOutputOrdersInnerTotalBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

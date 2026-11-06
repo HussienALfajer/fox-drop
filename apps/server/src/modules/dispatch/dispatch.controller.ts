@@ -29,6 +29,7 @@ import {
   DispatchRefusedError,
   DispatchService,
   type DispatchState,
+  type PickerCaptain,
 } from './dispatch.service.js';
 
 const minor = z.string().regex(/^\d+$/).describe('Minor units of the currency, as a string.');
@@ -79,6 +80,54 @@ class AdminDispatchStateDto extends createZodDto(
     }),
   }),
 ) {}
+
+class AdminPickerDto extends createZodDto(
+  z.object({
+    captains: z
+      .array(
+        z.object({
+          captainId: z.uuid(),
+          name: z.string(),
+          vehicle: z.enum(['walking', 'bicycle', 'motorbike', 'car']),
+          eligible: z.boolean(),
+          reasons: z
+            .array(
+              z.enum([
+                'busy',
+                'cash_limit',
+                'closed_due',
+                'simulated_location',
+                'out_of_range',
+                'vehicle_not_allowed',
+              ]),
+            )
+            .describe(
+              'Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed.',
+            ),
+          distanceMetres: z
+            .int()
+            .describe(
+              'To the restaurant: by road within the search radius, else the straight line.',
+            ),
+          etaMin: z.int().nullable().describe('To the restaurant; null beyond the search radius.'),
+          ordersToday: z.int(),
+          custody: z.object({ usage: money, limit: money }).describe('Cash-limit usage.'),
+          acceptanceRate: z
+            .int()
+            .nullable()
+            .describe('A percentage over the last offers answered (CA §11.1); null without one.'),
+        }),
+      )
+      .describe('Every online captain of the city, nearest to the restaurant first (AP §9.3.2).'),
+  }),
+) {}
+
+function pickerBody(captain: PickerCaptain) {
+  return {
+    ...captain,
+    custody: { usage: moneyBody(captain.custody.usage), limit: moneyBody(captain.custody.limit) },
+  };
+}
 
 class CaptainOfferParamsDto extends createZodDto(z.object({ offerId: z.uuid() })) {}
 
@@ -196,6 +245,16 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
 @AdminController('orders')
 export class AdminDispatchController {
   constructor(private readonly dispatch: DispatchService) {}
+
+  // The assignment picker: eligible captains, and the others greyed out.
+  @Get(':orderId/captains')
+  @RequirePermission('operations.manage')
+  @ZodResponse({ status: 200, type: AdminPickerDto })
+  picker(@Param() params: AdminAssignParamsDto) {
+    return refusalsAsHttp(async () => ({
+      captains: (await this.dispatch.picker(params.orderId, new Date())).map(pickerBody),
+    }));
+  }
 
   // An offer to the captain, or the order assigned at once when
   // dispatch.manual_assign_requires_accept is off. Refused 409
