@@ -2,7 +2,7 @@
 
 > Part of the [technology stack](README.md). A bare "§n" here means §n of the technology stack.
 
-1. **WhatsApp as the only code channel (T4, T5).** A ban or outage of all sending numbers stops new sign-ins; existing sessions continue. Mitigations are in §8.3.3. Still to decide: an emergency procedure for that case (for example, OPS verifying a captain or restaurant by phone and issuing a one-time sign-in from the panel), and when to add the official WhatsApp Cloud API or an SMS provider as a second channel.
+1. **WhatsApp as the only code channel (T4, T5).** A ban or outage of all sending numbers stops new sign-ins; existing sessions continue. Mitigations are in §8.3.3, and the emergency sign-in of §8.3.5 lets OWN or OPS sign a captain or a restaurant user in (owner decisions 2026-11-07); customers wait for the channel to return. Still to decide: when to add the official WhatsApp Cloud API or an SMS provider as a second channel.
 2. **Terms of the WhatsApp library.** Automated sending through an unofficial library is outside WhatsApp's terms; numbers can be banned even with the protections. Keep spare warmed numbers ready at all times.
 3. **Play policy for foreground service types and full-screen intents.** Verify at submission (RA §21 item 4, CA §18 item 6).
 4. **Critical Alerts entitlement.** Apply early; field-test iPhones on silent with and without it (CA §18 item 2).

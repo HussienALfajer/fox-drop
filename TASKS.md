@@ -7,13 +7,13 @@ The handover note between sessions: the current task, its branch, its plan, and 
 Slice W4, the emergency sign-in (`docs/roadmap.md`, Phase 1, before slice 1.14).
 
 - **Roadmap line:** operations issue a short-lived, one-time sign-in code bound to a captain's or a restaurant user's number, audited; customers are not covered (architecture §22 item 1). Verified by the tests; the panel screen waits for the design.
-- **Specs:** architecture §22 item 1, §8.3.2, §15; AP §6.3; `apps/server/src/modules/identity/CLAUDE.md` («Codes», «Captain sign-in», «Restaurant sign-in»).
+- **Specs:** architecture §22 item 1, §8.3.2, §8.3.5 (written by this slice), §15; AP §6.3; `apps/server/src/modules/identity/CLAUDE.md` («Codes», «Captain sign-in», «Restaurant sign-in»).
 - **Branch:** `feat/emergency-sign-in`.
 - **Owner decisions 2026-11-07:** operations verify the person by a phone call, issue the code in the panel, see it once and read it out; the person types it in the app's usual code screen, and the code is bound to the number, not to a device (the first device that uses it signs in). Valid 10 minutes (fixed), used once, `otp.max_attempts` wrong ones end it, and it replaces the number's open code. A new special permission `sign_in.emergency_code` for OWN and OPS. Allowed at any time, with a required reason, audited with the actor and the account, never the code or the number.
 - **Plan:**
-  - [ ] The migration: the permission row for OWN and OPS, and the emergency columns on `app_sign_in_codes` (who issued it and why; no device).
-  - [ ] The issue (failing tests first): `POST /v1/admin/emergency-sign-in-codes` with the party, the number and the reason; refused for a number that cannot sign in; audited; the sign-in accepts the code from any device; `pnpm generate:api`.
-  - [ ] Docs: AP §6.3, architecture §22 item 1, `identity/CLAUDE.md`.
+  - [x] The migration: the permission row for OWN and OPS, and the emergency columns on `app_sign_in_codes` (who issued it and why; no device).
+  - [x] The issue (failing tests first): `POST /v1/admin/emergency-sign-in-codes` with the party, the number and the reason; refused for a number that cannot sign in; audited; the sign-in accepts the code from any device; `pnpm generate:api`.
+  - [x] Docs: AP §6.3, architecture §22 item 1, `identity/CLAUDE.md`.
   - [ ] `checker`, then `reviewer`; pull request.
 
 ## Notes from earlier slices
