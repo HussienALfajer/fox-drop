@@ -7830,7 +7830,9 @@
         "type": "object",
         "properties": {
           "prepMin": {
-            "type": "number",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
             "description": "Whole minutes from merchant.prep_time_floor_min to merchant.prep_time_ceiling_min (RA §8.5); 400 invalid_prep_time otherwise."
           }
         },

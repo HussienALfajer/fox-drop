@@ -153,6 +153,8 @@ export async function readOrders(
                 orderEvents.orderPlacedAt,
                 accepted.map((row) => row.placedAt),
               ),
+              // The acceptance itself, not a return to preparing (AP §9.3.3).
+              eq(orderEvents.fromStatus, 'placed'),
               eq(orderEvents.toStatus, 'accepted'),
             ),
           );

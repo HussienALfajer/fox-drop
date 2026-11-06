@@ -170,10 +170,7 @@ export const orders = ordering.table(
       'orders_accepted_states',
       sql`${table.status} NOT IN ('accepted', 'ready', 'picked_up', 'arrived', 'delivered', 'failed') OR ${table.acceptedAt} IS NOT NULL`,
     ),
-    check(
-      'orders_ready',
-      sql`(${table.readyAt} IS NULL) = (${table.noCaptainAlertAt} IS NULL) AND (${table.status} <> 'ready' OR ${table.readyAt} IS NOT NULL)`,
-    ),
+    check('orders_ready', sql`${table.status} <> 'ready' OR ${table.readyAt} IS NOT NULL`),
     check(
       'orders_trip',
       sql`(${table.tripSeconds} IS NULL) = (${table.tripMetres} IS NULL) AND ${table.tripSeconds} >= 0 AND ${table.tripMetres} >= 0`,

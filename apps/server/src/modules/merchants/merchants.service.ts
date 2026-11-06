@@ -112,9 +112,6 @@ export interface Restaurant {
   coverage: Coverage;
   minimumOrder: Money;
   defaultPrepMin: number;
-  // RA §7.3: the busy-mode minutes while it is on at the time asked, else
-  // null.
-  busyExtraMin: number | null;
   maxActiveOrders: number | null;
   // The commission in effect now, in basis points.
   commissionBp: number | null;
@@ -363,8 +360,6 @@ export class MerchantsService implements OnModuleInit {
         minimumOrder: restaurants.minimumOrder,
         minimumOrderCurrency: restaurants.minimumOrderCurrency,
         defaultPrepMin: restaurants.defaultPrepMin,
-        busyExtraMin: restaurants.busyExtraMin,
-        busyUntil: restaurants.busyUntil,
         maxActiveOrders: restaurants.maxActiveOrders,
       })
       .from(restaurants)
@@ -398,8 +393,6 @@ export class MerchantsService implements OnModuleInit {
       coverage,
       minimumOrder: { amount: row.minimumOrder, currency: row.minimumOrderCurrency },
       defaultPrepMin: row.defaultPrepMin,
-      busyExtraMin:
-        row.busyUntil !== null && row.busyUntil.getTime() > at.getTime() ? row.busyExtraMin : null,
       maxActiveOrders: row.maxActiveOrders,
       commissionBp: commissionAt(rates, at)?.rateBp ?? null,
       schedule: await this.schedule(this.database.db, restaurantId),

@@ -226,6 +226,32 @@ const outboxTypes = async (id: string) =>
     await sql.query('SELECT type FROM ordering.outbox WHERE order_id = $1 ORDER BY id', [id])
   ).rows.map((entry) => entry.type);
 
+// A motorbike captain online at the point, its live position written.
+async function onlineAt(point: Point): Promise<string> {
+  const captains = app.get(CaptainsService);
+  const id = await captains.createCaptain(
+    azaz,
+    {
+      name: 'كابتن الاختبار',
+      vehicle: 'motorbike',
+      plateNumber: randomUUID().slice(0, 6),
+      custodyLimit: { amount: 300_000n, currency: 'TRY' },
+    },
+    change,
+  );
+  const now = new Date();
+  await captains.goOnline(id, { appVersion: '1.0.0', simulatedLocation: false }, now);
+  await captains.recordLocations(
+    id,
+    [{ ...point, accuracyMetres: 8, recordedAt: now, simulated: false }],
+    new Date(now.getTime() + 1),
+  );
+  return id;
+}
+
+// About 1.1 km north of the restaurant.
+const captainSpot = { latitude: 36.597, longitude: 37.046 };
+
 const ceilTo5 = (ms: number) => Math.ceil(ms / (5 * MINUTE)) * 5 * MINUTE;
 
 describe('placing keeps the trip of the estimate (docs/domain/03)', () => {
@@ -246,7 +272,6 @@ describe('the order keeps its acceptance and ready time whole (CHECKs)', () => {
       "status = 'accepted'",
       'accepted_at = now(), prep_min = 20',
       "status = 'ready', accepted_at = now(), prep_min = 20, promised_at = now(), search_start_at = now(), prep_late_alert_at = now()",
-      'ready_at = now()',
     ]) {
       await expect(
         sql.query(`UPDATE ordering.orders SET ${change} WHERE id = $1`, [order.id]),
@@ -308,7 +333,11 @@ describe('POST /v1/merchant/orders/{orderId}/accept (RA §8.5, §18)', () => {
       [QUEUES.searchStart, order.id],
     );
     expect(jobs.rows).toHaveLength(1);
-    expect(jobs.rows[0].data).toEqual({ orderId: order.id, placedAt: order.placedAt });
+    expect(jobs.rows[0].data).toEqual({
+      orderId: order.id,
+      placedAt: order.placedAt,
+      searchStartAt: new Date(acceptedAt).toISOString(),
+    });
     expect(new Date(jobs.rows[0].start_after).getTime()).toBe(acceptedAt);
 
     // A repeat of the key answers the order and changes nothing (RA §4.7).
@@ -432,32 +461,8 @@ describe('POST /v1/merchant/orders/{orderId}/accept (RA §8.5, §18)', () => {
 });
 
 describe('the search-start moment (AP §8.3, §9.12.6; owner decision 2026-11-06)', () => {
-  // A motorbike captain online at the point, its live position written.
-  async function onlineAt(point: Point): Promise<string> {
-    const captains = app.get(CaptainsService);
-    const id = await captains.createCaptain(
-      azaz,
-      {
-        name: 'كابتن الاختبار',
-        vehicle: 'motorbike',
-        plateNumber: randomUUID().slice(0, 6),
-        custodyLimit: { amount: 300_000n, currency: 'TRY' },
-      },
-      change,
-    );
-    const now = new Date();
-    await captains.goOnline(id, { appVersion: '1.0.0', simulatedLocation: false }, now);
-    await captains.recordLocations(
-      id,
-      [{ ...point, accuracyMetres: 8, recordedAt: now, simulated: false }],
-      new Date(now.getTime() + 1),
-    );
-    return id;
-  }
-
   it("starts the search when the nearest captain's ETA plus the buffer covers the prep time left", async () => {
-    // About 1.1 km north of the restaurant.
-    const at = { latitude: 36.597, longitude: 37.046 };
+    const at = captainSpot;
     const captain = await onlineAt(at);
     try {
       const order = await placed();
@@ -476,7 +481,7 @@ describe('the search-start moment (AP §8.3, §9.12.6; owner decision 2026-11-06
   });
 
   it('starts it at once when the prep time is shorter than the ETA and the buffer', async () => {
-    const captain = await onlineAt({ latitude: 36.597, longitude: 37.046 });
+    const captain = await onlineAt(captainSpot);
     try {
       const order = await placed();
       expect((await accept(order.id, await signedIn('merchant'), 5)).statusCode).toBe(200);
@@ -487,16 +492,24 @@ describe('the search-start moment (AP §8.3, §9.12.6; owner decision 2026-11-06
     }
   });
 
-  it('leaves the timer harmless on an order that ended', async () => {
+  it('leaves the timer harmless on an order that ended, or for a moment that moved', async () => {
     const order = await placed();
     const timers = app.get(OrderTimers);
     expect((await accept(order.id, await signedIn('merchant'))).statusCode).toBe(200);
-    expect(await timers.searchStart({ orderId: order.id, placedAt: order.placedAt })).toBe(true);
+    const searchStartAt = new Date((await row(order.id)).search_start_at).toISOString();
+    const job = { orderId: order.id, placedAt: order.placedAt, searchStartAt };
+    expect(await timers.searchStart(job)).toBe(true);
+    expect(
+      await timers.searchStart({
+        ...job,
+        searchStartAt: new Date(Date.now() + MINUTE).toISOString(),
+      }),
+    ).toBe(false);
     await sql.query(
       "UPDATE ordering.orders SET status = 'cancelled', version = 3, cancelled_at = now(), cancel_reason = 'test', food_prepared = false WHERE id = $1",
       [order.id],
     );
-    expect(await timers.searchStart({ orderId: order.id, placedAt: order.placedAt })).toBe(false);
+    expect(await timers.searchStart(job)).toBe(false);
   });
 });
 
@@ -539,11 +552,76 @@ describe('POST /v1/merchant/orders/{orderId}/ready (RA §8.8, §18)', () => {
     expect((await row(order.id)).version).toBe(3);
   });
 
-  it('allows pressing it early, right after acceptance', async () => {
+  it('allows pressing it early, and then starts a search still ahead at once (AP §9.12.6)', async () => {
+    const captain = await onlineAt(captainSpot);
+    try {
+      const order = await placed();
+      const cashier = await signedIn('merchant');
+      await accept(order.id, cashier, 45);
+      const accepted = await row(order.id);
+      expect(new Date(accepted.search_start_at).getTime()).toBeGreaterThan(
+        new Date(accepted.accepted_at).getTime() + 30 * MINUTE,
+      );
+      expect((await command('ready', order.id, cashier)).statusCode).toBe(200);
+      const ready = await row(order.id);
+      expect(new Date(ready.search_start_at).getTime()).toBe(new Date(ready.ready_at).getTime());
+      const jobs = await sql.query(
+        "SELECT data FROM pgboss.job WHERE name = $1 AND data->>'orderId' = $2 ORDER BY created_on",
+        [QUEUES.searchStart, order.id],
+      );
+      expect(jobs.rows.map((entry) => entry.data.searchStartAt)).toEqual([
+        new Date(accepted.search_start_at).toISOString(),
+        new Date(ready.ready_at).toISOString(),
+      ]);
+      // The first timer no longer acts; the new one does.
+      const timers = app.get(OrderTimers);
+      expect(await timers.searchStart(jobs.rows[0].data)).toBe(false);
+      expect(await timers.searchStart(jobs.rows[1].data)).toBe(true);
+    } finally {
+      await app.get(CaptainsService).goOffline(captain, new Date());
+    }
+  });
+
+  it('leaves a search start already passed where it was', async () => {
     const order = await placed();
     const cashier = await signedIn('merchant');
-    await accept(order.id, cashier, 45);
+    await accept(order.id, cashier);
+    const accepted = await row(order.id);
     expect((await command('ready', order.id, cashier)).statusCode).toBe(200);
+    expect((await row(order.id)).search_start_at).toEqual(accepted.search_start_at);
+  });
+
+  it("answers another restaurant's order with 404, and needs its key", async () => {
+    const order = await placed();
+    await accept(order.id, await signedIn('merchant'));
+    const other = await signedIn('merchant', { restaurantId: otherRestaurant });
+    const answer = await command('ready', order.id, other);
+    expect(answer.statusCode).toBe(404);
+    expect(answer.json().error).toBe('unknown_order');
+    const keyless = await command('ready', order.id, await signedIn('merchant'), { key: null });
+    expect(keyless.statusCode).toBe(400);
+    expect(keyless.json().error).toBe('idempotency_key_required');
+    expect((await row(order.id)).status).toBe('accepted');
+  });
+
+  it('refuses a key used for another command with 422', async () => {
+    const order = await placed();
+    const cashier = await signedIn('merchant');
+    const key = randomUUID();
+    expect((await accept(order.id, cashier, 20, key)).statusCode).toBe(200);
+    const answer = await command('ready', order.id, cashier, { key });
+    expect(answer.statusCode).toBe(422);
+    expect(answer.json().error).toBe('idempotency_key_reused');
+  });
+
+  it("refuses a terminated restaurant's owner with 403 restaurant_terminated (RA §5.5)", async () => {
+    const merchants = app.get(MerchantsService);
+    const closing = await newRestaurant(merchants, 'مطعم يغلق للتجهيز');
+    const owner = await signedIn('merchant', { restaurantId: closing, role: 'owner' });
+    await merchants.setAccountStatus(closing, 'terminated', change);
+    const answer = await command('ready', randomUUID(), owner);
+    expect(answer.statusCode).toBe(403);
+    expect(answer.json().error).toBe('restaurant_terminated');
   });
 
   it('refuses a placed order with 409 and the current order', async () => {

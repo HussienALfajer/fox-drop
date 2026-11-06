@@ -87,7 +87,10 @@ export class OrderCommands {
   ) {}
 
   async prepTimeChooser(restaurantId: string, now: Date): Promise<PrepTimeChooser> {
-    const restaurant = await this.merchants.restaurant(restaurantId, now);
+    const [restaurant, state] = await Promise.all([
+      this.merchants.restaurant(restaurantId, now),
+      this.merchants.operatingState(restaurantId, now),
+    ]);
     if (!restaurant) throw new Error(`restaurant ${restaurantId} not found`);
     const cityId = restaurant.cityId;
     const [options, stepMin, floorMin, ceilingMin] = await Promise.all([
@@ -96,7 +99,10 @@ export class OrderCommands {
       this.settings.get('merchant.prep_time_floor_min', { cityId }),
       this.settings.get('merchant.prep_time_ceiling_min', { cityId }),
     ]);
-    const preselected = restaurant.defaultPrepMin + (restaurant.busyExtraMin ?? 0);
+    // RA §7.3: busy mode counts only while the restaurant is open, as in the
+    // quote's estimate.
+    const busyExtraMin = state.state === 'open' ? (state.busyExtraMin ?? 0) : 0;
+    const preselected = restaurant.defaultPrepMin + busyExtraMin;
     return {
       options,
       stepMin,
@@ -165,7 +171,9 @@ export class OrderCommands {
 
   // RA §8.8: an accepted order becomes ready, early or late, with no undo.
   // No captain is ever assigned yet, so operations' no-captain moment is set
-  // at dispatch.no_captain_after_ready_min (AP §8.3).
+  // at dispatch.no_captain_after_ready_min (AP §8.3). A ready order has no
+  // prep time left, so a search start still ahead moves to now (AP §9.12.6),
+  // with its timer.
   async ready(command: MerchantCommand, now: Date): Promise<OrderView> {
     return this.run(
       command,
@@ -176,11 +184,14 @@ export class OrderCommands {
         const noCaptainMin = await this.settings.get('dispatch.no_captain_after_ready_min', {
           cityId: order.cityId,
         });
+        const early = order.searchStartAt !== null && order.searchStartAt.getTime() > now.getTime();
         return {
           set: {
             readyAt: now,
             noCaptainAlertAt: new Date(now.getTime() + noCaptainMin * MINUTE_MS),
+            ...(early ? { searchStartAt: now } : {}),
           },
+          ...(early ? { searchStartAt: now } : {}),
         };
       },
     );
@@ -197,7 +208,13 @@ export class OrderCommands {
     const earlier = await this.replay(this.database.db, command, requestHash, now);
     if (earlier !== null) return this.read(earlier);
     const order = await this.find(command);
-    if (order.status !== transition.from) throw await this.stateChanged(order);
+    if (order.status !== transition.from) {
+      // A repeat sent with the first may read the order after the first
+      // committed: it answers the first's order (architecture §5.3).
+      const first = await this.replay(this.database.db, command, requestHash, now);
+      if (first !== null) return this.read(first);
+      throw await this.stateChanged(order);
+    }
     const prepared = await change(order);
 
     // pg-boss connects before the lock is taken, never while it is held.
@@ -225,8 +242,12 @@ export class OrderCommands {
         at: now,
       });
       if (prepared.searchStartAt) {
-        // AP §8.3: the timer exists exactly when the acceptance does.
-        const job: SearchStartJob = { orderId: order.id, placedAt: order.placedAt.toISOString() };
+        // AP §8.3: the timer exists exactly when its moment does.
+        const job: SearchStartJob = {
+          orderId: order.id,
+          placedAt: order.placedAt.toISOString(),
+          searchStartAt: prepared.searchStartAt.toISOString(),
+        };
         await this.jobs.send(QUEUES.searchStart, job, {
           startAfter: prepared.searchStartAt,
           db: inTransaction(tx),
@@ -251,6 +272,7 @@ export class OrderCommands {
         status: orders.status,
         tripSeconds: orders.tripSeconds,
         tripMetres: orders.tripMetres,
+        searchStartAt: orders.searchStartAt,
       })
       .from(orders)
       .where(and(eq(orders.id, command.orderId), eq(orders.restaurantId, command.restaurantId)));
@@ -318,4 +340,5 @@ type OrderAtStart = {
   status: OrderView['status'];
   tripSeconds: number | null;
   tripMetres: number | null;
+  searchStartAt: Date | null;
 };

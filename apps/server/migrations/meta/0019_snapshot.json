@@ -1,5 +1,5 @@
 {
-  "id": "191b309f-f9f0-4b4f-b6d2-72c124188d5d",
+  "id": "57808ad9-b84d-479f-ace6-03d7a35ddfc6",
   "prevId": "ed8d254e-31ce-4539-8ccc-f9d38263d5c5",
   "version": "7",
   "dialect": "postgresql",
@@ -6181,7 +6181,7 @@
         },
         "orders_ready": {
           "name": "orders_ready",
-          "value": "(\"ordering\".\"orders\".\"ready_at\" IS NULL) = (\"ordering\".\"orders\".\"no_captain_alert_at\" IS NULL) AND (\"ordering\".\"orders\".\"status\" <> 'ready' OR \"ordering\".\"orders\".\"ready_at\" IS NOT NULL)"
+          "value": "\"ordering\".\"orders\".\"status\" <> 'ready' OR \"ordering\".\"orders\".\"ready_at\" IS NOT NULL"
         },
         "orders_trip": {
           "name": "orders_trip",

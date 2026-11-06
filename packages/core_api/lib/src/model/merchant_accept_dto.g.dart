@@ -8,7 +8,7 @@ part of 'merchant_accept_dto.dart';
 
 class _$MerchantAcceptDto extends MerchantAcceptDto {
   @override
-  final num prepMin;
+  final int prepMin;
 
   factory _$MerchantAcceptDto([
     void Function(MerchantAcceptDtoBuilder)? updates,
@@ -49,9 +49,9 @@ class MerchantAcceptDtoBuilder
     implements Builder<MerchantAcceptDto, MerchantAcceptDtoBuilder> {
   _$MerchantAcceptDto? _$v;
 
-  num? _prepMin;
-  num? get prepMin => _$this._prepMin;
-  set prepMin(num? prepMin) => _$this._prepMin = prepMin;
+  int? _prepMin;
+  int? get prepMin => _$this._prepMin;
+  set prepMin(int? prepMin) => _$this._prepMin = prepMin;
 
   MerchantAcceptDtoBuilder() {
     MerchantAcceptDto._defaults(this);

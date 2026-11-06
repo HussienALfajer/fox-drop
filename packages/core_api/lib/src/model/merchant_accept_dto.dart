@@ -17,7 +17,7 @@ abstract class MerchantAcceptDto
     implements Built<MerchantAcceptDto, MerchantAcceptDtoBuilder> {
   /// Whole minutes from merchant.prep_time_floor_min to merchant.prep_time_ceiling_min (RA §8.5); 400 invalid_prep_time otherwise.
   @BuiltValueField(wireName: r'prepMin')
-  num get prepMin;
+  int get prepMin;
 
   MerchantAcceptDto._();
 
@@ -48,7 +48,7 @@ class _$MerchantAcceptDtoSerializer
     yield r'prepMin';
     yield serializers.serialize(
       object.prepMin,
-      specifiedType: const FullType(num),
+      specifiedType: const FullType(int),
     );
   }
 
@@ -79,8 +79,8 @@ class _$MerchantAcceptDtoSerializer
       switch (key) {
         case r'prepMin':
           final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(num))
-                  as num;
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.prepMin = valueDes;
           break;
         default:

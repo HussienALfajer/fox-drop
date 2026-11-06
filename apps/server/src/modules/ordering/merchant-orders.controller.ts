@@ -117,7 +117,7 @@ class MerchantOrderParamsDto extends createZodDto(z.object({ orderId: z.uuid() }
 class MerchantAcceptDto extends createZodDto(
   z.object({
     prepMin: z
-      .number()
+      .int()
       .describe(
         'Whole minutes from merchant.prep_time_floor_min to merchant.prep_time_ceiling_min (RA §8.5); 400 invalid_prep_time otherwise.',
       ),
