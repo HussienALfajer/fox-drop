@@ -11,9 +11,33 @@ export default [
     rules: { 'no-console': 'error' },
   },
   {
-    // Every route lives in one product's group (architecture §5.3).
+    // Every route lives in one product's group (architecture §5.3), and only
+    // the adapter of architecture §8.3.1 knows the WhatsApp library, which
+    // the otp-sender role alone loads.
     files: ['src/**/*.ts'],
     ignores: ['src/http/route-groups.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@nestjs/common',
+              importNames: ['Controller'],
+              message: 'Use a route group controller from src/http/route-groups.ts.',
+            },
+            {
+              name: 'baileys',
+              message:
+                'Only src/modules/identity/whatsapp-baileys.ts imports the WhatsApp library; use WhatsAppClient.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/modules/identity/whatsapp-baileys.ts'],
     rules: {
       'no-restricted-imports': [
         'error',

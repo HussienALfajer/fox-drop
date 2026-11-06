@@ -4,25 +4,28 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice W1, the real WhatsApp sender with one number (`docs/roadmap.md`, Phase 1, before slice 1.14). The pool (W2), App Check (W3) and the emergency sign-in (W4) follow, one pull request each.
+Slice W2, the sender pool (`docs/roadmap.md`, Phase 1, before slice 1.14). App Check (W3) and the emergency sign-in (W4) follow, one pull request each.
 
-- **Specs:** architecture §4.4 (`otp-sender` role), §8.3.1 (the `CodeSender` port), §8.3.3 items 3, 8, 9 and 10; `apps/server/src/modules/identity/CLAUDE.md` («Code sender»); `infra/CLAUDE.md` for the staging container.
-- **Owner decisions 2026-11-06:** the Baileys library; two or more dedicated numbers are ready (the owner completes each business profile and keeps the numbers in normal use while warming); App Check on the server in W3; the emergency code in W4.
-- **Branch:** `feat/whatsapp-sender`.
-- **Design note:** the API must still answer `not_on_whatsapp` (400) and `unavailable` (503), so it puts the send request on a Valkey queue and waits for the sender's short answer within a timeout (no answer means `unavailable`, and the code row rolls back as today). The API never loads Baileys.
+- **Specs:** architecture §8.3.3 items 6, 7, 11–14; AP §9.1.3 (the two alerts), §9.14 (Settings, «أرقام إرسال الرموز»); `apps/server/src/modules/identity/CLAUDE.md` («The otp-sender process», «WhatsApp library», «Pairing»).
+- **Branch:** `feat/whatsapp-sender-pool`.
+- **Builds on W1:** `OtpSenderService` sends from the latest `active` row of `identity.otp_sender_numbers` (states `active`, `disconnected`); requests arrive one at a time on `identity:otp:send:requests`; pairing is `otp-sender-pair-command.ts`. The settings `otp.sender_per_minute_max`, `otp.sender_daily_max`, `otp.send_jitter_sec` and `otp.sender_warmup_caps` already exist in the catalogue.
+- **Open items with proposed defaults (ask the owner first):** the warm-up steps last two or three days each (§8.3.3 item 6 says «over two weeks»); the throttle threshold (a failure rate over a window, not in the specs); the sender alerts show in the pool's read and go to Sentry until the alerts feed of AP §9.1.3 exists; the emergency code (W4) lives 15 minutes, needs a new operations permission and is available at any time.
 - **Plan:**
-  - [ ] Read architecture §8.3 and the identity module's code sender, request limits and sign-in tests; check Baileys' current version, licence and its auth-state and on-WhatsApp APIs.
-  - [ ] A `WhatsAppClient` interface in the `otp-sender` role that hides Baileys, with a fake for the tests.
-  - [ ] Migration (`db-migration` skill): the sender's session credentials, encrypted with the identity secrets, and the on-WhatsApp cache (30 days), in the owning module's schema.
-  - [ ] The send protocol over Valkey: request with a correlation id, answer `sent`, `not_on_whatsapp` or `unavailable`, a timeout; a `QueuedCodeSender` adapter in the API for staging and production, `DevelopmentCodeSender` unchanged in development. Failing tests first.
-  - [ ] The sender: the on-WhatsApp check (cached), the fixed message (architecture §8.3.3 item 8), the one fixed reply to an incoming message pointing to the support number, reconnect from stored credentials.
-  - [ ] A server command that pairs a number and prints its QR code in the terminal (the panel screen waits for the design).
-  - [ ] The `otp-sender` container in `infra/compose.yaml` and staging, with memory limits; update the `deploy` skill if its steps change.
-  - [ ] Update `apps/server/src/modules/identity/CLAUDE.md` and the `.env.example` keys (fake values only).
-  - [ ] `checker`, then `reviewer`; pull request; after the merge, the owner pairs a number on staging and receives a code.
-- **Open items with proposed defaults (W2, W4):** the emergency code lives 15 minutes, needs a new operations permission and is available at any time; the sender alerts show in the pool's read and go to Sentry until the alerts feed of AP §9.1.3 exists.
+  - [ ] Ask the owner the open items above.
+  - [ ] Migration (`db-migration` skill): the states `warming`, `active`, `standby`, `throttled`, `disconnected`, `banned`; the warm-up start; daily counts per number (sent, failed) in the owning schema.
+  - [ ] Several sessions at once in `OtpSenderService`, rotation over the active numbers, failover to the next on a disconnect, throttle or ban. Failing tests first.
+  - [ ] Pacing per number (per minute, per day, warm-up cap) and the jitter between sends, with a short queue; the API's 10-second timeout still holds.
+  - [ ] Health counts and automatic throttling; the library's delivery and read receipts where Baileys exposes them.
+  - [ ] The admin API of «أرقام إرسال الرموز» (OWN): list with state and daily counts, set active or standby, disable; pairing stays the command until the panel screen (design stop). Route table in `admin-team.test.ts`; `pnpm generate:api`.
+  - [ ] The two alerts in the pool's read and to Sentry.
+  - [ ] Update `apps/server/src/modules/identity/CLAUDE.md` and the `deploy` skill.
+  - [ ] `checker`, then `reviewer`; pull request; after the merge, the owner pairs two numbers on staging, disconnects one, and codes still arrive.
 
 ## Notes from earlier slices
+
+- Slice W1 added the real WhatsApp sender with one number (`apps/server/src/modules/identity/CLAUDE.md`; owner decisions 2026-11-06: Baileys 7.0.0-rc14, the API waits for the sender's answer, the server image stays private on ghcr.io since Baileys depends on libsignal, GPL-3.0). Outside development the API's `QueuedCodeSender` pushes an encrypted request on Valkey and waits 10 seconds for the answer; the `otp-sender` role (`OtpSenderModule`, the only one that loads Baileys, a lint rule) checks the number is on WhatsApp (cached 30 days, numbers on WhatsApp only), sends the fixed message, replies once per chat with `SUPPORT_WHATSAPP_NUMBER`, keeps the session encrypted in `identity.otp_sender_credentials`, reconnects every 10 s and marks a logged-out number `disconnected`. Pairing: `otp-sender-pair-command.ts` (the `deploy` skill).
+- To confirm with the owner (slice W1): the reply's wording «هذا الرقم يرسل رموز الدخول إلى FOX DROP فقط ولا يقرأ الرسائل.» with the support number, or «المساعدة» in the app without one; a number not on WhatsApp is not cached (it is checked again at the next request); the code request holds the number's lock and a database connection up to 10 seconds while the sender answers (at most 3 at once per API process; sending after the commit instead would change the rollback, the owner's call).
+- Not built yet for the sender: the pool, pacing and jitter, warm-up, health and alerts (W2), App Check (W3), the emergency sign-in (W4), the Content wordings (AP §9.13), the panel screen.
 
 - Slice 1.13 added the arrival at the customer and the delivery (`apps/server/src/modules/ordering/CLAUDE.md`; owner decisions 2026-11-06; pull requests 48 and the delivery's, server and API only): the captain's customer block (CA §9.5; the number only for the captain's own active order), `POST /v1/captain/orders/{orderId}/arrive-at-customer` and `/deliver` (CA §9.6–9.8, the restaurant arrival's fix rules, `captain.customer_radius_m` with a reason beyond it), operations' `record-delivery` (AP §9.3.2). `DeliveryBooking.complete` books `custody.collect`, `change_given`, the conversion of other currencies into the base, the fee, the rounding, `merchant.commission` and `earn.order_pay` and `earn.waiting_pay` with `delivered` (outcome `normal`) in one transaction; the clearing account returns to zero, or holds a shortfall. `delivery.test.ts` runs the whole cycle against AP §8.4. `min_pay` now applies to the order pay only (`PayParts`).
 - To confirm with the owner (slice 1.13): recording each call or WhatsApp tap of the captain in the order timeline (CA §9.5) is not built; commission is rounded half up to the minor unit (AP §8.4 says nothing); «تسليم بعيد عن العنوان» reaches operations only while the order is active, not for a reason given at «تم التسليم» (it needs the alerts feed of AP §9.1.3); placing now needs a captain pay table in force (`captain_pay_unset`); «عليك تسليم اليوم» is the captain's whole custody at current rates.

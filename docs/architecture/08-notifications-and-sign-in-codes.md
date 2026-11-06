@@ -18,7 +18,7 @@ Ring, chime and silent levels are played by the apps themselves (RA §4.4, CA §
 ### 8.3.1 The channel abstraction
 
 - The `identity` module asks a **`CodeSender` port** to deliver a code. V1 has one adapter: `WhatsAppLibrarySender`.
-- The adapter runs in the separate `otp-sender` process (§4.4). The API puts a send request on a queue and does not wait for the library.
+- The adapter runs in the separate `otp-sender` process (§4.4). The API puts a send request on a queue and waits for the sender's short answer within a timeout, so the app still hears «هذا الرقم غير مسجّل على واتساب» (owner decision 2026-11-06); it never loads the library. No answer in time means no code was sent.
 - **Library:** the chosen third-party WhatsApp library. The default candidate for a Node.js server is **Baileys** (WhatsApp multi-device protocol, no browser needed). The adapter hides it completely, so it can be replaced by another library, by the official WhatsApp Cloud API, or by an SMS adapter later, with no change in the apps.
 - `otp.channel_order` stays a setting, with `whatsapp` as its only value in V1. SMS and voice are reserved for later (T5).
 

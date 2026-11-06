@@ -106,6 +106,8 @@ test('every environment names the settings compose.yaml and nginx need', () => {
     'ADMIN_PORT',
     'PORTAL_PORT',
     'CENTRIFUGO_PORT',
+    // The otp-sender's reply (architecture §8.3.3 item 9); may be empty.
+    'SUPPORT_WHATSAPP_NUMBER',
   ];
   for (const file of readdirSync(new URL('environments/', import.meta.url))) {
     const keys = read(`environments/${file}`)

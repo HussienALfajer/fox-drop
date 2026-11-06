@@ -430,3 +430,57 @@ export const appSigningKeys = identity.table('app_signing_keys', {
   publicKey: text('public_key').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
 });
+
+// A WhatsApp number that sends the sign-in codes (architecture §8.3.3 items
+// 4 and 10), paired by the server command. W1 sends from the latest active
+// one; the pool's states (§8.3.3 item 11) arrive with W2. A number logged out
+// by WhatsApp becomes disconnected and is paired again.
+export const otpSenderNumberStatuses = ['active', 'disconnected'] as const;
+
+export const otpSenderNumbers = identity.table(
+  'otp_sender_numbers',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    // The E.164 phone, encrypted, and its keyed hash to find it by.
+    phoneEncrypted: text('phone_encrypted').notNull(),
+    phoneHash: text('phone_hash').notNull(),
+    status: text('status', { enum: otpSenderNumberStatuses }).notNull(),
+    pairedAt: timestamp('paired_at', { withTimezone: true }).notNull(),
+    disconnectedAt: timestamp('disconnected_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('otp_sender_numbers_status_paired').on(table.status, table.pairedAt),
+    check('otp_sender_numbers_status_values', sql`${table.status} IN ('active', 'disconnected')`),
+    check(
+      'otp_sender_numbers_disconnected_at',
+      sql`(${table.status} = 'disconnected') = (${table.disconnectedAt} IS NOT NULL)`,
+    ),
+  ],
+);
+
+// A number's WhatsApp session (architecture §8.3.3 item 10): the library's
+// credentials and keys, one row per key, each value encrypted with
+// IdentitySecrets, so a restart does not force a new pairing. A key the
+// library removes keeps its row with a null value (no DELETE grant).
+export const otpSenderCredentials = identity.table(
+  'otp_sender_credentials',
+  {
+    numberId: uuid('number_id')
+      .notNull()
+      .references(() => otpSenderNumbers.id),
+    key: text('key').notNull(),
+    valueEncrypted: text('value_encrypted'),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.numberId, table.key] })],
+);
+
+// The numbers known to have a WhatsApp account (architecture §8.3.3 item 3),
+// by their keyed hash, checked again after 30 days. A number without one is
+// not cached, so a user who installs WhatsApp can sign in at once.
+export const otpWhatsAppNumbers = identity.table('otp_whatsapp_numbers', {
+  phoneHash: text('phone_hash').primaryKey(),
+  checkedAt: timestamp('checked_at', { withTimezone: true }).notNull(),
+});

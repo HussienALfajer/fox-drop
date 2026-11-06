@@ -136,12 +136,20 @@ services:
       PROCESS_ROLE: dispatcher
     mem_limit: 256m
 
+  # The WhatsApp sender of the sign-in codes (architecture §8.3.3): one
+  # session per sending number, restored from PostgreSQL. A number is paired
+  # with `run --rm otp-sender node dist/modules/identity/otp-sender-pair-command.js`
+  # (the deploy skill). The image stays private on ghcr.io: the WhatsApp
+  # library depends on GPL-3.0 code (owner decision 2026-11-06).
   otp-sender:
     <<: *server
     environment:
       <<: *server-environment
       PROCESS_ROLE: otp-sender
-    mem_limit: 256m
+      # The support WhatsApp number of the fixed reply (§8.3.3 item 9); empty,
+      # the reply points to the apps' help.
+      SUPPORT_WHATSAPP_NUMBER: ${SUPPORT_WHATSAPP_NUMBER:-}
+    mem_limit: 384m
 
   # Real time (architecture §6.1): the apps' WebSocket behind nginx's
   # /connection/websocket. The channels are centrifugo/config.yaml, as in

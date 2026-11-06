@@ -1,10 +1,14 @@
+import type { Valkey } from 'iovalkey';
+import { QueuedCodeSender } from './code-send-queue.js';
+import type { IdentitySecrets } from './secrets.js';
+
 // The injection token of the module's CodeSender.
 export const CODE_SENDER = Symbol('CODE_SENDER');
 
 // Architecture §8.3.1: the identity module asks this port to deliver a sign-in
-// code. V1's adapter is the WhatsApp library sender in the otp-sender process;
-// until it exists the API calls the development sender directly (owner
-// decision 2026-11-05). not_on_whatsapp: the number has no WhatsApp account,
+// code. Outside development the adapter is QueuedCodeSender, which hands the
+// code to the WhatsApp sender of the otp-sender process (code-send-queue.ts).
+// not_on_whatsapp: the number has no WhatsApp account,
 // so nothing was sent (architecture §8.3.3 item 3); unavailable: no channel
 // can send now (§8.3.3 item 14), so nothing was sent either.
 export type SendResult = 'sent' | 'not_on_whatsapp' | 'unavailable';
@@ -40,14 +44,8 @@ export class DevelopmentCodeSender implements CodeSender {
   }
 }
 
-// Outside development until the WhatsApp sender arrives (roadmap, before the
-// Phase 1 staging trials): every code request is refused, and nothing is sent.
-export class UnavailableCodeSender implements CodeSender {
-  send(): Promise<'unavailable'> {
-    return Promise.resolve('unavailable');
-  }
-}
-
-export function codeSenderFromEnvironment(): CodeSender {
-  return isDevelopment() ? new DevelopmentCodeSender() : new UnavailableCodeSender();
+// Development prints codes; staging and production send them over WhatsApp
+// through the otp-sender process.
+export function codeSenderFromEnvironment(valkey: Valkey, secrets: IdentitySecrets): CodeSender {
+  return isDevelopment() ? new DevelopmentCodeSender() : new QueuedCodeSender(valkey, secrets);
 }

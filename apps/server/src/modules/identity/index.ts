@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
-import { ValkeyModule } from '../../valkey/valkey.module.js';
+import { VALKEY, ValkeyModule } from '../../valkey/valkey.module.js';
 import { AuditModule } from '../audit/index.js';
 import { CaptainsModule } from '../captains/index.js';
 import { MerchantsModule } from '../merchants/index.js';
@@ -52,7 +52,11 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
     AdminSignInService,
     AdminSessionsService,
     AdminTeamService,
-    { provide: CODE_SENDER, useFactory: codeSenderFromEnvironment },
+    {
+      provide: CODE_SENDER,
+      useFactory: codeSenderFromEnvironment,
+      inject: [VALKEY, IDENTITY_SECRETS],
+    },
     AppSigningKeys,
     AppSessionsService,
     AppSignInService,
@@ -74,6 +78,7 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
 })
 export class IdentityModule {}
 
+export { OtpSenderModule } from './otp-sender.module.js';
 export { ADMIN_SESSION_COOKIE, RouteAccessGuard } from './route-access.guard.js';
 export { AdminSessionsService, type AdminSession } from './admin-sessions.service.js';
 export { AppSessionsService, type AppParty, type AppSession } from './app-sessions.service.js';
