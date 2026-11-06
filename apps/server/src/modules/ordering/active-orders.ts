@@ -53,15 +53,17 @@ export class ActiveOrders {
     return { newMax, trustedAfter, trustedMax };
   }
 
-  // The delivered orders count every delivered order until outcomes exist
-  // (AP §8.9), then only a normal one.
+  // D23: the delivered orders with outcome normal (AP §8.9) make a customer
+  // trusted.
   async customer(
     accountId: string,
     rules: CustomerLimitRules,
     executor: Executor = this.database.db,
   ): Promise<CustomerLimit> {
     const whose = eq(orders.customerAccountId, accountId);
-    const delivered = await countOrders(executor, whose, ['delivered']);
+    const delivered = await countOrders(executor, and(whose, eq(orders.outcome, 'normal'))!, [
+      'delivered',
+    ]);
     const trusted = delivered >= rules.trustedAfter;
     const limit = trusted ? rules.trustedMax : rules.newMax;
     const active = await countOrders(executor, whose, UNTIL_ENDED);

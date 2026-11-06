@@ -4,10 +4,34 @@ import { equivalent, type RateSnapshot } from '../fx/index.js';
 import type { Point } from '../geo/index.js';
 import type { CaptainTrack } from './order-events.js';
 import type { QuoteMoney } from './quote.js';
-import { type awayReasons, orderEvents, orderLines, orders, type orderStatuses } from './schema.js';
+import {
+  type awayReasons,
+  collections,
+  type orderOutcomes,
+  orderEvents,
+  orderLines,
+  orders,
+  type orderStatuses,
+  type shortfallReasons,
+} from './schema.js';
 
 type OrderStatus = (typeof orderStatuses)[number];
 export type AwayReason = (typeof awayReasons)[number];
+export type OrderOutcome = (typeof orderOutcomes)[number];
+type ShortfallReason = (typeof shortfallReasons)[number];
+
+// Payment lines as stored in jsonb, their amounts as strings (RA §8.10).
+interface PaymentLine {
+  currency: string;
+  amount: bigint;
+}
+
+function linesOf(stored: unknown): PaymentLine[] {
+  return (stored as { currency: string; amount: string }[]).map((line) => ({
+    currency: line.currency,
+    amount: BigInt(line.amount),
+  }));
+}
 type Executor = Pick<NodePgDatabase, 'select'>;
 
 // An order with its lines as the server keeps it: what the placing command
@@ -46,6 +70,18 @@ export interface OrderView {
   // (K4), which also covers the delivery.
   customerArrival: { at: Date } | null;
   away: { reason: AwayReason; note: string | null } | null;
+  // AP §8.1, §8.6, CA §9.8: «تم التسليم», its outcome and the door payment
+  // recorded (CU §11.8 Q23: «استلم الكابتن» and «أعاد لك»).
+  delivery: {
+    at: Date;
+    outcome: OrderOutcome;
+    received: PaymentLine[];
+    change: PaymentLine[];
+    netReceived: bigint;
+    // «نقص في التحصيل» (AP §8.6), with the captain's reason (K16).
+    shortfall: { amount: bigint; reason: ShortfallReason; note: string | null } | null;
+    recordedBy: { type: string; id: string; reason: string | null };
+  } | null;
   cancellation: { at: Date; reason: string } | null;
   currency: string;
   money: QuoteMoney;
@@ -110,6 +146,8 @@ export async function readOrders(
       arrivedAtCustomerAt: orders.arrivedAtCustomerAt,
       awayReason: orders.awayReason,
       awayNote: orders.awayNote,
+      deliveredAt: orders.deliveredAt,
+      outcome: orders.outcome,
       cancelledAt: orders.cancelledAt,
       cancelReason: orders.cancelReason,
       currency: orders.currency,
@@ -181,7 +219,27 @@ export async function readOrders(
               eq(orderEvents.toStatus, 'accepted'),
             ),
           );
+  const delivered = rows.filter((row) => row.deliveredAt !== null);
+  const deliveries =
+    delivered.length === 0
+      ? []
+      : await executor
+          .select()
+          .from(collections)
+          .where(
+            and(
+              inArray(
+                collections.orderId,
+                delivered.map((row) => row.id),
+              ),
+              inArray(
+                collections.orderPlacedAt,
+                delivered.map((row) => row.placedAt),
+              ),
+            ),
+          );
   return rows.map((row) => {
+    const collection = deliveries.find((each) => each.orderId === row.id);
     const snapshot = snapshotOf(row.rateSnapshot);
     return {
       id: row.id,
@@ -216,6 +274,28 @@ export async function readOrders(
           : null,
       customerArrival: row.arrivedAtCustomerAt && { at: row.arrivedAtCustomerAt },
       away: row.awayReason && { reason: row.awayReason, note: row.awayNote },
+      delivery:
+        row.deliveredAt && row.outcome && collection
+          ? {
+              at: row.deliveredAt,
+              outcome: row.outcome,
+              received: linesOf(collection.receivedLines),
+              change: linesOf(collection.changeLines),
+              netReceived: collection.netReceived,
+              shortfall: collection.shortfallReason
+                ? {
+                    amount: collection.shortfall,
+                    reason: collection.shortfallReason,
+                    note: collection.shortfallNote,
+                  }
+                : null,
+              recordedBy: {
+                type: collection.recordedByType,
+                id: collection.recordedById,
+                reason: collection.reason,
+              },
+            }
+          : null,
       cancellation:
         row.cancelledAt && row.cancelReason
           ? { at: row.cancelledAt, reason: row.cancelReason }

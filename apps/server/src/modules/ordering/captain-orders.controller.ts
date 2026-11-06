@@ -22,10 +22,11 @@ import {
   type CaptainActiveOrder,
   CaptainOrderRefusedError,
   CaptainOrders,
+  type DeliverySummary,
   WEAK_GPS_METRES,
 } from './captain-orders.js';
 import { minor } from './customer-quote.controller.js';
-import { awayReasons, captainTracks, orderStatuses } from './schema.js';
+import { awayReasons, captainTracks, orderStatuses, shortfallReasons } from './schema.js';
 
 const money = z.object({ amount: minor, currency: z.string().length(3) });
 // RA §8.10: one line per currency, the amounts in minor units.
@@ -239,6 +240,107 @@ class CaptainArriveAtCustomerDto extends createZodDto(
   }),
 ) {}
 
+// CA Appendix C (K16): why the captain collected less than due.
+export const shortfallGiven = z
+  .object({
+    reason: z.enum(shortfallReasons),
+    note: z.string().trim().min(1).max(200).nullable().describe('The text of «أخرى» only.'),
+  })
+  .refine((given) => (given.reason === 'other') === (given.note !== null), {
+    message: 'a note goes with «أخرى» and only with it',
+  });
+
+// AP §8.6, CA §9.7: the door payment, as the captain or operations record it.
+export const doorPayment = {
+  received: paymentLines.describe('What the customer paid, one line per currency.'),
+  change: z
+    .array(money)
+    .max(5)
+    .describe('The change given back, one line per currency; a tip is recorded as given (K14).'),
+  amountDue: money.describe(
+    'The amount due the screen showed; another one now answers 409 amount_due_changed.',
+  ),
+  shortfall: shortfallGiven
+    .nullable()
+    .describe(
+      'Needed when the net received is short beyond rounding: «الزبون لا يملك المبلغ كاملاً», «خطأ في العد», «أخرى».',
+    ),
+};
+
+export function doorCollection(body: {
+  received: { currency: string; amount: string }[];
+  change: { currency: string; amount: string }[];
+  amountDue: { currency: string; amount: string };
+  shortfall: { reason: (typeof shortfallReasons)[number]; note: string | null } | null;
+}) {
+  return {
+    received: linesOfBody(body.received),
+    change: linesOfBody(body.change),
+    amountDue: BigInt(body.amountDue.amount),
+    shortfall: body.shortfall,
+  };
+}
+
+class CaptainDeliverDto extends createZodDto(
+  z.object({
+    ...doorPayment,
+    location: commandLocation,
+    away: awayGiven
+      .nullable()
+      .describe(
+        'Needed beyond captain.customer_radius_m of the pin, unless given at the arrival (K4).',
+      ),
+  }),
+) {}
+
+class CaptainDeliverySummaryDto extends createZodDto(
+  z.object({
+    summary: z
+      .object({
+        orderId: z.uuid(),
+        number: z.string(),
+        pay: z
+          .object({
+            base: minor,
+            distance: minor,
+            topUp: minor.describe('«إكمال للحد الأدنى», shown when above 0.'),
+            waiting: minor,
+            total: minor.describe('«ربحت من هذا الطلب: {الأجر}».'),
+            currency: z.string().length(3),
+          })
+          .describe('The peak bonus comes with the peak windows.'),
+        custodyChange: z
+          .object({ amount: z.string().regex(/^-?\d+$/), currency: z.string().length(3) })
+          .describe('«تغيّرت عهدتك: {+المبلغ}»: the net collected minus the pickup payment.'),
+        handInToday: money.describe('«عليك تسليم اليوم: {المجموع}».'),
+      })
+      .describe('The order summary (CA §9.8); the captain is free for the next offer.'),
+  }),
+) {}
+
+function summaryBody(summary: DeliverySummary) {
+  const amount = (value: bigint) => value.toString();
+  return {
+    summary: {
+      orderId: summary.orderId,
+      number: summary.number.toString(),
+      pay: {
+        base: amount(summary.pay.base),
+        distance: amount(summary.pay.distance),
+        topUp: amount(summary.pay.topUp),
+        waiting: amount(summary.pay.waiting),
+        total: amount(summary.pay.total),
+        currency: summary.currency,
+      },
+      custodyChange: { amount: amount(summary.custodyChange), currency: summary.currency },
+      handInToday: {
+        amount: amount(summary.handInToday.amount),
+        currency: summary.handInToday.currency,
+      },
+    },
+  };
+}
+
 function activeOrderBody({
   order,
   restaurant,
@@ -391,6 +493,44 @@ export class CaptainOrdersController {
     }));
   }
 
+  // CA §9.7–9.8 «تم التسليم» with the door payment: the order is delivered
+  // and the captain gets the summary. 409 too_far_from_customer (send
+  // `away`), shortfall_reason_required with `shortfall`, overpaid («سجّل
+  // الباقي الذي أعدته للزبون»), amount_due_changed and order_state_changed
+  // with the order as it is now, currency_not_accepted, weak_location,
+  // simulated_location, stale_location, not_online; 400 invalid_lines,
+  // invalid_location; 404 unknown_order; 422 idempotency_key_reused.
+  @Post(':orderId/deliver')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CaptainDeliverySummaryDto })
+  async deliver(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: CaptainOrderParamsDto,
+    @Body() body: CaptainDeliverDto,
+  ) {
+    const captainId = captainOf(session);
+    return refusalsAsHttp(captainId, this.orders, async () =>
+      summaryBody(
+        await this.orders.deliver(
+          {
+            orderId: params.orderId,
+            captainId,
+            accountId: session.accountId,
+            deviceId: session.deviceId,
+            idempotencyKey,
+            ...doorCollection(body),
+            location: { ...body.location, recordedAt: new Date(body.location.recordedAt) },
+            away: body.away,
+          },
+          new Date(),
+        ),
+      ),
+    );
+  }
+
   // CA §9.4 «دفعت للمطعم واستلمت الطلب», at the restaurant: the request waits
   // for the restaurant for order.pickup_confirm_timeout_sec. 409
   // amount_mismatch («المبلغ لا يطابق المطلوب»), currency_not_accepted (the
@@ -456,7 +596,7 @@ async function refusalsAsHttp<T>(
         error: refusal,
       });
     }
-    if (refusal === 'order_state_changed') {
+    if (refusal === 'order_state_changed' || refusal === 'amount_due_changed') {
       const active = await orders.active(captainId, new Date());
       throw new ConflictException({
         statusCode: HttpStatus.CONFLICT,
@@ -471,6 +611,14 @@ async function refusalsAsHttp<T>(
         ? { distanceMetres: error.distanceMetres }
         : {}),
       ...(refusal === 'weak_location' ? { accuracyLimitMetres: WEAK_GPS_METRES } : {}),
+      ...(error.shortfall
+        ? {
+            shortfall: {
+              amount: error.shortfall.amount.toString(),
+              currency: error.shortfall.currency,
+            },
+          }
+        : {}),
     });
   }
 }

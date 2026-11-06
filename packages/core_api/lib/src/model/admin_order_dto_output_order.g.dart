@@ -397,6 +397,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
   @override
   final AdminOrderDtoOutputOrderPickup pickup;
   @override
+  final AdminOrderDtoOutputOrderDelivery? delivery;
+  @override
   final BuiltList<AdminOrderDtoOutputOrderTimelineInner> timeline;
 
   factory _$AdminOrderDtoOutputOrder([
@@ -428,6 +430,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     required this.lines,
     required this.money,
     required this.pickup,
+    this.delivery,
     required this.timeline,
   }) : super._();
   @override
@@ -467,6 +470,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
         lines == other.lines &&
         money == other.money &&
         pickup == other.pickup &&
+        delivery == other.delivery &&
         timeline == other.timeline;
   }
 
@@ -497,6 +501,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     _$hash = $jc(_$hash, lines.hashCode);
     _$hash = $jc(_$hash, money.hashCode);
     _$hash = $jc(_$hash, pickup.hashCode);
+    _$hash = $jc(_$hash, delivery.hashCode);
     _$hash = $jc(_$hash, timeline.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -529,6 +534,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
           ..add('lines', lines)
           ..add('money', money)
           ..add('pickup', pickup)
+          ..add('delivery', delivery)
           ..add('timeline', timeline))
         .toString();
   }
@@ -663,6 +669,12 @@ class AdminOrderDtoOutputOrderBuilder
   set pickup(AdminOrderDtoOutputOrderPickupBuilder? pickup) =>
       _$this._pickup = pickup;
 
+  AdminOrderDtoOutputOrderDeliveryBuilder? _delivery;
+  AdminOrderDtoOutputOrderDeliveryBuilder get delivery =>
+      _$this._delivery ??= AdminOrderDtoOutputOrderDeliveryBuilder();
+  set delivery(AdminOrderDtoOutputOrderDeliveryBuilder? delivery) =>
+      _$this._delivery = delivery;
+
   ListBuilder<AdminOrderDtoOutputOrderTimelineInner>? _timeline;
   ListBuilder<AdminOrderDtoOutputOrderTimelineInner> get timeline =>
       _$this._timeline ??= ListBuilder<AdminOrderDtoOutputOrderTimelineInner>();
@@ -700,6 +712,7 @@ class AdminOrderDtoOutputOrderBuilder
       _lines = $v.lines.toBuilder();
       _money = $v.money.toBuilder();
       _pickup = $v.pickup.toBuilder();
+      _delivery = $v.delivery?.toBuilder();
       _timeline = $v.timeline.toBuilder();
       _$v = null;
     }
@@ -777,6 +790,7 @@ class AdminOrderDtoOutputOrderBuilder
             lines: lines.build(),
             money: money.build(),
             pickup: pickup.build(),
+            delivery: _delivery?.build(),
             timeline: timeline.build(),
           );
     } catch (_) {
@@ -810,6 +824,8 @@ class AdminOrderDtoOutputOrderBuilder
         money.build();
         _$failedField = 'pickup';
         pickup.build();
+        _$failedField = 'delivery';
+        _delivery?.build();
         _$failedField = 'timeline';
         timeline.build();
       } catch (e) {

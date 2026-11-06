@@ -1044,6 +1044,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders/{orderId}/record-delivery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersRecordDelivery"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders": {
         parameters: {
             query?: never;
@@ -1118,6 +1134,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["captainOrdersArriveAtCustomer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/orders/{orderId}/deliver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainOrdersDeliver"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2320,6 +2352,26 @@ export interface components {
                     /** @description merchant_auto_cancel: «لم يرد المطعم على طلبك، نعتذر» (CU §11.9). */
                     reason: string;
                 } | null;
+                /** @description Once delivered; the order screen opens the rating sheet (CU §12.1). */
+                delivery: {
+                    /**
+                     * Format: date-time
+                     * @description «تم التسليم».
+                     */
+                    at: string;
+                    /** @description «استلم الكابتن: {المبالغ}» (CU §11.8, Q23). */
+                    received: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    }[];
+                    /** @description «أعاد لك: {المبالغ}». */
+                    change: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    }[];
+                } | null;
                 restaurant: {
                     /** Format: uuid */
                     id: string;
@@ -2413,6 +2465,26 @@ export interface components {
                     at: string;
                     /** @description merchant_auto_cancel: «لم يرد المطعم على طلبك، نعتذر» (CU §11.9). */
                     reason: string;
+                } | null;
+                /** @description Once delivered; the order screen opens the rating sheet (CU §12.1). */
+                delivery: {
+                    /**
+                     * Format: date-time
+                     * @description «تم التسليم».
+                     */
+                    at: string;
+                    /** @description «استلم الكابتن: {المبالغ}» (CU §11.8, Q23). */
+                    received: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    }[];
+                    /** @description «أعاد لك: {المبالغ}». */
+                    change: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    }[];
                 } | null;
                 restaurant: {
                     /** Format: uuid */
@@ -2874,6 +2946,35 @@ export interface components {
             /** @description Required (AP §9.3.2). */
             reason: string;
         };
+        AdminRecordDeliveryDto: {
+            /** @description What the customer paid, one line per currency. */
+            received: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            }[];
+            /** @description The change given back, one line per currency; a tip is recorded as given (K14). */
+            change: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            }[];
+            /** @description The amount due the screen showed; another one now answers 409 amount_due_changed. */
+            amountDue: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+            /** @description Needed when the net received is short beyond rounding: «الزبون لا يملك المبلغ كاملاً», «خطأ في العد», «أخرى». */
+            shortfall: {
+                /** @enum {string} */
+                reason: "customer_short" | "counting_error" | "other";
+                /** @description The text of «أخرى» only. */
+                note: string | null;
+            } | null;
+            /** @description Required (AP §9.3.2). */
+            reason: string;
+        };
         AdminBoardDto_Output: {
             /** @description Every live order, oldest first. */
             orders: {
@@ -3141,6 +3242,50 @@ export interface components {
                         }[];
                     } | null;
                 };
+                /** @description After «تم التسليم» (AP §9.3.1). */
+                delivery: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @enum {string} */
+                    outcome: "normal" | "free" | "fake" | "damaged" | "wrong_refused" | "failed_other";
+                    /** @description The payment lines (AP §9.3.1). */
+                    received: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    }[];
+                    /** @description The change given. */
+                    change: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    }[];
+                    /** @description Received minus change, by the order's rates. */
+                    netReceived: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
+                    /** @description «نقص في التحصيل» (AP §8.6), open until operations resolve it. */
+                    shortfall: {
+                        amount: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        };
+                        /** @enum {string} */
+                        reason: "customer_short" | "counting_error" | "other";
+                        note: string | null;
+                    } | null;
+                    recordedBy: {
+                        /** @enum {string} */
+                        type: "captain" | "admin";
+                        /** Format: uuid */
+                        id: string;
+                        /** @description Operations' reason. */
+                        reason: string | null;
+                    };
+                } | null;
                 timeline: {
                     version: number;
                     /** Format: date-time */
@@ -3508,6 +3653,83 @@ export interface components {
                 /** @description The text of «أخرى» only. */
                 note: string | null;
             } | null;
+        };
+        CaptainDeliverDto: {
+            /** @description What the customer paid, one line per currency. */
+            received: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            }[];
+            /** @description The change given back, one line per currency; a tip is recorded as given (K14). */
+            change: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            }[];
+            /** @description The amount due the screen showed; another one now answers 409 amount_due_changed. */
+            amountDue: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+            /** @description Needed when the net received is short beyond rounding: «الزبون لا يملك المبلغ كاملاً», «خطأ في العد», «أخرى». */
+            shortfall: {
+                /** @enum {string} */
+                reason: "customer_short" | "counting_error" | "other";
+                /** @description The text of «أخرى» only. */
+                note: string | null;
+            } | null;
+            /** @description The latest GPS fix. */
+            location: {
+                latitude: number;
+                longitude: number;
+                accuracyMetres: number;
+                /** Format: date-time */
+                recordedAt: string;
+                /** @description The device reports a mock location. */
+                simulated: boolean;
+            };
+            /** @description Needed beyond captain.customer_radius_m of the pin, unless given at the arrival (K4). */
+            away: {
+                /** @enum {string} */
+                reason: "customer_requested_other_place" | "pin_inaccurate" | "other";
+                /** @description The text of «أخرى» only. */
+                note: string | null;
+            } | null;
+        };
+        CaptainDeliverySummaryDto_Output: {
+            /** @description The order summary (CA §9.8); the captain is free for the next offer. */
+            summary: {
+                /** Format: uuid */
+                orderId: string;
+                number: string;
+                /** @description The peak bonus comes with the peak windows. */
+                pay: {
+                    /** @description Integer minor units (AP §8.6). */
+                    base: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    distance: string;
+                    /** @description «إكمال للحد الأدنى», shown when above 0. */
+                    topUp: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    waiting: string;
+                    /** @description «ربحت من هذا الطلب: {الأجر}». */
+                    total: string;
+                    currency: string;
+                };
+                /** @description «تغيّرت عهدتك: {+المبلغ}»: the net collected minus the pickup payment. */
+                custodyChange: {
+                    amount: string;
+                    currency: string;
+                };
+                /** @description «عليك تسليم اليوم: {المجموع}». */
+                handInToday: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+            };
         };
         CaptainPickupRequestDto: {
             /** @description The currency lines paid, the proposed ones or the own split. */
@@ -5312,6 +5534,35 @@ export interface operations {
             };
         };
     };
+    adminOrdersRecordDelivery: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRecordDeliveryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCardDto_Output"];
+                };
+            };
+        };
+    };
     adminOrdersBoard: {
         parameters: {
             query: {
@@ -5430,6 +5681,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainOrderDto_Output"];
+                };
+            };
+        };
+    };
+    captainOrdersDeliver: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainDeliverDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainDeliverySummaryDto_Output"];
                 };
             };
         };

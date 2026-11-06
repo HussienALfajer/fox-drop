@@ -62,7 +62,10 @@ export type OrderEventType =
   | 'order.picked_up'
   | 'order.pickup_disputed'
   // CA §9.6: the captain at the customer (status arrived, track at_customer).
-  | 'order.arrived_at_customer';
+  | 'order.arrived_at_customer'
+  // CA §9.8, AP §9.3.2: «تم التسليم» with outcome normal (status delivered,
+  // track done).
+  | 'order.delivered';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that

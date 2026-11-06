@@ -231,7 +231,7 @@ export class MerchantOrdersController {
   async board(@CurrentAppSession() session: AppSession) {
     const restaurantId = await this.restaurantOf(session);
     const [orders, prepTime] = await Promise.all([
-      this.orders.restaurantActiveOrders(restaurantId),
+      this.orders.restaurantActiveOrders(restaurantId, new Date()),
       this.commands.prepTimeChooser(restaurantId, new Date()),
     ]);
     return { orders: await this.boardOrders(restaurantId, orders), prepTime };

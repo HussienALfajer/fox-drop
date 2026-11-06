@@ -12,6 +12,7 @@ import { AuditModule } from '../audit/index.js';
 import { ActiveOrders } from './active-orders.js';
 import { CaptainOrders } from './captain-orders.js';
 import { CaptainOrdersController } from './captain-orders.controller.js';
+import { DeliveryBooking } from './delivery-booking.js';
 import { PickupBooking, PickupTimersWorker } from './pickup-booking.js';
 import { PickupCommands } from './pickup-commands.js';
 import { IdentityModule } from '../identity/index.js';
@@ -69,6 +70,7 @@ import { QuoteService } from './quote.service.js';
     CaptainOrders,
     PickupBooking,
     PickupCommands,
+    DeliveryBooking,
   ],
   exports: [QuoteService, OrdersService],
 })

@@ -11,15 +11,10 @@ part 'captain_current_offer_dto_output_offer_customer.g.dart';
 /// Never the customer's name, phone or exact address before acceptance (C2).
 ///
 /// Properties:
-/// * [neighbourhood]
+/// * [neighbourhood] 
 /// * [tripMetres] - Restaurant to customer.
 @BuiltValue()
-abstract class CaptainCurrentOfferDtoOutputOfferCustomer
-    implements
-        Built<
-          CaptainCurrentOfferDtoOutputOfferCustomer,
-          CaptainCurrentOfferDtoOutputOfferCustomerBuilder
-        > {
+abstract class CaptainCurrentOfferDtoOutputOfferCustomer implements Built<CaptainCurrentOfferDtoOutputOfferCustomer, CaptainCurrentOfferDtoOutputOfferCustomerBuilder> {
   @BuiltValueField(wireName: r'neighbourhood')
   String get neighbourhood;
 
@@ -29,26 +24,18 @@ abstract class CaptainCurrentOfferDtoOutputOfferCustomer
 
   CaptainCurrentOfferDtoOutputOfferCustomer._();
 
-  factory CaptainCurrentOfferDtoOutputOfferCustomer([
-    void updates(CaptainCurrentOfferDtoOutputOfferCustomerBuilder b),
-  ]) = _$CaptainCurrentOfferDtoOutputOfferCustomer;
+  factory CaptainCurrentOfferDtoOutputOfferCustomer([void updates(CaptainCurrentOfferDtoOutputOfferCustomerBuilder b)]) = _$CaptainCurrentOfferDtoOutputOfferCustomer;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CaptainCurrentOfferDtoOutputOfferCustomerBuilder b) =>
-      b;
+  static void _defaults(CaptainCurrentOfferDtoOutputOfferCustomerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainCurrentOfferDtoOutputOfferCustomer> get serializer =>
-      _$CaptainCurrentOfferDtoOutputOfferCustomerSerializer();
+  static Serializer<CaptainCurrentOfferDtoOutputOfferCustomer> get serializer => _$CaptainCurrentOfferDtoOutputOfferCustomerSerializer();
 }
 
-class _$CaptainCurrentOfferDtoOutputOfferCustomerSerializer
-    implements PrimitiveSerializer<CaptainCurrentOfferDtoOutputOfferCustomer> {
+class _$CaptainCurrentOfferDtoOutputOfferCustomerSerializer implements PrimitiveSerializer<CaptainCurrentOfferDtoOutputOfferCustomer> {
   @override
-  final Iterable<Type> types = const [
-    CaptainCurrentOfferDtoOutputOfferCustomer,
-    _$CaptainCurrentOfferDtoOutputOfferCustomer,
-  ];
+  final Iterable<Type> types = const [CaptainCurrentOfferDtoOutputOfferCustomer, _$CaptainCurrentOfferDtoOutputOfferCustomer];
 
   @override
   final String wireName = r'CaptainCurrentOfferDtoOutputOfferCustomer';
@@ -76,11 +63,7 @@ class _$CaptainCurrentOfferDtoOutputOfferCustomerSerializer
     CaptainCurrentOfferDtoOutputOfferCustomer object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -96,18 +79,17 @@ class _$CaptainCurrentOfferDtoOutputOfferCustomerSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'neighbourhood':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.neighbourhood = valueDes;
           break;
         case r'tripMetres':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.tripMetres = valueDes;
           break;
         default:
@@ -138,3 +120,5 @@ class _$CaptainCurrentOfferDtoOutputOfferCustomerSerializer
     return result.build();
   }
 }
+
+

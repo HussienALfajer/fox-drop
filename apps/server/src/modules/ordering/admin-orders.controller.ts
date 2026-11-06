@@ -22,12 +22,24 @@ import { AdminController } from '../../http/route-groups.js';
 import { CustomersService } from '../customers/index.js';
 import type { AdminSession } from '../identity/index.js';
 import { CaptainOrderRefusedError, CaptainOrders } from './captain-orders.js';
-import { linesBody, linesOfBody, paymentLines } from './captain-orders.controller.js';
+import {
+  doorCollection,
+  doorPayment,
+  linesBody,
+  linesOfBody,
+  paymentLines,
+} from './captain-orders.controller.js';
 import { OrderCommandRefusedError } from './order-commands.js';
 import { PickupCommands } from './pickup-commands.js';
 import { minor } from './customer-quote.controller.js';
 import { type OperationsOrder, OperationsViews } from './operations-views.js';
-import { awayReasons, captainTracks, orderStatuses } from './schema.js';
+import {
+  awayReasons,
+  captainTracks,
+  orderOutcomes,
+  orderStatuses,
+  shortfallReasons,
+} from './schema.js';
 
 const money = z.object({ amount: minor, currency: z.string().length(3) });
 const alerts = z
@@ -105,6 +117,13 @@ class AdminRecordArrivalDto extends createZodDto(
 class AdminConfirmPickupDto extends createZodDto(
   z.object({
     lines: paymentLines.describe("The agreed lines, prefilled from the captain's last request."),
+    reason: z.string().trim().min(1).max(500).describe('Required (AP §9.3.2).'),
+  }),
+) {}
+
+class AdminRecordDeliveryDto extends createZodDto(
+  z.object({
+    ...doorPayment,
     reason: z.string().trim().min(1).max(500).describe('Required (AP §9.3.2).'),
   }),
 ) {}
@@ -211,6 +230,29 @@ class AdminOrderDto extends createZodDto(
           .nullable()
           .describe('«خلاف على دفعة الاستلام» after the pickup (RA §8.10 item 8), always urgent.'),
       }),
+      delivery: z
+        .object({
+          at: z.iso.datetime(),
+          outcome: z.enum(orderOutcomes),
+          received: paymentLines.describe('The payment lines (AP §9.3.1).'),
+          change: z.array(money).describe('The change given.'),
+          netReceived: money.describe("Received minus change, by the order's rates."),
+          shortfall: z
+            .object({
+              amount: money,
+              reason: z.enum(shortfallReasons),
+              note: z.string().nullable(),
+            })
+            .nullable()
+            .describe('«نقص في التحصيل» (AP §8.6), open until operations resolve it.'),
+          recordedBy: z.object({
+            type: z.enum(['captain', 'admin']),
+            id: z.uuid(),
+            reason: z.string().nullable().describe("Operations' reason."),
+          }),
+        })
+        .nullable()
+        .describe('After «تم التسليم» (AP §9.3.1).'),
       timeline: z.array(
         z.object({
           version: z.int(),
@@ -374,6 +416,67 @@ export class AdminOrdersController {
     return { order: await this.card(params.orderId) };
   }
 
+  // AP §9.3.2 «تسجيل التسليم نيابة عن الكابتن»: picked_up or arrived, the
+  // lines and change the captain reports by phone, a reason; the same entries
+  // as the captain's delivery, audited as order.record_delivery. 409
+  // order_state_changed, amount_due_changed and currency_not_accepted with
+  // the card, overpaid, shortfall_reason_required with `shortfall`; 400
+  // invalid_lines; 404 unknown_order; 422 idempotency_key_reused.
+  @Post(':orderId/record-delivery')
+  @RequirePermission('operations.manage')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOrderCardDto })
+  async recordDelivery(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminRecordDeliveryDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.captainOrders.recordDelivery(
+        {
+          orderId: params.orderId,
+          admin: { accountId: session.accountId, roles: session.roles },
+          context: requestContext(request),
+          reason: body.reason,
+          idempotencyKey,
+          ...doorCollection(body),
+        },
+        new Date(),
+      );
+    } catch (error) {
+      if (!(error instanceof CaptainOrderRefusedError)) throw error;
+      if (error.refusal === 'unknown_order') {
+        throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: error.refusal });
+      }
+      if (error.refusal === 'invalid_lines') {
+        throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: error.refusal });
+      }
+      if (error.refusal === 'idempotency_key_reused') {
+        throw new UnprocessableEntityException({
+          statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: error.refusal,
+        });
+      }
+      throw new ConflictException({
+        statusCode: HttpStatus.CONFLICT,
+        error: error.refusal,
+        order: await this.card(params.orderId),
+        ...(error.shortfall
+          ? {
+              shortfall: {
+                amount: error.shortfall.amount.toString(),
+                currency: error.shortfall.currency,
+              },
+            }
+          : {}),
+      });
+    }
+    return { order: await this.card(params.orderId) };
+  }
+
   private async card(orderId: string) {
     const item = await this.views.order(orderId, new Date());
     if (item === null) throw new Error(`order ${orderId} not found`);
@@ -473,6 +576,29 @@ export class AdminOrdersController {
             accountId: item.pickupDispute.accountId,
             device: item.pickupDispute.device,
             receivedLines: linesBody(item.pickupDispute.receivedLines),
+          },
+        },
+        delivery: order.delivery && {
+          at: order.delivery.at.toISOString(),
+          outcome: order.delivery.outcome,
+          received: linesBody(order.delivery.received),
+          change: linesBody(order.delivery.change),
+          netReceived: {
+            amount: order.delivery.netReceived.toString(),
+            currency: order.currency,
+          },
+          shortfall: order.delivery.shortfall && {
+            amount: {
+              amount: order.delivery.shortfall.amount.toString(),
+              currency: order.currency,
+            },
+            reason: order.delivery.shortfall.reason,
+            note: order.delivery.shortfall.note,
+          },
+          recordedBy: {
+            type: order.delivery.recordedBy.type as 'captain' | 'admin',
+            id: order.delivery.recordedBy.id,
+            reason: order.delivery.recordedBy.reason,
           },
         },
         timeline: timeline.map((event) => ({ ...event, at: event.at.toISOString() })),

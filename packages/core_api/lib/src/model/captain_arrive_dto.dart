@@ -12,28 +12,24 @@ part 'captain_arrive_dto.g.dart';
 /// CaptainArriveDto
 ///
 /// Properties:
-/// * [location]
+/// * [location] 
 @BuiltValue()
-abstract class CaptainArriveDto
-    implements Built<CaptainArriveDto, CaptainArriveDtoBuilder> {
+abstract class CaptainArriveDto implements Built<CaptainArriveDto, CaptainArriveDtoBuilder> {
   @BuiltValueField(wireName: r'location')
   CaptainArriveDtoLocation get location;
 
   CaptainArriveDto._();
 
-  factory CaptainArriveDto([void updates(CaptainArriveDtoBuilder b)]) =
-      _$CaptainArriveDto;
+  factory CaptainArriveDto([void updates(CaptainArriveDtoBuilder b)]) = _$CaptainArriveDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainArriveDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainArriveDto> get serializer =>
-      _$CaptainArriveDtoSerializer();
+  static Serializer<CaptainArriveDto> get serializer => _$CaptainArriveDtoSerializer();
 }
 
-class _$CaptainArriveDtoSerializer
-    implements PrimitiveSerializer<CaptainArriveDto> {
+class _$CaptainArriveDtoSerializer implements PrimitiveSerializer<CaptainArriveDto> {
   @override
   final Iterable<Type> types = const [CaptainArriveDto, _$CaptainArriveDto];
 
@@ -58,11 +54,7 @@ class _$CaptainArriveDtoSerializer
     CaptainArriveDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -78,12 +70,10 @@ class _$CaptainArriveDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'location':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(CaptainArriveDtoLocation),
-                  )
-                  as CaptainArriveDtoLocation;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CaptainArriveDtoLocation),
+          ) as CaptainArriveDtoLocation;
           result.location.replace(valueDes);
           break;
         default:
@@ -114,3 +104,5 @@ class _$CaptainArriveDtoSerializer
     return result.build();
   }
 }
+
+

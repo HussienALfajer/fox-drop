@@ -1,5 +1,5 @@
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, eq, gt, inArray, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -318,11 +318,24 @@ export class OrdersService implements OnModuleInit {
 
   // RA §8.2: the restaurant's board, every order until it is delivered or
   // ends, oldest first; RA §4.3: the full state an app fetches after a
-  // reconnect.
-  restaurantActiveOrders(restaurantId: string): Promise<OrderView[]> {
+  // reconnect. A delivered order stays until order.pickup_dispute_window_min
+  // after its pickup, so «المبلغ غير صحيح» keeps its place (RA §8.10 item 8;
+  // owner decision 2026-11-06).
+  async restaurantActiveOrders(restaurantId: string, now: Date): Promise<OrderView[]> {
+    const restaurant = await this.merchants.restaurant(restaurantId, now);
+    const windowMin = restaurant
+      ? await this.settings.get('order.pickup_dispute_window_min', { cityId: restaurant.cityId })
+      : 0;
+    const disputableSince = new Date(now.getTime() - windowMin * 60_000);
     return readOrders(
       this.database.db,
-      and(eq(orders.restaurantId, restaurantId), inArray(orders.status, UNTIL_ENDED)),
+      and(
+        eq(orders.restaurantId, restaurantId),
+        or(
+          inArray(orders.status, UNTIL_ENDED),
+          and(eq(orders.status, 'delivered'), gt(orders.pickedUpAt, disputableSince)),
+        ),
+      ),
     );
   }
 

@@ -60,6 +60,20 @@ export const addressLabels = ['home', 'work', 'other'] as const;
 // (with text).
 export const awayReasons = ['customer_requested_other_place', 'pin_inaccurate', 'other'] as const;
 
+// AP §8.9: every order that ends after pickup gets one.
+export const orderOutcomes = [
+  'normal',
+  'free',
+  'fake',
+  'damaged',
+  'wrong_refused',
+  'failed_other',
+] as const;
+
+// CA Appendix C (K16): why the captain collected less than due: «الزبون لا
+// يملك المبلغ كاملاً», «خطأ في العد», «أخرى» (with text).
+export const shortfallReasons = ['customer_short', 'counting_error', 'other'] as const;
+
 // AP §4.8: the order numbers are sequential per city, from 10001 (owner
 // decision 2026-11-06). The row is taken last in the order's transaction, so
 // a refused order leaves no gap and the lock is held briefly.
@@ -164,6 +178,10 @@ export const orders = ordering.table(
     arrivedAtCustomerAt: timestamp('arrived_at_customer_at', { withTimezone: true }),
     awayReason: text('away_reason', { enum: awayReasons }),
     awayNote: text('away_note'),
+    // AP §8.1, §8.9: «تم التسليم» and the finished order's outcome; only
+    // normal so far (the other outcomes come with «تحديد النتيجة»).
+    deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+    outcome: text('outcome', { enum: orderOutcomes }),
     // The address snapshot (CU §7.3–7.4, Q6): the saved address it was copied
     // from, or null for an unsaved one; «الحي» is the zone at placing.
     addressId: uuid('address_id'),
@@ -246,6 +264,10 @@ export const orders = ordering.table(
     check(
       'orders_away_reason',
       sql`(${table.awayReason} IS NULL OR ${table.awayReason} IN ('customer_requested_other_place', 'pin_inaccurate', 'other')) AND (${table.awayNote} IS NOT NULL) = (${table.awayReason} IS NOT DISTINCT FROM 'other') AND char_length(${table.awayNote}) BETWEEN 1 AND 200`,
+    ),
+    check(
+      'orders_delivery',
+      sql`(${table.status} = 'delivered') = (${table.deliveredAt} IS NOT NULL) AND (${table.status} IN ('delivered', 'failed')) = (${table.outcome} IS NOT NULL) AND (${table.outcome} IS NULL OR ${table.outcome} IN ('normal', 'free', 'fake', 'damaged', 'wrong_refused', 'failed_other'))`,
     ),
     check(
       'orders_trip',
@@ -446,6 +468,68 @@ export const pickupDisputes = ordering.table(
     uniqueIndex('pickup_disputes_one_per_order').on(table.orderId),
     index('pickup_disputes_request').on(table.pickupRequestId),
     check('pickup_disputes_status_values', sql`${table.status} IN ('open')`),
+  ],
+);
+
+// AP §8.6, CA §9.7–9.8, AP §9.3.2: the payment at the door, one per order,
+// recorded by the captain at «تم التسليم» or by operations
+// («تسجيل التسليم نيابة عن الكابتن»): the lines received and given back, their
+// net in the base by the order's snapshot, any shortfall with its reason
+// (K16, «نقص في التحصيل» until operations resolve it), and the captain's pay
+// in its parts (CA §9.8, AP §8.5.5). The money itself is in the ledger.
+export const collections = ordering.table(
+  'collections',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    // The captains module's record.
+    captainId: uuid('captain_id').notNull(),
+    // The amount due (the order total) in the base currency.
+    currency: text('currency').notNull(),
+    amountDue: bigint('amount_due', { mode: 'bigint' }).notNull(),
+    // [{ currency, amount }], the amounts as strings of minor units.
+    receivedLines: jsonb('received_lines').notNull(),
+    changeLines: jsonb('change_lines').notNull(),
+    netReceived: bigint('net_received', { mode: 'bigint' }).notNull(),
+    shortfall: bigint('shortfall', { mode: 'bigint' }).notNull(),
+    shortfallReason: text('shortfall_reason', { enum: shortfallReasons }),
+    shortfallNote: text('shortfall_note'),
+    basePay: bigint('base_pay', { mode: 'bigint' }).notNull(),
+    distancePay: bigint('distance_pay', { mode: 'bigint' }).notNull(),
+    topUpPay: bigint('top_up_pay', { mode: 'bigint' }).notNull(),
+    waitingPay: bigint('waiting_pay', { mode: 'bigint' }).notNull(),
+    waitingMinutes: integer('waiting_minutes').notNull(),
+    recordedAt: timestamp('recorded_at', { withTimezone: true }).notNull(),
+    // captain (with the app installation) or admin.
+    recordedByType: text('recorded_by_type').notNull(),
+    recordedById: uuid('recorded_by_id').notNull(),
+    recordedByDevice: text('recorded_by_device'),
+    // Operations' reason (AP §9.3.2).
+    reason: text('reason'),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId, table.orderPlacedAt],
+      foreignColumns: [orders.id, orders.placedAt],
+    }),
+    uniqueIndex('collections_one_per_order').on(table.orderId),
+    index('collections_captain').on(table.captainId, table.recordedAt),
+    check(
+      'collections_money',
+      sql`${table.amountDue} >= 0 AND ${table.shortfall} >= 0 AND ${table.basePay} >= 0 AND ${table.distancePay} >= 0 AND ${table.topUpPay} >= 0 AND ${table.waitingPay} >= 0 AND ${table.waitingMinutes} >= 0`,
+    ),
+    check(
+      'collections_shortfall',
+      sql`(${table.shortfall} > 0) = (${table.shortfallReason} IS NOT NULL) AND (${table.shortfallReason} IS NULL OR ${table.shortfallReason} IN ('customer_short', 'counting_error', 'other')) AND (${table.shortfallNote} IS NOT NULL) = (${table.shortfallReason} IS NOT DISTINCT FROM 'other') AND char_length(${table.shortfallNote}) BETWEEN 1 AND 200`,
+    ),
+    check(
+      'collections_recorded_by',
+      sql`(${table.recordedByType} = 'captain' AND ${table.reason} IS NULL) OR (${table.recordedByType} = 'admin' AND ${table.reason} IS NOT NULL AND ${table.recordedByDevice} IS NULL)`,
+    ),
   ],
 );
 
