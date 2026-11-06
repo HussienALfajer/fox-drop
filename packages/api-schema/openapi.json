@@ -1939,6 +1939,42 @@
           "customer"
         ]
       }
+    },
+    "/v1/customer/quote": {
+      "post": {
+        "operationId": "customerQuoteQuote",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerQuoteRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerQuoteDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
     }
   },
   "info": {
@@ -5604,6 +5640,571 @@
           "schedule",
           "deliversHere",
           "menu"
+        ],
+        "additionalProperties": false
+      },
+      "CustomerQuoteRequestDto": {
+        "type": "object",
+        "properties": {
+          "restaurantId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "location": {
+            "type": "object",
+            "properties": {
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              }
+            },
+            "required": [
+              "latitude",
+              "longitude"
+            ],
+            "description": "The delivery point: the address pin or the selected point."
+          },
+          "lines": {
+            "minItems": 1,
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "optionIds": {
+                  "maxItems": 50,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20,
+                  "description": "1 to 20 per line (fixed)."
+                },
+                "note": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«مثلاً: بدون بصل», up to 100 characters; no phone number."
+                },
+                "knownUnitPrice": {
+                  "type": "string",
+                  "pattern": "^-?\\d+$",
+                  "description": "The unit price the customer last saw, with the options; a change is price_changed."
+                }
+              },
+              "required": [
+                "itemId",
+                "optionIds",
+                "quantity",
+                "note",
+                "knownUnitPrice"
+              ]
+            }
+          },
+          "payIn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«سأدفع بـ»: an accepted currency, or null for «لم أحدد» (CU §10.5); one no longer accepted gives payIn null."
+          },
+          "appVersion": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+          }
+        },
+        "required": [
+          "restaurantId",
+          "location",
+          "lines",
+          "payIn",
+          "appVersion"
+        ]
+      },
+      "CustomerQuoteDto_Output": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "Changes only with a money line, an equivalent, the rates or a blocking problem; the order command carries it."
+          },
+          "restaurant": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "open",
+                  "busy",
+                  "paused",
+                  "closed",
+                  "holiday"
+                ]
+              },
+              "busyMode": {
+                "type": "boolean"
+              },
+              "until": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "opensAt": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "message": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "state",
+              "busyMode",
+              "until",
+              "opensAt",
+              "message"
+            ],
+            "additionalProperties": false
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "description": "Null for an item no longer on the menu.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "options": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "priceDelta": {
+                        "type": "string",
+                        "pattern": "^-?\\d+$",
+                        "description": "Integer minor units (AP §8.6)."
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "priceDelta"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "unitPrice": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Null for a line that cannot be ordered."
+                },
+                "lineTotal": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "itemId",
+                "name",
+                "quantity",
+                "note",
+                "options",
+                "unitPrice",
+                "lineTotal"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3,
+            "description": "The base currency of every money line."
+          },
+          "money": {
+            "type": "object",
+            "properties": {
+              "itemsValue": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "«قيمة الأصناف»."
+              },
+              "deliveryFee": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "«رسوم التوصيل»."
+              },
+              "deliveryFree": {
+                "type": "boolean",
+                "description": "«مجاني»."
+              },
+              "discount": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "«الخصم»; 0 until codes arrive."
+              },
+              "rounding": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "«تقريب», shown only when not 0."
+              },
+              "total": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "«المجموع»."
+              }
+            },
+            "required": [
+              "itemsValue",
+              "deliveryFee",
+              "deliveryFree",
+              "discount",
+              "rounding",
+              "total"
+            ],
+            "additionalProperties": false
+          },
+          "equivalents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "string",
+                  "pattern": "^-?\\d+$",
+                  "description": "Integer minor units (AP §8.6)."
+                },
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                }
+              },
+              "required": [
+                "amount",
+                "currency"
+              ],
+              "additionalProperties": false
+            },
+            "description": "«أو {المبلغ} $ · {المبلغ} ل.س»: each other accepted currency, by its rounding."
+          },
+          "payIn": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$",
+                    "description": "Integer minor units (AP §8.6)."
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  }
+                },
+                "required": [
+                  "amount",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«ستدفع حوالي {المبلغ} {العملة}»."
+          },
+          "estimate": {
+            "type": "object",
+            "properties": {
+              "fromMin": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "toMin": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "fromMin",
+              "toMin"
+            ],
+            "additionalProperties": false,
+            "description": "«يصل خلال {fromMin}–{toMin} د»."
+          },
+          "minimumOrder": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              "reached": {
+                "type": "boolean"
+              },
+              "missing": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "«أضف {المبلغ} لتصل إلى الحد الأدنى ({الحد})»."
+              }
+            },
+            "required": [
+              "amount",
+              "currency",
+              "reached",
+              "missing"
+            ],
+            "additionalProperties": false
+          },
+          "freeDelivery": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "threshold": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$",
+                    "description": "Integer minor units (AP §8.6)."
+                  },
+                  "reached": {
+                    "type": "boolean",
+                    "description": "«توصيلك مجاني»."
+                  },
+                  "missing": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$",
+                    "description": "«أضف {المبلغ} لتحصل على توصيل مجاني»."
+                  }
+                },
+                "required": [
+                  "threshold",
+                  "reached",
+                  "missing"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                },
+                "rateVersionId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "currency",
+                "rateVersionId"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The exchange-rate version: null for the base currency."
+          },
+          "problems": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "enum": [
+                    "update_required",
+                    "maintenance",
+                    "platform_closed",
+                    "outside_zones",
+                    "not_covered",
+                    "restaurant_closed",
+                    "below_minimum_order",
+                    "minimum_not_in_base_currency",
+                    "delivery_unpriced",
+                    "rates_unavailable",
+                    "item_not_found",
+                    "item_unavailable",
+                    "option_not_found",
+                    "option_unavailable",
+                    "options_invalid",
+                    "price_not_in_base_currency",
+                    "price_changed"
+                  ]
+                },
+                "line": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The cart line, for a line problem."
+                },
+                "opensAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}»."
+                }
+              },
+              "required": [
+                "code",
+                "line",
+                "opensAt"
+              ],
+              "additionalProperties": false
+            },
+            "description": "CU §10.6: every one blocks ordering; the texts are in Appendix C."
+          }
+        },
+        "required": [
+          "version",
+          "restaurant",
+          "lines",
+          "currency",
+          "money",
+          "equivalents",
+          "payIn",
+          "estimate",
+          "minimumOrder",
+          "freeDelivery",
+          "rates",
+          "problems"
         ],
         "additionalProperties": false
       }

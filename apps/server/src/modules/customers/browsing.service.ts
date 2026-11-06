@@ -9,8 +9,8 @@ import {
   type Restaurant,
   type StorefrontState,
 } from '../merchants/index.js';
+import { estimateRange, tripMinutes } from '../ordering/index.js';
 import { SettingsService } from '../settings/index.js';
-import { estimateRange, tripMinutes } from './delivery-estimate.js';
 
 // The trip of the estimate is measured as the delivery fee is, by the
 // motorbike's distance (owner decision 2026-11-06 for the fee), before any
