@@ -868,6 +868,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerOrdersPlace"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1894,6 +1910,122 @@ export interface components {
                 /** @description platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}». */
                 opensAt: string | null;
             }[];
+        };
+        CustomerPlaceOrderDto: {
+            /** Format: uuid */
+            restaurantId: string;
+            lines: {
+                /** Format: uuid */
+                itemId: string;
+                optionIds: string[];
+                /** @description 1 to 20 per line (fixed). */
+                quantity: number;
+                /** @description «مثلاً: بدون بصل», up to 100 characters; no phone number. */
+                note: string | null;
+                /** @description The unit price the customer last saw, with the options; a change is price_changed. */
+                knownUnitPrice: string;
+            }[];
+            /** @description «سأدفع بـ»: an accepted currency, or null for «لم أحدد» (CU §10.5); one no longer accepted gives payIn null. */
+            payIn: string | null;
+            appVersion: string;
+            /** @description The version of the quote the customer confirmed (CU §10.7). */
+            quoteVersion: string;
+            /** @description A saved address (CU §7.3), or null. */
+            addressId: string | null;
+            /** @description «التوصيل إلى موقعي الحالي»: an address for this order only (CU §7.4), or null. */
+            unsavedAddress: {
+                /** @description The pin, inside an active zone (CU §7.1). */
+                location: {
+                    latitude: number;
+                    longitude: number;
+                };
+                /** @description «الشارع والبناء». */
+                street: string;
+                /** @description «الطابق والشقة», optional. */
+                floor: string | null;
+                /** @description «بالقرب من». */
+                landmark: string;
+                /** @description «رقم التواصل»; null is the account's own number. */
+                contactPhone: string | null;
+                /** @description «اسم المستلم», needed with another contact number (Q5). */
+                recipientName: string | null;
+                /** @description «توجيهات للكابتن», optional. */
+                directions: string | null;
+            } | null;
+            /** @description To the restaurant and the captain, up to 200 characters; no phone number. */
+            note: string | null;
+        };
+        CustomerPlacedOrderDto_Output: {
+            order: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as #10423 (AP §4.8). */
+                number: string;
+                /**
+                 * @description AP §8.1; placed when it was placed.
+                 * @enum {string}
+                 */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** Format: date-time */
+                placedAt: string;
+                /** Format: uuid */
+                restaurantId: string;
+                currency: string;
+                money: {
+                    /** @description Integer minor units (AP §8.6). */
+                    itemsValue: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    deliveryFee: string;
+                    deliveryFree: boolean;
+                    /** @description Integer minor units (AP §8.6). */
+                    discount: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    rounding: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    total: string;
+                };
+                lines: {
+                    /** Format: uuid */
+                    itemId: string;
+                    name: string;
+                    quantity: number;
+                    note: string | null;
+                    options: {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                        /** @description Integer minor units (AP §8.6). */
+                        priceDelta: string;
+                    }[];
+                    /** @description Integer minor units (AP §8.6). */
+                    unitPrice: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    lineTotal: string;
+                }[];
+                /** @description «سأدفع بـ»; null for «لم أحدد». */
+                payIn: string | null;
+                note: string | null;
+                estimate: {
+                    fromMin: number;
+                    toMin: number;
+                };
+                address: {
+                    location: {
+                        latitude: number;
+                        longitude: number;
+                    };
+                    /** @description «الحي» at placing. */
+                    neighbourhood: string;
+                    /** @description Null for an unsaved one. */
+                    label: ("home" | "work" | "other") | null;
+                    customLabel: string | null;
+                    street: string;
+                    floor: string | null;
+                    landmark: string;
+                    recipientName: string | null;
+                    directions: string | null;
+                };
+            };
         };
     };
     responses: never;
@@ -3207,6 +3339,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomerQuoteDto_Output"];
+                };
+            };
+        };
+    };
+    customerOrdersPlace: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerPlaceOrderDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerPlacedOrderDto_Output"];
                 };
             };
         };

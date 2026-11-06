@@ -17,31 +17,15 @@ import { z } from 'zod';
 import { AppSignedIn, CurrentAppSession, Public } from '../../http/access.js';
 import { CustomerController } from '../../http/route-groups.js';
 import { GeoRefusedError, GeoService } from '../geo/index.js';
-import { type AppSession, deviceId, phone } from '../identity/index.js';
+import { type AppSession, deviceId } from '../identity/index.js';
+import { addressFields, checked, location, personName } from './address-fields.js';
 import {
   type AddressFields,
   CustomersRefusedError,
   CustomersService,
 } from './customers.service.js';
 import { pointQuery } from './point-query.js';
-import { addressLabels, genders } from './schema.js';
-
-// CU §5.3: Arabic or Latin letters, with spaces and «-»; Arabic marks such
-// as the shadda may sit on a letter. Two letters at least.
-const nameCharacters = /^(?:[A-Za-z -]|(?=\p{Script_Extensions=Arabic})[\p{L}\p{M}])+$/u;
-const letter = /(?:[A-Za-z]|(?=\p{Script=Arabic})\p{L})/gu;
-const personName = (max: number) =>
-  z
-    .string()
-    .trim()
-    .min(2)
-    .max(max)
-    .regex(nameCharacters)
-    .refine((name) => (name.match(letter) ?? []).length >= 2, 'two letters at least');
-
-const latitude = z.number().min(-90).max(90);
-const longitude = z.number().min(-180).max(180);
-const location = z.object({ latitude, longitude });
+import { genders } from './schema.js';
 
 const profile = z.object({
   firstName: personName(30).describe('«الاسم»: 2 to 30 Arabic or Latin letters, spaces and «-».'),
@@ -64,34 +48,6 @@ class CustomerSaveProfileDto extends createZodDto(
       .describe('«أوافق على الشروط وسياسة الخصوصية»: needed the first time only.'),
   }),
 ) {}
-
-const text = (min: number, max: number) => z.string().trim().min(min).max(max);
-
-const addressFields = z.object({
-  location: location.describe('The pin, inside an active zone (CU §7.1).'),
-  label: z.enum(addressLabels).describe('«البيت», «العمل» or «آخر».'),
-  customLabel: text(1, 30).nullable().describe('The name of an «آخر» address; null otherwise.'),
-  street: text(3, 100).describe('«الشارع والبناء».'),
-  floor: text(1, 100).nullable().describe('«الطابق والشقة», optional.'),
-  landmark: text(3, 100).describe('«بالقرب من».'),
-  contactPhone: phone.nullable().describe("«رقم التواصل»; null is the account's own number."),
-  recipientName: personName(60)
-    .nullable()
-    .describe('«اسم المستلم», needed with another contact number (Q5).'),
-  directions: text(1, 200).nullable().describe('«توجيهات للكابتن», optional.'),
-});
-
-// Q5: a recipient's name with another contact number; «آخر» with its name.
-const checked = <T extends z.ZodType<z.infer<typeof addressFields>>>(schema: T) =>
-  schema
-    .refine((fields) => fields.contactPhone === null || fields.recipientName !== null, {
-      message: 'a recipient name is needed with another contact number',
-      path: ['recipientName'],
-    })
-    .refine((fields) => fields.label !== 'other' || fields.customLabel !== null, {
-      message: 'an «آخر» address needs its name',
-      path: ['customLabel'],
-    });
 
 class CustomerNewAddressDto extends createZodDto(
   checked(

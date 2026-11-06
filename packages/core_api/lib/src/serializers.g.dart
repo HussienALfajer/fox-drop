@@ -58,6 +58,17 @@ Serializers _$serializers =
           ..add(CustomerNewAddressDto.serializer)
           ..add(CustomerNewAddressDtoLabelEnum.serializer)
           ..add(CustomerNewAddressDtoLocation.serializer)
+          ..add(CustomerPlaceOrderDto.serializer)
+          ..add(CustomerPlaceOrderDtoUnsavedAddress.serializer)
+          ..add(CustomerPlacedOrderDtoOutput.serializer)
+          ..add(CustomerPlacedOrderDtoOutputOrder.serializer)
+          ..add(CustomerPlacedOrderDtoOutputOrderAddress.serializer)
+          ..add(CustomerPlacedOrderDtoOutputOrderAddressLabelEnum.serializer)
+          ..add(CustomerPlacedOrderDtoOutputOrderAddressLocation.serializer)
+          ..add(CustomerPlacedOrderDtoOutputOrderEstimate.serializer)
+          ..add(CustomerPlacedOrderDtoOutputOrderLinesInner.serializer)
+          ..add(CustomerPlacedOrderDtoOutputOrderMoney.serializer)
+          ..add(CustomerPlacedOrderDtoOutputOrderStatusEnum.serializer)
           ..add(CustomerProfileDtoOutput.serializer)
           ..add(CustomerProfileDtoOutputProfile.serializer)
           ..add(CustomerProfileDtoOutputProfileGenderEnum.serializer)
@@ -224,6 +235,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(CustomerPlacedOrderDtoOutputOrderLinesInner),
+            ]),
+            () => ListBuilder<CustomerPlacedOrderDtoOutputOrderLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(CustomerQuoteDtoOutputLinesInner),
             ]),
             () => ListBuilder<CustomerQuoteDtoOutputLinesInner>(),
@@ -251,6 +268,18 @@ Serializers _$serializers =
               const FullType(CustomerQuoteDtoOutputLinesInnerOptionsInner),
             ]),
             () => ListBuilder<CustomerQuoteDtoOutputLinesInnerOptionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerQuoteDtoOutputLinesInnerOptionsInner),
+            ]),
+            () => ListBuilder<CustomerQuoteDtoOutputLinesInnerOptionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerQuoteRequestDtoLinesInner),
+            ]),
+            () => ListBuilder<CustomerQuoteRequestDtoLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

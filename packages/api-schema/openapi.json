@@ -1975,6 +1975,53 @@
           "customer"
         ]
       }
+    },
+    "/v1/customer/orders": {
+      "post": {
+        "operationId": "customerOrdersPlace",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerPlaceOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerPlacedOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
     }
   },
   "info": {
@@ -6205,6 +6252,542 @@
           "freeDelivery",
           "rates",
           "problems"
+        ],
+        "additionalProperties": false
+      },
+      "CustomerPlaceOrderDto": {
+        "type": "object",
+        "properties": {
+          "restaurantId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "lines": {
+            "minItems": 1,
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "optionIds": {
+                  "maxItems": 50,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20,
+                  "description": "1 to 20 per line (fixed)."
+                },
+                "note": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«مثلاً: بدون بصل», up to 100 characters; no phone number."
+                },
+                "knownUnitPrice": {
+                  "type": "string",
+                  "pattern": "^-?\\d+$",
+                  "description": "The unit price the customer last saw, with the options; a change is price_changed."
+                }
+              },
+              "required": [
+                "itemId",
+                "optionIds",
+                "quantity",
+                "note",
+                "knownUnitPrice"
+              ]
+            }
+          },
+          "payIn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«سأدفع بـ»: an accepted currency, or null for «لم أحدد» (CU §10.5); one no longer accepted gives payIn null."
+          },
+          "appVersion": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+          },
+          "quoteVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "The version of the quote the customer confirmed (CU §10.7)."
+          },
+          "addressId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A saved address (CU §7.3), or null."
+          },
+          "unsavedAddress": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "location": {
+                    "type": "object",
+                    "properties": {
+                      "latitude": {
+                        "type": "number",
+                        "minimum": -90,
+                        "maximum": 90
+                      },
+                      "longitude": {
+                        "type": "number",
+                        "minimum": -180,
+                        "maximum": 180
+                      }
+                    },
+                    "required": [
+                      "latitude",
+                      "longitude"
+                    ],
+                    "description": "The pin, inside an active zone (CU §7.1)."
+                  },
+                  "street": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 100,
+                    "description": "«الشارع والبناء»."
+                  },
+                  "floor": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«الطابق والشقة», optional."
+                  },
+                  "landmark": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 100,
+                    "description": "«بالقرب من»."
+                  },
+                  "contactPhone": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
+                        "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«رقم التواصل»; null is the account's own number."
+                  },
+                  "recipientName": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 60,
+                        "pattern": "^(?:[A-Za-z -]|(?=\\p{Script_Extensions=Arabic})[\\p{L}\\p{M}])+$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«اسم المستلم», needed with another contact number (Q5)."
+                  },
+                  "directions": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«توجيهات للكابتن», optional."
+                  }
+                },
+                "required": [
+                  "location",
+                  "street",
+                  "floor",
+                  "landmark",
+                  "contactPhone",
+                  "recipientName",
+                  "directions"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«التوصيل إلى موقعي الحالي»: an address for this order only (CU §7.4), or null."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "To the restaurant and the captain, up to 200 characters; no phone number."
+          }
+        },
+        "required": [
+          "restaurantId",
+          "lines",
+          "payIn",
+          "appVersion",
+          "quoteVersion",
+          "addressId",
+          "unsavedAddress",
+          "note"
+        ]
+      },
+      "CustomerPlacedOrderDto_Output": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "number": {
+                "type": "string",
+                "description": "Shown as #10423 (AP §4.8)."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "placed",
+                  "accepted",
+                  "ready",
+                  "picked_up",
+                  "arrived",
+                  "delivered",
+                  "rejected",
+                  "cancelled",
+                  "failed"
+                ],
+                "description": "AP §8.1; placed when it was placed."
+              },
+              "placedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "restaurantId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              "money": {
+                "type": "object",
+                "properties": {
+                  "itemsValue": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$",
+                    "description": "Integer minor units (AP §8.6)."
+                  },
+                  "deliveryFee": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$",
+                    "description": "Integer minor units (AP §8.6)."
+                  },
+                  "deliveryFree": {
+                    "type": "boolean"
+                  },
+                  "discount": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$",
+                    "description": "Integer minor units (AP §8.6)."
+                  },
+                  "rounding": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$",
+                    "description": "Integer minor units (AP §8.6)."
+                  },
+                  "total": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$",
+                    "description": "Integer minor units (AP §8.6)."
+                  }
+                },
+                "required": [
+                  "itemsValue",
+                  "deliveryFee",
+                  "deliveryFree",
+                  "discount",
+                  "rounding",
+                  "total"
+                ],
+                "additionalProperties": false
+              },
+              "lines": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "note": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "priceDelta": {
+                            "type": "string",
+                            "pattern": "^-?\\d+$",
+                            "description": "Integer minor units (AP §8.6)."
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "priceDelta"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "unitPrice": {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    "lineTotal": {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    }
+                  },
+                  "required": [
+                    "itemId",
+                    "name",
+                    "quantity",
+                    "note",
+                    "options",
+                    "unitPrice",
+                    "lineTotal"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "payIn": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«سأدفع بـ»; null for «لم أحدد»."
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "estimate": {
+                "type": "object",
+                "properties": {
+                  "fromMin": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "toMin": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "fromMin",
+                  "toMin"
+                ],
+                "additionalProperties": false
+              },
+              "address": {
+                "type": "object",
+                "properties": {
+                  "location": {
+                    "type": "object",
+                    "properties": {
+                      "latitude": {
+                        "type": "number"
+                      },
+                      "longitude": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "latitude",
+                      "longitude"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "neighbourhood": {
+                    "type": "string",
+                    "description": "«الحي» at placing."
+                  },
+                  "label": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "home",
+                          "work",
+                          "other"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Null for an unsaved one."
+                  },
+                  "customLabel": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "street": {
+                    "type": "string"
+                  },
+                  "floor": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "landmark": {
+                    "type": "string"
+                  },
+                  "recipientName": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "directions": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "location",
+                  "neighbourhood",
+                  "label",
+                  "customLabel",
+                  "street",
+                  "floor",
+                  "landmark",
+                  "recipientName",
+                  "directions"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "number",
+              "status",
+              "placedAt",
+              "restaurantId",
+              "currency",
+              "money",
+              "lines",
+              "payIn",
+              "note",
+              "estimate",
+              "address"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "order"
         ],
         "additionalProperties": false
       }

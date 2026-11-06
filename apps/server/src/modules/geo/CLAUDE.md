@@ -25,4 +25,4 @@ Cities (AP §9.12.1), distances (architecture §7.1), service zones and the deli
 - `pricing.distance_method` is the fee's setting (AP §9.12.3), and the delivery estimate follows it too (`trip_min`, `docs/domain/03-timers.md`). When dispatch uses distances, decide with the owner whether it follows it.
 - Durations (the ETA), the route line and the distance matrix (OSRM `table`) for dispatch join with their slices.
 - Per-restaurant fee overrides wait for Phase 2 (owner decision 2026-11-06); editing a zone's outline or name, the fee screen, its preview calculator and the vote map (it reads `zone_votes`) with the panel's zones and pricing screen.
-- `deliveryFee` reads through the pool. Slice 1.8 prices inside the order's transaction: give it an executor then.
+- `deliveryFee` reads through the pool: placing an order re-runs the quote before its transaction (`apps/server/src/modules/ordering/CLAUDE.md`).

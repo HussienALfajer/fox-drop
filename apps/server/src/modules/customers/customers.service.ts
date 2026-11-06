@@ -52,6 +52,28 @@ export interface Address extends AddressFields {
   neighbourhood: string | null;
 }
 
+// CU §7.4: an unsaved address, the fields of a saved one without its label.
+export type UnsavedAddressFields = Omit<AddressFields, 'label' | 'customLabel'>;
+
+// The address an order keeps (Q6): «الحي» is the zone at placing, and another
+// contact number stays encrypted with identity's key.
+export interface OrderAddress {
+  // The saved address it was copied from; null for an unsaved one.
+  addressId: string | null;
+  cityId: string;
+  location: Point;
+  zone: { id: string; name: string };
+  label: AddressFields['label'] | null;
+  customLabel: string | null;
+  street: string;
+  floor: string | null;
+  landmark: string;
+  // null is the account's own number.
+  contactPhoneEncrypted: string | null;
+  recipientName: string | null;
+  directions: string | null;
+}
+
 // CU §7.1: where a point stands. served has restaurants that cover it;
 // no_restaurants is «لا توجد مطاعم توصل إلى موقعك حالياً»; outside_zones is
 // «قريباً في منطقتك» with the vote (§7.2).
@@ -134,6 +156,71 @@ export class CustomersService {
         .onConflictDoUpdate({ target: profiles.accountId, set: { ...profile, updatedAt: now } });
     }
     return profile;
+  }
+
+  // CU §7.3–7.4, Q6: the address an order keeps, copied from a saved address
+  // or from the fields of an unsaved one, with «الحي» from the active zone at
+  // the pin now. Refused outside every active zone.
+  async orderAddress(
+    accountId: string,
+    choice: { addressId: string } | { fields: UnsavedAddressFields },
+  ): Promise<OrderAddress> {
+    let source: {
+      addressId: string | null;
+      label: Address['label'] | null;
+      customLabel: string | null;
+      fields: UnsavedAddressFields;
+      contactPhoneEncrypted: string | null;
+    };
+    if ('addressId' in choice) {
+      const [row] = await this.database.db
+        .select(addressColumns)
+        .from(addresses)
+        .where(mine(accountId, choice.addressId));
+      if (!row) throw new CustomersRefusedError('unknown_address', 'no such address');
+      source = {
+        addressId: row.id,
+        label: row.label,
+        customLabel: row.customLabel,
+        fields: {
+          location: { latitude: row.latitude, longitude: row.longitude },
+          street: row.street,
+          floor: row.floor,
+          landmark: row.landmark,
+          contactPhone: null,
+          recipientName: row.recipientName,
+          directions: row.directions,
+        },
+        contactPhoneEncrypted: row.contactPhoneEncrypted,
+      };
+    } else {
+      const { fields } = choice;
+      source = {
+        addressId: null,
+        label: null,
+        customLabel: null,
+        fields,
+        contactPhoneEncrypted:
+          fields.contactPhone === null ? null : this.phones.encrypt(fields.contactPhone),
+      };
+    }
+    const place = await this.geo.locate(source.fields.location);
+    if (place === null || place.zone === null) throw outsideZones();
+    const { fields } = source;
+    return {
+      addressId: source.addressId,
+      cityId: place.cityId,
+      location: fields.location,
+      zone: place.zone,
+      label: source.label,
+      customLabel: source.customLabel,
+      street: fields.street,
+      floor: fields.floor,
+      landmark: fields.landmark,
+      contactPhoneEncrypted: source.contactPhoneEncrypted,
+      recipientName: source.contactPhoneEncrypted === null ? null : fields.recipientName,
+      directions: fields.directions,
+    };
   }
 
   // The saved addresses, the default first, then the newest.

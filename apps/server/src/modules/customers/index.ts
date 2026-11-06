@@ -20,6 +20,7 @@ import { CustomersService } from './customers.service.js';
 })
 export class CustomersModule {}
 
+export { unsavedAddressFields, withRecipient } from './address-fields.js';
 export {
   type Address,
   type AddressFields,
@@ -27,5 +28,7 @@ export {
   CustomersRefusedError,
   CustomersService,
   type Location,
+  type OrderAddress,
   type Profile,
+  type UnsavedAddressFields,
 } from './customers.service.js';

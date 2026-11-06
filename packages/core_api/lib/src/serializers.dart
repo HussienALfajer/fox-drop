@@ -51,6 +51,15 @@ import 'package:core_api/src/model/customer_location_dto_output.dart';
 import 'package:core_api/src/model/customer_location_dto_output_zone.dart';
 import 'package:core_api/src/model/customer_new_address_dto.dart';
 import 'package:core_api/src/model/customer_new_address_dto_location.dart';
+import 'package:core_api/src/model/customer_place_order_dto.dart';
+import 'package:core_api/src/model/customer_place_order_dto_unsaved_address.dart';
+import 'package:core_api/src/model/customer_placed_order_dto_output.dart';
+import 'package:core_api/src/model/customer_placed_order_dto_output_order.dart';
+import 'package:core_api/src/model/customer_placed_order_dto_output_order_address.dart';
+import 'package:core_api/src/model/customer_placed_order_dto_output_order_address_location.dart';
+import 'package:core_api/src/model/customer_placed_order_dto_output_order_estimate.dart';
+import 'package:core_api/src/model/customer_placed_order_dto_output_order_lines_inner.dart';
+import 'package:core_api/src/model/customer_placed_order_dto_output_order_money.dart';
 import 'package:core_api/src/model/customer_profile_dto_output.dart';
 import 'package:core_api/src/model/customer_profile_dto_output_profile.dart';
 import 'package:core_api/src/model/customer_quote_dto_output.dart';
@@ -169,6 +178,15 @@ part 'serializers.g.dart';
   CustomerLocationDtoOutputZone,
   CustomerNewAddressDto,
   CustomerNewAddressDtoLocation,
+  CustomerPlaceOrderDto,
+  CustomerPlaceOrderDtoUnsavedAddress,
+  CustomerPlacedOrderDtoOutput,
+  CustomerPlacedOrderDtoOutputOrder,
+  CustomerPlacedOrderDtoOutputOrderAddress,
+  CustomerPlacedOrderDtoOutputOrderAddressLocation,
+  CustomerPlacedOrderDtoOutputOrderEstimate,
+  CustomerPlacedOrderDtoOutputOrderLinesInner,
+  CustomerPlacedOrderDtoOutputOrderMoney,
   CustomerProfileDtoOutput,
   CustomerProfileDtoOutputProfile,
   CustomerQuoteDtoOutput,
@@ -383,6 +401,12 @@ Serializers serializers =
                 ListBuilder<
                   MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CustomerPlacedOrderDtoOutputOrderLinesInner),
+            ]),
+            () => ListBuilder<CustomerPlacedOrderDtoOutputOrderLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

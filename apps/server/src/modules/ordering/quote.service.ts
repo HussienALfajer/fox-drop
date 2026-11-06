@@ -8,7 +8,7 @@ import {
   type Point,
   tripMinutes,
 } from '../geo/index.js';
-import { MerchantsService, type StorefrontState } from '../merchants/index.js';
+import { MerchantsService, type Restaurant, type StorefrontState } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 import { platformOpening } from './platform-hours.js';
 import {
@@ -76,6 +76,16 @@ export interface Quote {
   problems: QuoteProblem[];
 }
 
+// A quote and what an order placed from it keeps.
+export interface PricedQuote {
+  quote: Quote;
+  // null while the city cannot have one (rates_unavailable).
+  snapshot: RateSnapshot | null;
+  // null while the city has no fee rule in its base (delivery_unpriced).
+  feeRuleId: string | null;
+  restaurant: Restaurant;
+}
+
 export type QuoteRefusal = 'unknown_restaurant';
 
 // A quote the server cannot answer at all, as opposed to a problem it shows.
@@ -107,6 +117,12 @@ export class QuoteService {
   ) {}
 
   async quote(request: QuoteRequest, now: Date): Promise<Quote> {
+    return (await this.price(request, now)).quote;
+  }
+
+  // The quote with what placing the order keeps: the rate snapshot it was
+  // priced with, the fee rule version and the restaurant (CU §10.7).
+  async price(request: QuoteRequest, now: Date): Promise<PricedQuote> {
     const restaurant = await this.merchants.restaurant(request.restaurantId, now);
     if (restaurant === null || restaurant.accountStatus !== 'active' || !restaurant.visible) {
       throw new QuoteRefusedError('unknown_restaurant', 'no restaurant customers see');
@@ -201,7 +217,7 @@ export class QuoteService {
       fee?.distance ??
       (await this.geo.distance(restaurant.location, point, { vehicle: TRIP_VEHICLE }));
 
-    return {
+    const quote: Quote = {
       version: quoteVersion({
         lines: request.lines.map((line, index) => ({
           itemId: line.itemId,
@@ -235,6 +251,7 @@ export class QuoteService {
       rates,
       problems,
     };
+    return { quote, snapshot, feeRuleId: fee?.ruleId ?? null, restaurant };
   }
 
   // The rates of a quote (AP §8.6); null while the city cannot have one, such
@@ -261,14 +278,15 @@ export class QuoteService {
     free: boolean;
     freeDeliveryFrom: bigint | null;
     distance: Distance | null;
+    ruleId: string;
   } | null> {
     try {
-      const { fee, free, freeDeliveryFrom, distance } = await this.geo.deliveryFee(cityId, {
+      const { fee, free, freeDeliveryFrom, distance, ruleId } = await this.geo.deliveryFee(cityId, {
         from,
         to,
         itemsValue,
       });
-      return { fee, free: free || fee === 0n, freeDeliveryFrom, distance };
+      return { fee, free: free || fee === 0n, freeDeliveryFrom, distance, ruleId };
     } catch (error) {
       if (
         error instanceof GeoRefusedError &&
