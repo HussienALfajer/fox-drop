@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
+import pg from 'pg';
 import { runMigrations } from './migrate.js';
 
 export interface TestDatabase {
@@ -50,7 +51,30 @@ export async function startTestDatabase(): Promise<TestDatabase> {
     migratorUrl,
     appUrl: roleUrl('fox_drop_app', passwords.app),
     stop: async () => {
+      await closedConnections(container.getConnectionUri());
       await container.stop();
     },
   };
+}
+
+// A pool's end() resolves before its clients' sockets close. Stopping
+// PostgreSQL while they close sends each one 57P01 («terminating connection
+// due to administrator command»), an uncaught error in a pool without an
+// error listener that fails the whole test run. So the stop waits, up to 5
+// seconds, until no other client is connected.
+async function closedConnections(adminUrl: string): Promise<void> {
+  const admin = new pg.Client({ connectionString: adminUrl });
+  await admin.connect();
+  try {
+    for (let attempt = 0; attempt < 50; attempt += 1) {
+      const { rows } = await admin.query<{ connected: number }>(
+        "SELECT count(*)::int AS connected FROM pg_stat_activity WHERE backend_type = 'client backend' AND pid <> pg_backend_pid()",
+      );
+      if (rows[0]!.connected === 0) return;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+  } finally {
+    // A client's end() resolves once its socket has closed.
+    await admin.end();
+  }
 }
