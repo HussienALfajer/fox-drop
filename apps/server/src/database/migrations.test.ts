@@ -649,6 +649,7 @@ describe('the identity tables (AP §5.1–5.2)', () => {
     ['delete a sending number', 'DELETE FROM identity.otp_sender_numbers'],
     ['delete a sending session key', 'DELETE FROM identity.otp_sender_credentials'],
     ['delete an on-WhatsApp check', 'DELETE FROM identity.otp_whatsapp_numbers'],
+    ['delete the daily counts of a sending number', 'DELETE FROM identity.otp_sender_daily_counts'],
   ])('refuse the application role to %s', async (_, statement) => {
     await expect(appQuery(statement)).rejects.toThrow(/permission denied/);
   });
@@ -671,9 +672,53 @@ describe('the sending numbers (architecture §8.3.3 items 10–11)', () => {
   it('refuse a state outside the list', async () => {
     await expect(
       appQuery(
-        "INSERT INTO identity.otp_sender_numbers (phone_encrypted, phone_hash, status, paired_at) VALUES ('e', 'h', 'banned', now())",
+        "INSERT INTO identity.otp_sender_numbers (phone_encrypted, phone_hash, status, paired_at) VALUES ('e', 'h', 'paused', now())",
       ),
     ).rejects.toThrow(/otp_sender_numbers_status_values/);
+  });
+
+  it('keep the time WhatsApp banned a number', async () => {
+    await expect(
+      appQuery(
+        "INSERT INTO identity.otp_sender_numbers (phone_encrypted, phone_hash, status, paired_at) VALUES ('e', 'h', 'banned', now())",
+      ),
+    ).rejects.toThrow(/otp_sender_numbers_disconnected_at/);
+    await appQuery(
+      "INSERT INTO identity.otp_sender_numbers (phone_encrypted, phone_hash, status, paired_at, disconnected_at, warmup_started_at) VALUES ('e', 'h', 'banned', now(), now(), now())",
+    );
+  });
+
+  it('refuse a warming number without its warm-up start, and an active one with it', async () => {
+    await expect(
+      appQuery(
+        "INSERT INTO identity.otp_sender_numbers (phone_encrypted, phone_hash, status, paired_at) VALUES ('e', 'h', 'warming', now())",
+      ),
+    ).rejects.toThrow(/otp_sender_numbers_warmup/);
+    await expect(
+      appQuery(
+        "INSERT INTO identity.otp_sender_numbers (phone_encrypted, phone_hash, status, paired_at, warmup_started_at) VALUES ('e', 'h', 'active', now(), now())",
+      ),
+    ).rejects.toThrow(/otp_sender_numbers_warmup/);
+  });
+
+  it('refuse a throttled number without its end and earlier state', async () => {
+    const throttled = (columns: string, values: string) =>
+      appQuery(
+        `INSERT INTO identity.otp_sender_numbers (phone_encrypted, phone_hash, status, paired_at${columns}) VALUES ('e', 'h', 'throttled', now()${values})`,
+      );
+    await expect(throttled('', '')).rejects.toThrow(/otp_sender_numbers_throttled/);
+    await expect(throttled(', throttled_until', ', now()')).rejects.toThrow(
+      /otp_sender_numbers_throttled/,
+    );
+    await expect(
+      throttled(', throttled_until, throttled_from', ", now(), 'standby'"),
+    ).rejects.toThrow(/otp_sender_numbers_throttled/);
+    await throttled(', throttled_until, throttled_from', ", now(), 'active'");
+    await expect(
+      appQuery(
+        "INSERT INTO identity.otp_sender_numbers (phone_encrypted, phone_hash, status, paired_at, throttled_until, throttled_from) VALUES ('e', 'h', 'active', now(), now(), 'active')",
+      ),
+    ).rejects.toThrow(/otp_sender_numbers_throttled/);
   });
 });
 

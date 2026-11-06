@@ -235,6 +235,12 @@ import 'package:core_api/src/model/realtime_token_dto_output.dart';
 import 'package:core_api/src/model/reset_setting_dto.dart';
 import 'package:core_api/src/model/role_matrix_dto_output.dart';
 import 'package:core_api/src/model/role_matrix_dto_output_roles_inner.dart';
+import 'package:core_api/src/model/sender_number_status_dto.dart';
+import 'package:core_api/src/model/sender_pool_dto_output.dart';
+import 'package:core_api/src/model/sender_pool_dto_output_alerts_inner.dart';
+import 'package:core_api/src/model/sender_pool_dto_output_numbers_inner.dart';
+import 'package:core_api/src/model/sender_pool_dto_output_numbers_inner_today.dart';
+import 'package:core_api/src/model/sender_pool_dto_output_numbers_inner_warmup.dart';
 import 'package:core_api/src/model/setting_entry_dto_output.dart';
 import 'package:core_api/src/model/setting_history_dto_output.dart';
 import 'package:core_api/src/model/setting_history_dto_output_changes_inner.dart';
@@ -475,6 +481,12 @@ part 'serializers.g.dart';
   ResetSettingDto,
   RoleMatrixDtoOutput,
   RoleMatrixDtoOutputRolesInner,
+  SenderNumberStatusDto,
+  SenderPoolDtoOutput,
+  SenderPoolDtoOutputAlertsInner,
+  SenderPoolDtoOutputNumbersInner,
+  SenderPoolDtoOutputNumbersInnerToday,
+  SenderPoolDtoOutputNumbersInnerWarmup,
   SettingEntryDtoOutput,
   SettingHistoryDtoOutput,
   SettingHistoryDtoOutputChangesInner,
@@ -574,6 +586,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(SenderPoolDtoOutputNumbersInner),
+            ]),
+            () => ListBuilder<SenderPoolDtoOutputNumbersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(
                 CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInnerOptionsInner,
               ),
@@ -605,6 +623,12 @@ Serializers serializers =
               FullType(AdminOrderDtoOutputOrderTimelineInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderTimelineInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(SenderPoolDtoOutputAlertsInner),
+            ]),
+            () => ListBuilder<SenderPoolDtoOutputAlertsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

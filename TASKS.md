@@ -4,25 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice W2, the sender pool (`docs/roadmap.md`, Phase 1, before slice 1.14). App Check (W3) and the emergency sign-in (W4) follow, one pull request each.
+Slice W3, App Check on the server (`docs/roadmap.md`, Phase 1, before slice 1.14). The emergency sign-in (W4) follows in its own pull request.
 
-- **Specs:** architecture §8.3.3 items 6, 7, 11–14; AP §9.1.3 (the two alerts), §9.14 (Settings, «أرقام إرسال الرموز»); `apps/server/src/modules/identity/CLAUDE.md` («The otp-sender process», «WhatsApp library», «Pairing»).
-- **Branch:** `feat/whatsapp-sender-pool`.
-- **Builds on W1:** `OtpSenderService` sends from the latest `active` row of `identity.otp_sender_numbers` (states `active`, `disconnected`); requests arrive one at a time on `identity:otp:send:requests`; pairing is `otp-sender-pair-command.ts`. The settings `otp.sender_per_minute_max`, `otp.sender_daily_max`, `otp.send_jitter_sec` and `otp.sender_warmup_caps` already exist in the catalogue.
-- **Open items with proposed defaults (ask the owner first):** the warm-up steps last two or three days each (§8.3.3 item 6 says «over two weeks»); the throttle threshold (a failure rate over a window, not in the specs); the sender alerts show in the pool's read and go to Sentry until the alerts feed of AP §9.1.3 exists; the emergency code (W4) lives 15 minutes, needs a new operations permission and is available at any time.
+- **Roadmap line:** the code request verifies a Firebase App Check token, behind a setting that stays off until the apps send one (architecture §8.3.3 item 1). Verified by the tests.
+- **Specs:** architecture §8.3.3 item 1 (Play Integrity on Android, App Attest on iOS; the Windows app uses its device registration), §8.3.2, §15; `apps/server/src/modules/identity/CLAUDE.md` («Request limits», «Code sender»). Owner decision 2026-11-06 (roadmap): the server verifies now, behind a setting; the apps add the token with slice 1.14.
+- **Branch:** `feat/app-check-server`.
+- **Builds on W2:** the code requests of the three apps (`POST /v1/{customer,merchant,captain}/auth/code`) run `AppSignInService.requestCode`: the IP limit first, then the number's lock, limits and the send.
+- **Open items to ask the owner first:** the setting's name and scope (proposed `otp.app_check_required`, global, OWN, default off, in Appendix A); the header (proposed `X-Firebase-AppCheck`, Firebase's own); the answer to a missing or invalid token (proposed `403 app_check_failed`, before the IP limit counts it or after); how the server verifies (proposed: Firebase's public JWKS and the project number from the environment, no service-account secret; or `firebase-admin`); what the Windows restaurant app sends, since App Check has no Windows provider (proposed: exempt the merchant app's Windows devices until its device registration exists, or ask).
 - **Plan:**
   - [ ] Ask the owner the open items above.
-  - [ ] Migration (`db-migration` skill): the states `warming`, `active`, `standby`, `throttled`, `disconnected`, `banned`; the warm-up start; daily counts per number (sent, failed) in the owning schema.
-  - [ ] Several sessions at once in `OtpSenderService`, rotation over the active numbers, failover to the next on a disconnect, throttle or ban. Failing tests first.
-  - [ ] Pacing per number (per minute, per day, warm-up cap) and the jitter between sends, with a short queue; the API's 10-second timeout still holds.
-  - [ ] Health counts and automatic throttling; the library's delivery and read receipts where Baileys exposes them.
-  - [ ] The admin API of «أرقام إرسال الرموز» (OWN): list with state and daily counts, set active or standby, disable; pairing stays the command until the panel screen (design stop). Route table in `admin-team.test.ts`; `pnpm generate:api`.
-  - [ ] The two alerts in the pool's read and to Sentry.
-  - [ ] Update `apps/server/src/modules/identity/CLAUDE.md` and the `deploy` skill.
-  - [ ] `checker`, then `reviewer`; pull request; after the merge, the owner pairs two numbers on staging, disconnects one, and codes still arrive.
+  - [ ] The setting in Appendix A and the catalogue.
+  - [ ] The token check (failing tests first): signature, issuer, audience, expiry against Firebase's keys, cached; a fake key set in the tests.
+  - [ ] The three code routes take the header and refuse without a valid token while the setting is on; `pnpm generate:api`.
+  - [ ] Update `apps/server/src/modules/identity/CLAUDE.md`, `.env.example` (fake project number) and the `deploy` skill.
+  - [ ] `checker`, then `reviewer`; pull request.
 
 ## Notes from earlier slices
 
+- Slice W2 added the sender pool (`apps/server/src/modules/identity/CLAUDE.md`, «The sender pool», «أرقام إرسال الرموز»; owner decisions 2026-11-06): six states, one session per number, the active numbers in turn then the warming ones, failover on a failed or unanswered send, pacing per minute and per day with the jitter, warm-up steps of `otp.sender_warmup_step_days` (3), daily counts with WhatsApp's receipts, the throttle (30% of the last 20 sends for 60 minutes), `banned` on WhatsApp's 403, the two alerts in `GET /v1/admin/otp-sender-numbers` and in Sentry, and OWN's `PUT .../{numberId}/status` and `POST .../{numberId}/disable`.
+- To confirm with the owner (slice W2): the warm-up clock runs from `warmup_started_at` while a number is disconnected, banned or standby, so a number paired again weeks later resumes at a later step or as active (store the warm-up time used, or shift the start, if idle days should not count); a banned number paired again keeps its earlier state, `active` when it had finished its warm-up; `standby` numbers stay connected but never send, even when no other number can; a send that does not answer before the deadline counts as failed, though WhatsApp may still deliver it late; the receipts of messages sent before the otp-sender restarts are not counted.
+- Not built yet for the sender: the panel screen with the QR pairing (design stop), blocks and reports as health signals (Baileys does not expose them), the alerts feed of AP §9.1.3, a second otp-sender process (pacing and the throttle window live in one process's memory).
 - Slice W1 added the real WhatsApp sender with one number (`apps/server/src/modules/identity/CLAUDE.md`; owner decisions 2026-11-06: Baileys 7.0.0-rc14, the API waits for the sender's answer, the server image stays private on ghcr.io since Baileys depends on libsignal, GPL-3.0). Outside development the API's `QueuedCodeSender` pushes an encrypted request on Valkey and waits 10 seconds for the answer; the `otp-sender` role (`OtpSenderModule`, the only one that loads Baileys, a lint rule) checks the number is on WhatsApp (cached 30 days, numbers on WhatsApp only), sends the fixed message, replies once per chat with `SUPPORT_WHATSAPP_NUMBER`, keeps the session encrypted in `identity.otp_sender_credentials`, reconnects every 10 s and marks a logged-out number `disconnected`. Pairing: `otp-sender-pair-command.ts` (the `deploy` skill).
 - To confirm with the owner (slice W1): the reply's wording «هذا الرقم يرسل رموز الدخول إلى FOX DROP فقط ولا يقرأ الرسائل.» with the support number, or «المساعدة» in the app without one; a number not on WhatsApp is not cached (it is checked again at the next request); the code request holds the number's lock and a database connection up to 10 seconds while the sender answers (at most 3 at once per API process; sending after the commit instead would change the rollback, the owner's call).
 - Not built yet for the sender: the pool, pacing and jitter, warm-up, health and alerts (W2), App Check (W3), the emergency sign-in (W4), the Content wordings (AP §9.13), the panel screen.

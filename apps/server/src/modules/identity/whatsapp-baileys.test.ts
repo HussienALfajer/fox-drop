@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { memorySession } from './otp-sender-numbers.js';
-import { closedReason, keyStore, orderedSession, writtenChat } from './whatsapp-baileys.js';
+import {
+  closedReason,
+  keyStore,
+  orderedSession,
+  receiptOf,
+  writtenChat,
+} from './whatsapp-baileys.js';
 import type { WhatsAppSessionStore } from './whatsapp-client.js';
 
 // The Baileys adapter's own logic (architecture §8.3.1, §8.3.3 items 9–10),
@@ -77,7 +83,7 @@ describe('the ordered session', () => {
 describe('a closed connection', () => {
   it.each([
     [401, 'logged_out'],
-    [403, 'logged_out'],
+    [403, 'banned'],
     [408, 'lost'],
     [428, 'lost'],
     [440, 'lost'],
@@ -86,6 +92,19 @@ describe('a closed connection', () => {
     [undefined, 'lost'],
   ])('with status %s is %s', (status, reason) => {
     expect(closedReason(status)).toBe(reason);
+  });
+});
+
+describe('a message status update', () => {
+  it.each([
+    [true, 2, null],
+    [true, 3, 'delivered'],
+    [true, 4, 'read'],
+    [true, 5, 'read'],
+    [true, undefined, null],
+    [false, 4, null],
+  ])('from me %s with status %s is %s', (fromMe, status, receipt) => {
+    expect(receiptOf(fromMe, status)).toBe(receipt);
   });
 });
 

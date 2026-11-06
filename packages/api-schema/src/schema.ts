@@ -548,6 +548,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/otp-sender-numbers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["otpSenderNumbersList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/otp-sender-numbers/{numberId}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["otpSenderNumbersSetStatus"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/otp-sender-numbers/{numberId}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["otpSenderNumbersDisable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/settings": {
         parameters: {
             query?: never;
@@ -1643,6 +1691,59 @@ export interface components {
         CaptainSignedOutDto_Output: {
             /** @constant */
             status: "signed_out";
+        };
+        SenderPoolDto_Output: {
+            numbers: {
+                /** Format: uuid */
+                id: string;
+                /** @description The sending number, E.164. */
+                phone: string;
+                /** @enum {string} */
+                status: "warming" | "active" | "standby" | "throttled" | "disconnected" | "banned";
+                /** @description Whether its WhatsApp session is open now. */
+                connected: boolean;
+                /** Format: date-time */
+                pairedAt: string;
+                /** @description When WhatsApp disconnected or banned it. */
+                stoppedAt: string | null;
+                throttledUntil: string | null;
+                /** @description While warming. */
+                warmup: {
+                    /** @description 1 for the first step of otp.sender_warmup_caps. */
+                    step: number;
+                    cap: number;
+                    /** Format: date-time */
+                    nextStepAt: string;
+                } | null;
+                /** @description Sends it may attempt today, failed ones included. */
+                dailyCap: number;
+                /** @description Today in Asia/Damascus. */
+                today: {
+                    sent: number;
+                    failed: number;
+                    delivered: number;
+                    read: number;
+                };
+            }[];
+            /** @description The alerts of architecture §8.3.3 item 14 (AP §9.1.3). */
+            alerts: {
+                /**
+                 * @description number_stopped: «رقم إرسال الرموز متوقف» (warning); cannot_send: «لا يمكن إرسال رموز الدخول» (critical).
+                 * @enum {string}
+                 */
+                type: "number_stopped" | "cannot_send";
+                /** @enum {string} */
+                severity: "warning" | "critical";
+                /** @description The stopped numbers; empty for cannot_send. */
+                numberIds: string[];
+            }[];
+        };
+        SenderNumberStatusDto: {
+            /**
+             * @description «نشط» or «احتياطي» (architecture §8.3.3 item 13).
+             * @enum {string}
+             */
+            status: "active" | "standby";
         };
         SettingListDto_Output: {
             settings: {
@@ -4767,6 +4868,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainSignedOutDto_Output"];
+                };
+            };
+        };
+    };
+    otpSenderNumbersList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SenderPoolDto_Output"];
+                };
+            };
+        };
+    };
+    otpSenderNumbersSetStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                numberId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SenderNumberStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SenderPoolDto_Output"];
+                };
+            };
+        };
+    };
+    otpSenderNumbersDisable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                numberId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SenderPoolDto_Output"];
                 };
             };
         };

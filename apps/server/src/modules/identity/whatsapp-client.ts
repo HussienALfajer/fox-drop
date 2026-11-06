@@ -11,9 +11,11 @@ export interface WhatsAppSessionStore {
 }
 
 export type WhatsAppClosedReason =
-  // WhatsApp ended the session (the phone unlinked the device, or a ban):
-  // only a new pairing brings the number back.
+  // WhatsApp ended the session (the phone unlinked the device): only a new
+  // pairing brings the number back.
   | 'logged_out'
+  // WhatsApp refused the number (403): a ban.
+  | 'banned'
   // Anything else: the client reconnects on its own.
   | 'lost';
 
@@ -26,11 +28,15 @@ export interface WhatsAppEvents {
   // Someone wrote to the number. The chat is the library's opaque address,
   // for reply().
   incoming(chat: string): void;
+  // WhatsApp's receipt for a message sendText sent, by its id
+  // (architecture §8.3.3 item 12).
+  receipt(messageId: string, status: 'delivered' | 'read'): void;
 }
 
 export interface WhatsAppClient {
   isOnWhatsApp(phone: string): Promise<boolean>;
-  sendText(phone: string, text: string): Promise<void>;
+  // The sent message's id, for its receipts.
+  sendText(phone: string, text: string): Promise<string | null>;
   reply(chat: string, text: string): Promise<void>;
   close(): Promise<void>;
 }

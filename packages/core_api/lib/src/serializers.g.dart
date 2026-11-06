@@ -354,6 +354,16 @@ Serializers _$serializers =
           ..add(ResetSettingDto.serializer)
           ..add(RoleMatrixDtoOutput.serializer)
           ..add(RoleMatrixDtoOutputRolesInner.serializer)
+          ..add(SenderNumberStatusDto.serializer)
+          ..add(SenderNumberStatusDtoStatusEnum.serializer)
+          ..add(SenderPoolDtoOutput.serializer)
+          ..add(SenderPoolDtoOutputAlertsInner.serializer)
+          ..add(SenderPoolDtoOutputAlertsInnerSeverityEnum.serializer)
+          ..add(SenderPoolDtoOutputAlertsInnerTypeEnum.serializer)
+          ..add(SenderPoolDtoOutputNumbersInner.serializer)
+          ..add(SenderPoolDtoOutputNumbersInnerStatusEnum.serializer)
+          ..add(SenderPoolDtoOutputNumbersInnerToday.serializer)
+          ..add(SenderPoolDtoOutputNumbersInnerWarmup.serializer)
           ..add(SettingEntryDtoOutput.serializer)
           ..add(SettingEntryDtoOutputEditRolesEnum.serializer)
           ..add(SettingEntryDtoOutputGroupEnum.serializer)
@@ -763,6 +773,18 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(SenderPoolDtoOutputNumbersInner),
+            ]),
+            () => ListBuilder<SenderPoolDtoOutputNumbersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(SenderPoolDtoOutputAlertsInner),
+            ]),
+            () => ListBuilder<SenderPoolDtoOutputAlertsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(SettingHistoryDtoOutputChangesInner),
             ]),
             () => ListBuilder<SettingHistoryDtoOutputChangesInner>(),
@@ -778,6 +800,10 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

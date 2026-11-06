@@ -66,6 +66,12 @@ export function reportError(error: unknown): void {
   Sentry.captureException(error);
 }
 
+// For an alert of AP §9.1.3 raised by a role without the panel's alerts feed,
+// so it still reaches someone (architecture §16).
+export function reportAlert(message: string, level: 'warning' | 'fatal'): void {
+  Sentry.captureMessage(message, level);
+}
+
 // For errors outside Nest, before the process exits.
 export async function reportFatal(error: unknown): Promise<void> {
   Sentry.captureException(error);
