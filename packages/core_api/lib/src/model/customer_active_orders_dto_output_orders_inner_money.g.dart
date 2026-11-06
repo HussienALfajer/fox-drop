@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'customer_placed_order_dto_output_order_money.dart';
+part of 'customer_active_orders_dto_output_orders_inner_money.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$CustomerPlacedOrderDtoOutputOrderMoney
-    extends CustomerPlacedOrderDtoOutputOrderMoney {
+class _$CustomerActiveOrdersDtoOutputOrdersInnerMoney
+    extends CustomerActiveOrdersDtoOutputOrdersInnerMoney {
   @override
   final String itemsValue;
   @override
@@ -21,12 +21,14 @@ class _$CustomerPlacedOrderDtoOutputOrderMoney
   @override
   final String total;
 
-  factory _$CustomerPlacedOrderDtoOutputOrderMoney([
-    void Function(CustomerPlacedOrderDtoOutputOrderMoneyBuilder)? updates,
-  ]) => (CustomerPlacedOrderDtoOutputOrderMoneyBuilder()..update(updates))
-      ._build();
+  factory _$CustomerActiveOrdersDtoOutputOrdersInnerMoney([
+    void Function(CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder)?
+    updates,
+  ]) =>
+      (CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder()..update(updates))
+          ._build();
 
-  _$CustomerPlacedOrderDtoOutputOrderMoney._({
+  _$CustomerActiveOrdersDtoOutputOrdersInnerMoney._({
     required this.itemsValue,
     required this.deliveryFee,
     required this.deliveryFree,
@@ -35,18 +37,18 @@ class _$CustomerPlacedOrderDtoOutputOrderMoney
     required this.total,
   }) : super._();
   @override
-  CustomerPlacedOrderDtoOutputOrderMoney rebuild(
-    void Function(CustomerPlacedOrderDtoOutputOrderMoneyBuilder) updates,
+  CustomerActiveOrdersDtoOutputOrdersInnerMoney rebuild(
+    void Function(CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  CustomerPlacedOrderDtoOutputOrderMoneyBuilder toBuilder() =>
-      CustomerPlacedOrderDtoOutputOrderMoneyBuilder()..replace(this);
+  CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder toBuilder() =>
+      CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is CustomerPlacedOrderDtoOutputOrderMoney &&
+    return other is CustomerActiveOrdersDtoOutputOrdersInnerMoney &&
         itemsValue == other.itemsValue &&
         deliveryFee == other.deliveryFee &&
         deliveryFree == other.deliveryFree &&
@@ -71,7 +73,7 @@ class _$CustomerPlacedOrderDtoOutputOrderMoney
   @override
   String toString() {
     return (newBuiltValueToStringHelper(
-            r'CustomerPlacedOrderDtoOutputOrderMoney',
+            r'CustomerActiveOrdersDtoOutputOrdersInnerMoney',
           )
           ..add('itemsValue', itemsValue)
           ..add('deliveryFee', deliveryFee)
@@ -83,13 +85,13 @@ class _$CustomerPlacedOrderDtoOutputOrderMoney
   }
 }
 
-class CustomerPlacedOrderDtoOutputOrderMoneyBuilder
+class CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder
     implements
         Builder<
-          CustomerPlacedOrderDtoOutputOrderMoney,
-          CustomerPlacedOrderDtoOutputOrderMoneyBuilder
+          CustomerActiveOrdersDtoOutputOrdersInnerMoney,
+          CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder
         > {
-  _$CustomerPlacedOrderDtoOutputOrderMoney? _$v;
+  _$CustomerActiveOrdersDtoOutputOrdersInnerMoney? _$v;
 
   String? _itemsValue;
   String? get itemsValue => _$this._itemsValue;
@@ -115,11 +117,11 @@ class CustomerPlacedOrderDtoOutputOrderMoneyBuilder
   String? get total => _$this._total;
   set total(String? total) => _$this._total = total;
 
-  CustomerPlacedOrderDtoOutputOrderMoneyBuilder() {
-    CustomerPlacedOrderDtoOutputOrderMoney._defaults(this);
+  CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder() {
+    CustomerActiveOrdersDtoOutputOrdersInnerMoney._defaults(this);
   }
 
-  CustomerPlacedOrderDtoOutputOrderMoneyBuilder get _$this {
+  CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _itemsValue = $v.itemsValue;
@@ -134,52 +136,53 @@ class CustomerPlacedOrderDtoOutputOrderMoneyBuilder
   }
 
   @override
-  void replace(CustomerPlacedOrderDtoOutputOrderMoney other) {
-    _$v = other as _$CustomerPlacedOrderDtoOutputOrderMoney;
+  void replace(CustomerActiveOrdersDtoOutputOrdersInnerMoney other) {
+    _$v = other as _$CustomerActiveOrdersDtoOutputOrdersInnerMoney;
   }
 
   @override
   void update(
-    void Function(CustomerPlacedOrderDtoOutputOrderMoneyBuilder)? updates,
+    void Function(CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder)?
+    updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  CustomerPlacedOrderDtoOutputOrderMoney build() => _build();
+  CustomerActiveOrdersDtoOutputOrdersInnerMoney build() => _build();
 
-  _$CustomerPlacedOrderDtoOutputOrderMoney _build() {
+  _$CustomerActiveOrdersDtoOutputOrdersInnerMoney _build() {
     final _$result =
         _$v ??
-        _$CustomerPlacedOrderDtoOutputOrderMoney._(
+        _$CustomerActiveOrdersDtoOutputOrdersInnerMoney._(
           itemsValue: BuiltValueNullFieldError.checkNotNull(
             itemsValue,
-            r'CustomerPlacedOrderDtoOutputOrderMoney',
+            r'CustomerActiveOrdersDtoOutputOrdersInnerMoney',
             'itemsValue',
           ),
           deliveryFee: BuiltValueNullFieldError.checkNotNull(
             deliveryFee,
-            r'CustomerPlacedOrderDtoOutputOrderMoney',
+            r'CustomerActiveOrdersDtoOutputOrdersInnerMoney',
             'deliveryFee',
           ),
           deliveryFree: BuiltValueNullFieldError.checkNotNull(
             deliveryFree,
-            r'CustomerPlacedOrderDtoOutputOrderMoney',
+            r'CustomerActiveOrdersDtoOutputOrdersInnerMoney',
             'deliveryFree',
           ),
           discount: BuiltValueNullFieldError.checkNotNull(
             discount,
-            r'CustomerPlacedOrderDtoOutputOrderMoney',
+            r'CustomerActiveOrdersDtoOutputOrdersInnerMoney',
             'discount',
           ),
           rounding: BuiltValueNullFieldError.checkNotNull(
             rounding,
-            r'CustomerPlacedOrderDtoOutputOrderMoney',
+            r'CustomerActiveOrdersDtoOutputOrdersInnerMoney',
             'rounding',
           ),
           total: BuiltValueNullFieldError.checkNotNull(
             total,
-            r'CustomerPlacedOrderDtoOutputOrderMoney',
+            r'CustomerActiveOrdersDtoOutputOrdersInnerMoney',
             'total',
           ),
         );

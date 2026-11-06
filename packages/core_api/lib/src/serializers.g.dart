@@ -39,6 +39,21 @@ Serializers _$serializers =
           ..add(CompleteSetupDto.serializer)
           ..add(CreateUserDto.serializer)
           ..add(CreateUserDtoRolesEnum.serializer)
+          ..add(CustomerActiveOrdersDtoOutput.serializer)
+          ..add(CustomerActiveOrdersDtoOutputOrdersInner.serializer)
+          ..add(CustomerActiveOrdersDtoOutputOrdersInnerAddress.serializer)
+          ..add(
+            CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum.serializer,
+          )
+          ..add(
+            CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation.serializer,
+          )
+          ..add(CustomerActiveOrdersDtoOutputOrdersInnerCancellation.serializer)
+          ..add(CustomerActiveOrdersDtoOutputOrdersInnerEstimate.serializer)
+          ..add(CustomerActiveOrdersDtoOutputOrdersInnerLinesInner.serializer)
+          ..add(CustomerActiveOrdersDtoOutputOrdersInnerMoney.serializer)
+          ..add(CustomerActiveOrdersDtoOutputOrdersInnerRestaurant.serializer)
+          ..add(CustomerActiveOrdersDtoOutputOrdersInnerStatusEnum.serializer)
           ..add(CustomerAddressDeletedDtoOutput.serializer)
           ..add(CustomerAddressDeletedDtoOutputStatusEnum.serializer)
           ..add(CustomerAddressDtoOutput.serializer)
@@ -58,17 +73,11 @@ Serializers _$serializers =
           ..add(CustomerNewAddressDto.serializer)
           ..add(CustomerNewAddressDtoLabelEnum.serializer)
           ..add(CustomerNewAddressDtoLocation.serializer)
+          ..add(CustomerOrderDtoOutput.serializer)
+          ..add(CustomerOrderDtoOutputOrder.serializer)
+          ..add(CustomerOrderDtoOutputOrderStatusEnum.serializer)
           ..add(CustomerPlaceOrderDto.serializer)
           ..add(CustomerPlaceOrderDtoUnsavedAddress.serializer)
-          ..add(CustomerPlacedOrderDtoOutput.serializer)
-          ..add(CustomerPlacedOrderDtoOutputOrder.serializer)
-          ..add(CustomerPlacedOrderDtoOutputOrderAddress.serializer)
-          ..add(CustomerPlacedOrderDtoOutputOrderAddressLabelEnum.serializer)
-          ..add(CustomerPlacedOrderDtoOutputOrderAddressLocation.serializer)
-          ..add(CustomerPlacedOrderDtoOutputOrderEstimate.serializer)
-          ..add(CustomerPlacedOrderDtoOutputOrderLinesInner.serializer)
-          ..add(CustomerPlacedOrderDtoOutputOrderMoney.serializer)
-          ..add(CustomerPlacedOrderDtoOutputOrderStatusEnum.serializer)
           ..add(CustomerProfileDtoOutput.serializer)
           ..add(CustomerProfileDtoOutputProfile.serializer)
           ..add(CustomerProfileDtoOutputProfileGenderEnum.serializer)
@@ -158,6 +167,14 @@ Serializers _$serializers =
           )
           ..add(MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice.serializer)
           ..add(MerchantMenuDtoOutputCategoriesInnerSwitchedOff.serializer)
+          ..add(MerchantOrdersDtoOutput.serializer)
+          ..add(MerchantOrdersDtoOutputOrdersInner.serializer)
+          ..add(MerchantOrdersDtoOutputOrdersInnerCustomer.serializer)
+          ..add(MerchantOrdersDtoOutputOrdersInnerLinesInner.serializer)
+          ..add(
+            MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner.serializer,
+          )
+          ..add(MerchantOrdersDtoOutputOrdersInnerStatusEnum.serializer)
           ..add(MerchantRefreshDto.serializer)
           ..add(MerchantRestaurantDtoOutput.serializer)
           ..add(MerchantRestaurantDtoOutputAccountStatusEnum.serializer)
@@ -212,6 +229,23 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+            ]),
+            () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(CaptainLocationsDtoPointsInner),
             ]),
             () => ListBuilder<CaptainLocationsDtoPointsInner>(),
@@ -230,15 +264,15 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
-              const FullType(CustomerAddressListDtoOutputAddressesInner),
+              const FullType(CustomerActiveOrdersDtoOutputOrdersInner),
             ]),
-            () => ListBuilder<CustomerAddressListDtoOutputAddressesInner>(),
+            () => ListBuilder<CustomerActiveOrdersDtoOutputOrdersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
-              const FullType(CustomerPlacedOrderDtoOutputOrderLinesInner),
+              const FullType(CustomerAddressListDtoOutputAddressesInner),
             ]),
-            () => ListBuilder<CustomerPlacedOrderDtoOutputOrderLinesInner>(),
+            () => ListBuilder<CustomerAddressListDtoOutputAddressesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -360,6 +394,29 @@ Serializers _$serializers =
             () =>
                 ListBuilder<
                   MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantOrdersDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<MerchantOrdersDtoOutputOrdersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantOrdersDtoOutputOrdersInnerLinesInner),
+            ]),
+            () => ListBuilder<MerchantOrdersDtoOutputOrdersInnerLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner
                 >(),
           )
           ..addBuilderFactory(
@@ -487,6 +544,23 @@ Serializers _$serializers =
               const FullType(TeamUsersDtoOutputUsersInner),
             ]),
             () => ListBuilder<TeamUsersDtoOutputUsersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+            ]),
+            () => ListBuilder<CaptainWentOfflineDtoOutputHandIn?>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
+                >(),
           ))
         .build();
 

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -129,6 +129,17 @@ export class CustomersService {
       .from(profiles)
       .where(eq(profiles.accountId, accountId));
     return row ?? null;
+  }
+
+  // The completed customers' first names by account, in one read: all a
+  // restaurant sees of its customer with «الحي» (RA §8.4, principle 6).
+  async firstNames(accountIds: string[]): Promise<Map<string, string>> {
+    if (accountIds.length === 0) return new Map();
+    const rows = await this.database.db
+      .select({ accountId: profiles.accountId, firstName: profiles.firstName })
+      .from(profiles)
+      .where(inArray(profiles.accountId, accountIds));
+    return new Map(rows.map((row) => [row.accountId, row.firstName]));
   }
 
   // «أكمل بياناتك» (CU §5.3), and later edits in «حسابي» (§13). The terms

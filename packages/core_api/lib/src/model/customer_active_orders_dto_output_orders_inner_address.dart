@@ -3,14 +3,14 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/customer_placed_order_dto_output_order_address_location.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address_location.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'customer_placed_order_dto_output_order_address.g.dart';
+part 'customer_active_orders_dto_output_orders_inner_address.g.dart';
 
-/// CustomerPlacedOrderDtoOutputOrderAddress
+/// CustomerActiveOrdersDtoOutputOrdersInnerAddress
 ///
 /// Properties:
 /// * [location]
@@ -23,14 +23,14 @@ part 'customer_placed_order_dto_output_order_address.g.dart';
 /// * [recipientName]
 /// * [directions]
 @BuiltValue()
-abstract class CustomerPlacedOrderDtoOutputOrderAddress
+abstract class CustomerActiveOrdersDtoOutputOrdersInnerAddress
     implements
         Built<
-          CustomerPlacedOrderDtoOutputOrderAddress,
-          CustomerPlacedOrderDtoOutputOrderAddressBuilder
+          CustomerActiveOrdersDtoOutputOrdersInnerAddress,
+          CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder
         > {
   @BuiltValueField(wireName: r'location')
-  CustomerPlacedOrderDtoOutputOrderAddressLocation get location;
+  CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation get location;
 
   /// «الحي» at placing.
   @BuiltValueField(wireName: r'neighbourhood')
@@ -38,7 +38,7 @@ abstract class CustomerPlacedOrderDtoOutputOrderAddress
 
   /// Null for an unsaved one.
   @BuiltValueField(wireName: r'label')
-  CustomerPlacedOrderDtoOutputOrderAddressLabelEnum? get label;
+  CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum? get label;
   // enum labelEnum {  home,  work,  other,  };
 
   @BuiltValueField(wireName: r'customLabel')
@@ -59,41 +59,45 @@ abstract class CustomerPlacedOrderDtoOutputOrderAddress
   @BuiltValueField(wireName: r'directions')
   String? get directions;
 
-  CustomerPlacedOrderDtoOutputOrderAddress._();
+  CustomerActiveOrdersDtoOutputOrdersInnerAddress._();
 
-  factory CustomerPlacedOrderDtoOutputOrderAddress([
-    void updates(CustomerPlacedOrderDtoOutputOrderAddressBuilder b),
-  ]) = _$CustomerPlacedOrderDtoOutputOrderAddress;
+  factory CustomerActiveOrdersDtoOutputOrdersInnerAddress([
+    void updates(CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder b),
+  ]) = _$CustomerActiveOrdersDtoOutputOrdersInnerAddress;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerPlacedOrderDtoOutputOrderAddressBuilder b) => b;
+  static void _defaults(
+    CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerPlacedOrderDtoOutputOrderAddress> get serializer =>
-      _$CustomerPlacedOrderDtoOutputOrderAddressSerializer();
+  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerAddress>
+  get serializer =>
+      _$CustomerActiveOrdersDtoOutputOrdersInnerAddressSerializer();
 }
 
-class _$CustomerPlacedOrderDtoOutputOrderAddressSerializer
-    implements PrimitiveSerializer<CustomerPlacedOrderDtoOutputOrderAddress> {
+class _$CustomerActiveOrdersDtoOutputOrdersInnerAddressSerializer
+    implements
+        PrimitiveSerializer<CustomerActiveOrdersDtoOutputOrdersInnerAddress> {
   @override
   final Iterable<Type> types = const [
-    CustomerPlacedOrderDtoOutputOrderAddress,
-    _$CustomerPlacedOrderDtoOutputOrderAddress,
+    CustomerActiveOrdersDtoOutputOrdersInnerAddress,
+    _$CustomerActiveOrdersDtoOutputOrdersInnerAddress,
   ];
 
   @override
-  final String wireName = r'CustomerPlacedOrderDtoOutputOrderAddress';
+  final String wireName = r'CustomerActiveOrdersDtoOutputOrdersInnerAddress';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CustomerPlacedOrderDtoOutputOrderAddress object, {
+    CustomerActiveOrdersDtoOutputOrdersInnerAddress object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'location';
     yield serializers.serialize(
       object.location,
       specifiedType: const FullType(
-        CustomerPlacedOrderDtoOutputOrderAddressLocation,
+        CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
       ),
     );
     yield r'neighbourhood';
@@ -107,7 +111,7 @@ class _$CustomerPlacedOrderDtoOutputOrderAddressSerializer
         : serializers.serialize(
             object.label,
             specifiedType: const FullType.nullable(
-              CustomerPlacedOrderDtoOutputOrderAddressLabelEnum,
+              CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum,
             ),
           );
     yield r'customLabel';
@@ -153,7 +157,7 @@ class _$CustomerPlacedOrderDtoOutputOrderAddressSerializer
   @override
   Object serialize(
     Serializers serializers,
-    CustomerPlacedOrderDtoOutputOrderAddress object, {
+    CustomerActiveOrdersDtoOutputOrdersInnerAddress object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -168,7 +172,7 @@ class _$CustomerPlacedOrderDtoOutputOrderAddressSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CustomerPlacedOrderDtoOutputOrderAddressBuilder result,
+    required CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -180,10 +184,10 @@ class _$CustomerPlacedOrderDtoOutputOrderAddressSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      CustomerPlacedOrderDtoOutputOrderAddressLocation,
+                      CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
                     ),
                   )
-                  as CustomerPlacedOrderDtoOutputOrderAddressLocation;
+                  as CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation;
           result.location.replace(valueDes);
           break;
         case r'neighbourhood':
@@ -200,10 +204,10 @@ class _$CustomerPlacedOrderDtoOutputOrderAddressSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      CustomerPlacedOrderDtoOutputOrderAddressLabelEnum,
+                      CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum,
                     ),
                   )
-                  as CustomerPlacedOrderDtoOutputOrderAddressLabelEnum?;
+                  as CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum?;
           if (valueDes == null) continue;
           result.label = valueDes;
           break;
@@ -274,12 +278,12 @@ class _$CustomerPlacedOrderDtoOutputOrderAddressSerializer
   }
 
   @override
-  CustomerPlacedOrderDtoOutputOrderAddress deserialize(
+  CustomerActiveOrdersDtoOutputOrdersInnerAddress deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = CustomerPlacedOrderDtoOutputOrderAddressBuilder();
+    final result = CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
@@ -295,27 +299,29 @@ class _$CustomerPlacedOrderDtoOutputOrderAddressSerializer
 }
 
 /// Null for an unsaved one.
-class CustomerPlacedOrderDtoOutputOrderAddressLabelEnum extends EnumClass {
+class CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum
+    extends EnumClass {
   @BuiltValueEnumConst(wireName: r'home')
-  static const CustomerPlacedOrderDtoOutputOrderAddressLabelEnum home =
-      _$customerPlacedOrderDtoOutputOrderAddressLabelEnum_home;
+  static const CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum home =
+      _$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum_home;
   @BuiltValueEnumConst(wireName: r'work')
-  static const CustomerPlacedOrderDtoOutputOrderAddressLabelEnum work =
-      _$customerPlacedOrderDtoOutputOrderAddressLabelEnum_work;
+  static const CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum work =
+      _$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum_work;
   @BuiltValueEnumConst(wireName: r'other')
-  static const CustomerPlacedOrderDtoOutputOrderAddressLabelEnum other =
-      _$customerPlacedOrderDtoOutputOrderAddressLabelEnum_other;
+  static const CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum other =
+      _$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum_other;
 
-  static Serializer<CustomerPlacedOrderDtoOutputOrderAddressLabelEnum>
+  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum>
   get serializer =>
-      _$customerPlacedOrderDtoOutputOrderAddressLabelEnumSerializer;
+      _$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnumSerializer;
 
-  const CustomerPlacedOrderDtoOutputOrderAddressLabelEnum._(String name)
+  const CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum._(String name)
     : super(name);
 
-  static BuiltSet<CustomerPlacedOrderDtoOutputOrderAddressLabelEnum>
-  get values => _$customerPlacedOrderDtoOutputOrderAddressLabelEnumValues;
-  static CustomerPlacedOrderDtoOutputOrderAddressLabelEnum valueOf(
+  static BuiltSet<CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum>
+  get values =>
+      _$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnumValues;
+  static CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum valueOf(
     String name,
-  ) => _$customerPlacedOrderDtoOutputOrderAddressLabelEnumValueOf(name);
+  ) => _$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnumValueOf(name);
 }

@@ -55,6 +55,37 @@ test('OSRM runs the image development uses, for every vehicle', () => {
   assert.deepEqual(compose.networks.osrm, { name: 'foxdrop-osrm-${FOXDROP_ENV:?}' });
 });
 
+test("Centrifugo runs development's image and calls this environment's API", () => {
+  const development = parse(read('../compose.yaml'), { merge: true });
+  const centrifugo = compose.services.centrifugo;
+  assert.equal(centrifugo.image, development.services.centrifugo.image);
+  // The proxies reach the API on the environment's own network, and the
+  // server publishes to this Centrifugo (§6.1).
+  const proxies = JSON.parse(centrifugo.environment.CENTRIFUGO_PROXIES);
+  assert.deepEqual(
+    proxies.map((proxy) => [proxy.name, proxy.endpoint]),
+    [
+      ['merchant', 'http://api:3000/v1/merchant/realtime/subscribe'],
+      ['customer', 'http://api:3000/v1/customer/realtime/subscribe'],
+    ],
+  );
+  // Only the API and the worker get its settings, and only the API the
+  // token and proxy secrets.
+  const realtime = (name) =>
+    Object.keys(compose.services[name].environment)
+      .filter((key) => key.startsWith('CENTRIFUGO_'))
+      .toSorted();
+  assert.deepEqual(realtime('api'), [
+    'CENTRIFUGO_API_KEY',
+    'CENTRIFUGO_API_URL',
+    'CENTRIFUGO_PROXY_SECRET',
+    'CENTRIFUGO_TOKEN_SECRET',
+  ]);
+  assert.deepEqual(realtime('worker'), ['CENTRIFUGO_API_KEY', 'CENTRIFUGO_API_URL']);
+  for (const name of ['dispatcher', 'otp-sender']) assert.deepEqual(realtime(name), []);
+  assert.equal(compose.services.api.environment.CENTRIFUGO_API_URL, 'http://centrifugo:8000/api');
+});
+
 test('nginx replaces X-Forwarded-For with the address it sees', () => {
   // The API trusts exactly one hop; appending would let a client pick its address.
   for (const file of readdirSync(new URL('nginx/', import.meta.url))) {

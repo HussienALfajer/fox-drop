@@ -245,6 +245,17 @@ export class MerchantsService implements OnModuleInit {
       .orderBy(asc(restaurants.nameAr));
   }
 
+  // The restaurants' names by id, in one read: what an order shows of its
+  // restaurant (CU §11.1).
+  async names(ids: string[]): Promise<Map<string, { nameAr: string; nameEn: string | null }>> {
+    if (ids.length === 0) return new Map();
+    const rows = await this.database.db
+      .select({ id: restaurants.id, nameAr: restaurants.nameAr, nameEn: restaurants.nameEn })
+      .from(restaurants)
+      .where(inArray(restaurants.id, ids));
+    return new Map(rows.map(({ id, ...names }) => [id, names]));
+  }
+
   // A new restaurant, a draft until activated (AP §9.6.3).
   async createRestaurant(
     cityId: string,

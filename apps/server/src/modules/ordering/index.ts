@@ -11,10 +11,12 @@ import { SettingsModule } from '../settings/index.js';
 import { ActiveOrders } from './active-orders.js';
 import { CustomerOrdersController } from './customer-orders.controller.js';
 import { CustomerQuoteController } from './customer-quote.controller.js';
+import { MerchantOrdersController } from './merchant-orders.controller.js';
 import { OrderChannelAccess } from './order-channel.js';
 import { OrderPartitions } from './order-partitions.js';
 import { OrderTimers, OrderTimersWorker } from './order-timers.js';
 import { OrdersService } from './orders.service.js';
+export type { OrderView } from './order-views.js';
 import { OutboxRelay, OutboxRelayWorker } from './outbox-relay.js';
 import { QuoteService } from './quote.service.js';
 
@@ -33,7 +35,7 @@ import { QuoteService } from './quote.service.js';
     CaptainsModule,
     NotificationsModule,
   ],
-  controllers: [CustomerQuoteController, CustomerOrdersController],
+  controllers: [CustomerQuoteController, CustomerOrdersController, MerchantOrdersController],
   providers: [ActiveOrders, QuoteService, OrdersService, OrderTimers, OrderChannelAccess],
   exports: [QuoteService, OrdersService],
 })
@@ -51,7 +53,6 @@ export {
   type OrderRefusal,
   OrderRefusedError,
   OrdersService,
-  type PlacedOrder,
   type PlaceOrder,
 } from './orders.service.js';
 export {

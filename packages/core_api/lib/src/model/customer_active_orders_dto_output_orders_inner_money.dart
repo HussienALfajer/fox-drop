@@ -6,9 +6,9 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'customer_placed_order_dto_output_order_money.g.dart';
+part 'customer_active_orders_dto_output_orders_inner_money.g.dart';
 
-/// CustomerPlacedOrderDtoOutputOrderMoney
+/// CustomerActiveOrdersDtoOutputOrdersInnerMoney
 ///
 /// Properties:
 /// * [itemsValue] - Integer minor units (AP §8.6).
@@ -18,11 +18,11 @@ part 'customer_placed_order_dto_output_order_money.g.dart';
 /// * [rounding] - Integer minor units (AP §8.6).
 /// * [total] - Integer minor units (AP §8.6).
 @BuiltValue()
-abstract class CustomerPlacedOrderDtoOutputOrderMoney
+abstract class CustomerActiveOrdersDtoOutputOrdersInnerMoney
     implements
         Built<
-          CustomerPlacedOrderDtoOutputOrderMoney,
-          CustomerPlacedOrderDtoOutputOrderMoneyBuilder
+          CustomerActiveOrdersDtoOutputOrdersInnerMoney,
+          CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder
         > {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'itemsValue')
@@ -47,34 +47,37 @@ abstract class CustomerPlacedOrderDtoOutputOrderMoney
   @BuiltValueField(wireName: r'total')
   String get total;
 
-  CustomerPlacedOrderDtoOutputOrderMoney._();
+  CustomerActiveOrdersDtoOutputOrdersInnerMoney._();
 
-  factory CustomerPlacedOrderDtoOutputOrderMoney([
-    void updates(CustomerPlacedOrderDtoOutputOrderMoneyBuilder b),
-  ]) = _$CustomerPlacedOrderDtoOutputOrderMoney;
+  factory CustomerActiveOrdersDtoOutputOrdersInnerMoney([
+    void updates(CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder b),
+  ]) = _$CustomerActiveOrdersDtoOutputOrdersInnerMoney;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerPlacedOrderDtoOutputOrderMoneyBuilder b) => b;
+  static void _defaults(
+    CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerPlacedOrderDtoOutputOrderMoney> get serializer =>
-      _$CustomerPlacedOrderDtoOutputOrderMoneySerializer();
+  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerMoney>
+  get serializer => _$CustomerActiveOrdersDtoOutputOrdersInnerMoneySerializer();
 }
 
-class _$CustomerPlacedOrderDtoOutputOrderMoneySerializer
-    implements PrimitiveSerializer<CustomerPlacedOrderDtoOutputOrderMoney> {
+class _$CustomerActiveOrdersDtoOutputOrdersInnerMoneySerializer
+    implements
+        PrimitiveSerializer<CustomerActiveOrdersDtoOutputOrdersInnerMoney> {
   @override
   final Iterable<Type> types = const [
-    CustomerPlacedOrderDtoOutputOrderMoney,
-    _$CustomerPlacedOrderDtoOutputOrderMoney,
+    CustomerActiveOrdersDtoOutputOrdersInnerMoney,
+    _$CustomerActiveOrdersDtoOutputOrdersInnerMoney,
   ];
 
   @override
-  final String wireName = r'CustomerPlacedOrderDtoOutputOrderMoney';
+  final String wireName = r'CustomerActiveOrdersDtoOutputOrdersInnerMoney';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CustomerPlacedOrderDtoOutputOrderMoney object, {
+    CustomerActiveOrdersDtoOutputOrdersInnerMoney object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'itemsValue';
@@ -112,7 +115,7 @@ class _$CustomerPlacedOrderDtoOutputOrderMoneySerializer
   @override
   Object serialize(
     Serializers serializers,
-    CustomerPlacedOrderDtoOutputOrderMoney object, {
+    CustomerActiveOrdersDtoOutputOrdersInnerMoney object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -127,7 +130,7 @@ class _$CustomerPlacedOrderDtoOutputOrderMoneySerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CustomerPlacedOrderDtoOutputOrderMoneyBuilder result,
+    required CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -197,12 +200,12 @@ class _$CustomerPlacedOrderDtoOutputOrderMoneySerializer
   }
 
   @override
-  CustomerPlacedOrderDtoOutputOrderMoney deserialize(
+  CustomerActiveOrdersDtoOutputOrdersInnerMoney deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = CustomerPlacedOrderDtoOutputOrderMoneyBuilder();
+    final result = CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

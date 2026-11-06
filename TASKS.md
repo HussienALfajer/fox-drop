@@ -4,26 +4,23 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 1.9, real time (`docs/roadmap.md`, Phase 1): the outbox relay, Centrifugo tokens and channels; the new order rings in the restaurant app and the customer's order screen updates, with polling as fallback.
+Slice 1.10, accept and ready (`docs/roadmap.md`, Phase 1): acceptance with the prep time, the promised time, the prep countdown, «الطلب جاهز».
 
-- **Specs:** architecture §5.5 (the outbox relay, at least once), §6.1–6.3 (Centrifugo, channels, heartbeats and fallbacks), §4.4 (the worker), E4; RA §4.3 (real-time connection and waking up; clients ignore events older than the version they show), RA §4.4 and §16 (the new order's ring), RA §8 (the incoming order); CU §4.3 (real time and polling), CU §11 (the order screen); AP §8.3 (the apology when the system cancels).
-- **Branch:** `feat/realtime`.
-- **Owner decisions 2026-11-06:** server and API only, as slices 1.7 and 1.8 (the Flutter screens wait for the apps' sign-in screens and the design); two pull requests; push (FCM) in a later slice; presence and the heartbeats (RA §4.3, §4.6, architecture §6.3) later, with the receiving-device rule.
-- **Plan:**
-  - Pull request 1, `feat/realtime`: the relay, the tokens and the proxy.
-    - [x] The failing tests first (`outbox-relay.test.ts`): each unpublished row published at least once and marked, in id order but never by a «last id» mark; a row committed late still published; a failed publish kept for a later run; relays side by side never publish a row twice at once.
-    - [x] The `notifications` module: connection tokens per app (`POST /v1/{merchant,customer}/realtime/token`), the subscription proxy (`@RealtimeProxy()`, `X-Centrifugo-Proxy-Secret`) checking the session and the channel (`merchant:{restaurant_id}`, `order:{order_id}`), the publisher; Centrifugo's channels in `infra/centrifugo/config.yaml`, the local `compose.yaml` and `.env.example`.
-    - [x] The relay in the worker: a pg-boss job with every transition, a run at start; end to end through a real Centrifugo to a `centrifuge` client (`order-realtime.test.ts`).
-    - [x] Staging prepared: `provision.sh` adds the Centrifugo secrets, nginx proxies `/connection/websocket` to port 3113.
-    - [x] `checker` and the `reviewer` (no blocking finding; the seven should-fix ones fixed in `fix(realtime): the review…`).
-    - [ ] Pull request 42 merged (GitHub auto-merge with a merge commit once CI passes); then `provision.sh` on staging from `main` (the `deploy` skill), which adds the Centrifugo secrets and the nginx route.
-  - **Stopped at:** pull request 42 open with auto-merge on, waiting for CI. Next: once it is merged, provision staging, then pull request 2 from an up-to-date `main`.
-  - Pull request 2, `feat/realtime-reads`: the polling fallback and Centrifugo on staging.
-    - [ ] The order reads for the polling fallback with the order version: the restaurant's incoming orders (RA §8) and the customer's order (CU §11).
-    - [ ] Centrifugo in `infra/compose.yaml` with the server's `CENTRIFUGO_*` (its proxies call `http://api:3000` on the environment's network); deploy and check a connection on staging. Staging's outbox has rows from before real time: the first run would publish old `order.placed` events to restaurant devices, so decide first whether to mark the rows older than the channels' history (10 minutes) published without sending them.
-    - [ ] `checker`, the `reviewer`, the pull request, the handover to slice 1.10.
+- **Specs:** RA §8.5 (accept: the prep time chooser, its settings and the busy-mode minutes), §8.7 (preparing: the prep countdown and lateness), §8.8 (ready), §8.2–8.4 (the board's columns, sorting, timers and badges), §18 (who may run each command and when), §4.7 (idempotency keys, state conflicts answered with the current state); AP §8.1 (the states), §8.3 (the timers: the search start, prep lateness, no captain after ready); CU §11.1–11.2 (the customer's texts and «يصل حوالي {الساعة}»); `docs/domain/03-timers.md` (the promised time).
+- **Branch:** `feat/accept-and-ready`.
+- **Ask the owner first:** the split into pull requests, and whether this slice is again server and API only (the Flutter screens still wait for the apps' sign-in screens and the design), as in slices 1.7–1.9.
+- **Plan (to confirm with the owner):**
+  - [ ] The failing tests first: accepting a `placed` order at its version (`accepted`, version 2, the prep time within the floor, ceiling and step, the promised time, the outbox row); a second accept from another device answers the current state (RA §4.7); an accept after the automatic cancellation is refused with the current state; the automatic cancellation job then leaves the accepted order alone.
+  - [ ] `POST /v1/merchant/orders/{orderId}/accept` with `Idempotency-Key` (owners and cashiers, RA §18), through `lockOrder` and `recordTransition`; the search-start moment and the prep timers as pg-boss jobs in the same transaction (AP §8.3).
+  - [ ] `POST /v1/merchant/orders/{orderId}/ready` (`accepted` to `ready`, no undo), with the no-captain-after-ready timer (AP §8.3) left to dispatch if it needs the captain.
+  - [ ] The board and the customer's order show the prep time, the promised time and the ready time; the relay publishes `order.accepted` and `order.ready`.
+  - [ ] `checker`, the `reviewer`, the pull request, the handover to slice 1.11.
 
 ## Notes from earlier slices
+
+- Slice 1.9 added real time (`apps/server/src/modules/notifications/CLAUDE.md`, `apps/server/src/modules/ordering/CLAUDE.md`; owner decisions 2026-11-06; pull requests 42 and 43): the outbox relay in the worker publishes every transition to `merchant:{restaurant_id}` and `order:{order_id}` through Centrifugo, at least once, with the order version; the apps get connection tokens from `POST /v1/{merchant,customer}/realtime/token`, and Centrifugo asks the API about every subscription. The reads give the full state: `GET /v1/merchant/orders` (the board, with `acceptAlertAt` and `autoCancelAt`), `GET /v1/customer/orders/active` and `GET /v1/customer/orders/{orderId}`. Each environment runs its own Centrifugo (`infra/compose.yaml`).
+- For slice 1.10: a new transition type goes into `OrderEventType` (`order-events.ts`) and the relay publishes it as is; the reads must show each new field to the right party only (each route picks its fields). The board's owner-only money lines (RA §8.4, §12.1) and the option groups' names on a line are still missing.
+- Not built yet for real time: push (FCM), presence and the restaurant devices' heartbeats (Centrifugo's ping interval is still its default 25 s, the spec's 20 s), the `captain:`, `customer:`, `ops:` and `ops_map:` channels, a Valkey engine for Centrifugo.
 
 - Owner decision 2026-11-06 (CU §10.7 item 6): placing checks the two active-order limits, the rate snapshot and the number under the locks of one transaction, and the quote's other checks just before it; the restaurant's acceptance is the last safeguard (`apps/server/src/modules/ordering/CLAUDE.md`, «What is atomic»).
 - Slice 1.8 placed the order (`apps/server/src/modules/ordering/CLAUDE.md`, owner decisions 2026-11-06; pull requests 38, 39 and the capacity check's): `POST /v1/customer/orders` with an `Idempotency-Key` re-runs the quote, then in one transaction takes the customer's and the restaurant's locks, counts both limits (D23, RA §7.4), takes the rate snapshot and numbers the order per city from 10001. Orders, lines and events are partitioned by month. Every transition writes its `order_events` row and an `ordering.outbox` row (`recordTransition`), and timers are pg-boss jobs sent in the same transaction (`Jobs`, `inTransaction`). The automatic cancellation runs in the worker (`merchant_auto_cancel`).

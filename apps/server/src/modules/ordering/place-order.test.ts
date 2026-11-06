@@ -9,7 +9,11 @@ import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
 import { FxService } from '../fx/index.js';
 import { GeoService, type Point } from '../geo/index.js';
-import { CODE_SENDER, type DevelopmentCodeSender } from '../identity/index.js';
+import {
+  CODE_SENDER,
+  type DevelopmentCodeSender,
+  MerchantAccountsService,
+} from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 
@@ -103,6 +107,8 @@ beforeAll(async () => {
       bySystem,
     );
   }
+  // Every customer and restaurant user here signs in from one address.
+  await settings.update('otp.ip_hourly_max', {}, 1000, bySystem);
   // The capacity check has its own tests (capacity-check.test.ts).
   await settings.update('dispatch.capacity_check', { cityId: azaz }, false, bySystem);
   const geo = app.get(GeoService);
@@ -205,7 +211,9 @@ describe('POST /v1/customer/orders (CU §10.7)', () => {
     expect(order).toMatchObject({
       status: 'placed',
       number: '10001',
-      restaurantId: restaurant,
+      version: 1,
+      restaurant: { id: restaurant, nameAr: 'مطعم الاختبار', nameEn: null },
+      cancellation: null,
       currency: 'TRY',
       money: quote.money,
       payIn: 'USD',
@@ -579,5 +587,157 @@ describe('placing, at the edges (CU §10.7, architecture §5.3)', () => {
       },
     });
     expect(answer.statusCode).toBe(401);
+  });
+});
+
+// A signed-in restaurant user of the restaurant: the headers of its calls.
+async function merchantSignedIn(
+  restaurantId: string,
+  role: 'owner' | 'cashier' = 'cashier',
+): Promise<Record<string, string>> {
+  const phone = `+9639${randomInt(100_000_000).toString().padStart(8, '0')}`;
+  await app
+    .get(MerchantAccountsService)
+    .addAccount(restaurantId, { role, name: role, phone }, change);
+  const deviceId = randomUUID();
+  await app.inject({ method: 'POST', url: '/v1/merchant/auth/code', payload: { phone, deviceId } });
+  const code = app.get<DevelopmentCodeSender>(CODE_SENDER).lastCode(phone);
+  const answer = await app.inject({
+    method: 'POST',
+    url: '/v1/merchant/auth/sign-in',
+    payload: { phone, deviceId, code },
+  });
+  return { authorization: `Bearer ${answer.json().accessToken}` };
+}
+
+describe("the order's reads, for the screens and the polling fallback (CU §4.3, §11; RA §4.3, §8)", () => {
+  it("answers the customer's own order with its version, and 404 for another's", async () => {
+    const headers = await signedIn();
+    const { order: placed } = (await place(headers)).json();
+    const read = await app.inject({
+      method: 'GET',
+      url: `/v1/customer/orders/${placed.id}`,
+      headers,
+    });
+    expect(read.statusCode).toBe(200);
+    expect(read.json().order).toEqual(placed);
+    // CU §11.1: the total with its equivalents, by the order's own rates
+    // (28 000 TRY at 40 TRY a dollar is 7.00 USD on the 0.50 unit).
+    expect(placed.equivalents).toEqual([{ currency: 'USD', amount: '700' }]);
+
+    const other = await signedIn();
+    const refused = await app.inject({
+      method: 'GET',
+      url: `/v1/customer/orders/${placed.id}`,
+      headers: other,
+    });
+    expect(refused.statusCode).toBe(404);
+    expect(refused.json().error).toBe('unknown_order');
+    const malformed = await app.inject({ method: 'GET', url: '/v1/customer/orders/x', headers });
+    expect(malformed.statusCode).toBe(400);
+
+    // CU §11.9: a cancelled order shows why, at its new version.
+    await end(placed.id);
+    const cancelled = (
+      await app.inject({ method: 'GET', url: `/v1/customer/orders/${placed.id}`, headers })
+    ).json().order;
+    expect(cancelled).toMatchObject({
+      status: 'cancelled',
+      version: 2,
+      cancellation: { reason: 'customer', at: expect.any(String) },
+    });
+  });
+
+  it("lists the customer's orders until they end, for the active-order bar (CU §6)", async () => {
+    const headers = await signedIn();
+    const empty = await app.inject({ method: 'GET', url: '/v1/customer/orders/active', headers });
+    expect(empty.json()).toEqual({ orders: [] });
+    const settings = app.get(SettingsService);
+    await settings.update('customer.new_max_active_orders', { cityId: azaz }, 2, bySystem);
+    try {
+      const older = (await place(headers)).json().order;
+      const newer = (await place(headers)).json().order;
+      const active = await app.inject({
+        method: 'GET',
+        url: '/v1/customer/orders/active',
+        headers,
+      });
+      expect(active.json().orders.map((each: { id: string }) => each.id)).toEqual([
+        newer.id,
+        older.id,
+      ]);
+      await end(older.id);
+      const left = await app.inject({ method: 'GET', url: '/v1/customer/orders/active', headers });
+      expect(left.json().orders.map((each: { id: string }) => each.id)).toEqual([newer.id]);
+      await end(newer.id);
+    } finally {
+      await settings.update('customer.new_max_active_orders', { cityId: azaz }, 1, bySystem);
+    }
+    const after = await app.inject({ method: 'GET', url: '/v1/customer/orders/active', headers });
+    expect(after.json()).toEqual({ orders: [] });
+  });
+
+  it("answers the restaurant's board, oldest first, without the customer's total or address", async () => {
+    const { id: own, item } = await restaurantWith('مطعم اللوحة');
+    const lines = cart(item, 1);
+    const cook = await merchantSignedIn(own);
+    const completed = await signedIn();
+    const saved = await app.inject({
+      method: 'PUT',
+      url: '/v1/customer/profile',
+      headers: completed,
+      payload: {
+        firstName: 'سامر',
+        lastName: 'الحلبي',
+        gender: 'male',
+        birthday: null,
+        acceptTerms: true,
+      },
+    });
+    expect(saved.statusCode).toBe(200);
+    const first = (await place(completed, { restaurantId: own, lines })).json().order;
+    const second = (await place(await signedIn(), { restaurantId: own, lines })).json().order;
+    const elsewhere = (await place(await signedIn())).json().order;
+
+    const board = await app.inject({ method: 'GET', url: '/v1/merchant/orders', headers: cook });
+    expect(board.statusCode).toBe(200);
+    const { orders } = board.json();
+    expect(orders.map((each: { id: string }) => each.id)).toEqual([first.id, second.id]);
+    // A customer who has not completed the account has no name yet.
+    expect(orders[1].customer).toEqual({ firstName: null, neighbourhood: 'المركز' });
+    expect(orders[0]).toEqual({
+      id: first.id,
+      number: first.number,
+      status: 'placed',
+      version: 1,
+      placedAt: first.placedAt,
+      // RA §8.2–8.3: order.merchant_accept_alert_min (3) and
+      // order.merchant_auto_cancel_min (7) after placing.
+      acceptAlertAt: new Date(Date.parse(first.placedAt) + 3 * 60_000).toISOString(),
+      autoCancelAt: new Date(Date.parse(first.placedAt) + 7 * 60_000).toISOString(),
+      // The first name only, never the last name (RA §8.4).
+      customer: { firstName: 'سامر', neighbourhood: 'المركز' },
+      note: 'الرجاء الاتصال عند الوصول',
+      lines: [{ name: 'شاورما', quantity: 1, options: [], note: null, lineTotal: '12000' }],
+      currency: 'TRY',
+      itemsValue: '12000',
+    });
+
+    // RA §8.2: an order leaves the board when it ends.
+    await end(first.id);
+    const after = (
+      await app.inject({ method: 'GET', url: '/v1/merchant/orders', headers: cook })
+    ).json();
+    expect(after.orders.map((each: { id: string }) => each.id)).toEqual([second.id]);
+    await Promise.all([end(second.id), end(elsewhere.id)]);
+  });
+
+  it("refuses a terminated restaurant's board with 403 restaurant_terminated (RA §5.5)", async () => {
+    const { id: closing } = await restaurantWith('مطعم يغلق');
+    const owner = await merchantSignedIn(closing, 'owner');
+    await merchants.setAccountStatus(closing, 'terminated', change);
+    const answer = await app.inject({ method: 'GET', url: '/v1/merchant/orders', headers: owner });
+    expect(answer.statusCode).toBe(403);
+    expect(answer.json().error).toBe('restaurant_terminated');
   });
 });

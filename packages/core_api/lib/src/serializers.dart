@@ -39,6 +39,15 @@ import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart'
 import 'package:core_api/src/model/change_roles_dto.dart';
 import 'package:core_api/src/model/complete_setup_dto.dart';
 import 'package:core_api/src/model/create_user_dto.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address_location.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_estimate.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_lines_inner.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_money.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_restaurant.dart';
 import 'package:core_api/src/model/customer_address_deleted_dto_output.dart';
 import 'package:core_api/src/model/customer_address_dto_output.dart';
 import 'package:core_api/src/model/customer_address_fields_dto.dart';
@@ -51,15 +60,10 @@ import 'package:core_api/src/model/customer_location_dto_output.dart';
 import 'package:core_api/src/model/customer_location_dto_output_zone.dart';
 import 'package:core_api/src/model/customer_new_address_dto.dart';
 import 'package:core_api/src/model/customer_new_address_dto_location.dart';
+import 'package:core_api/src/model/customer_order_dto_output.dart';
+import 'package:core_api/src/model/customer_order_dto_output_order.dart';
 import 'package:core_api/src/model/customer_place_order_dto.dart';
 import 'package:core_api/src/model/customer_place_order_dto_unsaved_address.dart';
-import 'package:core_api/src/model/customer_placed_order_dto_output.dart';
-import 'package:core_api/src/model/customer_placed_order_dto_output_order.dart';
-import 'package:core_api/src/model/customer_placed_order_dto_output_order_address.dart';
-import 'package:core_api/src/model/customer_placed_order_dto_output_order_address_location.dart';
-import 'package:core_api/src/model/customer_placed_order_dto_output_order_estimate.dart';
-import 'package:core_api/src/model/customer_placed_order_dto_output_order_lines_inner.dart';
-import 'package:core_api/src/model/customer_placed_order_dto_output_order_money.dart';
 import 'package:core_api/src/model/customer_profile_dto_output.dart';
 import 'package:core_api/src/model/customer_profile_dto_output_profile.dart';
 import 'package:core_api/src/model/customer_quote_dto_output.dart';
@@ -112,6 +116,11 @@ import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_ite
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_option_groups_inner_options_inner.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_price.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_switched_off.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner_options_inner.dart';
 import 'package:core_api/src/model/merchant_refresh_dto.dart';
 import 'package:core_api/src/model/merchant_restaurant_dto_output.dart';
 import 'package:core_api/src/model/merchant_session_dto_output.dart';
@@ -167,6 +176,15 @@ part 'serializers.g.dart';
   ChangeRolesDto,
   CompleteSetupDto,
   CreateUserDto,
+  CustomerActiveOrdersDtoOutput,
+  CustomerActiveOrdersDtoOutputOrdersInner,
+  CustomerActiveOrdersDtoOutputOrdersInnerAddress,
+  CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
+  CustomerActiveOrdersDtoOutputOrdersInnerCancellation,
+  CustomerActiveOrdersDtoOutputOrdersInnerEstimate,
+  CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
+  CustomerActiveOrdersDtoOutputOrdersInnerMoney,
+  CustomerActiveOrdersDtoOutputOrdersInnerRestaurant,
   CustomerAddressDeletedDtoOutput,
   CustomerAddressDtoOutput,
   CustomerAddressFieldsDto,
@@ -179,15 +197,10 @@ part 'serializers.g.dart';
   CustomerLocationDtoOutputZone,
   CustomerNewAddressDto,
   CustomerNewAddressDtoLocation,
+  CustomerOrderDtoOutput,
+  CustomerOrderDtoOutputOrder,
   CustomerPlaceOrderDto,
   CustomerPlaceOrderDtoUnsavedAddress,
-  CustomerPlacedOrderDtoOutput,
-  CustomerPlacedOrderDtoOutputOrder,
-  CustomerPlacedOrderDtoOutputOrderAddress,
-  CustomerPlacedOrderDtoOutputOrderAddressLocation,
-  CustomerPlacedOrderDtoOutputOrderEstimate,
-  CustomerPlacedOrderDtoOutputOrderLinesInner,
-  CustomerPlacedOrderDtoOutputOrderMoney,
   CustomerProfileDtoOutput,
   CustomerProfileDtoOutputProfile,
   CustomerQuoteDtoOutput,
@@ -240,6 +253,11 @@ part 'serializers.g.dart';
   MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner,
   MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice,
   MerchantMenuDtoOutputCategoriesInnerSwitchedOff,
+  MerchantOrdersDtoOutput,
+  MerchantOrdersDtoOutputOrdersInner,
+  MerchantOrdersDtoOutputOrdersInnerCustomer,
+  MerchantOrdersDtoOutputOrdersInnerLinesInner,
+  MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner,
   MerchantRefreshDto,
   MerchantRestaurantDtoOutput,
   MerchantSessionDtoOutput,
@@ -284,6 +302,17 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(
+                MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CustomerRestaurantPageDtoOutputMenuInnerItemsInner),
             ]),
             () =>
@@ -320,6 +349,12 @@ Serializers serializers =
               FullType(RoleMatrixDtoOutputRolesInner),
             ]),
             () => ListBuilder<RoleMatrixDtoOutputRolesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+            ]),
+            () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -395,6 +430,27 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(CustomerActiveOrdersDtoOutputOrdersInnerLinesInner),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantOrdersDtoOutputOrdersInnerLinesInner),
+            ]),
+            () => ListBuilder<MerchantOrdersDtoOutputOrdersInnerLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantOrdersDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<MerchantOrdersDtoOutputOrdersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(
                 MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner,
               ),
@@ -403,12 +459,6 @@ Serializers serializers =
                 ListBuilder<
                   MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
                 >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
-              FullType(CustomerPlacedOrderDtoOutputOrderLinesInner),
-            ]),
-            () => ListBuilder<CustomerPlacedOrderDtoOutputOrderLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -436,6 +486,12 @@ Serializers serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(String)]),
             () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CustomerActiveOrdersDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<CustomerActiveOrdersDtoOutputOrdersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
