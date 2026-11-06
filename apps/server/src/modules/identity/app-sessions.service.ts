@@ -43,10 +43,20 @@ export interface AppTokens {
 // many seconds of its first use is a retry whose answer was lost, not a reuse.
 export const REFRESH_RETRY_GRACE_SECONDS = 10;
 
-// Any refusal of a refresh token: unknown, already used, or its session ended.
+// Any refusal of a refresh token: unknown, already used, or its session
+// ended. other_device: a captain signed in on another device (CA §4.9, K5), so
+// the app shows «سُجّل دخولك من جهاز آخر».
 export class RefreshRefusedError extends Error {
-  constructor() {
+  constructor(readonly reason: 'other_device' | null = null) {
     super('refresh refused');
+  }
+}
+
+// A valid access token whose session ended because the captain signed in on
+// another device (CA §4.9, K5).
+export class SignedInElsewhereError extends Error {
+  constructor() {
+    super('signed in on another device');
   }
 }
 
@@ -127,6 +137,7 @@ export class AppSessionsService {
           party: appSessions.party,
           accountId: appSessions.accountId,
           endedAt: appSessions.endedAt,
+          endReason: appSessions.endReason,
           lastUsedTokenId: appSessions.lastUsedTokenId,
         })
         .from(appSessions)
@@ -140,6 +151,7 @@ export class AppSessionsService {
           ),
         )
         .for('update');
+      if (session?.endReason === 'other_device') return 'other_device' as const;
       if (!session || session.endedAt) return null;
       const [token] = await tx
         .select({
@@ -189,6 +201,7 @@ export class AppSessionsService {
       const { id, party, accountId } = session;
       return this.issue(tx, { id, party, accountId }, signingKey, now);
     });
+    if (result === 'other_device') throw new RefreshRefusedError('other_device');
     if (!result) throw new RefreshRefusedError();
     return result;
   }
@@ -204,17 +217,22 @@ export class AppSessionsService {
     const claims = await this.keys.verify(accessToken, party, now);
     if (!claims) return null;
     const [open] = await this.database.db
-      .select({ id: appSessions.id, deviceId: appSessions.deviceId })
+      .select({
+        id: appSessions.id,
+        deviceId: appSessions.deviceId,
+        endedAt: appSessions.endedAt,
+        endReason: appSessions.endReason,
+      })
       .from(appSessions)
       .where(
         and(
           eq(appSessions.id, claims.sessionId),
           eq(appSessions.party, party),
           eq(appSessions.accountId, claims.accountId),
-          isNull(appSessions.endedAt),
         ),
       );
-    if (!open) return null;
+    if (open?.endReason === 'other_device') throw new SignedInElsewhereError();
+    if (!open || open.endedAt) return null;
     let merchant: MerchantAccount | null = null;
     if (party === 'merchant') {
       // RA §5.5: a cashier's access ends with the restaurant's termination,

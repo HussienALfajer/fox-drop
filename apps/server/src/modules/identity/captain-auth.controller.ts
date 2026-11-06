@@ -53,10 +53,11 @@ class CaptainSessionDto extends createZodDto(z.object({ ...user, sessionId: z.uu
 class CaptainSignedOutDto extends createZodDto(z.object({ status: z.literal('signed_out') })) {}
 
 // CA §4.9: the captain app's sign-in with a WhatsApp code, its tokens and
-// sign-out, on the same engine as the other apps. There is no self-signup: a
-// number of no captain is refused before any code is sent. A sign-in on a new
-// device signs the old one out (K5): its next call answers 401, and the app
-// shows «سُجّل دخولك من جهاز آخر».
+// sign-out, on the same engine as the other apps. There is no self-signup:
+// the code request answers alike for every number, and only a captain who may
+// sign in gets a code (owner decision 2026-11-06). A sign-in on a new device
+// signs the old one out (K5): its next call answers 401 other_device, and the
+// app shows «سُجّل دخولك من جهاز آخر».
 @CaptainController('auth')
 export class CaptainAuthController {
   constructor(
@@ -80,7 +81,6 @@ export class CaptainAuthController {
       );
       return { ...sent, expiresAt: sent.expiresAt.toISOString() };
     } catch (error) {
-      if (error instanceof CaptainSignInRefusedError) throw signInRefused(error);
       codeRequestAnswer(error, reply);
     }
   }
@@ -119,7 +119,13 @@ export class CaptainAuthController {
     try {
       return tokensBody(await this.sessions.refresh(body.refreshToken));
     } catch (error) {
-      if (error instanceof RefreshRefusedError) throw new UnauthorizedException();
+      if (error instanceof RefreshRefusedError) {
+        throw new UnauthorizedException(
+          error.reason === null
+            ? undefined
+            : { statusCode: HttpStatus.UNAUTHORIZED, error: error.reason },
+        );
+      }
       throw error;
     }
   }
@@ -142,8 +148,9 @@ export class CaptainAuthController {
   }
 }
 
-// CA §4.9: 403 with the reason the app shows: not_registered (the number
-// belongs to no captain) or contract_ended «انتهى تعاقدك مع FOX DROP.».
+// CA §4.9: 403 with the reason, once the right code proved the number: the
+// contract ended (contract_ended «انتهى تعاقدك مع FOX DROP.») or the number
+// stopped belonging to a captain since the code was sent (not_registered).
 function signInRefused(error: CaptainSignInRefusedError): ForbiddenException {
   return new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: error.refusal });
 }

@@ -148,12 +148,29 @@ describe('the captain app sign-in (CA §4.9)', () => {
     expect(current.json()).toMatchObject({ accountId, captainId });
   });
 
-  it('refuses a number of no captain before sending any code', async () => {
-    const phone = newPhone();
-    const answer = await requestCode(phone, randomUUID());
-    expect(answer.statusCode).toBe(403);
-    expect(answer.json()).toMatchObject({ error: 'not_registered' });
-    expect(sender.lastCode(phone)).toBeUndefined();
+  it('answers a number of no captain as any other, and sends it nothing (owner decision 2026-11-06)', async () => {
+    const { phone: registered } = await captain();
+    const unknown = newPhone();
+    const deviceId = randomUUID();
+    const answers = [await requestCode(registered, deviceId), await requestCode(unknown, deviceId)];
+    expect(answers.map((answer) => answer.statusCode)).toEqual([200, 200]);
+    expect(Object.keys(answers[1]!.json()).sort()).toEqual(Object.keys(answers[0]!.json()).sort());
+    expect(sender.lastCode(registered)).toEqual(expect.any(String));
+    expect(sender.lastCode(unknown)).toBeUndefined();
+    // The resend wait holds alike, so a second request tells nothing either.
+    const again = [await requestCode(registered, deviceId), await requestCode(unknown, deviceId)];
+    expect(again.map((answer) => [answer.statusCode, answer.json().error])).toEqual([
+      [429, 'resend_wait'],
+      [429, 'resend_wait'],
+    ]);
+    // A guessed code is a wrong code.
+    const guessed = await app.inject({
+      method: 'POST',
+      url: '/v1/captain/auth/sign-in',
+      payload: { phone: unknown, deviceId, code: '123456' },
+    });
+    expect(guessed.statusCode).toBe(400);
+    expect(guessed.json()).toMatchObject({ error: 'wrong_code' });
   });
 
   it('signs out the other device when the captain signs in on a new one (K5)', async () => {
@@ -164,7 +181,10 @@ describe('the captain app sign-in (CA §4.9)', () => {
       "UPDATE identity.app_sign_in_codes SET created_at = created_at - interval '2 minutes'",
     );
     const second = (await signIn(phone)).json();
-    expect((await session(first.accessToken)).statusCode).toBe(401);
+    // The old device can tell why: «سُجّل دخولك من جهاز آخر».
+    const old = await session(first.accessToken);
+    expect(old.statusCode).toBe(401);
+    expect(old.json()).toMatchObject({ error: 'other_device' });
     expect((await session(second.accessToken)).statusCode).toBe(200);
     const refreshed = await app.inject({
       method: 'POST',
@@ -172,6 +192,7 @@ describe('the captain app sign-in (CA §4.9)', () => {
       payload: { refreshToken: first.refreshToken },
     });
     expect(refreshed.statusCode).toBe(401);
+    expect(refreshed.json()).toMatchObject({ error: 'other_device' });
     const { rows } = await sql.query(
       "SELECT end_reason FROM identity.app_sessions WHERE party = 'captain' AND account_id = $1 AND ended_at IS NOT NULL",
       [first.accountId],
@@ -194,9 +215,15 @@ describe('the captain app sign-in (CA §4.9)', () => {
       payload: { refreshToken },
     });
     expect(refreshed.statusCode).toBe(401);
+    expect((await session(accessToken)).json().error).toBeUndefined();
+    // Past the resend wait: no code reaches a terminated captain.
+    await sql.query(
+      "UPDATE identity.app_sign_in_codes SET created_at = created_at - interval '2 minutes'",
+    );
+    const before = sender.lastCode(phone);
     const code = await requestCode(phone, randomUUID());
-    expect(code.statusCode).toBe(403);
-    expect(code.json()).toMatchObject({ error: 'contract_ended' });
+    expect(code.statusCode).toBe(200);
+    expect(sender.lastCode(phone)).toBe(before);
   });
 
   it('refuses a captain token on the other apps, and theirs here', async () => {

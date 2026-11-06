@@ -135,11 +135,15 @@ export class AppSignInService {
       const merchant = await this.merchantAccounts.signInAccount(phoneHash);
       if (typeof merchant === 'string') throw new MerchantSignInRefusedError(merchant);
     }
-    // CA §4.9: likewise a captain, never created by sign-in.
-    if (request.party === 'captain') {
-      const captain = await this.captainAccounts.signInAccount(phoneHash, now);
-      if (typeof captain === 'string') throw new CaptainSignInRefusedError(captain);
-    }
+    // A captain is never created by sign-in, and the answer never tells
+    // whether a number belongs to a captain (architecture §8.3.2; owner
+    // decision 2026-11-06): every step runs, the limits and the resend wait
+    // included, but a number that cannot sign in gets nothing (§8.3.3). The
+    // joining slice sends codes to new numbers for the application form
+    // (CA §5.1).
+    const silent =
+      request.party === 'captain' &&
+      typeof (await this.captainAccounts.signInAccount(phoneHash, now)) === 'string';
 
     return this.database.db.transaction(async (tx) => {
       // One request per number at a time, so the resend wait and the one open
@@ -190,7 +194,7 @@ export class AppSignInService {
         // Sent last, so a refusal rolls the new code back and keeps the old.
         // The otp-sender queue will take the request through the outbox in
         // this transaction instead (architecture §8.3.1, E3).
-        const sent = await this.sender.send(request.phone, code);
+        const sent = silent ? 'sent' : await this.sender.send(request.phone, code);
         if (sent !== 'sent') throw new CodeRequestRefusedError(sent);
         return { channel: 'whatsapp' as const, resendAfterSec, expiresAt };
       } catch (error) {

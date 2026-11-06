@@ -143,10 +143,36 @@ describe('the availability routes (CA §7)', () => {
     expect(refused.statusCode).toBe(400);
   });
 
-  it('needs a captain token', async () => {
-    expect((await app.inject({ method: 'GET', url: '/v1/captain/availability' })).statusCode).toBe(
-      401,
-    );
+  it('needs a captain token: none, or a customer token, answers 401 on every captain route', async () => {
+    const phone = `+9639${randomInt(100_000_000).toString().padStart(8, '0')}`;
+    const deviceId = randomUUID();
+    await app.inject({
+      method: 'POST',
+      url: '/v1/customer/auth/code',
+      payload: { phone, deviceId },
+    });
+    const code = app.get<DevelopmentCodeSender>(CODE_SENDER).lastCode(phone);
+    const customer = await app.inject({
+      method: 'POST',
+      url: '/v1/customer/auth/sign-in',
+      payload: { phone, deviceId, code },
+    });
+    const headers = { authorization: `Bearer ${customer.json().accessToken}` };
+    const routes: ['GET' | 'POST', string, object?][] = [
+      ['GET', '/v1/captain/auth/session'],
+      ['GET', '/v1/captain/availability'],
+      [
+        'POST',
+        '/v1/captain/availability/online',
+        { appVersion: '1.0.0', simulatedLocation: false },
+      ],
+      ['POST', '/v1/captain/availability/offline'],
+      ['POST', '/v1/captain/location', { points: [point(new Date())] }],
+    ];
+    for (const [method, url, payload] of routes) {
+      expect((await call(headers, method, url, payload)).statusCode, url).toBe(401);
+      expect((await call({}, method, url, payload)).statusCode, url).toBe(401);
+    }
   });
 });
 
@@ -173,10 +199,11 @@ describe('the location route (CA §4.3, architecture §7.3)', () => {
     expect(await valkey.geopos(`captains:online:${azaz}`, captainId)).toHaveLength(1);
   });
 
-  it('stops offers while the newest point is simulated', async () => {
-    const { headers } = await signedIn();
+  it('stops offers while the newest point is simulated, never showing it as the live position', async () => {
+    const { captainId, headers } = await signedIn();
     await goOnline(headers);
     await sendPoints(headers, [point(new Date(Date.now() + 1_000), true)]);
+    expect(await valkey.exists(`captains:position:${captainId}`)).toBe(0);
     expect((await call(headers, 'GET', '/v1/captain/availability')).json().availability).toEqual({
       state: 'not_receiving_offers',
       since: expect.any(String),
@@ -195,10 +222,20 @@ describe('the location route (CA §4.3, architecture §7.3)', () => {
     expect(offline.json()).toMatchObject({ error: 'not_online' });
 
     await goOnline(headers);
-    await sendPoints(headers, [point(new Date(Date.now() + 1_000))]);
+    const onlineAt = new Date();
+    await sendPoints(headers, [point(onlineAt)]);
+    await new Promise((resolve) => setTimeout(resolve, 20));
     await call(headers, 'POST', '/v1/captain/availability/offline');
     expect(await valkey.exists(`captains:position:${captainId}`)).toBe(0);
     expect(await valkey.zscore(`captains:online:${azaz}`, captainId)).toBeNull();
+    // A point queued while online and sent after going offline is kept for
+    // the route, but never brings the live position back.
+    const late = await sendPoints(headers, [point(new Date(onlineAt.getTime() + 5))]);
+    expect(late.json()).toEqual({ accepted: 1 });
+    expect(await valkey.exists(`captains:position:${captainId}`)).toBe(0);
+    // A point recorded offline is not.
+    const afterOffline = await sendPoints(headers, [point(new Date(Date.now() + 30_000))]);
+    expect(afterOffline.statusCode).toBe(409);
   });
 
   it('refuses a point recorded in the future and a point off the globe', async () => {

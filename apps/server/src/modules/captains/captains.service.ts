@@ -262,7 +262,7 @@ export class CaptainsService implements OnModuleInit {
     if (change.until != null && change.until <= now) {
       throw new CaptainsRefusedError('invalid_captain', 'a suspension ends after now');
     }
-    const cityId = await this.database.db.transaction(async (tx) => {
+    const { cityId, ended } = await this.database.db.transaction(async (tx) => {
       const row = await this.lockCaptain(tx, captainId);
       const current = captainOf(row, now).status;
       if (!statusChanges[current].includes(status)) {
@@ -281,14 +281,15 @@ export class CaptainsService implements OnModuleInit {
           updatedAt: sql`now()`,
         })
         .where(eq(captainRecords.id, captainId));
-      if (status !== 'active') {
-        await this.endOnline(
-          tx,
-          captainId,
-          status === 'suspended' ? 'suspended' : 'terminated',
-          now,
-        );
-      }
+      const ended =
+        status === 'active'
+          ? null
+          : await this.endOnline(
+              tx,
+              captainId,
+              status === 'suspended' ? 'suspended' : 'terminated',
+              now,
+            );
       await this.audit.recordWrite(
         {
           actor: change.actor,
@@ -302,9 +303,9 @@ export class CaptainsService implements OnModuleInit {
         },
         tx,
       );
-      return row.cityId;
+      return { cityId: row.cityId, ended };
     });
-    if (status !== 'active') await this.positions.remove(cityId, captainId);
+    if (ended !== null) await this.positions.remove(cityId, captainId, ended);
   }
 
   // AP §9.7.5: a new cash limit, effective immediately, with a reason.
@@ -502,11 +503,11 @@ export class CaptainsService implements OnModuleInit {
   async goOffline(captainId: string, now: Date): Promise<{ handIn: Money | null }> {
     const cityId = (await this.row(this.database.db, captainId)).cityId;
     const rules = await this.cityRules(cityId, now);
-    await this.database.db.transaction(async (tx) => {
+    const ended = await this.database.db.transaction(async (tx) => {
       await this.lockCaptain(tx, captainId);
-      await this.endOnline(tx, captainId, 'captain', now);
+      return this.endOnline(tx, captainId, 'captain', now);
     });
-    await this.positions.remove(cityId, captainId);
+    if (ended !== null) await this.positions.remove(cityId, captainId, ended);
     // After the offline commits, so reading the cash can never undo it.
     const row = await this.row(this.database.db, captainId);
     const { custody } = await this.input(this.database.db, row, rules);
@@ -514,10 +515,13 @@ export class CaptainsService implements OnModuleInit {
     return { handIn: held > rules.remitTolerance ? { ...custody.usage } : null };
   }
 
-  // CA §4.3, architecture §7.3: the points of an online captain, kept for
-  // routes and disputes, the newest as the live position. Points recorded
-  // before going online are dropped, since nothing is collected offline; a
-  // point sent again is kept once. An offline captain's points are refused.
+  // CA §4.3, architecture §7.3: the points recorded inside one of the
+  // captain's online periods, kept for routes and disputes (a point queued
+  // without a signal included); the newest real point of the open period is
+  // the live position. A point recorded offline is dropped, since nothing is
+  // collected then, and so is one older than the partitions; a point sent
+  // again is kept once. Refused (not_online) when the captain is offline and
+  // no point belongs to an online period.
   async recordLocations(
     captainId: string,
     points: LocationPoint[],
@@ -532,33 +536,68 @@ export class CaptainsService implements OnModuleInit {
       }
     }
     const row = await this.row(this.database.db, captainId);
-    const [open] = await this.database.db
-      .select({ startedAt: onlinePeriods.startedAt })
-      .from(onlinePeriods)
-      .where(and(eq(onlinePeriods.captainId, captainId), isNull(onlinePeriods.endedAt)));
-    if (!open) throw new CaptainsRefusedError('not_online', 'the captain is offline');
-    const kept = points.filter((point) => point.recordedAt >= open.startedAt);
-    if (kept.length === 0) return { accepted: 0 };
-    const inserted = await this.database.db
-      .insert(locations)
-      .values(
-        kept.map((point) => ({
-          captainId,
-          cityId: row.cityId,
-          recordedAt: point.recordedAt,
-          receivedAt: now,
-          location: sql`ST_SetSRID(ST_MakePoint(${point.longitude}, ${point.latitude}), 4326)`,
-          accuracyMetres: point.accuracyMetres,
-          simulated: point.simulated,
-        })),
-      )
-      .onConflictDoNothing()
-      .returning({ recordedAt: locations.recordedAt });
-    const newest = kept.reduce((latest, point) =>
-      point.recordedAt > latest.recordedAt ? point : latest,
-    );
-    await this.positions.set(row.cityId, captainId, newest);
-    return { accepted: inserted.length };
+    // The partitions reach back to the start of last month (UTC).
+    const oldest = Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1);
+    const result = await this.database.db.transaction(async (tx) => {
+      // The open period is held, so going offline waits for these points.
+      const [open] = await tx
+        .select({ id: onlinePeriods.id, startedAt: onlinePeriods.startedAt })
+        .from(onlinePeriods)
+        .where(and(eq(onlinePeriods.captainId, captainId), isNull(onlinePeriods.endedAt)))
+        .for('share');
+      // A point queued without a signal counts when it was recorded inside
+      // one of the captain's online periods, so the route is complete.
+      const first = new Date(Math.min(...points.map((point) => point.recordedAt.getTime())));
+      const periods = await tx
+        .select({ startedAt: onlinePeriods.startedAt, endedAt: onlinePeriods.endedAt })
+        .from(onlinePeriods)
+        .where(
+          and(
+            eq(onlinePeriods.captainId, captainId),
+            sql`coalesce(${onlinePeriods.endedAt}, 'infinity') >= ${first.toISOString()}`,
+          ),
+        );
+      const kept = points.filter(
+        (point) =>
+          point.recordedAt.getTime() >= oldest &&
+          periods.some(
+            (period) =>
+              point.recordedAt >= period.startedAt &&
+              (period.endedAt === null || point.recordedAt <= period.endedAt),
+          ),
+      );
+      if (!open && kept.length === 0) return null;
+      if (kept.length === 0) return { accepted: 0, open, live: [] };
+      const inserted = await tx
+        .insert(locations)
+        .values(
+          kept.map((point) => ({
+            captainId,
+            cityId: row.cityId,
+            recordedAt: point.recordedAt,
+            receivedAt: now,
+            location: sql`ST_SetSRID(ST_MakePoint(${point.longitude}, ${point.latitude}), 4326)`,
+            accuracyMetres: point.accuracyMetres,
+            simulated: point.simulated,
+          })),
+        )
+        .onConflictDoNothing()
+        .returning({ recordedAt: locations.recordedAt });
+      // A simulated point never becomes the live position.
+      const live = open
+        ? kept.filter((point) => !point.simulated && point.recordedAt >= open.startedAt)
+        : [];
+      return { accepted: inserted.length, open, live };
+    });
+    if (result === null) throw new CaptainsRefusedError('not_online', 'the captain is offline');
+    const { open, live } = result;
+    if (open && live.length > 0) {
+      const newest = live.reduce((latest, point) =>
+        point.recordedAt > latest.recordedAt ? point : latest,
+      );
+      await this.positions.set(row.cityId, captainId, open.id, newest);
+    }
+    return { accepted: result.accepted };
   }
 
   // The city's rules the state reads, outside any transaction: settings take
@@ -668,14 +707,16 @@ export class CaptainsService implements OnModuleInit {
     captainId: string,
     reason: 'captain' | 'suspended' | 'terminated',
     now: Date,
-  ): Promise<void> {
-    await tx
+  ): Promise<string | null> {
+    const [ended] = await tx
       .update(onlinePeriods)
       .set({
         endedAt: sql`greatest(${now.toISOString()}::timestamptz, started_at)`,
         endReason: reason,
       })
-      .where(and(eq(onlinePeriods.captainId, captainId), isNull(onlinePeriods.endedAt)));
+      .where(and(eq(onlinePeriods.captainId, captainId), isNull(onlinePeriods.endedAt)))
+      .returning({ id: onlinePeriods.id });
+    return ended?.id ?? null;
   }
 
   private async row(executor: Executor, captainId: string) {
