@@ -1,9 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { equivalent, FxRefusedError, FxService, type RateSnapshot } from '../fx/index.js';
-import { type Distance, GeoRefusedError, GeoService, type Point } from '../geo/index.js';
+import {
+  type Distance,
+  estimateRange,
+  GeoRefusedError,
+  GeoService,
+  type Point,
+  tripMinutes,
+} from '../geo/index.js';
 import { MerchantsService, type StorefrontState } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
-import { estimateRange, tripMinutes } from './delivery-estimate.js';
 import { platformOpening } from './platform-hours.js';
 import {
   type CartLine,

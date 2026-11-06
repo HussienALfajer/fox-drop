@@ -16,7 +16,6 @@ import { QuoteService } from './quote.service.js';
 })
 export class OrderingModule {}
 
-export { estimateRange, tripMinutes } from './delivery-estimate.js';
 export {
   type Quote,
   type QuoteProblem,

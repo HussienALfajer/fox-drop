@@ -7,14 +7,15 @@ The handover note between sessions: the current task, its branch, its plan, and 
 Slice 1.8, placing the order (`docs/roadmap.md`, Phase 1): the atomic re-check, the rate snapshot, the order number, idempotency, the capacity check, the automatic cancellation timer through pg-boss.
 
 - **Specs:** CU §10.7 (placing the order, Q10, Q11), CU §7.3–7.4 (the address snapshot, the unsaved address, Q6), CU §10.3 (the order note, Q25), CU §5.5 (the active-order limit, D23), AP §8.1 (order states), AP §8.3 (timers: the automatic cancellation), AP §8.4 and §8.6 (the money and the rate snapshot the order keeps), AP §4.8 (order numbers), AP §9.12.6 (the capacity check), RA §7.4 (the maximum active orders), architecture §4.3 (transactions, the outbox), §5.4–5.5 (pg-boss), docs/domain/01 and 03.
-- **Branch:** `feat/place-order`.
-- **Ask the owner first:** the split into pull requests; whether the capacity check runs in Phase 1 with manual dispatch only (D6), since `dispatch.capacity_check` is on by default and needs the eligible captains nearby (AP §9.12.6); the first number of a city's order sequence (AP §4.8: sequential per city, shown as `#10423`); how a guest's unsaved address is kept on the order.
-- **Plan (draft, to confirm with the owner):**
-  - [ ] The failing tests first: the order's state at placing, the money it keeps (AP §8.4), the refusal on a changed quote version, fee rule or rate version (CU §10.7), the active-order limit (D23), idempotency, the cancellation timer.
-  - [ ] The `ordering` schema through the `db-migration` skill: the order with its lines, money, rate snapshot, address snapshot, notes and «سأدفع بـ»; the order number; the idempotency keys; the order events (append-only).
-  - [ ] The order command: one transaction that re-runs the quote (`QuoteService` with the transaction as executor, `GeoService.deliveryFee` and `MerchantsService.menu` too), calls `FxService.snapshotForOrder`, counts the restaurant's active orders under its lock (RA §7.4) and the customer's (D23), and writes the timer and the outbox row (E3, E4).
-  - [ ] pg-boss in the worker and the automatic cancellation (AP §8.3).
-  - [ ] `checker`, the `reviewer`, the pull request, the handover to slice 1.9.
+- **Owner decisions 2026-11-06:** three pull requests, server and API only (like slice 1.7); the capacity check is built now and on, with the eligibility conditions that have data (a captain must be online near the restaurant to order, the demo captain included); a city's order numbers start at 10001; an unsaved address is kept on the order as a snapshot only, and «احفظ هذا العنوان» is the app's separate «إضافة عنوان» call.
+- **Pull request 1, `feat/place-order`:** the order and its placing.
+  - [ ] Move the estimate (`estimateRange`, `tripMinutes`) to `geo`, so `ordering` can import `customers` without an import cycle.
+  - [ ] The `ordering` schema through the `db-migration` skill: the city's order numbers; the orders and their lines (money, rate snapshot, fee rule, commission and pay table version, address snapshot, note, «سأدفع بـ»), partitioned by month; the order events (append-only, partitioned); the idempotency keys.
+  - [ ] The failing tests first: the order's state and money at placing (AP §8.4), the refusal on a changed quote or rate snapshot (CU §10.7), the restaurant's maximum active orders (RA §7.4) and the customer's (D23) under concurrency, idempotency.
+  - [ ] The order command `POST /v1/customer/orders`: re-runs the quote, then in one transaction takes the customer's and the restaurant's locks, counts both limits, calls `FxService.snapshotForOrder` and compares it with the quote's, numbers the order and writes it with its first event. The restaurant's busy state counts the active orders.
+  - [ ] `checker`, the `reviewer`, the pull request.
+- **Pull request 2, `feat/order-timers`:** pg-boss in the worker, the outbox table written in the order's transaction (E3, E4), and the automatic cancellation after `order.merchant_auto_cancel_min` (AP §8.3), which re-reads the order and acts only on the same state and version.
+- **Pull request 3, `feat/capacity-check`:** the capacity check (AP §9.12.6) in the quote and at placing, while `dispatch.capacity_check` is on: an online, active captain within `dispatch.search_radius_km` of the restaurant, under the cash limit, not blocked, whose vehicle is allowed for the trip; then the handover to slice 1.9.
 
 ## Notes from earlier slices
 

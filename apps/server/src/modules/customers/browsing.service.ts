@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { GeoRefusedError, GeoService, type Point } from '../geo/index.js';
+import {
+  estimateRange,
+  GeoRefusedError,
+  GeoService,
+  type Point,
+  tripMinutes,
+} from '../geo/index.js';
 import {
   type MenuCategory,
   type MenuItem,
@@ -9,7 +15,6 @@ import {
   type Restaurant,
   type StorefrontState,
 } from '../merchants/index.js';
-import { estimateRange, tripMinutes } from '../ordering/index.js';
 import { SettingsService } from '../settings/index.js';
 
 // The trip of the estimate is measured as the delivery fee is, by the
