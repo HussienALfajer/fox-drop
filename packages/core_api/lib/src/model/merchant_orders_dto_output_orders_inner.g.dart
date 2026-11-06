@@ -147,6 +147,10 @@ class _$MerchantOrdersDtoOutputOrdersInner
   @override
   final DateTime? autoCancelAt;
   @override
+  final MerchantOrdersDtoOutputOrdersInnerAcceptance? acceptance;
+  @override
+  final DateTime? readyAt;
+  @override
   final MerchantOrdersDtoOutputOrdersInnerCustomer customer;
   @override
   final String? note;
@@ -169,6 +173,8 @@ class _$MerchantOrdersDtoOutputOrdersInner
     required this.placedAt,
     this.acceptAlertAt,
     this.autoCancelAt,
+    this.acceptance,
+    this.readyAt,
     required this.customer,
     this.note,
     required this.lines,
@@ -195,6 +201,8 @@ class _$MerchantOrdersDtoOutputOrdersInner
         placedAt == other.placedAt &&
         acceptAlertAt == other.acceptAlertAt &&
         autoCancelAt == other.autoCancelAt &&
+        acceptance == other.acceptance &&
+        readyAt == other.readyAt &&
         customer == other.customer &&
         note == other.note &&
         lines == other.lines &&
@@ -212,6 +220,8 @@ class _$MerchantOrdersDtoOutputOrdersInner
     _$hash = $jc(_$hash, placedAt.hashCode);
     _$hash = $jc(_$hash, acceptAlertAt.hashCode);
     _$hash = $jc(_$hash, autoCancelAt.hashCode);
+    _$hash = $jc(_$hash, acceptance.hashCode);
+    _$hash = $jc(_$hash, readyAt.hashCode);
     _$hash = $jc(_$hash, customer.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, lines.hashCode);
@@ -231,6 +241,8 @@ class _$MerchantOrdersDtoOutputOrdersInner
           ..add('placedAt', placedAt)
           ..add('acceptAlertAt', acceptAlertAt)
           ..add('autoCancelAt', autoCancelAt)
+          ..add('acceptance', acceptance)
+          ..add('readyAt', readyAt)
           ..add('customer', customer)
           ..add('note', note)
           ..add('lines', lines)
@@ -279,6 +291,18 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
   set autoCancelAt(DateTime? autoCancelAt) =>
       _$this._autoCancelAt = autoCancelAt;
 
+  MerchantOrdersDtoOutputOrdersInnerAcceptanceBuilder? _acceptance;
+  MerchantOrdersDtoOutputOrdersInnerAcceptanceBuilder get acceptance =>
+      _$this._acceptance ??=
+          MerchantOrdersDtoOutputOrdersInnerAcceptanceBuilder();
+  set acceptance(
+    MerchantOrdersDtoOutputOrdersInnerAcceptanceBuilder? acceptance,
+  ) => _$this._acceptance = acceptance;
+
+  DateTime? _readyAt;
+  DateTime? get readyAt => _$this._readyAt;
+  set readyAt(DateTime? readyAt) => _$this._readyAt = readyAt;
+
   MerchantOrdersDtoOutputOrdersInnerCustomerBuilder? _customer;
   MerchantOrdersDtoOutputOrdersInnerCustomerBuilder get customer =>
       _$this._customer ??= MerchantOrdersDtoOutputOrdersInnerCustomerBuilder();
@@ -318,6 +342,8 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
       _placedAt = $v.placedAt;
       _acceptAlertAt = $v.acceptAlertAt;
       _autoCancelAt = $v.autoCancelAt;
+      _acceptance = $v.acceptance?.toBuilder();
+      _readyAt = $v.readyAt;
       _customer = $v.customer.toBuilder();
       _note = $v.note;
       _lines = $v.lines.toBuilder();
@@ -376,6 +402,8 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
             ),
             acceptAlertAt: acceptAlertAt,
             autoCancelAt: autoCancelAt,
+            acceptance: _acceptance?.build(),
+            readyAt: readyAt,
             customer: customer.build(),
             note: note,
             lines: lines.build(),
@@ -393,6 +421,9 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'acceptance';
+        _acceptance?.build();
+
         _$failedField = 'customer';
         customer.build();
 

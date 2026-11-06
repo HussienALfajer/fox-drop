@@ -932,6 +932,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/orders/{orderId}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantOrdersAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orders/{orderId}/ready": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantOrdersReady"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/realtime/token": {
         parameters: {
             query?: never;
@@ -2007,6 +2039,8 @@ export interface components {
                 version: number;
                 /** Format: date-time */
                 placedAt: string;
+                /** @description «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows. */
+                promisedAt: string | null;
                 /** @description While cancelled (CU §11.9). */
                 cancellation: {
                     /** Format: date-time */
@@ -2099,6 +2133,8 @@ export interface components {
                 version: number;
                 /** Format: date-time */
                 placedAt: string;
+                /** @description «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows. */
+                promisedAt: string | null;
                 /** @description While cancelled (CU §11.9). */
                 cancellation: {
                     /** Format: date-time */
@@ -2240,6 +2276,22 @@ export interface components {
                 acceptAlertAt: string | null;
                 /** @description «يُلغى تلقائياً خلال {د:ث}» counts down to it while placed (RA §8.3). */
                 autoCancelAt: string | null;
+                /** @description Null until the order is accepted. */
+                acceptance: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description The prep time chosen (RA §8.5). */
+                    prepMin: number;
+                    /**
+                     * Format: date-time
+                     * @description While accepted, the prep countdown runs to it; past it the card turns red and counts up, «متأخر {د} د» (RA §8.7).
+                     */
+                    prepDueAt: string;
+                    /** @description «قُبل الطلب من جهاز {اسم الجهاز}» (RA §4.7); null when not accepted on a named device of the restaurant. */
+                    deviceName: string | null;
+                } | null;
+                /** @description «الطلب جاهز» (RA §8.8). */
+                readyAt: string | null;
                 /** @description Never the phone number, the last name or the full address (RA §8.4). */
                 customer: {
                     /** @description Null while the customer has not completed the account (CU §5.3). */
@@ -2262,6 +2314,79 @@ export interface components {
                 /** @description «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11). */
                 itemsValue: string;
             }[];
+            /** @description The accept prompt's prep-time chooser (RA §8.5). */
+            prepTime: {
+                /** @description The chips (merchant.prep_time_options). */
+                options: number[];
+                /** @description The «−» and «+» step. */
+                stepMin: number;
+                floorMin: number;
+                ceilingMin: number;
+                /** @description Preselected: the default prep time plus the busy-mode minutes while busy mode is on, «قبول — {د} د». */
+                defaultMin: number;
+            };
+        };
+        MerchantAcceptDto: {
+            /** @description Whole minutes from merchant.prep_time_floor_min to merchant.prep_time_ceiling_min (RA §8.5); 400 invalid_prep_time otherwise. */
+            prepMin: number;
+        };
+        MerchantOrderDto_Output: {
+            order: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as #10423 (AP §4.8). */
+                number: string;
+                /**
+                 * @description AP §8.1; the board column (RA §8.1–8.2).
+                 * @enum {string}
+                 */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3). */
+                version: number;
+                /** Format: date-time */
+                placedAt: string;
+                /** @description While placed from then: the card turns red and the prompt adds «تأخرتم في الرد — سيتصل بكم فريق العمليات» (RA §8.2–8.3). */
+                acceptAlertAt: string | null;
+                /** @description «يُلغى تلقائياً خلال {د:ث}» counts down to it while placed (RA §8.3). */
+                autoCancelAt: string | null;
+                /** @description Null until the order is accepted. */
+                acceptance: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description The prep time chosen (RA §8.5). */
+                    prepMin: number;
+                    /**
+                     * Format: date-time
+                     * @description While accepted, the prep countdown runs to it; past it the card turns red and counts up, «متأخر {د} د» (RA §8.7).
+                     */
+                    prepDueAt: string;
+                    /** @description «قُبل الطلب من جهاز {اسم الجهاز}» (RA §4.7); null when not accepted on a named device of the restaurant. */
+                    deviceName: string | null;
+                } | null;
+                /** @description «الطلب جاهز» (RA §8.8). */
+                readyAt: string | null;
+                /** @description Never the phone number, the last name or the full address (RA §8.4). */
+                customer: {
+                    /** @description Null while the customer has not completed the account (CU §5.3). */
+                    firstName: string | null;
+                    neighbourhood: string;
+                };
+                /** @description The customer's note. */
+                note: string | null;
+                lines: {
+                    name: string;
+                    quantity: number;
+                    options: {
+                        name: string;
+                    }[];
+                    note: string | null;
+                    /** @description Integer minor units (AP §8.6). */
+                    lineTotal: string;
+                }[];
+                currency: string;
+                /** @description «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11). */
+                itemsValue: string;
+            };
         };
         RealtimeTokenDto_Output: {
             /** @description Centrifugo's connection token, valid 15 minutes; ask again when it expires. */
@@ -3670,6 +3795,60 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantOrdersDto_Output"];
+                };
+            };
+        };
+    };
+    merchantOrdersAccept: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantAcceptDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderDto_Output"];
+                };
+            };
+        };
+    };
+    merchantOrdersReady: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderDto_Output"];
                 };
             };
         };

@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_prep_time.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -14,12 +15,16 @@ part 'merchant_orders_dto_output.g.dart';
 ///
 /// Properties:
 /// * [orders] - Every order until it is delivered or ends, oldest first (RA §8.2).
+/// * [prepTime]
 @BuiltValue()
 abstract class MerchantOrdersDtoOutput
     implements Built<MerchantOrdersDtoOutput, MerchantOrdersDtoOutputBuilder> {
   /// Every order until it is delivered or ends, oldest first (RA §8.2).
   @BuiltValueField(wireName: r'orders')
   BuiltList<MerchantOrdersDtoOutputOrdersInner> get orders;
+
+  @BuiltValueField(wireName: r'prepTime')
+  MerchantOrdersDtoOutputPrepTime get prepTime;
 
   MerchantOrdersDtoOutput._();
 
@@ -58,6 +63,11 @@ class _$MerchantOrdersDtoOutputSerializer
         FullType(MerchantOrdersDtoOutputOrdersInner),
       ]),
     );
+    yield r'prepTime';
+    yield serializers.serialize(
+      object.prepTime,
+      specifiedType: const FullType(MerchantOrdersDtoOutputPrepTime),
+    );
   }
 
   @override
@@ -95,6 +105,17 @@ class _$MerchantOrdersDtoOutputSerializer
                   )
                   as BuiltList<MerchantOrdersDtoOutputOrdersInner>;
           result.orders.replace(valueDes);
+          break;
+        case r'prepTime':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      MerchantOrdersDtoOutputPrepTime,
+                    ),
+                  )
+                  as MerchantOrdersDtoOutputPrepTime;
+          result.prepTime.replace(valueDes);
           break;
         default:
           unhandled.add(key);

@@ -388,9 +388,13 @@ describe('the active-order limits (D23, RA §7.4)', () => {
     for (let index = 0; index < 3; index += 1) {
       const answer = await place(headers);
       placed.push(answer.json().order.id);
-      await sql.query("UPDATE ordering.orders SET status = 'delivered' WHERE id = $1", [
-        answer.json().order.id,
-      ]);
+      // A delivered order was accepted (a CHECK).
+      await sql.query(
+        `UPDATE ordering.orders SET status = 'delivered', accepted_at = now(), prep_min = 20,
+           promised_at = now(), search_start_at = now(), prep_late_alert_at = now()
+         WHERE id = $1`,
+        [answer.json().order.id],
+      );
     }
     for (let index = 0; index < 3; index += 1) {
       expect((await place(headers)).statusCode).toBe(201);
@@ -715,6 +719,8 @@ describe("the order's reads, for the screens and the polling fallback (CU §4.3,
       // order.merchant_auto_cancel_min (7) after placing.
       acceptAlertAt: new Date(Date.parse(first.placedAt) + 3 * 60_000).toISOString(),
       autoCancelAt: new Date(Date.parse(first.placedAt) + 7 * 60_000).toISOString(),
+      acceptance: null,
+      readyAt: null,
       // The first name only, never the last name (RA §8.4).
       customer: { firstName: 'سامر', neighbourhood: 'المركز' },
       note: 'الرجاء الاتصال عند الوصول',

@@ -112,6 +112,9 @@ export interface Restaurant {
   coverage: Coverage;
   minimumOrder: Money;
   defaultPrepMin: number;
+  // RA §7.3: the busy-mode minutes while it is on at the time asked, else
+  // null.
+  busyExtraMin: number | null;
   maxActiveOrders: number | null;
   // The commission in effect now, in basis points.
   commissionBp: number | null;
@@ -360,6 +363,8 @@ export class MerchantsService implements OnModuleInit {
         minimumOrder: restaurants.minimumOrder,
         minimumOrderCurrency: restaurants.minimumOrderCurrency,
         defaultPrepMin: restaurants.defaultPrepMin,
+        busyExtraMin: restaurants.busyExtraMin,
+        busyUntil: restaurants.busyUntil,
         maxActiveOrders: restaurants.maxActiveOrders,
       })
       .from(restaurants)
@@ -393,6 +398,8 @@ export class MerchantsService implements OnModuleInit {
       coverage,
       minimumOrder: { amount: row.minimumOrder, currency: row.minimumOrderCurrency },
       defaultPrepMin: row.defaultPrepMin,
+      busyExtraMin:
+        row.busyUntil !== null && row.busyUntil.getTime() > at.getTime() ? row.busyExtraMin : null,
       maxActiveOrders: row.maxActiveOrders,
       commissionBp: commissionAt(rates, at)?.rateBp ?? null,
       schedule: await this.schedule(this.database.db, restaurantId),
@@ -1020,6 +1027,18 @@ export class MerchantsService implements OnModuleInit {
 
   // Whether this app installation has its name in the restaurant (RA §5.2
   // item 5).
+  // RA §4.7, §8.4: the names of the restaurant's devices by their app
+  // installation, for «قُبل الطلب من جهاز {اسم الجهاز}»; an unnamed one is
+  // left out.
+  async deviceNames(restaurantId: string, deviceIds: string[]): Promise<Map<string, string>> {
+    if (deviceIds.length === 0) return new Map();
+    const rows = await this.database.db
+      .select({ deviceId: devices.deviceId, name: devices.name })
+      .from(devices)
+      .where(and(eq(devices.restaurantId, restaurantId), inArray(devices.deviceId, deviceIds)));
+    return new Map(rows.map((row) => [row.deviceId, row.name]));
+  }
+
   async deviceNamed(restaurantId: string, deviceId: string): Promise<boolean> {
     const [device] = await this.database.db
       .select({ id: devices.id })

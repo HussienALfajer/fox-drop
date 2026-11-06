@@ -24,6 +24,7 @@ part 'customer_order_dto_output_order.g.dart';
 /// * [status] - AP §8.1.
 /// * [version] - Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3).
 /// * [placedAt]
+/// * [promisedAt] - «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows.
 /// * [cancellation]
 /// * [restaurant]
 /// * [currency]
@@ -56,6 +57,10 @@ abstract class CustomerOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'placedAt')
   DateTime get placedAt;
+
+  /// «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows.
+  @BuiltValueField(wireName: r'promisedAt')
+  DateTime? get promisedAt;
 
   @BuiltValueField(wireName: r'cancellation')
   CustomerActiveOrdersDtoOutputOrdersInnerCancellation? get cancellation;
@@ -144,6 +149,13 @@ class _$CustomerOrderDtoOutputOrderSerializer
       object.placedAt,
       specifiedType: const FullType(DateTime),
     );
+    yield r'promisedAt';
+    yield object.promisedAt == null
+        ? null
+        : serializers.serialize(
+            object.promisedAt,
+            specifiedType: const FullType.nullable(DateTime),
+          );
     yield r'cancellation';
     yield object.cancellation == null
         ? null
@@ -284,6 +296,16 @@ class _$CustomerOrderDtoOutputOrderSerializer
                   )
                   as DateTime;
           result.placedAt = valueDes;
+          break;
+        case r'promisedAt':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
+          if (valueDes == null) continue;
+          result.promisedAt = valueDes;
           break;
         case r'cancellation':
           final valueDes =

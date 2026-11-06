@@ -95,6 +95,9 @@ export interface PricedQuote {
   // null while the city has no fee rule in its base (delivery_unpriced).
   feeRuleId: string | null;
   restaurant: Restaurant;
+  // The trip of the estimate: its duration in whole seconds rounded up, and
+  // its distance in whole metres.
+  trip: { seconds: number; metres: number };
 }
 
 export type QuoteRefusal = 'unknown_restaurant';
@@ -248,6 +251,7 @@ export class QuoteService {
       problem('no_captain_nearby');
     }
 
+    const tripMin = tripMinutes(distance.metres, speedKmh);
     const quote: Quote = {
       version: quoteVersion({
         lines: request.lines.map((line, index) => ({
@@ -271,7 +275,7 @@ export class QuoteService {
       estimate: estimateRange({
         prepMin: restaurant.defaultPrepMin,
         busyExtraMin: state.state.state === 'open' ? state.state.busyExtraMin : null,
-        tripMin: tripMinutes(distance.metres, speedKmh),
+        tripMin,
         bufferMin,
       }),
       minimumOrder: { ...restaurant.minimumOrder, ...status.minimumOrder },
@@ -282,7 +286,15 @@ export class QuoteService {
       rates,
       problems,
     };
-    return { quote, snapshot, feeRuleId: fee?.ruleId ?? null, restaurant };
+    // The order keeps the trip of the estimate shown (docs/domain/03).
+    const tripSeconds = Math.ceil(tripMin * 60);
+    return {
+      quote,
+      snapshot,
+      feeRuleId: fee?.ruleId ?? null,
+      restaurant,
+      trip: { seconds: tripSeconds, metres: distance.metres },
+    };
   }
 
   // The rates of a quote (AP §8.6); null while the city cannot have one, such

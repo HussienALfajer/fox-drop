@@ -103,6 +103,7 @@ import 'package:core_api/src/model/customer_zone_vote_dto.dart';
 import 'package:core_api/src/model/customer_zone_vote_dto_location.dart';
 import 'package:core_api/src/model/customer_zone_voted_dto_output.dart';
 import 'package:core_api/src/model/done_dto_output.dart';
+import 'package:core_api/src/model/merchant_accept_dto.dart';
 import 'package:core_api/src/model/merchant_availability_dto.dart';
 import 'package:core_api/src/model/merchant_availability_saved_dto_output.dart';
 import 'package:core_api/src/model/merchant_code_request_dto.dart';
@@ -116,11 +117,14 @@ import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_ite
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_option_groups_inner_options_inner.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_price.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_switched_off.dart';
+import 'package:core_api/src/model/merchant_order_dto_output.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_acceptance.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner_options_inner.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_prep_time.dart';
 import 'package:core_api/src/model/merchant_refresh_dto.dart';
 import 'package:core_api/src/model/merchant_restaurant_dto_output.dart';
 import 'package:core_api/src/model/merchant_session_dto_output.dart';
@@ -240,6 +244,7 @@ part 'serializers.g.dart';
   CustomerZoneVoteDtoLocation,
   CustomerZoneVotedDtoOutput,
   DoneDtoOutput,
+  MerchantAcceptDto,
   MerchantAvailabilityDto,
   MerchantAvailabilitySavedDtoOutput,
   MerchantCodeRequestDto,
@@ -253,11 +258,14 @@ part 'serializers.g.dart';
   MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner,
   MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice,
   MerchantMenuDtoOutputCategoriesInnerSwitchedOff,
+  MerchantOrderDtoOutput,
   MerchantOrdersDtoOutput,
   MerchantOrdersDtoOutputOrdersInner,
+  MerchantOrdersDtoOutputOrdersInnerAcceptance,
   MerchantOrdersDtoOutputOrdersInnerCustomer,
   MerchantOrdersDtoOutputOrdersInnerLinesInner,
   MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner,
+  MerchantOrdersDtoOutputPrepTime,
   MerchantRefreshDto,
   MerchantRestaurantDtoOutput,
   MerchantSessionDtoOutput,
@@ -465,6 +473,10 @@ Serializers serializers =
               FullType(CustomerRestaurantPageDtoOutputScheduleInner),
             ]),
             () => ListBuilder<CustomerRestaurantPageDtoOutputScheduleInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(int)]),
+            () => ListBuilder<int>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

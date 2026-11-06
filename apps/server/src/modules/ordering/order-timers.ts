@@ -17,6 +17,14 @@ export interface AutoCancelJob {
   version: number;
 }
 
+// The search-start timer of an accepted order (AP §8.3, §9.12.6), set for
+// its search-start moment.
+export interface SearchStartJob {
+  orderId: string;
+  // ISO time, the order's partition key.
+  placedAt: string;
+}
+
 // AP §8.3: the reason of the automatic cancellation, «المطعم لم يستجب», kept
 // for the system alone: it is what counts the order as unanswered by the
 // restaurant (RA §11), which an operations cancellation never does.
@@ -61,6 +69,18 @@ export class OrderTimers {
       return true;
     });
   }
+
+  // AP §8.3, §9.12.6: the search-start moment came; true while the order
+  // still waits for a captain (accepted or ready). In manual mode (D6) it
+  // raises «بحاجة لتعيين», which comes with dispatch (slice 1.11); until then
+  // the worker logs it.
+  async searchStart(job: SearchStartJob): Promise<boolean> {
+    const [order] = await this.database.db
+      .select({ status: orders.status })
+      .from(orders)
+      .where(and(eq(orders.id, job.orderId), eq(orders.placedAt, new Date(job.placedAt))));
+    return order?.status === 'accepted' || order?.status === 'ready';
+  }
 }
 
 // The worker's handlers of the order timers.
@@ -74,6 +94,13 @@ export class OrderTimersWorker implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
+    await this.jobs.work<SearchStartJob>(QUEUES.searchStart, async (batch) => {
+      for (const job of batch) {
+        if (await this.timers.searchStart(job.data)) {
+          this.logger.log({ orderId: job.data.orderId }, 'search start: the order needs a captain');
+        }
+      }
+    });
     await this.jobs.work<AutoCancelJob>(QUEUES.merchantAutoCancel, async (batch) => {
       for (const job of batch) {
         try {

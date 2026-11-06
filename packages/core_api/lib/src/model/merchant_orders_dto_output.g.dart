@@ -9,12 +9,15 @@ part of 'merchant_orders_dto_output.dart';
 class _$MerchantOrdersDtoOutput extends MerchantOrdersDtoOutput {
   @override
   final BuiltList<MerchantOrdersDtoOutputOrdersInner> orders;
+  @override
+  final MerchantOrdersDtoOutputPrepTime prepTime;
 
   factory _$MerchantOrdersDtoOutput([
     void Function(MerchantOrdersDtoOutputBuilder)? updates,
   ]) => (MerchantOrdersDtoOutputBuilder()..update(updates))._build();
 
-  _$MerchantOrdersDtoOutput._({required this.orders}) : super._();
+  _$MerchantOrdersDtoOutput._({required this.orders, required this.prepTime})
+    : super._();
   @override
   MerchantOrdersDtoOutput rebuild(
     void Function(MerchantOrdersDtoOutputBuilder) updates,
@@ -27,22 +30,26 @@ class _$MerchantOrdersDtoOutput extends MerchantOrdersDtoOutput {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is MerchantOrdersDtoOutput && orders == other.orders;
+    return other is MerchantOrdersDtoOutput &&
+        orders == other.orders &&
+        prepTime == other.prepTime;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, orders.hashCode);
+    _$hash = $jc(_$hash, prepTime.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-      r'MerchantOrdersDtoOutput',
-    )..add('orders', orders)).toString();
+    return (newBuiltValueToStringHelper(r'MerchantOrdersDtoOutput')
+          ..add('orders', orders)
+          ..add('prepTime', prepTime))
+        .toString();
   }
 }
 
@@ -57,6 +64,12 @@ class MerchantOrdersDtoOutputBuilder
   set orders(ListBuilder<MerchantOrdersDtoOutputOrdersInner>? orders) =>
       _$this._orders = orders;
 
+  MerchantOrdersDtoOutputPrepTimeBuilder? _prepTime;
+  MerchantOrdersDtoOutputPrepTimeBuilder get prepTime =>
+      _$this._prepTime ??= MerchantOrdersDtoOutputPrepTimeBuilder();
+  set prepTime(MerchantOrdersDtoOutputPrepTimeBuilder? prepTime) =>
+      _$this._prepTime = prepTime;
+
   MerchantOrdersDtoOutputBuilder() {
     MerchantOrdersDtoOutput._defaults(this);
   }
@@ -65,6 +78,7 @@ class MerchantOrdersDtoOutputBuilder
     final $v = _$v;
     if ($v != null) {
       _orders = $v.orders.toBuilder();
+      _prepTime = $v.prepTime.toBuilder();
       _$v = null;
     }
     return this;
@@ -86,12 +100,19 @@ class MerchantOrdersDtoOutputBuilder
   _$MerchantOrdersDtoOutput _build() {
     _$MerchantOrdersDtoOutput _$result;
     try {
-      _$result = _$v ?? _$MerchantOrdersDtoOutput._(orders: orders.build());
+      _$result =
+          _$v ??
+          _$MerchantOrdersDtoOutput._(
+            orders: orders.build(),
+            prepTime: prepTime.build(),
+          );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'orders';
         orders.build();
+        _$failedField = 'prepTime';
+        prepTime.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'MerchantOrdersDtoOutput',

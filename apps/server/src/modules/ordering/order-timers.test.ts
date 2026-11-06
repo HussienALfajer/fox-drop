@@ -235,7 +235,8 @@ describe('the automatic cancellation (AP §8.3)', () => {
 
   it('leaves an order that moved on since the timer was set', async () => {
     const order = await placed();
-    await sql.query("UPDATE ordering.orders SET status = 'accepted', version = 2 WHERE id = $1", [
+    // Acceptance itself is proved through its route (accept-and-ready.test.ts).
+    await sql.query("UPDATE ordering.orders SET status = 'rejected', version = 2 WHERE id = $1", [
       order.id,
     ]);
     expect(
@@ -246,7 +247,7 @@ describe('the automatic cancellation (AP §8.3)', () => {
           new Date(),
         ),
     ).toBe(false);
-    expect((await orderOf(order.id)).status).toBe('accepted');
+    expect((await orderOf(order.id)).status).toBe('rejected');
   });
 
   it('runs in the worker when the job is due', async () => {

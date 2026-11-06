@@ -95,6 +95,27 @@ export const orders = ordering.table(
     autoCancelAt: timestamp('auto_cancel_at', { withTimezone: true }),
     estimateFromMin: smallint('estimate_from_min').notNull(),
     estimateToMin: smallint('estimate_to_min').notNull(),
+    // The trip of the estimate shown at placing, in whole seconds rounded up
+    // (docs/domain/03): the promised time at acceptance uses it (owner
+    // decision 2026-11-06). Null for an order placed before slice 1.10.
+    tripSeconds: integer('trip_seconds'),
+    // And its motorbike distance in whole metres, for the captains eligible
+    // for the trip (dispatch.max_distance_km.<vehicle>).
+    tripMetres: integer('trip_metres'),
+    // RA §8.5, AP §8.3, docs/domain/03: set together when the restaurant
+    // accepts. The prep time chosen; the promised time; the search-start
+    // moment of dispatch; operations' «تحضير متأخر» moment, prep_late_alert
+    // past the prep time (owner decision 2026-11-06: its timer comes with the
+    // operations board).
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+    prepMin: smallint('prep_min'),
+    promisedAt: timestamp('promised_at', { withTimezone: true }),
+    searchStartAt: timestamp('search_start_at', { withTimezone: true }),
+    prepLateAlertAt: timestamp('prep_late_alert_at', { withTimezone: true }),
+    // RA §8.8, AP §8.3: «الطلب جاهز», and operations' no-captain-after-ready
+    // moment (its timer comes with the operations board).
+    readyAt: timestamp('ready_at', { withTimezone: true }),
+    noCaptainAlertAt: timestamp('no_captain_alert_at', { withTimezone: true }),
     // The address snapshot (CU §7.3–7.4, Q6): the saved address it was copied
     // from, or null for an unsaved one; «الحي» is the zone at placing.
     addressId: uuid('address_id'),
@@ -140,6 +161,22 @@ export const orders = ordering.table(
     check(
       'orders_label_values',
       sql`${table.label} IS NULL OR ${table.label} IN ('home', 'work', 'other')`,
+    ),
+    check(
+      'orders_acceptance',
+      sql`(${table.acceptedAt} IS NULL) = (${table.prepMin} IS NULL) AND (${table.acceptedAt} IS NULL) = (${table.promisedAt} IS NULL) AND (${table.acceptedAt} IS NULL) = (${table.searchStartAt} IS NULL) AND (${table.acceptedAt} IS NULL) = (${table.prepLateAlertAt} IS NULL) AND ${table.prepMin} > 0`,
+    ),
+    check(
+      'orders_accepted_states',
+      sql`${table.status} NOT IN ('accepted', 'ready', 'picked_up', 'arrived', 'delivered', 'failed') OR ${table.acceptedAt} IS NOT NULL`,
+    ),
+    check(
+      'orders_ready',
+      sql`(${table.readyAt} IS NULL) = (${table.noCaptainAlertAt} IS NULL) AND (${table.status} <> 'ready' OR ${table.readyAt} IS NOT NULL)`,
+    ),
+    check(
+      'orders_trip',
+      sql`(${table.tripSeconds} IS NULL) = (${table.tripMetres} IS NULL) AND ${table.tripSeconds} >= 0 AND ${table.tripMetres} >= 0`,
     ),
     check(
       'orders_recipient',
@@ -196,6 +233,9 @@ export const orderEvents = ordering.table(
     // customer, restaurant, captain, admin or system, and its id.
     actorType: text('actor_type').notNull(),
     actorId: uuid('actor_id'),
+    // RA §18: the app installation a restaurant user ran the command on;
+    // null for every other actor.
+    actorDevice: text('actor_device'),
     reason: text('reason'),
   },
   (table) => [

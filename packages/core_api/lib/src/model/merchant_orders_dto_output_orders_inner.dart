@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_acceptance.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
@@ -21,6 +22,8 @@ part 'merchant_orders_dto_output_orders_inner.g.dart';
 /// * [placedAt]
 /// * [acceptAlertAt] - While placed from then: the card turns red and the prompt adds «تأخرتم في الرد — سيتصل بكم فريق العمليات» (RA §8.2–8.3).
 /// * [autoCancelAt] - «يُلغى تلقائياً خلال {د:ث}» counts down to it while placed (RA §8.3).
+/// * [acceptance]
+/// * [readyAt] - «الطلب جاهز» (RA §8.8).
 /// * [customer]
 /// * [note] - The customer's note.
 /// * [lines]
@@ -59,6 +62,13 @@ abstract class MerchantOrdersDtoOutputOrdersInner
   /// «يُلغى تلقائياً خلال {د:ث}» counts down to it while placed (RA §8.3).
   @BuiltValueField(wireName: r'autoCancelAt')
   DateTime? get autoCancelAt;
+
+  @BuiltValueField(wireName: r'acceptance')
+  MerchantOrdersDtoOutputOrdersInnerAcceptance? get acceptance;
+
+  /// «الطلب جاهز» (RA §8.8).
+  @BuiltValueField(wireName: r'readyAt')
+  DateTime? get readyAt;
 
   @BuiltValueField(wireName: r'customer')
   MerchantOrdersDtoOutputOrdersInnerCustomer get customer;
@@ -146,6 +156,22 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
         ? null
         : serializers.serialize(
             object.autoCancelAt,
+            specifiedType: const FullType.nullable(DateTime),
+          );
+    yield r'acceptance';
+    yield object.acceptance == null
+        ? null
+        : serializers.serialize(
+            object.acceptance,
+            specifiedType: const FullType.nullable(
+              MerchantOrdersDtoOutputOrdersInnerAcceptance,
+            ),
+          );
+    yield r'readyAt';
+    yield object.readyAt == null
+        ? null
+        : serializers.serialize(
+            object.readyAt,
             specifiedType: const FullType.nullable(DateTime),
           );
     yield r'customer';
@@ -267,6 +293,28 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
                   as DateTime?;
           if (valueDes == null) continue;
           result.autoCancelAt = valueDes;
+          break;
+        case r'acceptance':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      MerchantOrdersDtoOutputOrdersInnerAcceptance,
+                    ),
+                  )
+                  as MerchantOrdersDtoOutputOrdersInnerAcceptance?;
+          if (valueDes == null) continue;
+          result.acceptance.replace(valueDes);
+          break;
+        case r'readyAt':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
+          if (valueDes == null) continue;
+          result.readyAt = valueDes;
           break;
         case r'customer':
           final valueDes =

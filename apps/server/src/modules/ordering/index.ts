@@ -13,6 +13,7 @@ import { CustomerOrdersController } from './customer-orders.controller.js';
 import { CustomerQuoteController } from './customer-quote.controller.js';
 import { MerchantOrdersController } from './merchant-orders.controller.js';
 import { OrderChannelAccess } from './order-channel.js';
+import { OrderCommands } from './order-commands.js';
 import { OrderPartitions } from './order-partitions.js';
 import { OrderTimers, OrderTimersWorker } from './order-timers.js';
 import { OrdersService } from './orders.service.js';
@@ -21,8 +22,9 @@ import { OutboxRelay, OutboxRelayWorker } from './outbox-relay.js';
 import { QuoteService } from './quote.service.js';
 
 // The ordering module (architecture §4.2): the quote (CU §10.6), the order
-// (CU §10.7) and its real-time channel (architecture §6.2); its state machine
-// and outcomes join with slice 1.10 onwards.
+// (CU §10.7), the restaurant's acceptance and «الطلب جاهز» (RA §8.5–8.8) and
+// its real-time channel (architecture §6.2); the rest of its state machine and
+// its outcomes join with slice 1.11 onwards.
 @Module({
   imports: [
     DatabaseModule,
@@ -36,7 +38,14 @@ import { QuoteService } from './quote.service.js';
     NotificationsModule,
   ],
   controllers: [CustomerQuoteController, CustomerOrdersController, MerchantOrdersController],
-  providers: [ActiveOrders, QuoteService, OrdersService, OrderTimers, OrderChannelAccess],
+  providers: [
+    ActiveOrders,
+    QuoteService,
+    OrdersService,
+    OrderCommands,
+    OrderTimers,
+    OrderChannelAccess,
+  ],
   exports: [QuoteService, OrdersService],
 })
 export class OrderingModule {}
