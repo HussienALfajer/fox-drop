@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_board_dto_output_orders_inner_moments.dart';
+part of 'admin_order_card_dto_output_order_moments.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminBoardDtoOutputOrdersInnerMoments
-    extends AdminBoardDtoOutputOrdersInnerMoments {
+class _$AdminOrderCardDtoOutputOrderMoments
+    extends AdminOrderCardDtoOutputOrderMoments {
   @override
   final DateTime? acceptAlertAt;
   @override
@@ -18,37 +18,45 @@ class _$AdminBoardDtoOutputOrdersInnerMoments
   final DateTime? searchAlertAt;
   @override
   final DateTime? noCaptainAlertAt;
+  @override
+  final DateTime? captainArrivedAt;
+  @override
+  final DateTime? captainWaitingAlertAt;
 
-  factory _$AdminBoardDtoOutputOrdersInnerMoments([
-    void Function(AdminBoardDtoOutputOrdersInnerMomentsBuilder)? updates,
-  ]) => (AdminBoardDtoOutputOrdersInnerMomentsBuilder()..update(updates))
-      ._build();
+  factory _$AdminOrderCardDtoOutputOrderMoments([
+    void Function(AdminOrderCardDtoOutputOrderMomentsBuilder)? updates,
+  ]) =>
+      (AdminOrderCardDtoOutputOrderMomentsBuilder()..update(updates))._build();
 
-  _$AdminBoardDtoOutputOrdersInnerMoments._({
+  _$AdminOrderCardDtoOutputOrderMoments._({
     this.acceptAlertAt,
     this.prepLateAlertAt,
     this.searchStartedAt,
     this.searchAlertAt,
     this.noCaptainAlertAt,
+    this.captainArrivedAt,
+    this.captainWaitingAlertAt,
   }) : super._();
   @override
-  AdminBoardDtoOutputOrdersInnerMoments rebuild(
-    void Function(AdminBoardDtoOutputOrdersInnerMomentsBuilder) updates,
+  AdminOrderCardDtoOutputOrderMoments rebuild(
+    void Function(AdminOrderCardDtoOutputOrderMomentsBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminBoardDtoOutputOrdersInnerMomentsBuilder toBuilder() =>
-      AdminBoardDtoOutputOrdersInnerMomentsBuilder()..replace(this);
+  AdminOrderCardDtoOutputOrderMomentsBuilder toBuilder() =>
+      AdminOrderCardDtoOutputOrderMomentsBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminBoardDtoOutputOrdersInnerMoments &&
+    return other is AdminOrderCardDtoOutputOrderMoments &&
         acceptAlertAt == other.acceptAlertAt &&
         prepLateAlertAt == other.prepLateAlertAt &&
         searchStartedAt == other.searchStartedAt &&
         searchAlertAt == other.searchAlertAt &&
-        noCaptainAlertAt == other.noCaptainAlertAt;
+        noCaptainAlertAt == other.noCaptainAlertAt &&
+        captainArrivedAt == other.captainArrivedAt &&
+        captainWaitingAlertAt == other.captainWaitingAlertAt;
   }
 
   @override
@@ -59,31 +67,33 @@ class _$AdminBoardDtoOutputOrdersInnerMoments
     _$hash = $jc(_$hash, searchStartedAt.hashCode);
     _$hash = $jc(_$hash, searchAlertAt.hashCode);
     _$hash = $jc(_$hash, noCaptainAlertAt.hashCode);
+    _$hash = $jc(_$hash, captainArrivedAt.hashCode);
+    _$hash = $jc(_$hash, captainWaitingAlertAt.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-            r'AdminBoardDtoOutputOrdersInnerMoments',
-          )
+    return (newBuiltValueToStringHelper(r'AdminOrderCardDtoOutputOrderMoments')
           ..add('acceptAlertAt', acceptAlertAt)
           ..add('prepLateAlertAt', prepLateAlertAt)
           ..add('searchStartedAt', searchStartedAt)
           ..add('searchAlertAt', searchAlertAt)
-          ..add('noCaptainAlertAt', noCaptainAlertAt))
+          ..add('noCaptainAlertAt', noCaptainAlertAt)
+          ..add('captainArrivedAt', captainArrivedAt)
+          ..add('captainWaitingAlertAt', captainWaitingAlertAt))
         .toString();
   }
 }
 
-class AdminBoardDtoOutputOrdersInnerMomentsBuilder
+class AdminOrderCardDtoOutputOrderMomentsBuilder
     implements
         Builder<
-          AdminBoardDtoOutputOrdersInnerMoments,
-          AdminBoardDtoOutputOrdersInnerMomentsBuilder
+          AdminOrderCardDtoOutputOrderMoments,
+          AdminOrderCardDtoOutputOrderMomentsBuilder
         > {
-  _$AdminBoardDtoOutputOrdersInnerMoments? _$v;
+  _$AdminOrderCardDtoOutputOrderMoments? _$v;
 
   DateTime? _acceptAlertAt;
   DateTime? get acceptAlertAt => _$this._acceptAlertAt;
@@ -110,11 +120,21 @@ class AdminBoardDtoOutputOrdersInnerMomentsBuilder
   set noCaptainAlertAt(DateTime? noCaptainAlertAt) =>
       _$this._noCaptainAlertAt = noCaptainAlertAt;
 
-  AdminBoardDtoOutputOrdersInnerMomentsBuilder() {
-    AdminBoardDtoOutputOrdersInnerMoments._defaults(this);
+  DateTime? _captainArrivedAt;
+  DateTime? get captainArrivedAt => _$this._captainArrivedAt;
+  set captainArrivedAt(DateTime? captainArrivedAt) =>
+      _$this._captainArrivedAt = captainArrivedAt;
+
+  DateTime? _captainWaitingAlertAt;
+  DateTime? get captainWaitingAlertAt => _$this._captainWaitingAlertAt;
+  set captainWaitingAlertAt(DateTime? captainWaitingAlertAt) =>
+      _$this._captainWaitingAlertAt = captainWaitingAlertAt;
+
+  AdminOrderCardDtoOutputOrderMomentsBuilder() {
+    AdminOrderCardDtoOutputOrderMoments._defaults(this);
   }
 
-  AdminBoardDtoOutputOrdersInnerMomentsBuilder get _$this {
+  AdminOrderCardDtoOutputOrderMomentsBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _acceptAlertAt = $v.acceptAlertAt;
@@ -122,35 +142,39 @@ class AdminBoardDtoOutputOrdersInnerMomentsBuilder
       _searchStartedAt = $v.searchStartedAt;
       _searchAlertAt = $v.searchAlertAt;
       _noCaptainAlertAt = $v.noCaptainAlertAt;
+      _captainArrivedAt = $v.captainArrivedAt;
+      _captainWaitingAlertAt = $v.captainWaitingAlertAt;
       _$v = null;
     }
     return this;
   }
 
   @override
-  void replace(AdminBoardDtoOutputOrdersInnerMoments other) {
-    _$v = other as _$AdminBoardDtoOutputOrdersInnerMoments;
+  void replace(AdminOrderCardDtoOutputOrderMoments other) {
+    _$v = other as _$AdminOrderCardDtoOutputOrderMoments;
   }
 
   @override
   void update(
-    void Function(AdminBoardDtoOutputOrdersInnerMomentsBuilder)? updates,
+    void Function(AdminOrderCardDtoOutputOrderMomentsBuilder)? updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminBoardDtoOutputOrdersInnerMoments build() => _build();
+  AdminOrderCardDtoOutputOrderMoments build() => _build();
 
-  _$AdminBoardDtoOutputOrdersInnerMoments _build() {
+  _$AdminOrderCardDtoOutputOrderMoments _build() {
     final _$result =
         _$v ??
-        _$AdminBoardDtoOutputOrdersInnerMoments._(
+        _$AdminOrderCardDtoOutputOrderMoments._(
           acceptAlertAt: acceptAlertAt,
           prepLateAlertAt: prepLateAlertAt,
           searchStartedAt: searchStartedAt,
           searchAlertAt: searchAlertAt,
           noCaptainAlertAt: noCaptainAlertAt,
+          captainArrivedAt: captainArrivedAt,
+          captainWaitingAlertAt: captainWaitingAlertAt,
         );
     replace(_$result);
     return _$result;

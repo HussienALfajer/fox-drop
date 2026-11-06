@@ -8,7 +8,10 @@ import { GeoModule } from '../geo/index.js';
 import { MerchantsModule } from '../merchants/index.js';
 import { NotificationsModule, NotificationsWorkerModule } from '../notifications/index.js';
 import { SettingsModule } from '../settings/index.js';
+import { AuditModule } from '../audit/index.js';
 import { ActiveOrders } from './active-orders.js';
+import { CaptainOrders } from './captain-orders.js';
+import { CaptainOrdersController } from './captain-orders.controller.js';
 import { AdminOrdersController } from './admin-orders.controller.js';
 import { CustomerOrdersController } from './customer-orders.controller.js';
 import { CustomerQuoteController } from './customer-quote.controller.js';
@@ -32,6 +35,7 @@ import { QuoteService } from './quote.service.js';
   imports: [
     DatabaseModule,
     JobsModule,
+    AuditModule,
     SettingsModule,
     FxModule,
     GeoModule,
@@ -46,6 +50,7 @@ import { QuoteService } from './quote.service.js';
     CustomerOrdersController,
     MerchantOrdersController,
     AdminOrdersController,
+    CaptainOrdersController,
   ],
   providers: [
     ActiveOrders,
@@ -55,6 +60,7 @@ import { QuoteService } from './quote.service.js';
     OrderTimers,
     OrderChannelAccess,
     OperationsViews,
+    CaptainOrders,
   ],
   exports: [QuoteService, OrdersService],
 })

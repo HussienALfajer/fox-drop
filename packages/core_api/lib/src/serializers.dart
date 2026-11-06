@@ -16,15 +16,16 @@ import 'package:core_api/src/model/date.dart';
 
 import 'package:core_api/src/model/admin_assign_dto.dart';
 import 'package:core_api/src/model/admin_board_dto_output.dart';
-import 'package:core_api/src/model/admin_board_dto_output_orders_inner.dart';
-import 'package:core_api/src/model/admin_board_dto_output_orders_inner_badges.dart';
-import 'package:core_api/src/model/admin_board_dto_output_orders_inner_captain.dart';
-import 'package:core_api/src/model/admin_board_dto_output_orders_inner_moments.dart';
-import 'package:core_api/src/model/admin_board_dto_output_orders_inner_restaurant.dart';
-import 'package:core_api/src/model/admin_board_dto_output_orders_inner_total.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order_offer.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order_captain.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order_moments.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order_restaurant.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
 import 'package:core_api/src/model/admin_order_dto_output.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
@@ -41,8 +42,20 @@ import 'package:core_api/src/model/admin_picker_dto_output_captains_inner.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_limit.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_usage.dart';
+import 'package:core_api/src/model/admin_record_arrival_dto.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/backup_codes_dto_output.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_lines_inner.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_payment.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_preparation.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant_location.dart';
+import 'package:core_api/src/model/captain_arrive_dto.dart';
+import 'package:core_api/src/model/captain_arrive_dto_location.dart';
 import 'package:core_api/src/model/captain_availability_dto_output.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_availability.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_custody.dart';
@@ -64,6 +77,8 @@ import 'package:core_api/src/model/captain_locations_dto_points_inner.dart';
 import 'package:core_api/src/model/captain_locations_saved_dto_output.dart';
 import 'package:core_api/src/model/captain_offer_dto_output.dart';
 import 'package:core_api/src/model/captain_offer_dto_output_offer.dart';
+import 'package:core_api/src/model/captain_order_dto_output.dart';
+import 'package:core_api/src/model/captain_order_dto_output_order.dart';
 import 'package:core_api/src/model/captain_refresh_dto.dart';
 import 'package:core_api/src/model/captain_session_dto_output.dart';
 import 'package:core_api/src/model/captain_sign_in_dto.dart';
@@ -158,6 +173,7 @@ import 'package:core_api/src/model/merchant_orders_dto_output.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_acceptance.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain_arrival.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner_options_inner.dart';
@@ -194,15 +210,16 @@ part 'serializers.g.dart';
 @SerializersFor([
   AdminAssignDto,
   AdminBoardDtoOutput,
-  AdminBoardDtoOutputOrdersInner,
-  AdminBoardDtoOutputOrdersInnerBadges,
-  AdminBoardDtoOutputOrdersInnerCaptain,
-  AdminBoardDtoOutputOrdersInnerMoments,
-  AdminBoardDtoOutputOrdersInnerRestaurant,
-  AdminBoardDtoOutputOrdersInnerTotal,
   AdminDispatchStateDtoOutput,
   AdminDispatchStateDtoOutputOrder,
   AdminDispatchStateDtoOutputOrderOffer,
+  AdminOrderCardDtoOutput,
+  AdminOrderCardDtoOutputOrder,
+  AdminOrderCardDtoOutputOrderBadges,
+  AdminOrderCardDtoOutputOrderCaptain,
+  AdminOrderCardDtoOutputOrderMoments,
+  AdminOrderCardDtoOutputOrderRestaurant,
+  AdminOrderCardDtoOutputOrderTotal,
   AdminOrderDtoOutput,
   AdminOrderDtoOutputOrder,
   AdminOrderDtoOutputOrderAcceptance,
@@ -219,8 +236,20 @@ part 'serializers.g.dart';
   AdminPickerDtoOutputCaptainsInnerCustody,
   AdminPickerDtoOutputCaptainsInnerCustodyLimit,
   AdminPickerDtoOutputCaptainsInnerCustodyUsage,
+  AdminRecordArrivalDto,
   AdminSessionDtoOutput,
   BackupCodesDtoOutput,
+  CaptainActiveOrderDtoOutput,
+  CaptainActiveOrderDtoOutputOrder,
+  CaptainActiveOrderDtoOutputOrderArrival,
+  CaptainActiveOrderDtoOutputOrderCollect,
+  CaptainActiveOrderDtoOutputOrderLinesInner,
+  CaptainActiveOrderDtoOutputOrderPickupPayment,
+  CaptainActiveOrderDtoOutputOrderPreparation,
+  CaptainActiveOrderDtoOutputOrderRestaurant,
+  CaptainActiveOrderDtoOutputOrderRestaurantLocation,
+  CaptainArriveDto,
+  CaptainArriveDtoLocation,
   CaptainAvailabilityDtoOutput,
   CaptainAvailabilityDtoOutputAvailability,
   CaptainAvailabilityDtoOutputCustody,
@@ -242,6 +271,8 @@ part 'serializers.g.dart';
   CaptainLocationsSavedDtoOutput,
   CaptainOfferDtoOutput,
   CaptainOfferDtoOutputOffer,
+  CaptainOrderDtoOutput,
+  CaptainOrderDtoOutputOrder,
   CaptainRefreshDto,
   CaptainSessionDtoOutput,
   CaptainSignInDto,
@@ -336,6 +367,7 @@ part 'serializers.g.dart';
   MerchantOrdersDtoOutputOrdersInner,
   MerchantOrdersDtoOutputOrdersInnerAcceptance,
   MerchantOrdersDtoOutputOrdersInnerCaptain,
+  MerchantOrdersDtoOutputOrdersInnerCaptainArrival,
   MerchantOrdersDtoOutputOrdersInnerCustomer,
   MerchantOrdersDtoOutputOrdersInnerLinesInner,
   MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner,
@@ -433,6 +465,10 @@ Serializers serializers =
             () => ListBuilder<CustomerQuoteDtoOutputRatesInner>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(AdminOrderCardDtoOutputOrder)]),
+            () => ListBuilder<AdminOrderCardDtoOutputOrder>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, [
               FullType(RoleMatrixDtoOutputRolesInner),
             ]),
@@ -443,12 +479,6 @@ Serializers serializers =
               FullType(CaptainAvailabilityDtoOutputCustodyLimit),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
-              FullType(AdminBoardDtoOutputOrdersInner),
-            ]),
-            () => ListBuilder<AdminBoardDtoOutputOrdersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -495,6 +525,12 @@ Serializers serializers =
               FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
             ]),
             () => ListBuilder<CaptainWentOfflineDtoOutputHandIn>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainActiveOrderDtoOutputOrderLinesInner),
+            ]),
+            () => ListBuilder<CaptainActiveOrderDtoOutputOrderLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

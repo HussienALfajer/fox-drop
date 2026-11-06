@@ -51,7 +51,9 @@ export type OrderEventType =
   | 'order.search_started'
   | 'order.offered'
   | 'order.offer_closed'
-  | 'order.assigned';
+  | 'order.assigned'
+  // CA §9.2: the captain reached the restaurant (track at_merchant).
+  | 'order.captain_arrived';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that
@@ -75,6 +77,10 @@ export async function recordTransition(
       device?: string;
     };
     reason: string | null;
+    // What the outbox publishes as the reason, the reason when left out. An
+    // operations note stays in the event row and the audit, never on the
+    // apps' channels (AP §10, RA §8.4): its transitions publish null.
+    publicReason?: string | null;
     at: Date;
     // The captain track after it, and the captain it is about (an offer's or
     // the one assigned); the order's own when left out.
@@ -115,7 +121,7 @@ export async function recordTransition(
       customerAccountId: order.customerAccountId,
       status: transition.to,
       version: transition.version,
-      reason: transition.reason,
+      reason: transition.publicReason === undefined ? transition.reason : transition.publicReason,
       at: transition.at.toISOString(),
       captainTrack,
       captainId,

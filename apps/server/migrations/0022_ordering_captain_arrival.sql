@@ -1,0 +1,3 @@
+ALTER TABLE "ordering"."orders" ADD COLUMN "arrived_at_merchant_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "ordering"."orders" ADD COLUMN "captain_waiting_alert_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "ordering"."orders" ADD CONSTRAINT "orders_arrival" CHECK (("arrived_at_merchant_at" IS NULL) = ("captain_waiting_alert_at" IS NULL) AND ("captain_track" NOT IN ('at_merchant', 'pickup_pending') OR "arrived_at_merchant_at" IS NOT NULL));

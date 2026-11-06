@@ -153,6 +153,9 @@ _$adminOrderDtoOutputOrderAlertsEnum_noCaptain =
 const AdminOrderDtoOutputOrderAlertsEnum
 _$adminOrderDtoOutputOrderAlertsEnum_noCaptainAfterReady =
     const AdminOrderDtoOutputOrderAlertsEnum._('noCaptainAfterReady');
+const AdminOrderDtoOutputOrderAlertsEnum
+_$adminOrderDtoOutputOrderAlertsEnum_captainWaiting =
+    const AdminOrderDtoOutputOrderAlertsEnum._('captainWaiting');
 
 AdminOrderDtoOutputOrderAlertsEnum _$adminOrderDtoOutputOrderAlertsEnumValueOf(
   String name,
@@ -166,6 +169,8 @@ AdminOrderDtoOutputOrderAlertsEnum _$adminOrderDtoOutputOrderAlertsEnumValueOf(
       return _$adminOrderDtoOutputOrderAlertsEnum_noCaptain;
     case 'noCaptainAfterReady':
       return _$adminOrderDtoOutputOrderAlertsEnum_noCaptainAfterReady;
+    case 'captainWaiting':
+      return _$adminOrderDtoOutputOrderAlertsEnum_captainWaiting;
     default:
       throw ArgumentError(name);
   }
@@ -179,6 +184,7 @@ _$adminOrderDtoOutputOrderAlertsEnumValues =
         _$adminOrderDtoOutputOrderAlertsEnum_prepLate,
         _$adminOrderDtoOutputOrderAlertsEnum_noCaptain,
         _$adminOrderDtoOutputOrderAlertsEnum_noCaptainAfterReady,
+        _$adminOrderDtoOutputOrderAlertsEnum_captainWaiting,
       ],
     );
 
@@ -293,12 +299,14 @@ class _$AdminOrderDtoOutputOrderAlertsEnumSerializer
     'prepLate': 'prep_late',
     'noCaptain': 'no_captain',
     'noCaptainAfterReady': 'no_captain_after_ready',
+    'captainWaiting': 'captain_waiting',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
     'prep_late': 'prepLate',
     'no_captain': 'noCaptain',
     'no_captain_after_ready': 'noCaptainAfterReady',
+    'captain_waiting': 'captainWaiting',
   };
 
   @override
@@ -335,7 +343,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
   @override
   final DateTime placedAt;
   @override
-  final AdminBoardDtoOutputOrdersInnerRestaurant restaurant;
+  final AdminOrderCardDtoOutputOrderRestaurant restaurant;
   @override
   final String neighbourhood;
   @override
@@ -345,13 +353,13 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
   @override
   final AdminOrderDtoOutputOrderCaptainTrackEnum? captainTrack;
   @override
-  final AdminBoardDtoOutputOrdersInnerCaptain? captain;
+  final AdminOrderCardDtoOutputOrderCaptain? captain;
   @override
-  final AdminBoardDtoOutputOrdersInnerTotal total;
+  final AdminOrderCardDtoOutputOrderTotal total;
   @override
-  final AdminBoardDtoOutputOrdersInnerBadges badges;
+  final AdminOrderCardDtoOutputOrderBadges badges;
   @override
-  final AdminBoardDtoOutputOrdersInnerMoments moments;
+  final AdminOrderCardDtoOutputOrderMoments moments;
   @override
   final BuiltList<AdminOrderDtoOutputOrderAlertsEnum> alerts;
   @override
@@ -530,10 +538,10 @@ class AdminOrderDtoOutputOrderBuilder
   DateTime? get placedAt => _$this._placedAt;
   set placedAt(DateTime? placedAt) => _$this._placedAt = placedAt;
 
-  AdminBoardDtoOutputOrdersInnerRestaurantBuilder? _restaurant;
-  AdminBoardDtoOutputOrdersInnerRestaurantBuilder get restaurant =>
-      _$this._restaurant ??= AdminBoardDtoOutputOrdersInnerRestaurantBuilder();
-  set restaurant(AdminBoardDtoOutputOrdersInnerRestaurantBuilder? restaurant) =>
+  AdminOrderCardDtoOutputOrderRestaurantBuilder? _restaurant;
+  AdminOrderCardDtoOutputOrderRestaurantBuilder get restaurant =>
+      _$this._restaurant ??= AdminOrderCardDtoOutputOrderRestaurantBuilder();
+  set restaurant(AdminOrderCardDtoOutputOrderRestaurantBuilder? restaurant) =>
       _$this._restaurant = restaurant;
 
   String? _neighbourhood;
@@ -555,28 +563,28 @@ class AdminOrderDtoOutputOrderBuilder
   set captainTrack(AdminOrderDtoOutputOrderCaptainTrackEnum? captainTrack) =>
       _$this._captainTrack = captainTrack;
 
-  AdminBoardDtoOutputOrdersInnerCaptainBuilder? _captain;
-  AdminBoardDtoOutputOrdersInnerCaptainBuilder get captain =>
-      _$this._captain ??= AdminBoardDtoOutputOrdersInnerCaptainBuilder();
-  set captain(AdminBoardDtoOutputOrdersInnerCaptainBuilder? captain) =>
+  AdminOrderCardDtoOutputOrderCaptainBuilder? _captain;
+  AdminOrderCardDtoOutputOrderCaptainBuilder get captain =>
+      _$this._captain ??= AdminOrderCardDtoOutputOrderCaptainBuilder();
+  set captain(AdminOrderCardDtoOutputOrderCaptainBuilder? captain) =>
       _$this._captain = captain;
 
-  AdminBoardDtoOutputOrdersInnerTotalBuilder? _total;
-  AdminBoardDtoOutputOrdersInnerTotalBuilder get total =>
-      _$this._total ??= AdminBoardDtoOutputOrdersInnerTotalBuilder();
-  set total(AdminBoardDtoOutputOrdersInnerTotalBuilder? total) =>
+  AdminOrderCardDtoOutputOrderTotalBuilder? _total;
+  AdminOrderCardDtoOutputOrderTotalBuilder get total =>
+      _$this._total ??= AdminOrderCardDtoOutputOrderTotalBuilder();
+  set total(AdminOrderCardDtoOutputOrderTotalBuilder? total) =>
       _$this._total = total;
 
-  AdminBoardDtoOutputOrdersInnerBadgesBuilder? _badges;
-  AdminBoardDtoOutputOrdersInnerBadgesBuilder get badges =>
-      _$this._badges ??= AdminBoardDtoOutputOrdersInnerBadgesBuilder();
-  set badges(AdminBoardDtoOutputOrdersInnerBadgesBuilder? badges) =>
+  AdminOrderCardDtoOutputOrderBadgesBuilder? _badges;
+  AdminOrderCardDtoOutputOrderBadgesBuilder get badges =>
+      _$this._badges ??= AdminOrderCardDtoOutputOrderBadgesBuilder();
+  set badges(AdminOrderCardDtoOutputOrderBadgesBuilder? badges) =>
       _$this._badges = badges;
 
-  AdminBoardDtoOutputOrdersInnerMomentsBuilder? _moments;
-  AdminBoardDtoOutputOrdersInnerMomentsBuilder get moments =>
-      _$this._moments ??= AdminBoardDtoOutputOrdersInnerMomentsBuilder();
-  set moments(AdminBoardDtoOutputOrdersInnerMomentsBuilder? moments) =>
+  AdminOrderCardDtoOutputOrderMomentsBuilder? _moments;
+  AdminOrderCardDtoOutputOrderMomentsBuilder get moments =>
+      _$this._moments ??= AdminOrderCardDtoOutputOrderMomentsBuilder();
+  set moments(AdminOrderCardDtoOutputOrderMomentsBuilder? moments) =>
       _$this._moments = moments;
 
   ListBuilder<AdminOrderDtoOutputOrderAlertsEnum>? _alerts;

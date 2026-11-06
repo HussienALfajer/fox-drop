@@ -281,6 +281,8 @@ class _$MerchantOrdersDtoOutputOrdersInner
   final MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum? captainTrack;
   @override
   final MerchantOrdersDtoOutputOrdersInnerCaptain? captain;
+  @override
+  final MerchantOrdersDtoOutputOrdersInnerCaptainArrival? captainArrival;
 
   factory _$MerchantOrdersDtoOutputOrdersInner([
     void Function(MerchantOrdersDtoOutputOrdersInnerBuilder)? updates,
@@ -303,6 +305,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
     required this.itemsValue,
     this.captainTrack,
     this.captain,
+    this.captainArrival,
   }) : super._();
   @override
   MerchantOrdersDtoOutputOrdersInner rebuild(
@@ -332,7 +335,8 @@ class _$MerchantOrdersDtoOutputOrdersInner
         currency == other.currency &&
         itemsValue == other.itemsValue &&
         captainTrack == other.captainTrack &&
-        captain == other.captain;
+        captain == other.captain &&
+        captainArrival == other.captainArrival;
   }
 
   @override
@@ -354,6 +358,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
     _$hash = $jc(_$hash, itemsValue.hashCode);
     _$hash = $jc(_$hash, captainTrack.hashCode);
     _$hash = $jc(_$hash, captain.hashCode);
+    _$hash = $jc(_$hash, captainArrival.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -376,7 +381,8 @@ class _$MerchantOrdersDtoOutputOrdersInner
           ..add('currency', currency)
           ..add('itemsValue', itemsValue)
           ..add('captainTrack', captainTrack)
-          ..add('captain', captain))
+          ..add('captain', captain)
+          ..add('captainArrival', captainArrival))
         .toString();
   }
 }
@@ -470,6 +476,14 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
   set captain(MerchantOrdersDtoOutputOrdersInnerCaptainBuilder? captain) =>
       _$this._captain = captain;
 
+  MerchantOrdersDtoOutputOrdersInnerCaptainArrivalBuilder? _captainArrival;
+  MerchantOrdersDtoOutputOrdersInnerCaptainArrivalBuilder get captainArrival =>
+      _$this._captainArrival ??=
+          MerchantOrdersDtoOutputOrdersInnerCaptainArrivalBuilder();
+  set captainArrival(
+    MerchantOrdersDtoOutputOrdersInnerCaptainArrivalBuilder? captainArrival,
+  ) => _$this._captainArrival = captainArrival;
+
   MerchantOrdersDtoOutputOrdersInnerBuilder() {
     MerchantOrdersDtoOutputOrdersInner._defaults(this);
   }
@@ -493,6 +507,7 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
       _itemsValue = $v.itemsValue;
       _captainTrack = $v.captainTrack;
       _captain = $v.captain?.toBuilder();
+      _captainArrival = $v.captainArrival?.toBuilder();
       _$v = null;
     }
     return this;
@@ -563,6 +578,7 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
             ),
             captainTrack: captainTrack,
             captain: _captain?.build(),
+            captainArrival: _captainArrival?.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -578,6 +594,8 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
 
         _$failedField = 'captain';
         _captain?.build();
+        _$failedField = 'captainArrival';
+        _captainArrival?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'MerchantOrdersDtoOutputOrdersInner',

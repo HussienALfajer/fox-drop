@@ -8,7 +8,7 @@ part of 'admin_board_dto_output.dart';
 
 class _$AdminBoardDtoOutput extends AdminBoardDtoOutput {
   @override
-  final BuiltList<AdminBoardDtoOutputOrdersInner> orders;
+  final BuiltList<AdminOrderCardDtoOutputOrder> orders;
 
   factory _$AdminBoardDtoOutput([
     void Function(AdminBoardDtoOutputBuilder)? updates,
@@ -50,10 +50,10 @@ class AdminBoardDtoOutputBuilder
     implements Builder<AdminBoardDtoOutput, AdminBoardDtoOutputBuilder> {
   _$AdminBoardDtoOutput? _$v;
 
-  ListBuilder<AdminBoardDtoOutputOrdersInner>? _orders;
-  ListBuilder<AdminBoardDtoOutputOrdersInner> get orders =>
-      _$this._orders ??= ListBuilder<AdminBoardDtoOutputOrdersInner>();
-  set orders(ListBuilder<AdminBoardDtoOutputOrdersInner>? orders) =>
+  ListBuilder<AdminOrderCardDtoOutputOrder>? _orders;
+  ListBuilder<AdminOrderCardDtoOutputOrder> get orders =>
+      _$this._orders ??= ListBuilder<AdminOrderCardDtoOutputOrder>();
+  set orders(ListBuilder<AdminOrderCardDtoOutputOrder>? orders) =>
       _$this._orders = orders;
 
   AdminBoardDtoOutputBuilder() {

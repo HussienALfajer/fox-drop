@@ -20,7 +20,10 @@ export type OperationsAlert =
   // «طلب بلا كابتن»: dispatch.no_captain_alert_min after the search started.
   | 'no_captain'
   // No captain dispatch.no_captain_after_ready_min after ready.
-  | 'no_captain_after_ready';
+  | 'no_captain_after_ready'
+  // «كابتن ينتظر عند المطعم»: captain.waiting_threshold_min at the
+  // restaurant before pickup (RA §8.9).
+  | 'captain_waiting';
 
 // An order as the operations board shows it (AP §9.2.1) and the detail's
 // header (AP §9.3.1).
@@ -39,6 +42,8 @@ export interface OperationsOrder {
     searchStartedAt: Date | null;
     searchAlertAt: Date | null;
     noCaptainAlertAt: Date | null;
+    captainArrivedAt: Date | null;
+    captainWaitingAlertAt: Date | null;
   };
   alerts: OperationsAlert[];
   // The badges built so far: «بحاجة لتعيين», «ملاحظة», «زبون جديد».
@@ -168,6 +173,11 @@ export class OperationsViews {
       if (view.status === 'ready' && more.captainId === null && passed(more.noCaptainAlertAt)) {
         alerts.push('no_captain_after_ready');
       }
+      const atRestaurant =
+        more.captainTrack === 'at_merchant' || more.captainTrack === 'pickup_pending';
+      if (waiting && atRestaurant && passed(view.captainArrival?.waitingAlertAt ?? null)) {
+        alerts.push('captain_waiting');
+      }
       return {
         order: view,
         restaurantName: names.get(view.restaurantId)?.nameAr ?? '',
@@ -198,6 +208,8 @@ export class OperationsViews {
           searchStartedAt: more.searchStartedAt,
           searchAlertAt: more.searchAlertAt,
           noCaptainAlertAt: more.noCaptainAlertAt,
+          captainArrivedAt: view.captainArrival?.at ?? null,
+          captainWaitingAlertAt: view.captainArrival?.waitingAlertAt ?? null,
         },
         alerts,
         needsAssignment: more.captainTrack === 'searching',

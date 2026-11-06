@@ -6,19 +6,19 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_board_dto_output_orders_inner_restaurant.g.dart';
+part 'admin_order_card_dto_output_order_restaurant.g.dart';
 
-/// AdminBoardDtoOutputOrdersInnerRestaurant
+/// AdminOrderCardDtoOutputOrderRestaurant
 ///
 /// Properties:
 /// * [id]
 /// * [name]
 @BuiltValue()
-abstract class AdminBoardDtoOutputOrdersInnerRestaurant
+abstract class AdminOrderCardDtoOutputOrderRestaurant
     implements
         Built<
-          AdminBoardDtoOutputOrdersInnerRestaurant,
-          AdminBoardDtoOutputOrdersInnerRestaurantBuilder
+          AdminOrderCardDtoOutputOrderRestaurant,
+          AdminOrderCardDtoOutputOrderRestaurantBuilder
         > {
   @BuiltValueField(wireName: r'id')
   String get id;
@@ -26,34 +26,34 @@ abstract class AdminBoardDtoOutputOrdersInnerRestaurant
   @BuiltValueField(wireName: r'name')
   String get name;
 
-  AdminBoardDtoOutputOrdersInnerRestaurant._();
+  AdminOrderCardDtoOutputOrderRestaurant._();
 
-  factory AdminBoardDtoOutputOrdersInnerRestaurant([
-    void updates(AdminBoardDtoOutputOrdersInnerRestaurantBuilder b),
-  ]) = _$AdminBoardDtoOutputOrdersInnerRestaurant;
+  factory AdminOrderCardDtoOutputOrderRestaurant([
+    void updates(AdminOrderCardDtoOutputOrderRestaurantBuilder b),
+  ]) = _$AdminOrderCardDtoOutputOrderRestaurant;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminBoardDtoOutputOrdersInnerRestaurantBuilder b) => b;
+  static void _defaults(AdminOrderCardDtoOutputOrderRestaurantBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminBoardDtoOutputOrdersInnerRestaurant> get serializer =>
-      _$AdminBoardDtoOutputOrdersInnerRestaurantSerializer();
+  static Serializer<AdminOrderCardDtoOutputOrderRestaurant> get serializer =>
+      _$AdminOrderCardDtoOutputOrderRestaurantSerializer();
 }
 
-class _$AdminBoardDtoOutputOrdersInnerRestaurantSerializer
-    implements PrimitiveSerializer<AdminBoardDtoOutputOrdersInnerRestaurant> {
+class _$AdminOrderCardDtoOutputOrderRestaurantSerializer
+    implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderRestaurant> {
   @override
   final Iterable<Type> types = const [
-    AdminBoardDtoOutputOrdersInnerRestaurant,
-    _$AdminBoardDtoOutputOrdersInnerRestaurant,
+    AdminOrderCardDtoOutputOrderRestaurant,
+    _$AdminOrderCardDtoOutputOrderRestaurant,
   ];
 
   @override
-  final String wireName = r'AdminBoardDtoOutputOrdersInnerRestaurant';
+  final String wireName = r'AdminOrderCardDtoOutputOrderRestaurant';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminBoardDtoOutputOrdersInnerRestaurant object, {
+    AdminOrderCardDtoOutputOrderRestaurant object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'id';
@@ -71,7 +71,7 @@ class _$AdminBoardDtoOutputOrdersInnerRestaurantSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminBoardDtoOutputOrdersInnerRestaurant object, {
+    AdminOrderCardDtoOutputOrderRestaurant object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -86,7 +86,7 @@ class _$AdminBoardDtoOutputOrdersInnerRestaurantSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminBoardDtoOutputOrdersInnerRestaurantBuilder result,
+    required AdminOrderCardDtoOutputOrderRestaurantBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -120,12 +120,12 @@ class _$AdminBoardDtoOutputOrdersInnerRestaurantSerializer
   }
 
   @override
-  AdminBoardDtoOutputOrdersInnerRestaurant deserialize(
+  AdminOrderCardDtoOutputOrderRestaurant deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminBoardDtoOutputOrdersInnerRestaurantBuilder();
+    final result = AdminOrderCardDtoOutputOrderRestaurantBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

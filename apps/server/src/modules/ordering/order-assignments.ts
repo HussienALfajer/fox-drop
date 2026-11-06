@@ -15,7 +15,7 @@ type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 type Executor = Pick<NodePgDatabase, 'select'>;
 
 // AP §9.12.6: a captain's assigned order counts until it ends.
-const CAPTAIN_ACTIVE: OrderStatus[] = ['accepted', 'ready', 'picked_up', 'arrived'];
+export const CAPTAIN_ACTIVE: OrderStatus[] = ['accepted', 'ready', 'picked_up', 'arrived'];
 
 // What dispatch reads of an order (AP §9.3.2, §9.12.6; CA §8.2): its state,
 // its captain track and what an offer shows. Money is in the order's

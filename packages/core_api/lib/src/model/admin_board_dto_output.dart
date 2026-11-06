@@ -4,7 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_board_dto_output_orders_inner.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -19,7 +19,7 @@ abstract class AdminBoardDtoOutput
     implements Built<AdminBoardDtoOutput, AdminBoardDtoOutputBuilder> {
   /// Every live order, oldest first.
   @BuiltValueField(wireName: r'orders')
-  BuiltList<AdminBoardDtoOutputOrdersInner> get orders;
+  BuiltList<AdminOrderCardDtoOutputOrder> get orders;
 
   AdminBoardDtoOutput._();
 
@@ -54,7 +54,7 @@ class _$AdminBoardDtoOutputSerializer
     yield serializers.serialize(
       object.orders,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminBoardDtoOutputOrdersInner),
+        FullType(AdminOrderCardDtoOutputOrder),
       ]),
     );
   }
@@ -89,10 +89,10 @@ class _$AdminBoardDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(AdminBoardDtoOutputOrdersInner),
+                      FullType(AdminOrderCardDtoOutputOrder),
                     ]),
                   )
-                  as BuiltList<AdminBoardDtoOutputOrdersInner>;
+                  as BuiltList<AdminOrderCardDtoOutputOrder>;
           result.orders.replace(valueDes);
           break;
         default:

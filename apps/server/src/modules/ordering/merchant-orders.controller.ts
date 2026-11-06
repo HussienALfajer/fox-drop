@@ -101,6 +101,19 @@ const boardOrder = z.object({
     })
     .nullable()
     .describe('From assignment (RA §8.9); the photo and the ETA come with their slices.'),
+  captainArrival: z
+    .object({
+      at: z.iso
+        .datetime()
+        .describe('«وصل الكابتن {الاسم} لاستلام الطلب #{رقم}»; the waiting timer counts from it.'),
+      waitingAlertAt: z.iso
+        .datetime()
+        .describe(
+          'Not picked up by then: every device chimes «الكابتن ينتظر الطلب #{رقم} منذ {د} دقائق» (RA §8.9).',
+        ),
+    })
+    .nullable()
+    .describe('While the captain waits at the restaurant (RA §8.9), else null.'),
 });
 
 class MerchantOrdersDto extends createZodDto(
@@ -308,6 +321,16 @@ export class MerchantOrdersController {
       itemsValue: order.money.itemsValue.toString(),
       captainTrack: order.captainTrack,
       captain: captainLine(order.captainId === null ? undefined : captains.get(order.captainId)),
+      // RA §8.9: only while the captain waits at the restaurant, so the app
+      // never chimes after pickup.
+      captainArrival:
+        order.captainArrival &&
+        (order.captainTrack === 'at_merchant' || order.captainTrack === 'pickup_pending')
+          ? {
+              at: order.captainArrival.at.toISOString(),
+              waitingAlertAt: order.captainArrival.waitingAlertAt.toISOString(),
+            }
+          : null,
     }));
   }
 }
