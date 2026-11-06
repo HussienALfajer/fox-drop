@@ -60,7 +60,9 @@ export type OrderEventType =
   | 'order.pickup_requested'
   | 'order.pickup_rejected'
   | 'order.picked_up'
-  | 'order.pickup_disputed';
+  | 'order.pickup_disputed'
+  // CA §9.6: the captain at the customer (status arrived, track at_customer).
+  | 'order.arrived_at_customer';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that

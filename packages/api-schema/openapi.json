@@ -2638,6 +2638,63 @@
         ]
       }
     },
+    "/v1/captain/orders/{orderId}/arrive-at-customer": {
+      "post": {
+        "operationId": "captainOrdersArriveAtCustomer",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptainArriveAtCustomerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
     "/v1/captain/orders/{orderId}/pickup-request": {
       "post": {
         "operationId": "captainOrdersRequestPickup",
@@ -9726,10 +9783,11 @@
                     "no_captain",
                     "no_captain_after_ready",
                     "captain_waiting",
-                    "pickup_disputed"
+                    "pickup_disputed",
+                    "away_from_address"
                   ]
                 },
-                "description": "AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام»."
+                "description": "AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام», «تسليم بعيد عن العنوان»."
               }
             },
             "required": [
@@ -10065,10 +10123,11 @@
                       "no_captain",
                       "no_captain_after_ready",
                       "captain_waiting",
-                      "pickup_disputed"
+                      "pickup_disputed",
+                      "away_from_address"
                     ]
                   },
-                  "description": "AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام»."
+                  "description": "AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام», «تسليم بعيد عن العنوان»."
                 }
               },
               "required": [
@@ -10390,10 +10449,11 @@
                     "no_captain",
                     "no_captain_after_ready",
                     "captain_waiting",
-                    "pickup_disputed"
+                    "pickup_disputed",
+                    "away_from_address"
                   ]
                 },
-                "description": "AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام»."
+                "description": "AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام», «تسليم بعيد عن العنوان»."
               },
               "promisedAt": {
                 "anyOf": [
@@ -10550,13 +10610,69 @@
                       "string",
                       "null"
                     ]
+                  },
+                  "arrival": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "away": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "reason": {
+                                    "type": "string",
+                                    "enum": [
+                                      "customer_requested_other_place",
+                                      "pin_inaccurate",
+                                      "other"
+                                    ]
+                                  },
+                                  "note": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "reason",
+                                  "note"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "The reason given beyond captain.customer_radius_m (CA §9.6)."
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "away"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The captain at the customer (CA §9.6)."
                   }
                 },
                 "required": [
                   "name",
                   "address",
                   "recipientName",
-                  "payIn"
+                  "payIn",
+                  "arrival"
                 ],
                 "additionalProperties": false,
                 "description": "The phone, masked and revealed with a log (AP §5.4), comes with its slice."
@@ -11601,6 +11717,189 @@
                     ],
                     "additionalProperties": false,
                     "description": "Step 2 and the pickup request (CA §9.3–9.4)."
+                  },
+                  "customer": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "description": "The recipient's name when the order is for someone else, else the customer's.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "phone": {
+                        "description": "«اتصال بالزبون» and «واتساب الزبون» (C10) open it; the app shows it nowhere else.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "location": {
+                        "type": "object",
+                        "properties": {
+                          "latitude": {
+                            "type": "number"
+                          },
+                          "longitude": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "latitude",
+                          "longitude"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The exact pin, with the route and «ابدأ الملاحة»."
+                      },
+                      "address": {
+                        "type": "object",
+                        "properties": {
+                          "neighbourhood": {
+                            "type": "string",
+                            "description": "«الحي»."
+                          },
+                          "label": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "home",
+                                  "work",
+                                  "other"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "customLabel": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "street": {
+                            "type": "string"
+                          },
+                          "floor": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "landmark": {
+                            "type": "string"
+                          },
+                          "directions": {
+                            "description": "The customer's directions.",
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "neighbourhood",
+                          "label",
+                          "customLabel",
+                          "street",
+                          "floor",
+                          "landmark",
+                          "directions"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "payIn": {
+                        "description": "«الزبون سيدفع بـ {العملة}», an indication only (CU U10).",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "collectEquivalents": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "pattern": "^-?\\d+$",
+                              "description": "Integer minor units (AP §8.6)."
+                            },
+                            "currency": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 3
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "description": "«تقبض من الزبون» in the other accepted currencies, each by its rounding."
+                      },
+                      "promisedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                        "description": "«التسليم المتوقع قبل {الساعة}»."
+                      },
+                      "arrival": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "at": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                              },
+                              "awayReason": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "customer_requested_other_place",
+                                      "pin_inaccurate",
+                                      "other"
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "The reason given away from the pin; it covers the delivery too (K4)."
+                              }
+                            },
+                            "required": [
+                              "at",
+                              "awayReason"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "Null until «وصلت» at the customer (CA §9.6)."
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "phone",
+                      "location",
+                      "address",
+                      "payIn",
+                      "collectEquivalents",
+                      "promisedAt",
+                      "arrival"
+                    ],
+                    "additionalProperties": false,
+                    "description": "Steps 3 and 4, to and at the customer (CA §9.5–9.6)."
                   }
                 },
                 "required": [
@@ -11617,10 +11916,11 @@
                   "note",
                   "pickupPayment",
                   "collect",
-                  "pickup"
+                  "pickup",
+                  "customer"
                 ],
                 "additionalProperties": false,
-                "description": "The active order (CA §9); the customer block joins with the delivery slice."
+                "description": "The active order (CA §9)."
               },
               {
                 "type": "null"
@@ -12152,6 +12452,189 @@
                 ],
                 "additionalProperties": false,
                 "description": "Step 2 and the pickup request (CA §9.3–9.4)."
+              },
+              "customer": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "The recipient's name when the order is for someone else, else the customer's.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "phone": {
+                    "description": "«اتصال بالزبون» and «واتساب الزبون» (C10) open it; the app shows it nowhere else.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "location": {
+                    "type": "object",
+                    "properties": {
+                      "latitude": {
+                        "type": "number"
+                      },
+                      "longitude": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "latitude",
+                      "longitude"
+                    ],
+                    "additionalProperties": false,
+                    "description": "The exact pin, with the route and «ابدأ الملاحة»."
+                  },
+                  "address": {
+                    "type": "object",
+                    "properties": {
+                      "neighbourhood": {
+                        "type": "string",
+                        "description": "«الحي»."
+                      },
+                      "label": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "home",
+                              "work",
+                              "other"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "customLabel": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "street": {
+                        "type": "string"
+                      },
+                      "floor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "landmark": {
+                        "type": "string"
+                      },
+                      "directions": {
+                        "description": "The customer's directions.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "neighbourhood",
+                      "label",
+                      "customLabel",
+                      "street",
+                      "floor",
+                      "landmark",
+                      "directions"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "payIn": {
+                    "description": "«الزبون سيدفع بـ {العملة}», an indication only (CU U10).",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "collectEquivalents": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "amount": {
+                          "type": "string",
+                          "pattern": "^-?\\d+$",
+                          "description": "Integer minor units (AP §8.6)."
+                        },
+                        "currency": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 3
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "currency"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "«تقبض من الزبون» in the other accepted currencies, each by its rounding."
+                  },
+                  "promisedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "«التسليم المتوقع قبل {الساعة}»."
+                  },
+                  "arrival": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "awayReason": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "customer_requested_other_place",
+                                  "pin_inaccurate",
+                                  "other"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "The reason given away from the pin; it covers the delivery too (K4)."
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "awayReason"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Null until «وصلت» at the customer (CA §9.6)."
+                  }
+                },
+                "required": [
+                  "name",
+                  "phone",
+                  "location",
+                  "address",
+                  "payIn",
+                  "collectEquivalents",
+                  "promisedAt",
+                  "arrival"
+                ],
+                "additionalProperties": false,
+                "description": "Steps 3 and 4, to and at the customer (CA §9.5–9.6)."
               }
             },
             "required": [
@@ -12168,16 +12651,100 @@
               "note",
               "pickupPayment",
               "collect",
-              "pickup"
+              "pickup",
+              "customer"
             ],
             "additionalProperties": false,
-            "description": "The active order (CA §9); the customer block joins with the delivery slice."
+            "description": "The active order (CA §9)."
           }
         },
         "required": [
           "order"
         ],
         "additionalProperties": false
+      },
+      "CaptainArriveAtCustomerDto": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "object",
+            "properties": {
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "accuracyMetres": {
+                "type": "number",
+                "minimum": 0
+              },
+              "recordedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "simulated": {
+                "type": "boolean",
+                "description": "The device reports a mock location."
+              }
+            },
+            "required": [
+              "latitude",
+              "longitude",
+              "accuracyMetres",
+              "recordedAt",
+              "simulated"
+            ],
+            "description": "The latest GPS fix."
+          },
+          "away": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "customer_requested_other_place",
+                      "pin_inaccurate",
+                      "other"
+                    ]
+                  },
+                  "note": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The text of «أخرى» only."
+                  }
+                },
+                "required": [
+                  "reason",
+                  "note"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Needed beyond captain.customer_radius_m of the pin: «الزبون طلب مكاناً آخر», «موقع الزبون على الخريطة غير دقيق», «أخرى»."
+          }
+        },
+        "required": [
+          "location",
+          "away"
+        ]
       },
       "CaptainPickupRequestDto": {
         "type": "object",

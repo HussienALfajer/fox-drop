@@ -55,6 +55,11 @@ export const captainTracks = [
 
 export const addressLabels = ['home', 'work', 'other'] as const;
 
+// CA Appendix C (C9, K4): why the captain arrived or delivered away from the
+// pin: «الزبون طلب مكاناً آخر», «موقع الزبون على الخريطة غير دقيق», «أخرى»
+// (with text).
+export const awayReasons = ['customer_requested_other_place', 'pin_inaccurate', 'other'] as const;
+
 // AP §4.8: the order numbers are sequential per city, from 10001 (owner
 // decision 2026-11-06). The row is taken last in the order's transaction, so
 // a refused order leaves no gap and the lock is held briefly.
@@ -152,6 +157,13 @@ export const orders = ordering.table(
     // is «لم يُضغط جاهز»: ready was recorded at the pickup (S8).
     pickedUpAt: timestamp('picked_up_at', { withTimezone: true }),
     readyByPickup: boolean('ready_by_pickup'),
+    // CA §9.6: «وصلت» at the customer (status arrived, track at_customer).
+    // Away from the pin beyond captain.customer_radius_m, the captain's reason
+    // (CA Appendix C, K4), which covers the delivery too, with its text for
+    // «أخرى»; operations see «تسليم بعيد عن العنوان» (AP §9.1.3).
+    arrivedAtCustomerAt: timestamp('arrived_at_customer_at', { withTimezone: true }),
+    awayReason: text('away_reason', { enum: awayReasons }),
+    awayNote: text('away_note'),
     // The address snapshot (CU §7.3–7.4, Q6): the saved address it was copied
     // from, or null for an unsaved one; «الحي» is the zone at placing.
     addressId: uuid('address_id'),
@@ -226,6 +238,14 @@ export const orders = ordering.table(
     check(
       'orders_pickup',
       sql`(${table.pickedUpAt} IS NULL) = (${table.readyByPickup} IS NULL) AND (${table.status} NOT IN ('picked_up', 'arrived', 'delivered', 'failed') OR (${table.pickedUpAt} IS NOT NULL AND ${table.readyAt} IS NOT NULL))`,
+    ),
+    check(
+      'orders_customer_arrival',
+      sql`(${table.status} <> 'arrived' OR ${table.arrivedAtCustomerAt} IS NOT NULL) AND (${table.captainTrack} IS DISTINCT FROM 'at_customer' OR ${table.arrivedAtCustomerAt} IS NOT NULL)`,
+    ),
+    check(
+      'orders_away_reason',
+      sql`(${table.awayReason} IS NULL OR ${table.awayReason} IN ('customer_requested_other_place', 'pin_inaccurate', 'other')) AND (${table.awayNote} IS NOT NULL) = (${table.awayReason} IS NOT DISTINCT FROM 'other') AND char_length(${table.awayNote}) BETWEEN 1 AND 200`,
     ),
     check(
       'orders_trip',

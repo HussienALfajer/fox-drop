@@ -7,9 +7,11 @@ The handover note between sessions: the current task, its branch, its plan, and 
 Slice 1.13, delivery and money (`docs/roadmap.md`, Phase 1): arrival at the customer, payment at the door with change, delivery, the custody, earnings, commission and platform entries, a full-cycle test that matches AP §8.4.
 
 - **Specs:** CA §9.5–9.8 (step 3 to the customer, step 4 at the customer, payment at the door, delivery and the order summary), CA §15; AP §8.4–8.11 (the order money, custody and earnings, currencies, the restaurant account, outcomes, platform accounts), docs/domain/04, 05, 09, 11; AP §9.3.2 «تسجيل التسليم نيابة عن الكابتن»; CU §11 (what the customer sees at delivery).
-- **Branch:** to name with the owner, after the split.
-- **Ask the owner first:** the split into pull requests and whether it stays server and API only, as slices 1.7–1.12 did; whether waiting pay counts towards the minimum pay (slice 1.6's note); the arrival radius at the customer (CA §9.6: 200 m, or with a reason); the two points of slice 1.12 below (the fix age and the simulated fix).
-- **Plan:** to write as a checklist once the owner has answered.
+- **Branches:** `feat/customer-arrival`, then `feat/delivery`.
+- **Owner decisions 2026-11-06:** two pull requests, server and API only (the screens wait for the design); the arrival and delivery at the customer follow the restaurant arrival's fix rules (a fix from the last minute, 100 m or better, not simulated) with `captain.customer_radius_m` (200 m) and a reason beyond it; the peak bonus waits for the peak windows' slice; `min_pay` applies to the order pay only, as docs/domain/04 says, and waiting pay is added on top (slice 1.6's `orderPay` changes); the door takes every accepted currency of the city (CA §9.7), the clearing account brought back to zero in the base through `platform.fx_rounding` at the order's rates; the restaurant's board keeps an order until its pickup dispute window ends.
+- **Plan:**
+  - [ ] Pull request 1, `feat/customer-arrival`: the customer block of the captain's active order (CA §9.5), `POST /v1/captain/orders/{orderId}/arrive-at-customer` with the away reason (CA §9.6, K4), operations' «تسليم بعيد عن العنوان» and the arrival in the detail.
+  - [ ] Pull request 2, `feat/delivery`: the pay parts with `min_pay` on the order pay only; the door payment check (CA §9.7) and `POST /v1/captain/orders/{orderId}/deliver` with the custody, rounding, delivery fee, commission and pay journals (AP §8.4–8.6) and the summary (CA §9.8); operations' «تسجيل التسليم نيابة عن الكابتن» (AP §9.3.2) and the collection in the detail; the outcome `normal` and D23's count; the restaurant's board until the dispute window ends; a full-cycle test that matches AP §8.4.
 
 ## Notes from earlier slices
 

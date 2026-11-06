@@ -11,12 +11,13 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_lines_i
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_customer.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'captain_active_order_dto_output_order.g.dart';
 
-/// The active order (CA §9); the customer block joins with the delivery slice.
+/// The active order (CA §9).
 ///
 /// Properties:
 /// * [id]
@@ -33,6 +34,7 @@ part 'captain_active_order_dto_output_order.g.dart';
 /// * [pickupPayment]
 /// * [collect]
 /// * [pickup]
+/// * [customer]
 @BuiltValue()
 abstract class CaptainActiveOrderDtoOutputOrder
     implements
@@ -88,6 +90,9 @@ abstract class CaptainActiveOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'pickup')
   CaptainActiveOrderDtoOutputOrderPickup get pickup;
+
+  @BuiltValueField(wireName: r'customer')
+  CaptainActiveOrderDtoOutputOrderCustomer get customer;
 
   CaptainActiveOrderDtoOutputOrder._();
 
@@ -202,6 +207,11 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
     yield serializers.serialize(
       object.pickup,
       specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderPickup),
+    );
+    yield r'customer';
+    yield serializers.serialize(
+      object.customer,
+      specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderCustomer),
     );
   }
 
@@ -369,6 +379,17 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
                   )
                   as CaptainActiveOrderDtoOutputOrderPickup;
           result.pickup.replace(valueDes);
+          break;
+        case r'customer':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainActiveOrderDtoOutputOrderCustomer,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderCustomer;
+          result.customer.replace(valueDes);
           break;
         default:
           unhandled.add(key);

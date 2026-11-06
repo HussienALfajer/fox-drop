@@ -1,0 +1,5 @@
+ALTER TABLE "ordering"."orders" ADD COLUMN "arrived_at_customer_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "ordering"."orders" ADD COLUMN "away_reason" text;--> statement-breakpoint
+ALTER TABLE "ordering"."orders" ADD COLUMN "away_note" text;--> statement-breakpoint
+ALTER TABLE "ordering"."orders" ADD CONSTRAINT "orders_customer_arrival" CHECK (("status" <> 'arrived' OR "arrived_at_customer_at" IS NOT NULL) AND ("captain_track" IS DISTINCT FROM 'at_customer' OR "arrived_at_customer_at" IS NOT NULL));--> statement-breakpoint
+ALTER TABLE "ordering"."orders" ADD CONSTRAINT "orders_away_reason" CHECK (("away_reason" IS NULL OR "away_reason" IN ('customer_requested_other_place', 'pin_inaccurate', 'other')) AND ("away_note" IS NOT NULL) = ("away_reason" IS NOT DISTINCT FROM 'other') AND char_length("away_note") BETWEEN 1 AND 200);

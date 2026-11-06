@@ -27,7 +27,7 @@ import { OrderCommandRefusedError } from './order-commands.js';
 import { PickupCommands } from './pickup-commands.js';
 import { minor } from './customer-quote.controller.js';
 import { type OperationsOrder, OperationsViews } from './operations-views.js';
-import { captainTracks, orderStatuses } from './schema.js';
+import { awayReasons, captainTracks, orderStatuses } from './schema.js';
 
 const money = z.object({ amount: minor, currency: z.string().length(3) });
 const alerts = z
@@ -39,10 +39,11 @@ const alerts = z
       'no_captain_after_ready',
       'captain_waiting',
       'pickup_disputed',
+      'away_from_address',
     ]),
   )
   .describe(
-    'AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام».',
+    'AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام», «تسليم بعيد عن العنوان».',
   );
 
 const card = z.object({
@@ -132,6 +133,16 @@ class AdminOrderDto extends createZodDto(
           }),
           recipientName: z.string().nullable(),
           payIn: z.string().nullable().describe('«سأدفع بـ».'),
+          arrival: z
+            .object({
+              at: z.iso.datetime(),
+              away: z
+                .object({ reason: z.enum(awayReasons), note: z.string().nullable() })
+                .nullable()
+                .describe('The reason given beyond captain.customer_radius_m (CA §9.6).'),
+            })
+            .nullable()
+            .describe('The captain at the customer (CA §9.6).'),
         })
         .describe('The phone, masked and revealed with a log (AP §5.4), comes with its slice.'),
       note: z.string().nullable(),
@@ -416,6 +427,10 @@ export class AdminOrdersController {
           },
           recipientName: order.address.recipientName,
           payIn: order.payIn,
+          arrival: order.customerArrival && {
+            at: order.customerArrival.at.toISOString(),
+            away: order.away,
+          },
         },
         note: order.note,
         lines: order.lines.map((line) => ({

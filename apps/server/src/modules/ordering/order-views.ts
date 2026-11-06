@@ -4,9 +4,10 @@ import { equivalent, type RateSnapshot } from '../fx/index.js';
 import type { Point } from '../geo/index.js';
 import type { CaptainTrack } from './order-events.js';
 import type { QuoteMoney } from './quote.js';
-import { orderEvents, orderLines, orders, type orderStatuses } from './schema.js';
+import { type awayReasons, orderEvents, orderLines, orders, type orderStatuses } from './schema.js';
 
 type OrderStatus = (typeof orderStatuses)[number];
+export type AwayReason = (typeof awayReasons)[number];
 type Executor = Pick<NodePgDatabase, 'select'>;
 
 // An order with its lines as the server keeps it: what the placing command
@@ -41,6 +42,10 @@ export interface OrderView {
   // AP §8.1: the pickup, and whether ready was recorded at it («لم يُضغط
   // جاهز», S8).
   pickup: { at: Date; readyByPickup: boolean } | null;
+  // CA §9.6: «وصلت» at the customer, and the reason given away from the pin
+  // (K4), which also covers the delivery.
+  customerArrival: { at: Date } | null;
+  away: { reason: AwayReason; note: string | null } | null;
   cancellation: { at: Date; reason: string } | null;
   currency: string;
   money: QuoteMoney;
@@ -102,6 +107,9 @@ export async function readOrders(
       captainWaitingAlertAt: orders.captainWaitingAlertAt,
       pickedUpAt: orders.pickedUpAt,
       readyByPickup: orders.readyByPickup,
+      arrivedAtCustomerAt: orders.arrivedAtCustomerAt,
+      awayReason: orders.awayReason,
+      awayNote: orders.awayNote,
       cancelledAt: orders.cancelledAt,
       cancelReason: orders.cancelReason,
       currency: orders.currency,
@@ -206,6 +214,8 @@ export async function readOrders(
         row.pickedUpAt && row.readyByPickup !== null
           ? { at: row.pickedUpAt, readyByPickup: row.readyByPickup }
           : null,
+      customerArrival: row.arrivedAtCustomerAt && { at: row.arrivedAtCustomerAt },
+      away: row.awayReason && { reason: row.awayReason, note: row.awayNote },
       cancellation:
         row.cancelledAt && row.cancelReason
           ? { at: row.cancelledAt, reason: row.cancelReason }
