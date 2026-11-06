@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { IdentityModule } from '../identity/index.js';
+import { MerchantsModule } from '../merchants/index.js';
 import { RealtimeAccess } from './realtime-access.js';
 import { RealtimePublisher } from './realtime-publisher.js';
+import { RealtimeSessions } from './realtime-sessions.js';
 import { RealtimeTokens } from './realtime-tokens.js';
 import { CustomerRealtimeController, MerchantRealtimeController } from './realtime.controller.js';
 
@@ -9,9 +11,9 @@ import { CustomerRealtimeController, MerchantRealtimeController } from './realti
 // through Centrifugo (§6), its connection tokens and its subscription proxy.
 // Push, in-app messages and sound levels join with their slices.
 @Module({
-  imports: [IdentityModule],
+  imports: [IdentityModule, MerchantsModule],
   controllers: [MerchantRealtimeController, CustomerRealtimeController],
-  providers: [RealtimeTokens, RealtimeAccess, RealtimePublisher],
+  providers: [RealtimeTokens, RealtimeAccess, RealtimePublisher, RealtimeSessions],
   exports: [RealtimeAccess, RealtimePublisher],
 })
 export class NotificationsModule {}
@@ -22,4 +24,5 @@ export class NotificationsWorkerModule {}
 
 export { merchantChannel, orderChannel } from './channels.js';
 export { type ChannelCheck, RealtimeAccess } from './realtime-access.js';
+export { requireRealtime } from './realtime-config.js';
 export { PublishFailedError, RealtimePublisher } from './realtime-publisher.js';

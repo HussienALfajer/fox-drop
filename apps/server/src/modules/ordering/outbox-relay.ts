@@ -1,4 +1,10 @@
-import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  type OnModuleDestroy,
+  type OnModuleInit,
+} from '@nestjs/common';
 import { and, asc, inArray, isNull, notInArray } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -10,11 +16,39 @@ import {
   orderChannel,
   PublishFailedError,
   RealtimePublisher,
+  requireRealtime,
 } from '../notifications/index.js';
 import { outbox } from './schema.js';
 
-// Rows taken per transaction, which holds their locks while it publishes.
-const BATCH = 50;
+// Rows taken per transaction, which holds their locks and a connection while
+// it publishes, up to 2 s a call.
+const BATCH = 20;
+
+// A run even without a transition, so rows left by runs that gave up (the
+// queue's retries end after about an hour) wait at most this long.
+const BACKSTOP_MS = 60_000;
+
+// The outbox payload (recordTransition, schema 1).
+interface OutboxPayload {
+  schema: 1;
+  orderId: string;
+  number: string;
+  cityId: string;
+  restaurantId: string;
+  customerAccountId: string;
+  status: string;
+  version: number;
+  reason: string | null;
+  at: string;
+}
+
+// What the apps receive (RA §4.3, CU §4.3): the event's type and the order's
+// new state and version, without the ids only the server needs. Clients
+// ignore an event whose version is not newer than the one they show.
+function publication(type: string, payload: OutboxPayload) {
+  const { schema, orderId, number, restaurantId, status, version, reason, at } = payload;
+  return { type, schema, orderId, number, restaurantId, status, version, reason, at };
+}
 
 // Architecture §5.5, E4: publishes the committed outbox rows to Centrifugo,
 // at least once, then marks them. Each run takes the unpublished rows in id
@@ -57,11 +91,11 @@ export class OutboxRelay {
           .for('update', { skipLocked: true });
         const done: bigint[] = [];
         for (const row of rows) {
-          const payload = row.payload as { orderId: string; restaurantId: string };
+          const payload = row.payload as OutboxPayload;
           try {
             await this.publisher.broadcast(
               [merchantChannel(payload.restaurantId), orderChannel(payload.orderId)],
-              payload,
+              publication(row.type, payload),
               `outbox:${row.id}`,
             );
             done.push(row.id);
@@ -89,10 +123,12 @@ export class OutboxRelay {
 // The worker's relay: every transition sends a job in its transaction
 // (recordTransition), so a run starts as soon as the row commits; a failed
 // run is tried again with the queue's backoff, and any later run takes the
-// rows it left. One run at start takes the rows written while no worker ran.
+// rows it left. One run at start takes the rows written while no worker ran,
+// and one a minute those left by runs that gave up.
 @Injectable()
-export class OutboxRelayWorker implements OnModuleInit {
+export class OutboxRelayWorker implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger('OutboxRelay');
+  private backstop: NodeJS.Timeout | undefined;
 
   constructor(
     private readonly jobs: Jobs,
@@ -101,6 +137,7 @@ export class OutboxRelayWorker implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
+    requireRealtime('publishing');
     if (!this.publisher.enabled) {
       // Staging until Centrifugo joins it: the rows wait in the outbox.
       this.logger.warn('real time is not configured (CENTRIFUGO_*): the outbox is not relayed');
@@ -120,6 +157,15 @@ export class OutboxRelayWorker implements OnModuleInit {
       // A burst of transitions sends a job each; one run takes them all.
       { pollingIntervalSeconds: 0.5, batchSize: 50 },
     );
-    await this.jobs.send(QUEUES.outboxRelay, {}, {});
+    const run = () =>
+      this.jobs.send(QUEUES.outboxRelay, {}, {}).catch((error: unknown) => {
+        this.logger.error({ err: error }, 'could not start an outbox relay run');
+      });
+    await run();
+    this.backstop = setInterval(() => void run(), BACKSTOP_MS);
+  }
+
+  onModuleDestroy(): void {
+    clearInterval(this.backstop);
   }
 }

@@ -69,6 +69,11 @@ type Executor = Pick<Database['db'], 'select' | 'insert' | 'update'>;
 // do not expire with inactivity (CU §5.4).
 @Injectable()
 export class AppSessionsService {
+  // Told the sessions that ended once their end commits, such as the
+  // real-time connections to drop (registered by notifications, which this
+  // module cannot import).
+  private readonly endedListeners: ((sessionIds: string[]) => void)[] = [];
+
   constructor(
     @Inject(DATABASE) private readonly database: Database,
     private readonly keys: AppSigningKeys,
@@ -128,6 +133,7 @@ export class AppSessionsService {
     // is read through the merchants or captains module, on a connection of
     // its own, so before the transaction.
     const partyAllowed = await this.partyAllowed(hash, now);
+    let reused: string | null = null;
     const result = await this.database.db.transaction(async (tx) => {
       // The session row first, then the token: every refresh of a session
       // takes turns on the session row, so none can deadlock another.
@@ -170,7 +176,7 @@ export class AppSessionsService {
         now.getTime() - token.usedAt.getTime() <= REFRESH_RETRY_GRACE_SECONDS * 1000;
       if (token.supersededAt || (token.usedAt && !retry)) {
         // Reuse: end the whole family, and commit it.
-        await this.end(tx, session.id, 'refresh_reuse', now);
+        reused = (await this.end(tx, session.id, 'refresh_reuse', now)) ? session.id : null;
         return null;
       }
       if (!(await this.accountIsActive(tx, session.party, session.accountId, partyAllowed))) {
@@ -201,6 +207,7 @@ export class AppSessionsService {
       const { id, party, accountId } = session;
       return this.issue(tx, { id, party, accountId }, signingKey, now);
     });
+    if (reused) this.notifyEnded([reused]);
     if (result === 'other_device') throw new RefreshRefusedError('other_device');
     if (!result) throw new RefreshRefusedError();
     return result;
@@ -272,30 +279,35 @@ export class AppSessionsService {
   }
 
   async signOut(session: AppSession, now = new Date()): Promise<void> {
-    await this.end(this.database.db, session.id, 'sign_out', now);
+    if (await this.end(this.database.db, session.id, 'sign_out', now)) {
+      this.notifyEnded([session.id]);
+    }
   }
 
   // «تسجيل الخروج من كل الأجهزة» (CU §5.4): every open session of the account,
   // this one included. Returns how many ended.
   async signOutEverywhere(session: AppSession, now = new Date()): Promise<number> {
-    return this.endAll(
+    const ended = await this.endAll(
       this.database.db,
       session.party,
       session.accountId,
       'sign_out_everywhere',
       now,
     );
+    this.notifyEnded(ended);
+    return ended.length;
   }
 
   // Ends every open session of an account, inside the caller's transaction:
-  // its refresh tokens stop working at once (architecture §15.1).
+  // its refresh tokens stop working at once (architecture §15.1). The ids of
+  // those it ended; the caller passes them to notifyEnded once it commits.
   async endAll(
     executor: Pick<Database['db'], 'update'>,
     party: AppParty,
     accountId: string,
     reason: AppSessionEndReason,
     now: Date,
-  ): Promise<number> {
+  ): Promise<string[]> {
     const ended = await executor
       .update(appSessions)
       .set({ endedAt: now, endReason: reason })
@@ -307,7 +319,17 @@ export class AppSessionsService {
         ),
       )
       .returning({ id: appSessions.id });
-    return ended.length;
+    return ended.map((row) => row.id);
+  }
+
+  onEnded(listener: (sessionIds: string[]) => void): void {
+    this.endedListeners.push(listener);
+  }
+
+  // After the end of these sessions committed.
+  notifyEnded(sessionIds: string[]): void {
+    if (sessionIds.length === 0) return;
+    for (const listener of this.endedListeners) listener(sessionIds);
   }
 
   // The key to sign with now. Callers resolve it before opening their
@@ -375,15 +397,18 @@ export class AppSessionsService {
     }
   }
 
+  // Whether it was open.
   private async end(
     executor: Pick<Database['db'], 'update'>,
     sessionId: string,
     reason: AppSessionEndReason,
     now: Date,
-  ): Promise<void> {
-    await executor
+  ): Promise<boolean> {
+    const ended = await executor
       .update(appSessions)
       .set({ endedAt: now, endReason: reason })
-      .where(and(eq(appSessions.id, sessionId), isNull(appSessions.endedAt)));
+      .where(and(eq(appSessions.id, sessionId), isNull(appSessions.endedAt)))
+      .returning({ id: appSessions.id });
+    return ended.length > 0;
   }
 }

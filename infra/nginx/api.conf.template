@@ -24,6 +24,12 @@ location = /connection/websocket {
     proxy_read_timeout 120s;
 }
 
+# Centrifugo's subscription proxy reaches the API directly on the
+# environment's network, never through nginx.
+location ~ ^/v1/[a-z]+/realtime/subscribe$ {
+    return 404;
+}
+
 location /v1/ {
     proxy_pass http://127.0.0.1:${API_PORT};
     include snippets/foxdrop-proxy.conf;

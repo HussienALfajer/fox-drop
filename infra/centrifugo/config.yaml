@@ -1,6 +1,6 @@
 # Centrifugo's channels (architecture §6), the same in every environment: the
-# local compose.yaml, each environment's infra/compose.yaml and the server's
-# tests mount this file. The secrets and the subscription proxies, whose
+# local compose.yaml and the server's tests mount this file, and each
+# environment's infra/compose.yaml will once Centrifugo joins it. The secrets and the subscription proxies, whose
 # endpoints differ per environment, come from the environment:
 # CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY, CENTRIFUGO_HTTP_API_KEY and
 # CENTRIFUGO_PROXIES (the proxies "merchant" and "customer", each sending

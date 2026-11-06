@@ -130,12 +130,13 @@ const phoneNumber = () => `+9639${randomInt(100_000_000).toString().padStart(8, 
 async function signedIn(
   party: 'customer' | 'merchant',
   restaurantId = restaurant,
+  role: 'owner' | 'cashier' = 'cashier',
 ): Promise<Record<string, string>> {
   const phone = phoneNumber();
   if (party === 'merchant') {
     await app
       .get(MerchantAccountsService)
-      .addAccount(restaurantId, { role: 'cashier', name: 'كاشير', phone }, change);
+      .addAccount(restaurantId, { role, name: role, phone }, change);
   }
   const deviceId = randomUUID();
   await app.inject({ method: 'POST', url: `/v1/${party}/auth/code`, payload: { phone, deviceId } });
@@ -221,9 +222,12 @@ function subscribed(token: string, channel: string) {
     subscription.on('subscribed', () => resolve('subscribed'));
     subscription.on('unsubscribed', (context) => resolve(context.code));
   });
+  const disconnected = new Promise<number>((resolve) => {
+    client.on('disconnected', (context) => resolve(context.code));
+  });
   subscription.subscribe();
   client.connect();
-  return { client, outcome, received };
+  return { client, outcome, disconnected, received };
 }
 
 async function eventually(check: () => boolean, ms = 10_000): Promise<void> {
@@ -240,6 +244,41 @@ describe('connection tokens (architecture §6.1)', () => {
     const claims = decodeJwt(token);
     expect(claims.meta).toMatchObject({ party: 'merchant' });
     expect(claims.exp! - claims.iat!).toBe(15 * 60);
+  });
+
+  it('answers 503 while real time is off', async () => {
+    const headers = await signedIn('customer');
+    delete process.env.CENTRIFUGO_TOKEN_SECRET;
+    try {
+      const answer = await app.inject({
+        method: 'POST',
+        url: '/v1/customer/realtime/token',
+        headers,
+      });
+      expect(answer.statusCode).toBe(503);
+      expect(answer.json()).toMatchObject({ error: 'realtime_unavailable' });
+    } finally {
+      Object.assign(process.env, centrifugo.env);
+    }
+  });
+
+  it('refuses the owners of a terminated restaurant, who keep only the money section (RA §5.5)', async () => {
+    const azaz = (await sql.query("SELECT id FROM geo.cities WHERE code = 'AZ'")).rows[0].id;
+    const { id } = await restaurantWith(azaz, 'مطعم يغلق');
+    const owner = await signedIn('merchant', id, 'owner');
+    const token = await realtimeToken('merchant', owner);
+    await app.get(MerchantsService).setAccountStatus(id, 'terminated', change);
+
+    const answer = await app.inject({
+      method: 'POST',
+      url: '/v1/merchant/realtime/token',
+      headers: owner,
+    });
+    expect(answer.statusCode).toBe(403);
+    expect(answer.json()).toMatchObject({ error: 'restaurant_terminated' });
+    expect((await proxied('merchant', token, `merchant:${id}`)).json()).toMatchObject({
+      error: { code: 403 },
+    });
   });
 
   it('needs a signed-in user of the app', async () => {
@@ -302,12 +341,40 @@ describe('the subscription proxy (architecture §6.1–6.2)', () => {
     });
   });
 
-  it("refuses a call without Centrifugo's secret", async () => {
+  it("refuses a call without Centrifugo's secret, and every call while none is set", async () => {
     const token = await realtimeToken('merchant', await signedIn('merchant'));
     expect((await proxied('merchant', token, `merchant:${restaurant}`, null)).statusCode).toBe(403);
     expect((await proxied('merchant', token, `merchant:${restaurant}`, 'wrong')).statusCode).toBe(
       403,
     );
+    delete process.env.CENTRIFUGO_PROXY_SECRET;
+    try {
+      expect((await proxied('merchant', token, `merchant:${restaurant}`)).statusCode).toBe(403);
+    } finally {
+      Object.assign(process.env, centrifugo.env);
+    }
+  });
+
+  it('refuses a malformed channel and a session it does not know', async () => {
+    const token = await realtimeToken('merchant', await signedIn('merchant'));
+    for (const channel of [
+      `merchant:${restaurant}:x`,
+      'merchant:x',
+      `captain:${restaurant}`,
+      restaurant,
+    ]) {
+      expect((await proxied('merchant', token, channel)).json()).toMatchObject({
+        error: { code: 403 },
+      });
+    }
+    const claims = decodeJwt(token);
+    const unknown = await app.inject({
+      method: 'POST',
+      url: '/v1/merchant/realtime/subscribe',
+      headers: { 'x-centrifugo-proxy-secret': proxySecret },
+      payload: { user: randomUUID(), channel: `merchant:${restaurant}`, meta: claims.meta },
+    });
+    expect(unknown.json()).toEqual({ disconnect: { code: 4501, reason: 'session ended' } });
   });
 });
 
@@ -335,12 +402,16 @@ describe('the order reaches the apps through Centrifugo (RA §4.3, CU §4.3)', (
       const orderId = await place(customer);
       await eventually(() => cashier.received.length > 0);
       expect(cashier.received[0]).toMatchObject({
+        type: 'order.placed',
         schema: 1,
         orderId,
+        number: expect.stringMatching(/^\d+$/) as unknown,
         restaurantId: restaurant,
         status: 'placed',
         version: 1,
       });
+      // Only what the apps need (RA §4.3).
+      expect(cashier.received[0]).not.toHaveProperty('customerAccountId');
 
       const screen = subscribed(await realtimeToken('customer', customer), `order:${orderId}`);
       try {
@@ -357,6 +428,7 @@ describe('the order reaches the apps through Centrifugo (RA §4.3, CU §4.3)', (
           );
         await eventually(() => screen.received.length > 0);
         expect(screen.received[0]).toMatchObject({
+          type: 'order.cancelled',
           orderId,
           status: 'cancelled',
           version: 2,
@@ -370,6 +442,37 @@ describe('the order reaches the apps through Centrifugo (RA §4.3, CU §4.3)', (
       expect(elsewhere.received).toEqual([]);
     } finally {
       for (const each of [cashier, elsewhere, intruder]) each.client.disconnect();
+    }
+  });
+});
+
+describe('a sign-out applies at once (CU §5.4, RA §5.1)', () => {
+  it('disconnects the connections of a session that signs out, and only them', async () => {
+    const leaving = await signedIn('merchant');
+    const leavingDevice = subscribed(
+      await realtimeToken('merchant', leaving),
+      `merchant:${restaurant}`,
+    );
+    const staying = subscribed(
+      await realtimeToken('merchant', await signedIn('merchant')),
+      `merchant:${restaurant}`,
+    );
+    try {
+      expect(await leavingDevice.outcome).toBe('subscribed');
+      expect(await staying.outcome).toBe('subscribed');
+
+      await app.inject({ method: 'POST', url: '/v1/merchant/auth/sign-out', headers: leaving });
+
+      expect(await leavingDevice.disconnected).toBe(4501);
+      const customer = await signedIn('customer');
+      const orderId = await place(customer);
+      await eventually(() =>
+        staying.received.some((data) => (data as { orderId: string }).orderId === orderId),
+      );
+      expect(leavingDevice.received).not.toContainEqual(expect.objectContaining({ orderId }));
+    } finally {
+      leavingDevice.client.disconnect();
+      staying.client.disconnect();
     }
   });
 });

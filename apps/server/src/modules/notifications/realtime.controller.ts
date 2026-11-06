@@ -1,4 +1,11 @@
-import { Body, HttpCode, HttpStatus, Post, ServiceUnavailableException } from '@nestjs/common';
+import {
+  Body,
+  ForbiddenException,
+  HttpCode,
+  HttpStatus,
+  Post,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
@@ -53,7 +60,14 @@ export class MerchantRealtimeController {
   @AppSignedIn()
   @HttpCode(HttpStatus.OK)
   @ZodResponse({ status: HttpStatus.OK, type: RealtimeTokenDto })
-  token(@CurrentAppSession() session: AppSession) {
+  async token(@CurrentAppSession() session: AppSession) {
+    // RA §5.5: a terminated restaurant's owners keep only the money section.
+    if (await this.access.terminated(session)) {
+      throw new ForbiddenException({
+        statusCode: HttpStatus.FORBIDDEN,
+        error: 'restaurant_terminated',
+      });
+    }
     return tokenOf(this.tokens, session);
   }
 

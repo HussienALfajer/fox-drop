@@ -3,8 +3,8 @@
 # as root, from a copy of this repository's infra/ folder:
 #   infra/server/provision.sh <environment>
 # Safe to run again after a change under infra/nginx or infra/server: it
-# reinstalls the configuration and never touches the database, the secrets or
-# the releases. The `deploy` skill shows how to run it from a commit on main.
+# reinstalls the configuration and never touches the database, the releases
+# or a secret already there (it only adds a missing one). The `deploy` skill shows how to run it from a commit on main.
 set -euo pipefail
 
 die() {
@@ -84,6 +84,9 @@ fi
 # once, when its line is missing.
 add_secret() {
   if ! grep -q "^$1=" "$env_file"; then
+    # The owner edits the file by hand: never glue the line onto a last line
+    # without its newline.
+    if [ -s "$env_file" ] && [ -n "$(tail -c1 "$env_file")" ]; then echo >>"$env_file"; fi
     echo "$1=$(openssl rand -hex 32)" >>"$env_file"
     echo "added $1 to $env_file"
   fi
