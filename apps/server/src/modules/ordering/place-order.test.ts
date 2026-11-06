@@ -103,6 +103,8 @@ beforeAll(async () => {
       bySystem,
     );
   }
+  // The capacity check has its own tests (capacity-check.test.ts).
+  await settings.update('dispatch.capacity_check', { cityId: azaz }, false, bySystem);
   const geo = app.get(GeoService);
   await geo.createZone(azaz, { name: 'المركز', area: square(centre), active: true }, change);
   await geo.setDeliveryFeeRule(

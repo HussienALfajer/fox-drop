@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Valkey } from 'iovalkey';
 import { VALKEY } from '../../valkey/valkey.module.js';
+import type { Point } from '../geo/index.js';
 
 export interface LivePosition {
   latitude: number;
@@ -62,6 +63,32 @@ export class LivePositions {
       );
     } catch (error) {
       this.logger.warn({ err: error }, 'the live position was not written');
+    }
+  }
+
+  // The captains whose live position is within the radius, nearest first;
+  // one whose hash expired (no point for 10 minutes) is left out. Null when
+  // Valkey cannot answer.
+  async near(cityId: string, point: Point, radiusMetres: number): Promise<string[] | null> {
+    try {
+      const members = (await this.valkey.geosearch(
+        cityKey(cityId),
+        'FROMLONLAT',
+        point.longitude,
+        point.latitude,
+        'BYRADIUS',
+        radiusMetres,
+        'm',
+        'ASC',
+      )) as string[];
+      if (members.length === 0) return [];
+      const pipeline = this.valkey.pipeline();
+      for (const captainId of members) pipeline.exists(captainKey(captainId));
+      const live = (await pipeline.exec()) ?? [];
+      return members.filter((_, index) => live[index]?.[1] === 1);
+    } catch (error) {
+      this.logger.warn({ err: error }, 'the live positions could not be read');
+      return null;
     }
   }
 

@@ -59,14 +59,14 @@ beforeAll(async () => {
   await fx.setCityCurrency(azaz, { currency: 'TRY', displayOrder: 1, enabled: true }, change);
   await fx.setBaseCurrency(azaz, 'TRY', change);
   const { SettingsService } = await import('../settings/index.js');
-  await app
-    .get(SettingsService)
-    .update(
-      'currency.<code>.rounding_unit',
-      { cityId: azaz, parameter: 'TRY' },
-      { amountMinor: 500 },
-      bySystem,
-    );
+  const settings = app.get(SettingsService);
+  await settings.update('dispatch.capacity_check', { cityId: azaz }, false, bySystem);
+  await settings.update(
+    'currency.<code>.rounding_unit',
+    { cityId: azaz, parameter: 'TRY' },
+    { amountMinor: 500 },
+    bySystem,
+  );
   const geo = app.get(GeoService);
   await geo.createZone(azaz, { name: 'المركز', area: square(centre), active: true }, change);
   await geo.setDeliveryFeeRule(

@@ -5,7 +5,7 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { FxService } from '../fx/index.js';
-import { GeoService, lastCutoff } from '../geo/index.js';
+import { GeoService, lastCutoff, type Point } from '../geo/index.js';
 import { type JournalType, LedgerService } from '../ledger/index.js';
 import { lockCityCurrencies, SettingsService, type Vehicle, vehicles } from '../settings/index.js';
 import {
@@ -455,6 +455,39 @@ export class CaptainsService implements OnModuleInit {
       ]),
     ) as Record<Vehicle, PayRate>;
     return { id: table.id, currency: table.currency, effectiveFrom: table.effectiveFrom, rates };
+  }
+
+  // AP §9.12.6, the capacity check: whether an eligible captain is within
+  // dispatch.search_radius_km of the restaurant now, nearest first. Eligible
+  // is online and receiving offers (active, under the cash limit, not blocked
+  // for unhanded cash: `availability`), with a vehicle allowed for the trip.
+  // No active order passes until orders are assigned (slice 1.11); the
+  // maximum pickup amount is ignored, as the rule says. Null when the live
+  // positions cannot be read, so the caller decides.
+  async eligibleNear(
+    cityId: string,
+    restaurant: Point,
+    tripMetres: number,
+    now: Date,
+  ): Promise<boolean | null> {
+    const radiusKm = await this.settings.get('dispatch.search_radius_km', { cityId });
+    const nearby = await this.positions.near(cityId, restaurant, radiusKm * 1000);
+    if (nearby === null) return null;
+    const allowed = new Map<Vehicle, boolean>();
+    for (const captainId of nearby) {
+      const captain = await this.captain(captainId, now);
+      if (captain === null || captain.cityId !== cityId) continue;
+      if (!allowed.has(captain.vehicle)) {
+        const maxKm = await this.settings.get(`dispatch.max_distance_km.${captain.vehicle}`, {
+          cityId,
+        });
+        allowed.set(captain.vehicle, tripMetres <= maxKm * 1000);
+      }
+      if (!allowed.get(captain.vehicle)) continue;
+      const { availability } = await this.state(captainId, now);
+      if (availability.state === 'online_available') return true;
+    }
+    return false;
   }
 
   // The captain's state and cash now (CA §7.1, AP §8.5.3–8.5.4).
