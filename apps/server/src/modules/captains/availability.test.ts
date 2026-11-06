@@ -72,6 +72,11 @@ describe('onlineBlocks', () => {
       { kind: 'version_below_minimum', minVersion: '1.2.0' },
     ]);
     expect(onlineBlocks({ ...ready, appVersion: '1.10.0' }, now)).toEqual([]);
+    for (const appVersion of ['1.3.0-beta', 'abc', '', null]) {
+      expect(onlineBlocks({ ...ready, appVersion }, now)).toEqual([
+        { kind: 'version_below_minimum', minVersion: '1.2.0' },
+      ]);
+    }
     expect(onlineBlocks({ ...ready, appVersion: '0.1.0', minVersion: null }, now)).toEqual([]);
   });
 

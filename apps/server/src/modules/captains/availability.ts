@@ -51,8 +51,10 @@ function suspendedAt(input: AvailabilityInput, now: Date) {
   return suspension.until === null || now < suspension.until ? suspension : null;
 }
 
-// Versions as major.minor.patch, compared part by part.
+// Versions as major.minor.patch, compared part by part; one that is not in
+// that form is below any minimum.
 function below(version: string, minimum: string): boolean {
+  if (!/^\d+\.\d+\.\d+$/.test(version)) return true;
   const parts = version.split('.').map(Number);
   const least = minimum.split('.').map(Number);
   for (let index = 0; index < least.length; index += 1) {

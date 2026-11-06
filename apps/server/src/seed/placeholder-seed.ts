@@ -248,7 +248,7 @@ export class PlaceholderSeed {
         context: noRequest,
         reason: 'Placeholder for development and staging (AP §13 item 5)',
       };
-      if ((await this.captains.payTable(cityId, new Date())) === null) {
+      if (!(await this.captains.hasPayTable(cityId))) {
         const rates = Object.fromEntries(vehicles.map((vehicle) => [vehicle, azazPay]));
         await this.captains.setPayTable(
           cityId,

@@ -482,13 +482,14 @@ describe('LedgerService.post', () => {
 
 describe('LedgerService.ownerAccounts', () => {
   it("lists one owner's accounts of a purpose, one per currency", async () => {
-    const { captainId, custody, custodyUsd } = await setUp();
-    const listed = await ledger.ownerAccounts(captainId, 'captain.custody');
+    const { cityId, captainId, custody, custodyUsd } = await setUp();
+    const listed = await ledger.ownerAccounts(cityId, captainId, 'captain.custody');
     expect(listed.sort((a, b) => a.currency.localeCompare(b.currency))).toEqual([
       { id: custody, currency: 'TRY' },
       { id: custodyUsd, currency: 'USD' },
     ]);
-    expect(await ledger.ownerAccounts(randomUUID(), 'captain.custody')).toEqual([]);
+    expect(await ledger.ownerAccounts(cityId, randomUUID(), 'captain.custody')).toEqual([]);
+    expect(await ledger.ownerAccounts(randomUUID(), captainId, 'captain.custody')).toEqual([]);
   });
 });
 

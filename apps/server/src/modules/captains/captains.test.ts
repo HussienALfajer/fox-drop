@@ -65,8 +65,8 @@ const device = { appVersion: '1.0.0', simulatedLocation: false };
 
 let cities = 0;
 
-// A new city with TRY as its base.
-async function city(): Promise<string> {
+// A new city with TRY as its base and, when asked, USD at 40 TRY.
+async function city({ usd = false } = {}): Promise<string> {
   cities += 1;
   const { rows } = await sql.query<{ id: string }>(
     'INSERT INTO geo.cities (code, name) VALUES ($1, $2) RETURNING id',
@@ -75,6 +75,23 @@ async function city(): Promise<string> {
   const cityId = rows[0]!.id;
   await fx.setCityCurrency(cityId, { currency: 'TRY', displayOrder: 1, enabled: true }, fxSystem);
   await fx.setBaseCurrency(cityId, 'TRY', fxSystem);
+  if (usd) {
+    await fx.setCityCurrency(
+      cityId,
+      { currency: 'USD', displayOrder: 2, enabled: false },
+      fxSystem,
+    );
+    await fx.setRate(
+      cityId,
+      'USD',
+      { value: '40', direction: 'base_per_unit' },
+      {
+        ...fxSystem,
+        actor: { type: 'admin', id: '0190f3a0-0000-7000-8000-0000000000f1', role: 'FIN' },
+      },
+    );
+    await fx.setCityCurrency(cityId, { currency: 'USD', displayOrder: 2, enabled: true }, fxSystem);
+  }
   return cityId;
 }
 
@@ -85,25 +102,31 @@ const motorbike: NewCaptain = {
   custodyLimit: { amount: 300_000n, currency: 'TRY' },
 };
 
-async function captain(overrides: Partial<NewCaptain> = {}) {
-  const cityId = await city();
+async function captain(overrides: Partial<NewCaptain> = {}, options = { usd: false }) {
+  const cityId = await city(options);
   const id = await captains.createCaptain(cityId, { ...motorbike, ...overrides }, change);
   return { cityId, id };
 }
 
 // Cash in the captain's hands: + collected from a customer, − paid to a
 // restaurant or handed in at the desk.
-async function custody(cityId: string, captainId: string, type: JournalType, amount: bigint) {
+async function custody(
+  cityId: string,
+  captainId: string,
+  type: JournalType,
+  amount: bigint,
+  currency = 'TRY',
+) {
   await db.transaction(async (tx) => {
     const account = await ledger.openAccount(
-      { cityId, purpose: 'captain.custody', ownerId: captainId, currency: 'TRY' },
+      { cityId, purpose: 'captain.custody', ownerId: captainId, currency },
       tx,
     );
     const desk = type === 'custody.hand_in';
     const counter = await ledger.openAccount(
       desk
-        ? { cityId, purpose: 'platform.cash', ownerId: randomUUID(), currency: 'TRY' }
-        : { cityId, purpose: 'platform.order_clearing', ownerId: null, currency: 'TRY' },
+        ? { cityId, purpose: 'platform.cash', ownerId: randomUUID(), currency }
+        : { cityId, purpose: 'platform.order_clearing', ownerId: null, currency },
       tx,
     );
     await ledger.post(
@@ -113,8 +136,8 @@ async function custody(cityId: string, captainId: string, type: JournalType, amo
         source: desk ? null : { kind: 'order', id: randomUUID() },
         actor: { type: 'system', id: null },
         entries: [
-          { accountId: account, currency: 'TRY', amount },
-          { accountId: counter, currency: 'TRY', amount: -amount },
+          { accountId: account, currency, amount },
+          { accountId: counter, currency, amount: -amount },
         ],
       },
       tx,
@@ -135,7 +158,7 @@ const everyVehicle = (value: PayRate) =>
 describe('CaptainsService.createCaptain', () => {
   it('adds an active captain with its vehicle and cash limit, audited', async () => {
     const { id } = await captain();
-    expect(await captains.captain(id)).toMatchObject({
+    expect(await captains.captain(id, new Date())).toMatchObject({
       name: 'أحمد محمد علي',
       vehicle: 'motorbike',
       plateNumber: '123456',
@@ -191,13 +214,35 @@ describe('CaptainsService.setStatus', () => {
       captains.setStatus(id, 'suspended', { ...change, reason: ' ' }, now),
     ).rejects.toMatchObject({ refusal: 'reason_required' });
     await captains.setStatus(id, 'suspended', { ...change, reason: 'تأخر متكرر', until }, now);
-    expect((await captains.captain(id))?.suspension).toEqual({ reason: 'تأخر متكرر', until });
+    expect((await captains.captain(id, new Date()))?.suspension).toEqual({
+      reason: 'تأخر متكرر',
+      until,
+    });
     await captains.setStatus(id, 'active', change, now);
-    expect((await captains.captain(id))?.suspension).toBeNull();
+    expect((await captains.captain(id, new Date()))?.suspension).toBeNull();
     await captains.setStatus(id, 'terminated', change, now);
     await expect(captains.setStatus(id, 'active', change, now)).rejects.toMatchObject({
       refusal: 'status_change_not_allowed',
     });
+  });
+
+  it('reads a suspension past its end as active, and replaces a suspension', async () => {
+    const { id } = await captain();
+    const now = new Date();
+    const until = new Date(now.getTime() + day);
+    await captains.setStatus(id, 'suspended', { ...change, reason: 'يوم', until }, now);
+    await captains.setStatus(id, 'suspended', { ...change, reason: 'سبعة أيام' }, now);
+    expect((await captains.captain(id, now))?.suspension).toEqual({
+      reason: 'سبعة أيام',
+      until: null,
+    });
+    const later = new Date(now.getTime() + 2 * day);
+    await captains.setStatus(id, 'suspended', { ...change, reason: 'يوم', until: later }, now);
+    const after = new Date(later.getTime() + 1);
+    expect(await captains.captain(id, after)).toMatchObject({ status: 'active', suspension: null });
+    // The next step of the ladder needs no reactivation first (AP §9.7.6).
+    await captains.setStatus(id, 'suspended', { ...change, reason: 'المرحلة التالية' }, after);
+    expect((await captains.captain(id, after))?.status).toBe('suspended');
   });
 
   it('sets an online captain offline at once', async () => {
@@ -229,7 +274,7 @@ describe('CaptainsService.setCustodyLimit', () => {
       ),
     ).rejects.toMatchObject({ refusal: 'reason_required' });
     await captains.setCustodyLimit(id, { amount: 500_000n, currency: 'TRY' }, change);
-    expect((await captains.captain(id))?.custodyLimit).toEqual({
+    expect((await captains.captain(id, new Date()))?.custodyLimit).toEqual({
       amount: 500_000n,
       currency: 'TRY',
     });
@@ -401,6 +446,54 @@ describe('going online and offline (CA §7.2, §7.5)', () => {
     expect(await blocks(captains.goOnline(id, device, now))).toEqual(['suspended']);
     await captains.setStatus(id, 'terminated', change, now);
     expect(await blocks(captains.goOnline(id, device, now))).toEqual(['contract_ended']);
+  });
+
+  it('counts every currency at its current rate and nets them in closed_due (AP §8.5.4)', async () => {
+    const { cityId, id } = await captain({}, { usd: true });
+    // Paid a restaurant 400 TRY, collected 10 USD (400 TRY) from the customer.
+    await custody(cityId, id, 'custody.pay_merchant', -40_000n);
+    await custody(cityId, id, 'custody.collect', 1_000n, 'USD');
+    const later = new Date(Date.now() + 2 * day);
+    const { custody: held } = await captains.state(id, later);
+    // Usage is the positive positions only; closed_due nets them.
+    expect(held.usage).toEqual({ amount: 40_000n, currency: 'TRY' });
+    expect(held.closedDue).toEqual({ amount: 0n, currency: 'TRY' });
+    expect((await captains.goOnline(id, device, later)).availability.state).toBe(
+      'online_available',
+    );
+    // A disabled currency still counts, and going offline still works.
+    await fx.setCityCurrency(
+      cityId,
+      { currency: 'USD', displayOrder: 2, enabled: false },
+      fxSystem,
+    );
+    expect((await captains.state(id, later)).custody.usage.amount).toBe(40_000n);
+    expect(await captains.goOffline(id, later)).toEqual({
+      handIn: { amount: 40_000n, currency: 'TRY' },
+    });
+  });
+
+  it('blocks on a closed day due in another currency', async () => {
+    const { cityId, id } = await captain({}, { usd: true });
+    await custody(cityId, id, 'custody.collect', 500n, 'USD');
+    const refused = await captains
+      .goOnline(id, device, new Date(Date.now() + 2 * day))
+      .catch((error: unknown) => error);
+    expect((refused as CaptainsRefusedError).blocks).toMatchObject([
+      { kind: 'closed_due', amount: 20_000n },
+    ]);
+  });
+
+  it('converts a cash limit set in another of the city currencies', async () => {
+    const { cityId, id } = await captain(
+      { custodyLimit: { amount: 7_500n, currency: 'USD' } },
+      { usd: true },
+    );
+    await custody(cityId, id, 'custody.collect', 300_000n);
+    expect((await captains.state(id, new Date())).custody).toMatchObject({
+      usage: { amount: 300_000n, currency: 'TRY' },
+      limit: { amount: 300_000n, currency: 'TRY' },
+    });
   });
 
   it('refuses an unknown captain', async () => {

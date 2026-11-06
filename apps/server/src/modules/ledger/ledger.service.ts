@@ -171,6 +171,7 @@ export class LedgerService {
   // One owner's accounts of a purpose, one per currency, such as a captain's
   // custody (AP §8.5.1).
   async ownerAccounts(
+    cityId: string,
     ownerId: string,
     purpose: AccountPurpose,
     executor: LedgerExecutor = this.database.db,
@@ -178,7 +179,13 @@ export class LedgerService {
     return executor
       .select({ id: accounts.id, currency: accounts.currency })
       .from(accounts)
-      .where(and(eq(accounts.ownerId, ownerId), eq(accounts.purpose, purpose)));
+      .where(
+        and(
+          eq(accounts.cityId, cityId),
+          eq(accounts.purpose, purpose),
+          eq(accounts.ownerId, ownerId),
+        ),
+      );
   }
 
   // The balance at a moment, plus the entries of the given types posted since,

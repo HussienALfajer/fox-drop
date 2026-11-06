@@ -4,7 +4,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
-import { FxService, type RateSnapshot, toBase } from '../fx/index.js';
+import { FxService } from '../fx/index.js';
 import { GeoService, lastCutoff } from '../geo/index.js';
 import { type JournalType, LedgerService } from '../ledger/index.js';
 import { lockCityCurrencies, SettingsService, type Vehicle, vehicles } from '../settings/index.js';
@@ -111,7 +111,7 @@ const deskTypes: JournalType[] = [
 // AP §9.7.5: the status changes allowed; every one needs a reason.
 const statusChanges: Record<CaptainStatus, CaptainStatus[]> = {
   active: ['suspended', 'terminated'],
-  suspended: ['active', 'terminated'],
+  suspended: ['active', 'suspended', 'terminated'],
   terminated: [],
 };
 
@@ -198,12 +198,23 @@ export class CaptainsService implements OnModuleInit {
     });
   }
 
-  async captain(captainId: string): Promise<Captain | null> {
+  // The captain as they are now: a suspension past its end reads as active.
+  async captain(captainId: string, now: Date): Promise<Captain | null> {
     const [row] = await this.database.db
       .select()
       .from(captainRecords)
       .where(eq(captainRecords.id, captainId));
-    return row ? captainOf(row) : null;
+    return row ? captainOf(row, now) : null;
+  }
+
+  // Whether the city has a pay table, in force or to come, for the seed.
+  async hasPayTable(cityId: string): Promise<boolean> {
+    const [table] = await this.database.db
+      .select({ id: payTables.id })
+      .from(payTables)
+      .where(eq(payTables.cityId, cityId))
+      .limit(1);
+    return table !== undefined;
   }
 
   // The captains of a city by name, for the seed.
@@ -215,7 +226,8 @@ export class CaptainsService implements OnModuleInit {
   }
 
   // AP §9.7.5: suspend (until a moment or further notice), reactivate or
-  // terminate, each with a reason. An online captain goes offline at once; an
+  // terminate, each with a reason. Suspending a suspended captain replaces
+  // the suspension (a new reason or end); one past its end counts as active. An online captain goes offline at once; an
   // active order would keep them in last-order mode (K18), which comes with
   // the ordering slices.
   async setStatus(
@@ -235,10 +247,11 @@ export class CaptainsService implements OnModuleInit {
     }
     await this.database.db.transaction(async (tx) => {
       const row = await this.lockCaptain(tx, captainId);
-      if (!statusChanges[row.status].includes(status)) {
+      const current = captainOf(row, now).status;
+      if (!statusChanges[current].includes(status)) {
         throw new CaptainsRefusedError(
           'status_change_not_allowed',
-          `a ${row.status} captain cannot become ${status}`,
+          `a ${current} captain cannot become ${status}`,
         );
       }
       const until = change.until ?? null;
@@ -266,7 +279,7 @@ export class CaptainsService implements OnModuleInit {
           cityId: row.cityId,
           action: 'captain.status',
           target: { type: 'captain', id: captainId },
-          before: { status: row.status },
+          before: { status: current },
           after: { status, ...(until === null ? {} : { suspendedUntil: until.toISOString() }) },
           reason: change.reason ?? null,
         },
@@ -470,13 +483,15 @@ export class CaptainsService implements OnModuleInit {
   async goOffline(captainId: string, now: Date): Promise<{ handIn: Money | null }> {
     const cityId = (await this.row(this.database.db, captainId)).cityId;
     const rules = await this.cityRules(cityId, now);
-    return this.database.db.transaction(async (tx) => {
-      const row = await this.lockCaptain(tx, captainId);
+    await this.database.db.transaction(async (tx) => {
+      await this.lockCaptain(tx, captainId);
       await this.endOnline(tx, captainId, 'captain', now);
-      const { custody } = await this.input(tx, row, rules);
-      const held = custody.usage.amount;
-      return { handIn: held > rules.remitTolerance ? { ...custody.usage } : null };
     });
+    // After the offline commits, so reading the cash can never undo it.
+    const row = await this.row(this.database.db, captainId);
+    const { custody } = await this.input(this.database.db, row, rules);
+    const held = custody.usage.amount;
+    return { handIn: held > rules.remitTolerance ? { ...custody.usage } : null };
   }
 
   // The city's rules the state reads, outside any transaction: settings take
@@ -511,11 +526,14 @@ export class CaptainsService implements OnModuleInit {
       .from(onlinePeriods)
       .where(and(eq(onlinePeriods.captainId, row.id), isNull(onlinePeriods.endedAt)));
     const custody = await this.custody(executor, row, rules.lastCutoff, rules.warnPct);
-    const captain = captainOf(row);
     return {
       availability: {
-        status: captain.status,
-        suspension: captain.suspension,
+        // As stored: the rules read a suspension past its end as active.
+        status: row.status,
+        suspension:
+          row.status === 'suspended'
+            ? { reason: row.suspensionReason!, until: row.suspendedUntil }
+            : null,
         onlineSince: open?.startedAt ?? null,
         custodyUsage: custody.usage.amount,
         custodyLimit: custody.limit.amount,
@@ -540,26 +558,30 @@ export class CaptainsService implements OnModuleInit {
     cutoff: Date,
     warnPct: number,
   ): Promise<Custody> {
-    const base = row.custodyLimitCurrency;
-    const accounts = await this.ledger.ownerAccounts(row.id, 'captain.custody', executor);
-    let snapshot: RateSnapshot | null = null;
-    const inBase = async (amount: bigint, currency: string) => {
-      if (currency === base || amount === 0n) return amount;
-      snapshot ??= await this.fx.snapshot(row.cityId, executor);
-      return toBase(snapshot, amount, currency);
-    };
+    const accounts = await this.ledger.ownerAccounts(
+      row.cityId,
+      row.id,
+      'captain.custody',
+      executor,
+    );
+    // Every currency counts at its current rate, a disabled one included.
+    const { base, toBase } = await this.fx.currentValue(row.cityId, executor);
+    const inBase = (amount: bigint, currency: string) =>
+      currency === base || amount === 0n ? amount : toBase(amount, currency);
+    // A limit set in another of the city's currencies before the base locked.
+    const limit = inBase(row.custodyLimit, row.custodyLimitCurrency);
     let usage = 0n;
     let closedDue = 0n;
     for (const account of accounts) {
       const balance = await this.ledger.balance(account.id, executor);
-      if (balance.amount > 0n) usage += await inBase(balance.amount, account.currency);
+      if (balance.amount > 0n) usage += inBase(balance.amount, account.currency);
       const closed = await this.ledger.balanceAt(account.id, cutoff, deskTypes, executor);
-      closedDue += await inBase(closed.amount, account.currency);
+      closedDue += inBase(closed.amount, account.currency);
     }
     return {
       usage: { amount: usage, currency: base },
-      limit: { amount: row.custodyLimit, currency: base },
-      warn: usage * 100n >= row.custodyLimit * BigInt(warnPct),
+      limit: { amount: limit, currency: base },
+      warn: usage * 100n >= limit * BigInt(warnPct),
       closedDue: { amount: closedDue, currency: base },
       lastCutoff: cutoff,
     };
@@ -617,18 +639,19 @@ export class CaptainsService implements OnModuleInit {
   }
 }
 
-function captainOf(row: typeof captainRecords.$inferSelect): Captain {
+function captainOf(row: typeof captainRecords.$inferSelect, now: Date): Captain {
+  const lapsed =
+    row.status === 'suspended' && row.suspendedUntil !== null && row.suspendedUntil <= now;
+  const status = lapsed ? 'active' : row.status;
   return {
     id: row.id,
     cityId: row.cityId,
     name: row.name,
     vehicle: row.vehicle,
     plateNumber: row.plateNumber,
-    status: row.status,
+    status,
     suspension:
-      row.status === 'suspended'
-        ? { reason: row.suspensionReason!, until: row.suspendedUntil }
-        : null,
+      status === 'suspended' ? { reason: row.suspensionReason!, until: row.suspendedUntil } : null,
     custodyLimit: { amount: row.custodyLimit, currency: row.custodyLimitCurrency },
   };
 }

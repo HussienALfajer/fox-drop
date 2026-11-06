@@ -17,12 +17,7 @@ import { CaptainsService } from './captains.service.js';
 })
 export class CaptainsModule {}
 
-export type {
-  Availability,
-  CaptainStatus,
-  NoOffersReason,
-  OnlineBlock,
-} from './availability.js';
+export type { Availability, CaptainStatus, NoOffersReason, OnlineBlock } from './availability.js';
 export { orderPay, type PayRate } from './pay.js';
 export {
   type Captain,

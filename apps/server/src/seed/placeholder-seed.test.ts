@@ -141,7 +141,12 @@ describe('the placeholder seed', () => {
     };
     expect(table).toMatchObject({
       currency: 'TRY',
-      rates: { walking: placeholder, bicycle: placeholder, motorbike: placeholder, car: placeholder },
+      rates: {
+        walking: placeholder,
+        bicycle: placeholder,
+        motorbike: placeholder,
+        car: placeholder,
+      },
     });
     const { rows } = await sql.query(
       'SELECT count(*)::int AS n FROM captains.pay_tables WHERE city_id = $1',
@@ -150,7 +155,7 @@ describe('the placeholder seed', () => {
     expect(rows).toEqual([{ n: 1 }]);
     const ids = await captains.captainIds(azaz);
     expect(ids).toHaveLength(1);
-    await expect(captains.captain(ids[0]!.id)).resolves.toMatchObject({
+    await expect(captains.captain(ids[0]!.id, new Date())).resolves.toMatchObject({
       name: 'كابتن فوكس التجريبي',
       vehicle: 'motorbike',
       status: 'active',
