@@ -87,13 +87,23 @@ describe('the alerts', () => {
     ).toEqual([{ type: 'number_stopped', severity: 'warning', numberIds: ['n2', 'n3', 'n4'] }]);
   });
 
+  it('name a number whose session is closed', () => {
+    expect(poolAlerts([number({}), number({ id: 'n2', connected: false })])).toEqual([
+      { type: 'number_stopped', severity: 'warning', numberIds: ['n2'] },
+    ]);
+  });
+
   it.each([
     ['no number', []],
     ['only a standby number', [number({ status: 'standby' })]],
-    ['a number not connected', [number({ connected: false })]],
     ['a number at its cap', [number({ status: 'warming', attemptedToday: 50, dailyCap: 50 })]],
+    ['a number not connected', [number({ connected: false })]],
   ])('say codes cannot be sent with %s', (_, numbers) => {
-    expect(poolAlerts(numbers)).toContainEqual({ type: 'cannot_send', severity: 'critical' });
+    expect(poolAlerts(numbers)).toContainEqual({
+      type: 'cannot_send',
+      severity: 'critical',
+      numberIds: [],
+    });
   });
 
   it('count a warming number that can send', () => {

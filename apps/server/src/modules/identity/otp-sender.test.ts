@@ -4,8 +4,9 @@ import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { Valkey } from 'iovalkey';
 import pg from 'pg';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiModule } from '../../api.module.js';
+import { reportAlert } from '../../observability/error-tracking.js';
 import { createDatabase, type Database } from '../../database/database.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
 import { createApiApp } from '../../http/create-api-app.js';
@@ -38,6 +39,13 @@ import {
 // the otp-sender process with a fake WhatsApp library, the API's code
 // requests through Valkey, and the sessions stored encrypted in PostgreSQL.
 
+// The alerts that would reach Sentry (§8.3.3 item 14).
+vi.mock('../../observability/error-tracking.js', async (original) => ({
+  ...(await original<typeof import('../../observability/error-tracking.js')>()),
+  reportAlert: vi.fn(),
+}));
+const alerts = vi.mocked(reportAlert);
+
 // One sending number as the fake library sees it, found by the phone its
 // stored session names.
 class FakeNumber {
@@ -46,6 +54,10 @@ class FakeNumber {
   connects = 0;
   closes = 0;
   failSend = false;
+  // The on-WhatsApp check never answers.
+  hang = false;
+  // The session never opens.
+  neverOpen = false;
   events: WhatsAppEvents | undefined;
   session: WhatsAppSessionStore | undefined;
 
@@ -83,9 +95,10 @@ class FakeWhatsApp {
     number.session = session;
     number.events = events;
     await session.write({ restored: 'yes' });
-    setImmediate(() => events.open(phone));
+    if (!number.neverOpen) setImmediate(() => events.open(phone));
     return {
       isOnWhatsApp: (to) => {
+        if (number.hang) return new Promise<boolean>(() => undefined);
         this.checks += 1;
         return Promise.resolve(this.onWhatsApp.has(to));
       },
@@ -225,8 +238,8 @@ describe('the otp-sender', () => {
   let queued: QueuedCodeSender;
 
   // Answers one request as the request loop would, with ten seconds left.
-  const request = (phone: string, code = '482913', now = new Date()) =>
-    sender.answer(encodeSendRequest(secrets, phone, code, now.getTime() + 10_000), now);
+  const request = (phone: string, code = '482913', now = new Date(), left = 10_000) =>
+    sender.answer(encodeSendRequest(secrets, phone, code, now.getTime() + left), now);
 
   const reachable = () => {
     const phone = newPhone();
@@ -279,6 +292,16 @@ describe('the otp-sender', () => {
     expect(await queued.send(newPhone(), '111111')).toBe('unavailable');
     expect(Date.now() - started).toBeLessThan(SEND_ANSWER_TIMEOUT_MS);
     expect(whatsapp.numbers.size).toBe(0);
+  });
+
+  it('says once that no number can send, after the sessions had a supervision to open', async () => {
+    // The module's start ran the first supervision: no alert yet.
+    expect(alerts).not.toHaveBeenCalled();
+    await sender.supervise();
+    await sender.supervise();
+    expect(alerts.mock.calls).toEqual([
+      ['لا يمكن إرسال رموز الدخول: no sending number can send', 'fatal'],
+    ]);
   });
 
   describe('with a paired number', () => {
@@ -557,6 +580,47 @@ describe('the otp-sender', () => {
       expect(await countsOf(only!.id)).toEqual({ sent: 1, failed: 0, delivered: 1, read: 1 });
     });
 
+    it('count a check that does not answer before the deadline as the number failing', async () => {
+      const [hung] = await activeNumbers(1);
+      hung!.fake.hang = true;
+      const started = Date.now();
+      expect(await request(newPhone(), '482913', new Date(), 3_500)).toBe('unavailable');
+      expect(Date.now() - started).toBeLessThan(1_500);
+      expect(await countsOf(hung!.id)).toMatchObject({ sent: 0, failed: 1 });
+    });
+
+    it('report each stopped number to Sentry once, without its phone', async () => {
+      const [banned, throttled] = await activeNumbers(2);
+      alerts.mockClear();
+      banned!.fake.events?.closed('banned');
+      await until(() => alerts.mock.calls.length === 1);
+      throttled!.fake.failSend = true;
+      for (let attempt = 0; attempt < 10; attempt += 1) await request(reachable());
+      expect(await statusOf(throttled!.id)).toBe('throttled');
+      expect(alerts.mock.calls).toEqual([
+        ['رقم إرسال الرموز متوقف: a sending number is banned', 'warning'],
+        ['رقم إرسال الرموز متوقف: a sending number is throttled', 'warning'],
+      ]);
+      expect(JSON.stringify(alerts.mock.calls)).not.toContain(banned!.phone.slice(1));
+    });
+
+    it('report a number whose session does not open within a minute', async () => {
+      const phone = newPhone();
+      whatsapp.number(phone).neverOpen = true;
+      const { id } = await pair(phone);
+      alerts.mockClear();
+      const now = Date.now();
+      await sender.supervise(new Date(now));
+      await sender.supervise(new Date(now + 30_000));
+      expect(alerts).not.toHaveBeenCalledWith(expect.stringContaining('not connected'), 'warning');
+      await sender.supervise(new Date(now + 61_000));
+      await sender.supervise(new Date(now + 71_000));
+      expect(alerts.mock.calls.filter(([message]) => message.includes('not connected'))).toEqual([
+        ['رقم إرسال الرموز متوقف: a sending number is not connected', 'warning'],
+      ]);
+      expect(sender.connectedNumbers()).not.toContain(id);
+    });
+
     it('close a disabled number', async () => {
       const [only] = await activeNumbers(1);
       const closes = only!.fake.closes;
@@ -683,7 +747,7 @@ describe('the otp-sender', () => {
         expect(standby.statusCode).toBe(200);
         expect(standby.json()).toMatchObject({
           numbers: [{ id, status: 'standby' }],
-          alerts: [{ type: 'cannot_send', severity: 'critical' }],
+          alerts: [{ type: 'cannot_send', severity: 'critical', numberIds: [] }],
         });
         expect(await request(reachable())).toBe('unavailable');
 
@@ -715,7 +779,7 @@ describe('the otp-sender', () => {
           numbers: [{ id, status: 'banned', connected: false }],
           alerts: [
             { type: 'number_stopped', severity: 'warning', numberIds: [id] },
-            { type: 'cannot_send', severity: 'critical' },
+            { type: 'cannot_send', severity: 'critical', numberIds: [] },
           ],
         });
         const refused = await call('PUT', `/${id}/status`, { status: 'active' });
@@ -766,5 +830,16 @@ describe('pairing a number again', () => {
       [second.id],
     );
     expect((await pair(phone)).status).toBe('active');
+  });
+
+  it('keeps the counts of the day with the phone', async () => {
+    const phone = newPhone();
+    const first = await pair(phone);
+    await sql.query(
+      'INSERT INTO identity.otp_sender_daily_counts (number_id, day, sent, failed) VALUES ($1, $2, 40, 2)',
+      [first.id, senderDay(new Date())],
+    );
+    const second = await pair(phone);
+    expect(await countsOf(second.id)).toEqual({ sent: 40, failed: 2, delivered: 0, read: 0 });
   });
 });

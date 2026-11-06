@@ -59,10 +59,21 @@ export const SUPERVISE_INTERVAL_MS = 10_000;
 const REPLIED_SECONDS = 30 * 24 * 60 * 60;
 // How long the request loop blocks on the list, so a stop is quick.
 const POLL_SECONDS = 1;
-// The sent messages a connection remembers for their receipts.
+// The sent messages a number remembers for their receipts.
 const REMEMBERED_MESSAGES = 5_000;
+// A number in a connected state whose session stays closed this long raises
+// «رقم إرسال الرموز متوقف» (§8.3.3 item 14): reconnecting takes 10 s.
+export const UNCONNECTED_ALERT_MS = 60_000;
 
-type Receipt = 'sent' | 'delivered' | 'read';
+// A sent message's receipt so far, and the day of its send, which its
+// receipts count on.
+interface SentMessage {
+  receipt: 'sent' | 'delivered';
+  day: string;
+}
+
+// A check or a send that does not answer before the deadline.
+class SendTimedOutError extends Error {}
 
 interface Connection {
   number: SenderNumber;
@@ -72,9 +83,13 @@ interface Connection {
   // may start, after the jitter.
   sentAt: number[];
   nextFreeAt: number;
+}
+
+// What the sender keeps per number across its reconnections.
+interface NumberMemory {
   // The last sends' outcomes, for the throttle (item 12).
   outcomes: boolean[];
-  messages: Map<string, Receipt>;
+  messages: Map<string, SentMessage>;
 }
 
 interface Candidate {
@@ -96,9 +111,16 @@ export class OtpSenderService implements OnApplicationBootstrap, OnApplicationSh
   private superviseTimer: NodeJS.Timeout | undefined;
   private requestLoop: Promise<void> | undefined;
   private blocking: Valkey | undefined;
+  private readonly memory = new Map<string, NumberMemory>();
+  // Since when each number in a connected state has had no open session, and
+  // whether its alert went out.
+  private readonly unconnectedSince = new Map<string, number>();
+  private readonly unconnectedAlerted = new Set<string>();
   private stopped = false;
-  // Whether a number could send at the last supervision; null before it.
+  // Whether a number could send at the last supervision; null until the
+  // second one, since sessions open after the first.
   private couldSend: boolean | null = null;
+  private supervisions = 0;
 
   constructor(
     @Inject(DATABASE) private readonly database: Database,
@@ -184,8 +206,44 @@ export class OtpSenderService implements OnApplicationBootstrap, OnApplicationSh
         this.logger.error({ err: error, number: number.id }, 'otp sender number not connected'),
       );
     }
+    for (const id of this.memory.keys()) if (!wanted.has(id)) this.memory.delete(id);
     await this.markConnected();
+    this.watchUnconnected(wanted.keys(), now);
+    this.supervisions += 1;
     await this.watchCanSend(now);
+  }
+
+  private remembered(numberId: string): NumberMemory {
+    let memory = this.memory.get(numberId);
+    if (!memory) {
+      memory = { outcomes: [], messages: new Map() };
+      this.memory.set(numberId, memory);
+    }
+    return memory;
+  }
+
+  // §8.3.3 item 14: a session that does not come back is a stopped number.
+  private watchUnconnected(wanted: Iterable<string>, now: Date): void {
+    const ids = new Set(wanted);
+    for (const id of [...this.unconnectedSince.keys()]) {
+      if (!ids.has(id)) {
+        this.unconnectedSince.delete(id);
+        this.unconnectedAlerted.delete(id);
+      }
+    }
+    for (const id of ids) {
+      if (this.connections.get(id)?.open) {
+        this.unconnectedSince.delete(id);
+        this.unconnectedAlerted.delete(id);
+        continue;
+      }
+      const since = this.unconnectedSince.get(id) ?? now.getTime();
+      this.unconnectedSince.set(id, since);
+      if (now.getTime() - since >= UNCONNECTED_ALERT_MS && !this.unconnectedAlerted.has(id)) {
+        this.unconnectedAlerted.add(id);
+        this.alertStopped(id, 'not connected');
+      }
+    }
   }
 
   private async open(number: SenderNumber): Promise<void> {
@@ -195,8 +253,6 @@ export class OtpSenderService implements OnApplicationBootstrap, OnApplicationSh
       open: false,
       sentAt: [],
       nextFreeAt: 0,
-      outcomes: [],
-      messages: new Map(),
     };
     connection.client = await this.connect(this.numbers.session(number.id), {
       qr: () => {
@@ -211,7 +267,7 @@ export class OtpSenderService implements OnApplicationBootstrap, OnApplicationSh
       },
       closed: (reason) => this.whenLost(connection, reason),
       incoming: (chat) => void this.answerIncoming(connection, chat),
-      receipt: (messageId, status) => void this.receipt(connection, messageId, status),
+      receipt: (messageId, status) => void this.receipt(number.id, messageId, status),
     });
     this.connections.set(number.id, connection);
   }
@@ -227,9 +283,14 @@ export class OtpSenderService implements OnApplicationBootstrap, OnApplicationSh
     });
   }
 
-  // §8.3.3 item 14: «لا يمكن إرسال رموز الدخول» once no number can send.
+  // §8.3.3 item 14: «لا يمكن إرسال رموز الدخول» once no number can send,
+  // once per change. The first supervision only opens the sessions.
   private async watchCanSend(now: Date): Promise<void> {
     const able = (await this.sendable(now)).length > 0;
+    if (this.supervisions < 2) {
+      if (able) this.couldSend = true;
+      return;
+    }
     if (!able && this.couldSend !== false) {
       this.logger.error('otp sender: no number can send sign-in codes');
       reportAlert('لا يمكن إرسال رموز الدخول: no sending number can send', 'fatal');
@@ -259,7 +320,10 @@ export class OtpSenderService implements OnApplicationBootstrap, OnApplicationSh
   }
 
   // §8.3.3 item 14: «رقم إرسال الرموز متوقف».
-  private alertStopped(numberId: string, status: 'disconnected' | 'throttled' | 'banned'): void {
+  private alertStopped(
+    numberId: string,
+    status: 'disconnected' | 'throttled' | 'banned' | 'not connected',
+  ): void {
     this.logger.error({ number: numberId, status }, 'otp sender number stopped');
     reportAlert(`رقم إرسال الرموز متوقف: a sending number is ${status}`, 'warning');
   }
@@ -299,7 +363,8 @@ export class OtpSenderService implements OnApplicationBootstrap, OnApplicationSh
   }
 
   // §8.3.3 items 7, 11: the next number that can send before the deadline,
-  // and failover to the next one when a send fails.
+  // and failover to the next one when its check or send fails or does not
+  // answer in time.
   private async deliver(
     phone: string,
     code: string,
@@ -311,24 +376,27 @@ export class OtpSenderService implements OnApplicationBootstrap, OnApplicationSh
       const candidate = await this.pick(now, latest, tried);
       if (!candidate) return 'unavailable';
       const { connection } = candidate;
-      tried.add(connection.number.id);
+      const id = connection.number.id;
+      tried.add(id);
       const wait = candidate.freeAt - Date.now();
-      if (wait > 0) await pause(wait);
-      if (!connection.open) continue;
+      if (wait > 0) {
+        await pause(wait);
+        // OWN or the throttle may have stopped the number meanwhile.
+        const still = await this.sendable(now);
+        if (!still.some((sendable) => sendable.connection === connection)) continue;
+      }
       let onWhatsApp: boolean;
       try {
-        onWhatsApp = await this.onWhatsApp(connection.client, phone, now);
+        onWhatsApp = await beforeDeadline(this.onWhatsApp(connection.client, phone, now), latest);
       } catch (error) {
-        this.logger.warn(
-          { err: error, number: connection.number.id },
-          'otp on-WhatsApp check failed',
-        );
+        this.logger.warn({ err: error, number: id }, 'otp on-WhatsApp check failed');
+        await this.outcome(connection, false, senderDay(new Date()));
         continue;
       }
       if (!onWhatsApp) return 'not_on_whatsapp';
       // The check may take a while; the code must still be valid on arrival.
       if (Date.now() >= latest) return 'unavailable';
-      if (await this.send(connection, phone, code)) return 'sent';
+      if (await this.send(connection, phone, code, latest)) return 'sent';
     }
   }
 
@@ -340,11 +408,11 @@ export class OtpSenderService implements OnApplicationBootstrap, OnApplicationSh
       this.settings.get('otp.sender_per_minute_max'),
       this.sendable(now),
     ]);
+    const current = Date.now();
     const candidates = sendable
       .filter(({ connection }) => !tried.has(connection.number.id))
       .map(({ connection, status }) => {
-        const minuteAgo = Date.now() - 60_000;
-        connection.sentAt = connection.sentAt.filter((at) => at > minuteAgo);
+        connection.sentAt = connection.sentAt.filter((at) => at > current - 60_000);
         const minuteFree =
           connection.sentAt.length >= perMinute
             ? (connection.sentAt[connection.sentAt.length - perMinute] ?? 0) + 60_000
@@ -352,7 +420,7 @@ export class OtpSenderService implements OnApplicationBootstrap, OnApplicationSh
         return {
           connection,
           tier: status === 'active' ? 0 : 1,
-          freeAt: Math.max(connection.nextFreeAt, minuteFree),
+          freeAt: Math.max(current, connection.nextFreeAt, minuteFree),
           lastSent: connection.sentAt.at(-1) ?? 0,
         };
       })
@@ -389,65 +457,84 @@ export class OtpSenderService implements OnApplicationBootstrap, OnApplicationSh
     });
   }
 
-  // One send from one number, counted for the caps and the health signals.
-  private async send(connection: Connection, phone: string, code: string): Promise<boolean> {
+  // One send from one number. A send still unanswered at the deadline counts
+  // as failed, though WhatsApp may deliver it late.
+  private async send(
+    connection: Connection,
+    phone: string,
+    code: string,
+    latest: number,
+  ): Promise<boolean> {
     const id = connection.number.id;
     const jitter = await this.settings.get('otp.send_jitter_sec');
-    const startedAt = Date.now();
-    connection.sentAt.push(startedAt);
-    connection.nextFreeAt = startedAt + randomInt(jitter.min * 1000, jitter.max * 1000 + 1);
+    connection.sentAt.push(Date.now());
     const day = senderDay(new Date());
     let sent: boolean;
     try {
-      const messageId = await connection.client.sendText(phone, codeMessage(code));
-      if (messageId) this.remember(connection, messageId);
+      const messageId = await beforeDeadline(
+        connection.client.sendText(phone, codeMessage(code)),
+        latest,
+      );
+      if (messageId) this.remember(id, messageId, day);
       sent = true;
     } catch (error) {
       this.logger.error({ err: error, number: id }, 'otp code not sent');
       sent = false;
     }
-    await this.numbers
-      .count(id, day, sent ? { sent: 1 } : { failed: 1 })
-      .catch((error: unknown) => this.logger.error({ err: error }, 'otp send not counted'));
-    connection.outcomes = [...connection.outcomes, sent].slice(-THROTTLE_WINDOW);
-    if (!sent && shouldThrottle(connection.outcomes)) {
-      connection.outcomes = [];
-      const throttled = await this.numbers.throttle(id, new Date()).catch((error: unknown) => {
-        this.logger.error({ err: error }, 'otp sender number not throttled');
-        return false;
-      });
-      if (throttled) this.alertStopped(id, 'throttled');
-    }
+    // The jitter runs from the end of the send.
+    connection.nextFreeAt = Date.now() + randomInt(jitter.min * 1000, jitter.max * 1000 + 1);
+    await this.outcome(connection, sent, day);
     return sent;
   }
 
-  private remember(connection: Connection, messageId: string): void {
-    connection.messages.set(messageId, 'sent');
-    if (connection.messages.size > REMEMBERED_MESSAGES) {
-      const oldest = connection.messages.keys().next().value;
-      if (oldest !== undefined) connection.messages.delete(oldest);
+  // Counts a send (or a check that failed) for the caps and the health
+  // signals, and throttles a number that fails too often (item 12).
+  private async outcome(connection: Connection, sent: boolean, day: string): Promise<void> {
+    const id = connection.number.id;
+    await this.numbers
+      .count(id, day, sent ? { sent: 1 } : { failed: 1 })
+      .catch((error: unknown) => this.logger.error({ err: error }, 'otp send not counted'));
+    const memory = this.remembered(id);
+    memory.outcomes = [...memory.outcomes, sent].slice(-THROTTLE_WINDOW);
+    if (sent || !shouldThrottle(memory.outcomes)) return;
+    memory.outcomes = [];
+    const throttled = await this.numbers.throttle(id, new Date()).catch((error: unknown) => {
+      this.logger.error({ err: error }, 'otp sender number not throttled');
+      return false;
+    });
+    if (throttled) this.alertStopped(id, 'throttled');
+  }
+
+  private remember(numberId: string, messageId: string, day: string): void {
+    const { messages } = this.remembered(numberId);
+    messages.set(messageId, { receipt: 'sent', day });
+    if (messages.size > REMEMBERED_MESSAGES) {
+      const oldest = messages.keys().next().value;
+      if (oldest !== undefined) messages.delete(oldest);
     }
   }
 
-  // §8.3.3 item 12: delivered and read, once per message; a read without a
-  // delivery receipt counts as both.
+  // §8.3.3 item 12: delivered and read, once per message, on the day of its
+  // send; a read without a delivery receipt counts as both. Receipts of a
+  // message sent before the process started are not counted.
   private async receipt(
-    connection: Connection,
+    numberId: string,
     messageId: string,
     status: 'delivered' | 'read',
   ): Promise<void> {
-    const before = connection.messages.get(messageId);
-    if (!before || before === 'read' || (before === 'delivered' && status === 'delivered')) return;
+    const { messages } = this.remembered(numberId);
+    const message = messages.get(messageId);
+    if (!message || (message.receipt === 'delivered' && status === 'delivered')) return;
     const counts: Partial<DayCounts> = {};
-    if (before === 'sent') counts.delivered = 1;
+    if (message.receipt === 'sent') counts.delivered = 1;
     if (status === 'read') {
       counts.read = 1;
-      connection.messages.delete(messageId);
+      messages.delete(messageId);
     } else {
-      connection.messages.set(messageId, 'delivered');
+      message.receipt = 'delivered';
     }
     await this.numbers
-      .count(connection.number.id, senderDay(new Date()), counts)
+      .count(numberId, message.day, counts)
       .catch((error: unknown) => this.logger.warn({ err: error }, 'otp receipt not counted'));
   }
 
@@ -493,4 +580,17 @@ export class OtpSenderService implements OnApplicationBootstrap, OnApplicationSh
 
 function pause(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// The library's call, or SendTimedOutError once the deadline passes.
+function beforeDeadline<T>(call: Promise<T>, latest: number): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () => reject(new SendTimedOutError('no answer before the deadline')),
+      // A timer longer than 2^31 - 1 ms would fire at once.
+      Math.min(Math.max(0, latest - Date.now()), 2 ** 31 - 1),
+    );
+  });
+  return Promise.race([call, timeout]).finally(() => clearTimeout(timer));
 }

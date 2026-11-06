@@ -68,17 +68,15 @@ class SenderPoolDto extends createZodDto(
     numbers: z.array(SenderNumberDto.schema),
     alerts: z
       .array(
-        z.discriminatedUnion('type', [
-          z.object({
-            type: z.literal('number_stopped').describe('«رقم إرسال الرموز متوقف»'),
-            severity: z.literal('warning'),
-            numberIds: z.array(z.uuid()),
-          }),
-          z.object({
-            type: z.literal('cannot_send').describe('«لا يمكن إرسال رموز الدخول»'),
-            severity: z.literal('critical'),
-          }),
-        ]),
+        z.object({
+          type: z
+            .enum(['number_stopped', 'cannot_send'])
+            .describe(
+              'number_stopped: «رقم إرسال الرموز متوقف» (warning); cannot_send: «لا يمكن إرسال رموز الدخول» (critical).',
+            ),
+          severity: z.enum(['warning', 'critical']),
+          numberIds: z.array(z.uuid()).describe('The stopped numbers; empty for cannot_send.'),
+        }),
       )
       .describe('The alerts of architecture §8.3.3 item 14 (AP §9.1.3).'),
   }),

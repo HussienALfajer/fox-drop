@@ -4,6 +4,7 @@ import {
   CONNECTED_STATUSES,
   type SenderStatus,
   SENDING_STATUSES,
+  senderDay,
   THROTTLE_MINUTES,
 } from './otp-sender-pool.js';
 import { otpSenderCredentials, otpSenderDailyCounts, otpSenderNumbers } from './schema.js';
@@ -176,6 +177,15 @@ export class OtpSenderNumbers {
         })
         .returning({ id: otpSenderNumbers.id, status: otpSenderNumbers.status });
       if (!number) throw new Error('the sending number was not saved');
+      // The day's caps are the phone's, whichever row sent: the new row takes
+      // over today's counts of the earlier ones.
+      await tx.execute(sql`
+        INSERT INTO identity.otp_sender_daily_counts (number_id, day, sent, failed, delivered, read)
+        SELECT ${number.id}, counts.day, sum(counts.sent), sum(counts.failed), sum(counts.delivered), sum(counts.read)
+        FROM identity.otp_sender_daily_counts AS counts
+        JOIN identity.otp_sender_numbers AS numbers ON numbers.id = counts.number_id
+        WHERE numbers.phone_hash = ${phoneHash} AND numbers.id <> ${number.id} AND counts.day = ${senderDay(now)}
+        GROUP BY counts.day`);
       const rows = [...entries].map(([key, value]) => ({
         numberId: number.id,
         key,

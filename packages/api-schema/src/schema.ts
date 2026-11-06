@@ -1726,24 +1726,17 @@ export interface components {
                 };
             }[];
             /** @description The alerts of architecture §8.3.3 item 14 (AP §9.1.3). */
-            alerts: ({
+            alerts: {
                 /**
-                 * @description «رقم إرسال الرموز متوقف»
-                 * @constant
+                 * @description number_stopped: «رقم إرسال الرموز متوقف» (warning); cannot_send: «لا يمكن إرسال رموز الدخول» (critical).
+                 * @enum {string}
                  */
-                type: "number_stopped";
-                /** @constant */
-                severity: "warning";
+                type: "number_stopped" | "cannot_send";
+                /** @enum {string} */
+                severity: "warning" | "critical";
+                /** @description The stopped numbers; empty for cannot_send. */
                 numberIds: string[];
-            } | {
-                /**
-                 * @description «لا يمكن إرسال رموز الدخول»
-                 * @constant
-                 */
-                type: "cannot_send";
-                /** @constant */
-                severity: "critical";
-            })[];
+            }[];
         };
         SenderNumberStatusDto: {
             /**

@@ -35,12 +35,17 @@ _$senderPoolDtoOutputAlertsInnerTypeEnumValues =
     );
 
 const SenderPoolDtoOutputAlertsInnerSeverityEnum
+_$senderPoolDtoOutputAlertsInnerSeverityEnum_warning =
+    const SenderPoolDtoOutputAlertsInnerSeverityEnum._('warning');
+const SenderPoolDtoOutputAlertsInnerSeverityEnum
 _$senderPoolDtoOutputAlertsInnerSeverityEnum_critical =
     const SenderPoolDtoOutputAlertsInnerSeverityEnum._('critical');
 
 SenderPoolDtoOutputAlertsInnerSeverityEnum
 _$senderPoolDtoOutputAlertsInnerSeverityEnumValueOf(String name) {
   switch (name) {
+    case 'warning':
+      return _$senderPoolDtoOutputAlertsInnerSeverityEnum_warning;
     case 'critical':
       return _$senderPoolDtoOutputAlertsInnerSeverityEnum_critical;
     default:
@@ -52,6 +57,7 @@ final BuiltSet<SenderPoolDtoOutputAlertsInnerSeverityEnum>
 _$senderPoolDtoOutputAlertsInnerSeverityEnumValues =
     BuiltSet<SenderPoolDtoOutputAlertsInnerSeverityEnum>(
       const <SenderPoolDtoOutputAlertsInnerSeverityEnum>[
+        _$senderPoolDtoOutputAlertsInnerSeverityEnum_warning,
         _$senderPoolDtoOutputAlertsInnerSeverityEnum_critical,
       ],
     );
@@ -101,9 +107,11 @@ class _$SenderPoolDtoOutputAlertsInnerTypeEnumSerializer
 class _$SenderPoolDtoOutputAlertsInnerSeverityEnumSerializer
     implements PrimitiveSerializer<SenderPoolDtoOutputAlertsInnerSeverityEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
+    'warning': 'warning',
     'critical': 'critical',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
+    'warning': 'warning',
     'critical': 'critical',
   };
 
@@ -133,13 +141,21 @@ class _$SenderPoolDtoOutputAlertsInnerSeverityEnumSerializer
 
 class _$SenderPoolDtoOutputAlertsInner extends SenderPoolDtoOutputAlertsInner {
   @override
-  final OneOf oneOf;
+  final SenderPoolDtoOutputAlertsInnerTypeEnum type;
+  @override
+  final SenderPoolDtoOutputAlertsInnerSeverityEnum severity;
+  @override
+  final BuiltList<String> numberIds;
 
   factory _$SenderPoolDtoOutputAlertsInner([
     void Function(SenderPoolDtoOutputAlertsInnerBuilder)? updates,
   ]) => (SenderPoolDtoOutputAlertsInnerBuilder()..update(updates))._build();
 
-  _$SenderPoolDtoOutputAlertsInner._({required this.oneOf}) : super._();
+  _$SenderPoolDtoOutputAlertsInner._({
+    required this.type,
+    required this.severity,
+    required this.numberIds,
+  }) : super._();
   @override
   SenderPoolDtoOutputAlertsInner rebuild(
     void Function(SenderPoolDtoOutputAlertsInnerBuilder) updates,
@@ -152,22 +168,29 @@ class _$SenderPoolDtoOutputAlertsInner extends SenderPoolDtoOutputAlertsInner {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is SenderPoolDtoOutputAlertsInner && oneOf == other.oneOf;
+    return other is SenderPoolDtoOutputAlertsInner &&
+        type == other.type &&
+        severity == other.severity &&
+        numberIds == other.numberIds;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, oneOf.hashCode);
+    _$hash = $jc(_$hash, type.hashCode);
+    _$hash = $jc(_$hash, severity.hashCode);
+    _$hash = $jc(_$hash, numberIds.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-      r'SenderPoolDtoOutputAlertsInner',
-    )..add('oneOf', oneOf)).toString();
+    return (newBuiltValueToStringHelper(r'SenderPoolDtoOutputAlertsInner')
+          ..add('type', type)
+          ..add('severity', severity)
+          ..add('numberIds', numberIds))
+        .toString();
   }
 }
 
@@ -179,9 +202,20 @@ class SenderPoolDtoOutputAlertsInnerBuilder
         > {
   _$SenderPoolDtoOutputAlertsInner? _$v;
 
-  OneOf? _oneOf;
-  OneOf? get oneOf => _$this._oneOf;
-  set oneOf(OneOf? oneOf) => _$this._oneOf = oneOf;
+  SenderPoolDtoOutputAlertsInnerTypeEnum? _type;
+  SenderPoolDtoOutputAlertsInnerTypeEnum? get type => _$this._type;
+  set type(SenderPoolDtoOutputAlertsInnerTypeEnum? type) => _$this._type = type;
+
+  SenderPoolDtoOutputAlertsInnerSeverityEnum? _severity;
+  SenderPoolDtoOutputAlertsInnerSeverityEnum? get severity => _$this._severity;
+  set severity(SenderPoolDtoOutputAlertsInnerSeverityEnum? severity) =>
+      _$this._severity = severity;
+
+  ListBuilder<String>? _numberIds;
+  ListBuilder<String> get numberIds =>
+      _$this._numberIds ??= ListBuilder<String>();
+  set numberIds(ListBuilder<String>? numberIds) =>
+      _$this._numberIds = numberIds;
 
   SenderPoolDtoOutputAlertsInnerBuilder() {
     SenderPoolDtoOutputAlertsInner._defaults(this);
@@ -190,7 +224,9 @@ class SenderPoolDtoOutputAlertsInnerBuilder
   SenderPoolDtoOutputAlertsInnerBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _oneOf = $v.oneOf;
+      _type = $v.type;
+      _severity = $v.severity;
+      _numberIds = $v.numberIds.toBuilder();
       _$v = null;
     }
     return this;
@@ -210,15 +246,37 @@ class SenderPoolDtoOutputAlertsInnerBuilder
   SenderPoolDtoOutputAlertsInner build() => _build();
 
   _$SenderPoolDtoOutputAlertsInner _build() {
-    final _$result =
-        _$v ??
-        _$SenderPoolDtoOutputAlertsInner._(
-          oneOf: BuiltValueNullFieldError.checkNotNull(
-            oneOf,
-            r'SenderPoolDtoOutputAlertsInner',
-            'oneOf',
-          ),
+    _$SenderPoolDtoOutputAlertsInner _$result;
+    try {
+      _$result =
+          _$v ??
+          _$SenderPoolDtoOutputAlertsInner._(
+            type: BuiltValueNullFieldError.checkNotNull(
+              type,
+              r'SenderPoolDtoOutputAlertsInner',
+              'type',
+            ),
+            severity: BuiltValueNullFieldError.checkNotNull(
+              severity,
+              r'SenderPoolDtoOutputAlertsInner',
+              'severity',
+            ),
+            numberIds: numberIds.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'numberIds';
+        numberIds.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+          r'SenderPoolDtoOutputAlertsInner',
+          _$failedField,
+          e.toString(),
         );
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

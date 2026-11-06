@@ -109,9 +109,13 @@ export interface PoolNumberHealth {
   dailyCap: number;
 }
 
-export type PoolAlert =
-  | { type: 'number_stopped'; severity: 'warning'; numberIds: string[] }
-  | { type: 'cannot_send'; severity: 'critical' };
+// One shape for both, so every client reads them alike; numberIds names the
+// stopped numbers and is empty for cannot_send.
+export interface PoolAlert {
+  type: 'number_stopped' | 'cannot_send';
+  severity: 'warning' | 'critical';
+  numberIds: string[];
+}
 
 // Whether a number can send a code now, its pacing aside.
 export function canSend(number: PoolNumberHealth): boolean {
@@ -123,16 +127,21 @@ export function canSend(number: PoolNumberHealth): boolean {
 }
 
 // Item 14, AP §9.1.3: «رقم إرسال الرموز متوقف» (Warning, OWN) while a number
-// is disconnected, throttled or banned; «لا يمكن إرسال رموز الدخول»
-// (Critical, OWN and OPS) while no number can send.
+// is disconnected, throttled or banned, or its session is closed;
+// «لا يمكن إرسال رموز الدخول» (Critical, OWN and OPS) while no number can
+// send.
 export function poolAlerts(numbers: readonly PoolNumberHealth[]): PoolAlert[] {
   const alerts: PoolAlert[] = [];
   const stopped = numbers
-    .filter((number) => (STOPPED_STATUSES as readonly SenderStatus[]).includes(number.status))
+    .filter(
+      (number) =>
+        (STOPPED_STATUSES as readonly SenderStatus[]).includes(number.status) || !number.connected,
+    )
     .map((number) => number.id);
   if (stopped.length > 0) {
     alerts.push({ type: 'number_stopped', severity: 'warning', numberIds: stopped });
   }
-  if (!numbers.some(canSend)) alerts.push({ type: 'cannot_send', severity: 'critical' });
+  if (!numbers.some(canSend))
+    alerts.push({ type: 'cannot_send', severity: 'critical', numberIds: [] });
   return alerts;
 }

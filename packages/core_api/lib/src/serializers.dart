@@ -238,8 +238,6 @@ import 'package:core_api/src/model/role_matrix_dto_output_roles_inner.dart';
 import 'package:core_api/src/model/sender_number_status_dto.dart';
 import 'package:core_api/src/model/sender_pool_dto_output.dart';
 import 'package:core_api/src/model/sender_pool_dto_output_alerts_inner.dart';
-import 'package:core_api/src/model/sender_pool_dto_output_alerts_inner_one_of.dart';
-import 'package:core_api/src/model/sender_pool_dto_output_alerts_inner_one_of1.dart';
 import 'package:core_api/src/model/sender_pool_dto_output_numbers_inner.dart';
 import 'package:core_api/src/model/sender_pool_dto_output_numbers_inner_today.dart';
 import 'package:core_api/src/model/sender_pool_dto_output_numbers_inner_warmup.dart';
@@ -486,8 +484,6 @@ part 'serializers.g.dart';
   SenderNumberStatusDto,
   SenderPoolDtoOutput,
   SenderPoolDtoOutputAlertsInner,
-  SenderPoolDtoOutputAlertsInnerOneOf,
-  SenderPoolDtoOutputAlertsInnerOneOf1,
   SenderPoolDtoOutputNumbersInner,
   SenderPoolDtoOutputNumbersInnerToday,
   SenderPoolDtoOutputNumbersInnerWarmup,

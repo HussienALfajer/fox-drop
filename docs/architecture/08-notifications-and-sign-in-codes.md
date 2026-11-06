@@ -49,7 +49,7 @@ WhatsApp bans numbers that send many messages to people who did not expect them,
 
 4. **Dedicated numbers:** two or more numbers owned by FOX DROP, used only for sign-in codes. Never a personal number, never the support number, never used for marketing or mass push (AP §9.11.4 uses push, not WhatsApp).
 5. **Business profile complete** on every number: name «FOX DROP», logo, description, website.
-6. **Warm-up:** a new number starts with a low daily cap that rises over two weeks (`otp.sender_warmup_caps`, default 50 → 100 → 200 → 400 → 800 → full). A number is used for codes only after it has been active and normal for some days.
+6. **Warm-up:** a new number starts with a low daily cap that rises over two weeks (`otp.sender_warmup_caps`, default 50 → 100 → 200 → 400 → 800 → full). Owner decision 2026-11-06: each step lasts `otp.sender_warmup_step_days` (3), so the number is `active` after 15 days; while `warming` it sends real codes within its step's cap, only when no `active` number can.
 7. **Pacing:** each number sends at most `otp.sender_per_minute_max` (12) and `otp.sender_daily_max` (1500) messages, with a random delay of `otp.send_jitter_sec` (1–4) seconds between sends. A short queue absorbs peaks.
 8. **One short, fixed message.** No links, no marketing, the same structure every time, chosen from a few approved wordings in Content (AP §9.13), for example:
    «رمز الدخول إلى FOX DROP: 482913
@@ -64,7 +64,8 @@ WhatsApp bans numbers that send many messages to people who did not expect them,
 13. **Panel screen «أرقام إرسال الرموز»** (OWN, in Settings, AP §9.14): add a number and pair it by scanning a QR code, see its state and daily counts, set it active or standby, disable it.
 14. **Alerts** (AP §9.1.3):
     - «رقم إرسال الرموز متوقف» (Warning, OWN): one number is disconnected, throttled or banned.
-    - «لا يمكن إرسال رموز الدخول» (Critical, OWN and OPS): no active number can send.
+    - «لا يمكن إرسال رموز الدخول» (Critical, OWN and OPS): no active or warming number can send.
+    - Owner decision 2026-11-06: until the panel's alerts feed exists, both show in the read of «أرقام إرسال الرموز» and go to Sentry. A number throttles when 30% or more of its last 20 sends (at least 10) failed, for 60 minutes (item 12).
 
 **D. Fewer codes overall**
 
