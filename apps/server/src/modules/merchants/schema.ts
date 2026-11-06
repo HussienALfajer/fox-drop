@@ -253,6 +253,37 @@ export const commissionRates = merchants.table(
   ],
 );
 
+export const devicePlatforms = ['android', 'ios', 'windows'] as const;
+
+// A device of a restaurant (RA §5.2 item 5, §5.3): named on its first sign-in,
+// such as «كاشير 1». The account that named it belongs to identity: a plain
+// column. The ring setting, the device check and the last seen time join with
+// staff and devices (RA §14).
+export const devices = merchants.table(
+  'devices',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    restaurantId: uuid('restaurant_id')
+      .notNull()
+      .references(() => restaurants.id),
+    // The app installation, as at sign-in.
+    deviceId: text('device_id').notNull(),
+    name: text('name').notNull(),
+    platform: text('platform', { enum: devicePlatforms }).notNull(),
+    appVersion: text('app_version').notNull(),
+    // The restaurant user who named or renamed it last.
+    namedById: uuid('named_by_id').notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (table) => [
+    uniqueIndex('devices_restaurant_device').on(table.restaurantId, table.deviceId),
+    check('devices_platform_values', sql`${table.platform} IN ('android', 'ios', 'windows')`),
+  ],
+);
+
 // AP §9.6.6, RA §9: a menu category. An unpublished one waits for its change
 // request (RA §9.2). Availability off with an end is «حتى الغد»; without an
 // end, until turned back on (RA §9.3). The availability window is minutes

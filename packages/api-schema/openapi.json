@@ -769,6 +769,202 @@
         ]
       }
     },
+    "/v1/merchant/auth/code": {
+      "post": {
+        "operationId": "merchantAuthRequestCode",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantCodeRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantCodeSentDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/auth/sign-in": {
+      "post": {
+        "operationId": "merchantAuthSignIn",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantSignInDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantSignedInDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/auth/refresh": {
+      "post": {
+        "operationId": "merchantAuthRefresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantRefreshDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantTokensDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/auth/session": {
+      "get": {
+        "operationId": "merchantAuthCurrent",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantSessionDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/auth/device": {
+      "put": {
+        "operationId": "merchantAuthDevice",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantDeviceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantDeviceSavedDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/auth/sign-out": {
+      "post": {
+        "operationId": "merchantAuthSignOut",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantSignedOutDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
     "/v1/admin/settings": {
       "get": {
         "operationId": "settingsList",
@@ -949,6 +1145,94 @@
         },
         "tags": [
           "admin"
+        ]
+      }
+    },
+    "/v1/merchant/restaurant": {
+      "get": {
+        "operationId": "merchantMenuRestaurant",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantRestaurantDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/menu": {
+      "get": {
+        "operationId": "merchantMenuMenu",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantMenuDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/menu/availability": {
+      "put": {
+        "operationId": "merchantMenuSetAvailability",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantAvailabilityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantAvailabilitySavedDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
         ]
       }
     }
@@ -1587,6 +1871,268 @@
         ],
         "additionalProperties": false
       },
+      "MerchantCodeRequestDto": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
+            "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+          },
+          "deviceId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "The app installation, generated once by the app and kept until it is removed."
+          }
+        },
+        "required": [
+          "phone",
+          "deviceId"
+        ]
+      },
+      "MerchantCodeSentDto_Output": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "const": "whatsapp",
+            "description": "Where the code went (architecture §8.3.4)."
+          },
+          "resendAfterSec": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "When the app may offer «إعادة الإرسال»."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "channel",
+          "resendAfterSec",
+          "expiresAt"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantSignInDto": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
+            "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+          },
+          "deviceId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "The app installation, generated once by the app and kept until it is removed."
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^\\d{6}$"
+          }
+        },
+        "required": [
+          "phone",
+          "deviceId",
+          "code"
+        ]
+      },
+      "MerchantSignedInDto_Output": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "restaurantId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "cashier"
+            ],
+            "description": "RA §5.4: what the app shows and the server allows."
+          },
+          "name": {
+            "type": "string"
+          },
+          "deviceNamed": {
+            "type": "boolean",
+            "description": "False on the first sign-in of this device: the app asks for its name (RA §5.2)."
+          },
+          "accessToken": {
+            "type": "string",
+            "description": "A JWT for the Authorization header, valid 15 minutes."
+          },
+          "accessTokenExpiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "Used once at /refresh for a new pair; using it twice signs the device out."
+          }
+        },
+        "required": [
+          "accountId",
+          "restaurantId",
+          "role",
+          "name",
+          "deviceNamed",
+          "accessToken",
+          "accessTokenExpiresAt",
+          "refreshToken"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantRefreshDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "MerchantTokensDto_Output": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "A JWT for the Authorization header, valid 15 minutes."
+          },
+          "accessTokenExpiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "Used once at /refresh for a new pair; using it twice signs the device out."
+          }
+        },
+        "required": [
+          "accessToken",
+          "accessTokenExpiresAt",
+          "refreshToken"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantSessionDto_Output": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "restaurantId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "cashier"
+            ],
+            "description": "RA §5.4: what the app shows and the server allows."
+          },
+          "name": {
+            "type": "string"
+          },
+          "deviceNamed": {
+            "type": "boolean",
+            "description": "False on the first sign-in of this device: the app asks for its name (RA §5.2)."
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "accountId",
+          "restaurantId",
+          "role",
+          "name",
+          "deviceNamed",
+          "sessionId"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantDeviceDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "description": "Such as «كاشير 1» or «تابلت المطبخ»."
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "android",
+              "ios",
+              "windows"
+            ]
+          },
+          "appVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "name",
+          "platform",
+          "appVersion"
+        ]
+      },
+      "MerchantDeviceSavedDto_Output": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "saved"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantSignedOutDto_Output": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "signed_out"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      },
       "SettingListDto_Output": {
         "type": "object",
         "properties": {
@@ -1935,6 +2481,427 @@
         },
         "required": [
           "changes"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantRestaurantDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "nameAr": {
+            "type": "string"
+          },
+          "nameEn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "accountStatus": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "test",
+              "active",
+              "suspended",
+              "terminated"
+            ]
+          },
+          "suspensionReason": {
+            "description": "«حساب مطعمك معلّق: {السبب}…» while suspended (RA §5.5).",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "suspended",
+              "terminated",
+              "holiday",
+              "closed",
+              "paused",
+              "busy",
+              "open"
+            ],
+            "description": "The operating state now (RA §7.1)."
+          },
+          "stateUntil": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When a holiday close or a pause ends."
+          }
+        },
+        "required": [
+          "id",
+          "nameAr",
+          "nameEn",
+          "accountStatus",
+          "suspensionReason",
+          "state",
+          "stateUntil"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantMenuDto_Output": {
+        "type": "object",
+        "properties": {
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "hidden": {
+                  "type": "boolean"
+                },
+                "available": {
+                  "type": "boolean"
+                },
+                "switchedOff": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "until": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "«حتى الغد»: on again at this time; null: «حتى أعيده»."
+                        }
+                      },
+                      "required": [
+                        "until"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The row's own switch (RA §9.3): null while on."
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "code": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "price": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "string",
+                            "pattern": "^\\d+$",
+                            "description": "Integer minor units (AP §8.6)."
+                          },
+                          "currency": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3
+                          }
+                        },
+                        "required": [
+                          "amount",
+                          "currency"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "available": {
+                        "type": "boolean",
+                        "description": "Whether customers can order it: its switch, its category and its required groups (RA §9.3)."
+                      },
+                      "switchedOff": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "until": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "«حتى الغد»: on again at this time; null: «حتى أعيده»."
+                              }
+                            },
+                            "required": [
+                              "until"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "The row's own switch (RA §9.3): null while on."
+                      },
+                      "hidden": {
+                        "type": "boolean"
+                      },
+                      "optionGroups": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "minChoices": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "maxChoices": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "options": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "priceDelta": {
+                                    "type": "object",
+                                    "properties": {
+                                      "amount": {
+                                        "type": "string",
+                                        "pattern": "^\\d+$",
+                                        "description": "Integer minor units (AP §8.6)."
+                                      },
+                                      "currency": {
+                                        "type": "string",
+                                        "minLength": 3,
+                                        "maxLength": 3
+                                      }
+                                    },
+                                    "required": [
+                                      "amount",
+                                      "currency"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "available": {
+                                    "type": "boolean"
+                                  },
+                                  "switchedOff": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "until": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ],
+                                            "description": "«حتى الغد»: on again at this time; null: «حتى أعيده»."
+                                          }
+                                        },
+                                        "required": [
+                                          "until"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "description": "The row's own switch (RA §9.3): null while on."
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name",
+                                  "priceDelta",
+                                  "available",
+                                  "switchedOff"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "minChoices",
+                            "maxChoices",
+                            "options"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "code",
+                      "name",
+                      "description",
+                      "price",
+                      "available",
+                      "switchedOff",
+                      "hidden",
+                      "optionGroups"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "hidden",
+                "available",
+                "switchedOff",
+                "items"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "categories"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantAvailabilityDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "category",
+              "item",
+              "option"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "until": {
+            "description": "Needed to switch off: «حتى الغد» (the default in the app) or «حتى أعيده» (RA §9.3).",
+            "type": "string",
+            "enum": [
+              "tomorrow",
+              "turned_back_on"
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "available"
+        ]
+      },
+      "MerchantAvailabilitySavedDto_Output": {
+        "type": "object",
+        "properties": {
+          "switchedOff": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "until": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«حتى الغد»: on again at this time; null: «حتى أعيده»."
+                  }
+                },
+                "required": [
+                  "until"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The row's own switch (RA §9.3): null while on."
+          }
+        },
+        "required": [
+          "switchedOff"
         ],
         "additionalProperties": false
       }

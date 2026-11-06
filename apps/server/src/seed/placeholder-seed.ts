@@ -3,6 +3,7 @@ import { DATABASE, DatabaseModule } from '../database/database.module.js';
 import type { Database } from '../database/database.js';
 import { FxModule, FxService } from '../modules/fx/index.js';
 import { GeoModule, GeoRefusedError, GeoService } from '../modules/geo/index.js';
+import { IdentityModule, MerchantAccountsService } from '../modules/identity/index.js';
 import {
   type MerchantChange,
   MerchantsModule,
@@ -75,6 +76,12 @@ const demoHours: OpeningPeriod[] = [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({
   opensAt: 10 * 60,
   closesAt: 2 * 60,
 }));
+// The demo restaurant's owner and cashier (RA §5.1), with numbers no one
+// holds: in development the code sender prints their sign-in codes.
+const demoAccounts = [
+  { role: 'owner', name: 'مالك تجريبي', phone: '+963900000001' },
+  { role: 'cashier', name: 'كاشير تجريبي', phone: '+963900000002' },
+] as const;
 const try_ = (amount: bigint) => ({ amount, currency: 'TRY' });
 
 // The placeholder data of development and staging, set by the API at start
@@ -90,6 +97,7 @@ export class PlaceholderSeed {
     private readonly fx: FxService,
     private readonly settings: SettingsService,
     private readonly merchants: MerchantsService,
+    private readonly merchantAccounts: MerchantAccountsService,
     @Inject(DATABASE) private readonly database: Database,
   ) {}
 
@@ -180,6 +188,13 @@ export class PlaceholderSeed {
       if (restaurant?.accountStatus === 'draft') {
         await this.merchants.setAccountStatus(id, 'active', change);
       }
+      // Each by its role, so a run that stopped between them is finished.
+      const roles = new Set((await this.merchantAccounts.accounts(id)).map((user) => user.role));
+      for (const account of demoAccounts) {
+        if (!roles.has(account.role)) {
+          await this.merchantAccounts.addAccount(id, account, change);
+        }
+      }
     } finally {
       await client
         .query("SELECT pg_advisory_unlock(hashtextextended('seed:demo-restaurant', 0))")
@@ -233,7 +248,7 @@ export class PlaceholderSeed {
 }
 
 @Module({
-  imports: [DatabaseModule, GeoModule, FxModule, SettingsModule, MerchantsModule],
+  imports: [DatabaseModule, GeoModule, FxModule, SettingsModule, MerchantsModule, IdentityModule],
   providers: [PlaceholderSeed],
 })
 export class PlaceholderSeedModule {}

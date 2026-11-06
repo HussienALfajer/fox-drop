@@ -372,6 +372,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/auth/code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantAuthRequestCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/auth/sign-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantAuthSignIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantAuthRefresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/auth/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantAuthCurrent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/auth/device": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantAuthDevice"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/auth/sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantAuthSignOut"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/settings": {
         parameters: {
             query?: never;
@@ -429,6 +525,54 @@ export interface paths {
         };
         get: operations["settingsHistory"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/restaurant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantMenuRestaurant"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/menu": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantMenuMenu"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/menu/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantMenuSetAvailability"];
         post?: never;
         delete?: never;
         options?: never;
@@ -607,6 +751,98 @@ export interface components {
             /** @constant */
             status: "signed_out";
         };
+        MerchantCodeRequestDto: {
+            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            phone: string;
+            /**
+             * Format: uuid
+             * @description The app installation, generated once by the app and kept until it is removed.
+             */
+            deviceId: string;
+        };
+        MerchantCodeSentDto_Output: {
+            /**
+             * @description Where the code went (architecture §8.3.4).
+             * @constant
+             */
+            channel: "whatsapp";
+            /** @description When the app may offer «إعادة الإرسال». */
+            resendAfterSec: number;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        MerchantSignInDto: {
+            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            phone: string;
+            /**
+             * Format: uuid
+             * @description The app installation, generated once by the app and kept until it is removed.
+             */
+            deviceId: string;
+            code: string;
+        };
+        MerchantSignedInDto_Output: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: uuid */
+            restaurantId: string;
+            /**
+             * @description RA §5.4: what the app shows and the server allows.
+             * @enum {string}
+             */
+            role: "owner" | "cashier";
+            name: string;
+            /** @description False on the first sign-in of this device: the app asks for its name (RA §5.2). */
+            deviceNamed: boolean;
+            /** @description A JWT for the Authorization header, valid 15 minutes. */
+            accessToken: string;
+            /** Format: date-time */
+            accessTokenExpiresAt: string;
+            /** @description Used once at /refresh for a new pair; using it twice signs the device out. */
+            refreshToken: string;
+        };
+        MerchantRefreshDto: {
+            refreshToken: string;
+        };
+        MerchantTokensDto_Output: {
+            /** @description A JWT for the Authorization header, valid 15 minutes. */
+            accessToken: string;
+            /** Format: date-time */
+            accessTokenExpiresAt: string;
+            /** @description Used once at /refresh for a new pair; using it twice signs the device out. */
+            refreshToken: string;
+        };
+        MerchantSessionDto_Output: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: uuid */
+            restaurantId: string;
+            /**
+             * @description RA §5.4: what the app shows and the server allows.
+             * @enum {string}
+             */
+            role: "owner" | "cashier";
+            name: string;
+            /** @description False on the first sign-in of this device: the app asks for its name (RA §5.2). */
+            deviceNamed: boolean;
+            /** Format: uuid */
+            sessionId: string;
+        };
+        MerchantDeviceDto: {
+            /** @description Such as «كاشير 1» or «تابلت المطبخ». */
+            name: string;
+            /** @enum {string} */
+            platform: "android" | "ios" | "windows";
+            appVersion: string;
+        };
+        MerchantDeviceSavedDto_Output: {
+            /** @constant */
+            status: "saved";
+        };
+        MerchantSignedOutDto_Output: {
+            /** @constant */
+            status: "signed_out";
+        };
         SettingListDto_Output: {
             settings: {
                 key: string;
@@ -675,6 +911,99 @@ export interface components {
                 /** Format: date-time */
                 changedAt: string;
             }[];
+        };
+        MerchantRestaurantDto_Output: {
+            /** Format: uuid */
+            id: string;
+            nameAr: string;
+            nameEn: string[];
+            /** @enum {string} */
+            accountStatus: "draft" | "test" | "active" | "suspended" | "terminated";
+            /** @description «حساب مطعمك معلّق: {السبب}…» while suspended (RA §5.5). */
+            suspensionReason: string[];
+            /**
+             * @description The operating state now (RA §7.1).
+             * @enum {string}
+             */
+            state: "draft" | "suspended" | "terminated" | "holiday" | "closed" | "paused" | "busy" | "open";
+            /** @description When a holiday close or a pause ends. */
+            stateUntil: string | null;
+        };
+        MerchantMenuDto_Output: {
+            categories: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                hidden: boolean;
+                available: boolean;
+                /** @description The row's own switch (RA §9.3): null while on. */
+                switchedOff: {
+                    /** @description «حتى الغد»: on again at this time; null: «حتى أعيده». */
+                    until: string | null;
+                } | null;
+                items: {
+                    /** Format: uuid */
+                    id: string;
+                    code: string;
+                    name: string;
+                    description: string | null;
+                    price: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
+                    /** @description Whether customers can order it: its switch, its category and its required groups (RA §9.3). */
+                    available: boolean;
+                    /** @description The row's own switch (RA §9.3): null while on. */
+                    switchedOff: {
+                        /** @description «حتى الغد»: on again at this time; null: «حتى أعيده». */
+                        until: string | null;
+                    } | null;
+                    hidden: boolean;
+                    optionGroups: {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                        minChoices: number;
+                        maxChoices: number;
+                        options: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string;
+                            priceDelta: {
+                                /** @description Integer minor units (AP §8.6). */
+                                amount: string;
+                                currency: string;
+                            };
+                            available: boolean;
+                            /** @description The row's own switch (RA §9.3): null while on. */
+                            switchedOff: {
+                                /** @description «حتى الغد»: on again at this time; null: «حتى أعيده». */
+                                until: string | null;
+                            } | null;
+                        }[];
+                    }[];
+                }[];
+            }[];
+        };
+        MerchantAvailabilityDto: {
+            /** @enum {string} */
+            type: "category" | "item" | "option";
+            /** Format: uuid */
+            id: string;
+            available: boolean;
+            /**
+             * @description Needed to switch off: «حتى الغد» (the default in the app) or «حتى أعيده» (RA §9.3).
+             * @enum {string}
+             */
+            until?: "tomorrow" | "turned_back_on";
+        };
+        MerchantAvailabilitySavedDto_Output: {
+            /** @description The row's own switch (RA §9.3): null while on. */
+            switchedOff: {
+                /** @description «حتى الغد»: on again at this time; null: «حتى أعيده». */
+                until: string | null;
+            } | null;
         };
     };
     responses: never;
@@ -1212,6 +1541,142 @@ export interface operations {
             };
         };
     };
+    merchantAuthRequestCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantCodeRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantCodeSentDto_Output"];
+                };
+            };
+        };
+    };
+    merchantAuthSignIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantSignInDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantSignedInDto_Output"];
+                };
+            };
+        };
+    };
+    merchantAuthRefresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantRefreshDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantTokensDto_Output"];
+                };
+            };
+        };
+    };
+    merchantAuthCurrent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantSessionDto_Output"];
+                };
+            };
+        };
+    };
+    merchantAuthDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantDeviceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantDeviceSavedDto_Output"];
+                };
+            };
+        };
+    };
+    merchantAuthSignOut: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantSignedOutDto_Output"];
+                };
+            };
+        };
+    };
     settingsList: {
         parameters: {
             query: {
@@ -1311,6 +1776,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SettingHistoryDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuRestaurant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantRestaurantDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuMenu: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantMenuDto_Output"];
+                };
+            };
+        };
+    };
+    merchantMenuSetAvailability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantAvailabilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantAvailabilitySavedDto_Output"];
                 };
             };
         };

@@ -9,8 +9,13 @@ import type { AuditRequestContext } from '../audit/index.js';
 import { SettingsService } from '../settings/index.js';
 import { type AppParty, AppSessionsService, type AppTokens } from './app-sessions.service.js';
 import { CODE_SENDER, type CodeSender } from './code-sender.js';
+import {
+  type MerchantAccount,
+  MerchantAccountsService,
+  MerchantSignInRefusedError,
+} from './merchant-accounts.service.js';
 import { DAY_MS, HOUR_MS, type Limit, RequestLimits } from './request-limits.js';
-import { appSignInCodes, customerAccounts } from './schema.js';
+import { appSignInCodes, customerAccounts, merchantAccounts } from './schema.js';
 import { IDENTITY_SECRETS, IdentitySecrets, newSignInCode } from './secrets.js';
 
 // A code request the server refuses (architecture §8.3.3 item 2, CU §5.2):
@@ -52,6 +57,8 @@ export interface AppSignIn extends AppTokens {
   accountId: string;
   // CU §5.2 item 4: the app shows the details screen (CU §5.3).
   newAccount: boolean;
+  // The restaurant user's account (RA §5.1), for the restaurant app.
+  merchant: MerchantAccount | null;
 }
 
 // Architecture §8.3.2: app sign-in with a 6-digit code sent to the phone. The
@@ -68,12 +75,14 @@ export class AppSignInService {
     @Inject(CODE_SENDER) private readonly sender: CodeSender,
     private readonly settings: SettingsService,
     private readonly sessions: AppSessionsService,
+    private readonly merchantAccounts: MerchantAccountsService,
   ) {
     this.limits = new RequestLimits(valkey);
   }
 
-  // The answer is the same whether the number has an account or not
-  // (architecture §8.3.2).
+  // A customer's answer is the same whether the number has an account or not
+  // (architecture §8.3.2); a restaurant user's tells the refusals of RA §5.2
+  // items 3–4 and §5.5.
   async requestCode(
     request: CodeRequest,
     context: AuditRequestContext,
@@ -110,6 +119,14 @@ export class AppSignInService {
       now,
     );
     if (!ip.reserved) throw new CodeRequestRefusedError('ip_limit', ip.retryAfterSec);
+
+    // RA §5.2 items 3–4: a restaurant user hears at once why no code comes,
+    // and nothing is sent to a number of no restaurant (architecture §8.3.2–
+    // 8.3.3). The IP limit above still counts the request.
+    if (request.party === 'merchant') {
+      const merchant = await this.merchantAccounts.signInAccount(phoneHash);
+      if (typeof merchant === 'string') throw new MerchantSignInRefusedError(merchant);
+    }
 
     return this.database.db.transaction(async (tx) => {
       // One request per number at a time, so the resend wait and the one open
@@ -171,8 +188,11 @@ export class AppSignInService {
     });
   }
 
-  // Checks the code and signs the device in, creating the account on the
-  // number's first sign-in (CU §5.2 items 3–4).
+  // Checks the code and signs the device in, creating a customer's account on
+  // the number's first sign-in (CU §5.2 items 3–4). A restaurant user's
+  // account is never created here (RA §5.2 item 3). The code request refused
+  // them already; a status changed since is refused here
+  // (MerchantSignInRefusedError) and the code is used up.
   async signIn(
     request: CodeRequest & { code: string },
     context: AuditRequestContext,
@@ -183,6 +203,10 @@ export class AppSignInService {
     // Before the transaction, so loading or creating the key never waits for
     // a second pool connection while this one is held.
     const signingKey = await this.sessions.signingKey(now);
+    // Before the transaction too: the restaurant's status is read through the
+    // merchants module, on a connection of its own.
+    const merchant =
+      request.party === 'merchant' ? await this.merchantAccounts.signInAccount(phoneHash) : null;
     const result = await this.database.db.transaction(async (tx) => {
       const [code] = await tx
         .select()
@@ -223,13 +247,12 @@ export class AppSignInService {
         .set({ endedAt: now, endReason: 'used' })
         .where(eq(appSignInCodes.id, code.id));
 
-      const account = await this.findOrCreateAccount(
-        tx,
-        request.party,
-        request.phone,
-        phoneHash,
-        now,
-      );
+      if (typeof merchant === 'string') return new MerchantSignInRefusedError(merchant);
+      const account =
+        merchant === null
+          ? await this.findOrCreateCustomer(tx, request.phone, phoneHash, now)
+          : await this.stillNotRemoved(tx, merchant);
+      if (account === null) return new MerchantSignInRefusedError('not_registered');
       const tokens = await this.sessions.start(
         tx,
         request.party,
@@ -239,42 +262,55 @@ export class AppSignInService {
         signingKey,
         now,
       );
-      return { accountId: account.id, newAccount: account.created, ...tokens };
+      return {
+        accountId: account.id,
+        newAccount: account.created,
+        merchant,
+        ...tokens,
+      };
     });
-    if (result instanceof SignInCodeRefusedError) throw result;
+    if (result instanceof SignInCodeRefusedError || result instanceof MerchantSignInRefusedError) {
+      throw result;
+    }
     return result;
   }
 
-  private async findOrCreateAccount(
+  // The merchant account read before the transaction, unless it was removed
+  // since.
+  private async stillNotRemoved(
+    tx: Pick<Database['db'], 'select'>,
+    merchant: MerchantAccount,
+  ): Promise<{ id: string; created: boolean } | null> {
+    const [row] = await tx
+      .select({ id: merchantAccounts.id })
+      .from(merchantAccounts)
+      .where(and(eq(merchantAccounts.id, merchant.id), isNull(merchantAccounts.removedAt)));
+    return row ? { id: row.id, created: false } : null;
+  }
+
+  private async findOrCreateCustomer(
     tx: Pick<Database['db'], 'select' | 'insert'>,
-    party: AppParty,
     phone: string,
     phoneHash: string,
     now: Date,
   ): Promise<{ id: string; created: boolean }> {
-    switch (party) {
-      case 'customer': {
-        // The code row lock serialises sign-ins of one number, so two cannot
-        // both create its account.
-        const [existing] = await tx
-          .select({ id: customerAccounts.id })
-          .from(customerAccounts)
-          .where(
-            and(eq(customerAccounts.phoneHash, phoneHash), eq(customerAccounts.status, 'active')),
-          );
-        if (existing) return { id: existing.id, created: false };
-        const [created] = await tx
-          .insert(customerAccounts)
-          .values({
-            phoneEncrypted: this.secrets.encrypt(phone),
-            phoneHash,
-            createdAt: now,
-            updatedAt: now,
-          })
-          .returning({ id: customerAccounts.id });
-        if (!created) throw new Error('the account was not created');
-        return { id: created.id, created: true };
-      }
-    }
+    // The code row lock serialises sign-ins of one number, so two cannot both
+    // create its account.
+    const [existing] = await tx
+      .select({ id: customerAccounts.id })
+      .from(customerAccounts)
+      .where(and(eq(customerAccounts.phoneHash, phoneHash), eq(customerAccounts.status, 'active')));
+    if (existing) return { id: existing.id, created: false };
+    const [created] = await tx
+      .insert(customerAccounts)
+      .values({
+        phoneEncrypted: this.secrets.encrypt(phone),
+        phoneHash,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning({ id: customerAccounts.id });
+    if (!created) throw new Error('the account was not created');
+    return { id: created.id, created: true };
   }
 }

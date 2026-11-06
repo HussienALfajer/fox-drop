@@ -27,6 +27,42 @@ Serializers _$serializers =
           ..add(CustomerTokensDtoOutput.serializer)
           ..add(DoneDtoOutput.serializer)
           ..add(DoneDtoOutputStatusEnum.serializer)
+          ..add(MerchantAvailabilityDto.serializer)
+          ..add(MerchantAvailabilityDtoTypeEnum.serializer)
+          ..add(MerchantAvailabilityDtoUntilEnum.serializer)
+          ..add(MerchantAvailabilitySavedDtoOutput.serializer)
+          ..add(MerchantCodeRequestDto.serializer)
+          ..add(MerchantCodeSentDtoOutput.serializer)
+          ..add(MerchantCodeSentDtoOutputChannelEnum.serializer)
+          ..add(MerchantDeviceDto.serializer)
+          ..add(MerchantDeviceDtoPlatformEnum.serializer)
+          ..add(MerchantDeviceSavedDtoOutput.serializer)
+          ..add(MerchantDeviceSavedDtoOutputStatusEnum.serializer)
+          ..add(MerchantMenuDtoOutput.serializer)
+          ..add(MerchantMenuDtoOutputCategoriesInner.serializer)
+          ..add(MerchantMenuDtoOutputCategoriesInnerItemsInner.serializer)
+          ..add(
+            MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInner
+                .serializer,
+          )
+          ..add(
+            MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
+                .serializer,
+          )
+          ..add(MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice.serializer)
+          ..add(MerchantMenuDtoOutputCategoriesInnerSwitchedOff.serializer)
+          ..add(MerchantRefreshDto.serializer)
+          ..add(MerchantRestaurantDtoOutput.serializer)
+          ..add(MerchantRestaurantDtoOutputAccountStatusEnum.serializer)
+          ..add(MerchantRestaurantDtoOutputStateEnum.serializer)
+          ..add(MerchantSessionDtoOutput.serializer)
+          ..add(MerchantSessionDtoOutputRoleEnum.serializer)
+          ..add(MerchantSignInDto.serializer)
+          ..add(MerchantSignedInDtoOutput.serializer)
+          ..add(MerchantSignedInDtoOutputRoleEnum.serializer)
+          ..add(MerchantSignedOutDtoOutput.serializer)
+          ..add(MerchantSignedOutDtoOutputStatusEnum.serializer)
+          ..add(MerchantTokensDtoOutput.serializer)
           ..add(ResetSettingDto.serializer)
           ..add(RoleMatrixDtoOutput.serializer)
           ..add(RoleMatrixDtoOutputRolesInner.serializer)
@@ -69,6 +105,40 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(MerchantMenuDtoOutputCategoriesInner),
+            ]),
+            () => ListBuilder<MerchantMenuDtoOutputCategoriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantMenuDtoOutputCategoriesInnerItemsInner),
+            ]),
+            () => ListBuilder<MerchantMenuDtoOutputCategoriesInnerItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(RoleMatrixDtoOutputRolesInner),
             ]),
             () => ListBuilder<RoleMatrixDtoOutputRolesInner>(),
@@ -90,6 +160,14 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

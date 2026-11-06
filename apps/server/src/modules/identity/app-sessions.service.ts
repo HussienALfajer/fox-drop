@@ -4,6 +4,7 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import type { AuditRequestContext } from '../audit/index.js';
 import { AppSigningKeys, type SigningKey } from './app-signing-keys.js';
+import { type MerchantAccount, MerchantAccountsService } from './merchant-accounts.service.js';
 import {
   appParties,
   appRefreshTokens,
@@ -21,6 +22,11 @@ export interface AppSession {
   id: string;
   party: AppParty;
   accountId: string;
+  // The app installation it signed in on.
+  deviceId: string;
+  // A restaurant user's restaurant and role (RA §5.1, §5.4), read at every
+  // request; null for the other apps.
+  merchant: MerchantAccount | null;
 }
 
 export interface AppTokens {
@@ -52,6 +58,7 @@ export class AppSessionsService {
   constructor(
     @Inject(DATABASE) private readonly database: Database,
     private readonly keys: AppSigningKeys,
+    private readonly merchantAccounts: MerchantAccountsService,
   ) {}
 
   // Called by the sign-in inside its transaction. A device holds one session
@@ -96,6 +103,10 @@ export class AppSessionsService {
   async refresh(refreshToken: string, now = new Date()): Promise<AppTokens> {
     const signingKey = await this.keys.signingKey(now);
     const hash = tokenHash(refreshToken);
+    // A restaurant user refreshes only while their restaurant lets them sign
+    // in (RA §5.5). Its status is read through the merchants module, on a
+    // connection of its own, so before the transaction.
+    const merchantAllowed = await this.merchantAllowed(hash);
     const result = await this.database.db.transaction(async (tx) => {
       // The session row first, then the token: every refresh of a session
       // takes turns on the session row, so none can deadlock another.
@@ -139,7 +150,9 @@ export class AppSessionsService {
         await this.end(tx, session.id, 'refresh_reuse', now);
         return null;
       }
-      if (!(await this.accountIsActive(tx, session.party, session.accountId))) return null;
+      if (!(await this.accountIsActive(tx, session.party, session.accountId, merchantAllowed))) {
+        return null;
+      }
       if (retry) {
         // The retry's pair replaces the one whose answer was lost.
         await tx
@@ -180,7 +193,7 @@ export class AppSessionsService {
     const claims = await this.keys.verify(accessToken, party, now);
     if (!claims) return null;
     const [open] = await this.database.db
-      .select({ id: appSessions.id })
+      .select({ id: appSessions.id, deviceId: appSessions.deviceId })
       .from(appSessions)
       .where(
         and(
@@ -190,7 +203,21 @@ export class AppSessionsService {
           isNull(appSessions.endedAt),
         ),
       );
-    return open ? { id: claims.sessionId, party, accountId: claims.accountId } : null;
+    if (!open) return null;
+    let merchant: MerchantAccount | null = null;
+    if (party === 'merchant') {
+      // RA §5.5: a cashier's access ends with the restaurant's termination,
+      // without waiting for the access token to expire.
+      merchant = await this.merchantAccounts.account(this.database.db, claims.accountId);
+      if (merchant === null || !(await this.merchantAccounts.mayUse(merchant))) return null;
+    }
+    return {
+      id: claims.sessionId,
+      party,
+      accountId: claims.accountId,
+      deviceId: open.deviceId,
+      merchant,
+    };
   }
 
   async signOut(session: AppSession, now = new Date()): Promise<void> {
@@ -240,7 +267,7 @@ export class AppSessionsService {
 
   private async issue(
     tx: Executor,
-    session: AppSession,
+    session: Pick<AppSession, 'id' | 'party' | 'accountId'>,
     signingKey: SigningKey,
     now: Date,
   ): Promise<AppTokens> {
@@ -256,12 +283,30 @@ export class AppSessionsService {
     return { accessToken: access.token, accessTokenExpiresAt: access.expiresAt, refreshToken };
   }
 
+  // Whether the restaurant user of a refresh token's session may still use
+  // the app; true for any other token, which the transaction checks.
+  private async merchantAllowed(hash: string): Promise<boolean> {
+    const [session] = await this.database.db
+      .select({ party: appSessions.party, accountId: appSessions.accountId })
+      .from(appSessions)
+      .innerJoin(appRefreshTokens, eq(appRefreshTokens.sessionId, appSessions.id))
+      .where(eq(appRefreshTokens.tokenHash, hash));
+    if (session?.party !== 'merchant') return true;
+    const account = await this.merchantAccounts.account(this.database.db, session.accountId);
+    return account !== null && (await this.merchantAccounts.mayUse(account));
+  }
+
   private async accountIsActive(
     executor: Pick<Database['db'], 'select'>,
     party: AppParty,
     accountId: string,
+    merchantAllowed: boolean,
   ): Promise<boolean> {
     switch (party) {
+      case 'merchant':
+        return (
+          merchantAllowed && (await this.merchantAccounts.account(executor, accountId)) !== null
+        );
       case 'customer': {
         const [account] = await executor
           .select({ status: customerAccounts.status })

@@ -3,12 +3,10 @@ import {
   Body,
   Get,
   HttpCode,
-  HttpException,
   HttpStatus,
   Post,
   Req,
   Res,
-  ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
@@ -18,52 +16,33 @@ import { AppSignedIn, CurrentAppSession, Public } from '../../http/access.js';
 import { requestContext } from '../../http/request-context.js';
 import { CustomerController } from '../../http/route-groups.js';
 import {
+  codeRequestAnswer,
+  codeSent,
+  deviceId,
+  phone,
+  refreshToken,
+  signInCode,
+  tokens,
+  tokensBody,
+} from './app-auth.js';
+import {
   type AppSession,
   AppSessionsService,
-  type AppTokens,
   RefreshRefusedError,
 } from './app-sessions.service.js';
-import {
-  AppSignInService,
-  CodeRequestRefusedError,
-  SignInCodeRefusedError,
-} from './app-sign-in.service.js';
-
-// CU §5.2 item 1: a Syrian (+963 9…, 9 digits) or Turkish (+90 5…, 10 digits)
-// mobile, which the app sends in E.164.
-const phone = z
-  .string()
-  .regex(/^(\+9639\d{8}|\+905\d{9})$/)
-  .describe('The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.');
-const deviceId = z
-  .uuid()
-  .describe('The app installation, generated once by the app and kept until it is removed.');
+import { AppSignInService, SignInCodeRefusedError } from './app-sign-in.service.js';
 
 class CustomerCodeRequestDto extends createZodDto(z.object({ phone, deviceId })) {}
 
-class CustomerCodeSentDto extends createZodDto(
-  z.object({
-    channel: z.literal('whatsapp').describe('Where the code went (architecture §8.3.4).'),
-    resendAfterSec: z.int().describe('When the app may offer «إعادة الإرسال».'),
-    expiresAt: z.iso.datetime(),
-  }),
-) {}
+class CustomerCodeSentDto extends createZodDto(codeSent) {}
 
 class CustomerSignInDto extends createZodDto(
   z.object({
     phone,
     deviceId,
-    code: z.string().regex(/^\d{6}$/),
+    code: signInCode,
   }),
 ) {}
-
-const tokens = {
-  accessToken: z.string().describe('A JWT for the Authorization header, valid 15 minutes.'),
-  accessTokenExpiresAt: z.iso.datetime(),
-  refreshToken: z
-    .string()
-    .describe('Used once at /refresh for a new pair; using it twice signs the device out.'),
-};
 
 class CustomerSignedInDto extends createZodDto(
   z.object({
@@ -73,9 +52,7 @@ class CustomerSignedInDto extends createZodDto(
   }),
 ) {}
 
-class CustomerRefreshDto extends createZodDto(
-  z.object({ refreshToken: z.string().min(1).max(200) }),
-) {}
+class CustomerRefreshDto extends createZodDto(z.object({ refreshToken })) {}
 
 class CustomerTokensDto extends createZodDto(z.object(tokens)) {}
 
@@ -84,14 +61,6 @@ class CustomerSessionDto extends createZodDto(
 ) {}
 
 class CustomerSignedOutDto extends createZodDto(z.object({ status: z.literal('signed_out') })) {}
-
-function tokensBody(result: AppTokens) {
-  return {
-    accessToken: result.accessToken,
-    accessTokenExpiresAt: result.accessTokenExpiresAt.toISOString(),
-    refreshToken: result.refreshToken,
-  };
-}
 
 // CU §5.2, §5.4: the customer app's sign-in with a WhatsApp code, its tokens,
 // sign-out and «تسجيل الخروج من كل الأجهزة». Codes and tokens travel in bodies
@@ -119,17 +88,7 @@ export class CustomerAuthController {
       );
       return { ...sent, expiresAt: sent.expiresAt.toISOString() };
     } catch (error) {
-      if (!(error instanceof CodeRequestRefusedError)) throw error;
-      const body = { error: error.refusal };
-      if (error.refusal === 'unavailable') throw new ServiceUnavailableException(body);
-      if (error.refusal === 'not_on_whatsapp') {
-        throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, ...body });
-      }
-      reply.header('retry-after', String(error.retryAfterSec));
-      throw new HttpException(
-        { statusCode: HttpStatus.TOO_MANY_REQUESTS, ...body, retryAfterSec: error.retryAfterSec },
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
+      codeRequestAnswer(error, reply);
     }
   }
 
