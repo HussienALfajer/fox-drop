@@ -4,24 +4,29 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 1.6, captain (`docs/roadmap.md`, Phase 1): an activated captain with vehicle, cash limit and pay table; phone sign-in, going online and offline, location every 10 seconds.
+Slice 1.7, customer browsing and the quote (`docs/roadmap.md`, Phase 1): account completion, the delivery point, restaurants that cover it, the restaurant page and item options, the cart, the versioned quote.
 
-- **Specs:** CA §4.3 (location), CA §4.9 (one device), CA §7 (availability: online, offline, the checks before going online), AP §9.7 (the captain record and its states), AP §9.12.5 (the pay table), the captain cash limit of AP §8 and Appendix A, architecture §4.2 (`captains` owns availability; `identity` owns users and sessions), §7 (location), §15.1 (app tokens).
-- **Branch:** `feat/captain`.
-- **Owner decisions 2026-11-06:** two pull requests: (1) the captain record, vehicle, states, cash limit, pay table, the checks before going online and the seed; (2) captain sign-in with one device, going online and offline, the location. The checks built now: suspension, contract ended, cash limit, cash from a previous business day (from the ledger), the minimum app version and a simulated location; required documents (K6) and terms (K7) join with their slices. Placeholders for development and staging: a cash limit of 3000 TRY for the demo captain; one pay table for every vehicle: 25 TRY including the first 3 km, 5 TRY per extra km pro rata by the metre and rounded down to the minor unit, no waiting pay, a minimum of 25 TRY; the maximum distance stays `dispatch.max_distance_km.<vehicle>`. A city's first pay table takes effect when published; every later one 7 days or more after (AP §9.12.5).
-- **Plan, pull request 1 (`feat/captain`):**
-  - [x] The failing tests first: the pay for a distance, the checks before going online and the availability state, the previous business-day cutoff.
-  - [x] The `captains` schema through the `db-migration` skill: the captain record, vehicle, states, cash limit, online periods, pay table versions.
-  - [x] `CaptainsService`: create, status, cash limit, pay table, custody usage and the cash due from closed days through `LedgerService`, going online and offline; the demo captain in the seed.
-  - [x] `checker`, the `reviewer`, the pull request.
-- **Plan, pull request 2 (`feat/captain-sign-in`):**
-  - [x] The `captain` party on the app sign-in engine (`identity`), as the `merchant` party of slice 1.5: accounts never created by sign-in, refusals before sending a code, one device (CA §4.9).
-  - [x] Captain routes: the availability state, going online and offline, the location every 10 seconds (Valkey for the live position, the partitioned `captains.locations` table, architecture §7.3).
-  - [ ] `checker`, the `reviewer`, the pull request, the handover to slice 1.7.
+- **Specs:** CU §5.3 (account completion), CU §7 (location and addresses, the three cases of §7.1, the votes of §7.2), CU §8 (finding food), CU §9 (restaurant page and items), CU §10.1–10.6 (cart, minimum order and free delivery, checkout, codes, «سأدفع بـ», the quote and the pre-order checks), the customer settings of CU Appendix A, AP §8.4 (order money) and §8.6 (currencies), architecture §4.2 (`customers` owns profiles and addresses; `ordering` owns the quote).
+- **Branch:** `feat/customer-browsing` (or one branch per pull request, as the owner splits it).
+- **Ask the owner first:** the split into pull requests (this slice spans the customer profile, addresses, browsing, the restaurant page, the cart and the quote, larger than 1.6, which took two), which parts of CU §8 (home sections, search, filters) are in Phase 1 given the design stop (logic only), promo codes (CU §10.4) in or out of Phase 1, and the open items the cited sections leave to the owner (`docs/product/v1/customer-app/18-open-items.md`).
+- **Plan (draft, to confirm with the owner):**
+  - [ ] The failing tests first: the quote's money (items, options, the restaurant's item discounts, the delivery fee with its rule version, the minimum order, the rate snapshot and its versions), the pre-order checks of CU §10.6.
+  - [ ] The `customers` schema through the `db-migration` skill: the profile fields of CU §5.3 and the saved addresses with their points; the account completion route.
+  - [ ] Browsing: the restaurants that cover a point (`MerchantsService` for the menu through `menu(id, now)`, `GeoService.zoneAt` for the three cases of CU §7.1), the restaurant page and item options.
+  - [ ] The cart and the versioned quote in `ordering`: the fee through `GeoService.deliveryFee` (its `ruleId`), the rates through `FxService.snapshot` (their versions), the capacity check stubbed until dispatch (AP §9.12.6) or asked of the owner.
+  - [ ] `checker`, the `reviewer`, the pull request, the handover to slice 1.8.
 
 ## Notes from earlier slices
 
-- Slice 1.5 added restaurants, menus and restaurant sign-in (`apps/server/src/modules/merchants/CLAUDE.md`, `apps/server/src/modules/identity/CLAUDE.md`; owner decisions 2026-11-06). Owners and cashiers are `identity.merchant_accounts` rows; `identity` reads the restaurant's status and devices through `MerchantsService`, and `merchants` imports only types from `identity`. The restaurant code request refuses `not_registered`, `restaurant_draft` and a terminated restaurant's cashier with `403` before sending (architecture §8.3.2 exempts RA §5.2 items 3–4); the status is checked again at sign-in, refresh and every request. A captain party should follow the same pattern.
+- Slice 1.6 added the captain (`apps/server/src/modules/captains/CLAUDE.md`, `apps/server/src/modules/identity/CLAUDE.md`; owner decisions 2026-11-06): the captain record with vehicle, status and a cash limit in the base currency; the city's pay table versions (a city's first in force when published, every later one 7 days or more after; extra metres pro rata, rounded down); going online and offline with every block of CA §7.2 except documents (K6) and terms (K7); the location in the partitioned `captains.locations` table and the live position in Valkey (`captains:online:<cityId>`, `captains:position:<id>`).
+- Placeholders in development and staging: one pay table for every vehicle (25 TRY including 3 km, 5 TRY per extra km, minimum 25 TRY) and a demo motorbike captain «كابتن فوكس التجريبي» with a 3000 TRY cash limit and the fake number +963900000003 (the development code sender prints its code).
+- The captain code request answers alike for every number and sends a code only to a captain who may sign in (owner decision 2026-11-06, architecture §8.3.2). The joining slice sends codes to new numbers for the application form (CA §5.1).
+- For the delivery slices: `orderPay` returns one total, the minimum applied to base, distance and waiting together; the weekly statement shows base, distance, waiting and peak apart (AP §8.5.5), and `earn.order_pay` and `earn.waiting_pay` post apart, so return the parts, and ask the owner whether waiting counts towards the minimum.
+- For dispatch: read the online captains from the Valkey geo set, then check each hash's `recordedAt` and the captain's state in the database (the geo set has no expiry). `CaptainsService.state` gives the availability; busy and last-order mode, the automatic offline after unanswered offers (C3) and the maximum pickup amount (C4) are not built.
+- To ask the owner later: whether a newer pay table publication cancels a pending older one (today v2 for day 30 then v3 for day 10 gives v3 from day 10, then v2 from day 30); whether the remit grace (AP §8.5.4) starts again at each cutoff a captain stays online across, or only at the first; terminating a captain does not run the offboarding checklist yet, so the panel's route must not call `setStatus('terminated')` before it exists; a terminated captain's app sessions are refused but stay open until then.
+- Not built yet for captains: the panel's captain screens and actions (AP §9.7), refusing a second device during an active order and releasing the device, publishing positions to the live map channel, the stale GPS alert, aggregating points after 90 days, a rate limit on the location route.
+
+- Slice 1.5 added restaurants, menus and restaurant sign-in (`apps/server/src/modules/merchants/CLAUDE.md`, `apps/server/src/modules/identity/CLAUDE.md`; owner decisions 2026-11-06). Owners and cashiers are `identity.merchant_accounts` rows; `identity` reads the restaurant's status and devices through `MerchantsService`, and `merchants` imports only types from `identity`. The restaurant code request refuses `not_registered`, `restaurant_draft` and a terminated restaurant's cashier with `403` before sending (architecture §8.3.2 exempts RA §5.2 items 3–4); the status is checked again at sign-in, refresh and every request.
 - The demo restaurant has a demo owner (+963900000001) and cashier (+963900000002), fake numbers: in development the code sender prints their codes.
 - «حتى الغد» is stored as `unavailable_until` (the next `finance.business_day_cutoff`) and read as on from that time: slice 1.7 must read the menu through `MerchantsService.menu(id, now)`, never the raw `available` column.
 - Not built yet for restaurants: owners adding and removing cashiers (RA §14), adding owners from the panel (AP §9.6.4), the owner portal's sign-in (S14), forced sign-out of a restaurant's devices, the money section of a terminated restaurant's owners, the device's ring setting, check and last seen.
@@ -109,4 +114,4 @@ Slice 1.6, captain (`docs/roadmap.md`, Phase 1): an activated captain with vehic
 
 ## Next
 
-Build slice 1.6: the captain (the plan above), after the owner confirms its split into pull requests.
+Build slice 1.7: customer browsing and the quote (the plan above), after the owner confirms its split into pull requests.
