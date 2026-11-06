@@ -216,6 +216,9 @@ export class OrderCommands {
       throw await this.stateChanged(order);
     }
     const prepared = await change(order);
+    const noCaptainAlertMin = prepared.searchStartAt
+      ? await this.settings.get('dispatch.no_captain_alert_min', { cityId: order.cityId })
+      : 0;
 
     // pg-boss connects before the lock is taken, never while it is held.
     await this.jobs.ready();
@@ -247,6 +250,7 @@ export class OrderCommands {
           orderId: order.id,
           placedAt: order.placedAt.toISOString(),
           searchStartAt: prepared.searchStartAt.toISOString(),
+          noCaptainAlertMin,
         };
         await this.jobs.send(QUEUES.searchStart, job, {
           startAfter: prepared.searchStartAt,

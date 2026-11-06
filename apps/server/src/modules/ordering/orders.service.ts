@@ -190,6 +190,8 @@ export class OrdersService implements OnModuleInit {
             restaurantId: restaurant.id,
             status: 'placed',
             version: 1,
+            captainTrack: null,
+            captainId: null,
             currency: snapshot.baseCurrency,
             ...quote.money,
             deliveryFree: quote.deliveryFree,
@@ -246,6 +248,8 @@ export class OrdersService implements OnModuleInit {
             customerAccountId: command.accountId,
             status: 'placed',
             version: 1,
+            captainTrack: null,
+            captainId: null,
           },
           {
             type: 'order.placed',

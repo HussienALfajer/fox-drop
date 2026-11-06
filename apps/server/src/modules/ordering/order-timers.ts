@@ -26,7 +26,12 @@ export interface SearchStartJob {
   // ISO time, the moment it was set for: one moved since (an early ready,
   // later «تعديل الوقت») leaves this job without effect.
   searchStartAt: string;
+  // dispatch.no_captain_alert_min when the job was sent (AP §8.3); a job
+  // sent before slice 1.11 has none and takes the default, 5.
+  noCaptainAlertMin?: number;
 }
+
+const MINUTE_MS = 60_000;
 
 // AP §8.3: the reason of the automatic cancellation, «المطعم لم يستجب», kept
 // for the system alone: it is what counts the order as unanswered by the
@@ -73,20 +78,56 @@ export class OrderTimers {
     });
   }
 
-  // AP §8.3, §9.12.6: the search-start moment came; true while the order
-  // still waits for a captain (accepted or ready) and its moment is still the
-  // job's. In manual mode (D6) it raises «بحاجة لتعيين», which comes with
-  // dispatch (slice 1.11) and will act under the order's lock; until then the
-  // worker logs it.
-  async searchStart(job: SearchStartJob): Promise<boolean> {
-    const [order] = await this.database.db
-      .select({ status: orders.status, searchStartAt: orders.searchStartAt })
-      .from(orders)
-      .where(and(eq(orders.id, job.orderId), eq(orders.placedAt, new Date(job.placedAt))));
-    return (
-      (order?.status === 'accepted' || order?.status === 'ready') &&
-      order.searchStartAt?.getTime() === new Date(job.searchStartAt).getTime()
-    );
+  // AP §8.3, §9.12.6: the search-start moment came. While the order still
+  // waits for a captain (accepted or ready, none assigned) and its moment is
+  // still the job's, the search starts: in manual mode (D6, the only one
+  // built) the order needs assignment, «بحاجة لتعيين», while its track is
+  // searching, and operations' «طلب بلا كابتن» moment is
+  // dispatch.no_captain_alert_min later. An order already offered keeps its
+  // offer and returns to searching if it is declined or expires. True when
+  // the search started.
+  async searchStart(job: SearchStartJob, now: Date): Promise<boolean> {
+    const placedAt = new Date(job.placedAt);
+    return this.database.db.transaction(async (tx) => {
+      const order = await lockOrder(tx, job.orderId, placedAt);
+      if (!order || (order.status !== 'accepted' && order.status !== 'ready')) return false;
+      if (order.captainId !== null) return false;
+      const [moments] = await tx
+        .select({ searchStartAt: orders.searchStartAt, searchStartedAt: orders.searchStartedAt })
+        .from(orders)
+        .where(and(eq(orders.id, order.id), eq(orders.placedAt, placedAt)));
+      // A moment moved since (an early ready, later «تعديل الوقت») leaves
+      // this job without effect, and the search starts once.
+      if (
+        !moments ||
+        moments.searchStartedAt !== null ||
+        moments.searchStartAt?.getTime() !== new Date(job.searchStartAt).getTime()
+      ) {
+        return false;
+      }
+      const version = order.version + 1;
+      const captainTrack = order.captainTrack ?? 'searching';
+      await tx
+        .update(orders)
+        .set({
+          version,
+          captainTrack,
+          searchStartedAt: now,
+          searchAlertAt: new Date(now.getTime() + (job.noCaptainAlertMin ?? 5) * MINUTE_MS),
+        })
+        .where(and(eq(orders.id, order.id), eq(orders.placedAt, placedAt)));
+      await recordTransition(tx, this.jobs, order, {
+        type: 'order.search_started',
+        from: order.status,
+        to: order.status,
+        version,
+        actor: { type: 'system', id: null },
+        reason: null,
+        at: now,
+        captainTrack,
+      });
+      return true;
+    });
   }
 }
 
@@ -104,10 +145,10 @@ export class OrderTimersWorker implements OnModuleInit {
     await this.jobs.work<SearchStartJob>(QUEUES.searchStart, async (batch) => {
       for (const job of batch) {
         try {
-          if (await this.timers.searchStart(job.data)) {
+          if (await this.timers.searchStart(job.data, new Date())) {
             this.logger.log(
               { orderId: job.data.orderId },
-              'search start: the order needs a captain',
+              'search started: the order needs a captain',
             );
           }
         } catch (error) {

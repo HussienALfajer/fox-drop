@@ -7,9 +7,14 @@ The handover note between sessions: the current task, its branch, its plan, and 
 Slice 1.11, manual dispatch (`docs/roadmap.md`, Phase 1): «بحاجة لتعيين» at the search start, the panel's sign-in screen, operations board and order detail with «تعيين كابتن», the 45-second offer in the captain app.
 
 - **Specs:** AP §9.2 (the operations board), §9.3.2 (the order detail and «تعيين كابتن»), §9.12.6 (dispatch modes, eligibility, the search start, the capacity check), §8.3 (the timers: the offer, no captain after the search start, no captain after ready), §8.1 (the captain on the order), §9.1.3 (the critical alerts), §5 (the panel's sign-in); CA §8 (offers: the 45 seconds, accepting and declining, «انتهت المهلة»), CA §15 (server commands); RA §8.9 (the captain line on the board).
-- **Branch:** to name with the owner, after the split.
-- **Ask the owner first:** the split into pull requests (the server's dispatch and offers, the panel's sign-in screen, the operations board and order detail, the captain app's offer); whether the panel's screens and the captain app's offer screen are built now as functional unstyled screens (Phase 1 decision 2026-11-05) or wait for the design (the design stop in `CLAUDE.md`); how dispatch measures a captain's trip (the notes of slice 1.8 below); and the alerts' timers that slice 1.10 left as moments (`prep_late_alert_at`, `no_captain_alert_at`, and the search start's 5-minute no-captain alert).
-- **Plan:** to write as a checklist once the owner has answered.
+- **Branch:** `feat/manual-dispatch`.
+- **Owner decisions 2026-11-06:** one pull request, server and API only (the panel's screens and the captain app's offer screen wait for the design, as in slices 1.7–1.10); operations' alerts are moments the board's read shows once they pass (no alert timers and no `ops:` channel yet; the critical alerts of AP §9.1.3 come with their slice); dispatch measures as the capacity check does (the search radius by the straight line from the live position, the vehicle by the order's kept trip, the picker's distance and ETA to the restaurant by road for the captain's vehicle); manual assignment both as an offer (`dispatch.manual_assign_requires_accept` true) and direct (false), with C3 (offline after `captain.offer_expiry_offline_count` consecutive expired offers).
+- **Plan:**
+  - [ ] «بحاجة لتعيين» at the search start: the order's captain and captain track (AP §8.2), the event type on `order_events`, the search-start job acting under the order's lock with the no-captain moment.
+  - [ ] Busy captains: a captain with an active order is «مشغول» (CA §7.1) and out of the capacity check and the search start; every captain near a restaurant with the reasons the picker greys out (AP §9.3.2).
+  - [ ] The `dispatch` module: operations' manual offer or direct assignment (`POST /v1/admin/orders/{orderId}/assign`), the 45-second expiry, the captain's offer, accept and decline (CA §8, §15), C3.
+  - [ ] The captain channel: `POST /v1/captain/realtime/token`, the `captain` namespace, offers and assignments published to `captain:{captain_id}` (architecture §6.2).
+  - [ ] The operations board, order detail and assignment picker reads (AP §9.2, §9.3.1–9.3.2), with the alerts' moments.
 
 ## Notes from earlier slices
 
