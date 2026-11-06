@@ -996,6 +996,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders/{orderId}/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminDispatchAssign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/offers/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainOffersCurrent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/offers/{offerId}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainOffersAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/offers/{offerId}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainOffersDecline"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2393,6 +2457,156 @@ export interface components {
             token: string;
             /** Format: date-time */
             expiresAt: string;
+        };
+        AdminAssignDto: {
+            /**
+             * Format: uuid
+             * @description An eligible captain from the assignment picker.
+             */
+            captainId: string;
+        };
+        AdminDispatchStateDto_Output: {
+            order: {
+                /** Format: uuid */
+                id: string;
+                number: string;
+                /** @enum {string} */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                version: number;
+                /** @description AP §8.2; searching is «بحاجة لتعيين» in manual mode. */
+                captainTrack: ("searching" | "offered" | "assigned" | "at_merchant" | "pickup_pending" | "picked_up" | "at_customer" | "done") | null;
+                /** @description From assignment. */
+                captainId: string | null;
+                /** @description The open offer, while the captain decides (CA §8.4). */
+                offer: {
+                    /** Format: uuid */
+                    id: string;
+                    /** Format: uuid */
+                    captainId: string;
+                    /** Format: date-time */
+                    expiresAt: string;
+                } | null;
+            };
+        };
+        CaptainCurrentOfferDto_Output: {
+            /** @description The open offer, or null. */
+            offer: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                status: "open" | "accepted" | "declined" | "expired";
+                /** Format: uuid */
+                orderId: string;
+                number: string;
+                /** @description «تعيين من العمليات» (CA §8.4). */
+                fromOperations: boolean;
+                /** Format: date-time */
+                offeredAt: string;
+                /**
+                 * Format: date-time
+                 * @description The countdown ring runs to it (CA §8.2).
+                 */
+                expiresAt: string;
+                /** @description The order pay, the largest text; «قد يُضاف أجر انتظار». Null without a pay table. */
+                pay: {
+                    /** @description Minor units of the currency, as a string. */
+                    amount: string;
+                    currency: string;
+                } | null;
+                restaurant: {
+                    name: string;
+                    location: {
+                        latitude: number;
+                        longitude: number;
+                    };
+                    /** @description From the captain, by road, when the offer opened. */
+                    distanceMetres: number;
+                };
+                /** @description Never the customer's name, phone or exact address before acceptance (C2). */
+                customer: {
+                    neighbourhood: string;
+                    /** @description Restaurant to customer. */
+                    tripMetres: number;
+                };
+                /** @description «تدفع للمطعم» (D26: the items value). */
+                pickupPayment: {
+                    /** @description Minor units of the currency, as a string. */
+                    amount: string;
+                    currency: string;
+                };
+                /** @description «تقبض من الزبون». */
+                collect: {
+                    /** @description Minor units of the currency, as a string. */
+                    amount: string;
+                    currency: string;
+                };
+                preparation: {
+                    /** @description «جاهز». */
+                    ready: boolean;
+                    /** @description «قيد التحضير — جاهز بعد {د} د تقريباً» counts to it while not ready. */
+                    readyAt: string | null;
+                };
+            } | null;
+        };
+        CaptainOfferDto_Output: {
+            /** @description An offer (CA §8.2). */
+            offer: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                status: "open" | "accepted" | "declined" | "expired";
+                /** Format: uuid */
+                orderId: string;
+                number: string;
+                /** @description «تعيين من العمليات» (CA §8.4). */
+                fromOperations: boolean;
+                /** Format: date-time */
+                offeredAt: string;
+                /**
+                 * Format: date-time
+                 * @description The countdown ring runs to it (CA §8.2).
+                 */
+                expiresAt: string;
+                /** @description The order pay, the largest text; «قد يُضاف أجر انتظار». Null without a pay table. */
+                pay: {
+                    /** @description Minor units of the currency, as a string. */
+                    amount: string;
+                    currency: string;
+                } | null;
+                restaurant: {
+                    name: string;
+                    location: {
+                        latitude: number;
+                        longitude: number;
+                    };
+                    /** @description From the captain, by road, when the offer opened. */
+                    distanceMetres: number;
+                };
+                /** @description Never the customer's name, phone or exact address before acceptance (C2). */
+                customer: {
+                    neighbourhood: string;
+                    /** @description Restaurant to customer. */
+                    tripMetres: number;
+                };
+                /** @description «تدفع للمطعم» (D26: the items value). */
+                pickupPayment: {
+                    /** @description Minor units of the currency, as a string. */
+                    amount: string;
+                    currency: string;
+                };
+                /** @description «تقبض من الزبون». */
+                collect: {
+                    /** @description Minor units of the currency, as a string. */
+                    amount: string;
+                    currency: string;
+                };
+                preparation: {
+                    /** @description «جاهز». */
+                    ready: boolean;
+                    /** @description «قيد التحضير — جاهز بعد {د} د تقريباً» counts to it while not ready. */
+                    readyAt: string | null;
+                };
+            };
         };
     };
     responses: never;
@@ -3889,6 +4103,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RealtimeTokenDto_Output"];
+                };
+            };
+        };
+    };
+    adminDispatchAssign: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminAssignDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDispatchStateDto_Output"];
+                };
+            };
+        };
+    };
+    captainOffersCurrent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainCurrentOfferDto_Output"];
+                };
+            };
+        };
+    };
+    captainOffersAccept: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                offerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainOfferDto_Output"];
+                };
+            };
+        };
+    };
+    captainOffersDecline: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                offerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainOfferDto_Output"];
                 };
             };
         };

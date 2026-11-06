@@ -17,7 +17,7 @@ import {
   onlineBlocks,
 } from './availability.js';
 import { LIVE_POSITION_MAX_AGE_MS, LivePositions, type NearbyCaptain } from './live-positions.js';
-import { checkPayRate, type PayRate } from './pay.js';
+import { checkPayRate, orderPay, type PayRate } from './pay.js';
 import { captainRecords, locations, onlinePeriods, payRates, payTables } from './schema.js';
 
 export type CaptainsRefusal =
@@ -548,6 +548,51 @@ export class CaptainsService implements OnModuleInit {
     return this.scan(cityId, restaurant, tripMetres, now, radiusMetres, false);
   }
 
+  // Dispatch's lock on a captain (AP §9.12.6): with the city's rules read
+  // now, outside any transaction, a function that locks the captain row in
+  // the command's transaction and answers the state, which going offline and
+  // another assignment then wait for.
+  async assignmentLock(
+    cityId: string,
+    now: Date,
+  ): Promise<(tx: Tx, captainId: string) => Promise<Availability>> {
+    const rules = await this.cityRules(cityId, now);
+    return async (tx, captainId) => {
+      const row = await this.lockCaptain(tx, captainId);
+      const input = await this.input(tx, row, rules);
+      return availability(input.availability, now);
+    };
+  }
+
+  // C3, AP §9.7.6: after captain.offer_expiry_offline_count expired offers in
+  // a row, the captain goes offline; never with an active order.
+  async offlineForUnansweredOffers(captainId: string, now: Date): Promise<boolean> {
+    const cityId = (await this.row(this.database.db, captainId)).cityId;
+    const ended = await this.database.db.transaction(async (tx) => {
+      await this.lockCaptain(tx, captainId);
+      if ((await this.activeOrders([captainId], tx)).size > 0) return null;
+      return this.endOnline(tx, captainId, 'offers_expired', now);
+    });
+    if (ended === null) return false;
+    await this.positions.remove(cityId, captainId, ended);
+    return true;
+  }
+
+  // AP §9.12.5, CA §8.2: an order's pay by the pay table it kept, for the
+  // vehicle and the trip, before any waiting.
+  async orderPay(payTableId: string, vehicle: Vehicle, metres: number): Promise<Money | null> {
+    const [table] = await this.database.db
+      .select({ currency: payTables.currency })
+      .from(payTables)
+      .where(eq(payTables.id, payTableId));
+    const [rate] = await this.database.db
+      .select()
+      .from(payRates)
+      .where(and(eq(payRates.tableId, payTableId), eq(payRates.vehicle, vehicle)));
+    if (!table || !rate) return null;
+    return { amount: orderPay(rate, { metres, waitingMinutes: 0 }), currency: table.currency };
+  }
+
   // The live positions come from Valkey, or from the locations table when
   // Valkey cannot answer (architecture §5.7), nearest first; then, with the
   // city's rules read once, each captain's record and state. A captain whose
@@ -901,7 +946,7 @@ export class CaptainsService implements OnModuleInit {
   private async endOnline(
     tx: Tx,
     captainId: string,
-    reason: 'captain' | 'suspended' | 'terminated',
+    reason: 'captain' | 'suspended' | 'terminated' | 'offers_expired',
     now: Date,
   ): Promise<string | null> {
     const [ended] = await tx

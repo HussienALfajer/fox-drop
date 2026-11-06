@@ -14,6 +14,10 @@ import 'package:built_value/iso_8601_date_time_serializer.dart';
 import 'package:core_api/src/date_serializer.dart';
 import 'package:core_api/src/model/date.dart';
 
+import 'package:core_api/src/model/admin_assign_dto.dart';
+import 'package:core_api/src/model/admin_dispatch_state_dto_output.dart';
+import 'package:core_api/src/model/admin_dispatch_state_dto_output_order.dart';
+import 'package:core_api/src/model/admin_dispatch_state_dto_output_order_offer.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/backup_codes_dto_output.dart';
 import 'package:core_api/src/model/captain_availability_dto_output.dart';
@@ -24,10 +28,20 @@ import 'package:core_api/src/model/captain_availability_dto_output_custody_limit
 import 'package:core_api/src/model/captain_availability_dto_output_custody_usage.dart';
 import 'package:core_api/src/model/captain_code_request_dto.dart';
 import 'package:core_api/src/model/captain_code_sent_dto_output.dart';
+import 'package:core_api/src/model/captain_current_offer_dto_output.dart';
+import 'package:core_api/src/model/captain_current_offer_dto_output_offer.dart';
+import 'package:core_api/src/model/captain_current_offer_dto_output_offer_collect.dart';
+import 'package:core_api/src/model/captain_current_offer_dto_output_offer_customer.dart';
+import 'package:core_api/src/model/captain_current_offer_dto_output_offer_pay.dart';
+import 'package:core_api/src/model/captain_current_offer_dto_output_offer_pickup_payment.dart';
+import 'package:core_api/src/model/captain_current_offer_dto_output_offer_preparation.dart';
+import 'package:core_api/src/model/captain_current_offer_dto_output_offer_restaurant.dart';
 import 'package:core_api/src/model/captain_go_online_dto.dart';
 import 'package:core_api/src/model/captain_locations_dto.dart';
 import 'package:core_api/src/model/captain_locations_dto_points_inner.dart';
 import 'package:core_api/src/model/captain_locations_saved_dto_output.dart';
+import 'package:core_api/src/model/captain_offer_dto_output.dart';
+import 'package:core_api/src/model/captain_offer_dto_output_offer.dart';
 import 'package:core_api/src/model/captain_refresh_dto.dart';
 import 'package:core_api/src/model/captain_session_dto_output.dart';
 import 'package:core_api/src/model/captain_sign_in_dto.dart';
@@ -155,6 +169,10 @@ import 'package:core_api/src/model/update_setting_dto.dart';
 part 'serializers.g.dart';
 
 @SerializersFor([
+  AdminAssignDto,
+  AdminDispatchStateDtoOutput,
+  AdminDispatchStateDtoOutputOrder,
+  AdminDispatchStateDtoOutputOrderOffer,
   AdminSessionDtoOutput,
   BackupCodesDtoOutput,
   CaptainAvailabilityDtoOutput,
@@ -165,10 +183,20 @@ part 'serializers.g.dart';
   CaptainAvailabilityDtoOutputCustodyUsage,
   CaptainCodeRequestDto,
   CaptainCodeSentDtoOutput,
+  CaptainCurrentOfferDtoOutput,
+  CaptainCurrentOfferDtoOutputOffer,
+  CaptainCurrentOfferDtoOutputOfferCollect,
+  CaptainCurrentOfferDtoOutputOfferCustomer,
+  CaptainCurrentOfferDtoOutputOfferPay,
+  CaptainCurrentOfferDtoOutputOfferPickupPayment,
+  CaptainCurrentOfferDtoOutputOfferPreparation,
+  CaptainCurrentOfferDtoOutputOfferRestaurant,
   CaptainGoOnlineDto,
   CaptainLocationsDto,
   CaptainLocationsDtoPointsInner,
   CaptainLocationsSavedDtoOutput,
+  CaptainOfferDtoOutput,
+  CaptainOfferDtoOutputOffer,
   CaptainRefreshDto,
   CaptainSessionDtoOutput,
   CaptainSignInDto,

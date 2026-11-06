@@ -13,6 +13,7 @@ import { CustomerOrdersController } from './customer-orders.controller.js';
 import { CustomerQuoteController } from './customer-quote.controller.js';
 import { MerchantOrdersController } from './merchant-orders.controller.js';
 import { OrderChannelAccess } from './order-channel.js';
+import { OrderAssignmentsModule } from './order-assignments.js';
 import { OrderCommands } from './order-commands.js';
 import { OrderPartitions } from './order-partitions.js';
 import { OrderTimers, OrderTimersWorker } from './order-timers.js';
@@ -36,6 +37,7 @@ import { QuoteService } from './quote.service.js';
     CustomersModule,
     CaptainsModule,
     NotificationsModule,
+    OrderAssignmentsModule,
   ],
   controllers: [CustomerQuoteController, CustomerOrdersController, MerchantOrdersController],
   providers: [
@@ -58,6 +60,13 @@ export class OrderingModule {}
 })
 export class OrderingWorkerModule {}
 
+export {
+  type AssignmentActor,
+  type AssignmentChange,
+  type DispatchOrder,
+  OrderAssignments,
+  OrderAssignmentsModule,
+} from './order-assignments.js';
 export {
   type OrderRefusal,
   OrderRefusedError,
