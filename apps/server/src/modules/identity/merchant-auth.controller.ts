@@ -18,6 +18,8 @@ import { AppSignedIn, CurrentAppSession, Public } from '../../http/access.js';
 import { requestContext } from '../../http/request-context.js';
 import { MerchantController } from '../../http/route-groups.js';
 import {
+  AppCheckHeader,
+  AppCheckToken,
   codeRequestAnswer,
   codeSent,
   deviceId,
@@ -41,7 +43,16 @@ import {
 import { devicePlatforms, MerchantsRefusedError, MerchantsService } from '../merchants/index.js';
 import { merchantRoles } from './schema.js';
 
-class MerchantCodeRequestDto extends createZodDto(z.object({ phone, deviceId })) {}
+class MerchantCodeRequestDto extends createZodDto(
+  z.object({
+    phone,
+    deviceId,
+    platform: z
+      .enum(devicePlatforms)
+      .optional()
+      .describe('Windows sends no App Check token (owner decision 2026-11-07).'),
+  }),
+) {}
 
 class MerchantCodeSentDto extends createZodDto(codeSent) {}
 
@@ -93,15 +104,23 @@ export class MerchantAuthController {
   @Post('code')
   @Public()
   @HttpCode(200)
+  @AppCheckHeader()
   @ZodResponse({ status: 200, type: MerchantCodeSentDto })
   async requestCode(
     @Body() body: MerchantCodeRequestDto,
     @Req() request: FastifyRequest,
     @Res({ passthrough: true }) reply: FastifyReply,
+    @AppCheckToken() appCheckToken: string | undefined,
   ) {
     try {
       const sent = await this.signInService.requestCode(
-        { party: 'merchant', phone: body.phone, deviceId: body.deviceId },
+        {
+          party: 'merchant',
+          phone: body.phone,
+          deviceId: body.deviceId,
+          appCheckToken,
+          platform: body.platform,
+        },
         requestContext(request),
       );
       return { ...sent, expiresAt: sent.expiresAt.toISOString() };

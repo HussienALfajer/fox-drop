@@ -12,11 +12,11 @@ Slice W3, App Check on the server (`docs/roadmap.md`, Phase 1, before slice 1.14
 - **Builds on W2:** the code requests of the three apps (`POST /v1/{customer,merchant,captain}/auth/code`) run `AppSignInService.requestCode`: the IP limit first, then the number's lock, limits and the send.
 - **Open items to ask the owner first:** the setting's name and scope (proposed `otp.app_check_required`, global, OWN, default off, in Appendix A); the header (proposed `X-Firebase-AppCheck`, Firebase's own); the answer to a missing or invalid token (proposed `403 app_check_failed`, before the IP limit counts it or after); how the server verifies (proposed: Firebase's public JWKS and the project number from the environment, no service-account secret; or `firebase-admin`); what the Windows restaurant app sends, since App Check has no Windows provider (proposed: exempt the merchant app's Windows devices until its device registration exists, or ask).
 - **Plan:**
-  - [ ] Ask the owner the open items above.
-  - [ ] The setting in Appendix A and the catalogue.
-  - [ ] The token check (failing tests first): signature, issuer, audience, expiry against Firebase's keys, cached; a fake key set in the tests.
-  - [ ] The three code routes take the header and refuse without a valid token while the setting is on; `pnpm generate:api`.
-  - [ ] Update `apps/server/src/modules/identity/CLAUDE.md`, `.env.example` (fake project number) and the `deploy` skill.
+  - [x] Ask the owner the open items above. Owner decisions 2026-11-07: the proposals as written (one global setting, the Firebase header, `403 app_check_failed` after the IP limit counts the request, Firebase's public JWKS with the project number, Windows exempt until its device registration).
+  - [x] The setting in Appendix A and the catalogue.
+  - [x] The token check (failing tests first): signature, issuer, audience, expiry against Firebase's keys, cached; a fake key set in the tests.
+  - [x] The three code routes take the header and refuse without a valid token while the setting is on; `pnpm generate:api`.
+  - [x] Update `apps/server/src/modules/identity/CLAUDE.md`, `.env.example` (fake project number) and the `deploy` skill.
   - [ ] `checker`, then `reviewer`; pull request.
 
 ## Notes from earlier slices

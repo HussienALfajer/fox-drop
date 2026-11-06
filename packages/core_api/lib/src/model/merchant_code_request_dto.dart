@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -13,6 +14,7 @@ part 'merchant_code_request_dto.g.dart';
 /// Properties:
 /// * [phone] - The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
 /// * [deviceId] - The app installation, generated once by the app and kept until it is removed.
+/// * [platform] - Windows sends no App Check token (owner decision 2026-11-07).
 @BuiltValue()
 abstract class MerchantCodeRequestDto
     implements Built<MerchantCodeRequestDto, MerchantCodeRequestDtoBuilder> {
@@ -23,6 +25,11 @@ abstract class MerchantCodeRequestDto
   /// The app installation, generated once by the app and kept until it is removed.
   @BuiltValueField(wireName: r'deviceId')
   String get deviceId;
+
+  /// Windows sends no App Check token (owner decision 2026-11-07).
+  @BuiltValueField(wireName: r'platform')
+  MerchantCodeRequestDtoPlatformEnum? get platform;
+  // enum platformEnum {  android,  ios,  windows,  };
 
   MerchantCodeRequestDto._();
 
@@ -64,6 +71,13 @@ class _$MerchantCodeRequestDtoSerializer
       object.deviceId,
       specifiedType: const FullType(String),
     );
+    if (object.platform != null) {
+      yield r'platform';
+      yield serializers.serialize(
+        object.platform,
+        specifiedType: const FullType(MerchantCodeRequestDtoPlatformEnum),
+      );
+    }
   }
 
   @override
@@ -109,6 +123,18 @@ class _$MerchantCodeRequestDtoSerializer
                   as String;
           result.deviceId = valueDes;
           break;
+        case r'platform':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      MerchantCodeRequestDtoPlatformEnum,
+                    ),
+                  )
+                  as MerchantCodeRequestDtoPlatformEnum?;
+          if (valueDes == null) continue;
+          result.platform = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -136,4 +162,27 @@ class _$MerchantCodeRequestDtoSerializer
     );
     return result.build();
   }
+}
+
+/// Windows sends no App Check token (owner decision 2026-11-07).
+class MerchantCodeRequestDtoPlatformEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'android')
+  static const MerchantCodeRequestDtoPlatformEnum android =
+      _$merchantCodeRequestDtoPlatformEnum_android;
+  @BuiltValueEnumConst(wireName: r'ios')
+  static const MerchantCodeRequestDtoPlatformEnum ios =
+      _$merchantCodeRequestDtoPlatformEnum_ios;
+  @BuiltValueEnumConst(wireName: r'windows')
+  static const MerchantCodeRequestDtoPlatformEnum windows =
+      _$merchantCodeRequestDtoPlatformEnum_windows;
+
+  static Serializer<MerchantCodeRequestDtoPlatformEnum> get serializer =>
+      _$merchantCodeRequestDtoPlatformEnumSerializer;
+
+  const MerchantCodeRequestDtoPlatformEnum._(String name) : super(name);
+
+  static BuiltSet<MerchantCodeRequestDtoPlatformEnum> get values =>
+      _$merchantCodeRequestDtoPlatformEnumValues;
+  static MerchantCodeRequestDtoPlatformEnum valueOf(String name) =>
+      _$merchantCodeRequestDtoPlatformEnumValueOf(name);
 }

@@ -1543,6 +1543,11 @@ export interface components {
              * @description The app installation, generated once by the app and kept until it is removed.
              */
             deviceId: string;
+            /**
+             * @description Windows sends no App Check token (owner decision 2026-11-07).
+             * @enum {string}
+             */
+            platform?: "android" | "ios" | "windows";
         };
         MerchantCodeSentDto_Output: {
             /**
@@ -4495,7 +4500,10 @@ export interface operations {
     customerAuthRequestCode: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description The Firebase App Check token. Refused with 403 app_check_failed when missing or invalid while the server requires it (otp.app_check_required). */
+                "X-Firebase-AppCheck"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4627,7 +4635,10 @@ export interface operations {
     merchantAuthRequestCode: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description The Firebase App Check token. Refused with 403 app_check_failed when missing or invalid while the server requires it (otp.app_check_required). */
+                "X-Firebase-AppCheck"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -4763,7 +4774,10 @@ export interface operations {
     captainAuthRequestCode: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description The Firebase App Check token. Refused with 403 app_check_failed when missing or invalid while the server requires it (otp.app_check_required). */
+                "X-Firebase-AppCheck"?: string;
+            };
             path?: never;
             cookie?: never;
         };

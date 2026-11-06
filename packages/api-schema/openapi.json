@@ -586,7 +586,17 @@
     "/v1/customer/auth/code": {
       "post": {
         "operationId": "customerAuthRequestCode",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "X-Firebase-AppCheck",
+            "in": "header",
+            "description": "The Firebase App Check token. Refused with 403 app_check_failed when missing or invalid while the server requires it (otp.app_check_required).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -772,7 +782,17 @@
     "/v1/merchant/auth/code": {
       "post": {
         "operationId": "merchantAuthRequestCode",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "X-Firebase-AppCheck",
+            "in": "header",
+            "description": "The Firebase App Check token. Refused with 403 app_check_failed when missing or invalid while the server requires it (otp.app_check_required).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -968,7 +988,17 @@
     "/v1/captain/auth/code": {
       "post": {
         "operationId": "captainAuthRequestCode",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "X-Firebase-AppCheck",
+            "in": "header",
+            "description": "The Firebase App Check token. Refused with 403 app_check_failed when missing or invalid while the server requires it (otp.app_check_required).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -3953,6 +3983,15 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
             "description": "The app installation, generated once by the app and kept until it is removed."
+          },
+          "platform": {
+            "description": "Windows sends no App Check token (owner decision 2026-11-07).",
+            "type": "string",
+            "enum": [
+              "android",
+              "ios",
+              "windows"
+            ]
           }
         },
         "required": [

@@ -210,6 +210,7 @@ class CustomerApi {
   ///
   /// Parameters:
   /// * [customerCodeRequestDto]
+  /// * [xFirebaseAppCheck] - The Firebase App Check token. Refused with 403 app_check_failed when missing or invalid while the server requires it (otp.app_check_required).
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -221,6 +222,7 @@ class CustomerApi {
   /// Throws [DioException] if API call or serialization fails
   Future<Response<CustomerCodeSentDtoOutput>> customerAuthRequestCode({
     required CustomerCodeRequestDto customerCodeRequestDto,
+    String? xFirebaseAppCheck,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -231,7 +233,11 @@ class CustomerApi {
     final _path = r'/v1/customer/auth/code';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{...?headers},
+      headers: <String, dynamic>{
+        if (xFirebaseAppCheck != null)
+          r'X-Firebase-AppCheck': xFirebaseAppCheck,
+        ...?headers,
+      },
       extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       contentType: 'application/json',
       validateStatus: validateStatus,
