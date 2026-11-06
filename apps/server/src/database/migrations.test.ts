@@ -491,6 +491,68 @@ describe('the customers tables and the zone votes (CU §5.3, §7.2–7.3)', () =
   });
 });
 
+describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
+  const azaz = "(SELECT id FROM geo.cities WHERE code = 'AZ')";
+  const suffix = new Date().toISOString().slice(0, 7).replace('-', '_');
+  const order = (id: string, extra: { total?: string; note?: string; phone?: string } = {}) =>
+    `INSERT INTO ordering.orders (id, placed_at, city_id, number, customer_account_id, restaurant_id, status, version, currency, items_value, delivery_fee, discount, rounding, total, delivery_free, fee_rule_id, commission_bp, rate_snapshot, note, estimate_from_min, estimate_to_min, location, zone_id, neighbourhood, street, landmark, contact_phone_encrypted, recipient_name) VALUES ('${id}', now(), ${azaz}, 10001, '${randomUUID()}', '${randomUUID()}', 'placed', 1, 'TRY', 20000, 4000, 0, 0, ${extra.total ?? '24000'}, false, '${randomUUID()}', 1500, '{}', ${extra.note ?? 'NULL'}, 30, 40, ST_SetSRID(ST_MakePoint(37.05, 36.59), 4326), '${randomUUID()}', 'أعزاز', 'شارع', 'جامع', ${extra.phone ?? 'NULL'}, NULL)`;
+  const placedAt = (id: string) => `(SELECT placed_at FROM ordering.orders WHERE id = '${id}')`;
+
+  it('have a partition of the orders, lines and events for this month and the next', async () => {
+    const { rows } = await appQuery(
+      "SELECT inhparent::regclass::text AS parent, count(*)::int AS n FROM pg_inherits WHERE inhparent IN ('ordering.orders'::regclass, 'ordering.order_lines'::regclass, 'ordering.order_events'::regclass) GROUP BY 1 ORDER BY 1",
+    );
+    expect(rows).toEqual([
+      { parent: 'ordering.order_events', n: 2 },
+      { parent: 'ordering.order_lines', n: 2 },
+      { parent: 'ordering.orders', n: 2 },
+    ]);
+  });
+
+  it('take an order with its line and event, and refuse money that does not add up', async () => {
+    const id = randomUUID();
+    await appQuery(order(id));
+    await appQuery(
+      `INSERT INTO ordering.order_lines (order_id, order_placed_at, position, city_id, item_id, item_name, quantity, options, unit_price, line_total) VALUES ('${id}', ${placedAt(id)}, 0, ${azaz}, '${randomUUID()}', 'شاورما', 2, '[]', 10000, 20000)`,
+    );
+    await appQuery(
+      `INSERT INTO ordering.order_events (order_id, order_placed_at, version, city_id, at, to_status, actor_type) VALUES ('${id}', ${placedAt(id)}, 1, ${azaz}, now(), 'placed', 'customer')`,
+    );
+    await appQuery(
+      `UPDATE ordering.orders SET status = 'cancelled', version = 2 WHERE id = '${id}'`,
+    );
+    await expect(appQuery(order(randomUUID(), { total: '25000' }))).rejects.toThrow(/orders_money/);
+    await expect(
+      appQuery(
+        `INSERT INTO ordering.order_lines (order_id, order_placed_at, position, city_id, item_id, item_name, quantity, options, unit_price, line_total) VALUES ('${id}', ${placedAt(id)}, 1, ${azaz}, '${randomUUID()}', 'شاورما', 2, '[]', 10000, 10000)`,
+      ),
+    ).rejects.toThrow(/order_lines_money/);
+  });
+
+  it('refuse a note over 200 characters and another number without its recipient', async () => {
+    await expect(appQuery(order(randomUUID(), { note: `'${'م'.repeat(201)}'` }))).rejects.toThrow(
+      /orders_note/,
+    );
+    await expect(appQuery(order(randomUUID(), { phone: "'v1.x'" }))).rejects.toThrow(
+      /orders_recipient/,
+    );
+  });
+
+  it('let the application role create the coming partitions again', async () => {
+    await appQuery('SELECT ordering.create_month_partitions()');
+  });
+
+  it.each([
+    ['change an order event', "UPDATE ordering.order_events SET reason = 'x'"],
+    ['change an order event partition', `UPDATE ordering.order_events_${suffix} SET reason = 'x'`],
+    ['delete an order', 'DELETE FROM ordering.orders'],
+    ['delete an order line', 'DELETE FROM ordering.order_lines'],
+    ['delete an idempotency key', 'DELETE FROM ordering.idempotency_keys'],
+  ])('refuse the application role to %s', async (_, statement) => {
+    await expect(appQuery(statement)).rejects.toThrow(/permission denied/);
+  });
+});
+
 describe('the identity tables (AP §5.1–5.2)', () => {
   it('refuse an admin account without an email or a phone', async () => {
     await expect(

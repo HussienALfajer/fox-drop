@@ -196,10 +196,17 @@ const statusChanges: Record<AccountStatus, readonly AccountStatus[]> = {
 type Tx = Parameters<Parameters<Database['db']['transaction']>[0]>[0];
 type Executor = Pick<NodePgDatabase, 'select' | 'execute'>;
 
+// A restaurant's orders in placed, accepted or ready (RA §7.4).
+export type ActiveOrderCount = (restaurantId: string) => Promise<number>;
+
 // Restaurants, their hours, states, coverage, minimum order, commission and
 // menu (architecture §4.2; AP §9.6, RA §7, §9, §10) for the other modules.
 @Injectable()
 export class MerchantsService implements OnModuleInit {
+  // RA §7.4: a restaurant's active orders, counted by the ordering module
+  // (countActiveOrders); none until it registers.
+  private activeOrders: ActiveOrderCount = () => Promise.resolve(0);
+
   constructor(
     @Inject(DATABASE) private readonly database: Database,
     private readonly geo: GeoService,
@@ -530,8 +537,13 @@ export class MerchantsService implements OnModuleInit {
     });
   }
 
-  // The state at a moment (RA §7.1). Active orders count from the ordering
-  // module when it exists (slice 1.8); until then none.
+  // RA §7.4: the ordering module counts the active orders, which this module
+  // cannot read (architecture §4.3).
+  countActiveOrders(count: ActiveOrderCount): void {
+    this.activeOrders = count;
+  }
+
+  // The state at a moment (RA §7.1).
   async operatingState(restaurantId: string, now = new Date()): Promise<OperatingState> {
     return (await this.storefrontState(restaurantId, now)).state;
   }
@@ -591,7 +603,8 @@ export class MerchantsService implements OnModuleInit {
           row.busyExtraMin !== null && row.busyUntil !== null
             ? { extraMin: row.busyExtraMin, endsAt: row.busyUntil }
             : null,
-        activeOrders: 0,
+        // Counted only against a maximum: the count reads every partition.
+        activeOrders: row.maxActiveOrders === null ? 0 : await this.activeOrders(restaurantId),
         maxActiveOrders: row.maxActiveOrders,
       },
       now,

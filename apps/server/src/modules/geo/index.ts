@@ -17,6 +17,7 @@ import { roadDistancesFromEnvironment } from './osrm-road-distances.js';
 export class GeoModule {}
 
 export { lastCutoff, nextCutoff } from './business-day.js';
+export { estimateRange, tripMinutes } from './delivery-estimate.js';
 export type { DeliveryFeeRule, DistanceBand } from './delivery-fee.js';
 export type { Distance, DistanceMethod, Point } from './distance.js';
 export {

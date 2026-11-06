@@ -1,9 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { equivalent, FxRefusedError, FxService, type RateSnapshot } from '../fx/index.js';
-import { type Distance, GeoRefusedError, GeoService, type Point } from '../geo/index.js';
-import { MerchantsService, type StorefrontState } from '../merchants/index.js';
+import {
+  type Distance,
+  estimateRange,
+  GeoRefusedError,
+  GeoService,
+  type Point,
+  tripMinutes,
+} from '../geo/index.js';
+import { MerchantsService, type Restaurant, type StorefrontState } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
-import { estimateRange, tripMinutes } from './delivery-estimate.js';
+import { ActiveOrders } from './active-orders.js';
 import { platformOpening } from './platform-hours.js';
 import {
   type CartLine,
@@ -30,6 +37,10 @@ export type QuoteProblemCode =
   | 'minimum_not_in_base_currency'
   | 'delivery_unpriced'
   | 'rates_unavailable'
+  // CU §5.5, D23: «يمكنك طلب واحد في كل مرة حتى يكتمل طلبك الحالي» for a new
+  // account, «وصلت إلى الحد الأقصى للطلبات الجارية» for a trusted one.
+  | 'one_order_at_a_time'
+  | 'active_order_limit'
   | LineProblem;
 
 export interface QuoteProblem {
@@ -47,6 +58,9 @@ export interface QuoteRequest {
   // «سأدفع بـ» (CU §10.5): an accepted currency, or null for «لم أحدد».
   payIn: string | null;
   appVersion: string;
+  // The signed-in customer, whose active-order limit the quote checks; null
+  // for a guest (CU §5.1).
+  customerAccountId: string | null;
 }
 
 export interface Quote {
@@ -70,6 +84,16 @@ export interface Quote {
   problems: QuoteProblem[];
 }
 
+// A quote and what an order placed from it keeps.
+export interface PricedQuote {
+  quote: Quote;
+  // null while the city cannot have one (rates_unavailable).
+  snapshot: RateSnapshot | null;
+  // null while the city has no fee rule in its base (delivery_unpriced).
+  feeRuleId: string | null;
+  restaurant: Restaurant;
+}
+
 export type QuoteRefusal = 'unknown_restaurant';
 
 // A quote the server cannot answer at all, as opposed to a problem it shows.
@@ -88,8 +112,8 @@ export class QuoteRefusedError extends Error {
 const TRIP_VEHICLE = 'motorbike';
 
 // CU §10.6: the versioned quote of a cart for a delivery point. Every check
-// with data is run (owner decision 2026-11-06); the capacity check (until
-// dispatch), the active-order limit (slice 1.8), account states, the terms
+// with data is run (owner decision 2026-11-06), the signed-in customer's
+// active-order limit included; the capacity check, account states, the terms
 // version, the emergency stop and codes (Phase 2) pass until their slices.
 @Injectable()
 export class QuoteService {
@@ -98,9 +122,16 @@ export class QuoteService {
     private readonly fx: FxService,
     private readonly geo: GeoService,
     private readonly merchants: MerchantsService,
+    private readonly activeOrders: ActiveOrders,
   ) {}
 
   async quote(request: QuoteRequest, now: Date): Promise<Quote> {
+    return (await this.price(request, now)).quote;
+  }
+
+  // The quote with what placing the order keeps: the rate snapshot it was
+  // priced with, the fee rule version and the restaurant (CU §10.7).
+  async price(request: QuoteRequest, now: Date): Promise<PricedQuote> {
     const restaurant = await this.merchants.restaurant(request.restaurantId, now);
     if (restaurant === null || restaurant.accountStatus !== 'active' || !restaurant.visible) {
       throw new QuoteRefusedError('unknown_restaurant', 'no restaurant customers see');
@@ -141,6 +172,13 @@ export class QuoteService {
     if (zone === null) problem('outside_zones');
     else if (!covers) problem('not_covered');
     if (state.state.state !== 'open') problem('restaurant_closed');
+    if (request.customerAccountId !== null) {
+      const limit = await this.activeOrders.customer(
+        request.customerAccountId,
+        await this.activeOrders.rules(cityId),
+      );
+      if (limit.reached) problem(limit.trusted ? 'active_order_limit' : 'one_order_at_a_time');
+    }
 
     const baseCurrency = snapshot?.baseCurrency ?? (await this.fx.baseCurrency(cityId));
     if (snapshot === null) problem('rates_unavailable');
@@ -195,7 +233,7 @@ export class QuoteService {
       fee?.distance ??
       (await this.geo.distance(restaurant.location, point, { vehicle: TRIP_VEHICLE }));
 
-    return {
+    const quote: Quote = {
       version: quoteVersion({
         lines: request.lines.map((line, index) => ({
           itemId: line.itemId,
@@ -229,6 +267,7 @@ export class QuoteService {
       rates,
       problems,
     };
+    return { quote, snapshot, feeRuleId: fee?.ruleId ?? null, restaurant };
   }
 
   // The rates of a quote (AP §8.6); null while the city cannot have one, such
@@ -255,14 +294,15 @@ export class QuoteService {
     free: boolean;
     freeDeliveryFrom: bigint | null;
     distance: Distance | null;
+    ruleId: string;
   } | null> {
     try {
-      const { fee, free, freeDeliveryFrom, distance } = await this.geo.deliveryFee(cityId, {
+      const { fee, free, freeDeliveryFrom, distance, ruleId } = await this.geo.deliveryFee(cityId, {
         from,
         to,
         itemsValue,
       });
-      return { fee, free: free || fee === 0n, freeDeliveryFrom, distance };
+      return { fee, free: free || fee === 0n, freeDeliveryFrom, distance, ruleId };
     } catch (error) {
       if (
         error instanceof GeoRefusedError &&

@@ -429,7 +429,7 @@ export class FxService implements OnModuleInit {
         decimals: decimals.get(entry.currency)!,
         rate: rate?.rate ?? { numerator: 1n, denominator: 1n },
         rateVersionId: rate?.versionId ?? null,
-        ...(await this.rounding(cityId, entry.currency)),
+        ...(await this.rounding(cityId, entry.currency, executor)),
       });
     }
     return { cityId, baseCurrency: base, takenAt: new Date(), currencies: snapshot };
@@ -499,12 +499,12 @@ export class FxService implements OnModuleInit {
     return this.snapshot(cityId, tx);
   }
 
-  private async rounding(cityId: string, code: string) {
+  // Read through the executor, so an order's transaction never waits for a
+  // second connection (one at a time on its connection).
+  private async rounding(cityId: string, code: string, executor: FxExecutor) {
     const target = { cityId, parameter: code };
-    const [unit, mode] = await Promise.all([
-      this.settings.get('currency.<code>.rounding_unit', target),
-      this.settings.get('currency.<code>.rounding_mode', target),
-    ]);
+    const unit = await this.settings.get('currency.<code>.rounding_unit', target, executor);
+    const mode = await this.settings.get('currency.<code>.rounding_mode', target, executor);
     // Owner decision 2026-11-05: no order without the rounding unit, which
     // is entered before launch.
     if (unit === null) {

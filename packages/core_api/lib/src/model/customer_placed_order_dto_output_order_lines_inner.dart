@@ -1,0 +1,241 @@
+//
+// AUTO-GENERATED FILE, DO NOT MODIFY!
+//
+
+// ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/customer_quote_dto_output_lines_inner_options_inner.dart';
+import 'package:built_value/built_value.dart';
+import 'package:built_value/serializer.dart';
+
+part 'customer_placed_order_dto_output_order_lines_inner.g.dart';
+
+/// CustomerPlacedOrderDtoOutputOrderLinesInner
+///
+/// Properties:
+/// * [itemId]
+/// * [name]
+/// * [quantity]
+/// * [note]
+/// * [options]
+/// * [unitPrice] - Integer minor units (AP §8.6).
+/// * [lineTotal] - Integer minor units (AP §8.6).
+@BuiltValue()
+abstract class CustomerPlacedOrderDtoOutputOrderLinesInner
+    implements
+        Built<
+          CustomerPlacedOrderDtoOutputOrderLinesInner,
+          CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder
+        > {
+  @BuiltValueField(wireName: r'itemId')
+  String get itemId;
+
+  @BuiltValueField(wireName: r'name')
+  String get name;
+
+  @BuiltValueField(wireName: r'quantity')
+  int get quantity;
+
+  @BuiltValueField(wireName: r'note')
+  String? get note;
+
+  @BuiltValueField(wireName: r'options')
+  BuiltList<CustomerQuoteDtoOutputLinesInnerOptionsInner> get options;
+
+  /// Integer minor units (AP §8.6).
+  @BuiltValueField(wireName: r'unitPrice')
+  String get unitPrice;
+
+  /// Integer minor units (AP §8.6).
+  @BuiltValueField(wireName: r'lineTotal')
+  String get lineTotal;
+
+  CustomerPlacedOrderDtoOutputOrderLinesInner._();
+
+  factory CustomerPlacedOrderDtoOutputOrderLinesInner([
+    void updates(CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder b),
+  ]) = _$CustomerPlacedOrderDtoOutputOrderLinesInner;
+
+  @BuiltValueHook(initializeBuilder: true)
+  static void _defaults(CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder b) =>
+      b;
+
+  @BuiltValueSerializer(custom: true)
+  static Serializer<CustomerPlacedOrderDtoOutputOrderLinesInner>
+  get serializer => _$CustomerPlacedOrderDtoOutputOrderLinesInnerSerializer();
+}
+
+class _$CustomerPlacedOrderDtoOutputOrderLinesInnerSerializer
+    implements
+        PrimitiveSerializer<CustomerPlacedOrderDtoOutputOrderLinesInner> {
+  @override
+  final Iterable<Type> types = const [
+    CustomerPlacedOrderDtoOutputOrderLinesInner,
+    _$CustomerPlacedOrderDtoOutputOrderLinesInner,
+  ];
+
+  @override
+  final String wireName = r'CustomerPlacedOrderDtoOutputOrderLinesInner';
+
+  Iterable<Object?> _serializeProperties(
+    Serializers serializers,
+    CustomerPlacedOrderDtoOutputOrderLinesInner object, {
+    FullType specifiedType = FullType.unspecified,
+  }) sync* {
+    yield r'itemId';
+    yield serializers.serialize(
+      object.itemId,
+      specifiedType: const FullType(String),
+    );
+    yield r'name';
+    yield serializers.serialize(
+      object.name,
+      specifiedType: const FullType(String),
+    );
+    yield r'quantity';
+    yield serializers.serialize(
+      object.quantity,
+      specifiedType: const FullType(int),
+    );
+    yield r'note';
+    yield object.note == null
+        ? null
+        : serializers.serialize(
+            object.note,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'options';
+    yield serializers.serialize(
+      object.options,
+      specifiedType: const FullType(BuiltList, [
+        FullType(CustomerQuoteDtoOutputLinesInnerOptionsInner),
+      ]),
+    );
+    yield r'unitPrice';
+    yield serializers.serialize(
+      object.unitPrice,
+      specifiedType: const FullType(String),
+    );
+    yield r'lineTotal';
+    yield serializers.serialize(
+      object.lineTotal,
+      specifiedType: const FullType(String),
+    );
+  }
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    CustomerPlacedOrderDtoOutputOrderLinesInner object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
+  }
+
+  void _deserializeProperties(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+    required List<Object?> serializedList,
+    required CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder result,
+    required List<Object?> unhandled,
+  }) {
+    for (var i = 0; i < serializedList.length; i += 2) {
+      final key = serializedList[i] as String;
+      final value = serializedList[i + 1];
+      switch (key) {
+        case r'itemId':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.itemId = valueDes;
+          break;
+        case r'name':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.name = valueDes;
+          break;
+        case r'quantity':
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
+          result.quantity = valueDes;
+          break;
+        case r'note':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.note = valueDes;
+          break;
+        case r'options':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CustomerQuoteDtoOutputLinesInnerOptionsInner),
+                    ]),
+                  )
+                  as BuiltList<CustomerQuoteDtoOutputLinesInnerOptionsInner>;
+          result.options.replace(valueDes);
+          break;
+        case r'unitPrice':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.unitPrice = valueDes;
+          break;
+        case r'lineTotal':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.lineTotal = valueDes;
+          break;
+        default:
+          unhandled.add(key);
+          unhandled.add(value);
+          break;
+      }
+    }
+  }
+
+  @override
+  CustomerPlacedOrderDtoOutputOrderLinesInner deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    final result = CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder();
+    final serializedList = (serialized as Iterable<Object?>).toList();
+    final unhandled = <Object?>[];
+    _deserializeProperties(
+      serializers,
+      serialized,
+      specifiedType: specifiedType,
+      serializedList: serializedList,
+      unhandled: unhandled,
+      result: result,
+    );
+    return result.build();
+  }
+}

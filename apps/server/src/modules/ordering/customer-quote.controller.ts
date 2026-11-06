@@ -1,18 +1,51 @@
 import { Body, HttpCode, HttpStatus, NotFoundException, Post } from '@nestjs/common';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
-import { Public } from '../../http/access.js';
+import { AppSignedInOrGuest, OptionalAppSession } from '../../http/access.js';
 import { CustomerController } from '../../http/route-groups.js';
+import type { AppSession } from '../identity/index.js';
 import type { StorefrontState } from '../merchants/index.js';
 import { type Quote, QuoteRefusedError, QuoteService } from './quote.service.js';
 
-const minor = z
+export const minor = z
   .string()
   .regex(/^-?\d+$/)
   .describe('Integer minor units (AP §8.6).');
 
 // Q25: a note with a run of 7 or more digits looks like a phone number.
-const noPhone = (text: string) => !/\p{Nd}{7,}/u.test(text);
+export const noPhone = (text: string) => !/\p{Nd}{7,}/u.test(text);
+
+export const cartLines = z
+  .array(
+    z.object({
+      itemId: z.uuid(),
+      optionIds: z.array(z.uuid()).max(50),
+      quantity: z.int().min(1).max(20).describe('1 to 20 per line (fixed).'),
+      note: z
+        .string()
+        .trim()
+        .min(1)
+        .max(100)
+        .refine(noPhone, 'no phone numbers in a note (Q25)')
+        .nullable()
+        .describe('«مثلاً: بدون بصل», up to 100 characters; no phone number.'),
+      knownUnitPrice: minor.describe(
+        'The unit price the customer last saw, with the options; a change is price_changed.',
+      ),
+    }),
+  )
+  .min(1)
+  .max(50);
+
+export const payInCurrency = z
+  .string()
+  .regex(/^[A-Z]{3}$/)
+  .nullable()
+  .describe(
+    '«سأدفع بـ»: an accepted currency, or null for «لم أحدد» (CU §10.5); one no longer accepted gives payIn null.',
+  );
+
+export const appVersion = z.string().regex(/^\d+\.\d+\.\d+$/, 'expected a version such as 1.4.0');
 
 class CustomerQuoteRequestDto extends createZodDto(
   z.object({
@@ -20,35 +53,9 @@ class CustomerQuoteRequestDto extends createZodDto(
     location: z
       .object({ latitude: z.number().min(-90).max(90), longitude: z.number().min(-180).max(180) })
       .describe('The delivery point: the address pin or the selected point.'),
-    lines: z
-      .array(
-        z.object({
-          itemId: z.uuid(),
-          optionIds: z.array(z.uuid()).max(50),
-          quantity: z.int().min(1).max(20).describe('1 to 20 per line (fixed).'),
-          note: z
-            .string()
-            .trim()
-            .min(1)
-            .max(100)
-            .refine(noPhone, 'no phone numbers in a note (Q25)')
-            .nullable()
-            .describe('«مثلاً: بدون بصل», up to 100 characters; no phone number.'),
-          knownUnitPrice: minor.describe(
-            'The unit price the customer last saw, with the options; a change is price_changed.',
-          ),
-        }),
-      )
-      .min(1)
-      .max(50),
-    payIn: z
-      .string()
-      .regex(/^[A-Z]{3}$/)
-      .nullable()
-      .describe(
-        '«سأدفع بـ»: an accepted currency, or null for «لم أحدد» (CU §10.5); one no longer accepted gives payIn null.',
-      ),
-    appVersion: z.string().regex(/^\d+\.\d+\.\d+$/, 'expected a version such as 1.4.0'),
+    lines: cartLines,
+    payIn: payInCurrency,
+    appVersion,
   }),
 ) {}
 
@@ -126,6 +133,8 @@ class CustomerQuoteDto extends createZodDto(
             'minimum_not_in_base_currency',
             'delivery_unpriced',
             'rates_unavailable',
+            'one_order_at_a_time',
+            'active_order_limit',
             'item_not_found',
             'item_unavailable',
             'option_not_found',
@@ -147,17 +156,21 @@ class CustomerQuoteDto extends createZodDto(
 
 // CU §10.6: the quote of the cart, asked for on every change of the cart,
 // the address or the code, and on opening checkout. Open to guests, who see
-// the full quote (CU §5.1).
+// the full quote (CU §5.1); a signed-in customer's also checks their
+// active-order limit (CU §5.5).
 @CustomerController()
 export class CustomerQuoteController {
   constructor(private readonly quotes: QuoteService) {}
 
   // 404 unknown_restaurant for a restaurant customers do not see.
   @Post('quote')
-  @Public()
+  @AppSignedInOrGuest()
   @HttpCode(200)
   @ZodResponse({ status: 200, type: CustomerQuoteDto })
-  async quote(@Body() body: CustomerQuoteRequestDto) {
+  async quote(
+    @OptionalAppSession() session: AppSession | null,
+    @Body() body: CustomerQuoteRequestDto,
+  ) {
     try {
       const quote = await this.quotes.quote(
         {
@@ -166,6 +179,7 @@ export class CustomerQuoteController {
             ...line,
             knownUnitPrice: BigInt(line.knownUnitPrice),
           })),
+          customerAccountId: session?.accountId ?? null,
         },
         new Date(),
       );
@@ -191,7 +205,7 @@ function stateBody({ state, message, opensAt }: StorefrontState) {
 const text = (value: bigint) => value.toString();
 const textOrNull = (value: bigint | null) => (value === null ? null : value.toString());
 
-function quoteBody(quote: Quote) {
+export function quoteBody(quote: Quote) {
   return {
     version: quote.version,
     restaurant: { id: quote.restaurant.id, ...stateBody(quote.restaurant.state) },

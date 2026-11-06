@@ -17,6 +17,8 @@ import 'package:core_api/src/model/customer_code_request_dto.dart';
 import 'package:core_api/src/model/customer_code_sent_dto_output.dart';
 import 'package:core_api/src/model/customer_location_dto_output.dart';
 import 'package:core_api/src/model/customer_new_address_dto.dart';
+import 'package:core_api/src/model/customer_place_order_dto.dart';
+import 'package:core_api/src/model/customer_placed_order_dto_output.dart';
 import 'package:core_api/src/model/customer_profile_dto_output.dart';
 import 'package:core_api/src/model/customer_quote_dto_output.dart';
 import 'package:core_api/src/model/customer_quote_request_dto.dart';
@@ -703,6 +705,102 @@ class CustomerApi {
     }
 
     return Response<CustomerRestaurantPageDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// customerOrdersPlace
+  ///
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
+  /// * [customerPlaceOrderDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [CustomerPlacedOrderDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<CustomerPlacedOrderDtoOutput>> customerOrdersPlace({
+    required String idempotencyKey,
+    required CustomerPlaceOrderDto customerPlaceOrderDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/customer/orders';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(CustomerPlaceOrderDto);
+      _bodyData = _serializers.serialize(
+        customerPlaceOrderDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    CustomerPlacedOrderDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerPlacedOrderDtoOutput),
+                )
+                as CustomerPlacedOrderDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<CustomerPlacedOrderDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

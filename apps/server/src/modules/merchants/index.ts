@@ -24,6 +24,7 @@ export type { AccountStatus, OperatingState, PauseSource } from './operating-sta
 export { takesOrders } from './operating-state.js';
 export { devicePlatforms } from './schema.js';
 export {
+  type ActiveOrderCount,
   type Coverage,
   type DevicePlatform,
   type MerchantChange,

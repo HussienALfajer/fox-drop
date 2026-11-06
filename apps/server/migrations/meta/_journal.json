@@ -113,6 +113,13 @@
       "when": 1793956470111,
       "tag": "0015_customers_profiles_addresses",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1793963202696,
+      "tag": "0016_ordering_orders",
+      "breakpoints": true
     }
   ]
 }

@@ -17,6 +17,7 @@ Cities (AP §9.12.1), distances (architecture §7.1), service zones and the deli
 - **Fee distance:** `deliveryFee(cityId, { from, to, itemsValue })` measures a distance-band fee by the motorbike's distance (`GeoService.distance`, so `pricing.distance_method` and the fallback apply), before any captain is known; a flat rule measures nothing. It returns the rule version it priced with, for the quote.
 - **Money:** amounts are `bigint` minor units, charged in the city's base currency (AP §8.6). Until the first order locks the base, a rule may be entered in any of the city's currencies, so the owner can enter it in a new base and then change the base; once locked, only in the base. `deliveryFee` refuses a rule outside the current base (`fee_not_in_base_currency`). `setDeliveryFeeRule` checks the currency under `lockCityCurrencies`, and geo registers its rule with `FxService.useCityAmounts`, so fx refuses a base change while the rule is in another currency (`amounts_in_other_currency`). The audit log keeps the amounts as strings.
 - **Every change** of a zone or a fee rule is audited in its transaction (`zone.create` with its corners, `zone.update`, `delivery_fee_rule.set`).
+- **The delivery estimate (`delivery-estimate.ts`, docs/domain/03, CU §8.4):** `estimateRange` (default prep + busy-mode minutes + the trip + `order.eta_buffer_min`, from a multiple of 5 to 10 minutes later) and `tripMinutes` (a distance at `order.eta_speed_kmh`), pure functions for the quote and the customers' browsing.
 - **Locally:** `docker compose run --rm osrm-build`, then `docker compose --profile osrm up --detach` (root `compose.yaml`). On staging one shared OSRM project serves every environment and rebuilds weekly (`infra/CLAUDE.md`).
 
 ## Not yet
@@ -24,4 +25,4 @@ Cities (AP §9.12.1), distances (architecture §7.1), service zones and the deli
 - `pricing.distance_method` is the fee's setting (AP §9.12.3), and the delivery estimate follows it too (`trip_min`, `docs/domain/03-timers.md`). When dispatch uses distances, decide with the owner whether it follows it.
 - Durations (the ETA), the route line and the distance matrix (OSRM `table`) for dispatch join with their slices.
 - Per-restaurant fee overrides wait for Phase 2 (owner decision 2026-11-06); editing a zone's outline or name, the fee screen, its preview calculator and the vote map (it reads `zone_votes`) with the panel's zones and pricing screen.
-- `deliveryFee` reads through the pool. Slice 1.8 prices inside the order's transaction: give it an executor then.
+- `deliveryFee` reads through the pool: placing an order re-runs the quote before its transaction (`apps/server/src/modules/ordering/CLAUDE.md`).
