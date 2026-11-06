@@ -3,7 +3,6 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -13,8 +12,6 @@ part 'captain_active_order_dto_output_order_customer_address.g.dart';
 ///
 /// Properties:
 /// * [neighbourhood] - «الحي».
-/// * [label]
-/// * [customLabel]
 /// * [street]
 /// * [floor]
 /// * [landmark]
@@ -29,13 +26,6 @@ abstract class CaptainActiveOrderDtoOutputOrderCustomerAddress
   /// «الحي».
   @BuiltValueField(wireName: r'neighbourhood')
   String get neighbourhood;
-
-  @BuiltValueField(wireName: r'label')
-  CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum? get label;
-  // enum labelEnum {  home,  work,  other,  };
-
-  @BuiltValueField(wireName: r'customLabel')
-  String? get customLabel;
 
   @BuiltValueField(wireName: r'street')
   String get street;
@@ -89,22 +79,6 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerAddressSerializer
       object.neighbourhood,
       specifiedType: const FullType(String),
     );
-    yield r'label';
-    yield object.label == null
-        ? null
-        : serializers.serialize(
-            object.label,
-            specifiedType: const FullType.nullable(
-              CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum,
-            ),
-          );
-    yield r'customLabel';
-    yield object.customLabel == null
-        ? null
-        : serializers.serialize(
-            object.customLabel,
-            specifiedType: const FullType.nullable(String),
-          );
     yield r'street';
     yield serializers.serialize(
       object.street,
@@ -164,28 +138,6 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerAddressSerializer
                   )
                   as String;
           result.neighbourhood = valueDes;
-          break;
-        case r'label':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum,
-                    ),
-                  )
-                  as CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum?;
-          if (valueDes == null) continue;
-          result.label = valueDes;
-          break;
-        case r'customLabel':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
-          if (valueDes == null) continue;
-          result.customLabel = valueDes;
           break;
         case r'street':
           final valueDes =
@@ -252,31 +204,4 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerAddressSerializer
     );
     return result.build();
   }
-}
-
-class CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum
-    extends EnumClass {
-  @BuiltValueEnumConst(wireName: r'home')
-  static const CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum home =
-      _$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnum_home;
-  @BuiltValueEnumConst(wireName: r'work')
-  static const CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum work =
-      _$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnum_work;
-  @BuiltValueEnumConst(wireName: r'other')
-  static const CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum other =
-      _$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnum_other;
-
-  static Serializer<CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum>
-  get serializer =>
-      _$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnumSerializer;
-
-  const CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum._(String name)
-    : super(name);
-
-  static BuiltSet<CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum>
-  get values =>
-      _$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnumValues;
-  static CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum valueOf(
-    String name,
-  ) => _$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnumValueOf(name);
 }

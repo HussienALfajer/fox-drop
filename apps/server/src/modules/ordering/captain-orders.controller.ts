@@ -25,7 +25,7 @@ import {
   WEAK_GPS_METRES,
 } from './captain-orders.js';
 import { minor } from './customer-quote.controller.js';
-import { addressLabels, awayReasons, captainTracks, orderStatuses } from './schema.js';
+import { awayReasons, captainTracks, orderStatuses } from './schema.js';
 
 const money = z.object({ amount: minor, currency: z.string().length(3) });
 // RA §8.10: one line per currency, the amounts in minor units.
@@ -97,7 +97,7 @@ const activeOrder = z
     captainTrack: z
       .enum(captainTracks)
       .describe(
-        'The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».',
+        'The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».',
       ),
     restaurant: z.object({
       name: z.string(),
@@ -162,8 +162,6 @@ const activeOrder = z
         location: point.describe('The exact pin, with the route and «ابدأ الملاحة».'),
         address: z.object({
           neighbourhood: z.string().describe('«الحي».'),
-          label: z.enum(addressLabels).nullable(),
-          customLabel: z.string().nullable(),
           street: z.string(),
           floor: z.string().nullable(),
           landmark: z.string(),
@@ -288,8 +286,6 @@ function activeOrderBody({
       location: order.address.location,
       address: {
         neighbourhood: order.address.neighbourhood,
-        label: order.address.label,
-        customLabel: order.address.customLabel,
         street: order.address.street,
         floor: order.address.floor,
         landmark: order.address.landmark,

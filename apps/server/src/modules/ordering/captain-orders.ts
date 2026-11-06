@@ -145,7 +145,7 @@ export class CaptainOrders {
       and(eq(orders.captainId, captainId), inArray(orders.status, CAPTAIN_ACTIVE)),
       { newestFirst: true },
     );
-    return order ? this.withRestaurant(order, now) : null;
+    return order ? this.withRestaurant(order, captainId, now) : null;
   }
 
   // CA §9.2 (C6): «وصلت إلى المطعم», only within
@@ -159,7 +159,7 @@ export class CaptainOrders {
     // The fix is not part of the command: a retry sends a newer one.
     const requestHash = commandHash({ verb: 'arrive', orderId: command.orderId });
     const earlier = await this.replay(command.accountId, command, requestHash, now);
-    if (earlier !== null) return this.answer(earlier, now);
+    if (earlier !== null) return this.answer(earlier, command.captainId, now);
     const order = await this.captainsOrder(command);
     if (!arrivable(order, command.captainId)) {
       throw await this.refusedState(order, command.accountId, command, requestHash, now);
@@ -197,7 +197,7 @@ export class CaptainOrders {
       return true;
     });
     if (!done) throw await this.stateChanged(order);
-    return this.answer(order, now);
+    return this.answer(order, command.captainId, now);
   }
 
   // CA §9.6 (K4): «وصلت» at the customer, after the pickup. Within
@@ -217,7 +217,7 @@ export class CaptainOrders {
       away: command.away,
     });
     const earlier = await this.replay(command.accountId, command, requestHash, now);
-    if (earlier !== null) return this.answer(earlier, now);
+    if (earlier !== null) return this.answer(earlier, command.captainId, now);
     const order = await this.captainsOrder(command);
     if (!customerArrivable(order, command.captainId)) {
       throw await this.refusedState(order, command.accountId, command, requestHash, now);
@@ -273,7 +273,7 @@ export class CaptainOrders {
       return true;
     });
     if (!done) throw await this.stateChanged(order);
-    return this.answer(order, now);
+    return this.answer(order, command.captainId, now);
   }
 
   // CA §9.4, RA §8.10 items 1-2: «دفعت للمطعم واستلمت الطلب» with the lines
@@ -292,7 +292,7 @@ export class CaptainOrders {
       lines: storedLines(command.lines),
     });
     const earlier = await this.replay(command.accountId, command, requestHash, now);
-    if (earlier !== null) return this.answer(earlier, now);
+    if (earlier !== null) return this.answer(earlier, command.captainId, now);
     const order = await this.captainsOrder(command);
     if (!requestable(order, command.captainId)) {
       throw await this.refusedState(order, command.accountId, command, requestHash, now);
@@ -358,7 +358,7 @@ export class CaptainOrders {
       return true;
     });
     if (!done) throw await this.stateChanged(order);
-    return this.answer(order, now);
+    return this.answer(order, command.captainId, now);
   }
 
   // AP §9.3.2 «تسجيل وصول الكابتن»: when GPS fails at the restaurant, OPS set
@@ -519,18 +519,23 @@ export class CaptainOrders {
 
   private async answer(
     key: { id: string; placedAt: Date },
+    captainId: string,
     now: Date,
   ): Promise<CaptainActiveOrder> {
-    return this.withRestaurant(await this.read(key), now);
+    return this.withRestaurant(await this.read(key), captainId, now);
   }
 
-  private async withRestaurant(order: OrderView, now: Date): Promise<CaptainActiveOrder> {
+  private async withRestaurant(
+    order: OrderView,
+    captainId: string,
+    now: Date,
+  ): Promise<CaptainActiveOrder> {
     const restaurant = await this.merchants.restaurant(order.restaurantId, now);
     if (!restaurant) throw new Error(`restaurant ${order.restaurantId} not found`);
     const [requests, disputes, customer] = await Promise.all([
       pickupRequestsOf(this.database.db, [order]),
       pickupDisputesOf(this.database.db, [order]),
-      this.customerOf(order),
+      this.customerOf(order, captainId),
     ]);
     return {
       order,
@@ -549,7 +554,12 @@ export class CaptainOrders {
   // CA §9.5 (C2, C10): the recipient's name when the order is for someone
   // else, else the customer's first name; the address's contact number, else
   // the account's own, for «اتصال بالزبون» and «واتساب الزبون».
-  private async customerOf(order: OrderView): Promise<CaptainActiveOrder['customer']> {
+  // C10: the buttons work only while the order is active, so a command
+  // replayed once the order ended or left the captain answers no number.
+  private async customerOf(
+    order: OrderView,
+    captainId: string,
+  ): Promise<CaptainActiveOrder['customer']> {
     const [row] = await this.database.db
       .select({ contactPhoneEncrypted: orders.contactPhoneEncrypted })
       .from(orders)
@@ -558,9 +568,11 @@ export class CaptainOrders {
       order.address.recipientName === null
         ? this.customers.firstNames([order.customerAccountId])
         : null,
-      row?.contactPhoneEncrypted
-        ? this.phones.decrypt(row.contactPhoneEncrypted)
-        : this.customerAccounts.phone(order.customerAccountId),
+      order.captainId !== captainId || !CAPTAIN_ACTIVE.includes(order.status)
+        ? null
+        : row?.contactPhoneEncrypted
+          ? this.phones.decrypt(row.contactPhoneEncrypted)
+          : this.customerAccounts.phone(order.customerAccountId),
     ]);
     return {
       name: order.address.recipientName ?? names?.get(order.customerAccountId) ?? null,

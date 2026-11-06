@@ -11290,7 +11290,7 @@
                       "at_customer",
                       "done"
                     ],
-                    "description": "The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم»."
+                    "description": "The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون»."
                   },
                   "restaurant": {
                     "type": "object",
@@ -11759,27 +11759,6 @@
                             "type": "string",
                             "description": "«الحي»."
                           },
-                          "label": {
-                            "anyOf": [
-                              {
-                                "type": "string",
-                                "enum": [
-                                  "home",
-                                  "work",
-                                  "other"
-                                ]
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "customLabel": {
-                            "type": [
-                              "string",
-                              "null"
-                            ]
-                          },
                           "street": {
                             "type": "string"
                           },
@@ -11802,8 +11781,6 @@
                         },
                         "required": [
                           "neighbourhood",
-                          "label",
-                          "customLabel",
                           "street",
                           "floor",
                           "landmark",
@@ -12025,7 +12002,7 @@
                   "at_customer",
                   "done"
                 ],
-                "description": "The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم»."
+                "description": "The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون»."
               },
               "restaurant": {
                 "type": "object",
@@ -12494,27 +12471,6 @@
                         "type": "string",
                         "description": "«الحي»."
                       },
-                      "label": {
-                        "anyOf": [
-                          {
-                            "type": "string",
-                            "enum": [
-                              "home",
-                              "work",
-                              "other"
-                            ]
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
-                      },
-                      "customLabel": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      },
                       "street": {
                         "type": "string"
                       },
@@ -12537,8 +12493,6 @@
                     },
                     "required": [
                       "neighbourhood",
-                      "label",
-                      "customLabel",
                       "street",
                       "floor",
                       "landmark",

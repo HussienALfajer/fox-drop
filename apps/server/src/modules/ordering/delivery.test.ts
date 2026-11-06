@@ -172,7 +172,9 @@ async function admin(roles: string[]) {
 }
 
 // A placed order the restaurant accepted, with the cashier who accepted it.
-async function acceptedOrder() {
+async function acceptedOrder(
+  recipient: { recipientName: string; contactPhone: string } | null = null,
+) {
   const customer = await appSignIn('customer', phoneNumber());
   const lines = [
     { itemId: item, optionIds: [], quantity: 2, note: 'بدون بصل', knownUnitPrice: '12000' },
@@ -198,8 +200,8 @@ async function acceptedOrder() {
         street: 'شارع السوق',
         floor: null,
         landmark: 'قرب الجامع',
-        contactPhone: null,
-        recipientName: null,
+        contactPhone: recipient?.contactPhone ?? null,
+        recipientName: recipient?.recipientName ?? null,
         directions: null,
       },
       note: null,
@@ -269,8 +271,10 @@ async function onlineCaptain(point: Point = captainSpot) {
 }
 
 // An accepted order assigned directly to a new online captain.
-async function assignedOrder() {
-  const order = await acceptedOrder();
+async function assignedOrder(
+  recipient: { recipientName: string; contactPhone: string } | null = null,
+) {
+  const order = await acceptedOrder(recipient);
   const captain = await onlineCaptain();
   const ops = await admin(['OPS']);
   expect((await ops.assign(order.id, captain.captainId)).statusCode).toBe(200);
@@ -395,6 +399,13 @@ describe('the captain on the way to the customer (CA §9.5)', () => {
     expect(order.customer.phone).toMatch(/^\+9639\d{8}$/);
     expect(new Date(order.customer.promisedAt).getTime()).toBeGreaterThan(Date.now());
   });
+
+  it("gives the recipient's name and number for an order for someone else (CU Q5)", async () => {
+    const contactPhone = phoneNumber();
+    const assigned = await assignedOrder({ recipientName: 'أبو أحمد', contactPhone });
+    const { order } = (await assigned.captain.active()).json();
+    expect(order.customer).toMatchObject({ name: 'أبو أحمد', phone: contactPhone });
+  });
 });
 
 describe('POST /v1/captain/orders/{orderId}/arrive-at-customer (CA §9.6, K4)', () => {
@@ -459,6 +470,8 @@ describe('POST /v1/captain/orders/{orderId}/arrive-at-customer (CA §9.6, K4)', 
       .json()
       .orders.find((entry: { id: string }) => entry.id === picked.order.id);
     expect(card.alerts).toContain('away_from_address');
+    // AP §9.2.1: the time in «الكابتن وصل» counts from the arrival.
+    expect(card.statusSince).toBe(answer.json().order.customer.arrival.at);
     const detail = (await picked.ops.get(`/v1/admin/orders/${picked.order.id}`)).json().order;
     expect(detail.customer.arrival.away).toEqual({
       reason: 'other',
@@ -518,6 +531,45 @@ describe('POST /v1/captain/orders/{orderId}/arrive-at-customer (CA §9.6, K4)', 
     expect(again.json().order.status).toBe('arrived');
     const events = await eventTypes(picked.order.id);
     expect(events.filter((event) => event.type === 'order.arrived_at_customer')).toHaveLength(1);
+  });
+
+  it('answers no number to a command replayed once the order ended (C10)', async () => {
+    const picked = await pickedUpOrder();
+    const key = randomUUID();
+    const first = await picked.arriveAtCustomer(atCustomer, { key });
+    expect(first.json().order.customer.phone).toMatch(/^\+9639\d{8}$/);
+    // The order ends (its delivery comes with the next pull request).
+    await sql.query(
+      "UPDATE ordering.orders SET status = 'cancelled', cancelled_at = now(), cancel_reason = 'test', food_prepared = false WHERE id = $1",
+      [picked.order.id],
+    );
+    const replayed = await picked.arriveAtCustomer(atCustomer, { key });
+    expect(replayed.statusCode).toBe(200);
+    expect(replayed.json().order.customer.phone).toBeNull();
+  });
+
+  it('refuses a key reused with another reason', async () => {
+    const picked = await pickedUpOrder();
+    const key = randomUUID();
+    const away = { reason: 'pin_inaccurate', note: null };
+    expect((await picked.arriveAtCustomer(farFromCustomer, { key, away })).statusCode).toBe(200);
+    const other = await picked.arriveAtCustomer(farFromCustomer, {
+      key,
+      away: { reason: 'customer_requested_other_place', note: null },
+    });
+    expect(other.statusCode).toBe(422);
+  });
+
+  it('keeps the arrival and its reason consistent in the database', async () => {
+    const picked = await pickedUpOrder();
+    const update = (set: string) =>
+      sql.query(`UPDATE ordering.orders SET ${set} WHERE id = $1`, [picked.order.id]);
+    await expect(update("status = 'arrived'")).rejects.toThrow(/orders_customer_arrival/);
+    await expect(update("away_reason = 'other'")).rejects.toThrow(/orders_away_reason/);
+    await expect(update("away_reason = 'pin_inaccurate', away_note = 'x'")).rejects.toThrow(
+      /orders_away_reason/,
+    );
+    await expect(update("away_reason = 'elsewhere'")).rejects.toThrow(/orders_away_reason/);
   });
 
   it('refuses another captain with unknown_order', async () => {

@@ -6,93 +6,10 @@ part of 'captain_active_order_dto_output_order_customer_address.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum
-_$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnum_home =
-    const CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum._('home');
-const CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum
-_$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnum_work =
-    const CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum._('work');
-const CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum
-_$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnum_other =
-    const CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum._('other');
-
-CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum
-_$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnumValueOf(String name) {
-  switch (name) {
-    case 'home':
-      return _$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnum_home;
-    case 'work':
-      return _$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnum_work;
-    case 'other':
-      return _$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnum_other;
-    default:
-      throw ArgumentError(name);
-  }
-}
-
-final BuiltSet<CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum>
-_$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnumValues =
-    BuiltSet<CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum>(
-      const <CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum>[
-        _$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnum_home,
-        _$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnum_work,
-        _$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnum_other,
-      ],
-    );
-
-Serializer<CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum>
-_$captainActiveOrderDtoOutputOrderCustomerAddressLabelEnumSerializer =
-    _$CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnumSerializer();
-
-class _$CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnumSerializer
-    implements
-        PrimitiveSerializer<
-          CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum
-        > {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'home': 'home',
-    'work': 'work',
-    'other': 'other',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'home': 'home',
-    'work': 'work',
-    'other': 'other',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum,
-  ];
-  @override
-  final String wireName =
-      'CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum';
-
-  @override
-  Object serialize(
-    Serializers serializers,
-    CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
-
-  @override
-  CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
-}
-
 class _$CaptainActiveOrderDtoOutputOrderCustomerAddress
     extends CaptainActiveOrderDtoOutputOrderCustomerAddress {
   @override
   final String neighbourhood;
-  @override
-  final CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum? label;
-  @override
-  final String? customLabel;
   @override
   final String street;
   @override
@@ -112,8 +29,6 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerAddress
 
   _$CaptainActiveOrderDtoOutputOrderCustomerAddress._({
     required this.neighbourhood,
-    this.label,
-    this.customLabel,
     required this.street,
     this.floor,
     required this.landmark,
@@ -134,8 +49,6 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerAddress
     if (identical(other, this)) return true;
     return other is CaptainActiveOrderDtoOutputOrderCustomerAddress &&
         neighbourhood == other.neighbourhood &&
-        label == other.label &&
-        customLabel == other.customLabel &&
         street == other.street &&
         floor == other.floor &&
         landmark == other.landmark &&
@@ -146,8 +59,6 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerAddress
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, neighbourhood.hashCode);
-    _$hash = $jc(_$hash, label.hashCode);
-    _$hash = $jc(_$hash, customLabel.hashCode);
     _$hash = $jc(_$hash, street.hashCode);
     _$hash = $jc(_$hash, floor.hashCode);
     _$hash = $jc(_$hash, landmark.hashCode);
@@ -162,8 +73,6 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerAddress
             r'CaptainActiveOrderDtoOutputOrderCustomerAddress',
           )
           ..add('neighbourhood', neighbourhood)
-          ..add('label', label)
-          ..add('customLabel', customLabel)
           ..add('street', street)
           ..add('floor', floor)
           ..add('landmark', landmark)
@@ -184,16 +93,6 @@ class CaptainActiveOrderDtoOutputOrderCustomerAddressBuilder
   String? get neighbourhood => _$this._neighbourhood;
   set neighbourhood(String? neighbourhood) =>
       _$this._neighbourhood = neighbourhood;
-
-  CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum? _label;
-  CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum? get label =>
-      _$this._label;
-  set label(CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum? label) =>
-      _$this._label = label;
-
-  String? _customLabel;
-  String? get customLabel => _$this._customLabel;
-  set customLabel(String? customLabel) => _$this._customLabel = customLabel;
 
   String? _street;
   String? get street => _$this._street;
@@ -219,8 +118,6 @@ class CaptainActiveOrderDtoOutputOrderCustomerAddressBuilder
     final $v = _$v;
     if ($v != null) {
       _neighbourhood = $v.neighbourhood;
-      _label = $v.label;
-      _customLabel = $v.customLabel;
       _street = $v.street;
       _floor = $v.floor;
       _landmark = $v.landmark;
@@ -255,8 +152,6 @@ class CaptainActiveOrderDtoOutputOrderCustomerAddressBuilder
             r'CaptainActiveOrderDtoOutputOrderCustomerAddress',
             'neighbourhood',
           ),
-          label: label,
-          customLabel: customLabel,
           street: BuiltValueNullFieldError.checkNotNull(
             street,
             r'CaptainActiveOrderDtoOutputOrderCustomerAddress',

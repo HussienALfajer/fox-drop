@@ -3172,7 +3172,7 @@ export interface components {
                 /** @description Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown. */
                 version: number;
                 /**
-                 * @description The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».
+                 * @description The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».
                  * @enum {string}
                  */
                 captainTrack: "searching" | "offered" | "assigned" | "at_merchant" | "pickup_pending" | "picked_up" | "at_customer" | "done";
@@ -3290,8 +3290,6 @@ export interface components {
                     address: {
                         /** @description «الحي». */
                         neighbourhood: string;
-                        label: ("home" | "work" | "other") | null;
-                        customLabel: string | null;
                         street: string;
                         floor: string | null;
                         landmark: string;
@@ -3345,7 +3343,7 @@ export interface components {
                 /** @description Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown. */
                 version: number;
                 /**
-                 * @description The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».
+                 * @description The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».
                  * @enum {string}
                  */
                 captainTrack: "searching" | "offered" | "assigned" | "at_merchant" | "pickup_pending" | "picked_up" | "at_customer" | "done";
@@ -3463,8 +3461,6 @@ export interface components {
                     address: {
                         /** @description «الحي». */
                         neighbourhood: string;
-                        label: ("home" | "work" | "other") | null;
-                        customLabel: string | null;
                         street: string;
                         floor: string | null;
                         landmark: string;

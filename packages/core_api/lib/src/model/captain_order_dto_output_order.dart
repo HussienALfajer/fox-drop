@@ -24,7 +24,7 @@ part 'captain_order_dto_output_order.g.dart';
 /// * [number] - Shown as #10423 (AP §4.8).
 /// * [status]
 /// * [version] - Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown.
-/// * [captainTrack] - The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».
+/// * [captainTrack] - The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».
 /// * [restaurant]
 /// * [preparation]
 /// * [arrival]
@@ -54,7 +54,7 @@ abstract class CaptainOrderDtoOutputOrder
   @BuiltValueField(wireName: r'version')
   int get version;
 
-  /// The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».
+  /// The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».
   @BuiltValueField(wireName: r'captainTrack')
   CaptainOrderDtoOutputOrderCaptainTrackEnum get captainTrack;
   // enum captainTrackEnum {  searching,  offered,  assigned,  at_merchant,  pickup_pending,  picked_up,  at_customer,  done,  };
@@ -455,7 +455,7 @@ class CaptainOrderDtoOutputOrderStatusEnum extends EnumClass {
       _$captainOrderDtoOutputOrderStatusEnumValueOf(name);
 }
 
-/// The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».
+/// The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».
 class CaptainOrderDtoOutputOrderCaptainTrackEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'searching')
   static const CaptainOrderDtoOutputOrderCaptainTrackEnum searching =

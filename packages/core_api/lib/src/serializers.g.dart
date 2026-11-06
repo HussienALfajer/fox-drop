@@ -74,9 +74,6 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputOrderCollect.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderCustomer.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderCustomerAddress.serializer)
-          ..add(
-            CaptainActiveOrderDtoOutputOrderCustomerAddressLabelEnum.serializer,
-          )
           ..add(CaptainActiveOrderDtoOutputOrderCustomerArrival.serializer)
           ..add(
             CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
