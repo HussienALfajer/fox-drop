@@ -11,6 +11,8 @@ import { startTestDatabase, type TestDatabase } from '../../database/test-databa
 import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
 import { SettingsService } from '../settings/index.js';
+import { AdminSessionsService } from './admin-sessions.service.js';
+import { ADMIN_SESSION_COOKIE } from './route-access.guard.js';
 import {
   encodeSendRequest,
   MAX_WAITING_SENDS,
@@ -607,6 +609,134 @@ describe('the otp-sender', () => {
       });
       expect(none.statusCode).toBe(400);
       expect(none.json()).toMatchObject({ error: 'not_on_whatsapp' });
+    });
+
+    describe('«أرقام إرسال الرموز» (§8.3.3 items 13–14, AP §9.14)', () => {
+      let owner: { cookies: Record<string, string>; accountId: string };
+      const url = '/v1/admin/otp-sender-numbers';
+      const call = (method: 'GET' | 'PUT' | 'POST', path = '', payload: object = {}) =>
+        app.inject({
+          method,
+          url: `${url}${path}`,
+          cookies: owner.cookies,
+          ...(method === 'GET' ? {} : { payload }),
+        });
+
+      beforeAll(async () => {
+        const { rows } = await sql.query<{ id: string }>(
+          `INSERT INTO identity.admin_accounts (name, email, status, password_hash, totp_secret_encrypted)
+           VALUES ('Pool owner', 'pool-owner@example.test', 'active', 'not used', 'not used') RETURNING id`,
+        );
+        const accountId = rows[0]!.id;
+        await sql.query(
+          "INSERT INTO identity.admin_account_roles (account_id, role_code) VALUES ($1, 'OWN')",
+          [accountId],
+        );
+        const { token } = await app
+          .get(AdminSessionsService)
+          .start(db.db, accountId, { ipAddress: null, device: null }, new Date());
+        owner = { accountId, cookies: { [ADMIN_SESSION_COOKIE]: token } };
+      });
+
+      beforeEach(async () => {
+        await emptyPool();
+      });
+
+      it('lists each number with its state, warm-up and counts of the day', async () => {
+        const warmingPhone = newPhone();
+        const { id: warmingId } = await pair(warmingPhone);
+        const { id: activeId } = await pair(newPhone());
+        await activate(activeId);
+        await connected(warmingId, activeId);
+        expect(await request(reachable())).toBe('sent');
+        const listed = await call('GET');
+        expect(listed.statusCode).toBe(200);
+        const body = listed.json<{
+          numbers: { id: string; phone: string; status: string }[];
+          alerts: unknown[];
+        }>();
+        expect(body.alerts).toEqual([]);
+        expect(body.numbers).toEqual([
+          expect.objectContaining({
+            id: warmingId,
+            phone: warmingPhone,
+            status: 'warming',
+            connected: true,
+            warmup: expect.objectContaining({ step: 1, cap: 50 }),
+            dailyCap: 50,
+            today: { sent: 0, failed: 0, delivered: 0, read: 0 },
+          }),
+          expect.objectContaining({
+            id: activeId,
+            status: 'active',
+            warmup: null,
+            dailyCap: 1500,
+            today: { sent: 1, failed: 0, delivered: 0, read: 0 },
+          }),
+        ]);
+      });
+
+      it('sets a number standby or active, with an audit event', async () => {
+        const { id } = await pair(newPhone());
+        await connected(id);
+        const standby = await call('PUT', `/${id}/status`, { status: 'standby' });
+        expect(standby.statusCode).toBe(200);
+        expect(standby.json()).toMatchObject({
+          numbers: [{ id, status: 'standby' }],
+          alerts: [{ type: 'cannot_send', severity: 'critical' }],
+        });
+        expect(await request(reachable())).toBe('unavailable');
+
+        const active = await call('PUT', `/${id}/status`, { status: 'active' });
+        expect(active.json()).toMatchObject({ numbers: [{ id, status: 'active', warmup: null }] });
+        expect(await request(reachable())).toBe('sent');
+        const { rows } = await sql.query<{ action: string; actor_id: string; changes: unknown }>(
+          'SELECT action, actor_id, changes FROM audit.events WHERE target_id = $1 ORDER BY occurred_at, id',
+          [id],
+        );
+        expect(rows).toEqual([
+          expect.objectContaining({
+            action: 'otp_sender_number.status_change',
+            actor_id: owner.accountId,
+          }),
+          expect.objectContaining({ action: 'otp_sender_number.status_change' }),
+        ]);
+      });
+
+      it('shows a stopped number in its alert, and needs a pairing to bring it back', async () => {
+        const phone = newPhone();
+        const { id } = await pair(phone);
+        await connected(id);
+        whatsapp.number(phone).events?.closed('banned');
+        await until(() => !sender.connectedNumbers().includes(id));
+        await pause(100);
+        const listed = await call('GET');
+        expect(listed.json()).toMatchObject({
+          numbers: [{ id, status: 'banned', connected: false }],
+          alerts: [
+            { type: 'number_stopped', severity: 'warning', numberIds: [id] },
+            { type: 'cannot_send', severity: 'critical' },
+          ],
+        });
+        const refused = await call('PUT', `/${id}/status`, { status: 'active' });
+        expect(refused.statusCode).toBe(409);
+        expect(refused.json()).toMatchObject({ error: 'needs_pairing' });
+      });
+
+      it('disables a number, which the otp-sender closes', async () => {
+        const phone = newPhone();
+        const { id } = await pair(phone);
+        await connected(id);
+        const disabled = await call('POST', `/${id}/disable`);
+        expect(disabled.statusCode).toBe(200);
+        expect(disabled.json()).toMatchObject({ numbers: [] });
+        await sender.supervise();
+        expect(sender.connectedNumbers()).toEqual([]);
+        expect((await call('POST', `/${id}/disable`)).statusCode).toBe(404);
+        expect(
+          (await call('PUT', `/${randomUUID()}/status`, { status: 'active' })).statusCode,
+        ).toBe(404);
+      });
     });
   });
 });

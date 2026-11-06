@@ -21,6 +21,8 @@ import { CustomerAccountsService } from './customer-accounts.service.js';
 import { CustomerAuthController } from './customer-auth.controller.js';
 import { MerchantAccountsService } from './merchant-accounts.service.js';
 import { MerchantAuthController } from './merchant-auth.controller.js';
+import { OtpSenderNumbersController } from './otp-sender-numbers.controller.js';
+import { OtpSenderPoolService } from './otp-sender-pool.service.js';
 import { PhoneCipher } from './phone-cipher.js';
 import { RouteAccessGuard } from './route-access.guard.js';
 import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
@@ -45,6 +47,7 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
     CustomerAuthController,
     MerchantAuthController,
     CaptainAuthController,
+    OtpSenderNumbersController,
   ],
   providers: [
     { provide: IDENTITY_SECRETS, useFactory: identitySecretsFromEnvironment },
@@ -65,6 +68,7 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
     CustomerAccountsService,
     PhoneCipher,
     RouteAccessGuard,
+    OtpSenderPoolService,
   ],
   exports: [
     AdminSessionsService,

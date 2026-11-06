@@ -82,7 +82,9 @@ try {
     session.entries,
     new Date(),
   );
-  process.stdout.write(`Paired ${maskPhone(paired)} as sending number ${number.id} (${number.status}).\n`);
+  process.stdout.write(
+    `Paired ${maskPhone(paired)} as sending number ${number.id} (${number.status}).\n`,
+  );
 } finally {
   await database.pool.end();
 }
