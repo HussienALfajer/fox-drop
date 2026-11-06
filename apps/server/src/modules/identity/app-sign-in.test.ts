@@ -460,9 +460,9 @@ describe('App Check on the code request (architecture §8.3.3 item 1)', () => {
       const response = await codeRoute('customer', { 'x-firebase-appcheck': 'valid-token' });
       expect(response.statusCode).toBe(200);
       expect(verify).toHaveBeenCalledWith('valid-token', expect.any(Date));
-      expect((await codeRoute('captain', { 'x-firebase-appcheck': 'valid-token' })).statusCode).toBe(
-        200,
-      );
+      expect(
+        (await codeRoute('captain', { 'x-firebase-appcheck': 'valid-token' })).statusCode,
+      ).toBe(200);
     });
   });
 

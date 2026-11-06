@@ -114,7 +114,13 @@ export class MerchantAuthController {
   ) {
     try {
       const sent = await this.signInService.requestCode(
-        { party: 'merchant', phone: body.phone, deviceId: body.deviceId, appCheckToken, platform: body.platform },
+        {
+          party: 'merchant',
+          phone: body.phone,
+          deviceId: body.deviceId,
+          appCheckToken,
+          platform: body.platform,
+        },
         requestContext(request),
       );
       return { ...sent, expiresAt: sent.expiresAt.toISOString() };

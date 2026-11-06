@@ -1,6 +1,7 @@
-import { createLocalJWKSet, exportJWK, generateKeyPair, type JWK, SignJWT } from 'jose';
-import { beforeAll, describe, expect, it } from 'vitest';
-import { FirebaseAppCheckVerifier } from './app-check.js';
+import { Logger } from '@nestjs/common';
+import { createLocalJWKSet, errors, exportJWK, generateKeyPair, type JWK, SignJWT } from 'jose';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { appCheckVerifierFromEnvironment, FirebaseAppCheckVerifier } from './app-check.js';
 
 // Architecture §8.3.3 item 1: the server verifies a Firebase App Check token
 // against Firebase's public keys, here a fake key set of the same shape.
@@ -76,9 +77,38 @@ describe('the App Check token (architecture §8.3.3 item 1)', () => {
   });
 
   it('refuses when Firebase keys cannot be read', async () => {
-    const unreachable = new FirebaseAppCheckVerifier(PROJECT, () =>
-      Promise.reject(new TypeError('fetch failed')),
-    );
-    expect(await unreachable.verify(await token(), now)).toBe(false);
+    const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+    try {
+      const unreachable = new FirebaseAppCheckVerifier(PROJECT, () =>
+        Promise.reject(new TypeError('fetch failed')),
+      );
+      expect(await unreachable.verify(await token(), now)).toBe(false);
+      // jose's remote key set throws a plain JOSEError on a non-200 answer.
+      const failing = new FirebaseAppCheckVerifier(PROJECT, () =>
+        Promise.reject(new errors.JOSEError('Expected 200 OK from the JSON Web Key Set response')),
+      );
+      expect(await failing.verify(await token(), now)).toBe(false);
+      expect(warn).toHaveBeenCalledTimes(2);
+      // A bad token is not a key problem: no log.
+      expect(await verifier.verify(await token({ key: otherKey }), now)).toBe(false);
+      expect(warn).toHaveBeenCalledTimes(2);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('takes the project number only when it is all digits', async () => {
+    const before = process.env.FIREBASE_PROJECT_NUMBER;
+    try {
+      process.env.FIREBASE_PROJECT_NUMBER = 'fox-drop';
+      const error = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+      const projectId = appCheckVerifierFromEnvironment();
+      expect(error).toHaveBeenCalledWith(expect.stringMatching(/all digits/));
+      expect(await projectId.verify(await token(), now)).toBe(false);
+      error.mockRestore();
+    } finally {
+      if (before === undefined) delete process.env.FIREBASE_PROJECT_NUMBER;
+      else process.env.FIREBASE_PROJECT_NUMBER = before;
+    }
   });
 });
