@@ -11,7 +11,8 @@
     "openapi": "tsc -p tsconfig.build.json && node scripts/write-openapi.mjs ../../packages/api-schema/openapi.json",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsc -p tsconfig.build.json && node --env-file=../../.env dist/database/migrate-command.js",
-    "admin:create-owner": "tsc -p tsconfig.build.json && node --env-file=../../.env dist/modules/identity/create-owner-command.js"
+    "admin:create-owner": "tsc -p tsconfig.build.json && node --env-file=../../.env dist/modules/identity/create-owner-command.js",
+    "otp:pair": "tsc -p tsconfig.build.json && node --env-file=../../.env dist/modules/identity/otp-sender-pair-command.js"
   },
   "dependencies": {
     "@fastify/cookie": "11.1.5",
@@ -21,6 +22,7 @@
     "@nestjs/swagger": "11.4.7",
     "@node-rs/argon2": "2.2.2",
     "@sentry/nestjs": "11.10.0",
+    "baileys": "7.0.0-rc14",
     "drizzle-orm": "0.45.4",
     "fastify": "5.11.3",
     "iovalkey": "0.4.0",
@@ -32,6 +34,7 @@
     "pg-boss": "12.38.0",
     "pino": "10.4.0",
     "pino-http": "11.0.0",
+    "qrcode": "1.5.4",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
     "zod": "4.6.7"
@@ -44,6 +47,7 @@
     "@testcontainers/valkey": "12.2.1",
     "@types/node": "26.6.6",
     "@types/pg": "8.23.1",
+    "@types/qrcode": "1.5.6",
     "centrifuge": "5.8.0",
     "drizzle-kit": "0.31.11",
     "eslint": "10.14.0",

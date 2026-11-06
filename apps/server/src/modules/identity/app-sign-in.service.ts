@@ -192,8 +192,8 @@ export class AppSignInService {
           createdAt: now,
         });
         // Sent last, so a refusal rolls the new code back and keeps the old.
-        // The otp-sender queue will take the request through the outbox in
-        // this transaction instead (architecture §8.3.1, E3).
+        // Outside development this waits for the otp-sender's answer
+        // (code-send-queue.ts), up to 10 seconds under the number's lock.
         const sent = silent ? 'sent' : await this.sender.send(request.phone, code);
         if (sent !== 'sent') throw new CodeRequestRefusedError(sent);
         return { channel: 'whatsapp' as const, resendAfterSec, expiresAt };

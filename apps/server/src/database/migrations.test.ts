@@ -646,8 +646,34 @@ describe('the identity tables (AP §5.1–5.2)', () => {
     ['delete a signing key', 'DELETE FROM identity.app_signing_keys'],
     ['delete a restaurant user', 'DELETE FROM identity.merchant_accounts'],
     ['delete a restaurant device', 'DELETE FROM merchants.devices'],
+    ['delete a sending number', 'DELETE FROM identity.otp_sender_numbers'],
+    ['delete a sending session key', 'DELETE FROM identity.otp_sender_credentials'],
+    ['delete an on-WhatsApp check', 'DELETE FROM identity.otp_whatsapp_numbers'],
   ])('refuse the application role to %s', async (_, statement) => {
     await expect(appQuery(statement)).rejects.toThrow(/permission denied/);
+  });
+});
+
+describe('the sending numbers (architecture §8.3.3 items 10–11)', () => {
+  it('refuse a disconnected number without its time, and an active one with it', async () => {
+    await expect(
+      appQuery(
+        "INSERT INTO identity.otp_sender_numbers (phone_encrypted, phone_hash, status, paired_at) VALUES ('e', 'h', 'disconnected', now())",
+      ),
+    ).rejects.toThrow(/otp_sender_numbers_disconnected_at/);
+    await expect(
+      appQuery(
+        "INSERT INTO identity.otp_sender_numbers (phone_encrypted, phone_hash, status, paired_at, disconnected_at) VALUES ('e', 'h', 'active', now(), now())",
+      ),
+    ).rejects.toThrow(/otp_sender_numbers_disconnected_at/);
+  });
+
+  it('refuse a state outside the list', async () => {
+    await expect(
+      appQuery(
+        "INSERT INTO identity.otp_sender_numbers (phone_encrypted, phone_hash, status, paired_at) VALUES ('e', 'h', 'banned', now())",
+      ),
+    ).rejects.toThrow(/otp_sender_numbers_status_values/);
   });
 });
 

@@ -7,6 +7,7 @@ import { LoggingModule } from '../logging/logging.module.js';
 import { AuditWorkerModule } from '../modules/audit/index.js';
 import { CaptainsWorkerModule } from '../modules/captains/index.js';
 import { DispatchWorkerModule } from '../modules/dispatch/index.js';
+import { OtpSenderModule } from '../modules/identity/index.js';
 import { LedgerWorkerModule } from '../modules/ledger/index.js';
 import { OrderingWorkerModule } from '../modules/ordering/index.js';
 import { PlaceholderSeed, seedsPlaceholders } from '../seed/placeholder-seed.js';
@@ -25,7 +26,7 @@ const BACKGROUND_MODULES: Record<BackgroundRole, Type[]> = {
     DispatchWorkerModule,
   ],
   dispatcher: [],
-  'otp-sender': [],
+  'otp-sender': [OtpSenderModule],
 };
 
 export async function createBackgroundContext(
