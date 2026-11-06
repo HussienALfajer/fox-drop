@@ -12,6 +12,7 @@ import {
   type RateSnapshot,
   type RoundingMode,
   type SnapshotCurrency,
+  toBase,
 } from './conversion.js';
 import { cityBases, cityCurrencies, currencies, rateVersions } from './schema.js';
 
@@ -272,10 +273,10 @@ export class FxService implements OnModuleInit {
       // The city's money settings and the other modules' amounts are in its
       // base currency (AP §8.6). Their changes take the same lock, so none
       // slips in meanwhile.
-      const amounts = [
-        ...(await this.settings.cityAmounts(cityId)),
-        ...(await Promise.all(this.amountSources.map((source) => source(cityId, tx)))).flat(),
-      ].filter((amount) => amount.currency !== currency);
+      const registered = await this.settings.cityAmounts(cityId);
+      // One at a time: the sources share the transaction's connection.
+      for (const source of this.amountSources) registered.push(...(await source(cityId, tx)));
+      const amounts = registered.filter((amount) => amount.currency !== currency);
       if (amounts.length > 0) {
         throw new FxRefusedError(
           'amounts_in_other_currency',
@@ -432,6 +433,52 @@ export class FxService implements OnModuleInit {
       });
     }
     return { cityId, baseCurrency: base, takenAt: new Date(), currencies: snapshot };
+  }
+
+  // Amounts in the base at the current rates of every currency of the city,
+  // enabled or not, to the nearest base minor unit: what a captain holds
+  // counts in every currency, a disabled one included (AP §8.5.3–8.5.4).
+  // Refuses a currency with no rate in the current base (rate_missing).
+  async currentValue(
+    cityId: string,
+    executor: FxExecutor = this.database.db,
+  ): Promise<{ base: string; toBase: (amountMinor: bigint, currency: string) => bigint }> {
+    const base = await this.baseCurrency(cityId, executor);
+    if (base === null)
+      throw new FxRefusedError('no_base_currency', 'the city has no base currency');
+    const rates = await this.currentRates(cityId, executor);
+    const decimals = new Map(
+      (await executor.select().from(currencies)).map((row) => [row.code, row.decimals]),
+    );
+    const plain = { rateVersionId: null, roundingUnitMinor: 1n, roundingMode: 'nearest' as const };
+    const snapshot: RateSnapshot = {
+      cityId,
+      baseCurrency: base,
+      takenAt: new Date(),
+      currencies: [
+        {
+          code: base,
+          decimals: decimals.get(base)!,
+          rate: { numerator: 1n, denominator: 1n },
+          ...plain,
+        },
+        ...rates.map((rate) => ({
+          code: rate.currency,
+          decimals: decimals.get(rate.currency)!,
+          rate: rate.rate,
+          ...plain,
+        })),
+      ],
+    };
+    return {
+      base,
+      toBase: (amountMinor, currency) => {
+        if (currency !== base && !rates.some((rate) => rate.currency === currency)) {
+          throw new FxRefusedError('rate_missing', `${currency} has no rate`);
+        }
+        return toBase(snapshot, amountMinor, currency);
+      },
+    };
   }
 
   // The snapshot an order keeps, inside the transaction that places it: the

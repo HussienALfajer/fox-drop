@@ -4,6 +4,7 @@ import { randomBytes } from 'node:crypto';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { startTestDatabase, type TestDatabase } from '../database/test-database.js';
+import { CaptainsService } from '../modules/captains/index.js';
 import { FxService } from '../modules/fx/index.js';
 import { GeoService } from '../modules/geo/index.js';
 import { MerchantAccountsService } from '../modules/identity/index.js';
@@ -126,6 +127,40 @@ describe('the placeholder seed', () => {
       { id: expect.any(String), restaurantId: id, role: 'owner', name: 'مالك تجريبي' },
       { id: expect.any(String), restaurantId: id, role: 'cashier', name: 'كاشير تجريبي' },
     ]);
+  });
+
+  it('gives Azaz one pay table for every vehicle and one active demo captain', async () => {
+    const captains = moduleRef.get(CaptainsService);
+    const table = await captains.payTable(azaz, new Date());
+    const placeholder = {
+      basePay: 2_500n,
+      includedMetres: 3_000,
+      perExtraKm: 500n,
+      waitingPerMinute: 0n,
+      minimumPay: 2_500n,
+    };
+    expect(table).toMatchObject({
+      currency: 'TRY',
+      rates: {
+        walking: placeholder,
+        bicycle: placeholder,
+        motorbike: placeholder,
+        car: placeholder,
+      },
+    });
+    const { rows } = await sql.query(
+      'SELECT count(*)::int AS n FROM captains.pay_tables WHERE city_id = $1',
+      [azaz],
+    );
+    expect(rows).toEqual([{ n: 1 }]);
+    const ids = await captains.captainIds(azaz);
+    expect(ids).toHaveLength(1);
+    await expect(captains.captain(ids[0]!.id, new Date())).resolves.toMatchObject({
+      name: 'كابتن فوكس التجريبي',
+      vehicle: 'motorbike',
+      status: 'active',
+      custodyLimit: { amount: 300_000n, currency: 'TRY' },
+    });
   });
 
   it('never replaces a value someone entered, and changes nothing when run again', async () => {

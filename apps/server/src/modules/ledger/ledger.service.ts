@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq, inArray, sql } from 'drizzle-orm';
+import { and, eq, gte, inArray, lt, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -164,6 +164,57 @@ export class LedgerService {
       .select({ sum: sql<string>`coalesce(sum(${entries.amount}), 0)::text` })
       .from(entries)
       .where(eq(entries.accountId, accountId));
+    const sign = accountPurposes[account.purpose as AccountPurpose].sign;
+    return { currency: account.currency, amount: BigInt(total?.sum ?? '0') * sign };
+  }
+
+  // One owner's accounts of a purpose, one per currency, such as a captain's
+  // custody (AP §8.5.1).
+  async ownerAccounts(
+    cityId: string,
+    ownerId: string,
+    purpose: AccountPurpose,
+    executor: LedgerExecutor = this.database.db,
+  ): Promise<{ id: string; currency: string }[]> {
+    return executor
+      .select({ id: accounts.id, currency: accounts.currency })
+      .from(accounts)
+      .where(
+        and(
+          eq(accounts.cityId, cityId),
+          eq(accounts.purpose, purpose),
+          eq(accounts.ownerId, ownerId),
+        ),
+      );
+  }
+
+  // The balance at a moment, plus the entries of the given types posted since,
+  // from the party's view: the cash due from closed days is the custody at the
+  // last cutoff plus the desk entries after it (AP §8.5.4). An entry's moment
+  // is its transaction's.
+  async balanceAt(
+    accountId: string,
+    at: Date,
+    plusSince: readonly JournalType[],
+    executor: LedgerExecutor = this.database.db,
+  ): Promise<Balance> {
+    const [account] = await executor
+      .select({ purpose: accounts.purpose, currency: accounts.currency })
+      .from(accounts)
+      .where(eq(accounts.id, accountId));
+    if (!account) throw new LedgerRefusal(`account ${accountId} does not exist`);
+    const since =
+      plusSince.length === 0 ? sql`false` : inArray(journals.type, [...plusSince] as string[]);
+    const [total] = await executor
+      .select({ sum: sql<string>`coalesce(sum(${entries.amount}), 0)::text` })
+      .from(entries)
+      .innerJoin(journals, eq(journals.id, entries.journalId))
+      .where(
+        and(
+          eq(entries.accountId, accountId),
+          or(lt(entries.createdAt, at), and(gte(entries.createdAt, at), since)),
+        ),
+      );
     const sign = accountPurposes[account.purpose as AccountPurpose].sign;
     return { currency: account.currency, amount: BigInt(total?.sum ?? '0') * sign };
   }

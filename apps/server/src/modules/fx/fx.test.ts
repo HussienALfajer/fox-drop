@@ -454,6 +454,26 @@ describe('the rate snapshot', () => {
   });
 });
 
+describe('the current value in the base', () => {
+  it('converts every currency with a rate, a disabled one included, and no rounding unit needed', async () => {
+    const cityId = await lira({ usd: true });
+    await accept(cityId, 'USD', 2, false);
+    const { base, toBase } = await fx.currentValue(cityId);
+    expect(base).toBe('TRY');
+    // 10 USD at 41.20 TRY.
+    expect(toBase(1_000n, 'USD')).toBe(41_200n);
+    expect(toBase(-1_000n, 'USD')).toBe(-41_200n);
+    expect(toBase(500n, 'TRY')).toBe(500n);
+  });
+
+  it('refuses a currency without a rate, and a city without a base', async () => {
+    const cityId = await lira();
+    const { toBase } = await fx.currentValue(cityId);
+    expect(() => toBase(1_000n, 'USD')).toThrow(FxRefusedError);
+    expect(await refusal(fx.currentValue(await city()))).toBe('no_base_currency');
+  });
+});
+
 describe('the settings, through the city currencies', () => {
   const owner = { editor: { id: finId, roles: ['OWN'] as const }, context, reason: 'Set' };
 

@@ -480,6 +480,50 @@ describe('LedgerService.post', () => {
   });
 });
 
+describe('LedgerService.ownerAccounts', () => {
+  it("lists one owner's accounts of a purpose, one per currency", async () => {
+    const { cityId, captainId, custody, custodyUsd } = await setUp();
+    const listed = await ledger.ownerAccounts(cityId, captainId, 'captain.custody');
+    expect(listed.sort((a, b) => a.currency.localeCompare(b.currency))).toEqual([
+      { id: custody, currency: 'TRY' },
+      { id: custodyUsd, currency: 'USD' },
+    ]);
+    expect(await ledger.ownerAccounts(cityId, randomUUID(), 'captain.custody')).toEqual([]);
+    expect(await ledger.ownerAccounts(randomUUID(), captainId, 'captain.custody')).toEqual([]);
+  });
+});
+
+describe('LedgerService.balanceAt', () => {
+  // The database clock between two posts: entries carry their transaction's
+  // time.
+  const databaseNow = async () =>
+    (await pool.query<{ now: Date }>('SELECT clock_timestamp() AS now')).rows[0]!.now;
+
+  it('sums the entries before a moment and the given types posted since (AP §8.5.4)', async () => {
+    const { cityId, custody, clearing, drawer } = await setUp();
+    await post(pickup(cityId, custody, clearing, [410n, -410n]));
+    const cutoff = await databaseNow();
+    await post(pickup(cityId, custody, clearing, [250n, -250n]));
+    await post({
+      cityId,
+      type: 'custody.hand_in',
+      source: null,
+      actor: system,
+      entries: [
+        { accountId: custody, currency: 'TRY', amount: -100n },
+        { accountId: drawer, currency: 'TRY', amount: 100n },
+      ],
+    });
+
+    expect(await ledger.balanceAt(custody, cutoff, [])).toEqual({ currency: 'TRY', amount: 410n });
+    expect(await ledger.balanceAt(custody, cutoff, ['custody.hand_in'])).toEqual({
+      currency: 'TRY',
+      amount: 310n,
+    });
+    expect(await ledger.balance(custody)).toEqual({ currency: 'TRY', amount: 560n });
+  });
+});
+
 describe('LedgerService.reverse', () => {
   it('cancels a journal entry by entry, once, with a reason', async () => {
     const { cityId, custody, clearing } = await setUp();
