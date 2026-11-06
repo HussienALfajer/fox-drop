@@ -4,27 +4,25 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 1.5, restaurant, menu and restaurant sign-in (`docs/roadmap.md`, Phase 1).
+Slice 1.6, captain (`docs/roadmap.md`, Phase 1): an activated captain with vehicle, cash limit and pay table; phone sign-in, going online and offline, location every 10 seconds.
 
-- **Specs:** RA §5 (accounts, owner phone sign-in, sessions and devices, roles, the account status of AP §9.6.1), RA §9 (menu: categories, items, option groups, availability, prices; what publishes at once and what needs review), RA §10 (status and hours), AP §9.6 (the restaurant record, its states, hours, coverage, minimum order and commission; the menu editor), architecture §4.2 (`merchants` owns restaurants, hours, states, devices and the menu), and AP §9.12.3 for the per-restaurant fee override.
-- **Branch:** `feat/restaurant-and-menu`.
-- **Owner decisions 2026-11-06:**
-  - Coverage is either a radius in metres around the restaurant's pin or a list of the city's service zones, chosen per restaurant (AP §9.6.3 step 3). Either way the point must also be inside an active service zone (slice 1.4).
-  - The per-restaurant delivery fee override (AP §9.12.3) waits for Phase 2; the walking skeleton prices with the city's rule.
-  - Two pull requests: the first builds the full data model (restaurant, states, hours, holiday closes, pauses, coverage, minimum order, commission versions, the menu with option groups, the price log and the menu change requests as tables) with `MerchantsService` and the demo restaurant; the second adds owner and cashier phone sign-in, reading the restaurant and its menu, and availability switches. The change-request routes and their review wait for Phase 2.
-  - The demo restaurant (development and staging only): open every day 10:00–02:00, minimum order 100 TRY, coverage a 3 km radius, commission 15%, default prep time 20 minutes, `active` and visible.
-- **Plan, pull request 1:**
-  - [x] Write the failing tests first: the operating state's precedence (RA §7.1), hours open and closed in the city's time zone with periods crossing midnight, the weekly schedule's rules (RA §10), coverage of a point, the commission in effect.
-  - [x] The `merchants` schema through the `db-migration` skill; `MerchantsService` for the restaurant record, account status, hours, coverage, minimum order, commission and the menu.
-  - [x] The demo restaurant and its menu in `src/seed/placeholder-seed.ts` (development and staging only).
-  - [x] The module's `CLAUDE.md`, `pnpm verify` through `checker`, the `reviewer`, then the pull request.
-- **Stopped at:** pull request 1 is done; start pull request 2 in a new session.
-- **Plan, pull request 2 (its own session):**
-  - [ ] The restaurant party on the app sign-in engine (`identity`, slice 0.10): owner and cashier accounts, one phone per restaurant (S6), the sign-in refusals of RA §5.2 and §5.5, devices.
-  - [ ] Merchant routes: the restaurant and its menu, availability switches (RA §9.3) by owners and cashiers.
-  - [ ] `checker`, the `reviewer`, the pull request, the handover to slice 1.6.
+- **Specs:** CA §4.3 (location), CA §4.9 (one device), CA §7 (availability: online, offline, the checks before going online), AP §9.7 (the captain record and its states), AP §9.12.5 (the pay table), the captain cash limit of AP §8 and Appendix A, architecture §4.2 (`captains` owns availability; `identity` owns users and sessions), §7 (location), §15.1 (app tokens).
+- **Branch:** `feat/captain`.
+- **Ask the owner first:** the split into pull requests (this slice is about the size of 1.5, which took two), and the open items the cited sections leave to the owner. Placeholders already decided for development and staging (owner decision 2026-11-05): captain pay 25 TRY for the first 3 km plus 5 TRY per extra km; a placeholder cash limit.
+- **Plan (draft, to confirm with the owner):**
+  - [ ] Write the failing tests first: the captain states and the checks before going online, the pay table's amount for a distance, the cash limit check.
+  - [ ] The `captains` schema through the `db-migration` skill: the captain record, vehicle, states, cash limit and pay table versions; `CaptainsService`; the demo captain in the seed.
+  - [ ] The `captain` party on the app sign-in engine (`identity`), as the `merchant` party of slice 1.5: accounts never created by sign-in, refusals before sending a code, one device (CA §4.9).
+  - [ ] Captain routes: going online and offline, the location every 10 seconds (Valkey for the live position, architecture §7).
+  - [ ] `checker`, the `reviewer`, the pull request, the handover to slice 1.7.
 
 ## Notes from earlier slices
+
+- Slice 1.5 added restaurants, menus and restaurant sign-in (`apps/server/src/modules/merchants/CLAUDE.md`, `apps/server/src/modules/identity/CLAUDE.md`; owner decisions 2026-11-06). Owners and cashiers are `identity.merchant_accounts` rows; `identity` reads the restaurant's status and devices through `MerchantsService`, and `merchants` imports only types from `identity`. The restaurant code request refuses `not_registered`, `restaurant_draft` and a terminated restaurant's cashier with `403` before sending (architecture §8.3.2 exempts RA §5.2 items 3–4); the status is checked again at sign-in, refresh and every request. A captain party should follow the same pattern.
+- The demo restaurant has a demo owner (+963900000001) and cashier (+963900000002), fake numbers: in development the code sender prints their codes.
+- «حتى الغد» is stored as `unavailable_until` (the next `finance.business_day_cutoff`) and read as on from that time: slice 1.7 must read the menu through `MerchantsService.menu(id, now)`, never the raw `available` column.
+- Not built yet for restaurants: owners adding and removing cashiers (RA §14), adding owners from the panel (AP §9.6.4), the owner portal's sign-in (S14), forced sign-out of a restaurant's devices, the money section of a terminated restaurant's owners, the device's ring setting, check and last seen.
+- `CODE_SENDER` and `DevelopmentCodeSender` are exported from `identity` for the tests of other modules that sign an app user in.
 
 - Slice 1.4 added zones and delivery fees to `geo` (`apps/server/src/modules/geo/CLAUDE.md`; owner decisions 2026-11-06): geo owns the fee rule; a distance-band fee uses the motorbike's distance (`GeoService.distance`, so `pricing.distance_method` applies); a distance on a band's edge takes the lower band; free delivery pays 0 whatever the minimum fee; the free-delivery threshold compares the items value after the restaurant's item discounts; active zones never overlap. Fee rules are append-only versions, and `deliveryFee` returns the version it priced with (`ruleId`) for the quote.
 - `zoneAt(cityId, point)` answers inside a zone or outside every zone; the third case of CU §7.1 («لا توجد مطاعم توصل إلى موقعك حالياً») needs the restaurants' coverage (slice 1.5) and the customer's browsing (slice 1.7).
@@ -108,4 +106,4 @@ Slice 1.5, restaurant, menu and restaurant sign-in (`docs/roadmap.md`, Phase 1).
 
 ## Next
 
-Build pull request 2 of slice 1.5: restaurant sign-in, the merchant routes and the availability switches (the plan above). The `merchants` module of pull request 1 is described in `apps/server/src/modules/merchants/CLAUDE.md`.
+Build slice 1.6: the captain (the plan above), after the owner confirms its split into pull requests.
