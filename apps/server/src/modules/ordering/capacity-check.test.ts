@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -10,6 +10,7 @@ import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
 import { CaptainsService } from '../captains/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService, type Point } from '../geo/index.js';
+import { CODE_SENDER, type DevelopmentCodeSender } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 
@@ -140,6 +141,7 @@ async function onlineAt(point: Point): Promise<string> {
   return id;
 }
 
+// Each case leaves no captain online and every setting as it found it.
 describe('the capacity check (AP §9.12.6)', () => {
   it('refuses the quote without any captain online', async () => {
     expect(await problems()).toContain('no_captain_nearby');
@@ -160,7 +162,7 @@ describe('the capacity check (AP §9.12.6)', () => {
     const near = await onlineAt({ latitude: 36.588, longitude: 37.047 });
     await settings.update('dispatch.max_distance_km.motorbike', { cityId: azaz }, 0.1, bySystem);
     expect(await problems()).toContain('no_captain_nearby');
-    await settings.update('dispatch.max_distance_km.motorbike', { cityId: azaz }, 10, bySystem);
+    await settings.reset('dispatch.max_distance_km.motorbike', { cityId: azaz }, bySystem);
     expect(await problems()).not.toContain('no_captain_nearby');
     await captains.goOffline(near, new Date());
   });
@@ -169,11 +171,79 @@ describe('the capacity check (AP §9.12.6)', () => {
     const near = await onlineAt({ latitude: 36.588, longitude: 37.047 });
     await captains.setStatus(near, 'suspended', change, new Date());
     expect(await problems()).toContain('no_captain_nearby');
+    await captains.setStatus(near, 'terminated', change, new Date());
+  });
+
+  it('refuses the order at placing, and places it once a captain is near', async () => {
+    const phone = `+9639${randomInt(100_000_000).toString().padStart(8, '0')}`;
+    const deviceId = randomUUID();
+    await app.inject({
+      method: 'POST',
+      url: '/v1/customer/auth/code',
+      payload: { phone, deviceId },
+    });
+    const code = app.get<DevelopmentCodeSender>(CODE_SENDER).lastCode(phone);
+    const signIn = await app.inject({
+      method: 'POST',
+      url: '/v1/customer/auth/sign-in',
+      payload: { phone, deviceId, code },
+    });
+    const lines = [
+      { itemId: item, optionIds: [], quantity: 1, note: null, knownUnitPrice: '12000' },
+    ];
+    const order = async () => {
+      const quote = await app.inject({
+        method: 'POST',
+        url: '/v1/customer/quote',
+        payload: {
+          restaurantId: restaurant,
+          location: customer,
+          lines,
+          payIn: null,
+          appVersion: '1.0.0',
+        },
+      });
+      return app.inject({
+        method: 'POST',
+        url: '/v1/customer/orders',
+        headers: {
+          authorization: `Bearer ${signIn.json().accessToken}`,
+          'idempotency-key': randomUUID(),
+        },
+        payload: {
+          restaurantId: restaurant,
+          lines,
+          payIn: null,
+          appVersion: '1.0.0',
+          quoteVersion: quote.json().version,
+          addressId: null,
+          unsavedAddress: {
+            location: customer,
+            street: 'شارع السوق',
+            floor: null,
+            landmark: 'قرب الجامع',
+            contactPhone: null,
+            recipientName: null,
+            directions: null,
+          },
+          note: null,
+        },
+      });
+    };
+    const refused = await order();
+    expect(refused.statusCode).toBe(409);
+    expect(refused.json().error).toBe('order_blocked');
+    expect(refused.json().quote.problems).toContainEqual(
+      expect.objectContaining({ code: 'no_captain_nearby' }),
+    );
+    const near = await onlineAt({ latitude: 36.588, longitude: 37.047 });
+    expect((await order()).statusCode).toBe(201);
+    await captains.goOffline(near, new Date());
   });
 
   it('does not run while dispatch.capacity_check is off', async () => {
     await settings.update('dispatch.capacity_check', { cityId: azaz }, false, bySystem);
     expect(await problems()).not.toContain('no_captain_nearby');
-    await settings.update('dispatch.capacity_check', { cityId: azaz }, true, bySystem);
+    await settings.reset('dispatch.capacity_check', { cityId: azaz }, bySystem);
   });
 });

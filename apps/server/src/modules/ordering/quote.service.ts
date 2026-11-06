@@ -238,12 +238,12 @@ export class QuoteService {
       fee?.distance ??
       (await this.geo.distance(restaurant.location, point, { vehicle: TRIP_VEHICLE }));
     // AP §9.12.6: no order without an eligible captain near the restaurant.
-    // Without the live positions (Valkey away) the check passes, so an outage
-    // of the cache never stops every order.
+    // It costs a few reads per nearby captain, so it runs only when nothing
+    // else blocks the order.
     if (
+      problems.length === 0 &&
       (await this.settings.get('dispatch.capacity_check', { cityId })) &&
-      (await this.captains.eligibleNear(cityId, restaurant.location, distance.metres, now)) ===
-        false
+      !(await this.captains.eligibleNear(cityId, restaurant.location, distance.metres, now))
     ) {
       problem('no_captain_nearby');
     }

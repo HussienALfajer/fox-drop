@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import { Test, type TestingModule } from '@nestjs/testing';
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
@@ -18,6 +18,7 @@ import {
   type NewCaptain,
   type PayRate,
 } from './index.js';
+import { LivePositions } from './live-positions.js';
 
 // CaptainsService on a fresh database and Valkey: the captain record, its
 // status and cash limit, the pay table, and going online and offline with the
@@ -500,5 +501,66 @@ describe('going online and offline (CA §7.2, §7.5)', () => {
     await expect(captains.state(randomUUID(), new Date())).rejects.toMatchObject({
       refusal: 'unknown_captain',
     });
+  });
+});
+
+describe('CaptainsService.eligibleNear (AP §9.12.6)', () => {
+  const restaurant = { latitude: 36.587, longitude: 37.046 };
+  const near = { latitude: 36.588, longitude: 37.047 };
+  const online = async (point: { latitude: number; longitude: number }, simulatedLater = false) => {
+    const { cityId, id } = await captain();
+    const now = new Date();
+    await captains.goOnline(id, device, now);
+    const points = [{ ...point, accuracyMetres: 8, recordedAt: now, simulated: false }];
+    if (simulatedLater) {
+      points.push({
+        ...point,
+        accuracyMetres: 8,
+        recordedAt: new Date(now.getTime() + 1),
+        simulated: true,
+      });
+    }
+    await captains.recordLocations(id, points, new Date(now.getTime() + 2));
+    return { cityId, id };
+  };
+
+  it('finds an online captain near the restaurant, and none once offline', async () => {
+    const { cityId, id } = await online(near);
+    expect(await captains.eligibleNear(cityId, restaurant, 500, new Date())).toBe(true);
+    await captains.goOffline(id, new Date());
+    expect(await captains.eligibleNear(cityId, restaurant, 500, new Date())).toBe(false);
+  });
+
+  it('reads the locations when Valkey cannot answer (architecture §5.7)', async () => {
+    const { cityId, id } = await online(near);
+    const positions = moduleRef.get(LivePositions);
+    const spy = vi.spyOn(positions, 'near').mockResolvedValue(null);
+    try {
+      expect(await captains.eligibleNear(cityId, restaurant, 500, new Date())).toBe(true);
+      // About 5.5 km away is outside the 3 km radius there too.
+      expect(
+        await captains.eligibleNear(
+          cityId,
+          { latitude: 36.587, longitude: 37.108 },
+          500,
+          new Date(),
+        ),
+      ).toBe(false);
+      await captains.goOffline(id, new Date());
+      expect(await captains.eligibleNear(cityId, restaurant, 500, new Date())).toBe(false);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('leaves out a position older than 10 minutes', async () => {
+    const { cityId } = await online(near);
+    const later = new Date(Date.now() + 11 * 60_000);
+    expect(await captains.eligibleNear(cityId, restaurant, 500, later)).toBe(false);
+  });
+
+  it('leaves out an online captain who receives no offers (a simulated location)', async () => {
+    const { cityId } = await online(near, true);
+    expect(await captains.eligibleNear(cityId, restaurant, 500, new Date())).toBe(false);
   });
 });
