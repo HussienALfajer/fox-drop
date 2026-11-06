@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
-import { and, asc, eq, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -14,17 +14,15 @@ import {
   type UnsavedAddressFields,
 } from '../customers/index.js';
 import { FxRefusedError, FxService, type RateSnapshot } from '../fx/index.js';
-import type { Point } from '../geo/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
-import { ActiveOrders } from './active-orders.js';
+import { ActiveOrders, UNTIL_ENDED } from './active-orders.js';
 import { recordTransition } from './order-events.js';
 import type { AutoCancelJob } from './order-timers.js';
 import { type Quote, type QuoteRequest, QuoteRefusedError, QuoteService } from './quote.service.js';
-import type { QuoteMoney } from './quote.js';
-import { idempotencyKeys, orderLines, orderNumbers, orders, type orderStatuses } from './schema.js';
+import { orderKey, readOrders, type OrderView } from './order-views.js';
+import { idempotencyKeys, orderLines, orderNumbers, orders } from './schema.js';
 
-type OrderStatus = (typeof orderStatuses)[number];
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 type Executor = Pick<NodePgDatabase, 'select'>;
 
@@ -65,40 +63,6 @@ export interface PlaceOrder {
   note: string | null;
 }
 
-export interface PlacedOrder {
-  id: string;
-  number: bigint;
-  status: OrderStatus;
-  placedAt: Date;
-  restaurantId: string;
-  currency: string;
-  money: QuoteMoney;
-  deliveryFree: boolean;
-  lines: {
-    itemId: string;
-    name: string;
-    quantity: number;
-    note: string | null;
-    options: { id: string; name: string; priceDelta: bigint }[];
-    unitPrice: bigint;
-    lineTotal: bigint;
-  }[];
-  payIn: string | null;
-  note: string | null;
-  estimate: { fromMin: number; toMin: number };
-  address: {
-    location: Point;
-    neighbourhood: string;
-    label: 'home' | 'work' | 'other' | null;
-    customLabel: string | null;
-    street: string;
-    floor: string | null;
-    landmark: string;
-    recipientName: string | null;
-    directions: string | null;
-  };
-}
-
 // A check the transaction failed (a limit reached, the rates changed since
 // the quote): the quote is run again after the rollback and shows it.
 class Requote extends Error {}
@@ -127,7 +91,7 @@ export class OrdersService implements OnModuleInit {
     this.merchants.countActiveOrders((restaurantId) => this.activeOrders.restaurant(restaurantId));
   }
 
-  async place(command: PlaceOrder, now: Date): Promise<PlacedOrder> {
+  async place(command: PlaceOrder, now: Date): Promise<OrderView> {
     const requestHash = hashOf(command);
     const earlier = await this.replay(this.database.db, command, requestHash, now);
     if (earlier !== null) return this.placed(earlier);
@@ -173,6 +137,9 @@ export class OrdersService implements OnModuleInit {
       this.captains.payTable(cityId, now),
       this.settings.get('order.merchant_auto_cancel_min', { cityId }),
     ]);
+
+    // RA §8.3: the restaurant's countdown ends when the job runs.
+    const autoCancelAt = new Date(now.getTime() + autoCancelMin * 60_000);
 
     // pg-boss connects before the locks are taken, never while they are held.
     await this.jobs.ready();
@@ -232,6 +199,7 @@ export class OrdersService implements OnModuleInit {
             rateSnapshot: plain(kept),
             payIn: quote.payIn?.currency ?? null,
             note: command.note,
+            autoCancelAt,
             estimateFromMin: quote.estimate.fromMin,
             estimateToMin: quote.estimate.toMin,
             addressId: address.addressId,
@@ -289,7 +257,7 @@ export class OrdersService implements OnModuleInit {
         // AP §8.3: the timer exists exactly when the placed order does.
         const job: AutoCancelJob = { orderId: id, placedAt: now.toISOString(), version: 1 };
         await this.jobs.send(QUEUES.merchantAutoCancel, job, {
-          startAfter: new Date(now.getTime() + autoCancelMin * 60_000),
+          startAfter: autoCancelAt,
           db: inTransaction(tx),
         });
         const key = { requestHash, orderId: id, orderPlacedAt: now, createdAt: now };
@@ -316,86 +284,40 @@ export class OrdersService implements OnModuleInit {
   // The order the command placed, the answer of the command and of its
   // repeats: its money, lines and address never change; its status may have
   // moved on since.
-  private async placed({ id, placedAt }: { id: string; placedAt: Date }): Promise<PlacedOrder> {
-    const db = this.database.db;
-    const [row] = await db
-      .select({
-        id: orders.id,
-        number: orders.number,
-        status: orders.status,
-        placedAt: orders.placedAt,
-        restaurantId: orders.restaurantId,
-        currency: orders.currency,
-        itemsValue: orders.itemsValue,
-        deliveryFee: orders.deliveryFee,
-        discount: orders.discount,
-        rounding: orders.rounding,
-        total: orders.total,
-        deliveryFree: orders.deliveryFree,
-        payIn: orders.payIn,
-        note: orders.note,
-        estimateFromMin: orders.estimateFromMin,
-        estimateToMin: orders.estimateToMin,
-        latitude: sql<number>`ST_Y(${orders.location})`.mapWith(Number),
-        longitude: sql<number>`ST_X(${orders.location})`.mapWith(Number),
-        neighbourhood: orders.neighbourhood,
-        label: orders.label,
-        customLabel: orders.customLabel,
-        street: orders.street,
-        floor: orders.floor,
-        landmark: orders.landmark,
-        recipientName: orders.recipientName,
-        directions: orders.directions,
-      })
-      .from(orders)
-      .where(and(eq(orders.id, id), eq(orders.placedAt, placedAt)));
-    if (!row) throw new Error(`order ${id} not found`);
-    const lines = await db
-      .select()
-      .from(orderLines)
-      .where(and(eq(orderLines.orderId, id), eq(orderLines.orderPlacedAt, placedAt)))
-      .orderBy(asc(orderLines.position));
-    return {
-      id: row.id,
-      number: row.number,
-      status: row.status,
-      placedAt: row.placedAt,
-      restaurantId: row.restaurantId,
-      currency: row.currency,
-      money: {
-        itemsValue: row.itemsValue,
-        deliveryFee: row.deliveryFee,
-        discount: row.discount,
-        rounding: row.rounding,
-        total: row.total,
-      },
-      deliveryFree: row.deliveryFree,
-      lines: lines.map((line) => ({
-        itemId: line.itemId,
-        name: line.itemName,
-        quantity: line.quantity,
-        note: line.note,
-        options: (line.options as { id: string; name: string; priceDelta: string }[]).map(
-          (option) => ({ ...option, priceDelta: BigInt(option.priceDelta) }),
-        ),
-        unitPrice: line.unitPrice,
-        lineTotal: line.lineTotal,
-      })),
-      payIn: row.payIn,
-      note: row.note,
-      estimate: { fromMin: row.estimateFromMin, toMin: row.estimateToMin },
-      address: {
-        location: { latitude: row.latitude, longitude: row.longitude },
-        neighbourhood: row.neighbourhood,
-        label: row.label,
-        customLabel: row.customLabel,
-        street: row.street,
-        floor: row.floor,
-        landmark: row.landmark,
-        recipientName: row.recipientName,
-        directions: row.directions,
-      },
-    };
+  private async placed({ id, placedAt }: { id: string; placedAt: Date }): Promise<OrderView> {
+    const [order] = await readOrders(this.database.db, orderKey(id, placedAt));
+    if (!order) throw new Error(`order ${id} not found`);
+    return order;
+  }
+
+  // CU §11: the customer's own order, or null for another's or an unknown
+  // one.
+  async customerOrder(accountId: string, orderId: string): Promise<OrderView | null> {
+    const [order] = await readOrders(
+      this.database.db,
+      and(eq(orders.id, orderId), eq(orders.customerAccountId, accountId)),
+    );
+    return order ?? null;
+  }
+
+  // CU §6 (the active-order bar), CU §4.3: the customer's orders until they
+  // end, newest first.
+  customerActiveOrders(accountId: string): Promise<OrderView[]> {
+    return readOrders(
+      this.database.db,
+      and(eq(orders.customerAccountId, accountId), inArray(orders.status, UNTIL_ENDED)),
+      { newestFirst: true },
+    );
+  }
+
+  // RA §8.2: the restaurant's board, every order until it is delivered or
+  // ends, oldest first; RA §4.3: the full state an app fetches after a
+  // reconnect.
+  restaurantActiveOrders(restaurantId: string): Promise<OrderView[]> {
+    return readOrders(
+      this.database.db,
+      and(eq(orders.restaurantId, restaurantId), inArray(orders.status, UNTIL_ENDED)),
+    );
   }
 
   // The order a key placed in the last 24 hours, or null; the key sent with

@@ -127,6 +127,13 @@
       "when": 1793965812120,
       "tag": "0017_ordering_cancellation_outbox",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793974978510,
+      "tag": "0018_ordering_auto_cancel_at",
+      "breakpoints": true
     }
   ]
 }

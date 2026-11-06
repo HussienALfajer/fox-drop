@@ -868,6 +868,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/orders/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerOrdersActive"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/orders/{orderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerOrdersOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/customer/orders": {
         parameters: {
             query?: never;
@@ -878,6 +910,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["customerOrdersPlace"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantOrdersBoard"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1943,6 +1991,191 @@ export interface components {
                 opensAt: string | null;
             }[];
         };
+        CustomerActiveOrdersDto_Output: {
+            /** @description Until each ends, newest first: the active-order bar (CU §6). */
+            orders: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as #10423 (AP §4.8). */
+                number: string;
+                /**
+                 * @description AP §8.1.
+                 * @enum {string}
+                 */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3). */
+                version: number;
+                /** Format: date-time */
+                placedAt: string;
+                /** @description While cancelled (CU §11.9). */
+                cancellation: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description merchant_auto_cancel: «لم يرد المطعم على طلبك، نعتذر» (CU §11.9). */
+                    reason: string;
+                } | null;
+                restaurant: {
+                    /** Format: uuid */
+                    id: string;
+                    nameAr: string;
+                    nameEn: string | null;
+                };
+                currency: string;
+                money: {
+                    /** @description Integer minor units (AP §8.6). */
+                    itemsValue: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    deliveryFee: string;
+                    deliveryFree: boolean;
+                    /** @description Integer minor units (AP §8.6). */
+                    discount: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    rounding: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    total: string;
+                };
+                /** @description The total in the city's other currencies, by the order's own rates (CU §11.1). */
+                equivalents: {
+                    currency: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                }[];
+                lines: {
+                    /** Format: uuid */
+                    itemId: string;
+                    name: string;
+                    quantity: number;
+                    note: string | null;
+                    options: {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                        /** @description Integer minor units (AP §8.6). */
+                        priceDelta: string;
+                    }[];
+                    /** @description Integer minor units (AP §8.6). */
+                    unitPrice: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    lineTotal: string;
+                }[];
+                /** @description «سأدفع بـ»; null for «لم أحدد». */
+                payIn: string | null;
+                note: string | null;
+                /** @description The range shown while placed (CU §11.1). */
+                estimate: {
+                    fromMin: number;
+                    toMin: number;
+                };
+                address: {
+                    location: {
+                        latitude: number;
+                        longitude: number;
+                    };
+                    /** @description «الحي» at placing. */
+                    neighbourhood: string;
+                    /** @description Null for an unsaved one. */
+                    label: ("home" | "work" | "other") | null;
+                    customLabel: string | null;
+                    street: string;
+                    floor: string | null;
+                    landmark: string;
+                    recipientName: string | null;
+                    directions: string | null;
+                };
+            }[];
+        };
+        CustomerOrderDto_Output: {
+            order: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as #10423 (AP §4.8). */
+                number: string;
+                /**
+                 * @description AP §8.1.
+                 * @enum {string}
+                 */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3). */
+                version: number;
+                /** Format: date-time */
+                placedAt: string;
+                /** @description While cancelled (CU §11.9). */
+                cancellation: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description merchant_auto_cancel: «لم يرد المطعم على طلبك، نعتذر» (CU §11.9). */
+                    reason: string;
+                } | null;
+                restaurant: {
+                    /** Format: uuid */
+                    id: string;
+                    nameAr: string;
+                    nameEn: string | null;
+                };
+                currency: string;
+                money: {
+                    /** @description Integer minor units (AP §8.6). */
+                    itemsValue: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    deliveryFee: string;
+                    deliveryFree: boolean;
+                    /** @description Integer minor units (AP §8.6). */
+                    discount: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    rounding: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    total: string;
+                };
+                /** @description The total in the city's other currencies, by the order's own rates (CU §11.1). */
+                equivalents: {
+                    currency: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                }[];
+                lines: {
+                    /** Format: uuid */
+                    itemId: string;
+                    name: string;
+                    quantity: number;
+                    note: string | null;
+                    options: {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                        /** @description Integer minor units (AP §8.6). */
+                        priceDelta: string;
+                    }[];
+                    /** @description Integer minor units (AP §8.6). */
+                    unitPrice: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    lineTotal: string;
+                }[];
+                /** @description «سأدفع بـ»; null for «لم أحدد». */
+                payIn: string | null;
+                note: string | null;
+                /** @description The range shown while placed (CU §11.1). */
+                estimate: {
+                    fromMin: number;
+                    toMin: number;
+                };
+                address: {
+                    location: {
+                        latitude: number;
+                        longitude: number;
+                    };
+                    /** @description «الحي» at placing. */
+                    neighbourhood: string;
+                    /** @description Null for an unsaved one. */
+                    label: ("home" | "work" | "other") | null;
+                    customLabel: string | null;
+                    street: string;
+                    floor: string | null;
+                    landmark: string;
+                    recipientName: string | null;
+                    directions: string | null;
+                };
+            };
+        };
         CustomerPlaceOrderDto: {
             /** Format: uuid */
             restaurantId: string;
@@ -1987,77 +2220,46 @@ export interface components {
             /** @description To the restaurant and the captain, up to 200 characters; no phone number. */
             note: string | null;
         };
-        CustomerPlacedOrderDto_Output: {
-            order: {
+        MerchantOrdersDto_Output: {
+            /** @description Every order until it is delivered or ends, oldest first (RA §8.2). */
+            orders: {
                 /** Format: uuid */
                 id: string;
                 /** @description Shown as #10423 (AP §4.8). */
                 number: string;
                 /**
-                 * @description AP §8.1; placed when it was placed.
+                 * @description AP §8.1; the board column (RA §8.1–8.2).
                  * @enum {string}
                  */
                 status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3). */
+                version: number;
                 /** Format: date-time */
                 placedAt: string;
-                /** Format: uuid */
-                restaurantId: string;
-                currency: string;
-                money: {
-                    /** @description Integer minor units (AP §8.6). */
-                    itemsValue: string;
-                    /** @description Integer minor units (AP §8.6). */
-                    deliveryFee: string;
-                    deliveryFree: boolean;
-                    /** @description Integer minor units (AP §8.6). */
-                    discount: string;
-                    /** @description Integer minor units (AP §8.6). */
-                    rounding: string;
-                    /** @description Integer minor units (AP §8.6). */
-                    total: string;
+                /** @description «يُلغى تلقائياً خلال {د:ث}» counts down to it while placed (RA §8.3). */
+                autoCancelAt: string | null;
+                /** @description Never the phone number, the last name or the full address (RA §8.4). */
+                customer: {
+                    /** @description Null while the customer has not completed the account (CU §5.3). */
+                    firstName: string | null;
+                    neighbourhood: string;
                 };
+                /** @description The customer's note. */
+                note: string | null;
                 lines: {
-                    /** Format: uuid */
-                    itemId: string;
                     name: string;
                     quantity: number;
-                    note: string | null;
                     options: {
-                        /** Format: uuid */
-                        id: string;
                         name: string;
-                        /** @description Integer minor units (AP §8.6). */
-                        priceDelta: string;
                     }[];
-                    /** @description Integer minor units (AP §8.6). */
-                    unitPrice: string;
+                    note: string | null;
                     /** @description Integer minor units (AP §8.6). */
                     lineTotal: string;
                 }[];
-                /** @description «سأدفع بـ»; null for «لم أحدد». */
-                payIn: string | null;
-                note: string | null;
-                estimate: {
-                    fromMin: number;
-                    toMin: number;
-                };
-                address: {
-                    location: {
-                        latitude: number;
-                        longitude: number;
-                    };
-                    /** @description «الحي» at placing. */
-                    neighbourhood: string;
-                    /** @description Null for an unsaved one. */
-                    label: ("home" | "work" | "other") | null;
-                    customLabel: string | null;
-                    street: string;
-                    floor: string | null;
-                    landmark: string;
-                    recipientName: string | null;
-                    directions: string | null;
-                };
-            };
+                currency: string;
+                /** @description «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11). */
+                itemsValue: string;
+            }[];
         };
         RealtimeTokenDto_Output: {
             /** @description Centrifugo's connection token, valid 15 minutes; ask again when it expires. */
@@ -3381,6 +3583,48 @@ export interface operations {
             };
         };
     };
+    customerOrdersActive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerActiveOrdersDto_Output"];
+                };
+            };
+        };
+    };
+    customerOrdersOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOrderDto_Output"];
+                };
+            };
+        };
+    };
     customerOrdersPlace: {
         parameters: {
             query?: never;
@@ -3403,7 +3647,27 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CustomerPlacedOrderDto_Output"];
+                    "application/json": components["schemas"]["CustomerOrderDto_Output"];
+                };
+            };
+        };
+    };
+    merchantOrdersBoard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrdersDto_Output"];
                 };
             };
         };

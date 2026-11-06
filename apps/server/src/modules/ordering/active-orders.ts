@@ -11,8 +11,9 @@ type Executor = Pick<NodePgDatabase, 'select'>;
 
 // RA §7.4: a restaurant's orders count until pickup or their end.
 const RESTAURANT_ACTIVE: OrderStatus[] = ['placed', 'accepted', 'ready'];
-// D23, CU §5.5: a customer's orders count until they end.
-const CUSTOMER_ACTIVE: OrderStatus[] = ['placed', 'accepted', 'ready', 'picked_up', 'arrived'];
+// D23, CU §5.5: a customer's orders count until they end; RA §8.2: the
+// restaurant's board shows them until then.
+export const UNTIL_ENDED: OrderStatus[] = ['placed', 'accepted', 'ready', 'picked_up', 'arrived'];
 
 // D23: the city's limits, read before any transaction (a settings read may
 // take a pool connection of its own).
@@ -63,7 +64,7 @@ export class ActiveOrders {
     const delivered = await countOrders(executor, whose, ['delivered']);
     const trusted = delivered >= rules.trustedAfter;
     const limit = trusted ? rules.trustedMax : rules.newMax;
-    const active = await countOrders(executor, whose, CUSTOMER_ACTIVE);
+    const active = await countOrders(executor, whose, UNTIL_ENDED);
     return { reached: active >= limit, limit, trusted };
   }
 }

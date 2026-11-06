@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'customer_placed_order_dto_output_order_lines_inner.dart';
+part of 'customer_active_orders_dto_output_orders_inner_lines_inner.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$CustomerPlacedOrderDtoOutputOrderLinesInner
-    extends CustomerPlacedOrderDtoOutputOrderLinesInner {
+class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
+    extends CustomerActiveOrdersDtoOutputOrdersInnerLinesInner {
   @override
   final String itemId;
   @override
@@ -23,12 +23,15 @@ class _$CustomerPlacedOrderDtoOutputOrderLinesInner
   @override
   final String lineTotal;
 
-  factory _$CustomerPlacedOrderDtoOutputOrderLinesInner([
-    void Function(CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder)? updates,
-  ]) => (CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder()..update(updates))
-      ._build();
+  factory _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner([
+    void Function(CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder)?
+    updates,
+  ]) =>
+      (CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder()
+            ..update(updates))
+          ._build();
 
-  _$CustomerPlacedOrderDtoOutputOrderLinesInner._({
+  _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner._({
     required this.itemId,
     required this.name,
     required this.quantity,
@@ -38,18 +41,20 @@ class _$CustomerPlacedOrderDtoOutputOrderLinesInner
     required this.lineTotal,
   }) : super._();
   @override
-  CustomerPlacedOrderDtoOutputOrderLinesInner rebuild(
-    void Function(CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder) updates,
+  CustomerActiveOrdersDtoOutputOrdersInnerLinesInner rebuild(
+    void Function(CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder)
+    updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder toBuilder() =>
-      CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder()..replace(this);
+  CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder toBuilder() =>
+      CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder()
+        ..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is CustomerPlacedOrderDtoOutputOrderLinesInner &&
+    return other is CustomerActiveOrdersDtoOutputOrdersInnerLinesInner &&
         itemId == other.itemId &&
         name == other.name &&
         quantity == other.quantity &&
@@ -76,7 +81,7 @@ class _$CustomerPlacedOrderDtoOutputOrderLinesInner
   @override
   String toString() {
     return (newBuiltValueToStringHelper(
-            r'CustomerPlacedOrderDtoOutputOrderLinesInner',
+            r'CustomerActiveOrdersDtoOutputOrdersInnerLinesInner',
           )
           ..add('itemId', itemId)
           ..add('name', name)
@@ -89,13 +94,13 @@ class _$CustomerPlacedOrderDtoOutputOrderLinesInner
   }
 }
 
-class CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder
+class CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder
     implements
         Builder<
-          CustomerPlacedOrderDtoOutputOrderLinesInner,
-          CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder
+          CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
+          CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder
         > {
-  _$CustomerPlacedOrderDtoOutputOrderLinesInner? _$v;
+  _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner? _$v;
 
   String? _itemId;
   String? get itemId => _$this._itemId;
@@ -129,11 +134,11 @@ class CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder
   String? get lineTotal => _$this._lineTotal;
   set lineTotal(String? lineTotal) => _$this._lineTotal = lineTotal;
 
-  CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder() {
-    CustomerPlacedOrderDtoOutputOrderLinesInner._defaults(this);
+  CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder() {
+    CustomerActiveOrdersDtoOutputOrdersInnerLinesInner._defaults(this);
   }
 
-  CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder get _$this {
+  CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _itemId = $v.itemId;
@@ -149,51 +154,52 @@ class CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder
   }
 
   @override
-  void replace(CustomerPlacedOrderDtoOutputOrderLinesInner other) {
-    _$v = other as _$CustomerPlacedOrderDtoOutputOrderLinesInner;
+  void replace(CustomerActiveOrdersDtoOutputOrdersInnerLinesInner other) {
+    _$v = other as _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner;
   }
 
   @override
   void update(
-    void Function(CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder)? updates,
+    void Function(CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder)?
+    updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  CustomerPlacedOrderDtoOutputOrderLinesInner build() => _build();
+  CustomerActiveOrdersDtoOutputOrdersInnerLinesInner build() => _build();
 
-  _$CustomerPlacedOrderDtoOutputOrderLinesInner _build() {
-    _$CustomerPlacedOrderDtoOutputOrderLinesInner _$result;
+  _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner _build() {
+    _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner _$result;
     try {
       _$result =
           _$v ??
-          _$CustomerPlacedOrderDtoOutputOrderLinesInner._(
+          _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner._(
             itemId: BuiltValueNullFieldError.checkNotNull(
               itemId,
-              r'CustomerPlacedOrderDtoOutputOrderLinesInner',
+              r'CustomerActiveOrdersDtoOutputOrdersInnerLinesInner',
               'itemId',
             ),
             name: BuiltValueNullFieldError.checkNotNull(
               name,
-              r'CustomerPlacedOrderDtoOutputOrderLinesInner',
+              r'CustomerActiveOrdersDtoOutputOrdersInnerLinesInner',
               'name',
             ),
             quantity: BuiltValueNullFieldError.checkNotNull(
               quantity,
-              r'CustomerPlacedOrderDtoOutputOrderLinesInner',
+              r'CustomerActiveOrdersDtoOutputOrdersInnerLinesInner',
               'quantity',
             ),
             note: note,
             options: options.build(),
             unitPrice: BuiltValueNullFieldError.checkNotNull(
               unitPrice,
-              r'CustomerPlacedOrderDtoOutputOrderLinesInner',
+              r'CustomerActiveOrdersDtoOutputOrdersInnerLinesInner',
               'unitPrice',
             ),
             lineTotal: BuiltValueNullFieldError.checkNotNull(
               lineTotal,
-              r'CustomerPlacedOrderDtoOutputOrderLinesInner',
+              r'CustomerActiveOrdersDtoOutputOrdersInnerLinesInner',
               'lineTotal',
             ),
           );
@@ -204,7 +210,7 @@ class CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder
         options.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'CustomerPlacedOrderDtoOutputOrderLinesInner',
+          r'CustomerActiveOrdersDtoOutputOrdersInnerLinesInner',
           _$failedField,
           e.toString(),
         );

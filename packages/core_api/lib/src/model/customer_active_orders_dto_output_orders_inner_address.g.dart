@@ -1,52 +1,54 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'customer_placed_order_dto_output_order_address.dart';
+part of 'customer_active_orders_dto_output_orders_inner_address.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-const CustomerPlacedOrderDtoOutputOrderAddressLabelEnum
-_$customerPlacedOrderDtoOutputOrderAddressLabelEnum_home =
-    const CustomerPlacedOrderDtoOutputOrderAddressLabelEnum._('home');
-const CustomerPlacedOrderDtoOutputOrderAddressLabelEnum
-_$customerPlacedOrderDtoOutputOrderAddressLabelEnum_work =
-    const CustomerPlacedOrderDtoOutputOrderAddressLabelEnum._('work');
-const CustomerPlacedOrderDtoOutputOrderAddressLabelEnum
-_$customerPlacedOrderDtoOutputOrderAddressLabelEnum_other =
-    const CustomerPlacedOrderDtoOutputOrderAddressLabelEnum._('other');
+const CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum
+_$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum_home =
+    const CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum._('home');
+const CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum
+_$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum_work =
+    const CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum._('work');
+const CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum
+_$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum_other =
+    const CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum._('other');
 
-CustomerPlacedOrderDtoOutputOrderAddressLabelEnum
-_$customerPlacedOrderDtoOutputOrderAddressLabelEnumValueOf(String name) {
+CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum
+_$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnumValueOf(String name) {
   switch (name) {
     case 'home':
-      return _$customerPlacedOrderDtoOutputOrderAddressLabelEnum_home;
+      return _$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum_home;
     case 'work':
-      return _$customerPlacedOrderDtoOutputOrderAddressLabelEnum_work;
+      return _$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum_work;
     case 'other':
-      return _$customerPlacedOrderDtoOutputOrderAddressLabelEnum_other;
+      return _$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum_other;
     default:
       throw ArgumentError(name);
   }
 }
 
-final BuiltSet<CustomerPlacedOrderDtoOutputOrderAddressLabelEnum>
-_$customerPlacedOrderDtoOutputOrderAddressLabelEnumValues =
-    BuiltSet<CustomerPlacedOrderDtoOutputOrderAddressLabelEnum>(
-      const <CustomerPlacedOrderDtoOutputOrderAddressLabelEnum>[
-        _$customerPlacedOrderDtoOutputOrderAddressLabelEnum_home,
-        _$customerPlacedOrderDtoOutputOrderAddressLabelEnum_work,
-        _$customerPlacedOrderDtoOutputOrderAddressLabelEnum_other,
+final BuiltSet<CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum>
+_$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnumValues =
+    BuiltSet<CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum>(
+      const <CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum>[
+        _$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum_home,
+        _$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum_work,
+        _$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum_other,
       ],
     );
 
-Serializer<CustomerPlacedOrderDtoOutputOrderAddressLabelEnum>
-_$customerPlacedOrderDtoOutputOrderAddressLabelEnumSerializer =
-    _$CustomerPlacedOrderDtoOutputOrderAddressLabelEnumSerializer();
+Serializer<CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum>
+_$customerActiveOrdersDtoOutputOrdersInnerAddressLabelEnumSerializer =
+    _$CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnumSerializer();
 
-class _$CustomerPlacedOrderDtoOutputOrderAddressLabelEnumSerializer
+class _$CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnumSerializer
     implements
-        PrimitiveSerializer<CustomerPlacedOrderDtoOutputOrderAddressLabelEnum> {
+        PrimitiveSerializer<
+          CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum
+        > {
   static const Map<String, Object> _toWire = const <String, Object>{
     'home': 'home',
     'work': 'work',
@@ -60,36 +62,37 @@ class _$CustomerPlacedOrderDtoOutputOrderAddressLabelEnumSerializer
 
   @override
   final Iterable<Type> types = const <Type>[
-    CustomerPlacedOrderDtoOutputOrderAddressLabelEnum,
+    CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum,
   ];
   @override
-  final String wireName = 'CustomerPlacedOrderDtoOutputOrderAddressLabelEnum';
+  final String wireName =
+      'CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum';
 
   @override
   Object serialize(
     Serializers serializers,
-    CustomerPlacedOrderDtoOutputOrderAddressLabelEnum object, {
+    CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum object, {
     FullType specifiedType = FullType.unspecified,
   }) => _toWire[object.name] ?? object.name;
 
   @override
-  CustomerPlacedOrderDtoOutputOrderAddressLabelEnum deserialize(
+  CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
-  }) => CustomerPlacedOrderDtoOutputOrderAddressLabelEnum.valueOf(
+  }) => CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum.valueOf(
     _fromWire[serialized] ?? (serialized is String ? serialized : ''),
   );
 }
 
-class _$CustomerPlacedOrderDtoOutputOrderAddress
-    extends CustomerPlacedOrderDtoOutputOrderAddress {
+class _$CustomerActiveOrdersDtoOutputOrdersInnerAddress
+    extends CustomerActiveOrdersDtoOutputOrdersInnerAddress {
   @override
-  final CustomerPlacedOrderDtoOutputOrderAddressLocation location;
+  final CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation location;
   @override
   final String neighbourhood;
   @override
-  final CustomerPlacedOrderDtoOutputOrderAddressLabelEnum? label;
+  final CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum? label;
   @override
   final String? customLabel;
   @override
@@ -103,12 +106,15 @@ class _$CustomerPlacedOrderDtoOutputOrderAddress
   @override
   final String? directions;
 
-  factory _$CustomerPlacedOrderDtoOutputOrderAddress([
-    void Function(CustomerPlacedOrderDtoOutputOrderAddressBuilder)? updates,
-  ]) => (CustomerPlacedOrderDtoOutputOrderAddressBuilder()..update(updates))
-      ._build();
+  factory _$CustomerActiveOrdersDtoOutputOrdersInnerAddress([
+    void Function(CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder)?
+    updates,
+  ]) =>
+      (CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder()
+            ..update(updates))
+          ._build();
 
-  _$CustomerPlacedOrderDtoOutputOrderAddress._({
+  _$CustomerActiveOrdersDtoOutputOrdersInnerAddress._({
     required this.location,
     required this.neighbourhood,
     this.label,
@@ -120,18 +126,19 @@ class _$CustomerPlacedOrderDtoOutputOrderAddress
     this.directions,
   }) : super._();
   @override
-  CustomerPlacedOrderDtoOutputOrderAddress rebuild(
-    void Function(CustomerPlacedOrderDtoOutputOrderAddressBuilder) updates,
+  CustomerActiveOrdersDtoOutputOrdersInnerAddress rebuild(
+    void Function(CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder)
+    updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  CustomerPlacedOrderDtoOutputOrderAddressBuilder toBuilder() =>
-      CustomerPlacedOrderDtoOutputOrderAddressBuilder()..replace(this);
+  CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder toBuilder() =>
+      CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is CustomerPlacedOrderDtoOutputOrderAddress &&
+    return other is CustomerActiveOrdersDtoOutputOrdersInnerAddress &&
         location == other.location &&
         neighbourhood == other.neighbourhood &&
         label == other.label &&
@@ -162,7 +169,7 @@ class _$CustomerPlacedOrderDtoOutputOrderAddress
   @override
   String toString() {
     return (newBuiltValueToStringHelper(
-            r'CustomerPlacedOrderDtoOutputOrderAddress',
+            r'CustomerActiveOrdersDtoOutputOrdersInnerAddress',
           )
           ..add('location', location)
           ..add('neighbourhood', neighbourhood)
@@ -177,20 +184,20 @@ class _$CustomerPlacedOrderDtoOutputOrderAddress
   }
 }
 
-class CustomerPlacedOrderDtoOutputOrderAddressBuilder
+class CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder
     implements
         Builder<
-          CustomerPlacedOrderDtoOutputOrderAddress,
-          CustomerPlacedOrderDtoOutputOrderAddressBuilder
+          CustomerActiveOrdersDtoOutputOrdersInnerAddress,
+          CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder
         > {
-  _$CustomerPlacedOrderDtoOutputOrderAddress? _$v;
+  _$CustomerActiveOrdersDtoOutputOrdersInnerAddress? _$v;
 
-  CustomerPlacedOrderDtoOutputOrderAddressLocationBuilder? _location;
-  CustomerPlacedOrderDtoOutputOrderAddressLocationBuilder get location =>
+  CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder? _location;
+  CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder get location =>
       _$this._location ??=
-          CustomerPlacedOrderDtoOutputOrderAddressLocationBuilder();
+          CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder();
   set location(
-    CustomerPlacedOrderDtoOutputOrderAddressLocationBuilder? location,
+    CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder? location,
   ) => _$this._location = location;
 
   String? _neighbourhood;
@@ -198,9 +205,10 @@ class CustomerPlacedOrderDtoOutputOrderAddressBuilder
   set neighbourhood(String? neighbourhood) =>
       _$this._neighbourhood = neighbourhood;
 
-  CustomerPlacedOrderDtoOutputOrderAddressLabelEnum? _label;
-  CustomerPlacedOrderDtoOutputOrderAddressLabelEnum? get label => _$this._label;
-  set label(CustomerPlacedOrderDtoOutputOrderAddressLabelEnum? label) =>
+  CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum? _label;
+  CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum? get label =>
+      _$this._label;
+  set label(CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnum? label) =>
       _$this._label = label;
 
   String? _customLabel;
@@ -228,11 +236,11 @@ class CustomerPlacedOrderDtoOutputOrderAddressBuilder
   String? get directions => _$this._directions;
   set directions(String? directions) => _$this._directions = directions;
 
-  CustomerPlacedOrderDtoOutputOrderAddressBuilder() {
-    CustomerPlacedOrderDtoOutputOrderAddress._defaults(this);
+  CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder() {
+    CustomerActiveOrdersDtoOutputOrdersInnerAddress._defaults(this);
   }
 
-  CustomerPlacedOrderDtoOutputOrderAddressBuilder get _$this {
+  CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _location = $v.location.toBuilder();
@@ -250,43 +258,44 @@ class CustomerPlacedOrderDtoOutputOrderAddressBuilder
   }
 
   @override
-  void replace(CustomerPlacedOrderDtoOutputOrderAddress other) {
-    _$v = other as _$CustomerPlacedOrderDtoOutputOrderAddress;
+  void replace(CustomerActiveOrdersDtoOutputOrdersInnerAddress other) {
+    _$v = other as _$CustomerActiveOrdersDtoOutputOrdersInnerAddress;
   }
 
   @override
   void update(
-    void Function(CustomerPlacedOrderDtoOutputOrderAddressBuilder)? updates,
+    void Function(CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder)?
+    updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  CustomerPlacedOrderDtoOutputOrderAddress build() => _build();
+  CustomerActiveOrdersDtoOutputOrdersInnerAddress build() => _build();
 
-  _$CustomerPlacedOrderDtoOutputOrderAddress _build() {
-    _$CustomerPlacedOrderDtoOutputOrderAddress _$result;
+  _$CustomerActiveOrdersDtoOutputOrdersInnerAddress _build() {
+    _$CustomerActiveOrdersDtoOutputOrdersInnerAddress _$result;
     try {
       _$result =
           _$v ??
-          _$CustomerPlacedOrderDtoOutputOrderAddress._(
+          _$CustomerActiveOrdersDtoOutputOrdersInnerAddress._(
             location: location.build(),
             neighbourhood: BuiltValueNullFieldError.checkNotNull(
               neighbourhood,
-              r'CustomerPlacedOrderDtoOutputOrderAddress',
+              r'CustomerActiveOrdersDtoOutputOrdersInnerAddress',
               'neighbourhood',
             ),
             label: label,
             customLabel: customLabel,
             street: BuiltValueNullFieldError.checkNotNull(
               street,
-              r'CustomerPlacedOrderDtoOutputOrderAddress',
+              r'CustomerActiveOrdersDtoOutputOrdersInnerAddress',
               'street',
             ),
             floor: floor,
             landmark: BuiltValueNullFieldError.checkNotNull(
               landmark,
-              r'CustomerPlacedOrderDtoOutputOrderAddress',
+              r'CustomerActiveOrdersDtoOutputOrdersInnerAddress',
               'landmark',
             ),
             recipientName: recipientName,
@@ -299,7 +308,7 @@ class CustomerPlacedOrderDtoOutputOrderAddressBuilder
         location.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'CustomerPlacedOrderDtoOutputOrderAddress',
+          r'CustomerActiveOrdersDtoOutputOrdersInnerAddress',
           _$failedField,
           e.toString(),
         );

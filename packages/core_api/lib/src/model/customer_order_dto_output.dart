@@ -3,67 +3,63 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/customer_placed_order_dto_output_order.dart';
+import 'package:core_api/src/model/customer_order_dto_output_order.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'customer_placed_order_dto_output.g.dart';
+part 'customer_order_dto_output.g.dart';
 
-/// CustomerPlacedOrderDtoOutput
+/// CustomerOrderDtoOutput
 ///
 /// Properties:
 /// * [order]
 @BuiltValue()
-abstract class CustomerPlacedOrderDtoOutput
-    implements
-        Built<
-          CustomerPlacedOrderDtoOutput,
-          CustomerPlacedOrderDtoOutputBuilder
-        > {
+abstract class CustomerOrderDtoOutput
+    implements Built<CustomerOrderDtoOutput, CustomerOrderDtoOutputBuilder> {
   @BuiltValueField(wireName: r'order')
-  CustomerPlacedOrderDtoOutputOrder get order;
+  CustomerOrderDtoOutputOrder get order;
 
-  CustomerPlacedOrderDtoOutput._();
+  CustomerOrderDtoOutput._();
 
-  factory CustomerPlacedOrderDtoOutput([
-    void updates(CustomerPlacedOrderDtoOutputBuilder b),
-  ]) = _$CustomerPlacedOrderDtoOutput;
+  factory CustomerOrderDtoOutput([
+    void updates(CustomerOrderDtoOutputBuilder b),
+  ]) = _$CustomerOrderDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerPlacedOrderDtoOutputBuilder b) => b;
+  static void _defaults(CustomerOrderDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerPlacedOrderDtoOutput> get serializer =>
-      _$CustomerPlacedOrderDtoOutputSerializer();
+  static Serializer<CustomerOrderDtoOutput> get serializer =>
+      _$CustomerOrderDtoOutputSerializer();
 }
 
-class _$CustomerPlacedOrderDtoOutputSerializer
-    implements PrimitiveSerializer<CustomerPlacedOrderDtoOutput> {
+class _$CustomerOrderDtoOutputSerializer
+    implements PrimitiveSerializer<CustomerOrderDtoOutput> {
   @override
   final Iterable<Type> types = const [
-    CustomerPlacedOrderDtoOutput,
-    _$CustomerPlacedOrderDtoOutput,
+    CustomerOrderDtoOutput,
+    _$CustomerOrderDtoOutput,
   ];
 
   @override
-  final String wireName = r'CustomerPlacedOrderDtoOutput';
+  final String wireName = r'CustomerOrderDtoOutput';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CustomerPlacedOrderDtoOutput object, {
+    CustomerOrderDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'order';
     yield serializers.serialize(
       object.order,
-      specifiedType: const FullType(CustomerPlacedOrderDtoOutputOrder),
+      specifiedType: const FullType(CustomerOrderDtoOutputOrder),
     );
   }
 
   @override
   Object serialize(
     Serializers serializers,
-    CustomerPlacedOrderDtoOutput object, {
+    CustomerOrderDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -78,7 +74,7 @@ class _$CustomerPlacedOrderDtoOutputSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CustomerPlacedOrderDtoOutputBuilder result,
+    required CustomerOrderDtoOutputBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -89,11 +85,9 @@ class _$CustomerPlacedOrderDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      CustomerPlacedOrderDtoOutputOrder,
-                    ),
+                    specifiedType: const FullType(CustomerOrderDtoOutputOrder),
                   )
-                  as CustomerPlacedOrderDtoOutputOrder;
+                  as CustomerOrderDtoOutputOrder;
           result.order.replace(valueDes);
           break;
         default:
@@ -105,12 +99,12 @@ class _$CustomerPlacedOrderDtoOutputSerializer
   }
 
   @override
-  CustomerPlacedOrderDtoOutput deserialize(
+  CustomerOrderDtoOutput deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = CustomerPlacedOrderDtoOutputBuilder();
+    final result = CustomerOrderDtoOutputBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

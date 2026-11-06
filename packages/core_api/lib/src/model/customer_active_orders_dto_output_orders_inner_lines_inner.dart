@@ -8,9 +8,9 @@ import 'package:core_api/src/model/customer_quote_dto_output_lines_inner_options
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'customer_placed_order_dto_output_order_lines_inner.g.dart';
+part 'customer_active_orders_dto_output_orders_inner_lines_inner.g.dart';
 
-/// CustomerPlacedOrderDtoOutputOrderLinesInner
+/// CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
 ///
 /// Properties:
 /// * [itemId]
@@ -21,11 +21,11 @@ part 'customer_placed_order_dto_output_order_lines_inner.g.dart';
 /// * [unitPrice] - Integer minor units (AP §8.6).
 /// * [lineTotal] - Integer minor units (AP §8.6).
 @BuiltValue()
-abstract class CustomerPlacedOrderDtoOutputOrderLinesInner
+abstract class CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
     implements
         Built<
-          CustomerPlacedOrderDtoOutputOrderLinesInner,
-          CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder
+          CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
+          CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder
         > {
   @BuiltValueField(wireName: r'itemId')
   String get itemId;
@@ -50,36 +50,40 @@ abstract class CustomerPlacedOrderDtoOutputOrderLinesInner
   @BuiltValueField(wireName: r'lineTotal')
   String get lineTotal;
 
-  CustomerPlacedOrderDtoOutputOrderLinesInner._();
+  CustomerActiveOrdersDtoOutputOrdersInnerLinesInner._();
 
-  factory CustomerPlacedOrderDtoOutputOrderLinesInner([
-    void updates(CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder b),
-  ]) = _$CustomerPlacedOrderDtoOutputOrderLinesInner;
+  factory CustomerActiveOrdersDtoOutputOrdersInnerLinesInner([
+    void updates(CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder b),
+  ]) = _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder b) =>
-      b;
+  static void _defaults(
+    CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerPlacedOrderDtoOutputOrderLinesInner>
-  get serializer => _$CustomerPlacedOrderDtoOutputOrderLinesInnerSerializer();
+  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerLinesInner>
+  get serializer =>
+      _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerSerializer();
 }
 
-class _$CustomerPlacedOrderDtoOutputOrderLinesInnerSerializer
+class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerSerializer
     implements
-        PrimitiveSerializer<CustomerPlacedOrderDtoOutputOrderLinesInner> {
+        PrimitiveSerializer<
+          CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
+        > {
   @override
   final Iterable<Type> types = const [
-    CustomerPlacedOrderDtoOutputOrderLinesInner,
-    _$CustomerPlacedOrderDtoOutputOrderLinesInner,
+    CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
+    _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
   ];
 
   @override
-  final String wireName = r'CustomerPlacedOrderDtoOutputOrderLinesInner';
+  final String wireName = r'CustomerActiveOrdersDtoOutputOrdersInnerLinesInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CustomerPlacedOrderDtoOutputOrderLinesInner object, {
+    CustomerActiveOrdersDtoOutputOrdersInnerLinesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'itemId';
@@ -126,7 +130,7 @@ class _$CustomerPlacedOrderDtoOutputOrderLinesInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    CustomerPlacedOrderDtoOutputOrderLinesInner object, {
+    CustomerActiveOrdersDtoOutputOrdersInnerLinesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -141,7 +145,7 @@ class _$CustomerPlacedOrderDtoOutputOrderLinesInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder result,
+    required CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -220,12 +224,12 @@ class _$CustomerPlacedOrderDtoOutputOrderLinesInnerSerializer
   }
 
   @override
-  CustomerPlacedOrderDtoOutputOrderLinesInner deserialize(
+  CustomerActiveOrdersDtoOutputOrdersInnerLinesInner deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = CustomerPlacedOrderDtoOutputOrderLinesInnerBuilder();
+    final result = CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

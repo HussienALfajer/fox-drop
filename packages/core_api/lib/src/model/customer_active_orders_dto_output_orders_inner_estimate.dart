@@ -6,19 +6,19 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'customer_placed_order_dto_output_order_estimate.g.dart';
+part 'customer_active_orders_dto_output_orders_inner_estimate.g.dart';
 
-/// CustomerPlacedOrderDtoOutputOrderEstimate
+/// The range shown while placed (CU §11.1).
 ///
 /// Properties:
 /// * [fromMin]
 /// * [toMin]
 @BuiltValue()
-abstract class CustomerPlacedOrderDtoOutputOrderEstimate
+abstract class CustomerActiveOrdersDtoOutputOrdersInnerEstimate
     implements
         Built<
-          CustomerPlacedOrderDtoOutputOrderEstimate,
-          CustomerPlacedOrderDtoOutputOrderEstimateBuilder
+          CustomerActiveOrdersDtoOutputOrdersInnerEstimate,
+          CustomerActiveOrdersDtoOutputOrdersInnerEstimateBuilder
         > {
   @BuiltValueField(wireName: r'fromMin')
   int get fromMin;
@@ -26,35 +26,38 @@ abstract class CustomerPlacedOrderDtoOutputOrderEstimate
   @BuiltValueField(wireName: r'toMin')
   int get toMin;
 
-  CustomerPlacedOrderDtoOutputOrderEstimate._();
+  CustomerActiveOrdersDtoOutputOrdersInnerEstimate._();
 
-  factory CustomerPlacedOrderDtoOutputOrderEstimate([
-    void updates(CustomerPlacedOrderDtoOutputOrderEstimateBuilder b),
-  ]) = _$CustomerPlacedOrderDtoOutputOrderEstimate;
+  factory CustomerActiveOrdersDtoOutputOrdersInnerEstimate([
+    void updates(CustomerActiveOrdersDtoOutputOrdersInnerEstimateBuilder b),
+  ]) = _$CustomerActiveOrdersDtoOutputOrdersInnerEstimate;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerPlacedOrderDtoOutputOrderEstimateBuilder b) =>
-      b;
+  static void _defaults(
+    CustomerActiveOrdersDtoOutputOrdersInnerEstimateBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerPlacedOrderDtoOutputOrderEstimate> get serializer =>
-      _$CustomerPlacedOrderDtoOutputOrderEstimateSerializer();
+  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerEstimate>
+  get serializer =>
+      _$CustomerActiveOrdersDtoOutputOrdersInnerEstimateSerializer();
 }
 
-class _$CustomerPlacedOrderDtoOutputOrderEstimateSerializer
-    implements PrimitiveSerializer<CustomerPlacedOrderDtoOutputOrderEstimate> {
+class _$CustomerActiveOrdersDtoOutputOrdersInnerEstimateSerializer
+    implements
+        PrimitiveSerializer<CustomerActiveOrdersDtoOutputOrdersInnerEstimate> {
   @override
   final Iterable<Type> types = const [
-    CustomerPlacedOrderDtoOutputOrderEstimate,
-    _$CustomerPlacedOrderDtoOutputOrderEstimate,
+    CustomerActiveOrdersDtoOutputOrdersInnerEstimate,
+    _$CustomerActiveOrdersDtoOutputOrdersInnerEstimate,
   ];
 
   @override
-  final String wireName = r'CustomerPlacedOrderDtoOutputOrderEstimate';
+  final String wireName = r'CustomerActiveOrdersDtoOutputOrdersInnerEstimate';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CustomerPlacedOrderDtoOutputOrderEstimate object, {
+    CustomerActiveOrdersDtoOutputOrdersInnerEstimate object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'fromMin';
@@ -72,7 +75,7 @@ class _$CustomerPlacedOrderDtoOutputOrderEstimateSerializer
   @override
   Object serialize(
     Serializers serializers,
-    CustomerPlacedOrderDtoOutputOrderEstimate object, {
+    CustomerActiveOrdersDtoOutputOrdersInnerEstimate object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -87,7 +90,7 @@ class _$CustomerPlacedOrderDtoOutputOrderEstimateSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CustomerPlacedOrderDtoOutputOrderEstimateBuilder result,
+    required CustomerActiveOrdersDtoOutputOrdersInnerEstimateBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -115,12 +118,12 @@ class _$CustomerPlacedOrderDtoOutputOrderEstimateSerializer
   }
 
   @override
-  CustomerPlacedOrderDtoOutputOrderEstimate deserialize(
+  CustomerActiveOrdersDtoOutputOrdersInnerEstimate deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = CustomerPlacedOrderDtoOutputOrderEstimateBuilder();
+    final result = CustomerActiveOrdersDtoOutputOrdersInnerEstimateBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

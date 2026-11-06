@@ -87,6 +87,10 @@ export const orders = ordering.table(
     payIn: text('pay_in'),
     // CU §10.3: to the restaurant and the captain, up to 200 characters.
     note: text('note'),
+    // RA §8.3: when the automatic cancellation job runs, by the setting in
+    // force at placing, for the restaurant's countdown; null for an order
+    // placed before slice 1.9.
+    autoCancelAt: timestamp('auto_cancel_at', { withTimezone: true }),
     estimateFromMin: smallint('estimate_from_min').notNull(),
     estimateToMin: smallint('estimate_to_min').notNull(),
     // The address snapshot (CU §7.3–7.4, Q6): the saved address it was copied
