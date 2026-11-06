@@ -170,6 +170,7 @@ Serializers _$serializers =
           ..add(MerchantSignedOutDtoOutput.serializer)
           ..add(MerchantSignedOutDtoOutputStatusEnum.serializer)
           ..add(MerchantTokensDtoOutput.serializer)
+          ..add(RealtimeTokenDtoOutput.serializer)
           ..add(ResetSettingDto.serializer)
           ..add(RoleMatrixDtoOutput.serializer)
           ..add(RoleMatrixDtoOutputRolesInner.serializer)

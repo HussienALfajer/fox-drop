@@ -216,6 +216,21 @@ export class AppSessionsService {
   ): Promise<AppSession | null> {
     const claims = await this.keys.verify(accessToken, party, now);
     if (!claims) return null;
+    const session = await this.openSession(party, claims.accountId, claims.sessionId, now);
+    if (session === 'other_device') throw new SignedInElsewhereError();
+    return session;
+  }
+
+  // The session while it is open and its account may still use the app,
+  // checked as a request's token is; 'other_device' when a captain's sign-in
+  // on another device ended it. The real-time subscription proxy checks a
+  // connection's session with it (architecture §6.1).
+  async openSession(
+    party: AppParty,
+    accountId: string,
+    sessionId: string,
+    now = new Date(),
+  ): Promise<AppSession | 'other_device' | null> {
     const [open] = await this.database.db
       .select({
         id: appSessions.id,
@@ -226,30 +241,30 @@ export class AppSessionsService {
       .from(appSessions)
       .where(
         and(
-          eq(appSessions.id, claims.sessionId),
+          eq(appSessions.id, sessionId),
           eq(appSessions.party, party),
-          eq(appSessions.accountId, claims.accountId),
+          eq(appSessions.accountId, accountId),
         ),
       );
-    if (open?.endReason === 'other_device') throw new SignedInElsewhereError();
+    if (open?.endReason === 'other_device') return 'other_device';
     if (!open || open.endedAt) return null;
     let merchant: MerchantAccount | null = null;
     if (party === 'merchant') {
       // RA §5.5: a cashier's access ends with the restaurant's termination,
       // without waiting for the access token to expire.
-      merchant = await this.merchantAccounts.account(this.database.db, claims.accountId);
+      merchant = await this.merchantAccounts.account(this.database.db, accountId);
       if (merchant === null || !(await this.merchantAccounts.mayUse(merchant))) return null;
     }
     let captain: CaptainAccount | null = null;
     if (party === 'captain') {
       // CA §4.9: a terminated captain's sessions end with the contract.
-      captain = await this.captainAccounts.account(this.database.db, claims.accountId);
+      captain = await this.captainAccounts.account(this.database.db, accountId);
       if (captain === null || !(await this.captainAccounts.mayUse(captain, now))) return null;
     }
     return {
-      id: claims.sessionId,
+      id: sessionId,
       party,
-      accountId: claims.accountId,
+      accountId: accountId,
       deviceId: open.deviceId,
       merchant,
       captain,

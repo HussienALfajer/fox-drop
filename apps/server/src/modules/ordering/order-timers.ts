@@ -27,7 +27,10 @@ export const MERCHANT_AUTO_CANCEL = 'merchant_auto_cancel';
 // repeated job changes nothing.
 @Injectable()
 export class OrderTimers {
-  constructor(@Inject(DATABASE) private readonly database: Database) {}
+  constructor(
+    @Inject(DATABASE) private readonly database: Database,
+    private readonly jobs: Jobs,
+  ) {}
 
   // AP §8.3: cancels a placed order the restaurant did not accept in time;
   // true when it did.
@@ -46,7 +49,7 @@ export class OrderTimers {
           foodPrepared: false,
         })
         .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
-      await recordTransition(tx, order, {
+      await recordTransition(tx, this.jobs, order, {
         type: 'order.cancelled',
         from: 'placed',
         to: 'cancelled',

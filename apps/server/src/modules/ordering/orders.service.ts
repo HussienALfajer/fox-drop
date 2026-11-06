@@ -265,6 +265,7 @@ export class OrdersService implements OnModuleInit {
         );
         await recordTransition(
           tx,
+          this.jobs,
           {
             id,
             placedAt: now,

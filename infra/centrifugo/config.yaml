@@ -1,0 +1,26 @@
+# Centrifugo's channels (architecture §6), the same in every environment: the
+# local compose.yaml, each environment's infra/compose.yaml and the server's
+# tests mount this file. The secrets and the subscription proxies, whose
+# endpoints differ per environment, come from the environment:
+# CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY, CENTRIFUGO_HTTP_API_KEY and
+# CENTRIFUGO_PROXIES (the proxies "merchant" and "customer", each sending
+# X-Centrifugo-Proxy-Secret).
+channel:
+  namespaces:
+    # merchant:{restaurant_id}, every signed-in device of the restaurant
+    # (§6.2). History lets a device that reconnects receive what it missed;
+    # when it cannot, the app fetches the full state (RA §4.3).
+    - name: merchant
+      history_size: 100
+      history_ttl: 600s
+      force_recovery: true
+      # The API checks every subscription (§6.1).
+      subscribe_proxy_enabled: true
+      subscribe_proxy_name: merchant
+    # order:{order_id}, the customer's devices while the order is active.
+    - name: order
+      history_size: 50
+      history_ttl: 600s
+      force_recovery: true
+      subscribe_proxy_enabled: true
+      subscribe_proxy_name: customer

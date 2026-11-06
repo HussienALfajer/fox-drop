@@ -1,5 +1,5 @@
 import { Injectable, Logger, Module, type OnApplicationShutdown } from '@nestjs/common';
-import type { PgBoss, SendOptions, WorkHandler } from 'pg-boss';
+import type { PgBoss, SendOptions, WorkHandler, WorkOptions } from 'pg-boss';
 import { reportError } from '../observability/error-tracking.js';
 import { createJobQueue, type QueueName } from './job-queue.js';
 
@@ -22,9 +22,14 @@ export class Jobs implements OnApplicationShutdown {
     return (await this.boss()).send(name, data, options);
   }
 
-  // The worker's handler of a queue; a job that throws is retried.
-  async work<Data extends object>(name: QueueName, handler: WorkHandler<Data>): Promise<void> {
-    await (await this.boss()).work<Data>(name, handler);
+  // The worker's handler of a queue; a job that throws is retried. The
+  // options change how often it polls and how many jobs a call takes.
+  async work<Data extends object>(
+    name: QueueName,
+    handler: WorkHandler<Data>,
+    options: Pick<WorkOptions, 'pollingIntervalSeconds' | 'batchSize'> = {},
+  ): Promise<void> {
+    await (await this.boss()).work<Data>(name, options, handler);
   }
 
   async onApplicationShutdown(): Promise<void> {

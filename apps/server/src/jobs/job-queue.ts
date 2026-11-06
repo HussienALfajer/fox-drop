@@ -13,6 +13,8 @@ export const JOB_SCHEMA = 'pgboss';
 export const QUEUES = {
   // AP §8.3: the order the restaurant did not accept in time.
   merchantAutoCancel: 'ordering-merchant-auto-cancel',
+  // Architecture §5.5: a run of the outbox relay, sent with each transition.
+  outboxRelay: 'ordering-outbox-relay',
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];

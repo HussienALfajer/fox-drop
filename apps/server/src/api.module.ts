@@ -7,6 +7,7 @@ import { FxModule } from './modules/fx/index.js';
 import { GeoModule } from './modules/geo/index.js';
 import { IdentityModule, RouteAccessGuard } from './modules/identity/index.js';
 import { MerchantsModule } from './modules/merchants/index.js';
+import { NotificationsModule } from './modules/notifications/index.js';
 import { OrderingModule } from './modules/ordering/index.js';
 import { SettingsModule } from './modules/settings/index.js';
 import { PlaceholderSeedModule } from './seed/placeholder-seed.js';
@@ -28,6 +29,7 @@ import { PlaceholderSeedModule } from './seed/placeholder-seed.js';
     CaptainsModule,
     CustomersModule,
     OrderingModule,
+    NotificationsModule,
     PlaceholderSeedModule,
   ],
   controllers: STATUS_CONTROLLERS,

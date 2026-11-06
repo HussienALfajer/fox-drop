@@ -13,7 +13,8 @@ export type RouteAccess =
   | { kind: 'admin_session' }
   | { kind: 'admin_permission'; permission: string }
   | { kind: 'app_session' }
-  | { kind: 'optional_app_session' };
+  | { kind: 'optional_app_session' }
+  | { kind: 'realtime_proxy' };
 
 export const ROUTE_ACCESS = 'fox_drop:route_access';
 
@@ -61,6 +62,15 @@ export const OptionalAppSession = createParamDecorator(
   (_data: unknown, context: ExecutionContext): AppSession | null =>
     context.switchToHttp().getRequest<FastifyRequest>().appSession ?? null,
 );
+
+// A route Centrifugo calls, such as the subscription proxy (architecture
+// §6.1): it must carry X-Centrifugo-Proxy-Secret, the CENTRIFUGO_PROXY_SECRET
+// Centrifugo is configured with. Such a route stays out of the OpenAPI
+// document, so no client is generated for it.
+export const RealtimeProxy = () =>
+  SetMetadata(ROUTE_ACCESS, { kind: 'realtime_proxy' } satisfies RouteAccess);
+
+export const REALTIME_PROXY_SECRET_HEADER = 'x-centrifugo-proxy-secret';
 
 // The app session RouteAccessGuard checked for this request.
 export const CurrentAppSession = createParamDecorator(

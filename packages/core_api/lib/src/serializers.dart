@@ -119,6 +119,7 @@ import 'package:core_api/src/model/merchant_sign_in_dto.dart';
 import 'package:core_api/src/model/merchant_signed_in_dto_output.dart';
 import 'package:core_api/src/model/merchant_signed_out_dto_output.dart';
 import 'package:core_api/src/model/merchant_tokens_dto_output.dart';
+import 'package:core_api/src/model/realtime_token_dto_output.dart';
 import 'package:core_api/src/model/reset_setting_dto.dart';
 import 'package:core_api/src/model/role_matrix_dto_output.dart';
 import 'package:core_api/src/model/role_matrix_dto_output_roles_inner.dart';
@@ -246,6 +247,7 @@ part 'serializers.g.dart';
   MerchantSignedInDtoOutput,
   MerchantSignedOutDtoOutput,
   MerchantTokensDtoOutput,
+  RealtimeTokenDtoOutput,
   ResetSettingDto,
   RoleMatrixDtoOutput,
   RoleMatrixDtoOutputRolesInner,

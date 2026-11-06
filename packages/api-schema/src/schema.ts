@@ -884,6 +884,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/realtime/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantRealtimeToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/realtime/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerRealtimeToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2026,6 +2058,12 @@ export interface components {
                     directions: string | null;
                 };
             };
+        };
+        RealtimeTokenDto_Output: {
+            /** @description Centrifugo's connection token, valid 15 minutes; ask again when it expires. */
+            token: string;
+            /** Format: date-time */
+            expiresAt: string;
         };
     };
     responses: never;
@@ -3366,6 +3404,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomerPlacedOrderDto_Output"];
+                };
+            };
+        };
+    };
+    merchantRealtimeToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RealtimeTokenDto_Output"];
+                };
+            };
+        };
+    };
+    customerRealtimeToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RealtimeTokenDto_Output"];
                 };
             };
         };
