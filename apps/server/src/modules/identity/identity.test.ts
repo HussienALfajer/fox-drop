@@ -243,6 +243,7 @@ describe('the setup link (AP §5.1 item 3)', () => {
       payload: { token },
     });
     expect(enrolment.statusCode).toBe(200);
+    expect(enrolment.headers['cache-control']).toBe('no-store');
     const { secret, otpauthUri } = enrolment.json<{ secret: string; otpauthUri: string }>();
     expect(otpauthUri).toMatch(/^otpauth:\/\/totp\/.*secret=/);
 
@@ -252,6 +253,7 @@ describe('the setup link (AP §5.1 item 3)', () => {
       payload: { token, password, code: await totpCode(secret, new Date()) },
     });
     expect(completed.statusCode).toBe(200);
+    expect(completed.headers['cache-control']).toBe('no-store');
     const { backupCodes } = completed.json<{ backupCodes: string[] }>();
     expect(new Set(backupCodes).size).toBe(10);
 

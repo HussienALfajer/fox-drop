@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   Post,
@@ -111,6 +112,8 @@ export class AdminAuthController {
   ) {}
 
   @Post('setup/totp')
+  // The TOTP secret and the backup codes are shown once: never cached.
+  @Header('Cache-Control', 'no-store')
   @Public()
   @HttpCode(200)
   @ZodResponse({ status: 200, type: TotpEnrolmentDto })
@@ -123,6 +126,8 @@ export class AdminAuthController {
   }
 
   @Post('setup/complete')
+  // The TOTP secret and the backup codes are shown once: never cached.
+  @Header('Cache-Control', 'no-store')
   @Public()
   @HttpCode(200)
   @ZodResponse({ status: 200, type: BackupCodesDto })

@@ -11,9 +11,9 @@ Slice 1.14a, panel sign-in and the emergency code (`docs/roadmap.md`, Phase 1, s
 - **Owner decisions 2026-11-07:** functional, unstyled screens (plain HTML, no styling), logic apart from presentation.
 - **Branch:** `feat/panel-sign-in`.
 - **Plan:**
-  - [ ] Setup: the `/setup#token=` page (password, the QR code of `otpauthUri` and the secret, the first TOTP code, the 10 backup codes shown once).
-  - [ ] Sign-in and the session: the sign-in page (login, password, TOTP or backup code), the session read guarding the other routes, sign-out, and a refusal that sends back to sign-in when the session ends.
-  - [ ] The «رمز دخول طارئ» page: the app, the number and the reason; the code and its expiry shown once; shown only with `sign_in.emergency_code`.
+  - [x] Setup: the `/setup#token=` page (password, the QR code of `otpauthUri` and the secret, the first TOTP code, the 10 backup codes shown once).
+  - [x] Sign-in and the session: the sign-in page (login, password, TOTP or backup code), the session read guarding the other routes, sign-out, and a refusal that sends back to sign-in when the session ends.
+  - [x] The «رمز دخول طارئ» page: the app, the number and the reason; the code and its expiry shown once; shown only with `sign_in.emergency_code`.
   - [ ] Playwright tests for each page; review; pull request.
 
 ## Notes from earlier slices
