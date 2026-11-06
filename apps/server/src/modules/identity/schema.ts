@@ -253,7 +253,7 @@ export const appSignInCodes = identity.table(
     // for an emergency code.
     deviceId: text('device_id'),
     // The admin account that issued an emergency code, and why.
-    issuedBy: uuid('issued_by'),
+    issuedBy: uuid('issued_by').references(() => adminAccounts.id),
     issueReason: text('issue_reason'),
     codeHash: text('code_hash').notNull(),
     // Wrong codes entered so far (otp.max_attempts).

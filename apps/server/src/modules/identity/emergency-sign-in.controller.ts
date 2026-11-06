@@ -1,4 +1,4 @@
-import { Body, ConflictException, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
+import { Body, ConflictException, Header, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
@@ -47,6 +47,8 @@ export class EmergencySignInController {
   // restaurant_terminated for a number that cannot sign in.
   @Post()
   @HttpCode(200)
+  // The answer carries a code that signs in: never cached.
+  @Header('Cache-Control', 'no-store')
   @RequirePermission('sign_in.emergency_code')
   @ZodResponse({ status: 200, type: EmergencySignInCodeDto })
   async issue(

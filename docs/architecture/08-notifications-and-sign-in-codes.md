@@ -78,6 +78,7 @@ WhatsApp bans numbers that send many messages to people who did not expect them,
 
 - The screen says where the code was sent: «أرسلنا الرمز إلى واتساب على الرقم {الرقم}» (CU §5.2).
 - After the resend wait, only «إعادة الإرسال» and «تعديل الرقم» are offered. There is no SMS or voice option in V1.
+- When no code can be sent, the captain and restaurant apps offer «لديّ رمز من العمليات», which opens the code screen for the number entered (§8.3.5; RA §5.2, CA §4.9). The customer app does not.
 - SMS auto-fill does not apply to WhatsApp messages. The code field accepts paste, and on Android the app offers to paste a 6-digit code it finds on the clipboard.
 
 ### 8.3.5 Emergency sign-in (owner decisions 2026-11-07)
@@ -85,8 +86,8 @@ WhatsApp bans numbers that send many messages to people who did not expect them,
 When no code reaches a captain or a restaurant user (every sending number stopped, or one person's code lost), operations sign them in by phone:
 
 - OWN or OPS (AP §6.3, `sign_in.emergency_code`) verify the person by a phone call and issue a code for the app (captain or restaurant) and the number, with a required reason. The number must belong to an account that may sign in.
-- The code is 6 digits like any other, shown once to the issuer, who reads it out. It is valid 10 minutes (fixed), used once, ends after `otp.max_attempts` wrong attempts, and replaces the number's open code.
-- It is bound to the number, not to a device: the person types it in the app's usual code screen and the first device that enters it signs in. The sign-in then runs as for a WhatsApp code (the account checks, one device for a captain).
-- The issue is audited with the issuer, the account and the reason, never the code or the number.
+- The code is 6 digits like any other, shown once to the issuer, who reads it out. It is valid 10 minutes (fixed), used once, ends after `otp.max_attempts` wrong attempts, and replaces the number's open code. While it is open, a code request for that number and app is refused with the resend wait until it expires (owner decision 2026-11-07), so neither the person's own resend nor anyone else can end it.
+- It is bound to the number, not to a device: the person types it in the app's usual code screen and the first device that enters it signs in. The sign-in then runs as for a WhatsApp code (the account checks, one device for a captain). Wrong attempts from any device count against it, so someone who knows the number can use it up; operations then issue a new one.
+- The issue is audited with the issuer, the account, its city and the reason, never the code or the number. The answer is never cached, and the route takes no `Idempotency-Key` (§5.3): a repeat issues a new code, since the code is never stored to answer a repeat with.
 - Customers are not covered: they wait for the channel to return (§22 item 1).
-- The apps must let the person reach the code screen when the code request fails (§8.3.4); the panel screen waits for the design.
+- The panel screen waits for the design; where it lives (the captain's profile, the restaurant's users, or both) is decided with it.

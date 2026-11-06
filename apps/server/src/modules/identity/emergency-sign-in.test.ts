@@ -89,7 +89,10 @@ async function captain(terminated = false) {
   return { phone, accountId };
 }
 
-async function restaurantUser(status: 'draft' | 'active') {
+async function restaurantUser(
+  status: 'draft' | 'active' | 'terminated',
+  role: 'owner' | 'cashier' = 'owner',
+) {
   const restaurantId = await merchants.createRestaurant(
     azaz,
     {
@@ -102,11 +105,14 @@ async function restaurantUser(status: 'draft' | 'active') {
     },
     change,
   );
-  if (status === 'active') await merchants.setAccountStatus(restaurantId, 'active', change);
   const phone = newPhone();
   const accountId = await app
     .get(MerchantAccountsService)
-    .addAccount(restaurantId, { role: 'owner', name: 'سامر', phone }, change);
+    .addAccount(restaurantId, { role, name: 'سامر', phone }, change);
+  if (status !== 'draft') await merchants.setAccountStatus(restaurantId, 'active', change);
+  if (status === 'terminated') {
+    await merchants.setAccountStatus(restaurantId, 'terminated', change);
+  }
   return { phone, accountId };
 }
 
@@ -184,7 +190,7 @@ describe('emergency sign-in codes (W4, architecture §22 item 1)', () => {
     expect(JSON.stringify(stored.rows[0])).not.toContain(body.code);
 
     const events = await sql.query(
-      `SELECT actor_id, actor_role, target_type, reason, changes::text AS changes
+      `SELECT actor_id, actor_role, target_type, city_id, reason, changes::text AS changes
        FROM audit.events WHERE action = 'app_sign_in_code.emergency_issue' AND target_id = $1`,
       [accountId],
     );
@@ -193,6 +199,7 @@ describe('emergency sign-in codes (W4, architecture §22 item 1)', () => {
         actor_id: ops.accountId,
         actor_role: 'OPS',
         target_type: 'captain_account',
+        city_id: azaz,
         reason: 'أرقام الإرسال متوقفة، تحققت منه هاتفياً',
       }),
     ]);
@@ -216,6 +223,47 @@ describe('emergency sign-in codes (W4, architecture §22 item 1)', () => {
     const second = (await owner.issue({ party: 'captain', phone, reason: 'مرة ثانية' })).json();
     expect((await signIn('captain', phone, first.code)).statusCode).toBe(400);
     expect((await signIn('captain', phone, second.code)).statusCode).toBe(200);
+  });
+
+  it('are kept while open: a code request waits until the emergency code expires', async () => {
+    const ops = await admin(['OPS']);
+    const service = app.get(EmergencySignInService);
+    const signInService = app.get(AppSignInService);
+    const { phone } = await captain();
+    const now = new Date();
+    const issued = await service.issue(
+      { party: 'captain', phone, reason: 'لم يصله الرمز' },
+      ops.session,
+      noRequest,
+      now,
+    );
+    const request = { party: 'captain' as const, phone, deviceId: randomUUID() };
+    const later = new Date(now.getTime() + 5 * 60_000);
+    await expect(signInService.requestCode(request, noRequest, later)).rejects.toMatchObject({
+      refusal: 'resend_wait',
+      retryAfterSec: 5 * 60,
+    });
+    // The emergency code still signs in.
+    expect((await signIn('captain', phone, issued.code)).statusCode).toBe(200);
+
+    // Once it expired, a code request replaces it as usual.
+    const next = await service.issue(
+      { party: 'captain', phone, reason: 'مرة ثانية' },
+      ops.session,
+      noRequest,
+      now,
+    );
+    const expired = new Date(now.getTime() + 10 * 60_000);
+    await signInService.requestCode(request, noRequest, expired);
+    const replaced = await sql.query(
+      `SELECT end_reason FROM identity.app_sign_in_codes WHERE issue_reason = 'مرة ثانية' AND issued_by = $1`,
+      [ops.accountId],
+    );
+    expect(replaced.rows).toEqual([{ end_reason: 'replaced' }]);
+    await expect(
+      signInService.signIn({ ...request, code: sender.lastCode(phone)! }, noRequest, expired),
+    ).resolves.toBeDefined();
+    expect(next.code).toMatch(/^\d{6}$/);
   });
 
   it('expire after 10 minutes and end after otp.max_attempts wrong codes', async () => {
@@ -263,6 +311,14 @@ describe('emergency sign-in codes (W4, architecture §22 item 1)', () => {
     const refusedDraft = await ops.issue({ party: 'merchant', phone: draft.phone, reason: 'x' });
     expect(refusedDraft.statusCode).toBe(409);
     expect(refusedDraft.json().error).toBe('restaurant_draft');
+
+    const cashier = await restaurantUser('terminated', 'cashier');
+    const refusedCashier = await ops.issue({
+      party: 'merchant',
+      phone: cashier.phone,
+      reason: 'x',
+    });
+    expect(refusedCashier.json().error).toBe('restaurant_terminated');
 
     const ended = await captain(true);
     const refusedEnded = await ops.issue({ party: 'captain', phone: ended.phone, reason: 'x' });

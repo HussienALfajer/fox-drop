@@ -10,7 +10,7 @@ import {
   type MerchantSignInRefusal,
 } from './merchant-accounts.service.js';
 import { actorRole } from './roles.js';
-import { appSignInCodes } from './schema.js';
+import { appSignInCodes, captainAccounts, merchantAccounts } from './schema.js';
 import { IDENTITY_SECRETS, IdentitySecrets, newSignInCode } from './secrets.js';
 
 // Owner decision 2026-11-07: an emergency code is valid 10 minutes, fixed.
@@ -55,6 +55,14 @@ export class EmergencySignInService {
         : await this.merchantAccounts.signInAccount(phoneHash);
     if (typeof account === 'string') throw new EmergencyCodeRefusedError(account);
 
+    // The audit event carries the account's city (AP D28, §9.16).
+    const table = request.party === 'captain' ? captainAccounts : merchantAccounts;
+    const [city] = await this.database.db
+      .select({ cityId: table.cityId })
+      .from(table)
+      .where(eq(table.id, account.id));
+    if (!city) throw new Error('the account has no city');
+
     const code = newSignInCode();
     const expiresAt = new Date(now.getTime() + EMERGENCY_CODE_MINUTES * 60_000);
     await this.database.db.transaction(async (tx) => {
@@ -86,7 +94,7 @@ export class EmergencySignInService {
         {
           actor: { type: 'admin', id: actor.accountId, role: actorRole(actor.roles) },
           context,
-          cityId: null,
+          cityId: city.cityId,
           action: 'app_sign_in_code.emergency_issue',
           target: {
             type: request.party === 'captain' ? 'captain_account' : 'merchant_account',

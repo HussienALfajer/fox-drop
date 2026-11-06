@@ -92,6 +92,7 @@ The device check runs before the first time a captain goes online, and again fro
 ## 4.9 Sign-in, session and device
 
 - **Sign-in:** by phone number and a code sent over WhatsApp, the only channel in V1 (`otp.channel_order`, technology-stack §8.3), with the `otp.*` settings (AP Appendix A). A number without WhatsApp gets «هذا الرقم غير مسجّل على واتساب».
+- **When no code can be sent** (the sending numbers are down), the error offers «لديّ رمز من العمليات» (owner decision 2026-11-07): it opens the code screen for the number entered, with a button to call operations, who can issue an emergency sign-in code after verifying the captain by phone (technology-stack §8.3.5). The sign-in then follows the rules below.
 - **One device (K5):** a captain is signed in on one device at a time (fixed). Signing in on a new device signs the old one out, and the old device shows «سُجّل دخولك من جهاز آخر».
 - **During an active order:** the captain cannot sign in on a second device by themselves. If the phone is lost, broken or out of battery, OPS release the old device from the panel (AP §9.7.5, «تحرير الجهاز»). The captain then signs in on the new device and continues the same order from its current step. If the captain has no phone at all, OPS can record the delivery on their behalf (AP §9.3.2).
 - **Session length:** sessions do not expire with inactivity. They end on sign-out, a sign-in on another device, termination, or an admin forcing sign-out.

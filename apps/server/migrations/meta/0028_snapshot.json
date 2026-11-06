@@ -1,5 +1,5 @@
 {
-  "id": "aab8c1fb-047c-4333-b8b4-799dbcb8307b",
+  "id": "1d38aad0-a539-4061-abf5-e7df0789b383",
   "prevId": "f2ecc3ce-1a92-45ff-b280-b153c3f73ef1",
   "version": "7",
   "dialect": "postgresql",
@@ -3046,7 +3046,22 @@
           "with": {}
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "app_sign_in_codes_issued_by_admin_accounts_id_fk": {
+          "name": "app_sign_in_codes_issued_by_admin_accounts_id_fk",
+          "tableFrom": "app_sign_in_codes",
+          "tableTo": "admin_accounts",
+          "schemaTo": "identity",
+          "columnsFrom": [
+            "issued_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
