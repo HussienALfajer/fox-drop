@@ -3,15 +3,19 @@ import { DatabaseModule } from '../../database/database.module.js';
 import { GeoModule } from '../geo/index.js';
 import { IdentityModule } from '../identity/index.js';
 import { MerchantsModule } from '../merchants/index.js';
+import { SettingsModule } from '../settings/index.js';
+import { BrowsingService } from './browsing.service.js';
+import { CustomerBrowsingController } from './customer-browsing.controller.js';
 import { CustomerProfileController } from './customer-profile.controller.js';
 import { CustomersService } from './customers.service.js';
 
 // The customers module (architecture §4.2): the customers' profiles and
-// saved addresses. Other modules read them through CustomersService only.
+// saved addresses, and their browsing of the restaurants that deliver to
+// them. Other modules read them through CustomersService only.
 @Module({
-  imports: [DatabaseModule, GeoModule, MerchantsModule, IdentityModule],
-  controllers: [CustomerProfileController],
-  providers: [CustomersService],
+  imports: [DatabaseModule, SettingsModule, GeoModule, MerchantsModule, IdentityModule],
+  controllers: [CustomerProfileController, CustomerBrowsingController],
+  providers: [CustomersService, BrowsingService],
   exports: [CustomersService],
 })
 export class CustomersModule {}

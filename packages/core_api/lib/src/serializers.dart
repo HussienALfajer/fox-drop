@@ -54,6 +54,19 @@ import 'package:core_api/src/model/customer_new_address_dto_location.dart';
 import 'package:core_api/src/model/customer_profile_dto_output.dart';
 import 'package:core_api/src/model/customer_profile_dto_output_profile.dart';
 import 'package:core_api/src/model/customer_refresh_dto.dart';
+import 'package:core_api/src/model/customer_restaurant_list_dto_output.dart';
+import 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner.dart';
+import 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner_delivery_fee.dart';
+import 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner_estimate.dart';
+import 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner_state.dart';
+import 'package:core_api/src/model/customer_restaurant_page_dto_output.dart';
+import 'package:core_api/src/model/customer_restaurant_page_dto_output_delivery_fee.dart';
+import 'package:core_api/src/model/customer_restaurant_page_dto_output_menu_inner.dart';
+import 'package:core_api/src/model/customer_restaurant_page_dto_output_menu_inner_items_inner.dart';
+import 'package:core_api/src/model/customer_restaurant_page_dto_output_menu_inner_items_inner_option_groups_inner.dart';
+import 'package:core_api/src/model/customer_restaurant_page_dto_output_menu_inner_items_inner_option_groups_inner_options_inner.dart';
+import 'package:core_api/src/model/customer_restaurant_page_dto_output_menu_inner_window.dart';
+import 'package:core_api/src/model/customer_restaurant_page_dto_output_schedule_inner.dart';
 import 'package:core_api/src/model/customer_save_profile_dto.dart';
 import 'package:core_api/src/model/customer_session_dto_output.dart';
 import 'package:core_api/src/model/customer_sign_in_dto.dart';
@@ -146,6 +159,19 @@ part 'serializers.g.dart';
   CustomerProfileDtoOutput,
   CustomerProfileDtoOutputProfile,
   CustomerRefreshDto,
+  CustomerRestaurantListDtoOutput,
+  CustomerRestaurantListDtoOutputRestaurantsInner,
+  CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee,
+  CustomerRestaurantListDtoOutputRestaurantsInnerEstimate,
+  CustomerRestaurantListDtoOutputRestaurantsInnerState,
+  CustomerRestaurantPageDtoOutput,
+  CustomerRestaurantPageDtoOutputDeliveryFee,
+  CustomerRestaurantPageDtoOutputMenuInner,
+  CustomerRestaurantPageDtoOutputMenuInnerItemsInner,
+  CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInner,
+  CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInnerOptionsInner,
+  CustomerRestaurantPageDtoOutputMenuInnerWindow,
+  CustomerRestaurantPageDtoOutputScheduleInner,
   CustomerSaveProfileDto,
   CustomerSessionDtoOutput,
   CustomerSignInDto,
@@ -204,19 +230,19 @@ Serializers serializers =
             () => ListBuilder<SettingListDtoOutputSettingsInner>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CustomerRestaurantListDtoOutputRestaurantsInner),
+            ]),
+            () =>
+                ListBuilder<CustomerRestaurantListDtoOutputRestaurantsInner>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, [FullType(TeamUsersDtoOutputUsersInner)]),
             () => ListBuilder<TeamUsersDtoOutputUsersInner>(),
           )
           ..addBuilderFactory(
-            const FullType(BuiltList, [
-              FullType(
-                MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
-                >(),
+            const FullType(BuiltList, [FullType(num)]),
+            () => ListBuilder<num>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -232,9 +258,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
-              FullType(MerchantMenuDtoOutputCategoriesInner),
+              FullType(CustomerRestaurantPageDtoOutputMenuInnerItemsInner),
             ]),
-            () => ListBuilder<MerchantMenuDtoOutputCategoriesInner>(),
+            () =>
+                ListBuilder<
+                  CustomerRestaurantPageDtoOutputMenuInnerItemsInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -250,6 +279,63 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(RoleMatrixDtoOutputRolesInner),
+            ]),
+            () => ListBuilder<RoleMatrixDtoOutputRolesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(
+                MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CustomerRestaurantPageDtoOutputScheduleInner),
+            ]),
+            () => ListBuilder<CustomerRestaurantPageDtoOutputScheduleInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(
+                CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInnerOptionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantMenuDtoOutputCategoriesInner),
+            ]),
+            () => ListBuilder<MerchantMenuDtoOutputCategoriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(
+                CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CustomerRestaurantPageDtoOutputMenuInner),
+            ]),
+            () => ListBuilder<CustomerRestaurantPageDtoOutputMenuInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(
                 MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInner,
               ),
@@ -262,12 +348,6 @@ Serializers serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(String)]),
             () => ListBuilder<String>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
-              FullType(RoleMatrixDtoOutputRolesInner),
-            ]),
-            () => ListBuilder<RoleMatrixDtoOutputRolesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

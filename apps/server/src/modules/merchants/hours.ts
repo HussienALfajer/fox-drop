@@ -92,3 +92,37 @@ export function currentPeriod(
   }
   return null;
 }
+
+// When the restaurant next opens by its schedule, at an opening minute after
+// this moment; null when the schedule has no period. The customer sees it
+// while it is closed: «مغلق — يفتح {اليوم} {الساعة}» (CU §8.2, U6).
+export function nextOpening(
+  periods: readonly OpeningPeriod[],
+  instant: Date,
+  timeZone: string,
+): Date | null {
+  if (periods.length === 0) return null;
+  const now = minuteOfWeek(instant, timeZone);
+  const wait = Math.min(
+    ...periods.map((period) => ((startInWeek(period) - now + WEEK - 1) % WEEK) + 1),
+  );
+  const startOfMinute = instant.getTime() - (instant.getTime() % 60_000);
+  return new Date(startOfMinute + wait * 60_000);
+}
+
+// CU §9.3: whether a moment is inside a category's daily availability window
+// on the city's clock, such as breakfast until 12:00. Like a period, a window
+// whose end is not after its start crosses midnight; it starts at its first
+// minute and ends at its last.
+export function inDailyWindow(
+  window: { startsAt: number; endsAt: number },
+  instant: Date,
+  timeZone: string,
+): boolean {
+  const minute = minuteOfWeek(instant, timeZone) % DAY;
+  const length =
+    window.endsAt > window.startsAt
+      ? window.endsAt - window.startsAt
+      : window.endsAt + DAY - window.startsAt;
+  return (minute - window.startsAt + DAY) % DAY < length;
+}

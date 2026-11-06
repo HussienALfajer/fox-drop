@@ -9,7 +9,13 @@ import { FxService } from '../fx/index.js';
 import { GeoService, nextCutoff, type Point } from '../geo/index.js';
 import { lockCityCurrencies, SettingsService } from '../settings/index.js';
 import { commissionAt } from './commission.js';
-import { checkWeeklySchedule, currentPeriod, type OpeningPeriod } from './hours.js';
+import {
+  checkWeeklySchedule,
+  currentPeriod,
+  inDailyWindow,
+  nextOpening,
+  type OpeningPeriod,
+} from './hours.js';
 import { type AccountStatus, type OperatingState, operatingState } from './operating-state.js';
 import {
   categories,
@@ -93,6 +99,11 @@ export interface Restaurant {
   cityId: string;
   nameAr: string;
   nameEn: string | null;
+  category: string | null;
+  description: string | null;
+  // Object storage keys; null until the storage arrives (T7).
+  logoKey: string | null;
+  coverKey: string | null;
   accountStatus: AccountStatus;
   // The reason of a suspension, for the restaurant app's banner (RA §5.5).
   suspensionReason: string | null;
@@ -113,6 +124,14 @@ export interface Restaurant {
 export type SwitchedOff = { until: Date | null } | null;
 
 export type DevicePlatform = (typeof devicePlatforms)[number];
+
+export interface StorefrontState {
+  state: OperatingState;
+  // A holiday close's message, or an operations pause's (AP §9.6.5).
+  message: string | null;
+  // While closed by the schedule, its next opening; null otherwise.
+  opensAt: Date | null;
+}
 
 export interface MenuOption {
   id: string;
@@ -135,9 +154,11 @@ export interface MenuItem {
   code: string;
   name: string;
   description: string | null;
+  // Object storage key; null until the storage arrives (T7).
+  photoKey: string | null;
   price: Money;
-  // Whether a customer can order it now: its switch, its category's, and its
-  // required groups' options (RA §9.3).
+  // Whether a customer can order it now: its switch, its category's (and its
+  // window), and its required groups' options (RA §9.3).
   available: boolean;
   switchedOff: SwitchedOff;
   hidden: boolean;
@@ -148,8 +169,13 @@ export interface MenuCategory {
   id: string;
   name: string;
   hidden: boolean;
+  // Its switch and its daily window.
   available: boolean;
   switchedOff: SwitchedOff;
+  // CU §9.3: minutes after midnight on the city's clock, such as breakfast
+  // until 12:00; null all day. «متوفر من {الساعة}» outside it.
+  window: { startsAt: number; endsAt: number } | null;
+  inWindow: boolean;
   items: MenuItem[];
 }
 
@@ -302,6 +328,10 @@ export class MerchantsService implements OnModuleInit {
         cityId: restaurants.cityId,
         nameAr: restaurants.nameAr,
         nameEn: restaurants.nameEn,
+        category: restaurants.category,
+        description: restaurants.description,
+        logoKey: restaurants.logoKey,
+        coverKey: restaurants.coverKey,
         accountStatus: restaurants.accountStatus,
         suspensionReason: restaurants.suspensionReason,
         visible: restaurants.visible,
@@ -334,6 +364,10 @@ export class MerchantsService implements OnModuleInit {
       cityId: row.cityId,
       nameAr: row.nameAr,
       nameEn: row.nameEn,
+      category: row.category,
+      description: row.description,
+      logoKey: row.logoKey,
+      coverKey: row.coverKey,
       accountStatus: row.accountStatus,
       suspensionReason: row.suspensionReason,
       visible: row.visible,
@@ -499,6 +533,13 @@ export class MerchantsService implements OnModuleInit {
   // The state at a moment (RA §7.1). Active orders count from the ordering
   // module when it exists (slice 1.8); until then none.
   async operatingState(restaurantId: string, now = new Date()): Promise<OperatingState> {
+    return (await this.storefrontState(restaurantId, now)).state;
+  }
+
+  // The operating state as customers see it (CU §9.2): with the message of a
+  // holiday close or an operations pause, and, while closed by the schedule,
+  // when it next opens («مغلق — يفتح {اليوم} {الساعة}»).
+  async storefrontState(restaurantId: string, now = new Date()): Promise<StorefrontState> {
     const db = this.database.db;
     const [row] = await db
       .select({
@@ -514,7 +555,7 @@ export class MerchantsService implements OnModuleInit {
     const timeZone = await this.geo.cityTimeZone(row.cityId);
     if (timeZone === null) throw new Error(`restaurant ${restaurantId} is in an unknown city`);
     const [holiday] = await db
-      .select({ endsAt: holidayCloses.endsAt })
+      .select({ endsAt: holidayCloses.endsAt, message: holidayCloses.message })
       .from(holidayCloses)
       .where(
         and(
@@ -527,7 +568,7 @@ export class MerchantsService implements OnModuleInit {
       .orderBy(desc(holidayCloses.endsAt))
       .limit(1);
     const [pause] = await db
-      .select({ source: pauses.source, endsAt: pauses.endsAt })
+      .select({ source: pauses.source, endsAt: pauses.endsAt, message: pauses.message })
       .from(pauses)
       .where(
         and(
@@ -539,11 +580,12 @@ export class MerchantsService implements OnModuleInit {
       )
       .orderBy(desc(pauses.startsAt))
       .limit(1);
-    return operatingState(
+    const schedule = await this.schedule(db, restaurantId);
+    const state = operatingState(
       {
         accountStatus: row.accountStatus,
         holiday: holiday ?? null,
-        period: currentPeriod(await this.schedule(db, restaurantId), now, timeZone),
+        period: currentPeriod(schedule, now, timeZone),
         pause: pause ?? null,
         busyMode:
           row.busyExtraMin !== null && row.busyUntil !== null
@@ -554,6 +596,14 @@ export class MerchantsService implements OnModuleInit {
       },
       now,
     );
+    const message =
+      state.state === 'holiday'
+        ? (holiday?.message ?? null)
+        : state.state === 'paused' && state.source === 'ops'
+          ? (pause?.message ?? null)
+          : null;
+    const opensAt = state.state === 'closed' ? nextOpening(schedule, now, timeZone) : null;
+    return { state, message, opensAt };
   }
 
   // Whether the restaurant delivers to the point (RA R13, CU §8): the point
@@ -825,15 +875,17 @@ export class MerchantsService implements OnModuleInit {
 
   // The published menu, in order, with what is hidden or unavailable now
   // marked; deleted rows are left out. A switch off «حتى الغد» is on again
-  // from its time. Availability windows join with the customer's menu
-  // (slice 1.7).
+  // from its time. A category outside its daily window, on the city's clock,
+  // is unavailable with its items (CU §9.3).
   async menu(restaurantId: string, now = new Date()): Promise<Menu> {
     const db = this.database.db;
     const [restaurant] = await db
-      .select({ id: restaurants.id })
+      .select({ id: restaurants.id, cityId: restaurants.cityId })
       .from(restaurants)
       .where(eq(restaurants.id, restaurantId));
     if (!restaurant) throw new MerchantsRefusedError('unknown_restaurant', 'no such restaurant');
+    const timeZone = await this.geo.cityTimeZone(restaurant.cityId);
+    if (timeZone === null) throw new Error(`restaurant ${restaurantId} is in an unknown city`);
     const published = (table: { published: AnyPgColumn; deletedAt: AnyPgColumn }) =>
       and(eq(table.published, true), isNull(table.deletedAt));
     const categoryRows = await db
@@ -897,39 +949,48 @@ export class MerchantsService implements OnModuleInit {
       ]),
     );
     return {
-      categories: categoryRows.map((category) => ({
-        id: category.id,
-        name: category.name,
-        hidden: category.hidden,
-        available: switchedOff(category, now) === null,
-        switchedOff: switchedOff(category, now),
-        items: itemRows
-          .filter((item) => item.categoryId === category.id)
-          .map((item) => {
-            const groups = links
-              .filter((link) => link.itemId === item.id)
-              .flatMap((link) => groupsById.get(link.groupId) ?? []);
-            // RA §9.3: an unavailable category makes its items unavailable,
-            // and so does a required group whose options are all unavailable.
-            const requiredGroupOut = groups.some(
-              (group) => group.minChoices > 0 && group.options.every((option) => !option.available),
-            );
-            return {
-              id: item.id,
-              code: item.code,
-              name: item.name,
-              description: item.description,
-              price: { amount: item.price, currency: item.currency },
-              available:
-                switchedOff(item, now) === null &&
-                switchedOff(category, now) === null &&
-                !requiredGroupOut,
-              switchedOff: switchedOff(item, now),
-              hidden: item.hidden,
-              optionGroups: groups,
-            };
-          }),
-      })),
+      categories: categoryRows.map((category) => {
+        const window =
+          category.windowStartsAt === null || category.windowEndsAt === null
+            ? null
+            : { startsAt: category.windowStartsAt, endsAt: category.windowEndsAt };
+        const inWindow = window === null || inDailyWindow(window, now, timeZone);
+        const categoryOn = switchedOff(category, now) === null && inWindow;
+        return {
+          id: category.id,
+          name: category.name,
+          hidden: category.hidden,
+          available: categoryOn,
+          switchedOff: switchedOff(category, now),
+          window,
+          inWindow,
+          items: itemRows
+            .filter((item) => item.categoryId === category.id)
+            .map((item) => {
+              const groups = links
+                .filter((link) => link.itemId === item.id)
+                .flatMap((link) => groupsById.get(link.groupId) ?? []);
+              // RA §9.3: an unavailable category makes its items unavailable,
+              // and so does a required group whose options are all unavailable.
+              const requiredGroupOut = groups.some(
+                (group) =>
+                  group.minChoices > 0 && group.options.every((option) => !option.available),
+              );
+              return {
+                id: item.id,
+                code: item.code,
+                name: item.name,
+                description: item.description,
+                photoKey: item.photoKey,
+                price: { amount: item.price, currency: item.currency },
+                available: switchedOff(item, now) === null && categoryOn && !requiredGroupOut,
+                switchedOff: switchedOff(item, now),
+                hidden: item.hidden,
+                optionGroups: groups,
+              };
+            }),
+        };
+      }),
     };
   }
 

@@ -38,5 +38,6 @@ export {
   type Money,
   type NewRestaurant,
   type Restaurant,
+  type StorefrontState,
   type SwitchedOff,
 } from './merchants.service.js';
