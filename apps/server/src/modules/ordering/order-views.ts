@@ -3,7 +3,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { equivalent, type RateSnapshot } from '../fx/index.js';
 import type { Point } from '../geo/index.js';
 import type { QuoteMoney } from './quote.js';
-import { orderLines, orders, type orderStatuses } from './schema.js';
+import { orderEvents, orderLines, orders, type orderStatuses } from './schema.js';
 
 type OrderStatus = (typeof orderStatuses)[number];
 type Executor = Pick<NodePgDatabase, 'select'>;
@@ -26,6 +26,12 @@ export interface OrderView {
   // the second; null for an order placed before slice 1.9.
   acceptAlertAt: Date | null;
   autoCancelAt: Date | null;
+  // RA §8.5, docs/domain/03: from the restaurant's acceptance, the prep time
+  // chosen, the promised time and the app installation it was accepted on
+  // (RA §18; null when another actor accepted).
+  acceptance: { at: Date; prepMin: number; promisedAt: Date; device: string | null } | null;
+  // RA §8.8: «الطلب جاهز».
+  readyAt: Date | null;
   cancellation: { at: Date; reason: string } | null;
   currency: string;
   money: QuoteMoney;
@@ -77,6 +83,10 @@ export async function readOrders(
       placedAt: orders.placedAt,
       acceptAlertAt: orders.acceptAlertAt,
       autoCancelAt: orders.autoCancelAt,
+      acceptedAt: orders.acceptedAt,
+      prepMin: orders.prepMin,
+      promisedAt: orders.promisedAt,
+      readyAt: orders.readyAt,
       cancelledAt: orders.cancelledAt,
       cancelReason: orders.cancelReason,
       currency: orders.currency,
@@ -126,6 +136,28 @@ export async function readOrders(
       ),
     )
     .orderBy(asc(orderLines.orderId), asc(orderLines.position));
+  const accepted = rows.filter((row) => row.acceptedAt !== null);
+  const acceptances =
+    accepted.length === 0
+      ? []
+      : await executor
+          .select({ orderId: orderEvents.orderId, device: orderEvents.actorDevice })
+          .from(orderEvents)
+          .where(
+            and(
+              inArray(
+                orderEvents.orderId,
+                accepted.map((row) => row.id),
+              ),
+              inArray(
+                orderEvents.orderPlacedAt,
+                accepted.map((row) => row.placedAt),
+              ),
+              // The acceptance itself, not a return to preparing (AP §9.3.3).
+              eq(orderEvents.fromStatus, 'placed'),
+              eq(orderEvents.toStatus, 'accepted'),
+            ),
+          );
   return rows.map((row) => {
     const snapshot = snapshotOf(row.rateSnapshot);
     return {
@@ -139,6 +171,16 @@ export async function readOrders(
       placedAt: row.placedAt,
       acceptAlertAt: row.acceptAlertAt,
       autoCancelAt: row.autoCancelAt,
+      acceptance:
+        row.acceptedAt && row.prepMin !== null && row.promisedAt
+          ? {
+              at: row.acceptedAt,
+              prepMin: row.prepMin,
+              promisedAt: row.promisedAt,
+              device: acceptances.find((event) => event.orderId === row.id)?.device ?? null,
+            }
+          : null,
+      readyAt: row.readyAt,
       cancellation:
         row.cancelledAt && row.cancelReason
           ? { at: row.cancelledAt, reason: row.cancelReason }

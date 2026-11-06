@@ -531,11 +531,24 @@ describe('CaptainsService.eligibleNear (AP §9.12.6)', () => {
     expect(await captains.eligibleNear(cityId, restaurant, 500, new Date())).toBe(false);
   });
 
+  it('gives the nearest eligible captain with its vehicle and position, for the search start', async () => {
+    const { cityId, id } = await online(near);
+    const nearest = await captains.nearestEligible(cityId, restaurant, 500, new Date());
+    expect(nearest).toMatchObject({ captainId: id, vehicle: 'motorbike' });
+    expect(nearest!.position.latitude).toBeCloseTo(near.latitude, 5);
+    expect(nearest!.position.longitude).toBeCloseTo(near.longitude, 5);
+    await captains.goOffline(id, new Date());
+    expect(await captains.nearestEligible(cityId, restaurant, 500, new Date())).toBeNull();
+  });
+
   it('reads the locations when Valkey cannot answer (architecture §5.7)', async () => {
     const { cityId, id } = await online(near);
     const positions = moduleRef.get(LivePositions);
     const spy = vi.spyOn(positions, 'near').mockResolvedValue(null);
     try {
+      const nearest = await captains.nearestEligible(cityId, restaurant, 500, new Date());
+      expect(nearest).toMatchObject({ captainId: id });
+      expect(nearest!.position.latitude).toBeCloseTo(near.latitude, 5);
       expect(await captains.eligibleNear(cityId, restaurant, 500, new Date())).toBe(true);
       // About 5.5 km away is outside the 3 km radius there too.
       expect(

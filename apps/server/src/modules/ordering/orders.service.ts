@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -21,13 +20,11 @@ import { recordTransition } from './order-events.js';
 import type { AutoCancelJob } from './order-timers.js';
 import { type Quote, type QuoteRequest, QuoteRefusedError, QuoteService } from './quote.service.js';
 import { orderKey, readOrders, type OrderView } from './order-views.js';
-import { idempotencyKeys, orderLines, orderNumbers, orders } from './schema.js';
+import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
+import { orderLines, orderNumbers, orders } from './schema.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 type Executor = Pick<NodePgDatabase, 'select'>;
-
-// Architecture §5.3: a key answers its order for 24 hours.
-const KEY_LIFETIME_MS = 24 * 60 * 60 * 1000;
 
 // AP §4.8: a city's first order number (owner decision 2026-11-06).
 const FIRST_ORDER_NUMBER = 10001n;
@@ -206,6 +203,8 @@ export class OrdersService implements OnModuleInit {
             autoCancelAt,
             estimateFromMin: quote.estimate.fromMin,
             estimateToMin: quote.estimate.toMin,
+            tripSeconds: priced.trip.seconds,
+            tripMetres: priced.trip.metres,
             addressId: address.addressId,
             location: sql`ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)`,
             zoneId: address.zone.id,
@@ -264,15 +263,14 @@ export class OrdersService implements OnModuleInit {
           startAfter: autoCancelAt,
           db: inTransaction(tx),
         });
-        const key = { requestHash, orderId: id, orderPlacedAt: now, createdAt: now };
-        // A key older than 24 hours is used again (architecture §5.3).
-        await tx
-          .insert(idempotencyKeys)
-          .values({ accountId: command.accountId, key: command.idempotencyKey, ...key })
-          .onConflictDoUpdate({
-            target: [idempotencyKeys.accountId, idempotencyKeys.key],
-            set: key,
-          });
+        await keepKey(
+          tx,
+          command.accountId,
+          command.idempotencyKey,
+          requestHash,
+          { id, placedAt: now },
+          now,
+        );
         return { id, placedAt: now };
       });
     } catch (error) {
@@ -324,33 +322,20 @@ export class OrdersService implements OnModuleInit {
     );
   }
 
-  // The order a key placed in the last 24 hours, or null; the key sent with
-  // another command is refused.
+  // The order a key placed in the last 24 hours, or null; the key sent
+  // with another command is refused.
   private async replay(
     executor: Executor,
     command: PlaceOrder,
     requestHash: string,
     now: Date,
   ): Promise<{ id: string; placedAt: Date } | null> {
-    const [row] = await executor
-      .select({
-        requestHash: idempotencyKeys.requestHash,
-        id: idempotencyKeys.orderId,
-        placedAt: idempotencyKeys.orderPlacedAt,
-        createdAt: idempotencyKeys.createdAt,
-      })
-      .from(idempotencyKeys)
-      .where(
-        and(
-          eq(idempotencyKeys.accountId, command.accountId),
-          eq(idempotencyKeys.key, command.idempotencyKey),
-        ),
-      );
-    if (!row || now.getTime() - row.createdAt.getTime() >= KEY_LIFETIME_MS) return null;
-    if (row.requestHash !== requestHash) {
-      throw new OrderRefusedError('idempotency_key_reused', 'the key came with another command');
+    try {
+      return await replayKey(executor, command.accountId, command.idempotencyKey, requestHash, now);
+    } catch (error) {
+      if (!(error instanceof IdempotencyKeyReusedError)) throw error;
+      throw new OrderRefusedError('idempotency_key_reused', error.message);
     }
-    return { id: row.id, placedAt: row.placedAt };
   }
 
   private async orderAddress(command: PlaceOrder) {
@@ -399,7 +384,5 @@ function rateKey(snapshot: RateSnapshot): string {
 // The command without its key, so a repeat is recognised and another
 // command with the same key refused.
 function hashOf(command: PlaceOrder): string {
-  return createHash('sha256')
-    .update(JSON.stringify(plain({ ...command, idempotencyKey: null })))
-    .digest('hex');
+  return commandHash({ ...command, idempotencyKey: null });
 }

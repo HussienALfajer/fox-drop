@@ -72,6 +72,12 @@ const customerOrder = z.object({
       'Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3).',
     ),
   placedAt: z.iso.datetime(),
+  promisedAt: z.iso
+    .datetime()
+    .nullable()
+    .describe(
+      '«يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows.',
+    ),
   cancellation: z
     .object({
       at: z.iso.datetime(),
@@ -245,6 +251,7 @@ function orderBody(
     status: order.status,
     version: order.version,
     placedAt: order.placedAt.toISOString(),
+    promisedAt: order.acceptance?.promisedAt.toISOString() ?? null,
     cancellation: order.cancellation && {
       at: order.cancellation.at.toISOString(),
       reason: order.cancellation.reason,

@@ -141,6 +141,8 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
   @override
   final DateTime placedAt;
   @override
+  final DateTime? promisedAt;
+  @override
   final CustomerActiveOrdersDtoOutputOrdersInnerCancellation? cancellation;
   @override
   final CustomerActiveOrdersDtoOutputOrdersInnerRestaurant restaurant;
@@ -171,6 +173,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     required this.status,
     required this.version,
     required this.placedAt,
+    this.promisedAt,
     this.cancellation,
     required this.restaurant,
     required this.currency,
@@ -200,6 +203,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
         status == other.status &&
         version == other.version &&
         placedAt == other.placedAt &&
+        promisedAt == other.promisedAt &&
         cancellation == other.cancellation &&
         restaurant == other.restaurant &&
         currency == other.currency &&
@@ -220,6 +224,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, version.hashCode);
     _$hash = $jc(_$hash, placedAt.hashCode);
+    _$hash = $jc(_$hash, promisedAt.hashCode);
     _$hash = $jc(_$hash, cancellation.hashCode);
     _$hash = $jc(_$hash, restaurant.hashCode);
     _$hash = $jc(_$hash, currency.hashCode);
@@ -242,6 +247,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
           ..add('status', status)
           ..add('version', version)
           ..add('placedAt', placedAt)
+          ..add('promisedAt', promisedAt)
           ..add('cancellation', cancellation)
           ..add('restaurant', restaurant)
           ..add('currency', currency)
@@ -284,6 +290,10 @@ class CustomerOrderDtoOutputOrderBuilder
   DateTime? _placedAt;
   DateTime? get placedAt => _$this._placedAt;
   set placedAt(DateTime? placedAt) => _$this._placedAt = placedAt;
+
+  DateTime? _promisedAt;
+  DateTime? get promisedAt => _$this._promisedAt;
+  set promisedAt(DateTime? promisedAt) => _$this._promisedAt = promisedAt;
 
   CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder? _cancellation;
   CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder
@@ -363,6 +373,7 @@ class CustomerOrderDtoOutputOrderBuilder
       _status = $v.status;
       _version = $v.version;
       _placedAt = $v.placedAt;
+      _promisedAt = $v.promisedAt;
       _cancellation = $v.cancellation?.toBuilder();
       _restaurant = $v.restaurant.toBuilder();
       _currency = $v.currency;
@@ -422,6 +433,7 @@ class CustomerOrderDtoOutputOrderBuilder
               r'CustomerOrderDtoOutputOrder',
               'placedAt',
             ),
+            promisedAt: promisedAt,
             cancellation: _cancellation?.build(),
             restaurant: restaurant.build(),
             currency: BuiltValueNullFieldError.checkNotNull(

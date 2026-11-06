@@ -1020,6 +1020,18 @@ export class MerchantsService implements OnModuleInit {
 
   // Whether this app installation has its name in the restaurant (RA §5.2
   // item 5).
+  // RA §4.7, §8.4: the names of the restaurant's devices by their app
+  // installation, for «قُبل الطلب من جهاز {اسم الجهاز}»; an unnamed one is
+  // left out.
+  async deviceNames(restaurantId: string, deviceIds: string[]): Promise<Map<string, string>> {
+    if (deviceIds.length === 0) return new Map();
+    const rows = await this.database.db
+      .select({ deviceId: devices.deviceId, name: devices.name })
+      .from(devices)
+      .where(and(eq(devices.restaurantId, restaurantId), inArray(devices.deviceId, deviceIds)));
+    return new Map(rows.map((row) => [row.deviceId, row.name]));
+  }
+
   async deviceNamed(restaurantId: string, deviceId: string): Promise<boolean> {
     const [device] = await this.database.db
       .select({ id: devices.id })

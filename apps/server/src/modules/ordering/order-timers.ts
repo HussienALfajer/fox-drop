@@ -17,6 +17,17 @@ export interface AutoCancelJob {
   version: number;
 }
 
+// The search-start timer of an accepted order (AP §8.3, §9.12.6), set for
+// its search-start moment.
+export interface SearchStartJob {
+  orderId: string;
+  // ISO time, the order's partition key.
+  placedAt: string;
+  // ISO time, the moment it was set for: one moved since (an early ready,
+  // later «تعديل الوقت») leaves this job without effect.
+  searchStartAt: string;
+}
+
 // AP §8.3: the reason of the automatic cancellation, «المطعم لم يستجب», kept
 // for the system alone: it is what counts the order as unanswered by the
 // restaurant (RA §11), which an operations cancellation never does.
@@ -61,6 +72,22 @@ export class OrderTimers {
       return true;
     });
   }
+
+  // AP §8.3, §9.12.6: the search-start moment came; true while the order
+  // still waits for a captain (accepted or ready) and its moment is still the
+  // job's. In manual mode (D6) it raises «بحاجة لتعيين», which comes with
+  // dispatch (slice 1.11) and will act under the order's lock; until then the
+  // worker logs it.
+  async searchStart(job: SearchStartJob): Promise<boolean> {
+    const [order] = await this.database.db
+      .select({ status: orders.status, searchStartAt: orders.searchStartAt })
+      .from(orders)
+      .where(and(eq(orders.id, job.orderId), eq(orders.placedAt, new Date(job.placedAt))));
+    return (
+      (order?.status === 'accepted' || order?.status === 'ready') &&
+      order.searchStartAt?.getTime() === new Date(job.searchStartAt).getTime()
+    );
+  }
 }
 
 // The worker's handlers of the order timers.
@@ -74,6 +101,23 @@ export class OrderTimersWorker implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
+    await this.jobs.work<SearchStartJob>(QUEUES.searchStart, async (batch) => {
+      for (const job of batch) {
+        try {
+          if (await this.timers.searchStart(job.data)) {
+            this.logger.log(
+              { orderId: job.data.orderId },
+              'search start: the order needs a captain',
+            );
+          }
+        } catch (error) {
+          // pg-boss tries it again (QUEUE_OPTIONS); each failure is reported.
+          this.logger.error({ err: error, orderId: job.data.orderId }, 'search start failed');
+          reportError(error);
+          throw error;
+        }
+      }
+    });
     await this.jobs.work<AutoCancelJob>(QUEUES.merchantAutoCancel, async (batch) => {
       for (const job of batch) {
         try {

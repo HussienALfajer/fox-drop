@@ -37,7 +37,7 @@ export async function lockOrder(tx: Tx, id: string, placedAt: Date): Promise<Ord
   return row;
 }
 
-export type OrderEventType = 'order.placed' | 'order.cancelled';
+export type OrderEventType = 'order.placed' | 'order.accepted' | 'order.ready' | 'order.cancelled';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that
@@ -53,7 +53,12 @@ export async function recordTransition(
     from: OrderStatus | null;
     to: OrderStatus;
     version: number;
-    actor: { type: 'customer' | 'restaurant' | 'captain' | 'admin' | 'system'; id: string | null };
+    // device: a restaurant user's app installation (RA §18).
+    actor: {
+      type: 'customer' | 'restaurant' | 'captain' | 'admin' | 'system';
+      id: string | null;
+      device?: string;
+    };
     reason: string | null;
     at: Date;
   },
@@ -68,6 +73,7 @@ export async function recordTransition(
     toStatus: transition.to,
     actorType: transition.actor.type,
     actorId: transition.actor.id,
+    actorDevice: transition.actor.device ?? null,
     reason: transition.reason,
   });
   await tx.insert(outbox).values({

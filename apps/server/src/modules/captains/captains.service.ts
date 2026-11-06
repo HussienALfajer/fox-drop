@@ -16,7 +16,7 @@ import {
   type OnlineBlock,
   onlineBlocks,
 } from './availability.js';
-import { LIVE_POSITION_MAX_AGE_MS, LivePositions } from './live-positions.js';
+import { LIVE_POSITION_MAX_AGE_MS, LivePositions, type NearbyCaptain } from './live-positions.js';
 import { checkPayRate, type PayRate } from './pay.js';
 import { captainRecords, locations, onlinePeriods, payRates, payTables } from './schema.js';
 
@@ -460,29 +460,41 @@ export class CaptainsService implements OnModuleInit {
   }
 
   // AP §9.12.6, the capacity check: whether an eligible captain is within
-  // dispatch.search_radius_km of the restaurant now, nearest first. Eligible
-  // is online and receiving offers (active, under the cash limit, not blocked
-  // for unhanded cash: `availability`), with a vehicle allowed for the trip.
-  // No active order passes until orders are assigned (slice 1.11); the
-  // maximum pickup amount is ignored, as the rule says. The live positions
-  // come from Valkey, or from the locations table when Valkey cannot answer
-  // (architecture §5.7). A captain whose state cannot be read is skipped.
+  // dispatch.search_radius_km of the restaurant now (nearestEligible).
   async eligibleNear(
     cityId: string,
     restaurant: Point,
     tripMetres: number,
     now: Date,
   ): Promise<boolean> {
+    return (await this.nearestEligible(cityId, restaurant, tripMetres, now)) !== null;
+  }
+
+  // The nearest eligible captain within dispatch.search_radius_km of the
+  // restaurant now, with its vehicle and live position, or null. Eligible is
+  // online and receiving offers (active, under the cash limit, not blocked
+  // for unhanded cash: `availability`), with a vehicle allowed for the trip.
+  // No active order passes until orders are assigned (slice 1.11); the
+  // maximum pickup amount is ignored, as AP §9.12.6 says. The live positions
+  // come from Valkey, or from the locations table when Valkey cannot answer
+  // (architecture §5.7), nearest first by the straight line. A captain whose
+  // state cannot be read is skipped.
+  async nearestEligible(
+    cityId: string,
+    restaurant: Point,
+    tripMetres: number,
+    now: Date,
+  ): Promise<(NearbyCaptain & { vehicle: Vehicle }) | null> {
     const radiusMetres = (await this.settings.get('dispatch.search_radius_km', { cityId })) * 1000;
     const nearby =
       (await this.positions.near(cityId, restaurant, radiusMetres, now)) ??
       (await this.nearFromLocations(cityId, restaurant, radiusMetres, now));
-    if (nearby.length === 0) return false;
+    if (nearby.length === 0) return null;
     const rules = await this.cityRules(cityId, now);
     const allowed = new Map<Vehicle, boolean>();
-    for (const captainId of nearby) {
+    for (const captain of nearby) {
       try {
-        const row = await this.row(this.database.db, captainId);
+        const row = await this.row(this.database.db, captain.captainId);
         if (row.cityId !== cityId) continue;
         if (!allowed.has(row.vehicle)) {
           const maxKm = await this.settings.get(`dispatch.max_distance_km.${row.vehicle}`, {
@@ -492,12 +504,17 @@ export class CaptainsService implements OnModuleInit {
         }
         if (!allowed.get(row.vehicle)) continue;
         const input = await this.input(this.database.db, row, rules);
-        if (availability(input.availability, now).state === 'online_available') return true;
+        if (availability(input.availability, now).state === 'online_available') {
+          return { ...captain, vehicle: row.vehicle };
+        }
       } catch (error) {
-        this.logger.warn({ err: error, captainId }, 'a nearby captain was left out');
+        this.logger.warn(
+          { err: error, captainId: captain.captainId },
+          'a nearby captain was left out',
+        );
       }
     }
-    return false;
+    return null;
   }
 
   // The newest real point of each open online period within the radius, no
@@ -508,11 +525,16 @@ export class CaptainsService implements OnModuleInit {
     point: Point,
     radiusMetres: number,
     now: Date,
-  ): Promise<string[]> {
+  ): Promise<NearbyCaptain[]> {
     const at = sql`ST_SetSRID(ST_MakePoint(${point.longitude}, ${point.latitude}), 4326)::geography`;
     const since = new Date(now.getTime() - LIVE_POSITION_MAX_AGE_MS).toISOString();
-    const { rows } = await this.database.db.execute<{ captain_id: string }>(sql`
-      SELECT p.captain_id FROM ${onlinePeriods} p
+    const { rows } = await this.database.db.execute<{
+      captain_id: string;
+      latitude: number;
+      longitude: number;
+    }>(sql`
+      SELECT p.captain_id, ST_Y(newest.location) AS latitude, ST_X(newest.location) AS longitude
+        FROM ${onlinePeriods} p
         JOIN ${captainRecords} c ON c.id = p.captain_id
         CROSS JOIN LATERAL (
           SELECT l.location FROM ${locations} l
@@ -523,7 +545,10 @@ export class CaptainsService implements OnModuleInit {
         WHERE p.ended_at IS NULL AND c.city_id = ${cityId}
           AND ST_DWithin(newest.location::geography, ${at}, ${radiusMetres})
         ORDER BY ST_Distance(newest.location::geography, ${at})`);
-    return rows.map((row) => row.captain_id);
+    return rows.map((row) => ({
+      captainId: row.captain_id,
+      position: { latitude: Number(row.latitude), longitude: Number(row.longitude) },
+    }));
   }
 
   // The captain's state and cash now (CA §7.1, AP §8.5.3–8.5.4).

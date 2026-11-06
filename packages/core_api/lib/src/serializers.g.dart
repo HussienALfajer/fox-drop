@@ -143,6 +143,7 @@ Serializers _$serializers =
           ..add(CustomerZoneVotedDtoOutputStatusEnum.serializer)
           ..add(DoneDtoOutput.serializer)
           ..add(DoneDtoOutputStatusEnum.serializer)
+          ..add(MerchantAcceptDto.serializer)
           ..add(MerchantAvailabilityDto.serializer)
           ..add(MerchantAvailabilityDtoTypeEnum.serializer)
           ..add(MerchantAvailabilityDtoUntilEnum.serializer)
@@ -167,14 +168,17 @@ Serializers _$serializers =
           )
           ..add(MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice.serializer)
           ..add(MerchantMenuDtoOutputCategoriesInnerSwitchedOff.serializer)
+          ..add(MerchantOrderDtoOutput.serializer)
           ..add(MerchantOrdersDtoOutput.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInner.serializer)
+          ..add(MerchantOrdersDtoOutputOrdersInnerAcceptance.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerCustomer.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerLinesInner.serializer)
           ..add(
             MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner.serializer,
           )
           ..add(MerchantOrdersDtoOutputOrdersInnerStatusEnum.serializer)
+          ..add(MerchantOrdersDtoOutputPrepTime.serializer)
           ..add(MerchantRefreshDto.serializer)
           ..add(MerchantRestaurantDtoOutput.serializer)
           ..add(MerchantRestaurantDtoOutputAccountStatusEnum.serializer)
@@ -544,6 +548,10 @@ Serializers _$serializers =
               const FullType(TeamUsersDtoOutputUsersInner),
             ]),
             () => ListBuilder<TeamUsersDtoOutputUsersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(int)]),
+            () => ListBuilder<int>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
