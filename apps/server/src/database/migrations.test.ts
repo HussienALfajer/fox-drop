@@ -519,7 +519,7 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
       `INSERT INTO ordering.order_events (order_id, order_placed_at, version, city_id, at, to_status, actor_type) VALUES ('${id}', ${placedAt(id)}, 1, ${azaz}, now(), 'placed', 'customer')`,
     );
     await appQuery(
-      `UPDATE ordering.orders SET status = 'cancelled', version = 2 WHERE id = '${id}'`,
+      `UPDATE ordering.orders SET status = 'cancelled', version = 2, cancelled_at = now(), cancel_reason = 'customer', food_prepared = false WHERE id = '${id}'`,
     );
     await expect(appQuery(order(randomUUID(), { total: '25000' }))).rejects.toThrow(/orders_money/);
     await expect(
@@ -540,6 +540,24 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
 
   it('let the application role create the coming partitions again', async () => {
     await appQuery('SELECT ordering.create_month_partitions()');
+  });
+
+  it('let the application role mark an outbox row published and change nothing else', async () => {
+    const { rows } = await appQuery(
+      `INSERT INTO ordering.outbox (created_at, city_id, type, order_id, order_version, payload) VALUES (now(), ${azaz}, 'order.placed', '${randomUUID()}', 1, '{}') RETURNING id`,
+    );
+    await appQuery(`UPDATE ordering.outbox SET published_at = now() WHERE id = ${rows[0].id}`);
+    await expect(
+      appQuery(`UPDATE ordering.outbox SET type = 'x' WHERE id = ${rows[0].id}`),
+    ).rejects.toThrow(/permission denied/);
+  });
+
+  it("install pg-boss as the migration role, with the application role's rows only", async () => {
+    const { rows } = await appQuery("SELECT name FROM pgboss.queue WHERE name LIKE 'ordering-%'");
+    expect(rows).toEqual([{ name: 'ordering-merchant-auto-cancel' }]);
+    await expect(appQuery('CREATE TABLE pgboss.extra (id int)')).rejects.toThrow(
+      /permission denied/,
+    );
   });
 
   it.each([

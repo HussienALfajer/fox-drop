@@ -188,7 +188,7 @@ async function place(
 
 // An order leaves the restaurant's and the customer's active orders.
 const end = (orderId: string) =>
-  sql.query("UPDATE ordering.orders SET status = 'cancelled', version = 2 WHERE id = $1", [
+  sql.query("UPDATE ordering.orders SET status = 'cancelled', version = 2, cancelled_at = now(), cancel_reason = 'customer', food_prepared = false WHERE id = $1", [
     orderId,
   ]);
 
@@ -384,7 +384,7 @@ describe('the active-order limits (D23, RA §7.4)', () => {
       expect.objectContaining({ code: 'active_order_limit' }),
     );
     await sql.query(
-      "UPDATE ordering.orders SET status = 'cancelled' WHERE status = 'placed' AND restaurant_id = $1",
+      "UPDATE ordering.orders SET status = 'cancelled', cancelled_at = now(), cancel_reason = 'customer', food_prepared = false WHERE status = 'placed' AND restaurant_id = $1",
       [restaurant],
     );
   });

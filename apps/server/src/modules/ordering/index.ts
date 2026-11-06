@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
+import { JobsModule } from '../../jobs/jobs.module.js';
 import { CaptainsModule } from '../captains/index.js';
 import { CustomersModule } from '../customers/index.js';
 import { FxModule } from '../fx/index.js';
@@ -10,6 +11,7 @@ import { ActiveOrders } from './active-orders.js';
 import { CustomerOrdersController } from './customer-orders.controller.js';
 import { CustomerQuoteController } from './customer-quote.controller.js';
 import { OrderPartitions } from './order-partitions.js';
+import { OrderTimers, OrderTimersWorker } from './order-timers.js';
 import { OrdersService } from './orders.service.js';
 import { QuoteService } from './quote.service.js';
 
@@ -19,6 +21,7 @@ import { QuoteService } from './quote.service.js';
 @Module({
   imports: [
     DatabaseModule,
+    JobsModule,
     SettingsModule,
     FxModule,
     GeoModule,
@@ -27,13 +30,17 @@ import { QuoteService } from './quote.service.js';
     CaptainsModule,
   ],
   controllers: [CustomerQuoteController, CustomerOrdersController],
-  providers: [ActiveOrders, QuoteService, OrdersService],
+  providers: [ActiveOrders, QuoteService, OrdersService, OrderTimers],
   exports: [QuoteService, OrdersService],
 })
 export class OrderingModule {}
 
-// The worker keeps the orders' monthly partitions a month ahead.
-@Module({ imports: [DatabaseModule], providers: [OrderPartitions] })
+// The worker keeps the orders' monthly partitions a month ahead and runs
+// their timers (AP §8.3).
+@Module({
+  imports: [DatabaseModule, JobsModule],
+  providers: [OrderPartitions, OrderTimers, OrderTimersWorker],
+})
 export class OrderingWorkerModule {}
 
 export {

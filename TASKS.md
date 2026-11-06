@@ -14,7 +14,10 @@ Slice 1.8, placing the order (`docs/roadmap.md`, Phase 1): the atomic re-check, 
   - [x] The failing tests first: the order's state and money at placing (AP §8.4), the refusal on a changed quote or rate snapshot (CU §10.7), the restaurant's maximum active orders (RA §7.4) and the customer's (D23) under concurrency, idempotency.
   - [x] The order command `POST /v1/customer/orders`: re-runs the quote, then in one transaction takes the customer's and the restaurant's locks, counts both limits, calls `FxService.snapshotForOrder` and compares it with the quote's, numbers the order and writes it with its first event. The restaurant's busy state counts the active orders.
   - [x] `checker`, the `reviewer` (its findings fixed: repeats sent together, the fx rounding read through the transaction, the limit in the signed-in quote, more tests), the pull request.
-- **Pull request 2, `feat/order-timers`:** pg-boss in the worker, the outbox table written in the order's transaction (E3, E4), and the automatic cancellation after `order.merchant_auto_cancel_min` (AP §8.3), which re-reads the order and acts only on the same state and version.
+- **Pull request 2, `feat/order-timers`:** the timers and the outbox.
+  - [x] pg-boss installed by the migration role, `Jobs` in the shared layer, the worker running the queues.
+  - [x] The outbox table written in each transition's transaction (E3, E4), and the automatic cancellation after `order.merchant_auto_cancel_min` (AP §8.3), which re-reads the order and acts only on the same state and version.
+  - [ ] `checker`, the `reviewer`, the pull request.
 - **Pull request 3, `feat/capacity-check`:** the capacity check (AP §9.12.6) in the quote and at placing, while `dispatch.capacity_check` is on: an online, active captain within `dispatch.search_radius_km` of the restaurant, under the cash limit, not blocked, whose vehicle is allowed for the trip; then the handover to slice 1.9.
 
 ## Notes from earlier slices
