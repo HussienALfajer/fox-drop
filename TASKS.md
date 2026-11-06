@@ -4,22 +4,21 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice W3, App Check on the server (`docs/roadmap.md`, Phase 1, before slice 1.14). The emergency sign-in (W4) follows in its own pull request.
+Slice W4, the emergency sign-in (`docs/roadmap.md`, Phase 1, before slice 1.14).
 
-- **Roadmap line:** the code request verifies a Firebase App Check token, behind a setting that stays off until the apps send one (architecture §8.3.3 item 1). Verified by the tests.
-- **Specs:** architecture §8.3.3 item 1 (Play Integrity on Android, App Attest on iOS; the Windows app uses its device registration), §8.3.2, §15; `apps/server/src/modules/identity/CLAUDE.md` («Request limits», «Code sender»). Owner decision 2026-11-06 (roadmap): the server verifies now, behind a setting; the apps add the token with slice 1.14.
-- **Branch:** `feat/app-check-server`.
-- **Builds on W2:** the code requests of the three apps (`POST /v1/{customer,merchant,captain}/auth/code`) run `AppSignInService.requestCode`: the IP limit first, then the number's lock, limits and the send.
-- **Open items to ask the owner first:** the setting's name and scope (proposed `otp.app_check_required`, global, OWN, default off, in Appendix A); the header (proposed `X-Firebase-AppCheck`, Firebase's own); the answer to a missing or invalid token (proposed `403 app_check_failed`, before the IP limit counts it or after); how the server verifies (proposed: Firebase's public JWKS and the project number from the environment, no service-account secret; or `firebase-admin`); what the Windows restaurant app sends, since App Check has no Windows provider (proposed: exempt the merchant app's Windows devices until its device registration exists, or ask).
+- **Roadmap line:** operations issue a short-lived, one-time sign-in code bound to a captain's or a restaurant user's number, audited; customers are not covered (architecture §22 item 1). Verified by the tests; the panel screen waits for the design.
+- **Specs:** architecture §22 item 1, §8.3.2, §15; AP §6.3; `apps/server/src/modules/identity/CLAUDE.md` («Codes», «Captain sign-in», «Restaurant sign-in»).
+- **Branch:** `feat/emergency-sign-in`.
+- **Owner decisions 2026-11-07:** operations verify the person by a phone call, issue the code in the panel, see it once and read it out; the person types it in the app's usual code screen, and the code is bound to the number, not to a device (the first device that uses it signs in). Valid 10 minutes (fixed), used once, `otp.max_attempts` wrong ones end it, and it replaces the number's open code. A new special permission `sign_in.emergency_code` for OWN and OPS. Allowed at any time, with a required reason, audited with the actor and the account, never the code or the number.
 - **Plan:**
-  - [x] Ask the owner the open items above. Owner decisions 2026-11-07: the proposals as written (one global setting, the Firebase header, `403 app_check_failed` after the IP limit counts the request, Firebase's public JWKS with the project number, Windows exempt until its device registration).
-  - [x] The setting in Appendix A and the catalogue.
-  - [x] The token check (failing tests first): signature, issuer, audience, expiry against Firebase's keys, cached; a fake key set in the tests.
-  - [x] The three code routes take the header and refuse without a valid token while the setting is on; `pnpm generate:api`.
-  - [x] Update `apps/server/src/modules/identity/CLAUDE.md`, `.env.example` (fake project number) and the `deploy` skill.
+  - [ ] The migration: the permission row for OWN and OPS, and the emergency columns on `app_sign_in_codes` (who issued it and why; no device).
+  - [ ] The issue (failing tests first): `POST /v1/admin/emergency-sign-in-codes` with the party, the number and the reason; refused for a number that cannot sign in; audited; the sign-in accepts the code from any device; `pnpm generate:api`.
+  - [ ] Docs: AP §6.3, architecture §22 item 1, `identity/CLAUDE.md`.
   - [ ] `checker`, then `reviewer`; pull request.
 
 ## Notes from earlier slices
+
+- Slice W3 added App Check on the code requests (`apps/server/src/modules/identity/CLAUDE.md`, «App Check»; owner decisions 2026-11-06 and 2026-11-07): `otp.app_check_required` (off until slice 1.14's apps send the token), the `X-Firebase-AppCheck` header, `403 app_check_failed` after the IP limit counts the request, Firebase's public JWKS with `FIREBASE_PROJECT_NUMBER`, the Windows restaurant app exempt until its device registration exists.
 
 - Slice W2 added the sender pool (`apps/server/src/modules/identity/CLAUDE.md`, «The sender pool», «أرقام إرسال الرموز»; owner decisions 2026-11-06): six states, one session per number, the active numbers in turn then the warming ones, failover on a failed or unanswered send, pacing per minute and per day with the jitter, warm-up steps of `otp.sender_warmup_step_days` (3), daily counts with WhatsApp's receipts, the throttle (30% of the last 20 sends for 60 minutes), `banned` on WhatsApp's 403, the two alerts in `GET /v1/admin/otp-sender-numbers` and in Sentry, and OWN's `PUT .../{numberId}/status` and `POST .../{numberId}/disable`.
 - To confirm with the owner (slice W2): the warm-up clock runs from `warmup_started_at` while a number is disconnected, banned or standby, so a number paired again weeks later resumes at a later step or as active (store the warm-up time used, or shift the start, if idle days should not count); a banned number paired again keeps its earlier state, `active` when it had finished its warm-up; `standby` numbers stay connected but never send, even when no other number can; a send that does not answer before the deadline counts as failed, though WhatsApp may still deliver it late; the receipts of messages sent before the otp-sender restarts are not counted.
@@ -161,4 +160,4 @@ Slice W3, App Check on the server (`docs/roadmap.md`, Phase 1, before slice 1.14
 
 ## Next
 
-Build slice 1.13: delivery and money, after the owner answers the questions above.
+Build slice 1.14 once W4 is merged (`docs/roadmap.md`).
