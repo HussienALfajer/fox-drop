@@ -6,18 +6,97 @@ part of 'merchant_code_request_dto.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const MerchantCodeRequestDtoPlatformEnum
+_$merchantCodeRequestDtoPlatformEnum_android =
+    const MerchantCodeRequestDtoPlatformEnum._('android');
+const MerchantCodeRequestDtoPlatformEnum
+_$merchantCodeRequestDtoPlatformEnum_ios =
+    const MerchantCodeRequestDtoPlatformEnum._('ios');
+const MerchantCodeRequestDtoPlatformEnum
+_$merchantCodeRequestDtoPlatformEnum_windows =
+    const MerchantCodeRequestDtoPlatformEnum._('windows');
+
+MerchantCodeRequestDtoPlatformEnum _$merchantCodeRequestDtoPlatformEnumValueOf(
+  String name,
+) {
+  switch (name) {
+    case 'android':
+      return _$merchantCodeRequestDtoPlatformEnum_android;
+    case 'ios':
+      return _$merchantCodeRequestDtoPlatformEnum_ios;
+    case 'windows':
+      return _$merchantCodeRequestDtoPlatformEnum_windows;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<MerchantCodeRequestDtoPlatformEnum>
+_$merchantCodeRequestDtoPlatformEnumValues =
+    BuiltSet<MerchantCodeRequestDtoPlatformEnum>(
+      const <MerchantCodeRequestDtoPlatformEnum>[
+        _$merchantCodeRequestDtoPlatformEnum_android,
+        _$merchantCodeRequestDtoPlatformEnum_ios,
+        _$merchantCodeRequestDtoPlatformEnum_windows,
+      ],
+    );
+
+Serializer<MerchantCodeRequestDtoPlatformEnum>
+_$merchantCodeRequestDtoPlatformEnumSerializer =
+    _$MerchantCodeRequestDtoPlatformEnumSerializer();
+
+class _$MerchantCodeRequestDtoPlatformEnumSerializer
+    implements PrimitiveSerializer<MerchantCodeRequestDtoPlatformEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'android': 'android',
+    'ios': 'ios',
+    'windows': 'windows',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'android': 'android',
+    'ios': 'ios',
+    'windows': 'windows',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[MerchantCodeRequestDtoPlatformEnum];
+  @override
+  final String wireName = 'MerchantCodeRequestDtoPlatformEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    MerchantCodeRequestDtoPlatformEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  MerchantCodeRequestDtoPlatformEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => MerchantCodeRequestDtoPlatformEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$MerchantCodeRequestDto extends MerchantCodeRequestDto {
   @override
   final String phone;
   @override
   final String deviceId;
+  @override
+  final MerchantCodeRequestDtoPlatformEnum? platform;
 
   factory _$MerchantCodeRequestDto([
     void Function(MerchantCodeRequestDtoBuilder)? updates,
   ]) => (MerchantCodeRequestDtoBuilder()..update(updates))._build();
 
-  _$MerchantCodeRequestDto._({required this.phone, required this.deviceId})
-    : super._();
+  _$MerchantCodeRequestDto._({
+    required this.phone,
+    required this.deviceId,
+    this.platform,
+  }) : super._();
   @override
   MerchantCodeRequestDto rebuild(
     void Function(MerchantCodeRequestDtoBuilder) updates,
@@ -32,7 +111,8 @@ class _$MerchantCodeRequestDto extends MerchantCodeRequestDto {
     if (identical(other, this)) return true;
     return other is MerchantCodeRequestDto &&
         phone == other.phone &&
-        deviceId == other.deviceId;
+        deviceId == other.deviceId &&
+        platform == other.platform;
   }
 
   @override
@@ -40,6 +120,7 @@ class _$MerchantCodeRequestDto extends MerchantCodeRequestDto {
     var _$hash = 0;
     _$hash = $jc(_$hash, phone.hashCode);
     _$hash = $jc(_$hash, deviceId.hashCode);
+    _$hash = $jc(_$hash, platform.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -48,7 +129,8 @@ class _$MerchantCodeRequestDto extends MerchantCodeRequestDto {
   String toString() {
     return (newBuiltValueToStringHelper(r'MerchantCodeRequestDto')
           ..add('phone', phone)
-          ..add('deviceId', deviceId))
+          ..add('deviceId', deviceId)
+          ..add('platform', platform))
         .toString();
   }
 }
@@ -65,6 +147,11 @@ class MerchantCodeRequestDtoBuilder
   String? get deviceId => _$this._deviceId;
   set deviceId(String? deviceId) => _$this._deviceId = deviceId;
 
+  MerchantCodeRequestDtoPlatformEnum? _platform;
+  MerchantCodeRequestDtoPlatformEnum? get platform => _$this._platform;
+  set platform(MerchantCodeRequestDtoPlatformEnum? platform) =>
+      _$this._platform = platform;
+
   MerchantCodeRequestDtoBuilder() {
     MerchantCodeRequestDto._defaults(this);
   }
@@ -74,6 +161,7 @@ class MerchantCodeRequestDtoBuilder
     if ($v != null) {
       _phone = $v.phone;
       _deviceId = $v.deviceId;
+      _platform = $v.platform;
       _$v = null;
     }
     return this;
@@ -106,6 +194,7 @@ class MerchantCodeRequestDtoBuilder
             r'MerchantCodeRequestDto',
             'deviceId',
           ),
+          platform: platform,
         );
     replace(_$result);
     return _$result;

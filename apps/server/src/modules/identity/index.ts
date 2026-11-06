@@ -16,6 +16,7 @@ import { AppSignInService } from './app-sign-in.service.js';
 import { AppSigningKeys } from './app-signing-keys.js';
 import { CaptainAccountsService } from './captain-accounts.service.js';
 import { CaptainAuthController } from './captain-auth.controller.js';
+import { APP_CHECK_VERIFIER, appCheckVerifierFromEnvironment } from './app-check.js';
 import { CODE_SENDER, codeSenderFromEnvironment } from './code-sender.js';
 import { CustomerAccountsService } from './customer-accounts.service.js';
 import { CustomerAuthController } from './customer-auth.controller.js';
@@ -60,6 +61,7 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
       useFactory: codeSenderFromEnvironment,
       inject: [VALKEY, IDENTITY_SECRETS],
     },
+    { provide: APP_CHECK_VERIFIER, useFactory: appCheckVerifierFromEnvironment },
     AppSigningKeys,
     AppSessionsService,
     AppSignInService,
@@ -92,6 +94,7 @@ export { PhoneCipher } from './phone-cipher.js';
 export { CustomerAccountsService } from './customer-accounts.service.js';
 // For the tests of other modules that sign an app user in.
 export { CODE_SENDER, type DevelopmentCodeSender } from './code-sender.js';
+export { APP_CHECK_VERIFIER, type AppCheckVerifier } from './app-check.js';
 export {
   type MerchantAccount,
   MerchantAccountRefusedError,

@@ -13,6 +13,8 @@ import {
   CaptainAccountsService,
   CaptainSignInRefusedError,
 } from './captain-accounts.service.js';
+import { type DevicePlatform } from '../merchants/index.js';
+import { APP_CHECK_VERIFIER, type AppCheckVerifier } from './app-check.js';
 import { CODE_SENDER, type CodeSender } from './code-sender.js';
 import {
   type MerchantAccount,
@@ -26,9 +28,16 @@ import { IDENTITY_SECRETS, IdentitySecrets, newSignInCode } from './secrets.js';
 // A code request the server refuses (architecture §8.3.3 item 2, CU §5.2):
 // the resend wait, the hourly limit of a number, the daily limit of a number
 // or a device («تجاوزت عدد المحاولات المسموح…»), the hourly limit of an IP
-// address; or nothing could be sent.
+// address; no valid App Check token while one is required (§8.3.3 item 1);
+// or nothing could be sent.
 export type CodeRequestRefusal =
-  'resend_wait' | 'hourly_limit' | 'daily_limit' | 'ip_limit' | 'not_on_whatsapp' | 'unavailable';
+  | 'resend_wait'
+  | 'hourly_limit'
+  | 'daily_limit'
+  | 'ip_limit'
+  | 'app_check_failed'
+  | 'not_on_whatsapp'
+  | 'unavailable';
 
 export class CodeRequestRefusedError extends Error {
   constructor(
@@ -56,6 +65,11 @@ export interface CodeRequest {
   // E.164.
   phone: string;
   deviceId: string;
+  // The X-Firebase-AppCheck header, when the app sent one.
+  appCheckToken?: string | undefined;
+  // The restaurant app says which platform it runs on: Windows has no App
+  // Check provider (owner decision 2026-11-07).
+  platform?: DevicePlatform | undefined;
 }
 
 export interface AppSignIn extends AppTokens {
@@ -80,6 +94,7 @@ export class AppSignInService {
     @Inject(VALKEY) valkey: Valkey,
     @Inject(IDENTITY_SECRETS) private readonly secrets: IdentitySecrets,
     @Inject(CODE_SENDER) private readonly sender: CodeSender,
+    @Inject(APP_CHECK_VERIFIER) private readonly appCheck: AppCheckVerifier,
     private readonly settings: SettingsService,
     private readonly sessions: AppSessionsService,
     private readonly merchantAccounts: MerchantAccountsService,
@@ -102,6 +117,7 @@ export class AppSignInService {
     const ipHourlyMax = await this.settings.get('otp.ip_hourly_max');
     const resendAfterSec = await this.settings.get('otp.resend_after_sec');
     const validityMin = await this.settings.get('otp.validity_min');
+    const appCheckRequired = await this.settings.get('otp.app_check_required');
     const numberKey = `identity:otp:number:${phoneHash}`;
     const requesterLimits: Limit[] = [
       { key: numberKey, windowMs: DAY_MS, max: await this.settings.get('otp.number_daily_max') },
@@ -127,6 +143,17 @@ export class AppSignInService {
       now,
     );
     if (!ip.reserved) throw new CodeRequestRefusedError('ip_limit', ip.retryAfterSec);
+
+    // Architecture §8.3.3 item 1: scripts and modified apps are refused before
+    // anything else, once the apps send the token (owner decisions 2026-11-06,
+    // 2026-11-07). The IP limit above counts them, so a script that sends no
+    // token still runs into it. The restaurant app on Windows has no App
+    // Check provider and is exempt until its device registration exists; its
+    // other limits still apply.
+    const exempt = request.party === 'merchant' && request.platform === 'windows';
+    if (appCheckRequired && !exempt && !(await this.appCheck.verify(request.appCheckToken, now))) {
+      throw new CodeRequestRefusedError('app_check_failed');
+    }
 
     // RA §5.2 items 3–4: a restaurant user hears at once why no code comes,
     // and nothing is sent to a number of no restaurant (architecture §8.3.2–

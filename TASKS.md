@@ -14,8 +14,8 @@ Slice W3, App Check on the server (`docs/roadmap.md`, Phase 1, before slice 1.14
 - **Plan:**
   - [ ] Ask the owner the open items above.
   - [ ] The setting in Appendix A and the catalogue.
-  - [ ] The token check (failing tests first): signature, issuer, audience, expiry against Firebase's keys, cached; a fake key set in the tests.
-  - [ ] The three code routes take the header and refuse without a valid token while the setting is on; `pnpm generate:api`.
+  - [x] The token check (failing tests first): signature, issuer, audience, expiry against Firebase's keys, cached; a fake key set in the tests.
+  - [x] The three code routes take the header and refuse without a valid token while the setting is on; `pnpm generate:api`.
   - [ ] Update `apps/server/src/modules/identity/CLAUDE.md`, `.env.example` (fake project number) and the `deploy` skill.
   - [ ] `checker`, then `reviewer`; pull request.
 

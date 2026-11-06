@@ -1,11 +1,16 @@
 import {
   BadRequestException,
+  createParamDecorator,
+  type ExecutionContext,
+  ForbiddenException,
   HttpException,
   HttpStatus,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import type { FastifyReply } from 'fastify';
+import { ApiHeader } from '@nestjs/swagger';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
+import { APP_CHECK_HEADER } from './app-check.js';
 import { APP_PHONE_PATTERN } from './app-phone.js';
 import type { AppTokens } from './app-sessions.service.js';
 import { CodeRequestRefusedError } from './app-sign-in.service.js';
@@ -47,10 +52,36 @@ export function tokensBody(result: AppTokens) {
   };
 }
 
-// A refused code request as its HTTP answer: 503, 400 or 429 with Retry-After.
+// Architecture §8.3.3 item 1: documents the App Check header of a code
+// request, so the generated clients can send it.
+export const AppCheckHeader = () =>
+  ApiHeader({
+    name: APP_CHECK_HEADER,
+    required: false,
+    description:
+      'The Firebase App Check token. Refused with 403 app_check_failed when missing or invalid ' +
+      'while the server requires it (otp.app_check_required).',
+    schema: { type: 'string' },
+  });
+
+// The header's value, if any; the service decides whether it is needed.
+export const AppCheckToken = createParamDecorator(
+  (_data: unknown, context: ExecutionContext): string | undefined => {
+    const value = context.switchToHttp().getRequest<FastifyRequest>().headers[
+      APP_CHECK_HEADER.toLowerCase()
+    ];
+    return typeof value === 'string' ? value : undefined;
+  },
+);
+
+// A refused code request as its HTTP answer: 403, 503, 400 or 429 with
+// Retry-After.
 export function codeRequestAnswer(error: unknown, reply: FastifyReply): never {
   if (!(error instanceof CodeRequestRefusedError)) throw error;
   const body = { error: error.refusal };
+  if (error.refusal === 'app_check_failed') {
+    throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, ...body });
+  }
   if (error.refusal === 'unavailable') throw new ServiceUnavailableException(body);
   if (error.refusal === 'not_on_whatsapp') {
     throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, ...body });

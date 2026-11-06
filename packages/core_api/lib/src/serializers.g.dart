@@ -285,6 +285,7 @@ Serializers _$serializers =
           ..add(MerchantAvailabilityDtoUntilEnum.serializer)
           ..add(MerchantAvailabilitySavedDtoOutput.serializer)
           ..add(MerchantCodeRequestDto.serializer)
+          ..add(MerchantCodeRequestDtoPlatformEnum.serializer)
           ..add(MerchantCodeSentDtoOutput.serializer)
           ..add(MerchantCodeSentDtoOutputChannelEnum.serializer)
           ..add(MerchantDeviceDto.serializer)

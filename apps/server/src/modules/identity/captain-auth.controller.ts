@@ -17,6 +17,8 @@ import { AppSignedIn, CurrentAppSession, Public } from '../../http/access.js';
 import { requestContext } from '../../http/request-context.js';
 import { CaptainController } from '../../http/route-groups.js';
 import {
+  AppCheckHeader,
+  AppCheckToken,
   codeRequestAnswer,
   codeSent,
   deviceId,
@@ -68,15 +70,17 @@ export class CaptainAuthController {
   @Post('code')
   @Public()
   @HttpCode(200)
+  @AppCheckHeader()
   @ZodResponse({ status: 200, type: CaptainCodeSentDto })
   async requestCode(
     @Body() body: CaptainCodeRequestDto,
     @Req() request: FastifyRequest,
     @Res({ passthrough: true }) reply: FastifyReply,
+    @AppCheckToken() appCheckToken: string | undefined,
   ) {
     try {
       const sent = await this.signInService.requestCode(
-        { party: 'captain', phone: body.phone, deviceId: body.deviceId },
+        { party: 'captain', phone: body.phone, deviceId: body.deviceId, appCheckToken },
         requestContext(request),
       );
       return { ...sent, expiresAt: sent.expiresAt.toISOString() };

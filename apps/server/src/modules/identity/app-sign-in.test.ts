@@ -16,6 +16,7 @@ import {
   CodeRequestRefusedError,
   SignInCodeRefusedError,
 } from './app-sign-in.service.js';
+import { APP_CHECK_VERIFIER, type AppCheckVerifier } from './app-check.js';
 import { CODE_SENDER, type DevelopmentCodeSender } from './code-sender.js';
 import { ACCESS_TOKEN_MINUTES, KEY_ROTATION_DAYS } from './app-signing-keys.js';
 
@@ -67,7 +68,7 @@ function newPhone(): string {
   return `+9639${randomInt(100_000_000).toString().padStart(8, '0')}`;
 }
 
-async function changeSetting(key: SettingKey, value: number) {
+async function changeSetting(key: SettingKey, value: number | boolean) {
   await settings.update(key, {}, value, {
     editor: { id: '0190f3a0-0000-7000-8000-000000000001', roles: ['OWN'] },
     context,
@@ -402,6 +403,102 @@ describe('the request limits under parallel requests', () => {
     } finally {
       send.mockRestore();
     }
+  });
+});
+
+describe('App Check on the code request (architecture §8.3.3 item 1)', () => {
+  function codeRoute(
+    party: 'customer' | 'merchant' | 'captain',
+    headers: Record<string, string> = {},
+    extra: Record<string, string> = {},
+  ) {
+    return app.inject({
+      method: 'POST',
+      url: `/v1/${party}/auth/code`,
+      headers,
+      payload: { phone: newPhone(), deviceId: randomUUID(), ...extra },
+    });
+  }
+
+  async function withAppCheck(run: (verify: ReturnType<typeof vi.spyOn>) => Promise<void>) {
+    const verify = vi.spyOn(app.get<AppCheckVerifier>(APP_CHECK_VERIFIER), 'verify');
+    await changeSetting('otp.app_check_required', true);
+    try {
+      await run(verify);
+    } finally {
+      verify.mockRestore();
+      await changeSetting('otp.app_check_required', false);
+    }
+  }
+
+  it('checks nothing while the setting is off', async () => {
+    const verify = vi.spyOn(app.get<AppCheckVerifier>(APP_CHECK_VERIFIER), 'verify');
+    try {
+      expect((await codeRoute('customer')).statusCode).toBe(200);
+      expect(verify).not.toHaveBeenCalled();
+    } finally {
+      verify.mockRestore();
+    }
+  });
+
+  it('refuses every app without a valid token while the setting is on', async () => {
+    await withAppCheck(async () => {
+      for (const party of ['customer', 'merchant', 'captain'] as const) {
+        const missing = await codeRoute(party);
+        expect(missing.statusCode).toBe(403);
+        expect(missing.json()).toMatchObject({ error: 'app_check_failed' });
+        const invalid = await codeRoute(party, { 'x-firebase-appcheck': 'not.a.token' });
+        expect(invalid.statusCode).toBe(403);
+        expect(invalid.json()).toMatchObject({ error: 'app_check_failed' });
+      }
+    });
+  });
+
+  it('sends the code once the header carries a valid token', async () => {
+    await withAppCheck(async (verify) => {
+      verify.mockResolvedValue(true);
+      const response = await codeRoute('customer', { 'x-firebase-appcheck': 'valid-token' });
+      expect(response.statusCode).toBe(200);
+      expect(verify).toHaveBeenCalledWith('valid-token', expect.any(Date));
+      expect((await codeRoute('captain', { 'x-firebase-appcheck': 'valid-token' })).statusCode).toBe(
+        200,
+      );
+    });
+  });
+
+  it('exempts the restaurant app on Windows only (owner decision 2026-11-07)', async () => {
+    await withAppCheck(async (verify) => {
+      // A number of no restaurant: past App Check, the restaurant refusal.
+      const windows = await codeRoute('merchant', {}, { platform: 'windows' });
+      expect(windows.statusCode).toBe(403);
+      expect(windows.json()).toMatchObject({ error: 'not_registered' });
+      expect(verify).not.toHaveBeenCalled();
+      const android = await codeRoute('merchant', {}, { platform: 'android' });
+      expect(android.json()).toMatchObject({ error: 'app_check_failed' });
+      // The customer and captain bodies take no platform, so none is exempt.
+      const customer = await codeRoute('customer', {}, { platform: 'windows' });
+      expect(customer.json()).toMatchObject({ error: 'app_check_failed' });
+    });
+  });
+
+  it('counts a refused request towards the IP limit', async () => {
+    await withAppCheck(async () => {
+      await changeSetting('otp.ip_hourly_max', 2);
+      try {
+        const now = new Date();
+        const ipAddress = '198.51.100.77';
+        for (let i = 0; i < 2; i += 1) {
+          await expect(request(newPhone(), randomUUID(), now, ipAddress)).rejects.toMatchObject({
+            refusal: 'app_check_failed',
+          });
+        }
+        await expect(request(newPhone(), randomUUID(), now, ipAddress)).rejects.toMatchObject({
+          refusal: 'ip_limit',
+        });
+      } finally {
+        await changeSetting('otp.ip_hourly_max', 30);
+      }
+    });
   });
 });
 
