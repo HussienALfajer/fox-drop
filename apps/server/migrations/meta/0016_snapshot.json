@@ -5613,6 +5613,10 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
+        "order_events_status_values": {
+          "name": "order_events_status_values",
+          "value": "(\"ordering\".\"order_events\".\"from_status\" IS NULL OR \"ordering\".\"order_events\".\"from_status\" IN ('placed', 'accepted', 'ready', 'picked_up', 'arrived', 'delivered', 'rejected', 'cancelled', 'failed')) AND \"ordering\".\"order_events\".\"to_status\" IN ('placed', 'accepted', 'ready', 'picked_up', 'arrived', 'delivered', 'rejected', 'cancelled', 'failed')"
+        },
         "order_events_actor_values": {
           "name": "order_events_actor_values",
           "value": "\"ordering\".\"order_events\".\"actor_type\" IN ('customer', 'restaurant', 'captain', 'admin', 'system')"

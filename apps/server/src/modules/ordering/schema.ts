@@ -189,6 +189,10 @@ export const orderEvents = ordering.table(
       foreignColumns: [orders.id, orders.placedAt],
     }),
     check(
+      'order_events_status_values',
+      sql`(${table.fromStatus} IS NULL OR ${table.fromStatus} IN ('placed', 'accepted', 'ready', 'picked_up', 'arrived', 'delivered', 'rejected', 'cancelled', 'failed')) AND ${table.toStatus} IN ('placed', 'accepted', 'ready', 'picked_up', 'arrived', 'delivered', 'rejected', 'cancelled', 'failed')`,
+    ),
+    check(
       'order_events_actor_values',
       sql`${table.actorType} IN ('customer', 'restaurant', 'captain', 'admin', 'system')`,
     ),

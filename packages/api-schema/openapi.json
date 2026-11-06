@@ -6193,6 +6193,8 @@
                     "minimum_not_in_base_currency",
                     "delivery_unpriced",
                     "rates_unavailable",
+                    "one_order_at_a_time",
+                    "active_order_limit",
                     "item_not_found",
                     "item_unavailable",
                     "option_not_found",

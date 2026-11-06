@@ -6,6 +6,7 @@ import { FxModule } from '../fx/index.js';
 import { GeoModule } from '../geo/index.js';
 import { MerchantsModule } from '../merchants/index.js';
 import { SettingsModule } from '../settings/index.js';
+import { ActiveOrders } from './active-orders.js';
 import { CustomerOrdersController } from './customer-orders.controller.js';
 import { CustomerQuoteController } from './customer-quote.controller.js';
 import { OrderPartitions } from './order-partitions.js';
@@ -26,7 +27,7 @@ import { QuoteService } from './quote.service.js';
     CaptainsModule,
   ],
   controllers: [CustomerQuoteController, CustomerOrdersController],
-  providers: [QuoteService, OrdersService],
+  providers: [ActiveOrders, QuoteService, OrdersService],
   exports: [QuoteService, OrdersService],
 })
 export class OrderingModule {}

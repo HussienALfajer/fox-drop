@@ -39,6 +39,12 @@ const CustomerQuoteDtoOutputProblemsInnerCodeEnum
 _$customerQuoteDtoOutputProblemsInnerCodeEnum_ratesUnavailable =
     const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('ratesUnavailable');
 const CustomerQuoteDtoOutputProblemsInnerCodeEnum
+_$customerQuoteDtoOutputProblemsInnerCodeEnum_oneOrderAtATime =
+    const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('oneOrderAtATime');
+const CustomerQuoteDtoOutputProblemsInnerCodeEnum
+_$customerQuoteDtoOutputProblemsInnerCodeEnum_activeOrderLimit =
+    const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('activeOrderLimit');
+const CustomerQuoteDtoOutputProblemsInnerCodeEnum
 _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound =
     const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('itemNotFound');
 const CustomerQuoteDtoOutputProblemsInnerCodeEnum
@@ -85,6 +91,10 @@ _$customerQuoteDtoOutputProblemsInnerCodeEnumValueOf(String name) {
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_deliveryUnpriced;
     case 'ratesUnavailable':
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_ratesUnavailable;
+    case 'oneOrderAtATime':
+      return _$customerQuoteDtoOutputProblemsInnerCodeEnum_oneOrderAtATime;
+    case 'activeOrderLimit':
+      return _$customerQuoteDtoOutputProblemsInnerCodeEnum_activeOrderLimit;
     case 'itemNotFound':
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound;
     case 'itemUnavailable':
@@ -118,6 +128,8 @@ _$customerQuoteDtoOutputProblemsInnerCodeEnumValues =
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_minimumNotInBaseCurrency,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_deliveryUnpriced,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_ratesUnavailable,
+        _$customerQuoteDtoOutputProblemsInnerCodeEnum_oneOrderAtATime,
+        _$customerQuoteDtoOutputProblemsInnerCodeEnum_activeOrderLimit,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemUnavailable,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_optionNotFound,
@@ -146,6 +158,8 @@ class _$CustomerQuoteDtoOutputProblemsInnerCodeEnumSerializer
     'minimumNotInBaseCurrency': 'minimum_not_in_base_currency',
     'deliveryUnpriced': 'delivery_unpriced',
     'ratesUnavailable': 'rates_unavailable',
+    'oneOrderAtATime': 'one_order_at_a_time',
+    'activeOrderLimit': 'active_order_limit',
     'itemNotFound': 'item_not_found',
     'itemUnavailable': 'item_unavailable',
     'optionNotFound': 'option_not_found',
@@ -165,6 +179,8 @@ class _$CustomerQuoteDtoOutputProblemsInnerCodeEnumSerializer
     'minimum_not_in_base_currency': 'minimumNotInBaseCurrency',
     'delivery_unpriced': 'deliveryUnpriced',
     'rates_unavailable': 'ratesUnavailable',
+    'one_order_at_a_time': 'oneOrderAtATime',
+    'active_order_limit': 'activeOrderLimit',
     'item_not_found': 'itemNotFound',
     'item_unavailable': 'itemUnavailable',
     'option_not_found': 'optionNotFound',

@@ -154,17 +154,20 @@ export class SettingsService {
   }
 
   // The value in effect: the stored one, or the default. Null for a value
-  // still to be entered before launch.
+  // still to be entered before launch. A transaction passes itself as the
+  // executor, so a cache miss reads through its connection and never waits
+  // for a second one.
   async get<Key extends SettingKey>(
     key: Key,
     target: SettingTarget = {},
+    executor: Pick<NodePgDatabase, 'select'> = this.database.db,
   ): Promise<SettingValue<Key>> {
     const setting = this.resolve(key, target);
     const cacheKey = this.cacheKey(setting);
     const cached = await this.readCache(cacheKey);
     if (cached !== undefined) return cached as SettingValue<Key>;
 
-    const state = await this.stored(this.database.db, setting);
+    const state = await this.stored(executor, setting);
     const value = this.effective(setting, state);
     await this.writeCache(cacheKey, state.version, value);
     return value as SettingValue<Key>;

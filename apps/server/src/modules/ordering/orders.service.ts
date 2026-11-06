@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
-import { and, asc, count, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, eq, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -11,10 +11,10 @@ import {
   CustomersService,
   type UnsavedAddressFields,
 } from '../customers/index.js';
-import { FxService, type RateSnapshot } from '../fx/index.js';
+import { FxRefusedError, FxService, type RateSnapshot } from '../fx/index.js';
 import type { Point } from '../geo/index.js';
 import { MerchantsService } from '../merchants/index.js';
-import { SettingsService } from '../settings/index.js';
+import { ActiveOrders } from './active-orders.js';
 import { type Quote, type QuoteRequest, QuoteRefusedError, QuoteService } from './quote.service.js';
 import type { QuoteMoney } from './quote.js';
 import {
@@ -30,11 +30,6 @@ type OrderStatus = (typeof orderStatuses)[number];
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 type Executor = Pick<NodePgDatabase, 'select'>;
 
-// RA §7.4: a restaurant's orders count until pickup or their end.
-const RESTAURANT_ACTIVE: OrderStatus[] = ['placed', 'accepted', 'ready'];
-// D23, CU §5.5: a customer's orders count until they end.
-const CUSTOMER_ACTIVE: OrderStatus[] = ['placed', 'accepted', 'ready', 'picked_up', 'arrived'];
-
 // Architecture §5.3: a key answers its order for 24 hours.
 const KEY_LIFETIME_MS = 24 * 60 * 60 * 1000;
 
@@ -45,20 +40,17 @@ export type OrderRefusal =
   | 'unknown_restaurant'
   | 'quote_changed'
   | 'order_blocked'
-  | 'restaurant_busy'
-  | 'active_order_limit'
   | 'idempotency_key_reused'
   | Extract<CustomersRefusal, 'unknown_address' | 'outside_zones'>;
 
-// A command the ordering module refuses: with the new quote for
-// quote_changed and order_blocked (CU §10.7), with the limit for
-// active_order_limit (D23).
+// A command the ordering module refuses; quote_changed and order_blocked
+// carry the new quote, which shows what changed or what blocks (CU §10.7).
 export class OrderRefusedError extends Error {
   override readonly name = 'OrderRefusedError';
   constructor(
     readonly refusal: OrderRefusal,
     message: string,
-    readonly details: { quote?: Quote; limit?: number; trusted?: boolean } = {},
+    readonly quote: Quote | null = null,
   ) {
     super(message);
   }
@@ -70,7 +62,7 @@ export interface PlaceOrder {
   accountId: string;
   idempotencyKey: string;
   quoteVersion: string;
-  request: Omit<QuoteRequest, 'location'>;
+  request: Omit<QuoteRequest, 'location' | 'customerAccountId'>;
   address: { addressId: string } | { fields: UnsavedAddressFields };
   note: string | null;
 }
@@ -109,106 +101,103 @@ export interface PlacedOrder {
   };
 }
 
-// A refusal found inside the transaction, answered after it rolled back.
-class RatesChanged extends Error {}
+// A check the transaction failed (a limit reached, the rates changed since
+// the quote): the quote is run again after the rollback and shows it.
+class Requote extends Error {}
 
 // The order and its placing (architecture §4.2, §5.5; CU §10.7). The quote is
-// re-run first; then one transaction takes the customer's and the
-// restaurant's locks, counts both limits, takes the rate snapshot and
-// numbers the order. The quote reads through the pool before the
-// transaction, so a placing never holds a connection while it waits for
-// another.
+// re-run first, through the pool, so a placing never holds a connection while
+// it waits for another; then one transaction takes the customer's and the
+// restaurant's locks, counts both limits, takes the rate snapshot and numbers
+// the order.
 @Injectable()
 export class OrdersService implements OnModuleInit {
   constructor(
     @Inject(DATABASE) private readonly database: Database,
     private readonly quotes: QuoteService,
+    private readonly activeOrders: ActiveOrders,
     private readonly customers: CustomersService,
     private readonly merchants: MerchantsService,
     private readonly captains: CaptainsService,
     private readonly fx: FxService,
-    private readonly settings: SettingsService,
   ) {}
 
   // RA §7.4: the restaurant is busy at its maximum active orders.
   onModuleInit(): void {
-    this.merchants.countActiveOrders((restaurantId) =>
-      this.activeOrders(this.database.db, eq(orders.restaurantId, restaurantId), RESTAURANT_ACTIVE),
-    );
+    this.merchants.countActiveOrders((restaurantId) => this.activeOrders.restaurant(restaurantId));
   }
 
   async place(command: PlaceOrder, now: Date): Promise<PlacedOrder> {
     const requestHash = hashOf(command);
     const earlier = await this.replay(this.database.db, command, requestHash, now);
     if (earlier !== null) return this.placed(earlier);
+    try {
+      return await this.placeOnce(command, requestHash, now);
+    } catch (error) {
+      // A repeat sent with the first can be refused by what the first
+      // changed (its restaurant now busy, the customer at the limit): it
+      // answers the first's order (architecture §5.3).
+      if (error instanceof OrderRefusedError && error.refusal !== 'idempotency_key_reused') {
+        const placed = await this.replay(this.database.db, command, requestHash, now);
+        if (placed !== null) return this.placed(placed);
+      }
+      throw error;
+    }
+  }
 
+  private async placeOnce(command: PlaceOrder, requestHash: string, now: Date) {
     const address = await this.orderAddress(command);
-    const request: QuoteRequest = { ...command.request, location: address.location };
+    const request: QuoteRequest = {
+      ...command.request,
+      location: address.location,
+      customerAccountId: command.accountId,
+    };
     const priced = await this.price(request, now);
     const { quote, restaurant } = priced;
     if (quote.problems.length > 0) {
-      throw new OrderRefusedError('order_blocked', 'a problem blocks ordering', { quote });
+      throw new OrderRefusedError('order_blocked', 'a problem blocks ordering', quote);
     }
     if (quote.version !== command.quoteVersion) {
-      throw new OrderRefusedError('quote_changed', 'the quote changed', { quote });
+      throw new OrderRefusedError('quote_changed', 'the quote changed', quote);
     }
     // Without problems the city has its rates and fee rule (CU §10.6).
     const snapshot = priced.snapshot!;
     const feeRuleId = priced.feeRuleId!;
-    if (restaurant.commissionBp === null) {
+    const commissionBp = restaurant.commissionBp;
+    if (commissionBp === null) {
       throw new Error(`restaurant ${restaurant.id} has no commission in effect`);
     }
     const { cityId } = restaurant;
-    const [newMax, trustedAfter, trustedMax, payTable] = await Promise.all([
-      this.settings.get('customer.new_max_active_orders', { cityId }),
-      this.settings.get('customer.trusted_after_delivered_orders', { cityId }),
-      this.settings.get('customer.trusted_max_active_orders', { cityId }),
+    const [rules, payTable] = await Promise.all([
+      this.activeOrders.rules(cityId),
       this.captains.payTable(cityId, now),
     ]);
 
-    let orderId: string;
+    let placed: { id: string; placedAt: Date };
     try {
-      orderId = await this.database.db.transaction(async (tx) => {
+      placed = await this.database.db.transaction(async (tx) => {
         // The customer's lock first, then the restaurant's, so two placings
         // never wait on each other in turn.
         await lock(tx, `orders:customer:${command.accountId}`);
         const repeat = await this.replay(tx, command, requestHash, now);
         if (repeat !== null) return repeat;
-
-        const delivered = await this.activeOrders(
-          tx,
-          eq(orders.customerAccountId, command.accountId),
-          ['delivered'],
-        );
-        const trusted = delivered >= trustedAfter;
-        const limit = trusted ? trustedMax : newMax;
-        const customerActive = await this.activeOrders(
-          tx,
-          eq(orders.customerAccountId, command.accountId),
-          CUSTOMER_ACTIVE,
-        );
-        if (customerActive >= limit) {
-          throw new OrderRefusedError('active_order_limit', 'at the active-order limit', {
-            limit,
-            trusted,
-          });
+        if ((await this.activeOrders.customer(command.accountId, rules, tx)).reached) {
+          throw new Requote('the customer reached the active-order limit');
         }
-
         await lock(tx, `orders:restaurant:${restaurant.id}`);
-        if (restaurant.maxActiveOrders !== null) {
-          const active = await this.activeOrders(
-            tx,
-            eq(orders.restaurantId, restaurant.id),
-            RESTAURANT_ACTIVE,
-          );
-          if (active >= restaurant.maxActiveOrders) {
-            throw new OrderRefusedError('restaurant_busy', 'the restaurant is at its maximum');
-          }
+        if (
+          restaurant.maxActiveOrders !== null &&
+          (await this.activeOrders.restaurant(restaurant.id, tx)) >= restaurant.maxActiveOrders
+        ) {
+          throw new Requote('the restaurant reached its maximum active orders');
         }
 
         // AP §8.6: the rates the order keeps are the ones it was priced with.
-        const kept = await this.fx.snapshotForOrder(cityId, tx);
-        if (rateKey(kept) !== rateKey(snapshot)) throw new RatesChanged();
+        const kept = await this.fx.snapshotForOrder(cityId, tx).catch((error: unknown) => {
+          if (error instanceof FxRefusedError) throw new Requote(error.message);
+          throw error;
+        });
+        if (rateKey(kept) !== rateKey(snapshot)) throw new Requote('the rates changed');
 
         // Last, so the city's number row is held briefly and a refused order
         // leaves no gap.
@@ -235,7 +224,7 @@ export class OrdersService implements OnModuleInit {
             ...quote.money,
             deliveryFree: quote.deliveryFree,
             feeRuleId,
-            commissionBp: restaurant.commissionBp!,
+            commissionBp,
             payTableId: payTable?.id ?? null,
             rateSnapshot: plain(kept),
             payIn: quote.payIn?.currency ?? null,
@@ -282,12 +271,7 @@ export class OrdersService implements OnModuleInit {
           actorType: 'customer',
           actorId: command.accountId,
         });
-        const key = {
-          requestHash,
-          orderId: id,
-          orderPlacedAt: now,
-          createdAt: now,
-        };
+        const key = { requestHash, orderId: id, orderPlacedAt: now, createdAt: now };
         // A key older than 24 hours is used again (architecture §5.3).
         await tx
           .insert(idempotencyKeys)
@@ -296,19 +280,22 @@ export class OrdersService implements OnModuleInit {
             target: [idempotencyKeys.accountId, idempotencyKeys.key],
             set: key,
           });
-        return id;
+        return { id, placedAt: now };
       });
     } catch (error) {
-      if (!(error instanceof RatesChanged)) throw error;
-      throw new OrderRefusedError('quote_changed', 'the exchange rates changed', {
-        quote: (await this.price(request, now)).quote,
-      });
+      if (!(error instanceof Requote)) throw error;
+      const { quote: fresh } = await this.price(request, now);
+      throw fresh.problems.length > 0
+        ? new OrderRefusedError('order_blocked', error.message, fresh)
+        : new OrderRefusedError('quote_changed', error.message, fresh);
     }
-    return this.placed(orderId);
+    return this.placed(placed);
   }
 
-  // The order as it was placed: the answer of the command and of its repeats.
-  private async placed(orderId: string): Promise<PlacedOrder> {
+  // The order the command placed, the answer of the command and of its
+  // repeats: its money, lines and address never change; its status may have
+  // moved on since.
+  private async placed({ id, placedAt }: { id: string; placedAt: Date }): Promise<PlacedOrder> {
     const db = this.database.db;
     const [row] = await db
       .select({
@@ -340,12 +327,12 @@ export class OrdersService implements OnModuleInit {
         directions: orders.directions,
       })
       .from(orders)
-      .where(eq(orders.id, orderId));
-    if (!row) throw new Error(`order ${orderId} not found`);
+      .where(and(eq(orders.id, id), eq(orders.placedAt, placedAt)));
+    if (!row) throw new Error(`order ${id} not found`);
     const lines = await db
       .select()
       .from(orderLines)
-      .where(and(eq(orderLines.orderId, orderId), eq(orderLines.orderPlacedAt, row.placedAt)))
+      .where(and(eq(orderLines.orderId, id), eq(orderLines.orderPlacedAt, placedAt)))
       .orderBy(asc(orderLines.position));
     return {
       id: row.id,
@@ -397,11 +384,12 @@ export class OrdersService implements OnModuleInit {
     command: PlaceOrder,
     requestHash: string,
     now: Date,
-  ): Promise<string | null> {
+  ): Promise<{ id: string; placedAt: Date } | null> {
     const [row] = await executor
       .select({
         requestHash: idempotencyKeys.requestHash,
-        orderId: idempotencyKeys.orderId,
+        id: idempotencyKeys.orderId,
+        placedAt: idempotencyKeys.orderPlacedAt,
         createdAt: idempotencyKeys.createdAt,
       })
       .from(idempotencyKeys)
@@ -415,7 +403,7 @@ export class OrdersService implements OnModuleInit {
     if (row.requestHash !== requestHash) {
       throw new OrderRefusedError('idempotency_key_reused', 'the key came with another command');
     }
-    return row.orderId;
+    return { id: row.id, placedAt: row.placedAt };
   }
 
   private async orderAddress(command: PlaceOrder) {
@@ -439,18 +427,6 @@ export class OrdersService implements OnModuleInit {
       if (!(error instanceof QuoteRefusedError)) throw error;
       throw new OrderRefusedError(error.refusal, error.message);
     }
-  }
-
-  private async activeOrders(
-    executor: Executor,
-    whose: ReturnType<typeof eq>,
-    statuses: OrderStatus[],
-  ): Promise<number> {
-    const [row] = await executor
-      .select({ n: count() })
-      .from(orders)
-      .where(and(whose, inArray(orders.status, statuses)));
-    return row?.n ?? 0;
   }
 }
 
@@ -476,8 +452,7 @@ function rateKey(snapshot: RateSnapshot): string {
 // The command without its key, so a repeat is recognised and another
 // command with the same key refused.
 function hashOf(command: PlaceOrder): string {
-  const rest = { ...command, idempotencyKey: null };
   return createHash('sha256')
-    .update(JSON.stringify(plain(rest)))
+    .update(JSON.stringify(plain({ ...command, idempotencyKey: null })))
     .digest('hex');
 }

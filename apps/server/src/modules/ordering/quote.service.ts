@@ -10,6 +10,7 @@ import {
 } from '../geo/index.js';
 import { MerchantsService, type Restaurant, type StorefrontState } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
+import { ActiveOrders } from './active-orders.js';
 import { platformOpening } from './platform-hours.js';
 import {
   type CartLine,
@@ -36,6 +37,10 @@ export type QuoteProblemCode =
   | 'minimum_not_in_base_currency'
   | 'delivery_unpriced'
   | 'rates_unavailable'
+  // CU §5.5, D23: «يمكنك طلب واحد في كل مرة حتى يكتمل طلبك الحالي» for a new
+  // account, «وصلت إلى الحد الأقصى للطلبات الجارية» for a trusted one.
+  | 'one_order_at_a_time'
+  | 'active_order_limit'
   | LineProblem;
 
 export interface QuoteProblem {
@@ -53,6 +58,9 @@ export interface QuoteRequest {
   // «سأدفع بـ» (CU §10.5): an accepted currency, or null for «لم أحدد».
   payIn: string | null;
   appVersion: string;
+  // The signed-in customer, whose active-order limit the quote checks; null
+  // for a guest (CU §5.1).
+  customerAccountId: string | null;
 }
 
 export interface Quote {
@@ -104,8 +112,8 @@ export class QuoteRefusedError extends Error {
 const TRIP_VEHICLE = 'motorbike';
 
 // CU §10.6: the versioned quote of a cart for a delivery point. Every check
-// with data is run (owner decision 2026-11-06); the capacity check (until
-// dispatch), the active-order limit (slice 1.8), account states, the terms
+// with data is run (owner decision 2026-11-06), the signed-in customer's
+// active-order limit included; the capacity check, account states, the terms
 // version, the emergency stop and codes (Phase 2) pass until their slices.
 @Injectable()
 export class QuoteService {
@@ -114,6 +122,7 @@ export class QuoteService {
     private readonly fx: FxService,
     private readonly geo: GeoService,
     private readonly merchants: MerchantsService,
+    private readonly activeOrders: ActiveOrders,
   ) {}
 
   async quote(request: QuoteRequest, now: Date): Promise<Quote> {
@@ -163,6 +172,13 @@ export class QuoteService {
     if (zone === null) problem('outside_zones');
     else if (!covers) problem('not_covered');
     if (state.state.state !== 'open') problem('restaurant_closed');
+    if (request.customerAccountId !== null) {
+      const limit = await this.activeOrders.customer(
+        request.customerAccountId,
+        await this.activeOrders.rules(cityId),
+      );
+      if (limit.reached) problem(limit.trusted ? 'active_order_limit' : 'one_order_at_a_time');
+    }
 
     const baseCurrency = snapshot?.baseCurrency ?? (await this.fx.baseCurrency(cityId));
     if (snapshot === null) problem('rates_unavailable');

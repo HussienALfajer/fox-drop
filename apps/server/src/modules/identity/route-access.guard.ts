@@ -43,7 +43,10 @@ export class RouteAccessGuard implements CanActivate {
     if (access.kind === 'public') return true;
     const group = this.reflector.get<RouteGroup | undefined>(ROUTE_GROUP, context.getClass());
     const request = context.switchToHttp().getRequest<FastifyRequest>();
-    if (access.kind === 'app_session') {
+    // A guest's call has no token; a token that fails is 401 as on any app
+    // route, so the app refreshes it.
+    if (access.kind === 'optional_app_session' && !request.headers.authorization) return true;
+    if (access.kind === 'app_session' || access.kind === 'optional_app_session') {
       // The app of the route's group.
       const party: AppParty | undefined =
         group === 'customer' || group === 'merchant' || group === 'captain' ? group : undefined;

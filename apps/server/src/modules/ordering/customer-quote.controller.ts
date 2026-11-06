@@ -1,8 +1,9 @@
 import { Body, HttpCode, HttpStatus, NotFoundException, Post } from '@nestjs/common';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
-import { Public } from '../../http/access.js';
+import { AppSignedInOrGuest, OptionalAppSession } from '../../http/access.js';
 import { CustomerController } from '../../http/route-groups.js';
+import type { AppSession } from '../identity/index.js';
 import type { StorefrontState } from '../merchants/index.js';
 import { type Quote, QuoteRefusedError, QuoteService } from './quote.service.js';
 
@@ -132,6 +133,8 @@ class CustomerQuoteDto extends createZodDto(
             'minimum_not_in_base_currency',
             'delivery_unpriced',
             'rates_unavailable',
+            'one_order_at_a_time',
+            'active_order_limit',
             'item_not_found',
             'item_unavailable',
             'option_not_found',
@@ -153,17 +156,21 @@ class CustomerQuoteDto extends createZodDto(
 
 // CU §10.6: the quote of the cart, asked for on every change of the cart,
 // the address or the code, and on opening checkout. Open to guests, who see
-// the full quote (CU §5.1).
+// the full quote (CU §5.1); a signed-in customer's also checks their
+// active-order limit (CU §5.5).
 @CustomerController()
 export class CustomerQuoteController {
   constructor(private readonly quotes: QuoteService) {}
 
   // 404 unknown_restaurant for a restaurant customers do not see.
   @Post('quote')
-  @Public()
+  @AppSignedInOrGuest()
   @HttpCode(200)
   @ZodResponse({ status: 200, type: CustomerQuoteDto })
-  async quote(@Body() body: CustomerQuoteRequestDto) {
+  async quote(
+    @OptionalAppSession() session: AppSession | null,
+    @Body() body: CustomerQuoteRequestDto,
+  ) {
     try {
       const quote = await this.quotes.quote(
         {
@@ -172,6 +179,7 @@ export class CustomerQuoteController {
             ...line,
             knownUnitPrice: BigInt(line.knownUnitPrice),
           })),
+          customerAccountId: session?.accountId ?? null,
         },
         new Date(),
       );

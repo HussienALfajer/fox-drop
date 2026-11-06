@@ -28,6 +28,7 @@ CREATE TABLE "ordering"."order_events" (
 	"actor_id" uuid,
 	"reason" text,
 	CONSTRAINT "order_events_order_id_order_placed_at_version_pk" PRIMARY KEY("order_id","order_placed_at","version"),
+	CONSTRAINT "order_events_status_values" CHECK (("ordering"."order_events"."from_status" IS NULL OR "ordering"."order_events"."from_status" IN ('placed', 'accepted', 'ready', 'picked_up', 'arrived', 'delivered', 'rejected', 'cancelled', 'failed')) AND "ordering"."order_events"."to_status" IN ('placed', 'accepted', 'ready', 'picked_up', 'arrived', 'delivered', 'rejected', 'cancelled', 'failed')),
 	CONSTRAINT "order_events_actor_values" CHECK ("ordering"."order_events"."actor_type" IN ('customer', 'restaurant', 'captain', 'admin', 'system'))
 ) PARTITION BY RANGE ("order_placed_at");
 --> statement-breakpoint

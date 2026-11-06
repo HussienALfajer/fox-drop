@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ApiModule } from '../../api.module.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
 import { createApiApp } from '../../http/create-api-app.js';
@@ -150,10 +150,11 @@ const cart = (itemId = shawarma, quantity = 2) => [
   { itemId, optionIds: [], quantity, note: null, knownUnitPrice: '12000' },
 ];
 
-async function quoteOf(restaurantId = restaurant, lines = cart()) {
+async function quoteOf(restaurantId = restaurant, lines = cart(), headers = {}) {
   const answer = await app.inject({
     method: 'POST',
     url: '/v1/customer/quote',
+    headers,
     payload: { restaurantId, location: centre, lines, payIn: 'USD', appVersion: '1.0.0' },
   });
   return answer.json();
@@ -221,6 +222,8 @@ describe('POST /v1/customer/orders (CU §10.7)', () => {
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({
       commission_bp: 1500,
+      fee_rule_id: (await sql.query('SELECT id FROM geo.fee_rules ORDER BY id DESC LIMIT 1'))
+        .rows[0].id,
       to_status: 'placed',
       actor_type: 'customer',
       version: 1,
@@ -268,7 +271,7 @@ describe('POST /v1/customer/orders (CU §10.7)', () => {
     await end(answer.json().order.id);
   });
 
-  it('refuses an address of another customer with 404 unknown_address', async () => {
+  it('refuses an unknown address with 404 unknown_address', async () => {
     const answer = await place(await signedIn(), { addressId: randomUUID(), unsavedAddress: null });
     expect(answer.statusCode).toBe(404);
     expect(answer.json().error).toBe('unknown_address');
@@ -338,13 +341,20 @@ describe('POST /v1/customer/orders (CU §10.7)', () => {
 });
 
 describe('the active-order limits (D23, RA §7.4)', () => {
-  it('lets a new account have one active order, refused with 409 active_order_limit', async () => {
+  it('lets a new account have one active order, shown in its quote (CU §5.5)', async () => {
     const headers = await signedIn();
     const first = await place(headers);
     expect(first.statusCode).toBe(201);
     const second = await place(headers);
     expect(second.statusCode).toBe(409);
-    expect(second.json()).toMatchObject({ error: 'active_order_limit', trusted: false, limit: 1 });
+    expect(second.json().error).toBe('order_blocked');
+    expect(second.json().quote.problems).toContainEqual(
+      expect.objectContaining({ code: 'one_order_at_a_time' }),
+    );
+    expect((await quoteOf(restaurant, cart(), headers)).problems).toContainEqual(
+      expect.objectContaining({ code: 'one_order_at_a_time' }),
+    );
+    expect((await quoteOf()).problems).toEqual([]);
     await end(first.json().order.id);
     expect((await place(headers)).statusCode).toBe(201);
   });
@@ -370,7 +380,9 @@ describe('the active-order limits (D23, RA §7.4)', () => {
       expect((await place(headers)).statusCode).toBe(201);
     }
     const fourth = await place(headers);
-    expect(fourth.json()).toMatchObject({ error: 'active_order_limit', trusted: true, limit: 3 });
+    expect(fourth.json().quote.problems).toContainEqual(
+      expect.objectContaining({ code: 'active_order_limit' }),
+    );
     await sql.query(
       "UPDATE ordering.orders SET status = 'cancelled' WHERE status = 'placed' AND restaurant_id = $1",
       [restaurant],
@@ -388,7 +400,7 @@ describe('the active-order limits (D23, RA §7.4)', () => {
     expect(answers.map((answer) => answer.statusCode).sort()).toEqual([201, 409, 409]);
     expect(
       answers.filter((answer) => answer.statusCode === 409).map((answer) => answer.json().error),
-    ).toEqual(['restaurant_busy', 'restaurant_busy']);
+    ).toEqual(['order_blocked', 'order_blocked']);
     expect((await merchants.storefrontState(id)).state.state).toBe('busy');
     const quote = await quoteOf(id, lines);
     expect(quote.restaurant.state).toBe('busy');
@@ -465,5 +477,99 @@ describe('the Idempotency-Key (architecture §5.3)', () => {
       { available: true },
       change,
     );
+  });
+});
+
+describe('placing, at the edges (CU §10.7, architecture §5.3)', () => {
+  it('refuses a saved address of another customer with 404 unknown_address', async () => {
+    const owner = await signedIn();
+    const saved = await app.inject({
+      method: 'POST',
+      url: '/v1/customer/addresses',
+      headers: owner,
+      payload: { ...unsaved, label: 'home', customLabel: null, isDefault: true },
+    });
+    const answer = await place(await signedIn(), {
+      addressId: saved.json().id,
+      unsavedAddress: null,
+    });
+    expect(answer.statusCode).toBe(404);
+    expect(answer.json().error).toBe('unknown_address');
+  });
+
+  it('refuses rates that changed inside the transaction with quote_changed and keeps nothing', async () => {
+    const headers = await signedIn();
+    const original = fx.snapshotForOrder.bind(fx);
+    const spy = vi.spyOn(fx, 'snapshotForOrder').mockImplementationOnce(async (cityId, tx) => {
+      const snapshot = await original(cityId, tx);
+      return {
+        ...snapshot,
+        currencies: snapshot.currencies.map((entry) =>
+          entry.code === 'USD' ? { ...entry, rateVersionId: randomUUID() } : entry,
+        ),
+      };
+    });
+    const before = (await sql.query('SELECT count(*)::int AS n FROM ordering.orders')).rows[0].n;
+    const answer = await place(headers);
+    spy.mockRestore();
+    expect(answer.statusCode).toBe(409);
+    expect(answer.json()).toMatchObject({ error: 'quote_changed', quote: await quoteOf() });
+    expect((await sql.query('SELECT count(*)::int AS n FROM ordering.orders')).rows[0].n).toBe(
+      before,
+    );
+  });
+
+  it('answers repeats sent together with one order when it fills the restaurant', async () => {
+    const { id, item } = await restaurantWith('مطعم بمكان واحد');
+    await sql.query('UPDATE merchants.restaurants SET max_active_orders = 1 WHERE id = $1', [id]);
+    const headers = await signedIn();
+    const key = randomUUID();
+    const extra = { restaurantId: id, lines: cart(item) };
+    const answers = await Promise.all([place(headers, extra, key), place(headers, extra, key)]);
+    expect(answers.map((answer) => answer.statusCode)).toEqual([201, 201]);
+    expect(answers[0]!.json().order.id).toBe(answers[1]!.json().order.id);
+    await end(answers[0]!.json().order.id);
+  });
+
+  it('places a new order with a key older than 24 hours', async () => {
+    const headers = await signedIn();
+    const key = randomUUID();
+    const first = await place(headers, {}, key);
+    await end(first.json().order.id);
+    await sql.query(
+      "UPDATE ordering.idempotency_keys SET created_at = now() - interval '25 hours' WHERE key = $1",
+      [key],
+    );
+    const again = await place(headers, {}, key);
+    expect(again.statusCode).toBe(201);
+    expect(again.json().order.id).not.toBe(first.json().order.id);
+    await end(again.json().order.id);
+  });
+
+  it('keeps one key per account, so two customers may send the same', async () => {
+    const key = randomUUID();
+    const answers = [
+      await place(await signedIn(), {}, key),
+      await place(await signedIn(), {}, key),
+    ];
+    expect(answers.map((answer) => answer.statusCode)).toEqual([201, 201]);
+    expect(answers[0]!.json().order.id).not.toBe(answers[1]!.json().order.id);
+    for (const answer of answers) await end(answer.json().order.id);
+  });
+
+  it('answers a quote with a token that fails with 401, so the app refreshes it', async () => {
+    const answer = await app.inject({
+      method: 'POST',
+      url: '/v1/customer/quote',
+      headers: { authorization: 'Bearer nonsense' },
+      payload: {
+        restaurantId: restaurant,
+        location: centre,
+        lines: cart(),
+        payIn: null,
+        appVersion: '1.0.0',
+      },
+    });
+    expect(answer.statusCode).toBe(401);
   });
 });

@@ -1904,7 +1904,7 @@ export interface components {
             /** @description CU §10.6: every one blocks ordering; the texts are in Appendix C. */
             problems: {
                 /** @enum {string} */
-                code: "update_required" | "maintenance" | "platform_closed" | "outside_zones" | "not_covered" | "restaurant_closed" | "below_minimum_order" | "minimum_not_in_base_currency" | "delivery_unpriced" | "rates_unavailable" | "item_not_found" | "item_unavailable" | "option_not_found" | "option_unavailable" | "options_invalid" | "price_not_in_base_currency" | "price_changed";
+                code: "update_required" | "maintenance" | "platform_closed" | "outside_zones" | "not_covered" | "restaurant_closed" | "below_minimum_order" | "minimum_not_in_base_currency" | "delivery_unpriced" | "rates_unavailable" | "one_order_at_a_time" | "active_order_limit" | "item_not_found" | "item_unavailable" | "option_not_found" | "option_unavailable" | "options_invalid" | "price_not_in_base_currency" | "price_changed";
                 /** @description The cart line, for a line problem. */
                 line: number | null;
                 /** @description platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}». */

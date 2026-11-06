@@ -603,7 +603,8 @@ export class MerchantsService implements OnModuleInit {
           row.busyExtraMin !== null && row.busyUntil !== null
             ? { extraMin: row.busyExtraMin, endsAt: row.busyUntil }
             : null,
-        activeOrders: await this.activeOrders(restaurantId),
+        // Counted only against a maximum: the count reads every partition.
+        activeOrders: row.maxActiveOrders === null ? 0 : await this.activeOrders(restaurantId),
         maxActiveOrders: row.maxActiveOrders,
       },
       now,

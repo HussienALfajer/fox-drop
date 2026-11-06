@@ -12,7 +12,8 @@ export type RouteAccess =
   | { kind: 'public' }
   | { kind: 'admin_session' }
   | { kind: 'admin_permission'; permission: string }
-  | { kind: 'app_session' };
+  | { kind: 'app_session' }
+  | { kind: 'optional_app_session' };
 
 export const ROUTE_ACCESS = 'fox_drop:route_access';
 
@@ -48,6 +49,18 @@ export const CurrentAdminSession = createParamDecorator(
 // signed-in user of that app (architecture §15.1).
 export const AppSignedIn = () =>
   SetMetadata(ROUTE_ACCESS, { kind: 'app_session' } satisfies RouteAccess);
+
+// An app route open to guests that answers more to a signed-in user, such as
+// the customer's quote (CU §5.1, §10.6): without a token it runs as a guest;
+// with one, the token must be valid.
+export const AppSignedInOrGuest = () =>
+  SetMetadata(ROUTE_ACCESS, { kind: 'optional_app_session' } satisfies RouteAccess);
+
+// The app session of an @AppSignedInOrGuest() route; null for a guest.
+export const OptionalAppSession = createParamDecorator(
+  (_data: unknown, context: ExecutionContext): AppSession | null =>
+    context.switchToHttp().getRequest<FastifyRequest>().appSession ?? null,
+);
 
 // The app session RouteAccessGuard checked for this request.
 export const CurrentAppSession = createParamDecorator(

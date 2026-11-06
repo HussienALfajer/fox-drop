@@ -110,8 +110,8 @@ class CustomerPlacedOrderDto extends createZodDto(
 export class CustomerOrdersController {
   constructor(private readonly orders: OrdersService) {}
 
-  // 409 quote_changed or order_blocked with the new quote, restaurant_busy,
-  // active_order_limit with the limit; 404 unknown_restaurant or
+  // 409 quote_changed or order_blocked with the new quote, which shows the
+  // restaurant busy or the customer at the limit (CU §5.5); 404 unknown_restaurant or
   // unknown_address; 409 outside_zones; 422 idempotency_key_reused.
   @Post('orders')
   @AppSignedIn()
@@ -149,7 +149,7 @@ export class CustomerOrdersController {
       return { order: orderBody(order) };
     } catch (error) {
       if (!(error instanceof OrderRefusedError)) throw error;
-      const { refusal, details } = error;
+      const { refusal, quote } = error;
       if (refusal === 'unknown_restaurant' || refusal === 'unknown_address') {
         throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: refusal });
       }
@@ -162,8 +162,7 @@ export class CustomerOrdersController {
       throw new ConflictException({
         statusCode: HttpStatus.CONFLICT,
         error: refusal,
-        ...(details.quote ? { quote: quoteBody(details.quote) } : {}),
-        ...(details.limit === undefined ? {} : { limit: details.limit, trusted: details.trusted }),
+        ...(quote ? { quote: quoteBody(quote) } : {}),
       });
     }
   }
