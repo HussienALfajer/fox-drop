@@ -67,6 +67,7 @@ test("Centrifugo runs development's image and calls this environment's API", () 
     [
       ['merchant', 'http://api:3000/v1/merchant/realtime/subscribe'],
       ['customer', 'http://api:3000/v1/customer/realtime/subscribe'],
+      ['captain', 'http://api:3000/v1/captain/realtime/subscribe'],
     ],
   );
   // Only the API and the worker get its settings, and only the API the
