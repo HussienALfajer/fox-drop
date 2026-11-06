@@ -4,19 +4,25 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice W4, the emergency sign-in (`docs/roadmap.md`, Phase 1, before slice 1.14).
+Slice 1.14, the walking skeleton on staging (`docs/roadmap.md`, Phase 1). The real WhatsApp sender (W1, W2), App Check on the server (W3) and the emergency sign-in (W4) it waited for are merged.
 
-- **Roadmap line:** operations issue a short-lived, one-time sign-in code bound to a captain's or a restaurant user's number, audited; customers are not covered (architecture §22 item 1). Verified by the tests; the panel screen waits for the design.
-- **Specs:** architecture §22 item 1, §8.3.2, §8.3.5 (written by this slice), §15; AP §6.3; `apps/server/src/modules/identity/CLAUDE.md` («Codes», «Captain sign-in», «Restaurant sign-in»).
-- **Branch:** `feat/emergency-sign-in`.
-- **Owner decisions 2026-11-07:** operations verify the person by a phone call, issue the code in the panel, see it once and read it out; the person types it in the app's usual code screen, and the code is bound to the number, not to a device (the first device that uses it signs in). Valid 10 minutes (fixed), used once, `otp.max_attempts` wrong ones end it, and it replaces the number's open code. A new special permission `sign_in.emergency_code` for OWN and OPS. Allowed at any time, with a required reason, audited with the actor and the account, never the code or the number. After the review (2026-11-07): an open emergency code is never replaced by a code request (the request waits until it expires), and the captain and restaurant apps offer «لديّ رمز من العمليات» when no code can be sent (slice 1.14).
+- **Roadmap line:** the whole cycle on real phones. The apps send the App Check token, and the captain and restaurant apps offer «لديّ رمز من العمليات» when no code can be sent (RA §5.2, CA §4.9, architecture §8.3.5).
+- **Specs:** Phase 1's definition in `docs/roadmap.md` (owner decisions 2026-11-05: functional, unstyled screens with logic kept apart from presentation); the customer, restaurant and captain app sections the cycle crosses (CU §5, §7–§10; RA §5, §8; CA §4.9, §7–§9); architecture §8.3.3 item 1 and §8.3.4–8.3.5, §11, §17.
+- **Branch:** one per pull request, named when the split is approved.
+- **Open items to ask the owner first:**
+  - The design stop: slices 1.11–1.13 left every screen for the design. Does 1.14 build the functional, unstyled screens of Phase 1's definition now, or wait for the UI/UX and design system?
+  - The split into pull requests (the `slice-plan` skill): this slice spans the three Flutter apps, the panel's operations screens and staging, so it is several pull requests.
+  - Firebase: the project, App Check with Play Integrity and App Attest for the apps' identifiers, `FIREBASE_PROJECT_NUMBER` on staging, and when to turn `otp.app_check_required` on.
+  - The phones and the people for the test on staging, and the paired sending numbers.
+  - The panel: the emergency sign-in screen and «أرقام إرسال الرموز» wait for the design; where the emergency screen lives (the captain's profile, the restaurant's users, or both).
 - **Plan:**
-  - [x] The migration: the permission row for OWN and OPS, and the emergency columns on `app_sign_in_codes` (who issued it and why; no device).
-  - [x] The issue (failing tests first): `POST /v1/admin/emergency-sign-in-codes` with the party, the number and the reason; refused for a number that cannot sign in; audited; the sign-in accepts the code from any device; `pnpm generate:api`.
-  - [x] Docs: AP §6.3, architecture §22 item 1, `identity/CLAUDE.md`.
-  - [ ] `checker`, then `reviewer`; pull request.
+  - [ ] Ask the owner the open items above.
+  - [ ] Split the slice with `slice-plan` and get the split approved; then write one checklist per pull request here.
 
 ## Notes from earlier slices
+
+- Slice W4 added the emergency sign-in (`apps/server/src/modules/identity/CLAUDE.md`, «Emergency sign-in»; architecture §8.3.5; owner decisions 2026-11-07): `POST /v1/admin/emergency-sign-in-codes` (`sign_in.emergency_code`, OWN and OPS) with the app (`captain` or `merchant`), the number and a required reason; a 6-digit code shown once, valid 10 minutes, used once, bound to the number and not to a device; an open emergency code is never replaced by a code request (`resend_wait` until it expires); audited with the account's city and the reason, never the code or the number. The apps' «لديّ رمز من العمليات» comes with slice 1.14; the panel screen waits for the design.
+- To confirm with the owner (slice W4): wrong attempts from any device count against an emergency code, so someone who knows the number can use it up (operations issue a new one); the wording of the error that offers «لديّ رمز من العمليات» and the operations number it calls are not written yet (Content, AP §9.13).
 
 - Slice W3 added App Check on the code requests (`apps/server/src/modules/identity/CLAUDE.md`, «App Check»; owner decisions 2026-11-06 and 2026-11-07): `otp.app_check_required` (off until slice 1.14's apps send the token), the `X-Firebase-AppCheck` header, `403 app_check_failed` after the IP limit counts the request, Firebase's public JWKS with `FIREBASE_PROJECT_NUMBER`, the Windows restaurant app exempt until its device registration exists.
 
