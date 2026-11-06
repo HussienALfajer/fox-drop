@@ -16,11 +16,11 @@ Slice 1.9, real time (`docs/roadmap.md`, Phase 1): the outbox relay, Centrifugo 
     - [x] The relay in the worker: a pg-boss job with every transition, a run at start; end to end through a real Centrifugo to a `centrifuge` client (`order-realtime.test.ts`).
     - [x] Staging prepared: `provision.sh` adds the Centrifugo secrets, nginx proxies `/connection/websocket` to port 3113.
     - [x] `checker` and the `reviewer` (no blocking finding; the seven should-fix ones fixed in `fix(realtime): the review…`).
-    - [ ] Pull request 42 merged (GitHub auto-merge with a merge commit once CI passes); then `provision.sh` on staging from `main` (the `deploy` skill), which adds the Centrifugo secrets and the nginx route.
-  - **Stopped at:** pull request 42 open with auto-merge on, waiting for CI. Next: once it is merged, provision staging, then pull request 2 from an up-to-date `main`.
+    - [x] Pull request 42 merged; `provision.sh` run on staging from `acb0caa`: the three Centrifugo secrets and the `/connection/websocket` route are there; the worker logs that real time is off until Centrifugo joins.
   - Pull request 2, `feat/realtime-reads`: the polling fallback and Centrifugo on staging.
-    - [ ] The order reads for the polling fallback with the order version: the restaurant's incoming orders (RA §8) and the customer's order (CU §11).
-    - [ ] Centrifugo in `infra/compose.yaml` with the server's `CENTRIFUGO_*` (its proxies call `http://api:3000` on the environment's network); deploy and check a connection on staging. Staging's outbox has rows from before real time: the first run would publish old `order.placed` events to restaurant devices, so decide first whether to mark the rows older than the channels' history (10 minutes) published without sending them.
+    - [x] The order reads for the polling fallback with the order version: the restaurant's board (`GET /v1/merchant/orders`, RA §8.2–8.4, with `auto_cancel_at` for the countdown) and the customer's order and active orders (`GET /v1/customer/orders/{orderId}`, `/active`, CU §11, §6).
+    - [x] Centrifugo in `infra/compose.yaml` with the server's `CENTRIFUGO_*` (its proxies call `http://api:3000` on the environment's network), checked by `infra.test.mjs`.
+    - [ ] Before the merge: mark staging's outbox rows from before real time published, without sending them (test data only; every such order has long been cancelled), so the first run does not ring old orders on restaurant devices. After the deploy: check a connection on staging.
     - [ ] `checker`, the `reviewer`, the pull request, the handover to slice 1.10.
 
 ## Notes from earlier slices

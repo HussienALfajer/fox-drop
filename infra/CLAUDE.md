@@ -6,7 +6,7 @@ How FOX DROP runs on the owner's shared Contabo server (architecture §17, T9, E
 
 - `compose.yaml`: one environment's Compose project (the database, Valkey, the migrations, the four server roles and the web container). Its images are the commit's `ghcr.io/hussienalfajer/fox-drop-server` and `fox-drop-web`.
 - `environments/<env>.env`: an environment's public settings (host names, loopback ports). Its secrets live only on the server, in `/srv/foxdrop-<env>/shared/.env`.
-- `centrifugo/config.yaml`: Centrifugo's channels (architecture §6), the same in every environment and in the server's tests; its secrets and subscription proxies come from the environment.
+- `centrifugo/config.yaml`: Centrifugo's channels (architecture §6), the same in every environment and in the server's tests; its secrets and subscription proxies come from the environment. Each environment runs its own `centrifugo` service, whose proxies call `http://api:3000` on the environment's network; the API and the worker publish to `http://centrifugo:8000/api`.
 - `osrm/`: the shared OSRM (architecture §7.1): its Compose project `foxdrop-osrm`, `cut.sh` (downloads the Syria extract and cuts Azaz's region with osmium), `build.sh` (builds the car, motorbike, bicycle and walking profiles), `motorbike.lua` and the cut image. The root `compose.yaml` runs the same scripts locally.
 - `web/`: the image of the panel and the portal (an unprivileged nginx that answers unknown paths with `index.html`) and its smoke test.
 - `nginx/`: the server's nginx site, snippets and limit zones; `*.template` files are rendered per environment by `provision.sh`.
@@ -32,5 +32,5 @@ How FOX DROP runs on the owner's shared Contabo server (architecture §17, T9, E
 - **Trust boundary:** `foxdrop-deploy` runs, as root, the `compose.yaml` of a commit on `main` with images from ghcr.io. Whoever can merge to `main` or push those images can act as root on the shared server; the forced command limits which commit deploys, not what it does.
 - Staging's B2 key may delete, to prune copies older than 30 days. Production's key must not: a B2 lifecycle rule prunes instead, so root on the shared server cannot erase the off-site copies.
 - Staging backs up with a nightly `pg_dump`; production needs the continuous WAL archiving of §17.2 (pgBackRest) and a tested restore before launch.
-- Centrifugo joins `compose.yaml` in slice 1.9's second pull request, after `provision.sh` has added its secrets and its nginx route on the server; imgproxy and the object storage join with their first use; the Sentry and PostHog relays for the apps (§16) with the apps' error tracking.
+- imgproxy and the object storage join with their first use; the Sentry and PostHog relays for the apps (§16) with the apps' error tracking.
 - Production: its `environments/production.env`, a deploy on a release tag, and its own sudoers line.

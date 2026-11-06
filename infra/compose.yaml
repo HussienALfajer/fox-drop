@@ -6,7 +6,7 @@
 #
 # Every published port is on 127.0.0.1: Docker bypasses the host firewall,
 # and nginx is the only public gateway (§15.5). infra.test.mjs checks it.
-# Centrifugo, imgproxy and the object storage join with their first use.
+# imgproxy and the object storage join with their first use.
 
 x-server: &server
   image: ghcr.io/hussienalfajer/fox-drop-server:${FOXDROP_RELEASE:?}
@@ -40,6 +40,13 @@ x-server-environment: &server-environment
   OSRM_MOTORBIKE_URL: http://osrm-motorbike:5000
   OSRM_BICYCLE_URL: http://osrm-bicycle:5000
   OSRM_WALKING_URL: http://osrm-walking:5000
+  # Real time (architecture §6): the API signs connection tokens and checks
+  # the subscription proxy's secret; the API and the worker publish through
+  # Centrifugo's HTTP API on this network.
+  CENTRIFUGO_API_URL: http://centrifugo:8000/api
+  CENTRIFUGO_TOKEN_SECRET: ${CENTRIFUGO_TOKEN_SECRET:?}
+  CENTRIFUGO_API_KEY: ${CENTRIFUGO_API_KEY:?}
+  CENTRIFUGO_PROXY_SECRET: ${CENTRIFUGO_PROXY_SECRET:?}
 
 services:
   postgres:
@@ -132,6 +139,34 @@ services:
       <<: *server-environment
       PROCESS_ROLE: otp-sender
     mem_limit: 256m
+
+  # Real time (architecture §6.1): the apps' WebSocket behind nginx's
+  # /connection/websocket. The channels are centrifugo/config.yaml, as in
+  # development; the subscription proxies call the API on this network, and
+  # nginx never lets them in from outside. The memory engine keeps the
+  # channels' history, so a restart loses it and the apps fetch the full state.
+  centrifugo:
+    # The same image as the development compose.yaml (infra.test.mjs).
+    image: centrifugo/centrifugo:v6.10.2
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    command: [centrifugo, --config, /centrifugo/config.yaml]
+    environment:
+      CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY: ${CENTRIFUGO_TOKEN_SECRET:?}
+      CENTRIFUGO_HTTP_API_KEY: ${CENTRIFUGO_API_KEY:?}
+      CENTRIFUGO_PROXIES: >-
+        [{"name": "merchant", "endpoint": "http://api:3000/v1/merchant/realtime/subscribe",
+          "timeout": "3s", "include_connection_meta": true,
+          "http": {"static_headers": {"X-Centrifugo-Proxy-Secret": "${CENTRIFUGO_PROXY_SECRET:?}"}}},
+         {"name": "customer", "endpoint": "http://api:3000/v1/customer/realtime/subscribe",
+          "timeout": "3s", "include_connection_meta": true,
+          "http": {"static_headers": {"X-Centrifugo-Proxy-Secret": "${CENTRIFUGO_PROXY_SECRET:?}"}}}]
+    volumes:
+      - ./centrifugo/config.yaml:/centrifugo/config.yaml:ro
+    ports:
+      - 127.0.0.1:${CENTRIFUGO_PORT:?}:8000
+    mem_limit: 128m
 
   # The panel on 8080 and the portal on 8081 (web/nginx.conf).
   web:
