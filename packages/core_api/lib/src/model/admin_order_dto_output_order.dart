@@ -3,18 +3,19 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
-import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancellation.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
-import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_moments.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_money.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_captain.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_restaurant.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_pickup.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -37,7 +38,7 @@ part 'admin_order_dto_output_order.g.dart';
 /// * [total]
 /// * [badges]
 /// * [moments]
-/// * [alerts] - AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم».
+/// * [alerts] - AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام».
 /// * [promisedAt]
 /// * [acceptance]
 /// * [readyAt]
@@ -46,6 +47,7 @@ part 'admin_order_dto_output_order.g.dart';
 /// * [note]
 /// * [lines]
 /// * [money]
+/// * [pickup]
 /// * [timeline]
 @BuiltValue()
 abstract class AdminOrderDtoOutputOrder
@@ -101,10 +103,10 @@ abstract class AdminOrderDtoOutputOrder
   @BuiltValueField(wireName: r'moments')
   AdminOrderCardDtoOutputOrderMoments get moments;
 
-  /// AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم».
+  /// AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام».
   @BuiltValueField(wireName: r'alerts')
   BuiltList<AdminOrderDtoOutputOrderAlertsEnum> get alerts;
-  // enum alertsEnum {  restaurant_not_accepted,  prep_late,  no_captain,  no_captain_after_ready,  captain_waiting,  };
+  // enum alertsEnum {  restaurant_not_accepted,  prep_late,  no_captain,  no_captain_after_ready,  captain_waiting,  pickup_disputed,  };
 
   @BuiltValueField(wireName: r'promisedAt')
   DateTime? get promisedAt;
@@ -129,6 +131,9 @@ abstract class AdminOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'money')
   AdminOrderDtoOutputOrderMoney get money;
+
+  @BuiltValueField(wireName: r'pickup')
+  AdminOrderDtoOutputOrderPickup get pickup;
 
   @BuiltValueField(wireName: r'timeline')
   BuiltList<AdminOrderDtoOutputOrderTimelineInner> get timeline;
@@ -305,6 +310,11 @@ class _$AdminOrderDtoOutputOrderSerializer
     yield serializers.serialize(
       object.money,
       specifiedType: const FullType(AdminOrderDtoOutputOrderMoney),
+    );
+    yield r'pickup';
+    yield serializers.serialize(
+      object.pickup,
+      specifiedType: const FullType(AdminOrderDtoOutputOrderPickup),
     );
     yield r'timeline';
     yield serializers.serialize(
@@ -578,6 +588,17 @@ class _$AdminOrderDtoOutputOrderSerializer
                   as AdminOrderDtoOutputOrderMoney;
           result.money.replace(valueDes);
           break;
+        case r'pickup':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminOrderDtoOutputOrderPickup,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderPickup;
+          result.pickup.replace(valueDes);
+          break;
         case r'timeline':
           final valueDes =
               serializers.deserialize(
@@ -713,6 +734,9 @@ class AdminOrderDtoOutputOrderAlertsEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'captain_waiting')
   static const AdminOrderDtoOutputOrderAlertsEnum captainWaiting =
       _$adminOrderDtoOutputOrderAlertsEnum_captainWaiting;
+  @BuiltValueEnumConst(wireName: r'pickup_disputed')
+  static const AdminOrderDtoOutputOrderAlertsEnum pickupDisputed =
+      _$adminOrderDtoOutputOrderAlertsEnum_pickupDisputed;
 
   static Serializer<AdminOrderDtoOutputOrderAlertsEnum> get serializer =>
       _$adminOrderDtoOutputOrderAlertsEnumSerializer;

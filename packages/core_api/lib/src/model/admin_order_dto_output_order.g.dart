@@ -156,6 +156,9 @@ _$adminOrderDtoOutputOrderAlertsEnum_noCaptainAfterReady =
 const AdminOrderDtoOutputOrderAlertsEnum
 _$adminOrderDtoOutputOrderAlertsEnum_captainWaiting =
     const AdminOrderDtoOutputOrderAlertsEnum._('captainWaiting');
+const AdminOrderDtoOutputOrderAlertsEnum
+_$adminOrderDtoOutputOrderAlertsEnum_pickupDisputed =
+    const AdminOrderDtoOutputOrderAlertsEnum._('pickupDisputed');
 
 AdminOrderDtoOutputOrderAlertsEnum _$adminOrderDtoOutputOrderAlertsEnumValueOf(
   String name,
@@ -171,6 +174,8 @@ AdminOrderDtoOutputOrderAlertsEnum _$adminOrderDtoOutputOrderAlertsEnumValueOf(
       return _$adminOrderDtoOutputOrderAlertsEnum_noCaptainAfterReady;
     case 'captainWaiting':
       return _$adminOrderDtoOutputOrderAlertsEnum_captainWaiting;
+    case 'pickupDisputed':
+      return _$adminOrderDtoOutputOrderAlertsEnum_pickupDisputed;
     default:
       throw ArgumentError(name);
   }
@@ -185,6 +190,7 @@ _$adminOrderDtoOutputOrderAlertsEnumValues =
         _$adminOrderDtoOutputOrderAlertsEnum_noCaptain,
         _$adminOrderDtoOutputOrderAlertsEnum_noCaptainAfterReady,
         _$adminOrderDtoOutputOrderAlertsEnum_captainWaiting,
+        _$adminOrderDtoOutputOrderAlertsEnum_pickupDisputed,
       ],
     );
 
@@ -300,6 +306,7 @@ class _$AdminOrderDtoOutputOrderAlertsEnumSerializer
     'noCaptain': 'no_captain',
     'noCaptainAfterReady': 'no_captain_after_ready',
     'captainWaiting': 'captain_waiting',
+    'pickupDisputed': 'pickup_disputed',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -307,6 +314,7 @@ class _$AdminOrderDtoOutputOrderAlertsEnumSerializer
     'no_captain': 'noCaptain',
     'no_captain_after_ready': 'noCaptainAfterReady',
     'captain_waiting': 'captainWaiting',
+    'pickup_disputed': 'pickupDisputed',
   };
 
   @override
@@ -379,6 +387,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
   @override
   final AdminOrderDtoOutputOrderMoney money;
   @override
+  final AdminOrderDtoOutputOrderPickup pickup;
+  @override
   final BuiltList<AdminOrderDtoOutputOrderTimelineInner> timeline;
 
   factory _$AdminOrderDtoOutputOrder([
@@ -409,6 +419,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     this.note,
     required this.lines,
     required this.money,
+    required this.pickup,
     required this.timeline,
   }) : super._();
   @override
@@ -447,6 +458,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
         note == other.note &&
         lines == other.lines &&
         money == other.money &&
+        pickup == other.pickup &&
         timeline == other.timeline;
   }
 
@@ -476,6 +488,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, lines.hashCode);
     _$hash = $jc(_$hash, money.hashCode);
+    _$hash = $jc(_$hash, pickup.hashCode);
     _$hash = $jc(_$hash, timeline.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -507,6 +520,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
           ..add('note', note)
           ..add('lines', lines)
           ..add('money', money)
+          ..add('pickup', pickup)
           ..add('timeline', timeline))
         .toString();
   }
@@ -635,6 +649,12 @@ class AdminOrderDtoOutputOrderBuilder
   set money(AdminOrderDtoOutputOrderMoneyBuilder? money) =>
       _$this._money = money;
 
+  AdminOrderDtoOutputOrderPickupBuilder? _pickup;
+  AdminOrderDtoOutputOrderPickupBuilder get pickup =>
+      _$this._pickup ??= AdminOrderDtoOutputOrderPickupBuilder();
+  set pickup(AdminOrderDtoOutputOrderPickupBuilder? pickup) =>
+      _$this._pickup = pickup;
+
   ListBuilder<AdminOrderDtoOutputOrderTimelineInner>? _timeline;
   ListBuilder<AdminOrderDtoOutputOrderTimelineInner> get timeline =>
       _$this._timeline ??= ListBuilder<AdminOrderDtoOutputOrderTimelineInner>();
@@ -671,6 +691,7 @@ class AdminOrderDtoOutputOrderBuilder
       _note = $v.note;
       _lines = $v.lines.toBuilder();
       _money = $v.money.toBuilder();
+      _pickup = $v.pickup.toBuilder();
       _timeline = $v.timeline.toBuilder();
       _$v = null;
     }
@@ -747,6 +768,7 @@ class AdminOrderDtoOutputOrderBuilder
             note: note,
             lines: lines.build(),
             money: money.build(),
+            pickup: pickup.build(),
             timeline: timeline.build(),
           );
     } catch (_) {
@@ -778,6 +800,8 @@ class AdminOrderDtoOutputOrderBuilder
         lines.build();
         _$failedField = 'money';
         money.build();
+        _$failedField = 'pickup';
+        pickup.build();
         _$failedField = 'timeline';
         timeline.build();
       } catch (e) {

@@ -270,6 +270,8 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
   final CaptainActiveOrderDtoOutputOrderPickupPayment pickupPayment;
   @override
   final CaptainActiveOrderDtoOutputOrderCollect collect;
+  @override
+  final CaptainOrderDtoOutputOrderPickup pickup;
 
   factory _$CaptainOrderDtoOutputOrder([
     void Function(CaptainOrderDtoOutputOrderBuilder)? updates,
@@ -289,6 +291,7 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
     this.note,
     required this.pickupPayment,
     required this.collect,
+    required this.pickup,
   }) : super._();
   @override
   CaptainOrderDtoOutputOrder rebuild(
@@ -315,7 +318,8 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
         lines == other.lines &&
         note == other.note &&
         pickupPayment == other.pickupPayment &&
-        collect == other.collect;
+        collect == other.collect &&
+        pickup == other.pickup;
   }
 
   @override
@@ -334,6 +338,7 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, pickupPayment.hashCode);
     _$hash = $jc(_$hash, collect.hashCode);
+    _$hash = $jc(_$hash, pickup.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -353,7 +358,8 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
           ..add('lines', lines)
           ..add('note', note)
           ..add('pickupPayment', pickupPayment)
-          ..add('collect', collect))
+          ..add('collect', collect)
+          ..add('pickup', pickup))
         .toString();
   }
 }
@@ -437,6 +443,12 @@ class CaptainOrderDtoOutputOrderBuilder
   set collect(CaptainActiveOrderDtoOutputOrderCollectBuilder? collect) =>
       _$this._collect = collect;
 
+  CaptainOrderDtoOutputOrderPickupBuilder? _pickup;
+  CaptainOrderDtoOutputOrderPickupBuilder get pickup =>
+      _$this._pickup ??= CaptainOrderDtoOutputOrderPickupBuilder();
+  set pickup(CaptainOrderDtoOutputOrderPickupBuilder? pickup) =>
+      _$this._pickup = pickup;
+
   CaptainOrderDtoOutputOrderBuilder() {
     CaptainOrderDtoOutputOrder._defaults(this);
   }
@@ -457,6 +469,7 @@ class CaptainOrderDtoOutputOrderBuilder
       _note = $v.note;
       _pickupPayment = $v.pickupPayment.toBuilder();
       _collect = $v.collect.toBuilder();
+      _pickup = $v.pickup.toBuilder();
       _$v = null;
     }
     return this;
@@ -518,6 +531,7 @@ class CaptainOrderDtoOutputOrderBuilder
             note: note,
             pickupPayment: pickupPayment.build(),
             collect: collect.build(),
+            pickup: pickup.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -536,6 +550,8 @@ class CaptainOrderDtoOutputOrderBuilder
         pickupPayment.build();
         _$failedField = 'collect';
         collect.build();
+        _$failedField = 'pickup';
+        pickup.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'CaptainOrderDtoOutputOrder',

@@ -162,6 +162,13 @@
       "when": 1793985657875,
       "tag": "0022_ordering_captain_arrival",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793988931456,
+      "tag": "0023_ordering_pickup",
+      "breakpoints": true
     }
   ]
 }

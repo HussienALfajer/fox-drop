@@ -13,6 +13,7 @@ import {
   smallint,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 
@@ -146,6 +147,11 @@ export const orders = ordering.table(
     // moment the reads show, AP §9.1.3).
     arrivedAtMerchantAt: timestamp('arrived_at_merchant_at', { withTimezone: true }),
     captainWaitingAlertAt: timestamp('captain_waiting_alert_at', { withTimezone: true }),
+    // AP §8.1: the pickup, confirmed by the restaurant, automatically or by
+    // operations, with custody.pay_merchant in its transaction. ready_by_pickup
+    // is «لم يُضغط جاهز»: ready was recorded at the pickup (S8).
+    pickedUpAt: timestamp('picked_up_at', { withTimezone: true }),
+    readyByPickup: boolean('ready_by_pickup'),
     // The address snapshot (CU §7.3–7.4, Q6): the saved address it was copied
     // from, or null for an unsaved one; «الحي» is the zone at placing.
     addressId: uuid('address_id'),
@@ -217,6 +223,10 @@ export const orders = ordering.table(
       sql`${table.status} NOT IN ('accepted', 'ready', 'picked_up', 'arrived', 'delivered', 'failed') OR ${table.acceptedAt} IS NOT NULL`,
     ),
     check('orders_ready', sql`${table.status} <> 'ready' OR ${table.readyAt} IS NOT NULL`),
+    check(
+      'orders_pickup',
+      sql`(${table.pickedUpAt} IS NULL) = (${table.readyByPickup} IS NULL) AND (${table.status} NOT IN ('picked_up', 'arrived', 'delivered', 'failed') OR (${table.pickedUpAt} IS NOT NULL AND ${table.readyAt} IS NOT NULL))`,
+    ),
     check(
       'orders_trip',
       sql`(${table.tripSeconds} IS NULL) = (${table.tripMetres} IS NULL) AND ${table.tripSeconds} >= 0 AND ${table.tripMetres} >= 0`,
@@ -300,6 +310,122 @@ export const orderEvents = ordering.table(
       'order_events_actor_values',
       sql`${table.actorType} IN ('customer', 'restaurant', 'captain', 'admin', 'system')`,
     ),
+  ],
+);
+
+// RA §8.10, AP §8.1: the captain's pickup requests. One is open at a time
+// for an order; it closes confirmed (by the restaurant, automatically after
+// order.pickup_confirm_timeout_sec, or by operations), rejected
+// («المبلغ غير صحيح» with the lines received, «الطلب غير مكتمل») or voided.
+// Operations confirming without an open request write a confirmed one.
+export const pickupRequestStatuses = ['open', 'confirmed', 'rejected', 'voided'] as const;
+export const pickupOutcomes = [
+  'restaurant',
+  'automatic',
+  'operations',
+  'amount_incorrect',
+  'incomplete',
+  'cancelled',
+] as const;
+
+export const pickupRequests = ordering.table(
+  'pickup_requests',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    // The captains module's record.
+    captainId: uuid('captain_id').notNull(),
+    // The pickup payment when requested, set by the server (RA §8.10 item 2:
+    // the full items value, D26), in the order's currency.
+    currency: text('currency').notNull(),
+    amount: bigint('amount', { mode: 'bigint' }).notNull(),
+    // The currency lines the captain paid: [{ currency, amount }], the
+    // amounts as strings of minor units.
+    lines: jsonb('lines').notNull(),
+    openedAt: timestamp('opened_at', { withTimezone: true }).notNull(),
+    // The automatic confirmation's moment.
+    confirmBy: timestamp('confirm_by', { withTimezone: true }).notNull(),
+    status: text('status', { enum: pickupRequestStatuses }).notNull(),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    outcome: text('outcome', { enum: pickupOutcomes }),
+    // Who closed it: restaurant (an account and its app installation), admin
+    // or system.
+    closedByType: text('closed_by_type'),
+    closedById: uuid('closed_by_id'),
+    closedByDevice: text('closed_by_device'),
+    // The lines booked at confirmation (operations may enter others, AP
+    // §9.3.2), or the lines the restaurant says it received.
+    bookedLines: jsonb('booked_lines'),
+    receivedLines: jsonb('received_lines'),
+    // Operations' reason for confirming on the restaurant's behalf.
+    reason: text('reason'),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId, table.orderPlacedAt],
+      foreignColumns: [orders.id, orders.placedAt],
+    }),
+    index('pickup_requests_order').on(table.orderId, table.openedAt),
+    uniqueIndex('pickup_requests_one_open_per_order')
+      .on(table.orderId)
+      .where(sql`${table.status} = 'open'`),
+    check(
+      'pickup_requests_status_values',
+      sql`${table.status} IN ('open', 'confirmed', 'rejected', 'voided')`,
+    ),
+    check(
+      'pickup_requests_outcome',
+      sql`CASE ${table.status}
+        WHEN 'open' THEN ${table.outcome} IS NULL AND ${table.closedAt} IS NULL
+        WHEN 'confirmed' THEN ${table.outcome} IN ('restaurant', 'automatic', 'operations') AND ${table.closedAt} IS NOT NULL AND ${table.bookedLines} IS NOT NULL
+        WHEN 'rejected' THEN ${table.outcome} IN ('amount_incorrect', 'incomplete') AND ${table.closedAt} IS NOT NULL
+        ELSE ${table.outcome} = 'cancelled' AND ${table.closedAt} IS NOT NULL
+      END`,
+    ),
+    check(
+      'pickup_requests_received',
+      sql`(${table.receivedLines} IS NOT NULL) = (${table.outcome} IS NOT DISTINCT FROM 'amount_incorrect')`,
+    ),
+    check('pickup_requests_amount', sql`${table.amount} >= 0`),
+  ],
+);
+
+// RA §8.10 item 8: «المبلغ غير صحيح» within order.pickup_dispute_window_min
+// after the pickup, one per order, with the lines the restaurant says it
+// received. Owner decision 2026-11-06: recorded as a report linked to the
+// order; its ticket and resolution (AP §9.9.3) come with the support module.
+export const pickupDisputes = ordering.table(
+  'pickup_disputes',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    pickupRequestId: uuid('pickup_request_id')
+      .notNull()
+      .references(() => pickupRequests.id),
+    // The restaurant user (identity's merchant_accounts row) and the app
+    // installation.
+    accountId: uuid('account_id').notNull(),
+    device: text('device').notNull(),
+    receivedLines: jsonb('received_lines').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    status: text('status').notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId, table.orderPlacedAt],
+      foreignColumns: [orders.id, orders.placedAt],
+    }),
+    uniqueIndex('pickup_disputes_one_per_order').on(table.orderId),
+    index('pickup_disputes_request').on(table.pickupRequestId),
+    check('pickup_disputes_status_values', sql`${table.status} IN ('open')`),
   ],
 );
 

@@ -7,6 +7,12 @@ import { MerchantsService } from '../merchants/index.js';
 import { UNTIL_ENDED } from './active-orders.js';
 import type { CaptainTrack } from './order-events.js';
 import { orderKey, readOrders, type OrderView } from './order-views.js';
+import {
+  type PickupDisputeView,
+  pickupDisputesOf,
+  type PickupRequestView,
+  pickupRequestsOf,
+} from './pickup-views.js';
 import { orderEvents, orders } from './schema.js';
 
 // AP §9.1.3, §8.3: operations' alerts, each from its moment (owner decision
@@ -23,7 +29,11 @@ export type OperationsAlert =
   | 'no_captain_after_ready'
   // «كابتن ينتظر عند المطعم»: captain.waiting_threshold_min at the
   // restaurant before pickup (RA §8.9).
-  | 'captain_waiting';
+  | 'captain_waiting'
+  // «خلاف على مبلغ الاستلام» (critical): the restaurant answered the latest
+  // pickup request with «المبلغ غير صحيح»; it resolves itself once the
+  // pickup completes or the order ends (RA §8.10 item 6).
+  | 'pickup_disputed';
 
 // An order as the operations board shows it (AP §9.2.1) and the detail's
 // header (AP §9.3.1).
@@ -46,8 +56,14 @@ export interface OperationsOrder {
     captainWaitingAlertAt: Date | null;
   };
   alerts: OperationsAlert[];
-  // The badges built so far: «بحاجة لتعيين», «ملاحظة», «زبون جديد».
+  // The badges built so far: «بحاجة لتعيين», «ملاحظة», «زبون جديد»,
+  // «بانتظار تأكيد الاستلام» (AP §9.2.1).
   needsAssignment: boolean;
+  pickupPending: boolean;
+  // AP §9.3.1: every pickup request, newest first.
+  pickupRequests: PickupRequestView[];
+  // RA §8.10 item 8: the restaurant's dispute after the pickup.
+  pickupDispute: PickupDisputeView | null;
   newCustomer: boolean;
 }
 
@@ -147,6 +163,10 @@ export class OperationsViews {
       .where(and(inArray(orders.customerAccountId, customerIds), eq(orders.status, 'delivered')))
       .groupBy(orders.customerAccountId);
     const regulars = new Set(delivered.map((row) => row.customerAccountId));
+    const [requests, disputes] = await Promise.all([
+      pickupRequestsOf(this.database.db, views),
+      pickupDisputesOf(this.database.db, views),
+    ]);
     const names = await this.merchants.names([...new Set(views.map((view) => view.restaurantId))]);
     const captainIds = [...new Set(extras.flatMap((row) => row.captainId ?? []))];
     const captains = new Map(
@@ -178,6 +198,11 @@ export class OperationsViews {
       if (waiting && atRestaurant && passed(view.captainArrival?.waitingAlertAt ?? null)) {
         alerts.push('captain_waiting');
       }
+      // RA §8.10 item 6.4: until the pickup completes or the order ends.
+      const amountDisputed = (requests.get(view.id) ?? []).some(
+        (request) => request.outcome === 'amount_incorrect',
+      );
+      if (waiting && amountDisputed) alerts.push('pickup_disputed');
       return {
         order: view,
         restaurantName: names.get(view.restaurantId)?.nameAr ?? '',
@@ -213,6 +238,9 @@ export class OperationsViews {
         },
         alerts,
         needsAssignment: more.captainTrack === 'searching',
+        pickupPending: more.captainTrack === 'pickup_pending',
+        pickupRequests: requests.get(view.id) ?? [],
+        pickupDispute: disputes.get(view.id) ?? null,
         newCustomer: !regulars.has(view.customerAccountId),
       };
     });

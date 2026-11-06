@@ -18,9 +18,13 @@ import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { MerchantController } from '../../http/route-groups.js';
 import { CaptainsService } from '../captains/index.js';
 import { CustomersService } from '../customers/index.js';
-import type { AppSession } from '../identity/index.js';
+import { type AppSession, MerchantAccountsService } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
+import { SettingsService } from '../settings/index.js';
+import { linesBody, linesOfBody, paymentLines } from './captain-orders.controller.js';
 import { minor } from './customer-quote.controller.js';
+import { PickupCommands } from './pickup-commands.js';
+import type { PickupRequestView } from './pickup-views.js';
 import { type MerchantCommand, OrderCommandRefusedError, OrderCommands } from './order-commands.js';
 import type { OrderView } from './order-views.js';
 import { OrdersService } from './orders.service.js';
@@ -114,6 +118,51 @@ const boardOrder = z.object({
     })
     .nullable()
     .describe('While the captain waits at the restaurant (RA §8.9), else null.'),
+  pickup: z
+    .object({
+      request: z
+        .object({
+          id: z.uuid(),
+          status: z.enum(['open', 'confirmed', 'rejected', 'voided']),
+          outcome: z
+            .enum([
+              'restaurant',
+              'automatic',
+              'operations',
+              'amount_incorrect',
+              'incomplete',
+              'cancelled',
+            ])
+            .nullable()
+            .describe('automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام».'),
+          amount: z.object({ amount: minor, currency: z.string().length(3) }),
+          lines: paymentLines.describe('«400 ₺» or «5 $ + 195 ₺».'),
+          baseEquivalent: minor.describe('The lines in the base currency, by the order rates.'),
+          confirmBy: z.iso.datetime().describe('«يُؤكَّد تلقائياً خلال {ث} ث» counts down to it.'),
+          closedAt: z.iso.datetime().nullable(),
+          closedByUserName: z
+            .string()
+            .nullable()
+            .describe(
+              'The other devices close the prompt with «أكّد {اسم المستخدم} الاستلام» or «أبلغ {اسم المستخدم} أن المبلغ غير صحيح» (RA §8.10).',
+            ),
+          closedByDeviceName: z.string().nullable(),
+        })
+        .nullable()
+        .describe(
+          'The latest request; while open every device rings with the pickup prompt (RA §8.10 item 3).',
+        ),
+      pickedUpAt: z.iso.datetime().nullable().describe('«تم الاستلام».'),
+      readyNotPressed: z.boolean().describe('«لم يُضغط جاهز» (S8).'),
+      disputeUntil: z.iso
+        .datetime()
+        .nullable()
+        .describe(
+          '«المبلغ غير صحيح» stays on the order until then after the pickup (RA §8.10 item 8); null once disputed or before the pickup.',
+        ),
+      disputedAt: z.iso.datetime().nullable(),
+    })
+    .describe('The pickup confirmation (RA §8.10).'),
 });
 
 class MerchantOrdersDto extends createZodDto(
@@ -141,6 +190,14 @@ class MerchantOrderDto extends createZodDto(z.object({ order: boardOrder })) {}
 
 class MerchantOrderParamsDto extends createZodDto(z.object({ orderId: z.uuid() })) {}
 
+class MerchantPickupDisputeDto extends createZodDto(
+  z.object({
+    receivedLines: paymentLines.describe(
+      "What the restaurant actually received, prefilled with the captain's lines.",
+    ),
+  }),
+) {}
+
 class MerchantAcceptDto extends createZodDto(
   z.object({
     prepMin: z
@@ -163,6 +220,9 @@ export class MerchantOrdersController {
     private readonly merchants: MerchantsService,
     private readonly customers: CustomersService,
     private readonly captains: CaptainsService,
+    private readonly pickups: PickupCommands,
+    private readonly accounts: MerchantAccountsService,
+    private readonly settings: SettingsService,
   ) {}
 
   @Get('orders')
@@ -213,6 +273,62 @@ export class MerchantOrdersController {
     return this.answer(command.restaurantId, () => this.commands.ready(command, new Date()));
   }
 
+  // RA §8.10 item 4 «تأكيد الاستلام»: the atomic pickup. 409
+  // order_state_changed once another device answered, the request was
+  // confirmed automatically or the order was cancelled.
+  @Post('orders/:orderId/pickup/confirm')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: MerchantOrderDto })
+  async confirmPickup(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: MerchantOrderParamsDto,
+  ) {
+    const command = await this.command(session, idempotencyKey, params.orderId);
+    return this.answer(command.restaurantId, () => this.pickups.confirm(command, new Date()));
+  }
+
+  // RA §8.10 items 6 and 8 «المبلغ غير صحيح»: rejects an open request, or,
+  // within order.pickup_dispute_window_min after the pickup, records the
+  // dispute. 409 pickup_already_disputed, currency_not_accepted,
+  // order_state_changed; 400 invalid_lines.
+  @Post('orders/:orderId/pickup/dispute')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: MerchantOrderDto })
+  async disputePickup(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: MerchantOrderParamsDto,
+    @Body() body: MerchantPickupDisputeDto,
+  ) {
+    const command = await this.command(session, idempotencyKey, params.orderId);
+    return this.answer(command.restaurantId, () =>
+      this.pickups.dispute(
+        { ...command, receivedLines: linesOfBody(body.receivedLines) },
+        new Date(),
+      ),
+    );
+  }
+
+  // RA §8.10 item 7 «الطلب غير مكتمل»: rejects the request without amounts.
+  @Post('orders/:orderId/pickup/incomplete')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: MerchantOrderDto })
+  async pickupIncomplete(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: MerchantOrderParamsDto,
+  ) {
+    const command = await this.command(session, idempotencyKey, params.orderId);
+    return this.answer(command.restaurantId, () => this.pickups.incomplete(command, new Date()));
+  }
+
   private async command(
     session: AppSession,
     idempotencyKey: string,
@@ -237,7 +353,7 @@ export class MerchantOrdersController {
       if (refusal === 'unknown_order') {
         throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: refusal });
       }
-      if (refusal === 'invalid_prep_time') {
+      if (refusal === 'invalid_prep_time' || refusal === 'invalid_lines') {
         throw new BadRequestException({
           statusCode: HttpStatus.BAD_REQUEST,
           error: refusal,
@@ -250,7 +366,10 @@ export class MerchantOrdersController {
           error: refusal,
         });
       }
-      const [order] = await this.boardOrders(restaurantId, [error.order!]);
+      if (error.order === null) {
+        throw new ConflictException({ statusCode: HttpStatus.CONFLICT, error: refusal });
+      }
+      const [order] = await this.boardOrders(restaurantId, [error.order]);
       throw new ConflictException({ statusCode: HttpStatus.CONFLICT, error: refusal, order });
     }
   }
@@ -279,12 +398,28 @@ export class MerchantOrdersController {
         (captain) => (captain ? [[captain.id, captain] as const] : []),
       ),
     );
+    const [requests, disputes, users] = await Promise.all([
+      this.pickups.requests(orders),
+      this.pickups.disputes(orders),
+      this.accounts.accounts(restaurantId),
+    ]);
+    const userNames = new Map(users.map((user) => [user.id, user.name]));
+    const latest = new Map([...requests].map(([orderId, list]) => [orderId, list[0]!] as const));
     const [firstNames, deviceNames] = await Promise.all([
       this.customers.firstNames([...new Set(orders.map((order) => order.customerAccountId))]),
       this.merchants.deviceNames(restaurantId, [
-        ...new Set(orders.flatMap((order) => order.acceptance?.device ?? [])),
+        ...new Set([
+          ...orders.flatMap((order) => order.acceptance?.device ?? []),
+          ...[...latest.values()].flatMap((request) => request.closedBy?.device ?? []),
+        ]),
       ]),
     ]);
+    const windowMin =
+      orders.length === 0
+        ? 0
+        : await this.settings.get('order.pickup_dispute_window_min', {
+            cityId: orders[0]!.cityId,
+          });
     return orders.map((order) => ({
       id: order.id,
       number: order.number.toString(),
@@ -331,6 +466,14 @@ export class MerchantOrdersController {
               waitingAlertAt: order.captainArrival.waitingAlertAt.toISOString(),
             }
           : null,
+      pickup: pickupBody(
+        order,
+        latest.get(order.id) ?? null,
+        disputes.get(order.id)?.at ?? null,
+        windowMin,
+        deviceNames,
+        userNames,
+      ),
     }));
   }
 }
@@ -340,4 +483,43 @@ function captainLine(
   captain: { name: string; vehicle: 'walking' | 'bicycle' | 'motorbike' | 'car' } | undefined,
 ) {
   return captain ? { firstName: captain.name.split(' ')[0]!, vehicle: captain.vehicle } : null;
+}
+
+// RA §8.10: the latest request with its lines and their base equivalent, the
+// pickup and the dispute window after it.
+function pickupBody(
+  order: OrderView,
+  request: PickupRequestView | null,
+  disputedAt: Date | null,
+  windowMin: number,
+  deviceNames: Map<string, string>,
+  userNames: Map<string, string | null>,
+) {
+  return {
+    request: request && {
+      id: request.id,
+      status: request.status,
+      outcome: request.outcome,
+      amount: { amount: request.amount.amount.toString(), currency: request.amount.currency },
+      lines: linesBody(request.bookedLines ?? request.lines),
+      baseEquivalent: request.baseEquivalent.toString(),
+      confirmBy: request.confirmBy.toISOString(),
+      closedAt: request.closedAt?.toISOString() ?? null,
+      closedByUserName:
+        request.closedBy?.type === 'restaurant' && request.closedBy.id !== null
+          ? (userNames.get(request.closedBy.id) ?? null)
+          : null,
+      closedByDeviceName:
+        request.closedBy?.device == null
+          ? null
+          : (deviceNames.get(request.closedBy.device) ?? null),
+    },
+    pickedUpAt: order.pickup?.at.toISOString() ?? null,
+    readyNotPressed: order.pickup?.readyByPickup ?? false,
+    disputeUntil:
+      order.pickup && disputedAt === null
+        ? new Date(order.pickup.at.getTime() + windowMin * 60_000).toISOString()
+        : null,
+    disputedAt: disputedAt?.toISOString() ?? null,
+  };
 }
