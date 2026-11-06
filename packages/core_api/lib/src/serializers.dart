@@ -35,6 +35,10 @@ import 'package:core_api/src/model/admin_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer_address.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer_arrival.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer_arrival_away.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_delivery.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_delivery_net_received.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_delivery_recorded_by.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_delivery_shortfall.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner_options_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_money.dart';
@@ -50,7 +54,13 @@ import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custod
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_limit.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_usage.dart';
 import 'package:core_api/src/model/admin_record_arrival_dto.dart';
+import 'package:core_api/src/model/admin_record_delivery_dto.dart';
+import 'package:core_api/src/model/admin_record_delivery_dto_amount_due.dart';
+import 'package:core_api/src/model/admin_record_delivery_dto_received_inner.dart';
+import 'package:core_api/src/model/admin_record_delivery_dto_shortfall.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
+import 'package:core_api/src/model/admin_shortfalls_dto_output.dart';
+import 'package:core_api/src/model/admin_shortfalls_dto_output_shortfalls_inner.dart';
 import 'package:core_api/src/model/backup_codes_dto_output.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order.dart';
@@ -87,6 +97,13 @@ import 'package:core_api/src/model/captain_current_offer_dto_output_offer_custom
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_pickup_payment.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_preparation.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_restaurant.dart';
+import 'package:core_api/src/model/captain_deliver_dto.dart';
+import 'package:core_api/src/model/captain_deliver_dto_away.dart';
+import 'package:core_api/src/model/captain_delivery_summary_dto_output.dart';
+import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary.dart';
+import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_custody_change.dart';
+import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_hand_in_today.dart';
+import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_pay.dart';
 import 'package:core_api/src/model/captain_go_online_dto.dart';
 import 'package:core_api/src/model/captain_locations_dto.dart';
 import 'package:core_api/src/model/captain_locations_dto_points_inner.dart';
@@ -115,6 +132,7 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address_location.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_delivery.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_estimate.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_money.dart';
@@ -133,6 +151,7 @@ import 'package:core_api/src/model/customer_new_address_dto.dart';
 import 'package:core_api/src/model/customer_new_address_dto_location.dart';
 import 'package:core_api/src/model/customer_order_dto_output.dart';
 import 'package:core_api/src/model/customer_order_dto_output_order.dart';
+import 'package:core_api/src/model/customer_order_dto_output_order_delivery.dart';
 import 'package:core_api/src/model/customer_place_order_dto.dart';
 import 'package:core_api/src/model/customer_place_order_dto_unsaved_address.dart';
 import 'package:core_api/src/model/customer_profile_dto_output.dart';
@@ -256,6 +275,10 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderCustomerAddress,
   AdminOrderDtoOutputOrderCustomerArrival,
   AdminOrderDtoOutputOrderCustomerArrivalAway,
+  AdminOrderDtoOutputOrderDelivery,
+  AdminOrderDtoOutputOrderDeliveryNetReceived,
+  AdminOrderDtoOutputOrderDeliveryRecordedBy,
+  AdminOrderDtoOutputOrderDeliveryShortfall,
   AdminOrderDtoOutputOrderLinesInner,
   AdminOrderDtoOutputOrderLinesInnerOptionsInner,
   AdminOrderDtoOutputOrderMoney,
@@ -271,7 +294,13 @@ part 'serializers.g.dart';
   AdminPickerDtoOutputCaptainsInnerCustodyLimit,
   AdminPickerDtoOutputCaptainsInnerCustodyUsage,
   AdminRecordArrivalDto,
+  AdminRecordDeliveryDto,
+  AdminRecordDeliveryDtoAmountDue,
+  AdminRecordDeliveryDtoReceivedInner,
+  AdminRecordDeliveryDtoShortfall,
   AdminSessionDtoOutput,
+  AdminShortfallsDtoOutput,
+  AdminShortfallsDtoOutputShortfallsInner,
   BackupCodesDtoOutput,
   CaptainActiveOrderDtoOutput,
   CaptainActiveOrderDtoOutputOrder,
@@ -308,6 +337,13 @@ part 'serializers.g.dart';
   CaptainCurrentOfferDtoOutputOfferPickupPayment,
   CaptainCurrentOfferDtoOutputOfferPreparation,
   CaptainCurrentOfferDtoOutputOfferRestaurant,
+  CaptainDeliverDto,
+  CaptainDeliverDtoAway,
+  CaptainDeliverySummaryDtoOutput,
+  CaptainDeliverySummaryDtoOutputSummary,
+  CaptainDeliverySummaryDtoOutputSummaryCustodyChange,
+  CaptainDeliverySummaryDtoOutputSummaryHandInToday,
+  CaptainDeliverySummaryDtoOutputSummaryPay,
   CaptainGoOnlineDto,
   CaptainLocationsDto,
   CaptainLocationsDtoPointsInner,
@@ -336,6 +372,7 @@ part 'serializers.g.dart';
   CustomerActiveOrdersDtoOutputOrdersInnerAddress,
   CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
   CustomerActiveOrdersDtoOutputOrdersInnerCancellation,
+  CustomerActiveOrdersDtoOutputOrdersInnerDelivery,
   CustomerActiveOrdersDtoOutputOrdersInnerEstimate,
   CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
   CustomerActiveOrdersDtoOutputOrdersInnerMoney,
@@ -354,6 +391,7 @@ part 'serializers.g.dart';
   CustomerNewAddressDtoLocation,
   CustomerOrderDtoOutput,
   CustomerOrderDtoOutputOrder,
+  CustomerOrderDtoOutputOrderDelivery,
   CustomerPlaceOrderDto,
   CustomerPlaceOrderDtoUnsavedAddress,
   CustomerProfileDtoOutput,
@@ -576,6 +614,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminShortfallsDtoOutputShortfallsInner),
+            ]),
+            () => ListBuilder<AdminShortfallsDtoOutputShortfallsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
             ]),
             () => ListBuilder<CaptainWentOfflineDtoOutputHandIn>(),
@@ -623,6 +667,12 @@ Serializers serializers =
               FullType(CustomerQuoteDtoOutputProblemsInner),
             ]),
             () => ListBuilder<CustomerQuoteDtoOutputProblemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRecordDeliveryDtoReceivedInner),
+            ]),
+            () => ListBuilder<AdminRecordDeliveryDtoReceivedInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

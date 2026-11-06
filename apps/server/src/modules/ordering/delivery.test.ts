@@ -19,11 +19,14 @@ import {
   type DevelopmentCodeSender,
   MerchantAccountsService,
 } from '../identity/index.js';
+import { type AccountPurpose, type JournalType, LedgerService } from '../ledger/index.js';
 import { MerchantsService } from '../merchants/index.js';
-import { SettingsService } from '../settings/index.js';
+import { OrdersService } from './orders.service.js';
+import { SettingsService, type Vehicle, vehicles } from '../settings/index.js';
 
-// The way to the customer and the arrival at the door (CA §9.5–9.6, K4;
-// AP §9.1.3 «تسليم بعيد عن العنوان»).
+// The way to the customer, the arrival at the door, the door payment and the
+// delivery with its money (CA §9.5–9.8, K4, K16; AP §8.4–8.6, §9.1.3,
+// §9.3.2), and the whole cycle against AP §8.4's worked example.
 let database: TestDatabase;
 let cache: TestValkey;
 let app: NestFastifyApplication;
@@ -83,6 +86,26 @@ beforeAll(async () => {
     { cityId: azaz, parameter: 'TRY' },
     { amountMinor: 500 },
     bySystem,
+  );
+  // AP §9.12.5: the placeholder pay table, 25 TRY including the first 3 km
+  // and 5 TRY per extra km, the minimum 25 TRY.
+  const rate = {
+    basePay: 2_500n,
+    includedMetres: 3_000,
+    perExtraKm: 500n,
+    waitingPerMinute: 0n,
+    minimumPay: 2_500n,
+  };
+  await app.get(CaptainsService).setPayTable(
+    azaz,
+    {
+      currency: 'TRY',
+      rates: Object.fromEntries(vehicles.map((vehicle) => [vehicle, rate])) as Record<
+        Vehicle,
+        typeof rate
+      >,
+    },
+    change,
   );
   const geo = app.get(GeoService);
   await geo.createZone(azaz, { name: 'المركز', area: square(centre), active: true }, change);
@@ -161,6 +184,7 @@ async function admin(roles: string[]) {
   return {
     accountId,
     cookies,
+    post,
     get: (url: string) => app.inject({ method: 'GET', url, cookies }),
     assign: (orderId: string, captainId: string) =>
       post(`/v1/admin/orders/${orderId}/assign`, { captainId }),
@@ -172,12 +196,25 @@ async function admin(roles: string[]) {
 }
 
 // A placed order the restaurant accepted, with the cashier who accepted it.
+// The dish ordered, twice.
+interface Dish {
+  itemId: string;
+  unitPrice: string;
+}
+
 async function acceptedOrder(
   recipient: { recipientName: string; contactPhone: string } | null = null,
+  dish: Dish = { itemId: item, unitPrice: '12000' },
 ) {
   const customer = await appSignIn('customer', phoneNumber());
   const lines = [
-    { itemId: item, optionIds: [], quantity: 2, note: 'بدون بصل', knownUnitPrice: '12000' },
+    {
+      itemId: dish.itemId,
+      optionIds: [],
+      quantity: 2,
+      note: 'بدون بصل',
+      knownUnitPrice: dish.unitPrice,
+    },
   ];
   const quote = await app.inject({
     method: 'POST',
@@ -273,8 +310,9 @@ async function onlineCaptain(point: Point = captainSpot) {
 // An accepted order assigned directly to a new online captain.
 async function assignedOrder(
   recipient: { recipientName: string; contactPhone: string } | null = null,
+  dish?: Dish,
 ) {
-  const order = await acceptedOrder(recipient);
+  const order = await acceptedOrder(recipient, dish);
   const captain = await onlineCaptain();
   const ops = await admin(['OPS']);
   expect((await ops.assign(order.id, captain.captainId)).statusCode).toBe(200);
@@ -285,10 +323,11 @@ const SECOND = 1000;
 const TRY = (amount: string) => [{ currency: 'TRY', amount }];
 
 // An order whose captain is at the restaurant.
-async function captainAtRestaurant() {
-  const assigned = await assignedOrder();
+async function captainAtRestaurant(dish?: Dish) {
+  const assigned = await assignedOrder(null, dish);
   expect((await assigned.captain.arrive(assigned.order.id)).statusCode).toBe(200);
-  const requestPickup = (lines = TRY('24000'), key: string = randomUUID()) =>
+  const itemsValue = (BigInt(dish?.unitPrice ?? '12000') * 2n).toString();
+  const requestPickup = (lines = TRY(itemsValue), key: string = randomUUID()) =>
     app.inject({
       method: 'POST',
       url: `/v1/captain/orders/${assigned.order.id}/pickup-request`,
@@ -338,8 +377,8 @@ const farFromCustomer = { latitude: 36.595, longitude: 37.046 };
 
 // An order the captain picked up, with the commands of the way to the
 // customer.
-async function pickedUpOrder() {
-  const at = await captainAtRestaurant();
+async function pickedUpOrder(dish?: Dish) {
+  const at = await captainAtRestaurant(dish);
   expect((await at.requestPickup()).statusCode).toBe(200);
   expect((await at.restaurant('confirm')).statusCode).toBe(200);
   const arriveAtCustomer = (
@@ -590,5 +629,630 @@ describe('POST /v1/captain/orders/{orderId}/arrive-at-customer (CA §9.6, K4)', 
       },
     });
     expect(answer.statusCode).toBe(404);
+  });
+});
+
+// ---- The door payment and the delivery (CA §9.7–9.8; AP §8.4–8.6, §9.3.2)
+
+const ledgerOf = () => app.get(LedgerService);
+
+// A platform account's balance, as the specs show it, for the city.
+async function platform(purpose: AccountPurpose, currency = 'TRY'): Promise<bigint> {
+  const id = await ledgerOf().openAccount({ cityId: azaz, purpose, ownerId: null, currency });
+  return (await ledgerOf().balance(id)).amount;
+}
+
+// An owner's account balance (a captain's custody or earnings, a restaurant's
+// account), as the specs show it.
+async function owned(ownerId: string, purpose: AccountPurpose, currency = 'TRY'): Promise<bigint> {
+  const accounts = await ledgerOf().ownerAccounts(azaz, ownerId, purpose);
+  const account = accounts.find((each) => each.currency === currency);
+  return account ? (await ledgerOf().balance(account.id)).amount : 0n;
+}
+
+const PLATFORM: AccountPurpose[] = [
+  'platform.order_clearing',
+  'platform.revenue_delivery',
+  'platform.revenue_commission',
+  'platform.captain_pay',
+  'platform.fx_rounding',
+];
+
+// The platform accounts now, to compare one order's effect.
+async function platformNow(currency = 'TRY') {
+  const result: Partial<Record<AccountPurpose, bigint>> = {};
+  for (const purpose of PLATFORM) result[purpose] = await platform(purpose, currency);
+  return result as Record<AccountPurpose, bigint>;
+}
+
+function delta(before: Record<string, bigint>, after: Record<string, bigint>) {
+  return Object.fromEntries(Object.keys(before).map((key) => [key, after[key]! - before[key]!]));
+}
+
+// An order at the customer's door, with the delivery command.
+async function orderAtDoor(
+  options: { away?: object | null; dish?: Dish; tripMetres?: number } = {},
+) {
+  const picked = await pickedUpOrder(options.dish);
+  if (options.tripMetres !== undefined) {
+    // The trip kept at placing, as the pay of AP §8.4's example needs it.
+    await sql.query('UPDATE ordering.orders SET trip_metres = $2 WHERE id = $1', [
+      picked.order.id,
+      options.tripMetres,
+    ]);
+  }
+  const arrived = await picked.arriveAtCustomer(options.away ? farFromCustomer : atCustomer, {
+    away: options.away ?? null,
+  });
+  expect(arrived.statusCode).toBe(200);
+  const deliver = (
+    payment: {
+      received?: object[];
+      change?: object[];
+      amountDue?: string;
+      amountDueCurrency?: string;
+      shortfall?: object | null;
+      away?: object | null;
+    } = {},
+    where: Point = atCustomer,
+    key: string = randomUUID(),
+  ) =>
+    app.inject({
+      method: 'POST',
+      url: `/v1/captain/orders/${picked.order.id}/deliver`,
+      headers: { ...picked.captain.headers, 'idempotency-key': key },
+      payload: {
+        received: payment.received ?? TRY('28000'),
+        change: payment.change ?? [],
+        amountDue: {
+          amount: payment.amountDue ?? '28000',
+          currency: payment.amountDueCurrency ?? 'TRY',
+        },
+        shortfall: payment.shortfall ?? null,
+        away: payment.away ?? null,
+        location: {
+          ...where,
+          accuracyMetres: 10,
+          recordedAt: new Date().toISOString(),
+          simulated: false,
+        },
+      },
+    });
+  return { ...picked, deliver };
+}
+
+const deliveryRow = async (orderId: string) =>
+  (
+    await sql.query(
+      'SELECT status, captain_track, delivered_at, outcome, away_reason FROM ordering.orders WHERE id = $1',
+      [orderId],
+    )
+  ).rows[0];
+
+const collectionRow = async (orderId: string) =>
+  (await sql.query('SELECT * FROM ordering.collections WHERE order_id = $1', [orderId])).rows;
+
+describe('POST /v1/captain/orders/{orderId}/deliver (CA §9.7–9.8)', () => {
+  it('delivers with outcome normal, books the money and answers the summary', async () => {
+    const door = await orderAtDoor();
+    const before = await platformNow();
+    const restaurantBefore = await owned(restaurant, 'merchant.account');
+    const answer = await door.deliver();
+    expect(answer.statusCode).toBe(200);
+    // Items 2 × 120, fee 40, total 280 TRY; a trip within the 3 km.
+    expect(answer.json().summary).toMatchObject({
+      orderId: door.order.id,
+      pay: {
+        base: '2500',
+        distance: '0',
+        topUp: '0',
+        waiting: '0',
+        total: '2500',
+        currency: 'TRY',
+      },
+      custodyChange: { amount: '4000', currency: 'TRY' },
+      handInToday: { amount: '4000', currency: 'TRY' },
+    });
+    expect(await deliveryRow(door.order.id)).toMatchObject({
+      status: 'delivered',
+      captain_track: 'done',
+      outcome: 'normal',
+    });
+    const [collection] = await collectionRow(door.order.id);
+    expect(collection).toMatchObject({
+      amount_due: '28000',
+      net_received: '28000',
+      shortfall: '0',
+      shortfall_reason: null,
+      recorded_by_type: 'captain',
+      recorded_by_id: door.captain.captainId,
+    });
+    // AP §8.5: the captain's custody keeps the 40 gained, the pay is owed.
+    expect(await owned(door.captain.captainId, 'captain.custody')).toBe(4_000n);
+    expect(await owned(door.captain.captainId, 'captain.earnings')).toBe(2_500n);
+    // AP §8.7: the restaurant owes its 15% commission on 240.
+    expect((await owned(restaurant, 'merchant.account')) - restaurantBefore).toBe(-3_600n);
+    // The order's clearing returns to zero; the fee, commission and pay land.
+    expect(delta(before, await platformNow())).toEqual({
+      'platform.order_clearing': -24_000n, // the pickup's +240 settled
+      'platform.revenue_delivery': 4_000n,
+      'platform.revenue_commission': 3_600n,
+      'platform.captain_pay': 2_500n,
+      'platform.fx_rounding': 0n,
+    });
+    // The captain is free: no active order, the customer sees «تم التسليم».
+    expect((await door.captain.active()).json().order).toBeNull();
+    const events = await eventTypes(door.order.id);
+    expect(events.at(-1)).toEqual({ type: 'order.delivered', reason: null });
+    const outbox = await sql.query(
+      "SELECT payload FROM ordering.outbox WHERE order_id = $1 AND type = 'order.delivered'",
+      [door.order.id],
+    );
+    expect(outbox.rows[0].payload).toMatchObject({ status: 'delivered', reason: null });
+  });
+
+  it('shows the customer what was received and given back (CU §11.8, Q23)', async () => {
+    const door = await orderAtDoor();
+    const answer = await door.deliver({ received: TRY('30000'), change: TRY('2000') });
+    expect(answer.statusCode).toBe(200);
+    expect(answer.json().summary.custodyChange.amount).toBe('4000');
+    const customerId = (
+      await sql.query('SELECT customer_account_id FROM ordering.orders WHERE id = $1', [
+        door.order.id,
+      ])
+    ).rows[0].customer_account_id;
+    const view = await app.get(OrdersService).customerOrder(customerId, door.order.id);
+    expect(view?.delivery).toMatchObject({
+      outcome: 'normal',
+      received: [{ currency: 'TRY', amount: 30_000n }],
+      change: [{ currency: 'TRY', amount: 2_000n }],
+      netReceived: 28_000n,
+      shortfall: null,
+    });
+    // The custody holds the 300 received less the 20 given back and the 240.
+    expect(await owned(door.captain.captainId, 'captain.custody')).toBe(4_000n);
+  });
+
+  it('books a gap within rounding to platform.fx_rounding', async () => {
+    const door = await orderAtDoor();
+    const before = await platformNow();
+    // 2.50 TRY short, within half the 5 TRY unit.
+    expect((await door.deliver({ received: TRY('27750') })).statusCode).toBe(200);
+    const moved = delta(before, await platformNow());
+    expect(moved['platform.order_clearing']).toBe(-24_000n);
+    expect(moved['platform.fx_rounding']).toBe(-250n); // a loss of 2.50 for the platform
+  });
+
+  it('needs a reason for a shortfall, which stays open in the clearing account', async () => {
+    const door = await orderAtDoor();
+    const missing = await door.deliver({ received: TRY('25000') });
+    expect(missing.statusCode).toBe(409);
+    expect(missing.json()).toMatchObject({
+      error: 'shortfall_reason_required',
+      shortfall: { amount: '3000', currency: 'TRY' },
+    });
+    const before = await platformNow();
+    const answer = await door.deliver({
+      received: TRY('25000'),
+      shortfall: { reason: 'customer_short', note: null },
+    });
+    expect(answer.statusCode).toBe(200);
+    expect(answer.json().summary.custodyChange.amount).toBe('1000');
+    // AP §8.6: the missing 30 waits in the clearing account for operations.
+    expect(delta(before, await platformNow())['platform.order_clearing']).toBe(-21_000n);
+    const detail = (await door.ops.get(`/v1/admin/orders/${door.order.id}`)).json().order;
+    expect(detail.delivery).toMatchObject({
+      outcome: 'normal',
+      received: TRY('25000'),
+      change: [],
+      netReceived: { amount: '25000', currency: 'TRY' },
+      shortfall: {
+        amount: { amount: '3000', currency: 'TRY' },
+        reason: 'customer_short',
+        note: null,
+      },
+      recordedBy: { type: 'captain', id: door.captain.captainId, reason: null },
+    });
+    const list = (await door.ops.get(`/v1/admin/orders/shortfalls?cityId=${azaz}`)).json();
+    expect(
+      list.shortfalls.find((each: { orderId: string }) => each.orderId === door.order.id),
+    ).toMatchObject({
+      captainId: door.captain.captainId,
+      amountDue: { amount: '28000', currency: 'TRY' },
+      netReceived: { amount: '25000', currency: 'TRY' },
+      shortfall: { amount: '3000', currency: 'TRY' },
+      reason: 'customer_short',
+    });
+  });
+
+  it("refuses another captain's delivery with unknown_order", async () => {
+    const door = await orderAtDoor();
+    const other = await onlineCaptain();
+    const answer = await app.inject({
+      method: 'POST',
+      url: `/v1/captain/orders/${door.order.id}/deliver`,
+      headers: { ...other.headers, 'idempotency-key': randomUUID() },
+      payload: {
+        received: TRY('28000'),
+        change: [],
+        amountDue: { amount: '28000', currency: 'TRY' },
+        shortfall: null,
+        away: null,
+        location: {
+          ...atCustomer,
+          accuracyMetres: 10,
+          recordedAt: new Date().toISOString(),
+          simulated: false,
+        },
+      },
+    });
+    expect(answer.statusCode).toBe(404);
+  });
+
+  it("books a test order's pay to platform.test_cost, with no commission (AP §9.6.3)", async () => {
+    const door = await orderAtDoor();
+    await sql.query('UPDATE ordering.orders SET test_order = true WHERE id = $1', [door.order.id]);
+    const testCost = await platform('platform.test_cost');
+    const before = await platformNow();
+    const restaurantBefore = await owned(restaurant, 'merchant.account');
+    expect((await door.deliver()).statusCode).toBe(200);
+    expect((await platform('platform.test_cost')) - testCost).toBe(2_500n);
+    const moved = delta(before, await platformNow());
+    expect(moved['platform.revenue_commission']).toBe(0n);
+    expect(moved['platform.captain_pay']).toBe(0n);
+    expect(moved['platform.order_clearing']).toBe(-24_000n);
+    expect((await owned(restaurant, 'merchant.account')) - restaurantBefore).toBe(0n);
+    expect(await owned(door.captain.captainId, 'captain.earnings')).toBe(2_500n);
+  });
+
+  it('refuses a net above the amount due, and a stale amount due', async () => {
+    const door = await orderAtDoor();
+    const over = await door.deliver({ received: TRY('30000') });
+    expect(over.statusCode).toBe(409);
+    expect(over.json().error).toBe('overpaid');
+    const stale = await door.deliver({ amountDue: '27000', received: TRY('27000') });
+    expect(stale.statusCode).toBe(409);
+    expect(stale.json().error).toBe('amount_due_changed');
+    expect(stale.json().order.collect).toEqual({ amount: '28000', currency: 'TRY' });
+    const otherCurrency = await door.deliver({ amountDueCurrency: 'USD' });
+    expect(otherCurrency.json().error).toBe('amount_due_changed');
+    const huge = await door.deliver({ received: TRY('1234567890123456') });
+    expect(huge.statusCode).toBe(400);
+    const odd = await door.deliver({ received: [{ currency: 'EUR', amount: '1000' }] });
+    expect(odd.json().error).toBe('currency_not_accepted');
+    const repeated = await door.deliver({ received: [...TRY('14000'), ...TRY('14000')] });
+    expect(repeated.statusCode).toBe(400);
+    expect((await deliveryRow(door.order.id)).status).toBe('arrived');
+    expect(await collectionRow(door.order.id)).toHaveLength(0);
+  });
+
+  it('needs a reason away from the pin, unless one was given at the arrival (K4)', async () => {
+    const near = await orderAtDoor();
+    const far = await near.deliver({}, farFromCustomer);
+    expect(far.statusCode).toBe(409);
+    expect(far.json().error).toBe('too_far_from_customer');
+    const withReason = await near.deliver(
+      { away: { reason: 'customer_requested_other_place', note: null } },
+      farFromCustomer,
+    );
+    expect(withReason.statusCode).toBe(200);
+    expect((await deliveryRow(near.order.id)).away_reason).toBe('customer_requested_other_place');
+
+    const awayAtArrival = await orderAtDoor({ away: { reason: 'pin_inaccurate', note: null } });
+    expect((await awayAtArrival.deliver({}, farFromCustomer)).statusCode).toBe(200);
+    expect((await deliveryRow(awayAtArrival.order.id)).away_reason).toBe('pin_inaccurate');
+  });
+
+  it('refuses before the arrival at the door, and answers a repeat of the key once', async () => {
+    const picked = await pickedUpOrder();
+    const early = await app.inject({
+      method: 'POST',
+      url: `/v1/captain/orders/${picked.order.id}/deliver`,
+      headers: { ...picked.captain.headers, 'idempotency-key': randomUUID() },
+      payload: {
+        received: TRY('28000'),
+        change: [],
+        amountDue: { amount: '28000', currency: 'TRY' },
+        shortfall: null,
+        away: null,
+        location: {
+          ...atCustomer,
+          accuracyMetres: 10,
+          recordedAt: new Date().toISOString(),
+          simulated: false,
+        },
+      },
+    });
+    expect(early.statusCode).toBe(409);
+    expect(early.json().error).toBe('order_state_changed');
+
+    const door = await orderAtDoor();
+    const key = randomUUID();
+    const first = await door.deliver({}, atCustomer, key);
+    const again = await door.deliver({}, atCustomer, key);
+    expect(again.statusCode).toBe(200);
+    expect(again.json().summary).toEqual(first.json().summary);
+    expect(await collectionRow(door.order.id)).toHaveLength(1);
+    expect(await owned(door.captain.captainId, 'captain.earnings')).toBe(2_500n);
+  });
+
+  it('pays the waiting past the threshold apart from the order pay (docs/domain/04)', async () => {
+    const door = await orderAtDoor();
+    // The pay table pays 1 TRY a minute of waiting; the captain waited 30
+    // minutes at the restaurant, arriving 10 minutes after the food was due.
+    const migrator = new pg.Client({ connectionString: database.migratorUrl });
+    await migrator.connect();
+    try {
+      await migrator.query(
+        'UPDATE captains.pay_rates SET waiting_per_minute = 100 WHERE table_id = (SELECT pay_table_id FROM ordering.orders WHERE id = $1)',
+        [door.order.id],
+      );
+    } finally {
+      await migrator.end();
+    }
+    await sql.query(
+      `UPDATE ordering.orders SET
+         accepted_at = picked_up_at - interval '60 minutes',
+         arrived_at_merchant_at = picked_up_at - interval '30 minutes',
+         captain_waiting_alert_at = picked_up_at - interval '20 minutes'
+       WHERE id = $1`,
+      [door.order.id],
+    );
+    const answer = await door.deliver();
+    expect(answer.statusCode).toBe(200);
+    // Due 40 minutes before the pickup, arrived 30 before: paid from 20 before.
+    expect(answer.json().summary.pay).toMatchObject({
+      base: '2500',
+      waiting: '2000',
+      total: '4500',
+    });
+    expect(await owned(door.captain.captainId, 'captain.earnings')).toBe(4_500n);
+    expect((await collectionRow(door.order.id))[0].waiting_minutes).toBe(20);
+  });
+});
+
+describe('POST /v1/admin/orders/{orderId}/record-delivery (AP §9.3.2)', () => {
+  it('records the delivery for a picked-up order, with the same entries, audited', async () => {
+    const picked = await pickedUpOrder();
+    const answer = await picked.ops.post(`/v1/admin/orders/${picked.order.id}/record-delivery`, {
+      received: TRY('30000'),
+      change: TRY('2000'),
+      amountDue: { amount: '28000', currency: 'TRY' },
+      shortfall: null,
+      reason: 'هاتف الكابتن معطل',
+    });
+    expect(answer.statusCode).toBe(200);
+    expect(answer.json().order.status).toBe('delivered');
+    expect(await owned(picked.captain.captainId, 'captain.custody')).toBe(4_000n);
+    expect(await owned(picked.captain.captainId, 'captain.earnings')).toBe(2_500n);
+    const [collection] = await collectionRow(picked.order.id);
+    expect(collection).toMatchObject({
+      recorded_by_type: 'admin',
+      recorded_by_id: picked.ops.accountId,
+      reason: 'هاتف الكابتن معطل',
+    });
+    const audit = await sql.query(
+      "SELECT reason FROM audit.events WHERE action = 'order.record_delivery' AND target_id = $1",
+      [picked.order.id],
+    );
+    expect(audit.rows).toEqual([{ reason: 'هاتف الكابتن معطل' }]);
+    const again = await picked.ops.post(`/v1/admin/orders/${picked.order.id}/record-delivery`, {
+      received: TRY('28000'),
+      change: [],
+      amountDue: { amount: '28000', currency: 'TRY' },
+      shortfall: null,
+      reason: 'مرة ثانية',
+    });
+    expect(again.statusCode).toBe(409);
+    expect(again.json().error).toBe('order_state_changed');
+  });
+
+  it('records it from arrived too, and needs a reason for a shortfall', async () => {
+    const door = await orderAtDoor();
+    const body = {
+      received: TRY('25000'),
+      change: [],
+      amountDue: { amount: '28000', currency: 'TRY' },
+      reason: 'الكابتن بلا هاتف',
+    };
+    const missing = await door.ops.post(`/v1/admin/orders/${door.order.id}/record-delivery`, {
+      ...body,
+      shortfall: null,
+    });
+    expect(missing.statusCode).toBe(409);
+    expect(missing.json()).toMatchObject({
+      error: 'shortfall_reason_required',
+      shortfall: { amount: '3000', currency: 'TRY' },
+    });
+    const answer = await door.ops.post(`/v1/admin/orders/${door.order.id}/record-delivery`, {
+      ...body,
+      shortfall: { reason: 'counting_error', note: null },
+    });
+    expect(answer.statusCode).toBe(200);
+    expect((await collectionRow(door.order.id))[0]).toMatchObject({
+      shortfall: '3000',
+      shortfall_reason: 'counting_error',
+      recorded_by_type: 'admin',
+    });
+  });
+
+  it('needs operations.manage', async () => {
+    const picked = await pickedUpOrder();
+    const support = await admin(['SUP']);
+    const answer = await support.post(`/v1/admin/orders/${picked.order.id}/record-delivery`, {
+      received: TRY('28000'),
+      change: [],
+      amountDue: { amount: '28000', currency: 'TRY' },
+      shortfall: null,
+      reason: 'x',
+    });
+    expect(answer.statusCode).toBe(403);
+  });
+});
+
+describe("the restaurant's board after the delivery (RA §8.10 item 8)", () => {
+  it('keeps a delivered order until the pickup dispute window ends', async () => {
+    const door = await orderAtDoor();
+    expect((await door.deliver()).statusCode).toBe(200);
+    const onBoard = await door.boardOrder();
+    expect(onBoard).toMatchObject({ status: 'delivered' });
+    expect(new Date(onBoard.pickup.disputeUntil).getTime()).toBeGreaterThan(Date.now());
+    await sql.query(
+      "UPDATE ordering.orders SET picked_up_at = picked_up_at - interval '11 minutes' WHERE id = $1",
+      [door.order.id],
+    );
+    expect(await door.boardOrder()).toBeUndefined();
+  });
+});
+
+describe('the whole cycle against the worked example of AP §8.4', () => {
+  it('leaves every account as the example says, and the platform cash equals its margin', async () => {
+    // Items 400 (2 × 200), fee 40, commission 15%, a 5 km trip: base 25 for
+    // the first 3 km and 2 extra km × 5. There are no codes before Phase 2,
+    // so the example's platform code of 30 is left out: the customer pays
+    // 440, the custody gains 40 and the margin is 60 + 40 − 35 = 65.
+    const merchants = app.get(MerchantsService);
+    const category = await merchants.addCategory(restaurant, { name: 'مثال' }, change);
+    const dish = await merchants.addItem(
+      restaurant,
+      { categoryId: category, name: 'وجبة المثال', price: { amount: 20_000n, currency: 'TRY' } },
+      change,
+    );
+    const door = await orderAtDoor({
+      dish: { itemId: dish, unitPrice: '20000' },
+      tripMetres: 5_000,
+    });
+    const before = await platformNow();
+    const restaurantBefore = await owned(restaurant, 'merchant.account');
+    const answer = await door.deliver({ received: TRY('44000'), amountDue: '44000' });
+    expect(answer.statusCode).toBe(200);
+    expect(answer.json().summary.pay).toMatchObject({
+      base: '2500',
+      distance: '1000',
+      total: '3500',
+    });
+
+    const custody = await owned(door.captain.captainId, 'captain.custody');
+    const earnings = await owned(door.captain.captainId, 'captain.earnings');
+    const restaurantOwes = (await owned(restaurant, 'merchant.account')) - restaurantBefore;
+    const moved = delta(before, await platformNow());
+    expect({ custody, earnings, restaurantOwes }).toEqual({
+      custody: 4_000n, // handed in the same business day
+      earnings: 3_500n, // paid on Thursday
+      restaurantOwes: -6_000n, // the commission, collected on Saturday
+    });
+    expect(moved).toEqual({
+      'platform.order_clearing': -40_000n, // the pickup's +400: the order is settled
+      'platform.revenue_delivery': 4_000n,
+      'platform.revenue_commission': 6_000n,
+      'platform.captain_pay': 3_500n,
+      'platform.fx_rounding': 0n,
+    });
+    const margin =
+      moved['platform.revenue_commission']! +
+      moved['platform.revenue_delivery']! -
+      moved['platform.captain_pay']!;
+    expect(margin).toBe(6_500n);
+
+    // When each amount reaches the platform: the desk's hand-in, Thursday's
+    // payout and Saturday's settlement (their screens come with the finance
+    // slices; posted here as the desk will).
+    const drawer = await ledgerOf().openAccount({
+      cityId: azaz,
+      purpose: 'platform.cash',
+      ownerId: randomUUID(),
+      currency: 'TRY',
+    });
+    const desk = { type: 'admin', id: randomUUID() } as const;
+    const account = async (purpose: AccountPurpose, ownerId: string) =>
+      (await ledgerOf().ownerAccounts(azaz, ownerId, purpose)).find(
+        (each) => each.currency === 'TRY',
+      )!.id;
+    const custodyAccount = await account('captain.custody', door.captain.captainId);
+    const earningsAccount = await account('captain.earnings', door.captain.captainId);
+    const restaurantAccount = await account('merchant.account', restaurant);
+    const post = (type: JournalType, entries: [string, bigint][]) =>
+      db.db.transaction((tx) =>
+        ledgerOf().post(
+          {
+            cityId: azaz,
+            type,
+            source: null,
+            actor: desk,
+            entries: entries.map(([accountId, amount]) => ({ accountId, currency: 'TRY', amount })),
+          },
+          tx,
+        ),
+      );
+    await post('custody.hand_in', [
+      [custodyAccount, -4_000n],
+      [drawer, 4_000n],
+    ]);
+    await post('earn.payout', [
+      [earningsAccount, 3_500n],
+      [drawer, -3_500n],
+    ]);
+    await post('merchant.settlement', [
+      [restaurantAccount, -6_000n],
+      [drawer, 6_000n],
+    ]);
+    expect((await ledgerOf().balance(drawer)).amount).toBe(margin);
+    expect(await owned(door.captain.captainId, 'captain.custody')).toBe(0n);
+    expect(await owned(door.captain.captainId, 'captain.earnings')).toBe(0n);
+  });
+});
+
+describe('the door payment in another currency (AP §8.6, CA §9.7)', () => {
+  it('keeps the custody per currency and settles the clearing account in the base', async () => {
+    const fx = app.get(FxService);
+    const fin = { ...change, actor: { type: 'admin', id: randomUUID(), role: 'FIN' } } as const;
+    await fx.setCityCurrency(azaz, { currency: 'USD', displayOrder: 2, enabled: false }, change);
+    await fx.setRate(azaz, 'USD', { value: '41.20', direction: 'base_per_unit' }, fin);
+    await app
+      .get(SettingsService)
+      .update(
+        'currency.<code>.rounding_unit',
+        { cityId: azaz, parameter: 'USD' },
+        { amountMinor: 50 },
+        bySystem,
+      );
+    await fx.setCityCurrency(azaz, { currency: 'USD', displayOrder: 2, enabled: true }, change);
+    const door = await orderAtDoor();
+    const beforeTry = await platformNow();
+    const beforeUsd = await platformNow('USD');
+    // 7 USD = 288.40 TRY; 8.40 TRY back.
+    const answer = await door.deliver({
+      received: [{ currency: 'USD', amount: '700' }],
+      change: TRY('840'),
+    });
+    expect(answer.statusCode).toBe(200);
+    expect(answer.json().summary.custodyChange.amount).toBe('4000');
+    // CA §10.2: every currency at its current rate, so 7 USD less 248.40 TRY.
+    expect(answer.json().summary.handInToday).toEqual({ amount: '4000', currency: 'TRY' });
+    // AP §8.6: the captain hands back exactly the currencies received.
+    expect(await owned(door.captain.captainId, 'captain.custody', 'USD')).toBe(700n);
+    expect(await owned(door.captain.captainId, 'captain.custody')).toBe(-24_840n);
+    expect(delta(beforeTry, await platformNow())['platform.order_clearing']).toBe(-24_000n);
+    const usd = delta(beforeUsd, await platformNow('USD'));
+    expect(usd['platform.order_clearing']).toBe(0n);
+    // The platform's USD position against its TRY value.
+    expect(usd['platform.fx_rounding']).toBe(700n);
+    expect(delta(beforeTry, await platformNow())['platform.fx_rounding']).toBe(-28_840n);
+  });
+
+  it('books a gap within rounding beside the conversion', async () => {
+    const door = await orderAtDoor();
+    const beforeTry = await platformNow();
+    // 7 USD = 288.40 TRY; 8 TRY back leaves 280.40: 0.40 over, within half
+    // of 0.50 USD (10.30 TRY).
+    const answer = await door.deliver({
+      received: [{ currency: 'USD', amount: '700' }],
+      change: TRY('800'),
+    });
+    expect(answer.statusCode).toBe(200);
+    const moved = delta(beforeTry, await platformNow());
+    expect(moved['platform.order_clearing']).toBe(-24_000n);
+    // −288.40 for the USD's value, +0.40 gained in rounding.
+    expect(moved['platform.fx_rounding']).toBe(-28_800n);
   });
 });

@@ -176,6 +176,13 @@
       "when": 1793990363356,
       "tag": "0024_ordering_customer_arrival",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793992860749,
+      "tag": "0025_ordering_delivery",
+      "breakpoints": true
     }
   ]
 }

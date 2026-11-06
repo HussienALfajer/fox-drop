@@ -13,29 +13,54 @@ const placeholder: PayRate = {
   minimumPay: 2_500n,
 };
 
+const pay = (rate: PayRate, metres: number, waitingMinutes = 0) =>
+  orderPay(rate, { metres, waitingMinutes }).orderPay;
+
 describe('orderPay', () => {
   it('pays the base pay up to the included distance, its edge included', () => {
-    expect(orderPay(placeholder, { metres: 0, waitingMinutes: 0 })).toBe(2_500n);
-    expect(orderPay(placeholder, { metres: 2_000, waitingMinutes: 0 })).toBe(2_500n);
-    expect(orderPay(placeholder, { metres: 3_000, waitingMinutes: 0 })).toBe(2_500n);
+    expect(pay(placeholder, 0)).toBe(2_500n);
+    expect(pay(placeholder, 2_000)).toBe(2_500n);
+    expect(pay(placeholder, 3_000)).toBe(2_500n);
   });
 
   it('pays each extra metre pro rata, rounded down to the minor unit', () => {
-    expect(orderPay(placeholder, { metres: 3_400, waitingMinutes: 0 })).toBe(2_700n);
-    expect(orderPay(placeholder, { metres: 3_401, waitingMinutes: 0 })).toBe(2_700n);
-    expect(orderPay(placeholder, { metres: 3_402, waitingMinutes: 0 })).toBe(2_701n);
-    expect(orderPay(placeholder, { metres: 10_000, waitingMinutes: 0 })).toBe(6_000n);
+    expect(pay(placeholder, 3_400)).toBe(2_700n);
+    expect(pay(placeholder, 3_401)).toBe(2_700n);
+    expect(pay(placeholder, 3_402)).toBe(2_701n);
+    expect(pay(placeholder, 10_000)).toBe(6_000n);
   });
 
-  it('adds the waiting minutes past the threshold at the waiting rate', () => {
-    const waiting = { ...placeholder, waitingPerMinute: 100n };
-    expect(orderPay(waiting, { metres: 3_400, waitingMinutes: 4 })).toBe(3_100n);
+  it('gives the parts: base, distance, top-up and their sum (AP §8.5.5, CA §9.8)', () => {
+    expect(orderPay(placeholder, { metres: 5_000, waitingMinutes: 0 })).toEqual({
+      base: 2_500n,
+      distance: 1_000n,
+      topUp: 0n,
+      orderPay: 3_500n,
+      waiting: 0n,
+    });
   });
 
-  it('raises the pay to the minimum pay per order', () => {
+  it('raises the order pay to the minimum pay, with the top-up apart', () => {
     const low = { ...placeholder, basePay: 1_000n, minimumPay: 2_000n };
-    expect(orderPay(low, { metres: 3_000, waitingMinutes: 0 })).toBe(2_000n);
-    expect(orderPay(low, { metres: 6_000, waitingMinutes: 0 })).toBe(2_500n);
+    expect(orderPay(low, { metres: 3_000, waitingMinutes: 0 })).toEqual({
+      base: 1_000n,
+      distance: 0n,
+      topUp: 1_000n,
+      orderPay: 2_000n,
+      waiting: 0n,
+    });
+    expect(pay(low, 6_000)).toBe(2_500n);
+  });
+
+  it('adds the waiting pay on top, never absorbed by the minimum (docs/domain/04)', () => {
+    const low = { ...placeholder, basePay: 1_000n, minimumPay: 2_000n, waitingPerMinute: 100n };
+    expect(orderPay(low, { metres: 3_000, waitingMinutes: 4 })).toEqual({
+      base: 1_000n,
+      distance: 0n,
+      topUp: 1_000n,
+      orderPay: 2_000n,
+      waiting: 400n,
+    });
   });
 
   it('refuses a distance or a waiting time that is not a whole number of zero or more', () => {

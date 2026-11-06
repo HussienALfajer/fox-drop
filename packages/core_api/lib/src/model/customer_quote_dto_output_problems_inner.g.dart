@@ -39,6 +39,9 @@ const CustomerQuoteDtoOutputProblemsInnerCodeEnum
 _$customerQuoteDtoOutputProblemsInnerCodeEnum_ratesUnavailable =
     const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('ratesUnavailable');
 const CustomerQuoteDtoOutputProblemsInnerCodeEnum
+_$customerQuoteDtoOutputProblemsInnerCodeEnum_captainPayUnset =
+    const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('captainPayUnset');
+const CustomerQuoteDtoOutputProblemsInnerCodeEnum
 _$customerQuoteDtoOutputProblemsInnerCodeEnum_oneOrderAtATime =
     const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('oneOrderAtATime');
 const CustomerQuoteDtoOutputProblemsInnerCodeEnum
@@ -94,6 +97,8 @@ _$customerQuoteDtoOutputProblemsInnerCodeEnumValueOf(String name) {
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_deliveryUnpriced;
     case 'ratesUnavailable':
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_ratesUnavailable;
+    case 'captainPayUnset':
+      return _$customerQuoteDtoOutputProblemsInnerCodeEnum_captainPayUnset;
     case 'oneOrderAtATime':
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_oneOrderAtATime;
     case 'activeOrderLimit':
@@ -133,6 +138,7 @@ _$customerQuoteDtoOutputProblemsInnerCodeEnumValues =
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_minimumNotInBaseCurrency,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_deliveryUnpriced,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_ratesUnavailable,
+        _$customerQuoteDtoOutputProblemsInnerCodeEnum_captainPayUnset,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_oneOrderAtATime,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_activeOrderLimit,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_noCaptainNearby,
@@ -164,6 +170,7 @@ class _$CustomerQuoteDtoOutputProblemsInnerCodeEnumSerializer
     'minimumNotInBaseCurrency': 'minimum_not_in_base_currency',
     'deliveryUnpriced': 'delivery_unpriced',
     'ratesUnavailable': 'rates_unavailable',
+    'captainPayUnset': 'captain_pay_unset',
     'oneOrderAtATime': 'one_order_at_a_time',
     'activeOrderLimit': 'active_order_limit',
     'noCaptainNearby': 'no_captain_nearby',
@@ -186,6 +193,7 @@ class _$CustomerQuoteDtoOutputProblemsInnerCodeEnumSerializer
     'minimum_not_in_base_currency': 'minimumNotInBaseCurrency',
     'delivery_unpriced': 'deliveryUnpriced',
     'rates_unavailable': 'ratesUnavailable',
+    'captain_pay_unset': 'captainPayUnset',
     'one_order_at_a_time': 'oneOrderAtATime',
     'active_order_limit': 'activeOrderLimit',
     'no_captain_nearby': 'noCaptainNearby',

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, count, eq, inArray } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gt, inArray } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { CaptainsService } from '../captains/index.js';
@@ -13,7 +13,7 @@ import {
   type PickupRequestView,
   pickupRequestsOf,
 } from './pickup-views.js';
-import { orderEvents, orders } from './schema.js';
+import { collections, orderEvents, orders, type shortfallReasons } from './schema.js';
 
 // AP §9.1.3, §8.3: operations' alerts, each from its moment (owner decision
 // 2026-11-06: the board's read shows them once their moment passed; the
@@ -84,6 +84,19 @@ export interface TimelineEvent {
 }
 
 // Operations' reads of the orders (AP §9.2, §9.3.1).
+export interface Shortfall {
+  orderId: string;
+  number: bigint;
+  captainId: string;
+  currency: string;
+  amountDue: bigint;
+  netReceived: bigint;
+  amount: bigint;
+  reason: (typeof shortfallReasons)[number];
+  note: string | null;
+  recordedAt: Date;
+}
+
 @Injectable()
 export class OperationsViews {
   constructor(
@@ -117,6 +130,33 @@ export class OperationsViews {
 
   // AP §9.3.1: every event of the order with its time and actor, oldest
   // first.
+  // AP §8.6, CA §9.7 item 4: «نقص في التحصيل», the orders of the city
+  // delivered short of their total beyond rounding, newest first. Operations
+  // resolve them with the responsible party (not built yet), so every one is
+  // still open.
+  async shortfalls(cityId: string): Promise<Shortfall[]> {
+    return this.database.db
+      .select({
+        orderId: collections.orderId,
+        number: orders.number,
+        captainId: collections.captainId,
+        currency: collections.currency,
+        amountDue: collections.amountDue,
+        netReceived: collections.netReceived,
+        amount: collections.shortfall,
+        reason: collections.shortfallReason,
+        note: collections.shortfallNote,
+        recordedAt: collections.recordedAt,
+      })
+      .from(collections)
+      .innerJoin(
+        orders,
+        and(eq(orders.id, collections.orderId), eq(orders.placedAt, collections.orderPlacedAt)),
+      )
+      .where(and(eq(collections.cityId, cityId), gt(collections.shortfall, 0n)))
+      .orderBy(desc(collections.recordedAt)) as Promise<Shortfall[]>;
+  }
+
   async timeline(order: OrderView): Promise<TimelineEvent[]> {
     const rows = await this.database.db
       .select()

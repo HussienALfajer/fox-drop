@@ -24,7 +24,7 @@ abstract class CustomerQuoteDtoOutputProblemsInner
         > {
   @BuiltValueField(wireName: r'code')
   CustomerQuoteDtoOutputProblemsInnerCodeEnum get code;
-  // enum codeEnum {  update_required,  maintenance,  platform_closed,  outside_zones,  not_covered,  restaurant_closed,  below_minimum_order,  minimum_not_in_base_currency,  delivery_unpriced,  rates_unavailable,  one_order_at_a_time,  active_order_limit,  no_captain_nearby,  item_not_found,  item_unavailable,  option_not_found,  option_unavailable,  options_invalid,  price_not_in_base_currency,  price_changed,  };
+  // enum codeEnum {  update_required,  maintenance,  platform_closed,  outside_zones,  not_covered,  restaurant_closed,  below_minimum_order,  minimum_not_in_base_currency,  delivery_unpriced,  rates_unavailable,  captain_pay_unset,  one_order_at_a_time,  active_order_limit,  no_captain_nearby,  item_not_found,  item_unavailable,  option_not_found,  option_unavailable,  options_invalid,  price_not_in_base_currency,  price_changed,  };
 
   /// The cart line, for a line problem.
   @BuiltValueField(wireName: r'line')
@@ -204,6 +204,9 @@ class CustomerQuoteDtoOutputProblemsInnerCodeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'rates_unavailable')
   static const CustomerQuoteDtoOutputProblemsInnerCodeEnum ratesUnavailable =
       _$customerQuoteDtoOutputProblemsInnerCodeEnum_ratesUnavailable;
+  @BuiltValueEnumConst(wireName: r'captain_pay_unset')
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum captainPayUnset =
+      _$customerQuoteDtoOutputProblemsInnerCodeEnum_captainPayUnset;
   @BuiltValueEnumConst(wireName: r'one_order_at_a_time')
   static const CustomerQuoteDtoOutputProblemsInnerCodeEnum oneOrderAtATime =
       _$customerQuoteDtoOutputProblemsInnerCodeEnum_oneOrderAtATime;

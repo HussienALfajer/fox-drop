@@ -36,7 +36,7 @@ export class CaptainsModule {}
 export class CaptainsWorkerModule {}
 
 export type { Availability, CaptainStatus, NoOffersReason, OnlineBlock } from './availability.js';
-export { orderPay, type PayRate } from './pay.js';
+export { orderPay, type PayParts, type PayRate } from './pay.js';
 export {
   type ActiveOrderLookup,
   type Candidate,

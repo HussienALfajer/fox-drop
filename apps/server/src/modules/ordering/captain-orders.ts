@@ -8,6 +8,8 @@ import { Jobs } from '../../jobs/jobs.module.js';
 import { type AuditRequestContext, AuditService } from '../audit/index.js';
 import { CaptainsRefusedError, CaptainsService } from '../captains/index.js';
 import { CustomersService } from '../customers/index.js';
+import { FxService } from '../fx/index.js';
+import { LedgerService } from '../ledger/index.js';
 import { type Point, straightLineMetres } from '../geo/index.js';
 import { CustomerAccountsService, PhoneCipher } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
@@ -35,7 +37,14 @@ import {
   type PickupRequestView,
   pickupRequestsOf,
 } from './pickup-views.js';
-import { orders, pickupRequests } from './schema.js';
+import { collections, orders, pickupRequests } from './schema.js';
+import {
+  type Delivery,
+  DeliveryBooking,
+  lockForDelivery,
+  type ShortfallReason,
+} from './delivery-booking.js';
+import { checkDoorPayment, commission, waitingMinutes } from './door-payment.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 
@@ -60,6 +69,12 @@ export type CaptainOrderRefusal =
   | 'invalid_lines'
   | 'currency_not_accepted'
   | 'amount_mismatch'
+  // CA §9.7 item 4: the amount due changed since the screen showed it.
+  | 'amount_due_changed'
+  // «سجّل الباقي الذي أعدته للزبون».
+  | 'overpaid'
+  // K16: «المبلغ المقبوض أقل من المطلوب بـ {المبلغ}» needs a reason.
+  | 'shortfall_reason_required'
   | 'idempotency_key_reused';
 
 // A command on an order that the order or the captain refuses;
@@ -72,6 +87,8 @@ export class CaptainOrderRefusedError extends Error {
     message: string,
     readonly order: OrderView | null = null,
     readonly distanceMetres: number | null = null,
+    // shortfall_reason_required: the missing amount, in the base currency.
+    readonly shortfall: { amount: bigint; currency: string } | null = null,
   ) {
     super(message);
   }
@@ -135,6 +152,9 @@ export class CaptainOrders {
     private readonly customers: CustomersService,
     private readonly customerAccounts: CustomerAccountsService,
     private readonly phones: PhoneCipher,
+    private readonly booking: DeliveryBooking,
+    private readonly ledger: LedgerService,
+    private readonly fx: FxService,
   ) {}
 
   // CA §9: the order assigned to the captain until it ends, or null (no
@@ -274,6 +294,275 @@ export class CaptainOrders {
     });
     if (!done) throw await this.stateChanged(order);
     return this.answer(order, command.captainId, now);
+  }
+
+  // CA §9.7–9.8 (C9, K4, K16): «تم التسليم» at the customer with the door
+  // payment. Within captain.customer_radius_m of the pin, or with a reason
+  // given now or at the arrival. The payment is checked against the amount
+  // due the screen showed (AP §8.6); a shortfall needs its reason. The order
+  // becomes delivered with outcome normal, its collection and every journal
+  // of its money in one transaction (DeliveryBooking), and the captain is
+  // free for the next offer. Answers the order summary.
+  async deliver(
+    command: CaptainOrderCommand &
+      DoorCollection & { location: CommandLocation; away: AwayGiven | null },
+    now: Date,
+  ): Promise<DeliverySummary> {
+    const requestHash = commandHash({
+      verb: 'deliver',
+      orderId: command.orderId,
+      ...collectionHash(command),
+      away: command.away,
+    });
+    const earlier = await this.replay(command.accountId, command, requestHash, now);
+    if (earlier !== null) return this.summary(earlier, now);
+    const order = await this.captainsOrder(command);
+    if (!deliverable(order, command.captainId)) {
+      throw await this.refusedState(order, command.accountId, command, requestHash, now);
+    }
+    const delivery = await this.prepareDelivery(order, command, now);
+    const radius = await this.settings.get('captain.customer_radius_m', { cityId: order.cityId });
+    await this.recordLocation(command.captainId, command.location, now);
+    checkFix(command.location, now);
+    const distanceMetres = Math.round(straightLineMetres(command.location, order.location));
+    const far = distanceMetres > radius;
+    if (far && command.away === null && order.awayReason === null) {
+      throw new CaptainOrderRefusedError(
+        'too_far_from_customer',
+        `${distanceMetres} m from the customer, more than ${radius} m`,
+        null,
+        distanceMetres,
+      );
+    }
+    // K4: a reason given at the arrival covers the delivery and is kept.
+    const away = far && order.awayReason === null ? command.away : null;
+    await this.jobs.ready();
+    const done = await this.database.db.transaction(async (tx) => {
+      const locked = await lockOrder(tx, order.id, order.placedAt);
+      if (!locked) throw new Error(`order ${order.id} not found`);
+      if ((await this.replay(command.accountId, command, requestHash, now, tx)) !== null) {
+        return true;
+      }
+      if (!deliverable(locked, command.captainId)) return false;
+      await this.booking.complete(
+        tx,
+        await lockForDelivery(tx, locked),
+        delivery,
+        {
+          actor: { type: 'captain', id: command.captainId, device: command.deviceId },
+          reason: null,
+        },
+        now,
+        away,
+      );
+      await keepKey(tx, command.accountId, command.idempotencyKey, requestHash, order, now);
+      return true;
+    });
+    if (!done) throw await this.stateChanged(order);
+    return this.summary(order, now);
+  }
+
+  // AP §9.3.2 «تسجيل التسليم نيابة عن الكابتن»: for a captain without a
+  // working phone, operations enter the payment lines and change the captain
+  // reports, with a reason; picked_up or arrived. The same checks and entries
+  // as the captain's delivery, without a location; audited.
+  async recordDelivery(command: AdminOrderCommand & DoorCollection, now: Date): Promise<OrderView> {
+    const accountId = command.admin.accountId;
+    const requestHash = commandHash({
+      verb: 'record_delivery',
+      orderId: command.orderId,
+      ...collectionHash(command),
+      reason: command.reason,
+    });
+    const earlier = await this.replay(accountId, command, requestHash, now);
+    if (earlier !== null) return this.read(earlier);
+    const order = await this.anyOrder(command.orderId);
+    if (!deliverableByOperations(order)) {
+      throw await this.refusedState(order, accountId, command, requestHash, now);
+    }
+    const delivery = await this.prepareDelivery(order, command, now);
+    await this.jobs.ready();
+    const done = await this.database.db.transaction(async (tx) => {
+      const locked = await lockOrder(tx, order.id, order.placedAt);
+      if (!locked) throw new Error(`order ${order.id} not found`);
+      if ((await this.replay(accountId, command, requestHash, now, tx)) !== null) return true;
+      if (!deliverableByOperations(locked) || locked.captainId !== order.captainId) return false;
+      await this.booking.complete(
+        tx,
+        await lockForDelivery(tx, locked),
+        delivery,
+        { actor: { type: 'admin', id: accountId }, reason: command.reason },
+        now,
+        null,
+      );
+      await this.audit.recordWrite(
+        {
+          actor: { type: 'admin', id: accountId, role: command.admin.roles.join(',') },
+          context: command.context,
+          cityId: locked.cityId,
+          action: 'order.record_delivery',
+          target: { type: 'order', id: locked.id },
+          before: { status: locked.status },
+          after: {
+            status: 'delivered',
+            outcome: 'normal',
+            receivedLines: storedLines(command.received),
+            changeLines: storedLines(command.change),
+            shortfall: delivery.payment.shortfall.toString(),
+          },
+          reason: command.reason,
+        },
+        tx,
+      );
+      await keepKey(tx, accountId, command.idempotencyKey, requestHash, order, now);
+      return true;
+    });
+    if (!done) throw await this.stateChanged(order);
+    return this.read(order);
+  }
+
+  // The door payment checked and the order's money worked out before the
+  // transaction: none of it changes after the pickup (AP §8.1 item 4).
+  private async prepareDelivery(
+    order: OrderAtStart,
+    collection: DoorCollection,
+    now: Date,
+  ): Promise<Delivery> {
+    const base = snapshotOf(order.rateSnapshot).baseCurrency;
+    if (collection.amountDue.amount !== order.total || collection.amountDue.currency !== base) {
+      throw new CaptainOrderRefusedError(
+        'amount_due_changed',
+        'the amount due changed',
+        await this.read(order),
+      );
+    }
+    const payment = checkDoorPayment(
+      snapshotOf(order.rateSnapshot),
+      collection.received,
+      collection.change,
+      order.total,
+    );
+    if (typeof payment === 'string') {
+      throw new CaptainOrderRefusedError(payment, 'the payment lines do not fit the amount due');
+    }
+    if (payment.shortfall > 0n && collection.shortfall === null) {
+      throw new CaptainOrderRefusedError(
+        'shortfall_reason_required',
+        'the net received is short of the amount due',
+        null,
+        null,
+        { amount: payment.shortfall, currency: base },
+      );
+    }
+    if (order.captainId === null) throw new Error(`order ${order.id} has no captain`);
+    const [money] = await this.database.db
+      .select({
+        payTableId: orders.payTableId,
+        tripMetres: orders.tripMetres,
+        commissionBp: orders.commissionBp,
+        acceptedAt: orders.acceptedAt,
+        prepMin: orders.prepMin,
+        arrivedAtMerchantAt: orders.arrivedAtMerchantAt,
+        captainWaitingAlertAt: orders.captainWaitingAlertAt,
+        pickedUpAt: orders.pickedUpAt,
+        testOrder: orders.testOrder,
+      })
+      .from(orders)
+      .where(orderKey(order.id, order.placedAt));
+    const captain = await this.captains.captain(order.captainId, now);
+    if (!money?.acceptedAt || money.prepMin === null || !money.pickedUpAt) {
+      throw new Error(`order ${order.id} was not picked up`);
+    }
+    if (!captain) throw new Error(`captain ${order.captainId} not found`);
+    // Placing needs a pay table in force (captain_pay_unset); only an order
+    // placed before slice 1.13 can lack one.
+    if (money.payTableId === null) throw new Error(`order ${order.id} kept no pay table`);
+    const waiting = waitingMinutes({
+      acceptedAt: money.acceptedAt,
+      prepMin: money.prepMin,
+      arrivedAtMerchantAt: money.arrivedAtMerchantAt,
+      captainWaitingAlertAt: money.captainWaitingAlertAt,
+      pickedUpAt: money.pickedUpAt,
+    });
+    const pay = await this.captains.payParts(
+      money.payTableId,
+      captain.vehicle,
+      money.tripMetres ?? 0,
+      waiting,
+    );
+    if (!pay) throw new Error(`pay table ${money.payTableId} has no rate for ${captain.vehicle}`);
+    return {
+      received: collection.received,
+      change: collection.change,
+      payment,
+      // A reason sent without a shortfall is not kept.
+      shortfall: payment.shortfall > 0n ? collection.shortfall : null,
+      pay,
+      waitingMinutes: waiting,
+      // AP §9.6.3: a test order, flagged at placing, posts no commission.
+      commission: money.testOrder ? null : commission(order.itemsValue, money.commissionBp),
+    };
+  }
+
+  // CA §9.8: «ربحت من هذا الطلب», «تغيّرت عهدتك» and «عليك تسليم اليوم»,
+  // from the order's collection.
+  private async summary(key: { id: string; placedAt: Date }, now: Date): Promise<DeliverySummary> {
+    const [row] = await this.database.db
+      .select({
+        number: orders.number,
+        currency: orders.currency,
+        itemsValue: orders.itemsValue,
+        captainId: collections.captainId,
+        netReceived: collections.netReceived,
+        basePay: collections.basePay,
+        distancePay: collections.distancePay,
+        topUpPay: collections.topUpPay,
+        waitingPay: collections.waitingPay,
+      })
+      .from(collections)
+      .innerJoin(
+        orders,
+        and(eq(orders.id, collections.orderId), eq(orders.placedAt, collections.orderPlacedAt)),
+      )
+      .where(and(eq(collections.orderId, key.id), eq(collections.orderPlacedAt, key.placedAt)));
+    if (!row) throw new Error(`order ${key.id} has no collection`);
+    const orderPay = row.basePay + row.distancePay + row.topUpPay;
+    return {
+      orderId: key.id,
+      number: row.number,
+      currency: row.currency,
+      pay: {
+        base: row.basePay,
+        distance: row.distancePay,
+        topUp: row.topUpPay,
+        waiting: row.waitingPay,
+        total: orderPay + row.waitingPay,
+      },
+      custodyChange: row.netReceived - row.itemsValue,
+      handInToday: await this.custodyTotal(row.captainId, now),
+    };
+  }
+
+  // CA §9.8, §10.2: «عليك تسليم اليوم», the captain's custody in every
+  // currency at current rates, in the base; below zero the desk owes the
+  // captain («لك عند المكتب»).
+  private async custodyTotal(
+    captainId: string,
+    now: Date,
+  ): Promise<{ amount: bigint; currency: string }> {
+    const captain = await this.captains.captain(captainId, now);
+    if (!captain) throw new Error(`captain ${captainId} not found`);
+    const [accounts, { base, toBase }] = await Promise.all([
+      this.ledger.ownerAccounts(captain.cityId, captainId, 'captain.custody'),
+      this.fx.currentValue(captain.cityId),
+    ]);
+    let total = 0n;
+    for (const account of accounts) {
+      const { amount } = await this.ledger.balance(account.id);
+      total +=
+        account.currency === base || amount === 0n ? amount : toBase(amount, account.currency);
+    }
+    return { amount: total, currency: base };
   }
 
   // CA §9.4, RA §8.10 items 1-2: «دفعت للمطعم واستلمت الطلب» with the lines
@@ -478,6 +767,8 @@ export class CaptainOrders {
         captainTrack: orders.captainTrack,
         captainId: orders.captainId,
         itemsValue: orders.itemsValue,
+        total: orders.total,
+        awayReason: orders.awayReason,
         rateSnapshot: orders.rateSnapshot,
         latitude: sql<number>`ST_Y(${orders.location})`.mapWith(Number),
         longitude: sql<number>`ST_X(${orders.location})`.mapWith(Number),
@@ -639,10 +930,71 @@ type OrderAtStart = {
   captainTrack: OrderView['captainTrack'];
   captainId: string | null;
   itemsValue: bigint;
+  total: bigint;
   rateSnapshot: unknown;
-  // The customer's pin.
+  // The customer's pin, and the reason given at the arrival away from it.
   location: Point;
+  awayReason: AwayReason | null;
 };
+
+// The door payment a delivery records (AP §8.6, CA §9.7): the lines
+// received and given back, the amount due the screen showed, and the reason
+// of a shortfall (K16).
+export interface DoorCollection {
+  received: PaymentLine[];
+  change: PaymentLine[];
+  amountDue: { amount: bigint; currency: string };
+  shortfall: { reason: ShortfallReason; note: string | null } | null;
+}
+
+function collectionHash(collection: DoorCollection) {
+  return {
+    received: storedLines(collection.received),
+    change: storedLines(collection.change),
+    amountDue: {
+      amount: collection.amountDue.amount.toString(),
+      currency: collection.amountDue.currency,
+    },
+    shortfall: collection.shortfall,
+  };
+}
+
+// CA §9.8: the order summary, in the base currency's minor units. The peak
+// bonus waits for the peak windows (owner decision 2026-11-06).
+export interface DeliverySummary {
+  orderId: string;
+  number: bigint;
+  currency: string;
+  pay: { base: bigint; distance: bigint; topUp: bigint; waiting: bigint; total: bigint };
+  // The collection's net minus the pickup payment.
+  custodyChange: bigint;
+  // The positive custody positions now, converted at current rates.
+  handInToday: { amount: bigint; currency: string };
+}
+
+// CA §9.8: the order's captain at the customer (AP §8.1: arrived →
+// delivered by the captain).
+function deliverable(
+  order: Pick<OrderAtStart, 'status' | 'captainTrack' | 'captainId'>,
+  captainId: string,
+): boolean {
+  return (
+    order.status === 'arrived' &&
+    order.captainTrack === 'at_customer' &&
+    order.captainId === captainId
+  );
+}
+
+// AP §9.3.2: operations record a delivery from picked_up or arrived.
+function deliverableByOperations(
+  order: Pick<OrderAtStart, 'status' | 'captainTrack' | 'captainId'>,
+): boolean {
+  return (
+    order.captainId !== null &&
+    ((order.status === 'picked_up' && order.captainTrack === 'picked_up') ||
+      (order.status === 'arrived' && order.captainTrack === 'at_customer'))
+  );
+}
 
 // The reason given away from the customer's pin (CA Appendix C), with its
 // text for «أخرى».

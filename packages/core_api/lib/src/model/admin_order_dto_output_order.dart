@@ -6,6 +6,7 @@
 import 'package:core_api/src/model/admin_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_delivery.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
@@ -48,6 +49,7 @@ part 'admin_order_dto_output_order.g.dart';
 /// * [lines]
 /// * [money]
 /// * [pickup]
+/// * [delivery]
 /// * [timeline]
 @BuiltValue()
 abstract class AdminOrderDtoOutputOrder
@@ -134,6 +136,9 @@ abstract class AdminOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'pickup')
   AdminOrderDtoOutputOrderPickup get pickup;
+
+  @BuiltValueField(wireName: r'delivery')
+  AdminOrderDtoOutputOrderDelivery? get delivery;
 
   @BuiltValueField(wireName: r'timeline')
   BuiltList<AdminOrderDtoOutputOrderTimelineInner> get timeline;
@@ -316,6 +321,15 @@ class _$AdminOrderDtoOutputOrderSerializer
       object.pickup,
       specifiedType: const FullType(AdminOrderDtoOutputOrderPickup),
     );
+    yield r'delivery';
+    yield object.delivery == null
+        ? null
+        : serializers.serialize(
+            object.delivery,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderDelivery,
+            ),
+          );
     yield r'timeline';
     yield serializers.serialize(
       object.timeline,
@@ -598,6 +612,18 @@ class _$AdminOrderDtoOutputOrderSerializer
                   )
                   as AdminOrderDtoOutputOrderPickup;
           result.pickup.replace(valueDes);
+          break;
+        case r'delivery':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderDelivery,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderDelivery?;
+          if (valueDes == null) continue;
+          result.delivery.replace(valueDes);
           break;
         case r'timeline':
           final valueDes =

@@ -30,13 +30,25 @@ export function checkPayRate(rate: PayRate): string | null {
   return null;
 }
 
+// An order's pay in its parts (AP §8.4, §8.5.5; CA §9.8): the base pay, the
+// distance pay, the top-up to the minimum («إكمال للحد الأدنى»), their sum
+// `orderPay` (earn.order_pay), and the waiting pay (earn.waiting_pay).
+export interface PayParts {
+  base: bigint;
+  distance: bigint;
+  topUp: bigint;
+  orderPay: bigint;
+  waiting: bigint;
+}
+
 // The pay of one order: the base pay, each metre past the included distance
-// pro rata and rounded down to the minor unit, the waiting pay, raised to the
-// minimum pay (owner decision 2026-11-06).
+// pro rata and rounded down to the minor unit, raised to the minimum pay;
+// the waiting pay on top, never absorbed by the minimum (docs/domain/04;
+// owner decision 2026-11-06).
 export function orderPay(
   rate: PayRate,
   { metres, waitingMinutes }: { metres: number; waitingMinutes: number },
-): bigint {
+): PayParts {
   if (!Number.isInteger(metres) || metres < 0) {
     throw new RangeError('the distance is whole metres, zero or more');
   }
@@ -44,9 +56,14 @@ export function orderPay(
     throw new RangeError('the waiting time is whole minutes, zero or more');
   }
   const extraMetres = BigInt(Math.max(0, metres - rate.includedMetres));
-  const pay =
-    rate.basePay +
-    (extraMetres * rate.perExtraKm) / 1_000n +
-    BigInt(waitingMinutes) * rate.waitingPerMinute;
-  return pay < rate.minimumPay ? rate.minimumPay : pay;
+  const base = rate.basePay;
+  const distance = (extraMetres * rate.perExtraKm) / 1_000n;
+  const topUp = base + distance < rate.minimumPay ? rate.minimumPay - base - distance : 0n;
+  return {
+    base,
+    distance,
+    topUp,
+    orderPay: base + distance + topUp,
+    waiting: BigInt(waitingMinutes) * rate.waitingPerMinute,
+  };
 }

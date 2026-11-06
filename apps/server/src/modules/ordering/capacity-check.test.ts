@@ -62,6 +62,22 @@ beforeAll(async () => {
   const fx = app.get(FxService);
   await fx.setCityCurrency(azaz, { currency: 'TRY', displayOrder: 1, enabled: true }, change);
   await fx.setBaseCurrency(azaz, 'TRY', change);
+  // AP §9.12.5: a pay table in force, which placing needs (captain_pay_unset).
+  const payRate = {
+    basePay: 2500n,
+    includedMetres: 3000,
+    perExtraKm: 500n,
+    waitingPerMinute: 0n,
+    minimumPay: 2500n,
+  };
+  await app.get(CaptainsService).setPayTable(
+    azaz,
+    {
+      currency: 'TRY',
+      rates: { walking: payRate, bicycle: payRate, motorbike: payRate, car: payRate },
+    },
+    change,
+  );
   await settings.update(
     'currency.<code>.rounding_unit',
     { cityId: azaz, parameter: 'TRY' },

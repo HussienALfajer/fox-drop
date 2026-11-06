@@ -17,7 +17,7 @@ import {
   onlineBlocks,
 } from './availability.js';
 import { LIVE_POSITION_MAX_AGE_MS, LivePositions, type NearbyCaptain } from './live-positions.js';
-import { checkPayRate, orderPay, type PayRate } from './pay.js';
+import { checkPayRate, orderPay, type PayParts, type PayRate } from './pay.js';
 import { captainRecords, locations, onlinePeriods, payRates, payTables } from './schema.js';
 
 export type CaptainsRefusal =
@@ -614,6 +614,18 @@ export class CaptainsService implements OnModuleInit {
   // AP §9.12.5, CA §8.2: an order's pay by the pay table it kept, for the
   // vehicle and the trip, before any waiting.
   async orderPay(payTableId: string, vehicle: Vehicle, metres: number): Promise<Money | null> {
+    const parts = await this.payParts(payTableId, vehicle, metres, 0);
+    return parts && { amount: parts.orderPay, currency: parts.currency };
+  }
+
+  // AP §8.4, CA §9.8: the pay of a delivered order in its parts, by the pay
+  // table it kept, for the vehicle, the trip and the waiting minutes.
+  async payParts(
+    payTableId: string,
+    vehicle: Vehicle,
+    metres: number,
+    waitingMinutes: number,
+  ): Promise<(PayParts & { currency: string }) | null> {
     const [table] = await this.database.db
       .select({ currency: payTables.currency })
       .from(payTables)
@@ -623,7 +635,7 @@ export class CaptainsService implements OnModuleInit {
       .from(payRates)
       .where(and(eq(payRates.tableId, payTableId), eq(payRates.vehicle, vehicle)));
     if (!table || !rate) return null;
-    return { amount: orderPay(rate, { metres, waitingMinutes: 0 }), currency: table.currency };
+    return { ...orderPay(rate, { metres, waitingMinutes }), currency: table.currency };
   }
 
   // The live positions come from Valkey, or from the locations table when

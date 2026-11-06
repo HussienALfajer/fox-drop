@@ -87,6 +87,18 @@ const customerOrder = z.object({
     })
     .nullable()
     .describe('While cancelled (CU §11.9).'),
+  delivery: z
+    .object({
+      at: z.iso.datetime().describe('«تم التسليم».'),
+      received: z
+        .array(z.object({ amount: minor, currency: z.string().length(3) }))
+        .describe('«استلم الكابتن: {المبالغ}» (CU §11.8, Q23).'),
+      change: z
+        .array(z.object({ amount: minor, currency: z.string().length(3) }))
+        .describe('«أعاد لك: {المبالغ}».'),
+    })
+    .nullable()
+    .describe('Once delivered; the order screen opens the rating sheet (CU §12.1).'),
   restaurant: z.object({ id: z.uuid(), nameAr: z.string(), nameEn: z.string().nullable() }),
   currency: z.string().length(3),
   money: z.object({
@@ -255,6 +267,17 @@ function orderBody(
     cancellation: order.cancellation && {
       at: order.cancellation.at.toISOString(),
       reason: order.cancellation.reason,
+    },
+    delivery: order.delivery && {
+      at: order.delivery.at.toISOString(),
+      received: order.delivery.received.map((line) => ({
+        amount: text(line.amount),
+        currency: line.currency,
+      })),
+      change: order.delivery.change.map((line) => ({
+        amount: text(line.amount),
+        currency: line.currency,
+      })),
     },
     restaurant: { id: order.restaurantId, ...restaurant },
     currency: order.currency,

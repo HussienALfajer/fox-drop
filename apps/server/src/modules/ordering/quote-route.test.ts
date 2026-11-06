@@ -7,6 +7,7 @@ import { ApiModule } from '../../api.module.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
 import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
+import { CaptainsService } from '../captains/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService, type Point } from '../geo/index.js';
 import { MerchantsService } from '../merchants/index.js';
@@ -64,6 +65,22 @@ beforeAll(async () => {
   const fx = app.get(FxService);
   await fx.setCityCurrency(azaz, { currency: 'TRY', displayOrder: 1, enabled: true }, change);
   await fx.setBaseCurrency(azaz, 'TRY', change);
+  // AP §9.12.5: a pay table in force, which placing needs (captain_pay_unset).
+  const payRate = {
+    basePay: 2500n,
+    includedMetres: 3000,
+    perExtraKm: 500n,
+    waitingPerMinute: 0n,
+    minimumPay: 2500n,
+  };
+  await app.get(CaptainsService).setPayTable(
+    azaz,
+    {
+      currency: 'TRY',
+      rates: { walking: payRate, bicycle: payRate, motorbike: payRate, car: payRate },
+    },
+    change,
+  );
   await fx.setCityCurrency(azaz, { currency: 'USD', displayOrder: 2, enabled: false }, change);
   await fx.setRate(azaz, 'USD', { value: '40', direction: 'base_per_unit' }, fin);
   await fx.setCityCurrency(azaz, { currency: 'USD', displayOrder: 2, enabled: true }, change);

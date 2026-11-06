@@ -149,6 +149,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
   @override
   final CustomerActiveOrdersDtoOutputOrdersInnerCancellation? cancellation;
   @override
+  final CustomerActiveOrdersDtoOutputOrdersInnerDelivery? delivery;
+  @override
   final CustomerActiveOrdersDtoOutputOrdersInnerRestaurant restaurant;
   @override
   final String currency;
@@ -180,6 +182,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
     required this.placedAt,
     this.promisedAt,
     this.cancellation,
+    this.delivery,
     required this.restaurant,
     required this.currency,
     required this.money,
@@ -210,6 +213,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
         placedAt == other.placedAt &&
         promisedAt == other.promisedAt &&
         cancellation == other.cancellation &&
+        delivery == other.delivery &&
         restaurant == other.restaurant &&
         currency == other.currency &&
         money == other.money &&
@@ -231,6 +235,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
     _$hash = $jc(_$hash, placedAt.hashCode);
     _$hash = $jc(_$hash, promisedAt.hashCode);
     _$hash = $jc(_$hash, cancellation.hashCode);
+    _$hash = $jc(_$hash, delivery.hashCode);
     _$hash = $jc(_$hash, restaurant.hashCode);
     _$hash = $jc(_$hash, currency.hashCode);
     _$hash = $jc(_$hash, money.hashCode);
@@ -256,6 +261,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
           ..add('placedAt', placedAt)
           ..add('promisedAt', promisedAt)
           ..add('cancellation', cancellation)
+          ..add('delivery', delivery)
           ..add('restaurant', restaurant)
           ..add('currency', currency)
           ..add('money', money)
@@ -310,6 +316,14 @@ class CustomerActiveOrdersDtoOutputOrdersInnerBuilder
   set cancellation(
     CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder? cancellation,
   ) => _$this._cancellation = cancellation;
+
+  CustomerActiveOrdersDtoOutputOrdersInnerDeliveryBuilder? _delivery;
+  CustomerActiveOrdersDtoOutputOrdersInnerDeliveryBuilder get delivery =>
+      _$this._delivery ??=
+          CustomerActiveOrdersDtoOutputOrdersInnerDeliveryBuilder();
+  set delivery(
+    CustomerActiveOrdersDtoOutputOrdersInnerDeliveryBuilder? delivery,
+  ) => _$this._delivery = delivery;
 
   CustomerActiveOrdersDtoOutputOrdersInnerRestaurantBuilder? _restaurant;
   CustomerActiveOrdersDtoOutputOrdersInnerRestaurantBuilder get restaurant =>
@@ -382,6 +396,7 @@ class CustomerActiveOrdersDtoOutputOrdersInnerBuilder
       _placedAt = $v.placedAt;
       _promisedAt = $v.promisedAt;
       _cancellation = $v.cancellation?.toBuilder();
+      _delivery = $v.delivery?.toBuilder();
       _restaurant = $v.restaurant.toBuilder();
       _currency = $v.currency;
       _money = $v.money.toBuilder();
@@ -444,6 +459,7 @@ class CustomerActiveOrdersDtoOutputOrdersInnerBuilder
             ),
             promisedAt: promisedAt,
             cancellation: _cancellation?.build(),
+            delivery: _delivery?.build(),
             restaurant: restaurant.build(),
             currency: BuiltValueNullFieldError.checkNotNull(
               currency,
@@ -463,6 +479,8 @@ class CustomerActiveOrdersDtoOutputOrdersInnerBuilder
       try {
         _$failedField = 'cancellation';
         _cancellation?.build();
+        _$failedField = 'delivery';
+        _delivery?.build();
         _$failedField = 'restaurant';
         restaurant.build();
 

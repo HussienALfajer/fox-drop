@@ -38,6 +38,8 @@ export type QuoteProblemCode =
   | 'minimum_not_in_base_currency'
   | 'delivery_unpriced'
   | 'rates_unavailable'
+  // AP §9.12.5: no captain pay table in force, so no order could be delivered.
+  | 'captain_pay_unset'
   // CU §5.5, D23: «يمكنك طلب واحد في كل مرة حتى يكتمل طلبك الحالي» for a new
   // account, «وصلت إلى الحد الأقصى للطلبات الجارية» for a trusted one.
   | 'one_order_at_a_time'
@@ -198,6 +200,7 @@ export class QuoteService {
 
     const fee = await this.deliveryFee(cityId, restaurant.location, point, itemsValue);
     if (fee === null) problem('delivery_unpriced');
+    if ((await this.captains.payTable(cityId, now)) === null) problem('captain_pay_unset');
     // The free-delivery threshold of the rule the fee was priced with.
     const freeDeliveryFrom = fee?.freeDeliveryFrom ?? null;
     const status = thresholds({

@@ -9,6 +9,7 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_restaurant.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_delivery.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_money.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address.dart';
 import 'package:built_value/built_value.dart';
@@ -26,6 +27,7 @@ part 'customer_active_orders_dto_output_orders_inner.g.dart';
 /// * [placedAt]
 /// * [promisedAt] - «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows.
 /// * [cancellation]
+/// * [delivery]
 /// * [restaurant]
 /// * [currency]
 /// * [money]
@@ -67,6 +69,9 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInner
 
   @BuiltValueField(wireName: r'cancellation')
   CustomerActiveOrdersDtoOutputOrdersInnerCancellation? get cancellation;
+
+  @BuiltValueField(wireName: r'delivery')
+  CustomerActiveOrdersDtoOutputOrdersInnerDelivery? get delivery;
 
   @BuiltValueField(wireName: r'restaurant')
   CustomerActiveOrdersDtoOutputOrdersInnerRestaurant get restaurant;
@@ -168,6 +173,15 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerSerializer
             object.cancellation,
             specifiedType: const FullType.nullable(
               CustomerActiveOrdersDtoOutputOrdersInnerCancellation,
+            ),
+          );
+    yield r'delivery';
+    yield object.delivery == null
+        ? null
+        : serializers.serialize(
+            object.delivery,
+            specifiedType: const FullType.nullable(
+              CustomerActiveOrdersDtoOutputOrdersInnerDelivery,
             ),
           );
     yield r'restaurant';
@@ -323,6 +337,18 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerSerializer
                   as CustomerActiveOrdersDtoOutputOrdersInnerCancellation?;
           if (valueDes == null) continue;
           result.cancellation.replace(valueDes);
+          break;
+        case r'delivery':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerActiveOrdersDtoOutputOrdersInnerDelivery,
+                    ),
+                  )
+                  as CustomerActiveOrdersDtoOutputOrdersInnerDelivery?;
+          if (valueDes == null) continue;
+          result.delivery.replace(valueDes);
           break;
         case r'restaurant':
           final valueDes =
