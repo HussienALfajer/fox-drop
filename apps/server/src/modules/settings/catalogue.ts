@@ -520,6 +520,13 @@ export const catalogue = {
     schema: positiveInt,
     default: 3,
   }),
+  // Owner decision 2026-11-06: off until the apps send the token (slice 1.14).
+  'otp.app_check_required': define({
+    type: 'boolean',
+    scope: 'global',
+    schema: z.boolean(),
+    default: false,
+  }),
   'support.first_response_active_min': minutes(15, 1),
   'support.resolution_post_delivery_hours': define({
     type: 'duration',
