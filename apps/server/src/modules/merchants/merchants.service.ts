@@ -109,6 +109,8 @@ export interface Restaurant {
   suspensionReason: string | null;
   visible: boolean;
   location: Point;
+  // The street address the captain app shows (CA §9.2); null until entered.
+  address: string | null;
   coverage: Coverage;
   minimumOrder: Money;
   defaultPrepMin: number;
@@ -355,6 +357,7 @@ export class MerchantsService implements OnModuleInit {
         visible: restaurants.visible,
         latitude: sql<number>`ST_Y(${restaurants.location})`,
         longitude: sql<number>`ST_X(${restaurants.location})`,
+        address: restaurants.address,
         coverageKind: restaurants.coverageKind,
         coverageRadiusMetres: restaurants.coverageRadiusMetres,
         minimumOrder: restaurants.minimumOrder,
@@ -390,6 +393,7 @@ export class MerchantsService implements OnModuleInit {
       suspensionReason: row.suspensionReason,
       visible: row.visible,
       location: { latitude: row.latitude, longitude: row.longitude },
+      address: row.address,
       coverage,
       minimumOrder: { amount: row.minimumOrder, currency: row.minimumOrderCurrency },
       defaultPrepMin: row.defaultPrepMin,

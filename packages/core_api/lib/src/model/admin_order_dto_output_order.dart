@@ -6,15 +6,15 @@
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancellation.dart';
-import 'package:core_api/src/model/admin_board_dto_output_orders_inner_moments.dart';
-import 'package:core_api/src/model/admin_board_dto_output_orders_inner_badges.dart';
-import 'package:core_api/src/model/admin_board_dto_output_orders_inner_restaurant.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
-import 'package:core_api/src/model/admin_board_dto_output_orders_inner_captain.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order_moments.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_money.dart';
-import 'package:core_api/src/model/admin_board_dto_output_orders_inner_total.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order_captain.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order_restaurant.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -37,7 +37,7 @@ part 'admin_order_dto_output_order.g.dart';
 /// * [total]
 /// * [badges]
 /// * [moments]
-/// * [alerts] - AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready.
+/// * [alerts] - AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم».
 /// * [promisedAt]
 /// * [acceptance]
 /// * [readyAt]
@@ -71,7 +71,7 @@ abstract class AdminOrderDtoOutputOrder
   DateTime get placedAt;
 
   @BuiltValueField(wireName: r'restaurant')
-  AdminBoardDtoOutputOrdersInnerRestaurant get restaurant;
+  AdminOrderCardDtoOutputOrderRestaurant get restaurant;
 
   @BuiltValueField(wireName: r'neighbourhood')
   String get neighbourhood;
@@ -90,21 +90,21 @@ abstract class AdminOrderDtoOutputOrder
   // enum captainTrackEnum {  searching,  offered,  assigned,  at_merchant,  pickup_pending,  picked_up,  at_customer,  done,  };
 
   @BuiltValueField(wireName: r'captain')
-  AdminBoardDtoOutputOrdersInnerCaptain? get captain;
+  AdminOrderCardDtoOutputOrderCaptain? get captain;
 
   @BuiltValueField(wireName: r'total')
-  AdminBoardDtoOutputOrdersInnerTotal get total;
+  AdminOrderCardDtoOutputOrderTotal get total;
 
   @BuiltValueField(wireName: r'badges')
-  AdminBoardDtoOutputOrdersInnerBadges get badges;
+  AdminOrderCardDtoOutputOrderBadges get badges;
 
   @BuiltValueField(wireName: r'moments')
-  AdminBoardDtoOutputOrdersInnerMoments get moments;
+  AdminOrderCardDtoOutputOrderMoments get moments;
 
-  /// AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready.
+  /// AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم».
   @BuiltValueField(wireName: r'alerts')
   BuiltList<AdminOrderDtoOutputOrderAlertsEnum> get alerts;
-  // enum alertsEnum {  restaurant_not_accepted,  prep_late,  no_captain,  no_captain_after_ready,  };
+  // enum alertsEnum {  restaurant_not_accepted,  prep_late,  no_captain,  no_captain_after_ready,  captain_waiting,  };
 
   @BuiltValueField(wireName: r'promisedAt')
   DateTime? get promisedAt;
@@ -191,7 +191,7 @@ class _$AdminOrderDtoOutputOrderSerializer
     yield r'restaurant';
     yield serializers.serialize(
       object.restaurant,
-      specifiedType: const FullType(AdminBoardDtoOutputOrdersInnerRestaurant),
+      specifiedType: const FullType(AdminOrderCardDtoOutputOrderRestaurant),
     );
     yield r'neighbourhood';
     yield serializers.serialize(
@@ -225,23 +225,23 @@ class _$AdminOrderDtoOutputOrderSerializer
         : serializers.serialize(
             object.captain,
             specifiedType: const FullType.nullable(
-              AdminBoardDtoOutputOrdersInnerCaptain,
+              AdminOrderCardDtoOutputOrderCaptain,
             ),
           );
     yield r'total';
     yield serializers.serialize(
       object.total,
-      specifiedType: const FullType(AdminBoardDtoOutputOrdersInnerTotal),
+      specifiedType: const FullType(AdminOrderCardDtoOutputOrderTotal),
     );
     yield r'badges';
     yield serializers.serialize(
       object.badges,
-      specifiedType: const FullType(AdminBoardDtoOutputOrdersInnerBadges),
+      specifiedType: const FullType(AdminOrderCardDtoOutputOrderBadges),
     );
     yield r'moments';
     yield serializers.serialize(
       object.moments,
-      specifiedType: const FullType(AdminBoardDtoOutputOrdersInnerMoments),
+      specifiedType: const FullType(AdminOrderCardDtoOutputOrderMoments),
     );
     yield r'alerts';
     yield serializers.serialize(
@@ -389,10 +389,10 @@ class _$AdminOrderDtoOutputOrderSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      AdminBoardDtoOutputOrdersInnerRestaurant,
+                      AdminOrderCardDtoOutputOrderRestaurant,
                     ),
                   )
-                  as AdminBoardDtoOutputOrdersInnerRestaurant;
+                  as AdminOrderCardDtoOutputOrderRestaurant;
           result.restaurant.replace(valueDes);
           break;
         case r'neighbourhood':
@@ -440,10 +440,10 @@ class _$AdminOrderDtoOutputOrderSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      AdminBoardDtoOutputOrdersInnerCaptain,
+                      AdminOrderCardDtoOutputOrderCaptain,
                     ),
                   )
-                  as AdminBoardDtoOutputOrdersInnerCaptain?;
+                  as AdminOrderCardDtoOutputOrderCaptain?;
           if (valueDes == null) continue;
           result.captain.replace(valueDes);
           break;
@@ -452,10 +452,10 @@ class _$AdminOrderDtoOutputOrderSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      AdminBoardDtoOutputOrdersInnerTotal,
+                      AdminOrderCardDtoOutputOrderTotal,
                     ),
                   )
-                  as AdminBoardDtoOutputOrdersInnerTotal;
+                  as AdminOrderCardDtoOutputOrderTotal;
           result.total.replace(valueDes);
           break;
         case r'badges':
@@ -463,10 +463,10 @@ class _$AdminOrderDtoOutputOrderSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      AdminBoardDtoOutputOrdersInnerBadges,
+                      AdminOrderCardDtoOutputOrderBadges,
                     ),
                   )
-                  as AdminBoardDtoOutputOrdersInnerBadges;
+                  as AdminOrderCardDtoOutputOrderBadges;
           result.badges.replace(valueDes);
           break;
         case r'moments':
@@ -474,10 +474,10 @@ class _$AdminOrderDtoOutputOrderSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      AdminBoardDtoOutputOrdersInnerMoments,
+                      AdminOrderCardDtoOutputOrderMoments,
                     ),
                   )
-                  as AdminBoardDtoOutputOrdersInnerMoments;
+                  as AdminOrderCardDtoOutputOrderMoments;
           result.moments.replace(valueDes);
           break;
         case r'alerts':
@@ -710,6 +710,9 @@ class AdminOrderDtoOutputOrderAlertsEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'no_captain_after_ready')
   static const AdminOrderDtoOutputOrderAlertsEnum noCaptainAfterReady =
       _$adminOrderDtoOutputOrderAlertsEnum_noCaptainAfterReady;
+  @BuiltValueEnumConst(wireName: r'captain_waiting')
+  static const AdminOrderDtoOutputOrderAlertsEnum captainWaiting =
+      _$adminOrderDtoOutputOrderAlertsEnum_captainWaiting;
 
   static Serializer<AdminOrderDtoOutputOrderAlertsEnum> get serializer =>
       _$adminOrderDtoOutputOrderAlertsEnumSerializer;

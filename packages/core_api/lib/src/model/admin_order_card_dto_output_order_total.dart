@@ -6,7 +6,7 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_board_dto_output_orders_inner_total.g.dart';
+part 'admin_order_card_dto_output_order_total.g.dart';
 
 /// The customer total in the base currency.
 ///
@@ -14,11 +14,11 @@ part 'admin_board_dto_output_orders_inner_total.g.dart';
 /// * [amount] - Integer minor units (AP §8.6).
 /// * [currency]
 @BuiltValue()
-abstract class AdminBoardDtoOutputOrdersInnerTotal
+abstract class AdminOrderCardDtoOutputOrderTotal
     implements
         Built<
-          AdminBoardDtoOutputOrdersInnerTotal,
-          AdminBoardDtoOutputOrdersInnerTotalBuilder
+          AdminOrderCardDtoOutputOrderTotal,
+          AdminOrderCardDtoOutputOrderTotalBuilder
         > {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
@@ -27,34 +27,34 @@ abstract class AdminBoardDtoOutputOrdersInnerTotal
   @BuiltValueField(wireName: r'currency')
   String get currency;
 
-  AdminBoardDtoOutputOrdersInnerTotal._();
+  AdminOrderCardDtoOutputOrderTotal._();
 
-  factory AdminBoardDtoOutputOrdersInnerTotal([
-    void updates(AdminBoardDtoOutputOrdersInnerTotalBuilder b),
-  ]) = _$AdminBoardDtoOutputOrdersInnerTotal;
+  factory AdminOrderCardDtoOutputOrderTotal([
+    void updates(AdminOrderCardDtoOutputOrderTotalBuilder b),
+  ]) = _$AdminOrderCardDtoOutputOrderTotal;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminBoardDtoOutputOrdersInnerTotalBuilder b) => b;
+  static void _defaults(AdminOrderCardDtoOutputOrderTotalBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminBoardDtoOutputOrdersInnerTotal> get serializer =>
-      _$AdminBoardDtoOutputOrdersInnerTotalSerializer();
+  static Serializer<AdminOrderCardDtoOutputOrderTotal> get serializer =>
+      _$AdminOrderCardDtoOutputOrderTotalSerializer();
 }
 
-class _$AdminBoardDtoOutputOrdersInnerTotalSerializer
-    implements PrimitiveSerializer<AdminBoardDtoOutputOrdersInnerTotal> {
+class _$AdminOrderCardDtoOutputOrderTotalSerializer
+    implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderTotal> {
   @override
   final Iterable<Type> types = const [
-    AdminBoardDtoOutputOrdersInnerTotal,
-    _$AdminBoardDtoOutputOrdersInnerTotal,
+    AdminOrderCardDtoOutputOrderTotal,
+    _$AdminOrderCardDtoOutputOrderTotal,
   ];
 
   @override
-  final String wireName = r'AdminBoardDtoOutputOrdersInnerTotal';
+  final String wireName = r'AdminOrderCardDtoOutputOrderTotal';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminBoardDtoOutputOrdersInnerTotal object, {
+    AdminOrderCardDtoOutputOrderTotal object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'amount';
@@ -72,7 +72,7 @@ class _$AdminBoardDtoOutputOrdersInnerTotalSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminBoardDtoOutputOrdersInnerTotal object, {
+    AdminOrderCardDtoOutputOrderTotal object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -87,7 +87,7 @@ class _$AdminBoardDtoOutputOrdersInnerTotalSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminBoardDtoOutputOrdersInnerTotalBuilder result,
+    required AdminOrderCardDtoOutputOrderTotalBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -121,12 +121,12 @@ class _$AdminBoardDtoOutputOrdersInnerTotalSerializer
   }
 
   @override
-  AdminBoardDtoOutputOrdersInnerTotal deserialize(
+  AdminOrderCardDtoOutputOrderTotal deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminBoardDtoOutputOrdersInnerTotalBuilder();
+    final result = AdminOrderCardDtoOutputOrderTotalBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

@@ -1,18 +1,43 @@
-import { Get, HttpStatus, NotFoundException, Param, Query } from '@nestjs/common';
+import {
+  Body,
+  ConflictException,
+  Get,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+  Param,
+  Post,
+  Query,
+  Req,
+  UnprocessableEntityException,
+} from '@nestjs/common';
+import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
-import { RequirePermission } from '../../http/access.js';
+import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
+import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
+import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
 import { CustomersService } from '../customers/index.js';
+import type { AdminSession } from '../identity/index.js';
+import { CaptainOrderRefusedError, CaptainOrders } from './captain-orders.js';
 import { minor } from './customer-quote.controller.js';
 import { type OperationsOrder, OperationsViews } from './operations-views.js';
 import { captainTracks, orderStatuses } from './schema.js';
 
 const money = z.object({ amount: minor, currency: z.string().length(3) });
 const alerts = z
-  .array(z.enum(['restaurant_not_accepted', 'prep_late', 'no_captain', 'no_captain_after_ready']))
+  .array(
+    z.enum([
+      'restaurant_not_accepted',
+      'prep_late',
+      'no_captain',
+      'no_captain_after_ready',
+      'captain_waiting',
+    ]),
+  )
   .describe(
-    'AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready.',
+    'AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم».',
   );
 
 const card = z.object({
@@ -51,6 +76,8 @@ const card = z.object({
       searchStartedAt: z.iso.datetime().nullable(),
       searchAlertAt: z.iso.datetime().nullable(),
       noCaptainAlertAt: z.iso.datetime().nullable(),
+      captainArrivedAt: z.iso.datetime().nullable().describe('«وصل الكابتن».'),
+      captainWaitingAlertAt: z.iso.datetime().nullable(),
     })
     .describe("The alerts' moments, so the panel raises each when it passes."),
   alerts,
@@ -63,6 +90,12 @@ class AdminBoardDto extends createZodDto(
 ) {}
 
 class AdminOrderParamsDto extends createZodDto(z.object({ orderId: z.uuid() })) {}
+
+class AdminRecordArrivalDto extends createZodDto(
+  z.object({ reason: z.string().trim().min(1).max(500).describe('Required (AP §9.3.2).') }),
+) {}
+
+class AdminOrderCardDto extends createZodDto(z.object({ order: card })) {}
 
 class AdminOrderDto extends createZodDto(
   z.object({
@@ -151,6 +184,8 @@ function cardBody(item: OperationsOrder) {
       searchStartedAt: at(item.moments.searchStartedAt),
       searchAlertAt: at(item.moments.searchAlertAt),
       noCaptainAlertAt: at(item.moments.noCaptainAlertAt),
+      captainArrivedAt: at(item.moments.captainArrivedAt),
+      captainWaitingAlertAt: at(item.moments.captainWaitingAlertAt),
     },
     alerts: item.alerts,
   };
@@ -163,7 +198,62 @@ export class AdminOrdersController {
   constructor(
     private readonly views: OperationsViews,
     private readonly customers: CustomersService,
+    private readonly captainOrders: CaptainOrders,
   ) {}
+
+  // AP §9.3.2 «تسجيل وصول الكابتن», for OWN and OPS when GPS fails at the
+  // restaurant (CA §9.2): the assigned captain's track becomes at_merchant.
+  // 409 order_state_changed with the order as it is now (no captain, already
+  // arrived, picked up or ended); 404 unknown_order; 422
+  // idempotency_key_reused.
+  @Post(':orderId/record-arrival')
+  @RequirePermission('operations.manage')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOrderCardDto })
+  async recordArrival(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminRecordArrivalDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.captainOrders.recordArrival(
+        {
+          orderId: params.orderId,
+          admin: { accountId: session.accountId, roles: session.roles },
+          context: requestContext(request),
+          reason: body.reason,
+          idempotencyKey,
+        },
+        new Date(),
+      );
+    } catch (error) {
+      if (!(error instanceof CaptainOrderRefusedError)) throw error;
+      if (error.refusal === 'unknown_order') {
+        throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: error.refusal });
+      }
+      if (error.refusal === 'idempotency_key_reused') {
+        throw new UnprocessableEntityException({
+          statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: error.refusal,
+        });
+      }
+      throw new ConflictException({
+        statusCode: HttpStatus.CONFLICT,
+        error: error.refusal,
+        order: await this.card(params.orderId),
+      });
+    }
+    return { order: await this.card(params.orderId) };
+  }
+
+  private async card(orderId: string) {
+    const item = await this.views.order(orderId, new Date());
+    if (item === null) throw new Error(`order ${orderId} not found`);
+    return cardBody(item);
+  }
 
   @Get()
   @RequirePermission('operations.read')

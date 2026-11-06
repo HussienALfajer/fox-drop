@@ -1,40 +1,40 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_board_dto_output_orders_inner_restaurant.dart';
+part of 'admin_order_card_dto_output_order_restaurant.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminBoardDtoOutputOrdersInnerRestaurant
-    extends AdminBoardDtoOutputOrdersInnerRestaurant {
+class _$AdminOrderCardDtoOutputOrderRestaurant
+    extends AdminOrderCardDtoOutputOrderRestaurant {
   @override
   final String id;
   @override
   final String name;
 
-  factory _$AdminBoardDtoOutputOrdersInnerRestaurant([
-    void Function(AdminBoardDtoOutputOrdersInnerRestaurantBuilder)? updates,
-  ]) => (AdminBoardDtoOutputOrdersInnerRestaurantBuilder()..update(updates))
+  factory _$AdminOrderCardDtoOutputOrderRestaurant([
+    void Function(AdminOrderCardDtoOutputOrderRestaurantBuilder)? updates,
+  ]) => (AdminOrderCardDtoOutputOrderRestaurantBuilder()..update(updates))
       ._build();
 
-  _$AdminBoardDtoOutputOrdersInnerRestaurant._({
+  _$AdminOrderCardDtoOutputOrderRestaurant._({
     required this.id,
     required this.name,
   }) : super._();
   @override
-  AdminBoardDtoOutputOrdersInnerRestaurant rebuild(
-    void Function(AdminBoardDtoOutputOrdersInnerRestaurantBuilder) updates,
+  AdminOrderCardDtoOutputOrderRestaurant rebuild(
+    void Function(AdminOrderCardDtoOutputOrderRestaurantBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminBoardDtoOutputOrdersInnerRestaurantBuilder toBuilder() =>
-      AdminBoardDtoOutputOrdersInnerRestaurantBuilder()..replace(this);
+  AdminOrderCardDtoOutputOrderRestaurantBuilder toBuilder() =>
+      AdminOrderCardDtoOutputOrderRestaurantBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminBoardDtoOutputOrdersInnerRestaurant &&
+    return other is AdminOrderCardDtoOutputOrderRestaurant &&
         id == other.id &&
         name == other.name;
   }
@@ -51,7 +51,7 @@ class _$AdminBoardDtoOutputOrdersInnerRestaurant
   @override
   String toString() {
     return (newBuiltValueToStringHelper(
-            r'AdminBoardDtoOutputOrdersInnerRestaurant',
+            r'AdminOrderCardDtoOutputOrderRestaurant',
           )
           ..add('id', id)
           ..add('name', name))
@@ -59,13 +59,13 @@ class _$AdminBoardDtoOutputOrdersInnerRestaurant
   }
 }
 
-class AdminBoardDtoOutputOrdersInnerRestaurantBuilder
+class AdminOrderCardDtoOutputOrderRestaurantBuilder
     implements
         Builder<
-          AdminBoardDtoOutputOrdersInnerRestaurant,
-          AdminBoardDtoOutputOrdersInnerRestaurantBuilder
+          AdminOrderCardDtoOutputOrderRestaurant,
+          AdminOrderCardDtoOutputOrderRestaurantBuilder
         > {
-  _$AdminBoardDtoOutputOrdersInnerRestaurant? _$v;
+  _$AdminOrderCardDtoOutputOrderRestaurant? _$v;
 
   String? _id;
   String? get id => _$this._id;
@@ -75,11 +75,11 @@ class AdminBoardDtoOutputOrdersInnerRestaurantBuilder
   String? get name => _$this._name;
   set name(String? name) => _$this._name = name;
 
-  AdminBoardDtoOutputOrdersInnerRestaurantBuilder() {
-    AdminBoardDtoOutputOrdersInnerRestaurant._defaults(this);
+  AdminOrderCardDtoOutputOrderRestaurantBuilder() {
+    AdminOrderCardDtoOutputOrderRestaurant._defaults(this);
   }
 
-  AdminBoardDtoOutputOrdersInnerRestaurantBuilder get _$this {
+  AdminOrderCardDtoOutputOrderRestaurantBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _id = $v.id;
@@ -90,32 +90,32 @@ class AdminBoardDtoOutputOrdersInnerRestaurantBuilder
   }
 
   @override
-  void replace(AdminBoardDtoOutputOrdersInnerRestaurant other) {
-    _$v = other as _$AdminBoardDtoOutputOrdersInnerRestaurant;
+  void replace(AdminOrderCardDtoOutputOrderRestaurant other) {
+    _$v = other as _$AdminOrderCardDtoOutputOrderRestaurant;
   }
 
   @override
   void update(
-    void Function(AdminBoardDtoOutputOrdersInnerRestaurantBuilder)? updates,
+    void Function(AdminOrderCardDtoOutputOrderRestaurantBuilder)? updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminBoardDtoOutputOrdersInnerRestaurant build() => _build();
+  AdminOrderCardDtoOutputOrderRestaurant build() => _build();
 
-  _$AdminBoardDtoOutputOrdersInnerRestaurant _build() {
+  _$AdminOrderCardDtoOutputOrderRestaurant _build() {
     final _$result =
         _$v ??
-        _$AdminBoardDtoOutputOrdersInnerRestaurant._(
+        _$AdminOrderCardDtoOutputOrderRestaurant._(
           id: BuiltValueNullFieldError.checkNotNull(
             id,
-            r'AdminBoardDtoOutputOrdersInnerRestaurant',
+            r'AdminOrderCardDtoOutputOrderRestaurant',
             'id',
           ),
           name: BuiltValueNullFieldError.checkNotNull(
             name,
-            r'AdminBoardDtoOutputOrdersInnerRestaurant',
+            r'AdminOrderCardDtoOutputOrderRestaurant',
             'name',
           ),
         );

@@ -139,6 +139,13 @@ export const orders = ordering.table(
     searchAlertAt: timestamp('search_alert_at', { withTimezone: true }),
     captainId: uuid('captain_id'),
     assignedAt: timestamp('assigned_at', { withTimezone: true }),
+    // CA §9.2–9.3, RA §8.9: the captain's arrival at the restaurant (the
+    // captain within captain.merchant_arrival_radius_m, or operations'
+    // «تسجيل وصول الكابتن»), and the waiting alert's moment
+    // captain.waiting_threshold_min after it (owner decision 2026-11-06: a
+    // moment the reads show, AP §9.1.3).
+    arrivedAtMerchantAt: timestamp('arrived_at_merchant_at', { withTimezone: true }),
+    captainWaitingAlertAt: timestamp('captain_waiting_alert_at', { withTimezone: true }),
     // The address snapshot (CU §7.3–7.4, Q6): the saved address it was copied
     // from, or null for an unsaved one; «الحي» is the zone at placing.
     addressId: uuid('address_id'),
@@ -175,6 +182,10 @@ export const orders = ordering.table(
       .on(table.captainId, table.status)
       .where(sql`${table.captainId} IS NOT NULL`),
     index('orders_city_status').on(table.cityId, table.status),
+    check(
+      'orders_arrival',
+      sql`(${table.arrivedAtMerchantAt} IS NULL) = (${table.captainWaitingAlertAt} IS NULL) AND (${table.captainTrack} NOT IN ('at_merchant', 'pickup_pending') OR ${table.arrivedAtMerchantAt} IS NOT NULL)`,
+    ),
     check(
       'orders_captain_track_values',
       sql`${table.captainTrack} IS NULL OR ${table.captainTrack} IN ('searching', 'offered', 'assigned', 'at_merchant', 'pickup_pending', 'picked_up', 'at_customer', 'done')`,

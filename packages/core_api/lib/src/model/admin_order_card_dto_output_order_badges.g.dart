@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_board_dto_output_orders_inner_badges.dart';
+part of 'admin_order_card_dto_output_order_badges.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminBoardDtoOutputOrdersInnerBadges
-    extends AdminBoardDtoOutputOrdersInnerBadges {
+class _$AdminOrderCardDtoOutputOrderBadges
+    extends AdminOrderCardDtoOutputOrderBadges {
   @override
   final bool needsAssignment;
   @override
@@ -15,29 +15,28 @@ class _$AdminBoardDtoOutputOrdersInnerBadges
   @override
   final bool newCustomer;
 
-  factory _$AdminBoardDtoOutputOrdersInnerBadges([
-    void Function(AdminBoardDtoOutputOrdersInnerBadgesBuilder)? updates,
-  ]) =>
-      (AdminBoardDtoOutputOrdersInnerBadgesBuilder()..update(updates))._build();
+  factory _$AdminOrderCardDtoOutputOrderBadges([
+    void Function(AdminOrderCardDtoOutputOrderBadgesBuilder)? updates,
+  ]) => (AdminOrderCardDtoOutputOrderBadgesBuilder()..update(updates))._build();
 
-  _$AdminBoardDtoOutputOrdersInnerBadges._({
+  _$AdminOrderCardDtoOutputOrderBadges._({
     required this.needsAssignment,
     required this.note,
     required this.newCustomer,
   }) : super._();
   @override
-  AdminBoardDtoOutputOrdersInnerBadges rebuild(
-    void Function(AdminBoardDtoOutputOrdersInnerBadgesBuilder) updates,
+  AdminOrderCardDtoOutputOrderBadges rebuild(
+    void Function(AdminOrderCardDtoOutputOrderBadgesBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminBoardDtoOutputOrdersInnerBadgesBuilder toBuilder() =>
-      AdminBoardDtoOutputOrdersInnerBadgesBuilder()..replace(this);
+  AdminOrderCardDtoOutputOrderBadgesBuilder toBuilder() =>
+      AdminOrderCardDtoOutputOrderBadgesBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminBoardDtoOutputOrdersInnerBadges &&
+    return other is AdminOrderCardDtoOutputOrderBadges &&
         needsAssignment == other.needsAssignment &&
         note == other.note &&
         newCustomer == other.newCustomer;
@@ -55,7 +54,7 @@ class _$AdminBoardDtoOutputOrdersInnerBadges
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'AdminBoardDtoOutputOrdersInnerBadges')
+    return (newBuiltValueToStringHelper(r'AdminOrderCardDtoOutputOrderBadges')
           ..add('needsAssignment', needsAssignment)
           ..add('note', note)
           ..add('newCustomer', newCustomer))
@@ -63,13 +62,13 @@ class _$AdminBoardDtoOutputOrdersInnerBadges
   }
 }
 
-class AdminBoardDtoOutputOrdersInnerBadgesBuilder
+class AdminOrderCardDtoOutputOrderBadgesBuilder
     implements
         Builder<
-          AdminBoardDtoOutputOrdersInnerBadges,
-          AdminBoardDtoOutputOrdersInnerBadgesBuilder
+          AdminOrderCardDtoOutputOrderBadges,
+          AdminOrderCardDtoOutputOrderBadgesBuilder
         > {
-  _$AdminBoardDtoOutputOrdersInnerBadges? _$v;
+  _$AdminOrderCardDtoOutputOrderBadges? _$v;
 
   bool? _needsAssignment;
   bool? get needsAssignment => _$this._needsAssignment;
@@ -84,11 +83,11 @@ class AdminBoardDtoOutputOrdersInnerBadgesBuilder
   bool? get newCustomer => _$this._newCustomer;
   set newCustomer(bool? newCustomer) => _$this._newCustomer = newCustomer;
 
-  AdminBoardDtoOutputOrdersInnerBadgesBuilder() {
-    AdminBoardDtoOutputOrdersInnerBadges._defaults(this);
+  AdminOrderCardDtoOutputOrderBadgesBuilder() {
+    AdminOrderCardDtoOutputOrderBadges._defaults(this);
   }
 
-  AdminBoardDtoOutputOrdersInnerBadgesBuilder get _$this {
+  AdminOrderCardDtoOutputOrderBadgesBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _needsAssignment = $v.needsAssignment;
@@ -100,37 +99,37 @@ class AdminBoardDtoOutputOrdersInnerBadgesBuilder
   }
 
   @override
-  void replace(AdminBoardDtoOutputOrdersInnerBadges other) {
-    _$v = other as _$AdminBoardDtoOutputOrdersInnerBadges;
+  void replace(AdminOrderCardDtoOutputOrderBadges other) {
+    _$v = other as _$AdminOrderCardDtoOutputOrderBadges;
   }
 
   @override
   void update(
-    void Function(AdminBoardDtoOutputOrdersInnerBadgesBuilder)? updates,
+    void Function(AdminOrderCardDtoOutputOrderBadgesBuilder)? updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminBoardDtoOutputOrdersInnerBadges build() => _build();
+  AdminOrderCardDtoOutputOrderBadges build() => _build();
 
-  _$AdminBoardDtoOutputOrdersInnerBadges _build() {
+  _$AdminOrderCardDtoOutputOrderBadges _build() {
     final _$result =
         _$v ??
-        _$AdminBoardDtoOutputOrdersInnerBadges._(
+        _$AdminOrderCardDtoOutputOrderBadges._(
           needsAssignment: BuiltValueNullFieldError.checkNotNull(
             needsAssignment,
-            r'AdminBoardDtoOutputOrdersInnerBadges',
+            r'AdminOrderCardDtoOutputOrderBadges',
             'needsAssignment',
           ),
           note: BuiltValueNullFieldError.checkNotNull(
             note,
-            r'AdminBoardDtoOutputOrdersInnerBadges',
+            r'AdminOrderCardDtoOutputOrderBadges',
             'note',
           ),
           newCustomer: BuiltValueNullFieldError.checkNotNull(
             newCustomer,
-            r'AdminBoardDtoOutputOrdersInnerBadges',
+            r'AdminOrderCardDtoOutputOrderBadges',
             'newCustomer',
           ),
         );

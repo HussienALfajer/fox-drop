@@ -6,7 +6,7 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_board_dto_output_orders_inner_captain.g.dart';
+part 'admin_order_card_dto_output_order_captain.g.dart';
 
 /// Null shows a red «بلا كابتن».
 ///
@@ -15,11 +15,11 @@ part 'admin_board_dto_output_orders_inner_captain.g.dart';
 /// * [name]
 /// * [vehicle]
 @BuiltValue()
-abstract class AdminBoardDtoOutputOrdersInnerCaptain
+abstract class AdminOrderCardDtoOutputOrderCaptain
     implements
         Built<
-          AdminBoardDtoOutputOrdersInnerCaptain,
-          AdminBoardDtoOutputOrdersInnerCaptainBuilder
+          AdminOrderCardDtoOutputOrderCaptain,
+          AdminOrderCardDtoOutputOrderCaptainBuilder
         > {
   @BuiltValueField(wireName: r'id')
   String get id;
@@ -30,34 +30,34 @@ abstract class AdminBoardDtoOutputOrdersInnerCaptain
   @BuiltValueField(wireName: r'vehicle')
   String get vehicle;
 
-  AdminBoardDtoOutputOrdersInnerCaptain._();
+  AdminOrderCardDtoOutputOrderCaptain._();
 
-  factory AdminBoardDtoOutputOrdersInnerCaptain([
-    void updates(AdminBoardDtoOutputOrdersInnerCaptainBuilder b),
-  ]) = _$AdminBoardDtoOutputOrdersInnerCaptain;
+  factory AdminOrderCardDtoOutputOrderCaptain([
+    void updates(AdminOrderCardDtoOutputOrderCaptainBuilder b),
+  ]) = _$AdminOrderCardDtoOutputOrderCaptain;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminBoardDtoOutputOrdersInnerCaptainBuilder b) => b;
+  static void _defaults(AdminOrderCardDtoOutputOrderCaptainBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminBoardDtoOutputOrdersInnerCaptain> get serializer =>
-      _$AdminBoardDtoOutputOrdersInnerCaptainSerializer();
+  static Serializer<AdminOrderCardDtoOutputOrderCaptain> get serializer =>
+      _$AdminOrderCardDtoOutputOrderCaptainSerializer();
 }
 
-class _$AdminBoardDtoOutputOrdersInnerCaptainSerializer
-    implements PrimitiveSerializer<AdminBoardDtoOutputOrdersInnerCaptain> {
+class _$AdminOrderCardDtoOutputOrderCaptainSerializer
+    implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderCaptain> {
   @override
   final Iterable<Type> types = const [
-    AdminBoardDtoOutputOrdersInnerCaptain,
-    _$AdminBoardDtoOutputOrdersInnerCaptain,
+    AdminOrderCardDtoOutputOrderCaptain,
+    _$AdminOrderCardDtoOutputOrderCaptain,
   ];
 
   @override
-  final String wireName = r'AdminBoardDtoOutputOrdersInnerCaptain';
+  final String wireName = r'AdminOrderCardDtoOutputOrderCaptain';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminBoardDtoOutputOrdersInnerCaptain object, {
+    AdminOrderCardDtoOutputOrderCaptain object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'id';
@@ -80,7 +80,7 @@ class _$AdminBoardDtoOutputOrdersInnerCaptainSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminBoardDtoOutputOrdersInnerCaptain object, {
+    AdminOrderCardDtoOutputOrderCaptain object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -95,7 +95,7 @@ class _$AdminBoardDtoOutputOrdersInnerCaptainSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminBoardDtoOutputOrdersInnerCaptainBuilder result,
+    required AdminOrderCardDtoOutputOrderCaptainBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -138,12 +138,12 @@ class _$AdminBoardDtoOutputOrdersInnerCaptainSerializer
   }
 
   @override
-  AdminBoardDtoOutputOrdersInnerCaptain deserialize(
+  AdminOrderCardDtoOutputOrderCaptain deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminBoardDtoOutputOrdersInnerCaptainBuilder();
+    final result = AdminOrderCardDtoOutputOrderCaptainBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

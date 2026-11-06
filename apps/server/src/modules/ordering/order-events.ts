@@ -51,7 +51,9 @@ export type OrderEventType =
   | 'order.search_started'
   | 'order.offered'
   | 'order.offer_closed'
-  | 'order.assigned';
+  | 'order.assigned'
+  // CA §9.2: the captain reached the restaurant (track at_merchant).
+  | 'order.captain_arrived';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that

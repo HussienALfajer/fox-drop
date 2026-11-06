@@ -964,6 +964,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders/{orderId}/record-arrival": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersRecordArrival"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders": {
         parameters: {
             query?: never;
@@ -990,6 +1006,38 @@ export interface paths {
         get: operations["adminOrdersOrder"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/orders/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainOrdersActive"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/orders/{orderId}/arrive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainOrdersArrive"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2449,6 +2497,19 @@ export interface components {
                     /** @enum {string} */
                     vehicle: "walking" | "bicycle" | "motorbike" | "car";
                 } | null;
+                /** @description Null until the captain arrives (RA §8.9). */
+                captainArrival: {
+                    /**
+                     * Format: date-time
+                     * @description «وصل الكابتن {الاسم} لاستلام الطلب #{رقم}»; the waiting timer counts from it.
+                     */
+                    at: string;
+                    /**
+                     * Format: date-time
+                     * @description Not picked up by then: every device chimes «الكابتن ينتظر الطلب #{رقم} منذ {د} دقائق» (RA §8.9).
+                     */
+                    waitingAlertAt: string;
+                } | null;
             }[];
             /** @description The accept prompt's prep-time chooser (RA §8.5). */
             prepTime: {
@@ -2530,6 +2591,89 @@ export interface components {
                     /** @enum {string} */
                     vehicle: "walking" | "bicycle" | "motorbike" | "car";
                 } | null;
+                /** @description Null until the captain arrives (RA §8.9). */
+                captainArrival: {
+                    /**
+                     * Format: date-time
+                     * @description «وصل الكابتن {الاسم} لاستلام الطلب #{رقم}»; the waiting timer counts from it.
+                     */
+                    at: string;
+                    /**
+                     * Format: date-time
+                     * @description Not picked up by then: every device chimes «الكابتن ينتظر الطلب #{رقم} منذ {د} دقائق» (RA §8.9).
+                     */
+                    waitingAlertAt: string;
+                } | null;
+            };
+        };
+        AdminRecordArrivalDto: {
+            /** @description Required (AP §9.3.2). */
+            reason: string;
+        };
+        AdminOrderCardDto_Output: {
+            order: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as #10423 (AP §4.8). */
+                number: string;
+                /**
+                 * @description The board column (AP §9.2.1).
+                 * @enum {string}
+                 */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description Increases with every change (architecture §5.3). */
+                version: number;
+                /** Format: date-time */
+                placedAt: string;
+                restaurant: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                };
+                neighbourhood: string;
+                /**
+                 * Format: date-time
+                 * @description The time in the current state counts from it.
+                 */
+                statusSince: string;
+                /** @description The column's limit (AP §9.2.1): green before 80% of it, amber from 80%, red past it; null where it is not built yet. */
+                limitAt: string | null;
+                /** @description AP §8.2; null before the search starts and before any offer. */
+                captainTrack: ("searching" | "offered" | "assigned" | "at_merchant" | "pickup_pending" | "picked_up" | "at_customer" | "done") | null;
+                /** @description Null shows a red «بلا كابتن». */
+                captain: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    vehicle: string;
+                } | null;
+                /** @description The customer total in the base currency. */
+                total: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+                badges: {
+                    /** @description «بحاجة لتعيين» (AP §8.3). */
+                    needsAssignment: boolean;
+                    /** @description «ملاحظة». */
+                    note: boolean;
+                    /** @description «زبون جديد»: no delivered order yet. */
+                    newCustomer: boolean;
+                };
+                /** @description The alerts' moments, so the panel raises each when it passes. */
+                moments: {
+                    acceptAlertAt: string | null;
+                    prepLateAlertAt: string | null;
+                    searchStartedAt: string | null;
+                    searchAlertAt: string | null;
+                    noCaptainAlertAt: string | null;
+                    /** @description «وصل الكابتن». */
+                    captainArrivedAt: string | null;
+                    captainWaitingAlertAt: string | null;
+                };
+                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم». */
+                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting")[];
             };
         };
         AdminBoardDto_Output: {
@@ -2591,9 +2735,12 @@ export interface components {
                     searchStartedAt: string | null;
                     searchAlertAt: string | null;
                     noCaptainAlertAt: string | null;
+                    /** @description «وصل الكابتن». */
+                    captainArrivedAt: string | null;
+                    captainWaitingAlertAt: string | null;
                 };
-                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready. */
-                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready")[];
+                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم». */
+                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting")[];
             }[];
         };
         AdminOrderDto_Output: {
@@ -2654,9 +2801,12 @@ export interface components {
                     searchStartedAt: string | null;
                     searchAlertAt: string | null;
                     noCaptainAlertAt: string | null;
+                    /** @description «وصل الكابتن». */
+                    captainArrivedAt: string | null;
+                    captainWaitingAlertAt: string | null;
                 };
-                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready. */
-                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready")[];
+                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم». */
+                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting")[];
                 promisedAt: string | null;
                 acceptance: {
                     /** Format: date-time */
@@ -2736,6 +2886,156 @@ export interface components {
                     captainId: string | null;
                     reason: string | null;
                 }[];
+            };
+        };
+        CaptainActiveOrderDto_Output: {
+            /** @description Null without an active order. */
+            order: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as #10423 (AP §4.8). */
+                number: string;
+                /** @enum {string} */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown. */
+                version: number;
+                /**
+                 * @description The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».
+                 * @enum {string}
+                 */
+                captainTrack: "searching" | "offered" | "assigned" | "at_merchant" | "pickup_pending" | "picked_up" | "at_customer" | "done";
+                restaurant: {
+                    name: string;
+                    address: string | null;
+                    /** @description On the map, with the route and «ابدأ الملاحة». */
+                    location: {
+                        latitude: number;
+                        longitude: number;
+                    };
+                };
+                preparation: {
+                    /** @description «جاهز». */
+                    ready: boolean;
+                    readyAt: string | null;
+                    /**
+                     * Format: date-time
+                     * @description «قيد التحضير — جاهز بعد {د} د» counts to it while not ready.
+                     */
+                    prepDueAt: string;
+                };
+                /** @description Null until «وصلت إلى المطعم». */
+                arrival: {
+                    /**
+                     * Format: date-time
+                     * @description The waiting timer counts from it (CA §9.3).
+                     */
+                    at: string;
+                } | null;
+                itemCount: number;
+                /** @description The item check (C7): one tick box per line. */
+                lines: {
+                    name: string;
+                    quantity: number;
+                    options: {
+                        name: string;
+                    }[];
+                    note: string | null;
+                }[];
+                /** @description The customer's note. */
+                note: string | null;
+                /** @description «تدفع للمطعم» (D26: the items value). */
+                pickupPayment: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+                /** @description «تقبض من الزبون». */
+                collect: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+            } | null;
+        };
+        CaptainArriveDto: {
+            /** @description The latest GPS fix. */
+            location: {
+                latitude: number;
+                longitude: number;
+                accuracyMetres: number;
+                /** Format: date-time */
+                recordedAt: string;
+                /** @description The device reports a mock location. */
+                simulated: boolean;
+            };
+        };
+        CaptainOrderDto_Output: {
+            /** @description The active order (CA §9); the customer block joins with the delivery slice. */
+            order: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as #10423 (AP §4.8). */
+                number: string;
+                /** @enum {string} */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown. */
+                version: number;
+                /**
+                 * @description The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم».
+                 * @enum {string}
+                 */
+                captainTrack: "searching" | "offered" | "assigned" | "at_merchant" | "pickup_pending" | "picked_up" | "at_customer" | "done";
+                restaurant: {
+                    name: string;
+                    address: string | null;
+                    /** @description On the map, with the route and «ابدأ الملاحة». */
+                    location: {
+                        latitude: number;
+                        longitude: number;
+                    };
+                };
+                preparation: {
+                    /** @description «جاهز». */
+                    ready: boolean;
+                    readyAt: string | null;
+                    /**
+                     * Format: date-time
+                     * @description «قيد التحضير — جاهز بعد {د} د» counts to it while not ready.
+                     */
+                    prepDueAt: string;
+                };
+                /** @description Null until «وصلت إلى المطعم». */
+                arrival: {
+                    /**
+                     * Format: date-time
+                     * @description The waiting timer counts from it (CA §9.3).
+                     */
+                    at: string;
+                } | null;
+                itemCount: number;
+                /** @description The item check (C7): one tick box per line. */
+                lines: {
+                    name: string;
+                    quantity: number;
+                    options: {
+                        name: string;
+                    }[];
+                    note: string | null;
+                }[];
+                /** @description The customer's note. */
+                note: string | null;
+                /** @description «تدفع للمطعم» (D26: the items value). */
+                pickupPayment: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+                /** @description «تقبض من الزبون». */
+                collect: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
             };
         };
         RealtimeTokenDto_Output: {
@@ -4386,6 +4686,35 @@ export interface operations {
             };
         };
     };
+    adminOrdersRecordArrival: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRecordArrivalDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCardDto_Output"];
+                };
+            };
+        };
+    };
     adminOrdersBoard: {
         parameters: {
             query: {
@@ -4426,6 +4755,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminOrderDto_Output"];
+                };
+            };
+        };
+    };
+    captainOrdersActive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainActiveOrderDto_Output"];
+                };
+            };
+        };
+    };
+    captainOrdersArrive: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainArriveDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainOrderDto_Output"];
                 };
             };
         };

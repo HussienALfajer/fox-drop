@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_board_dto_output_orders_inner_captain.dart';
+part of 'admin_order_card_dto_output_order_captain.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminBoardDtoOutputOrdersInnerCaptain
-    extends AdminBoardDtoOutputOrdersInnerCaptain {
+class _$AdminOrderCardDtoOutputOrderCaptain
+    extends AdminOrderCardDtoOutputOrderCaptain {
   @override
   final String id;
   @override
@@ -15,29 +15,29 @@ class _$AdminBoardDtoOutputOrdersInnerCaptain
   @override
   final String vehicle;
 
-  factory _$AdminBoardDtoOutputOrdersInnerCaptain([
-    void Function(AdminBoardDtoOutputOrdersInnerCaptainBuilder)? updates,
-  ]) => (AdminBoardDtoOutputOrdersInnerCaptainBuilder()..update(updates))
-      ._build();
+  factory _$AdminOrderCardDtoOutputOrderCaptain([
+    void Function(AdminOrderCardDtoOutputOrderCaptainBuilder)? updates,
+  ]) =>
+      (AdminOrderCardDtoOutputOrderCaptainBuilder()..update(updates))._build();
 
-  _$AdminBoardDtoOutputOrdersInnerCaptain._({
+  _$AdminOrderCardDtoOutputOrderCaptain._({
     required this.id,
     required this.name,
     required this.vehicle,
   }) : super._();
   @override
-  AdminBoardDtoOutputOrdersInnerCaptain rebuild(
-    void Function(AdminBoardDtoOutputOrdersInnerCaptainBuilder) updates,
+  AdminOrderCardDtoOutputOrderCaptain rebuild(
+    void Function(AdminOrderCardDtoOutputOrderCaptainBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminBoardDtoOutputOrdersInnerCaptainBuilder toBuilder() =>
-      AdminBoardDtoOutputOrdersInnerCaptainBuilder()..replace(this);
+  AdminOrderCardDtoOutputOrderCaptainBuilder toBuilder() =>
+      AdminOrderCardDtoOutputOrderCaptainBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminBoardDtoOutputOrdersInnerCaptain &&
+    return other is AdminOrderCardDtoOutputOrderCaptain &&
         id == other.id &&
         name == other.name &&
         vehicle == other.vehicle;
@@ -55,9 +55,7 @@ class _$AdminBoardDtoOutputOrdersInnerCaptain
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-            r'AdminBoardDtoOutputOrdersInnerCaptain',
-          )
+    return (newBuiltValueToStringHelper(r'AdminOrderCardDtoOutputOrderCaptain')
           ..add('id', id)
           ..add('name', name)
           ..add('vehicle', vehicle))
@@ -65,13 +63,13 @@ class _$AdminBoardDtoOutputOrdersInnerCaptain
   }
 }
 
-class AdminBoardDtoOutputOrdersInnerCaptainBuilder
+class AdminOrderCardDtoOutputOrderCaptainBuilder
     implements
         Builder<
-          AdminBoardDtoOutputOrdersInnerCaptain,
-          AdminBoardDtoOutputOrdersInnerCaptainBuilder
+          AdminOrderCardDtoOutputOrderCaptain,
+          AdminOrderCardDtoOutputOrderCaptainBuilder
         > {
-  _$AdminBoardDtoOutputOrdersInnerCaptain? _$v;
+  _$AdminOrderCardDtoOutputOrderCaptain? _$v;
 
   String? _id;
   String? get id => _$this._id;
@@ -85,11 +83,11 @@ class AdminBoardDtoOutputOrdersInnerCaptainBuilder
   String? get vehicle => _$this._vehicle;
   set vehicle(String? vehicle) => _$this._vehicle = vehicle;
 
-  AdminBoardDtoOutputOrdersInnerCaptainBuilder() {
-    AdminBoardDtoOutputOrdersInnerCaptain._defaults(this);
+  AdminOrderCardDtoOutputOrderCaptainBuilder() {
+    AdminOrderCardDtoOutputOrderCaptain._defaults(this);
   }
 
-  AdminBoardDtoOutputOrdersInnerCaptainBuilder get _$this {
+  AdminOrderCardDtoOutputOrderCaptainBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _id = $v.id;
@@ -101,37 +99,37 @@ class AdminBoardDtoOutputOrdersInnerCaptainBuilder
   }
 
   @override
-  void replace(AdminBoardDtoOutputOrdersInnerCaptain other) {
-    _$v = other as _$AdminBoardDtoOutputOrdersInnerCaptain;
+  void replace(AdminOrderCardDtoOutputOrderCaptain other) {
+    _$v = other as _$AdminOrderCardDtoOutputOrderCaptain;
   }
 
   @override
   void update(
-    void Function(AdminBoardDtoOutputOrdersInnerCaptainBuilder)? updates,
+    void Function(AdminOrderCardDtoOutputOrderCaptainBuilder)? updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminBoardDtoOutputOrdersInnerCaptain build() => _build();
+  AdminOrderCardDtoOutputOrderCaptain build() => _build();
 
-  _$AdminBoardDtoOutputOrdersInnerCaptain _build() {
+  _$AdminOrderCardDtoOutputOrderCaptain _build() {
     final _$result =
         _$v ??
-        _$AdminBoardDtoOutputOrdersInnerCaptain._(
+        _$AdminOrderCardDtoOutputOrderCaptain._(
           id: BuiltValueNullFieldError.checkNotNull(
             id,
-            r'AdminBoardDtoOutputOrdersInnerCaptain',
+            r'AdminOrderCardDtoOutputOrderCaptain',
             'id',
           ),
           name: BuiltValueNullFieldError.checkNotNull(
             name,
-            r'AdminBoardDtoOutputOrdersInnerCaptain',
+            r'AdminOrderCardDtoOutputOrderCaptain',
             'name',
           ),
           vehicle: BuiltValueNullFieldError.checkNotNull(
             vehicle,
-            r'AdminBoardDtoOutputOrdersInnerCaptain',
+            r'AdminOrderCardDtoOutputOrderCaptain',
             'vehicle',
           ),
         );

@@ -6,20 +6,20 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_board_dto_output_orders_inner_badges.g.dart';
+part 'admin_order_card_dto_output_order_badges.g.dart';
 
-/// AdminBoardDtoOutputOrdersInnerBadges
+/// AdminOrderCardDtoOutputOrderBadges
 ///
 /// Properties:
 /// * [needsAssignment] - «بحاجة لتعيين» (AP §8.3).
 /// * [note] - «ملاحظة».
 /// * [newCustomer] - «زبون جديد»: no delivered order yet.
 @BuiltValue()
-abstract class AdminBoardDtoOutputOrdersInnerBadges
+abstract class AdminOrderCardDtoOutputOrderBadges
     implements
         Built<
-          AdminBoardDtoOutputOrdersInnerBadges,
-          AdminBoardDtoOutputOrdersInnerBadgesBuilder
+          AdminOrderCardDtoOutputOrderBadges,
+          AdminOrderCardDtoOutputOrderBadgesBuilder
         > {
   /// «بحاجة لتعيين» (AP §8.3).
   @BuiltValueField(wireName: r'needsAssignment')
@@ -33,34 +33,34 @@ abstract class AdminBoardDtoOutputOrdersInnerBadges
   @BuiltValueField(wireName: r'newCustomer')
   bool get newCustomer;
 
-  AdminBoardDtoOutputOrdersInnerBadges._();
+  AdminOrderCardDtoOutputOrderBadges._();
 
-  factory AdminBoardDtoOutputOrdersInnerBadges([
-    void updates(AdminBoardDtoOutputOrdersInnerBadgesBuilder b),
-  ]) = _$AdminBoardDtoOutputOrdersInnerBadges;
+  factory AdminOrderCardDtoOutputOrderBadges([
+    void updates(AdminOrderCardDtoOutputOrderBadgesBuilder b),
+  ]) = _$AdminOrderCardDtoOutputOrderBadges;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminBoardDtoOutputOrdersInnerBadgesBuilder b) => b;
+  static void _defaults(AdminOrderCardDtoOutputOrderBadgesBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminBoardDtoOutputOrdersInnerBadges> get serializer =>
-      _$AdminBoardDtoOutputOrdersInnerBadgesSerializer();
+  static Serializer<AdminOrderCardDtoOutputOrderBadges> get serializer =>
+      _$AdminOrderCardDtoOutputOrderBadgesSerializer();
 }
 
-class _$AdminBoardDtoOutputOrdersInnerBadgesSerializer
-    implements PrimitiveSerializer<AdminBoardDtoOutputOrdersInnerBadges> {
+class _$AdminOrderCardDtoOutputOrderBadgesSerializer
+    implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderBadges> {
   @override
   final Iterable<Type> types = const [
-    AdminBoardDtoOutputOrdersInnerBadges,
-    _$AdminBoardDtoOutputOrdersInnerBadges,
+    AdminOrderCardDtoOutputOrderBadges,
+    _$AdminOrderCardDtoOutputOrderBadges,
   ];
 
   @override
-  final String wireName = r'AdminBoardDtoOutputOrdersInnerBadges';
+  final String wireName = r'AdminOrderCardDtoOutputOrderBadges';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminBoardDtoOutputOrdersInnerBadges object, {
+    AdminOrderCardDtoOutputOrderBadges object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'needsAssignment';
@@ -83,7 +83,7 @@ class _$AdminBoardDtoOutputOrdersInnerBadgesSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminBoardDtoOutputOrdersInnerBadges object, {
+    AdminOrderCardDtoOutputOrderBadges object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -98,7 +98,7 @@ class _$AdminBoardDtoOutputOrdersInnerBadgesSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminBoardDtoOutputOrdersInnerBadgesBuilder result,
+    required AdminOrderCardDtoOutputOrderBadgesBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -141,12 +141,12 @@ class _$AdminBoardDtoOutputOrdersInnerBadgesSerializer
   }
 
   @override
-  AdminBoardDtoOutputOrdersInnerBadges deserialize(
+  AdminOrderCardDtoOutputOrderBadges deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminBoardDtoOutputOrdersInnerBadgesBuilder();
+    final result = AdminOrderCardDtoOutputOrderBadgesBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

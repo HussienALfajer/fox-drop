@@ -6,7 +6,7 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_board_dto_output_orders_inner_moments.g.dart';
+part 'admin_order_card_dto_output_order_moments.g.dart';
 
 /// The alerts' moments, so the panel raises each when it passes.
 ///
@@ -16,12 +16,14 @@ part 'admin_board_dto_output_orders_inner_moments.g.dart';
 /// * [searchStartedAt]
 /// * [searchAlertAt]
 /// * [noCaptainAlertAt]
+/// * [captainArrivedAt] - «وصل الكابتن».
+/// * [captainWaitingAlertAt]
 @BuiltValue()
-abstract class AdminBoardDtoOutputOrdersInnerMoments
+abstract class AdminOrderCardDtoOutputOrderMoments
     implements
         Built<
-          AdminBoardDtoOutputOrdersInnerMoments,
-          AdminBoardDtoOutputOrdersInnerMomentsBuilder
+          AdminOrderCardDtoOutputOrderMoments,
+          AdminOrderCardDtoOutputOrderMomentsBuilder
         > {
   @BuiltValueField(wireName: r'acceptAlertAt')
   DateTime? get acceptAlertAt;
@@ -38,34 +40,41 @@ abstract class AdminBoardDtoOutputOrdersInnerMoments
   @BuiltValueField(wireName: r'noCaptainAlertAt')
   DateTime? get noCaptainAlertAt;
 
-  AdminBoardDtoOutputOrdersInnerMoments._();
+  /// «وصل الكابتن».
+  @BuiltValueField(wireName: r'captainArrivedAt')
+  DateTime? get captainArrivedAt;
 
-  factory AdminBoardDtoOutputOrdersInnerMoments([
-    void updates(AdminBoardDtoOutputOrdersInnerMomentsBuilder b),
-  ]) = _$AdminBoardDtoOutputOrdersInnerMoments;
+  @BuiltValueField(wireName: r'captainWaitingAlertAt')
+  DateTime? get captainWaitingAlertAt;
+
+  AdminOrderCardDtoOutputOrderMoments._();
+
+  factory AdminOrderCardDtoOutputOrderMoments([
+    void updates(AdminOrderCardDtoOutputOrderMomentsBuilder b),
+  ]) = _$AdminOrderCardDtoOutputOrderMoments;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminBoardDtoOutputOrdersInnerMomentsBuilder b) => b;
+  static void _defaults(AdminOrderCardDtoOutputOrderMomentsBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminBoardDtoOutputOrdersInnerMoments> get serializer =>
-      _$AdminBoardDtoOutputOrdersInnerMomentsSerializer();
+  static Serializer<AdminOrderCardDtoOutputOrderMoments> get serializer =>
+      _$AdminOrderCardDtoOutputOrderMomentsSerializer();
 }
 
-class _$AdminBoardDtoOutputOrdersInnerMomentsSerializer
-    implements PrimitiveSerializer<AdminBoardDtoOutputOrdersInnerMoments> {
+class _$AdminOrderCardDtoOutputOrderMomentsSerializer
+    implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderMoments> {
   @override
   final Iterable<Type> types = const [
-    AdminBoardDtoOutputOrdersInnerMoments,
-    _$AdminBoardDtoOutputOrdersInnerMoments,
+    AdminOrderCardDtoOutputOrderMoments,
+    _$AdminOrderCardDtoOutputOrderMoments,
   ];
 
   @override
-  final String wireName = r'AdminBoardDtoOutputOrdersInnerMoments';
+  final String wireName = r'AdminOrderCardDtoOutputOrderMoments';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminBoardDtoOutputOrdersInnerMoments object, {
+    AdminOrderCardDtoOutputOrderMoments object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'acceptAlertAt';
@@ -103,12 +112,26 @@ class _$AdminBoardDtoOutputOrdersInnerMomentsSerializer
             object.noCaptainAlertAt,
             specifiedType: const FullType.nullable(DateTime),
           );
+    yield r'captainArrivedAt';
+    yield object.captainArrivedAt == null
+        ? null
+        : serializers.serialize(
+            object.captainArrivedAt,
+            specifiedType: const FullType.nullable(DateTime),
+          );
+    yield r'captainWaitingAlertAt';
+    yield object.captainWaitingAlertAt == null
+        ? null
+        : serializers.serialize(
+            object.captainWaitingAlertAt,
+            specifiedType: const FullType.nullable(DateTime),
+          );
   }
 
   @override
   Object serialize(
     Serializers serializers,
-    AdminBoardDtoOutputOrdersInnerMoments object, {
+    AdminOrderCardDtoOutputOrderMoments object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -123,7 +146,7 @@ class _$AdminBoardDtoOutputOrdersInnerMomentsSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminBoardDtoOutputOrdersInnerMomentsBuilder result,
+    required AdminOrderCardDtoOutputOrderMomentsBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -180,6 +203,26 @@ class _$AdminBoardDtoOutputOrdersInnerMomentsSerializer
           if (valueDes == null) continue;
           result.noCaptainAlertAt = valueDes;
           break;
+        case r'captainArrivedAt':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
+          if (valueDes == null) continue;
+          result.captainArrivedAt = valueDes;
+          break;
+        case r'captainWaitingAlertAt':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
+          if (valueDes == null) continue;
+          result.captainWaitingAlertAt = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -189,12 +232,12 @@ class _$AdminBoardDtoOutputOrdersInnerMomentsSerializer
   }
 
   @override
-  AdminBoardDtoOutputOrdersInnerMoments deserialize(
+  AdminOrderCardDtoOutputOrderMoments deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminBoardDtoOutputOrdersInnerMomentsBuilder();
+    final result = AdminOrderCardDtoOutputOrderMomentsBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

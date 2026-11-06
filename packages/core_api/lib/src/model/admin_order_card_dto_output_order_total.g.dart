@@ -1,40 +1,39 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_board_dto_output_orders_inner_total.dart';
+part of 'admin_order_card_dto_output_order_total.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminBoardDtoOutputOrdersInnerTotal
-    extends AdminBoardDtoOutputOrdersInnerTotal {
+class _$AdminOrderCardDtoOutputOrderTotal
+    extends AdminOrderCardDtoOutputOrderTotal {
   @override
   final String amount;
   @override
   final String currency;
 
-  factory _$AdminBoardDtoOutputOrdersInnerTotal([
-    void Function(AdminBoardDtoOutputOrdersInnerTotalBuilder)? updates,
-  ]) =>
-      (AdminBoardDtoOutputOrdersInnerTotalBuilder()..update(updates))._build();
+  factory _$AdminOrderCardDtoOutputOrderTotal([
+    void Function(AdminOrderCardDtoOutputOrderTotalBuilder)? updates,
+  ]) => (AdminOrderCardDtoOutputOrderTotalBuilder()..update(updates))._build();
 
-  _$AdminBoardDtoOutputOrdersInnerTotal._({
+  _$AdminOrderCardDtoOutputOrderTotal._({
     required this.amount,
     required this.currency,
   }) : super._();
   @override
-  AdminBoardDtoOutputOrdersInnerTotal rebuild(
-    void Function(AdminBoardDtoOutputOrdersInnerTotalBuilder) updates,
+  AdminOrderCardDtoOutputOrderTotal rebuild(
+    void Function(AdminOrderCardDtoOutputOrderTotalBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminBoardDtoOutputOrdersInnerTotalBuilder toBuilder() =>
-      AdminBoardDtoOutputOrdersInnerTotalBuilder()..replace(this);
+  AdminOrderCardDtoOutputOrderTotalBuilder toBuilder() =>
+      AdminOrderCardDtoOutputOrderTotalBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminBoardDtoOutputOrdersInnerTotal &&
+    return other is AdminOrderCardDtoOutputOrderTotal &&
         amount == other.amount &&
         currency == other.currency;
   }
@@ -50,20 +49,20 @@ class _$AdminBoardDtoOutputOrdersInnerTotal
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'AdminBoardDtoOutputOrdersInnerTotal')
+    return (newBuiltValueToStringHelper(r'AdminOrderCardDtoOutputOrderTotal')
           ..add('amount', amount)
           ..add('currency', currency))
         .toString();
   }
 }
 
-class AdminBoardDtoOutputOrdersInnerTotalBuilder
+class AdminOrderCardDtoOutputOrderTotalBuilder
     implements
         Builder<
-          AdminBoardDtoOutputOrdersInnerTotal,
-          AdminBoardDtoOutputOrdersInnerTotalBuilder
+          AdminOrderCardDtoOutputOrderTotal,
+          AdminOrderCardDtoOutputOrderTotalBuilder
         > {
-  _$AdminBoardDtoOutputOrdersInnerTotal? _$v;
+  _$AdminOrderCardDtoOutputOrderTotal? _$v;
 
   String? _amount;
   String? get amount => _$this._amount;
@@ -73,11 +72,11 @@ class AdminBoardDtoOutputOrdersInnerTotalBuilder
   String? get currency => _$this._currency;
   set currency(String? currency) => _$this._currency = currency;
 
-  AdminBoardDtoOutputOrdersInnerTotalBuilder() {
-    AdminBoardDtoOutputOrdersInnerTotal._defaults(this);
+  AdminOrderCardDtoOutputOrderTotalBuilder() {
+    AdminOrderCardDtoOutputOrderTotal._defaults(this);
   }
 
-  AdminBoardDtoOutputOrdersInnerTotalBuilder get _$this {
+  AdminOrderCardDtoOutputOrderTotalBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _amount = $v.amount;
@@ -88,32 +87,32 @@ class AdminBoardDtoOutputOrdersInnerTotalBuilder
   }
 
   @override
-  void replace(AdminBoardDtoOutputOrdersInnerTotal other) {
-    _$v = other as _$AdminBoardDtoOutputOrdersInnerTotal;
+  void replace(AdminOrderCardDtoOutputOrderTotal other) {
+    _$v = other as _$AdminOrderCardDtoOutputOrderTotal;
   }
 
   @override
   void update(
-    void Function(AdminBoardDtoOutputOrdersInnerTotalBuilder)? updates,
+    void Function(AdminOrderCardDtoOutputOrderTotalBuilder)? updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminBoardDtoOutputOrdersInnerTotal build() => _build();
+  AdminOrderCardDtoOutputOrderTotal build() => _build();
 
-  _$AdminBoardDtoOutputOrdersInnerTotal _build() {
+  _$AdminOrderCardDtoOutputOrderTotal _build() {
     final _$result =
         _$v ??
-        _$AdminBoardDtoOutputOrdersInnerTotal._(
+        _$AdminOrderCardDtoOutputOrderTotal._(
           amount: BuiltValueNullFieldError.checkNotNull(
             amount,
-            r'AdminBoardDtoOutputOrdersInnerTotal',
+            r'AdminOrderCardDtoOutputOrderTotal',
             'amount',
           ),
           currency: BuiltValueNullFieldError.checkNotNull(
             currency,
-            r'AdminBoardDtoOutputOrdersInnerTotal',
+            r'AdminOrderCardDtoOutputOrderTotal',
             'currency',
           ),
         );

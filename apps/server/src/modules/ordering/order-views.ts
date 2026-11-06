@@ -36,6 +36,8 @@ export interface OrderView {
   // AP §8.2: the captain track, and the captain from assignment.
   captainTrack: CaptainTrack | null;
   captainId: string | null;
+  // CA §9.2, RA §8.9: «وصل الكابتن», and the waiting alert's moment.
+  captainArrival: { at: Date; waitingAlertAt: Date } | null;
   cancellation: { at: Date; reason: string } | null;
   currency: string;
   money: QuoteMoney;
@@ -93,6 +95,8 @@ export async function readOrders(
       readyAt: orders.readyAt,
       captainTrack: orders.captainTrack,
       captainId: orders.captainId,
+      arrivedAtMerchantAt: orders.arrivedAtMerchantAt,
+      captainWaitingAlertAt: orders.captainWaitingAlertAt,
       cancelledAt: orders.cancelledAt,
       cancelReason: orders.cancelReason,
       currency: orders.currency,
@@ -189,6 +193,10 @@ export async function readOrders(
       readyAt: row.readyAt,
       captainTrack: row.captainTrack,
       captainId: row.captainId,
+      captainArrival:
+        row.arrivedAtMerchantAt && row.captainWaitingAlertAt
+          ? { at: row.arrivedAtMerchantAt, waitingAlertAt: row.captainWaitingAlertAt }
+          : null,
       cancellation:
         row.cancelledAt && row.cancelReason
           ? { at: row.cancelledAt, reason: row.cancelReason }

@@ -8,6 +8,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain_arrival.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -32,6 +33,7 @@ part 'merchant_orders_dto_output_orders_inner.g.dart';
 /// * [itemsValue] - «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11).
 /// * [captainTrack] - The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts.
 /// * [captain]
+/// * [captainArrival]
 @BuiltValue()
 abstract class MerchantOrdersDtoOutputOrdersInner
     implements
@@ -97,6 +99,9 @@ abstract class MerchantOrdersDtoOutputOrdersInner
 
   @BuiltValueField(wireName: r'captain')
   MerchantOrdersDtoOutputOrdersInnerCaptain? get captain;
+
+  @BuiltValueField(wireName: r'captainArrival')
+  MerchantOrdersDtoOutputOrdersInnerCaptainArrival? get captainArrival;
 
   MerchantOrdersDtoOutputOrdersInner._();
 
@@ -230,6 +235,15 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
             object.captain,
             specifiedType: const FullType.nullable(
               MerchantOrdersDtoOutputOrdersInnerCaptain,
+            ),
+          );
+    yield r'captainArrival';
+    yield object.captainArrival == null
+        ? null
+        : serializers.serialize(
+            object.captainArrival,
+            specifiedType: const FullType.nullable(
+              MerchantOrdersDtoOutputOrdersInnerCaptainArrival,
             ),
           );
   }
@@ -418,6 +432,18 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
                   as MerchantOrdersDtoOutputOrdersInnerCaptain?;
           if (valueDes == null) continue;
           result.captain.replace(valueDes);
+          break;
+        case r'captainArrival':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      MerchantOrdersDtoOutputOrdersInnerCaptainArrival,
+                    ),
+                  )
+                  as MerchantOrdersDtoOutputOrdersInnerCaptainArrival?;
+          if (valueDes == null) continue;
+          result.captainArrival.replace(valueDes);
           break;
         default:
           unhandled.add(key);

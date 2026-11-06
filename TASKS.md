@@ -12,9 +12,9 @@ Slice 1.12, pickup (`docs/roadmap.md`, Phase 1): arrival within 150 m, the item 
 
 ### Pull request 1: `feat/captain-arrival`
 
-- [ ] The captain's active order (CA §9.1–9.3): `GET /v1/captain/orders/active`, the order assigned to the signed-in captain with the restaurant, the preparation, the items with options and notes, the pickup payment and the captain track.
-- [ ] Arrival (CA §9.2, C6): `POST /v1/captain/orders/{orderId}/arrive` with the location, within `captain.merchant_arrival_radius_m` and an accuracy of 100 m or better; track `assigned` → `at_merchant`, `arrived_at_merchant_at` and the waiting alert moment; the location recorded. Operations' «تسجيل وصول الكابتن» with a reason (AP §9.3.2).
-- [ ] The reads: «وصل الكابتن» and the waiting moment on the restaurant's board (RA §8.9) and the operations board («كابتن ينتظر عند المطعم», AP §9.1.3).
+- [x] The captain's active order (CA §9.1–9.3): `GET /v1/captain/orders/active`, the order assigned to the signed-in captain with the restaurant, the preparation, the items with options and notes, the pickup payment and the captain track.
+- [x] Arrival (CA §9.2, C6): `POST /v1/captain/orders/{orderId}/arrive` with the location, within `captain.merchant_arrival_radius_m` and an accuracy of 100 m or better; track `assigned` → `at_merchant`, `arrived_at_merchant_at` and the waiting alert moment; the location recorded. Operations' «تسجيل وصول الكابتن» with a reason (AP §9.3.2).
+- [x] The reads: «وصل الكابتن» and the waiting moment on the restaurant's board (RA §8.9) and the operations board («كابتن ينتظر عند المطعم», AP §9.1.3).
 - [ ] Docs, review, handover to pull request 2.
 
 ### Pull request 2: `feat/pickup`
