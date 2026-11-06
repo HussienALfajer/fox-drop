@@ -8,12 +8,15 @@ Slice 1.6, captain (`docs/roadmap.md`, Phase 1): an activated captain with vehic
 
 - **Specs:** CA §4.3 (location), CA §4.9 (one device), CA §7 (availability: online, offline, the checks before going online), AP §9.7 (the captain record and its states), AP §9.12.5 (the pay table), the captain cash limit of AP §8 and Appendix A, architecture §4.2 (`captains` owns availability; `identity` owns users and sessions), §7 (location), §15.1 (app tokens).
 - **Branch:** `feat/captain`.
-- **Ask the owner first:** the split into pull requests (this slice is about the size of 1.5, which took two), and the open items the cited sections leave to the owner. Placeholders already decided for development and staging (owner decision 2026-11-05): captain pay 25 TRY for the first 3 km plus 5 TRY per extra km; a placeholder cash limit.
-- **Plan (draft, to confirm with the owner):**
-  - [ ] Write the failing tests first: the captain states and the checks before going online, the pay table's amount for a distance, the cash limit check.
-  - [ ] The `captains` schema through the `db-migration` skill: the captain record, vehicle, states, cash limit and pay table versions; `CaptainsService`; the demo captain in the seed.
+- **Owner decisions 2026-11-06:** two pull requests: (1) the captain record, vehicle, states, cash limit, pay table, the checks before going online and the seed; (2) captain sign-in with one device, going online and offline, the location. The checks built now: suspension, contract ended, cash limit, cash from a previous business day (from the ledger), the minimum app version and a simulated location; required documents (K6) and terms (K7) join with their slices. Placeholders for development and staging: a cash limit of 3000 TRY for the demo captain; one pay table for every vehicle: 25 TRY including the first 3 km, 5 TRY per extra km pro rata by the metre and rounded down to the minor unit, no waiting pay, a minimum of 25 TRY; the maximum distance stays `dispatch.max_distance_km.<vehicle>`. A city's first pay table takes effect when published; every later one 7 days or more after (AP §9.12.5).
+- **Plan, pull request 1 (`feat/captain`):**
+  - [x] The failing tests first: the pay for a distance, the checks before going online and the availability state, the previous business-day cutoff.
+  - [ ] The `captains` schema through the `db-migration` skill: the captain record, vehicle, states, cash limit, online periods, pay table versions.
+  - [ ] `CaptainsService`: create, status, cash limit, pay table, custody usage and the cash due from closed days through `LedgerService`, going online and offline; the demo captain in the seed.
+  - [ ] `checker`, the `reviewer`, the pull request.
+- **Plan, pull request 2 (`feat/captain-sign-in`):**
   - [ ] The `captain` party on the app sign-in engine (`identity`), as the `merchant` party of slice 1.5: accounts never created by sign-in, refusals before sending a code, one device (CA §4.9).
-  - [ ] Captain routes: going online and offline, the location every 10 seconds (Valkey for the live position, architecture §7).
+  - [ ] Captain routes: the availability state, going online and offline, the location every 10 seconds (Valkey for the live position, the partitioned `captains.locations` table, architecture §7.3).
   - [ ] `checker`, the `reviewer`, the pull request, the handover to slice 1.7.
 
 ## Notes from earlier slices

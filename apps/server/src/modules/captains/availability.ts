@@ -1,0 +1,111 @@
+// AP §9.7.5: a captain's account status. Activation is the pipeline's last
+// step (AP §9.7.1), so a captain record starts active.
+export const captainStatuses = ['active', 'suspended', 'terminated'] as const;
+export type CaptainStatus = (typeof captainStatuses)[number];
+
+// What the state of a captain is made of at a moment. Amounts are minor units
+// of the city's base currency.
+export interface AvailabilityInput {
+  status: CaptainStatus;
+  // While suspended: the reason shown to the captain and the end, if any.
+  suspension: { reason: string; until: Date | null } | null;
+  // The start of the open online period; null while offline.
+  onlineSince: Date | null;
+  // The positive custody positions in base (AP §8.5.3).
+  custodyUsage: bigint;
+  custodyLimit: bigint;
+  // AP §8.5.4, counted at lastCutoff.
+  closedDue: bigint;
+  remitTolerance: bigint;
+  lastCutoff: Date;
+  remitOnlineGraceHours: number;
+  appVersion: string | null;
+  // app.captain.min_version; null for none.
+  minVersion: string | null;
+  simulatedLocation: boolean;
+}
+
+// CA §7.2: a reason the «متصل» switch is refused, in the table's order.
+export type OnlineBlock =
+  | { kind: 'suspended'; reason: string; until: Date | null }
+  | { kind: 'contract_ended' }
+  | { kind: 'closed_due'; amount: bigint; cutoff: Date }
+  | { kind: 'cash_limit'; limit: bigint }
+  | { kind: 'version_below_minimum'; minVersion: string }
+  | { kind: 'simulated_location' };
+
+// CA §7.1, §7.2: why an online captain gets no offers.
+export type NoOffersReason = 'cash_limit' | 'closed_due' | 'simulated_location';
+
+// CA §7.1. Busy and last-order mode need an active order (the ordering
+// slices).
+export type Availability =
+  | { state: 'offline' }
+  | { state: 'online_available'; since: Date }
+  | { state: 'not_receiving_offers'; since: Date; reasons: NoOffersReason[] }
+  | { state: 'suspended'; reason: string; until: Date | null };
+
+function suspendedAt(input: AvailabilityInput, now: Date) {
+  const { suspension } = input;
+  if (input.status !== 'suspended' || suspension === null) return null;
+  return suspension.until === null || now < suspension.until ? suspension : null;
+}
+
+// Versions as major.minor.patch, compared part by part.
+function below(version: string, minimum: string): boolean {
+  const parts = version.split('.').map(Number);
+  const least = minimum.split('.').map(Number);
+  for (let index = 0; index < least.length; index += 1) {
+    const difference = (parts[index] ?? 0) - least[index]!;
+    if (difference !== 0) return difference < 0;
+  }
+  return false;
+}
+
+// Every block that refuses going online now, so the app shows each (CA §7.2).
+// Required documents (K6) and terms (K7) join with their slices.
+export function onlineBlocks(input: AvailabilityInput, now: Date): OnlineBlock[] {
+  const blocks: OnlineBlock[] = [];
+  if (input.status === 'terminated') return [{ kind: 'contract_ended' }];
+  const suspension = suspendedAt(input, now);
+  if (suspension !== null) {
+    blocks.push({ kind: 'suspended', reason: suspension.reason, until: suspension.until });
+  }
+  if (input.closedDue > input.remitTolerance) {
+    blocks.push({ kind: 'closed_due', amount: input.closedDue, cutoff: input.lastCutoff });
+  }
+  if (input.custodyUsage >= input.custodyLimit) {
+    blocks.push({ kind: 'cash_limit', limit: input.custodyLimit });
+  }
+  if (
+    input.minVersion !== null &&
+    (input.appVersion === null || below(input.appVersion, input.minVersion))
+  ) {
+    blocks.push({ kind: 'version_below_minimum', minVersion: input.minVersion });
+  }
+  if (input.simulatedLocation) blocks.push({ kind: 'simulated_location' });
+  return blocks;
+}
+
+// The captain's state now (CA §7.1, §7.2 "already online when a block
+// starts"). A captain online when the cutoff passed keeps offers for
+// captain.remit_online_grace_hours (AP §8.5.4); the version and terms apply
+// only the next time they go online.
+export function availability(input: AvailabilityInput, now: Date): Availability {
+  const suspension = suspendedAt(input, now);
+  if (suspension !== null) {
+    return { state: 'suspended', reason: suspension.reason, until: suspension.until };
+  }
+  const since = input.onlineSince;
+  if (input.status === 'terminated' || since === null) return { state: 'offline' };
+  const reasons: NoOffersReason[] = [];
+  if (input.custodyUsage >= input.custodyLimit) reasons.push('cash_limit');
+  if (input.closedDue > input.remitTolerance) {
+    const graceEnds = input.lastCutoff.getTime() + input.remitOnlineGraceHours * 3_600_000;
+    if (since >= input.lastCutoff || now.getTime() >= graceEnds) reasons.push('closed_due');
+  }
+  if (input.simulatedLocation) reasons.push('simulated_location');
+  return reasons.length === 0
+    ? { state: 'online_available', since }
+    : { state: 'not_receiving_offers', since, reasons };
+}

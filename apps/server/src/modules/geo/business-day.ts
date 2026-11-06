@@ -48,3 +48,13 @@ export function nextCutoff(now: Date, cutoffMinutes: number, timeZone: string): 
   if (cutoff <= wall) cutoff += DAY_MS;
   return instantOf(cutoff, timeZone);
 }
+
+// AP §8.5.4: the last business-day cutoff at or before now on the city's
+// clock, where the cash due from closed days is counted.
+export function lastCutoff(now: Date, cutoffMinutes: number, timeZone: string): Date {
+  const wall = wallClock(now, timeZone);
+  const midnight = wall - (wall % DAY_MS);
+  let cutoff = midnight + cutoffMinutes * 60_000;
+  if (cutoff > wall) cutoff -= DAY_MS;
+  return instantOf(cutoff, timeZone);
+}
