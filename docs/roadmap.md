@@ -46,7 +46,7 @@ Markers: `[ ]` not started, `[~]` in progress, `[x]` done.
   - `[x]` 1.5 Restaurant, menu and restaurant sign-in: the restaurant record, hours, coverage, minimum order and commission; categories, items and option groups; owner phone sign-in in the restaurant app (RA §5, §9, §10, AP §9.6).
   - `[x]` 1.6 Captain: an activated captain with vehicle, cash limit and pay table; phone sign-in, going online and offline, location every 10 seconds (CA §4.3, §7, AP §9.7, §9.12.5).
   - `[x]` 1.7 Customer browsing and the quote: account completion, the delivery point, restaurants that cover it, the restaurant page and item options, the cart, the versioned quote (CU §5.3, §7–§10.6).
-  - `[ ]` 1.8 Placing the order: the atomic re-check, the rate snapshot, the order number, idempotency, the capacity check, the automatic cancellation timer through pg-boss (CU §10.7, AP §8.1, §8.3).
+  - `[x]` 1.8 Placing the order: the atomic re-check, the rate snapshot, the order number, idempotency, the capacity check, the automatic cancellation timer through pg-boss (CU §10.7, AP §8.1, §8.3).
   - `[ ]` 1.9 Real time: the outbox relay, Centrifugo tokens and channels; the new order rings in the restaurant app and the customer's order screen updates, with polling as fallback (architecture §5.5, §6, RA §4.3, CU §4.3).
   - `[ ]` 1.10 Accept and ready: acceptance with the prep time, the promised time, the prep countdown, «الطلب جاهز» (RA §8.5–8.8, AP §8.3).
   - `[ ]` 1.11 Manual dispatch: «بحاجة لتعيين» at the search start, the panel's sign-in screen, operations board and order detail with «تعيين كابتن», the 45-second offer in the captain app (AP §9.2, §9.3.2, §9.12.6, CA §8).
