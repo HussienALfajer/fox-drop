@@ -80,6 +80,19 @@ if [ ! -f "$env_file" ]; then
   umask 022
   echo "created $env_file"
 fi
+# Secrets added after an environment's first provisioning: each is generated
+# once, when its line is missing.
+add_secret() {
+  if ! grep -q "^$1=" "$env_file"; then
+    echo "$1=$(openssl rand -hex 32)" >>"$env_file"
+    echo "added $1 to $env_file"
+  fi
+}
+# Real time (architecture §6.1): Centrifugo's token and API secrets and the
+# secret its subscription proxy sends to the API.
+add_secret CENTRIFUGO_TOKEN_SECRET
+add_secret CENTRIFUGO_API_KEY
+add_secret CENTRIFUGO_PROXY_SECRET
 chown "$user:$user" "$env_file"
 chmod 600 "$env_file"
 
@@ -102,7 +115,7 @@ for zone in 'zone=general:' 'zone=perip:'; do
 done
 # Only these variables are replaced; nginx's own $variables stay as they are.
 # shellcheck disable=SC2016
-render() { envsubst '${FOXDROP_ENV} ${ADMIN_HOST} ${PORTAL_HOST} ${API_HOST} ${API_PORT} ${ADMIN_PORT} ${PORTAL_PORT}' <"$1"; }
+render() { envsubst '${FOXDROP_ENV} ${ADMIN_HOST} ${PORTAL_HOST} ${API_HOST} ${API_PORT} ${ADMIN_PORT} ${PORTAL_PORT} ${CENTRIFUGO_PORT}' <"$1"; }
 available=/etc/nginx/sites-available/foxdrop-$environment
 enabled=/etc/nginx/sites-enabled/foxdrop-$environment
 nginx_files=(
