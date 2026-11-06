@@ -15,6 +15,9 @@ _$captainAvailabilityDtoOutputAvailabilityStateEnum_onlineAvailable =
       'onlineAvailable',
     );
 const CaptainAvailabilityDtoOutputAvailabilityStateEnum
+_$captainAvailabilityDtoOutputAvailabilityStateEnum_busy =
+    const CaptainAvailabilityDtoOutputAvailabilityStateEnum._('busy');
+const CaptainAvailabilityDtoOutputAvailabilityStateEnum
 _$captainAvailabilityDtoOutputAvailabilityStateEnum_notReceivingOffers =
     const CaptainAvailabilityDtoOutputAvailabilityStateEnum._(
       'notReceivingOffers',
@@ -30,6 +33,8 @@ _$captainAvailabilityDtoOutputAvailabilityStateEnumValueOf(String name) {
       return _$captainAvailabilityDtoOutputAvailabilityStateEnum_offline;
     case 'onlineAvailable':
       return _$captainAvailabilityDtoOutputAvailabilityStateEnum_onlineAvailable;
+    case 'busy':
+      return _$captainAvailabilityDtoOutputAvailabilityStateEnum_busy;
     case 'notReceivingOffers':
       return _$captainAvailabilityDtoOutputAvailabilityStateEnum_notReceivingOffers;
     case 'suspended':
@@ -45,6 +50,7 @@ _$captainAvailabilityDtoOutputAvailabilityStateEnumValues =
       const <CaptainAvailabilityDtoOutputAvailabilityStateEnum>[
         _$captainAvailabilityDtoOutputAvailabilityStateEnum_offline,
         _$captainAvailabilityDtoOutputAvailabilityStateEnum_onlineAvailable,
+        _$captainAvailabilityDtoOutputAvailabilityStateEnum_busy,
         _$captainAvailabilityDtoOutputAvailabilityStateEnum_notReceivingOffers,
         _$captainAvailabilityDtoOutputAvailabilityStateEnum_suspended,
       ],
@@ -99,12 +105,14 @@ class _$CaptainAvailabilityDtoOutputAvailabilityStateEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'offline': 'offline',
     'onlineAvailable': 'online_available',
+    'busy': 'busy',
     'notReceivingOffers': 'not_receiving_offers',
     'suspended': 'suspended',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'offline': 'offline',
     'online_available': 'onlineAvailable',
+    'busy': 'busy',
     'not_receiving_offers': 'notReceivingOffers',
     'suspended': 'suspended',
   };

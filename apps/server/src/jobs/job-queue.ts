@@ -17,6 +17,8 @@ export const QUEUES = {
   searchStart: 'ordering-search-start',
   // Architecture §5.5: a run of the outbox relay, sent with each transition.
   outboxRelay: 'ordering-outbox-relay',
+  // AP §8.3: an offer the captain did not answer in dispatch.offer_timeout_sec.
+  offerExpiry: 'dispatch-offer-expiry',
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];

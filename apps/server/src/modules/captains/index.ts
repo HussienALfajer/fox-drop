@@ -38,6 +38,8 @@ export class CaptainsWorkerModule {}
 export type { Availability, CaptainStatus, NoOffersReason, OnlineBlock } from './availability.js';
 export { orderPay, type PayRate } from './pay.js';
 export {
+  type ActiveOrderLookup,
+  type Candidate,
   type Captain,
   type CaptainChange,
   type CaptainState,
@@ -45,6 +47,7 @@ export {
   CaptainsRefusedError,
   CaptainsService,
   type Custody,
+  type IneligibleReason,
   type LocationPoint,
   type Money,
   type NewCaptain,

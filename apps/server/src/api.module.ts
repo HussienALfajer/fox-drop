@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { STATUS_CONTROLLERS } from './http/status.js';
 import { CaptainsModule } from './modules/captains/index.js';
 import { CustomersModule } from './modules/customers/index.js';
+import { DispatchModule } from './modules/dispatch/index.js';
 import { FxModule } from './modules/fx/index.js';
 import { GeoModule } from './modules/geo/index.js';
 import { IdentityModule, RouteAccessGuard } from './modules/identity/index.js';
@@ -29,6 +30,7 @@ import { PlaceholderSeedModule } from './seed/placeholder-seed.js';
     CaptainsModule,
     CustomersModule,
     OrderingModule,
+    DispatchModule,
     NotificationsModule,
     PlaceholderSeedModule,
   ],

@@ -39,6 +39,19 @@ export const orderStatuses = [
   'failed',
 ] as const;
 
+// AP §8.2: the captain track, recorded apart from the order status. Null
+// before the search starts and before any offer.
+export const captainTracks = [
+  'searching',
+  'offered',
+  'assigned',
+  'at_merchant',
+  'pickup_pending',
+  'picked_up',
+  'at_customer',
+  'done',
+] as const;
+
 export const addressLabels = ['home', 'work', 'other'] as const;
 
 // AP §4.8: the order numbers are sequential per city, from 10001 (owner
@@ -116,6 +129,16 @@ export const orders = ordering.table(
     // moment (its timer comes with the operations board).
     readyAt: timestamp('ready_at', { withTimezone: true }),
     noCaptainAlertAt: timestamp('no_captain_alert_at', { withTimezone: true }),
+    // AP §8.2, §8.3, §9.12.6: the captain track; when the search started
+    // (manual mode: «بحاجة لتعيين» while the track is searching), with
+    // operations' «طلب بلا كابتن» moment dispatch.no_captain_alert_min after
+    // it; the captain from assignment (the captains module's record) and
+    // when. An offer's captain is the dispatch module's.
+    captainTrack: text('captain_track', { enum: captainTracks }),
+    searchStartedAt: timestamp('search_started_at', { withTimezone: true }),
+    searchAlertAt: timestamp('search_alert_at', { withTimezone: true }),
+    captainId: uuid('captain_id'),
+    assignedAt: timestamp('assigned_at', { withTimezone: true }),
     // The address snapshot (CU §7.3–7.4, Q6): the saved address it was copied
     // from, or null for an unsaved one; «الحي» is the zone at placing.
     addressId: uuid('address_id'),
@@ -148,6 +171,18 @@ export const orders = ordering.table(
     index('orders_city_number').on(table.cityId, table.number),
     index('orders_customer_status').on(table.customerAccountId, table.status),
     index('orders_restaurant_status').on(table.restaurantId, table.status),
+    index('orders_captain_status')
+      .on(table.captainId, table.status)
+      .where(sql`${table.captainId} IS NOT NULL`),
+    index('orders_city_status').on(table.cityId, table.status),
+    check(
+      'orders_captain_track_values',
+      sql`${table.captainTrack} IS NULL OR ${table.captainTrack} IN ('searching', 'offered', 'assigned', 'at_merchant', 'pickup_pending', 'picked_up', 'at_customer', 'done')`,
+    ),
+    check(
+      'orders_captain',
+      sql`(${table.captainId} IS NULL) = (${table.assignedAt} IS NULL) AND (${table.captainId} IS NOT NULL) = (${table.captainTrack} IS NOT NULL AND ${table.captainTrack} NOT IN ('searching', 'offered')) AND (${table.searchStartedAt} IS NULL) = (${table.searchAlertAt} IS NULL) AND (${table.captainTrack} <> 'searching' OR ${table.searchStartedAt} IS NOT NULL)`,
+    ),
     check(
       'orders_status_values',
       sql`${table.status} IN ('placed', 'accepted', 'ready', 'picked_up', 'arrived', 'delivered', 'rejected', 'cancelled', 'failed')`,
@@ -234,6 +269,11 @@ export const orderEvents = ordering.table(
     // null for every other actor.
     actorDevice: text('actor_device'),
     reason: text('reason'),
+    // The event's type, such as order.accepted or order.offered (the outbox's
+    // type); null for an event written before slice 1.11.
+    type: text('type'),
+    // The captain the event is about: the offer's, or the one assigned.
+    captainId: uuid('captain_id'),
   },
   (table) => [
     primaryKey({ columns: [table.orderId, table.orderPlacedAt, table.version] }),

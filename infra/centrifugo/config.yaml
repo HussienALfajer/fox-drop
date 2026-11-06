@@ -3,7 +3,7 @@
 # infra/compose.yaml mount this file. The secrets and the subscription proxies, whose
 # endpoints differ per environment, come from the environment:
 # CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY, CENTRIFUGO_HTTP_API_KEY and
-# CENTRIFUGO_PROXIES (the proxies "merchant" and "customer", each sending
+# CENTRIFUGO_PROXIES (the proxies "merchant", "customer" and "captain", each sending
 # X-Centrifugo-Proxy-Secret).
 channel:
   namespaces:
@@ -24,3 +24,11 @@ channel:
       force_recovery: true
       subscribe_proxy_enabled: true
       subscribe_proxy_name: customer
+    # captain:{captain_id}, the captain's device: offers opened and closed,
+    # and the assigned order's changes (§6.2, CA §15).
+    - name: captain
+      history_size: 50
+      history_ttl: 600s
+      force_recovery: true
+      subscribe_proxy_enabled: true
+      subscribe_proxy_name: captain

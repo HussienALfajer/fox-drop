@@ -33,7 +33,7 @@ const money = z.object({
 // Dart client cannot read without another package.
 const availability = z
   .object({
-    state: z.enum(['offline', 'online_available', 'not_receiving_offers', 'suspended']),
+    state: z.enum(['offline', 'online_available', 'busy', 'not_receiving_offers', 'suspended']),
     since: z.iso.datetime().nullable().describe('Online since; null unless online.'),
     reasons: z
       .array(z.enum(['cash_limit', 'closed_due', 'simulated_location']))
@@ -44,7 +44,9 @@ const availability = z
       .nullable()
       .describe('While suspended: the end, or null until further notice.'),
   })
-  .describe('CA §7.1: «غير متصل», «متصل متاح», «لا تصلك عروض» with its reasons, «موقوف».');
+  .describe(
+    'CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «لا تصلك عروض» with its reasons, «موقوف».',
+  );
 
 class CaptainAvailabilityDto extends createZodDto(
   z.object({
@@ -139,8 +141,16 @@ export class CaptainAvailabilityController {
   @HttpCode(200)
   @ZodResponse({ status: 200, type: CaptainWentOfflineDto })
   async offline(@CurrentAppSession() session: AppSession) {
-    const { handIn } = await this.captains.goOffline(captainOf(session), new Date());
-    return { handIn: handIn === null ? null : moneyBody(handIn) };
+    try {
+      const { handIn } = await this.captains.goOffline(captainOf(session), new Date());
+      return { handIn: handIn === null ? null : moneyBody(handIn) };
+    } catch (error) {
+      // CA §15: not with an active order.
+      if (error instanceof CaptainsRefusedError && error.refusal === 'active_order') {
+        throw new ConflictException({ statusCode: HttpStatus.CONFLICT, error: error.refusal });
+      }
+      throw error;
+    }
   }
 
   // Offline answers 409 not_online: no location is collected (CA §4.3).

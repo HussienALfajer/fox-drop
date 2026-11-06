@@ -73,6 +73,7 @@ describe('OpenAPI document', () => {
     );
     const left = servedRoutes().filter(({ route }) => !documented.has(route));
     expect(left.map(({ route }) => route).sort()).toEqual([
+      'POST /v1/captain/realtime/subscribe',
       'POST /v1/customer/realtime/subscribe',
       'POST /v1/merchant/realtime/subscribe',
     ]);

@@ -5,14 +5,18 @@ import { RealtimeAccess } from './realtime-access.js';
 import { RealtimePublisher } from './realtime-publisher.js';
 import { RealtimeSessions } from './realtime-sessions.js';
 import { RealtimeTokens } from './realtime-tokens.js';
-import { CustomerRealtimeController, MerchantRealtimeController } from './realtime.controller.js';
+import {
+  CaptainRealtimeController,
+  CustomerRealtimeController,
+  MerchantRealtimeController,
+} from './realtime.controller.js';
 
 // The notifications module (architecture §4.2): so far real-time publishing
 // through Centrifugo (§6), its connection tokens and its subscription proxy.
 // Push, in-app messages and sound levels join with their slices.
 @Module({
   imports: [IdentityModule, MerchantsModule],
-  controllers: [MerchantRealtimeController, CustomerRealtimeController],
+  controllers: [MerchantRealtimeController, CustomerRealtimeController, CaptainRealtimeController],
   providers: [RealtimeTokens, RealtimeAccess, RealtimePublisher, RealtimeSessions],
   exports: [RealtimeAccess, RealtimePublisher],
 })
@@ -22,7 +26,7 @@ export class NotificationsModule {}
 @Module({ providers: [RealtimePublisher], exports: [RealtimePublisher] })
 export class NotificationsWorkerModule {}
 
-export { merchantChannel, orderChannel } from './channels.js';
+export { captainChannel, merchantChannel, orderChannel } from './channels.js';
 export { type ChannelCheck, RealtimeAccess } from './realtime-access.js';
 export { requireRealtime } from './realtime-config.js';
 export { PublishFailedError, RealtimePublisher } from './realtime-publisher.js';

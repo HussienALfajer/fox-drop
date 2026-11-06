@@ -10,7 +10,11 @@ import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { AppSignedIn, CurrentAppSession, RealtimeProxy } from '../../http/access.js';
-import { CustomerController, MerchantController } from '../../http/route-groups.js';
+import {
+  CaptainController,
+  CustomerController,
+  MerchantController,
+} from '../../http/route-groups.js';
 import type { AppSession } from '../identity/index.js';
 import { RealtimeAccess, type SubscribeAnswer } from './realtime-access.js';
 import { CONNECTION_TOKEN_MINUTES, RealtimeTokens } from './realtime-tokens.js';
@@ -105,5 +109,33 @@ export class CustomerRealtimeController {
   @HttpCode(HttpStatus.OK)
   subscribe(@Body() body: RealtimeSubscribeDto): Promise<SubscribeAnswer> {
     return this.access.subscribe('customer', body);
+  }
+}
+
+// CA §15: the captain's device connects to Centrifugo and subscribes to
+// captain:{captain_id}, for its offers and its assigned order (architecture
+// §6.2).
+@CaptainController('realtime')
+export class CaptainRealtimeController {
+  constructor(
+    private readonly tokens: RealtimeTokens,
+    private readonly access: RealtimeAccess,
+  ) {}
+
+  @Post('token')
+  @AppSignedIn()
+  @HttpCode(HttpStatus.OK)
+  @ZodResponse({ status: HttpStatus.OK, type: RealtimeTokenDto })
+  token(@CurrentAppSession() session: AppSession) {
+    return tokenOf(this.tokens, session);
+  }
+
+  // Centrifugo's subscription proxy for the captain namespace.
+  @Post('subscribe')
+  @RealtimeProxy()
+  @ApiExcludeEndpoint()
+  @HttpCode(HttpStatus.OK)
+  subscribe(@Body() body: RealtimeSubscribeDto): Promise<SubscribeAnswer> {
+    return this.access.subscribe('captain', body);
   }
 }

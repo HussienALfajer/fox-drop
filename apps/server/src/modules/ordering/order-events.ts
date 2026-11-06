@@ -2,9 +2,10 @@ import { and, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
 import type { Jobs } from '../../jobs/jobs.module.js';
-import { orderEvents, orders, outbox, type orderStatuses } from './schema.js';
+import { type captainTracks, orderEvents, orders, outbox, type orderStatuses } from './schema.js';
 
 type OrderStatus = (typeof orderStatuses)[number];
+export type CaptainTrack = (typeof captainTracks)[number];
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 
 export interface OrderRow {
@@ -16,6 +17,8 @@ export interface OrderRow {
   customerAccountId: string;
   status: OrderStatus;
   version: number;
+  captainTrack: CaptainTrack | null;
+  captainId: string | null;
 }
 
 // The order's columns a transition reads, locked for it.
@@ -30,6 +33,8 @@ export async function lockOrder(tx: Tx, id: string, placedAt: Date): Promise<Ord
       customerAccountId: orders.customerAccountId,
       status: orders.status,
       version: orders.version,
+      captainTrack: orders.captainTrack,
+      captainId: orders.captainId,
     })
     .from(orders)
     .where(and(eq(orders.id, id), eq(orders.placedAt, placedAt)))
@@ -37,7 +42,16 @@ export async function lockOrder(tx: Tx, id: string, placedAt: Date): Promise<Ord
   return row;
 }
 
-export type OrderEventType = 'order.placed' | 'order.accepted' | 'order.ready' | 'order.cancelled';
+export type OrderEventType =
+  | 'order.placed'
+  | 'order.accepted'
+  | 'order.ready'
+  | 'order.cancelled'
+  // AP §8.2–8.3: the captain track changed, the status did not.
+  | 'order.search_started'
+  | 'order.offered'
+  | 'order.offer_closed'
+  | 'order.assigned';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that
@@ -53,7 +67,8 @@ export async function recordTransition(
     from: OrderStatus | null;
     to: OrderStatus;
     version: number;
-    // device: a restaurant user's app installation (RA §18).
+    // device: a restaurant user's or a captain's app installation (RA §18,
+    // CA §15).
     actor: {
       type: 'customer' | 'restaurant' | 'captain' | 'admin' | 'system';
       id: string | null;
@@ -61,8 +76,15 @@ export async function recordTransition(
     };
     reason: string | null;
     at: Date;
+    // The captain track after it, and the captain it is about (an offer's or
+    // the one assigned); the order's own when left out.
+    captainTrack?: CaptainTrack | null;
+    captainId?: string | null;
   },
 ): Promise<void> {
+  const captainTrack =
+    transition.captainTrack === undefined ? order.captainTrack : transition.captainTrack;
+  const captainId = transition.captainId === undefined ? order.captainId : transition.captainId;
   await tx.insert(orderEvents).values({
     orderId: order.id,
     orderPlacedAt: order.placedAt,
@@ -75,6 +97,8 @@ export async function recordTransition(
     actorId: transition.actor.id,
     actorDevice: transition.actor.device ?? null,
     reason: transition.reason,
+    type: transition.type,
+    captainId,
   });
   await tx.insert(outbox).values({
     createdAt: transition.at,
@@ -93,6 +117,8 @@ export async function recordTransition(
       version: transition.version,
       reason: transition.reason,
       at: transition.at.toISOString(),
+      captainTrack,
+      captainId,
     },
   });
   await jobs.send(QUEUES.outboxRelay, {}, { db: inTransaction(tx) });

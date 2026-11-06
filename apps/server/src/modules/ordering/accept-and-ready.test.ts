@@ -215,7 +215,8 @@ const row = async (id: string) =>
   (
     await sql.query(
       `SELECT status, version, accepted_at, prep_min, promised_at, search_start_at,
-              prep_late_alert_at, ready_at, no_captain_alert_at, trip_seconds, trip_metres
+              prep_late_alert_at, ready_at, no_captain_alert_at, trip_seconds, trip_metres,
+              captain_track, search_started_at, search_alert_at, captain_id, assigned_at
          FROM ordering.orders WHERE id = $1`,
       [id],
     )
@@ -272,6 +273,22 @@ describe('the order keeps its acceptance and ready time whole (CHECKs)', () => {
       "status = 'accepted'",
       'accepted_at = now(), prep_min = 20',
       "status = 'ready', accepted_at = now(), prep_min = 20, promised_at = now(), search_start_at = now(), prep_late_alert_at = now()",
+    ]) {
+      await expect(
+        sql.query(`UPDATE ordering.orders SET ${change} WHERE id = $1`, [order.id]),
+      ).rejects.toThrow(/violates check constraint/);
+    }
+  });
+
+  it('refuses a captain without its track and time, and searching without its moments (AP §8.2)', async () => {
+    const order = await placed();
+    for (const change of [
+      "captain_track = 'teleported'",
+      "captain_track = 'searching'",
+      'search_started_at = now()',
+      `captain_id = '${randomUUID()}', assigned_at = now()`,
+      `captain_track = 'assigned', assigned_at = now()`,
+      `captain_track = 'offered', captain_id = '${randomUUID()}', assigned_at = now()`,
     ]) {
       await expect(
         sql.query(`UPDATE ordering.orders SET ${change} WHERE id = $1`, [order.id]),
@@ -337,6 +354,7 @@ describe('POST /v1/merchant/orders/{orderId}/accept (RA §8.5, §18)', () => {
       orderId: order.id,
       placedAt: order.placedAt,
       searchStartAt: new Date(acceptedAt).toISOString(),
+      noCaptainAlertMin: 5,
     });
     expect(new Date(jobs.rows[0].start_after).getTime()).toBe(acceptedAt);
 
@@ -492,24 +510,61 @@ describe('the search-start moment (AP §8.3, §9.12.6; owner decision 2026-11-06
     }
   });
 
+  it('raises «بحاجة لتعيين» when it comes, once, with the no-captain moment (AP §8.3)', async () => {
+    const order = await placed();
+    const timers = app.get(OrderTimers);
+    expect((await accept(order.id, await signedIn('merchant'))).statusCode).toBe(200);
+    const searchStartAt = new Date((await row(order.id)).search_start_at).toISOString();
+    const job = {
+      orderId: order.id,
+      placedAt: order.placedAt,
+      searchStartAt,
+      noCaptainAlertMin: 5,
+    };
+    const now = new Date();
+    expect(await timers.searchStart(job, now)).toBe(true);
+    const kept = await row(order.id);
+    expect(kept).toMatchObject({ status: 'accepted', version: 3, captain_track: 'searching' });
+    expect(new Date(kept.search_started_at).getTime()).toBe(now.getTime());
+    expect(new Date(kept.search_alert_at).getTime()).toBe(now.getTime() + 5 * MINUTE);
+    expect(await outboxTypes(order.id)).toEqual([
+      'order.placed',
+      'order.accepted',
+      'order.search_started',
+    ]);
+    const event = await sql.query(
+      'SELECT type, from_status, to_status, actor_type FROM ordering.order_events WHERE order_id = $1 AND version = 3',
+      [order.id],
+    );
+    expect(event.rows[0]).toEqual({
+      type: 'order.search_started',
+      from_status: 'accepted',
+      to_status: 'accepted',
+      actor_type: 'system',
+    });
+    // A repeated job changes nothing.
+    expect(await timers.searchStart(job, new Date())).toBe(false);
+    expect((await row(order.id)).version).toBe(3);
+  });
+
   it('leaves the timer harmless on an order that ended, or for a moment that moved', async () => {
     const order = await placed();
     const timers = app.get(OrderTimers);
     expect((await accept(order.id, await signedIn('merchant'))).statusCode).toBe(200);
     const searchStartAt = new Date((await row(order.id)).search_start_at).toISOString();
     const job = { orderId: order.id, placedAt: order.placedAt, searchStartAt };
-    expect(await timers.searchStart(job)).toBe(true);
     expect(
-      await timers.searchStart({
-        ...job,
-        searchStartAt: new Date(Date.now() + MINUTE).toISOString(),
-      }),
+      await timers.searchStart(
+        { ...job, searchStartAt: new Date(Date.now() + MINUTE).toISOString() },
+        new Date(),
+      ),
     ).toBe(false);
     await sql.query(
       "UPDATE ordering.orders SET status = 'cancelled', version = 3, cancelled_at = now(), cancel_reason = 'test', food_prepared = false WHERE id = $1",
       [order.id],
     );
-    expect(await timers.searchStart(job)).toBe(false);
+    expect(await timers.searchStart(job, new Date())).toBe(false);
+    expect((await row(order.id)).search_started_at).toBeNull();
   });
 });
 
@@ -575,8 +630,8 @@ describe('POST /v1/merchant/orders/{orderId}/ready (RA §8.8, §18)', () => {
       ]);
       // The first timer no longer acts; the new one does.
       const timers = app.get(OrderTimers);
-      expect(await timers.searchStart(jobs.rows[0].data)).toBe(false);
-      expect(await timers.searchStart(jobs.rows[1].data)).toBe(true);
+      expect(await timers.searchStart(jobs.rows[0].data, new Date())).toBe(false);
+      expect(await timers.searchStart(jobs.rows[1].data, new Date())).toBe(true);
     } finally {
       await app.get(CaptainsService).goOffline(captain, new Date());
     }

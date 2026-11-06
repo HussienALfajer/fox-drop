@@ -12,9 +12,12 @@ import { startTestDatabase, type TestDatabase } from '../../database/test-databa
 import { createApiApp } from '../../http/create-api-app.js';
 import { createBackgroundContext } from '../../roles/start-role.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
+import { CaptainsService } from '../captains/index.js';
+import { DispatchService } from '../dispatch/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService, type Point } from '../geo/index.js';
 import {
+  CaptainAccountsService,
   CODE_SENDER,
   type DevelopmentCodeSender,
   MerchantAccountsService,
@@ -150,7 +153,10 @@ async function signedIn(
   return { authorization: `Bearer ${answer.json().accessToken}` };
 }
 
-async function realtimeToken(party: 'customer' | 'merchant', headers: Record<string, string>) {
+async function realtimeToken(
+  party: 'customer' | 'merchant' | 'captain',
+  headers: Record<string, string>,
+) {
   const answer = await app.inject({ method: 'POST', url: `/v1/${party}/realtime/token`, headers });
   expect(answer.statusCode).toBe(200);
   return answer.json().token as string;
@@ -190,7 +196,7 @@ async function place(headers: Record<string, string>): Promise<string> {
 
 // The proxy's answer to a subscription, as Centrifugo asks for it.
 async function proxied(
-  party: 'customer' | 'merchant',
+  party: 'customer' | 'merchant' | 'captain',
   token: string,
   channel: string,
   secret: string | null = proxySecret,
@@ -477,6 +483,120 @@ describe('a sign-out applies at once (CU §5.4, RA §5.1)', () => {
     } finally {
       leavingDevice.client.disconnect();
       staying.client.disconnect();
+    }
+  });
+});
+
+// An activated motorbike captain with its app account's phone.
+async function captainSignedIn() {
+  const phone = phoneNumber();
+  const azaz = (await sql.query("SELECT id FROM geo.cities WHERE code = 'AZ'")).rows[0].id;
+  const captainId = await app.get(CaptainsService).createCaptain(
+    azaz,
+    {
+      name: 'كابتن القناة',
+      vehicle: 'motorbike',
+      plateNumber: randomUUID().slice(0, 6),
+      custodyLimit: { amount: 300_000n, currency: 'TRY' },
+    },
+    change,
+  );
+  await app.get(CaptainAccountsService).addAccount(captainId, phone, change);
+  return { captainId, phone };
+}
+
+// The captain signed in on a new device: its headers. Signing in again is
+// another device (CA §4.9).
+async function captainDevice(phone: string) {
+  const deviceId = randomUUID();
+  await app.inject({ method: 'POST', url: '/v1/captain/auth/code', payload: { phone, deviceId } });
+  const code = app.get<DevelopmentCodeSender>(CODE_SENDER).lastCode(phone);
+  const answer = await app.inject({
+    method: 'POST',
+    url: '/v1/captain/auth/sign-in',
+    payload: { phone, deviceId, code },
+  });
+  expect(answer.statusCode).toBe(200);
+  return { authorization: `Bearer ${answer.json().accessToken}` };
+}
+
+describe("the captain's channel (architecture §6.2, CA §15)", () => {
+  it('lets a captain into its own channel only, and carries its offers', async () => {
+    const { captainId, phone } = await captainSignedIn();
+    const other = await captainSignedIn();
+    const device = await captainDevice(phone);
+    const token = await realtimeToken('captain', device);
+    expect((await proxied('captain', token, `captain:${captainId}`)).json()).toEqual({
+      result: {},
+    });
+    expect((await proxied('captain', token, `captain:${other.captainId}`)).json()).toMatchObject({
+      error: { code: 403 },
+    });
+    // Another app's proxy refuses a captain's connection.
+    expect((await proxied('merchant', token, `merchant:${restaurant}`)).json()).toMatchObject({
+      error: { code: 403 },
+    });
+
+    const channel = subscribed(token, `captain:${captainId}`);
+    try {
+      expect(await channel.outcome).toBe('subscribed');
+      const captains = app.get(CaptainsService);
+      const now = new Date();
+      await captains.goOnline(captainId, { appVersion: '1.0.0', simulatedLocation: false }, now);
+      await captains.recordLocations(
+        captainId,
+        [{ ...centre, accuracyMetres: 8, recordedAt: now, simulated: false }],
+        new Date(now.getTime() + 1),
+      );
+      const orderId = await place(await signedIn('customer'));
+      const accepted = await app.inject({
+        method: 'POST',
+        url: `/v1/merchant/orders/${orderId}/accept`,
+        headers: { ...(await signedIn('merchant')), 'idempotency-key': randomUUID() },
+        payload: { prepMin: 20 },
+      });
+      expect(accepted.statusCode).toBe(200);
+      const state = await app.get(DispatchService).assign(
+        {
+          orderId,
+          captainId,
+          admin: { accountId: randomUUID(), roles: ['OPS'] },
+          context: { ipAddress: null, device: null },
+          idempotencyKey: randomUUID(),
+        },
+        new Date(),
+      );
+      await eventually(() => channel.received.length > 0);
+      expect(channel.received[0]).toMatchObject({
+        type: 'order.offered',
+        orderId,
+        status: 'accepted',
+        version: state.version,
+        captainTrack: 'offered',
+      });
+      expect(channel.received[0]).not.toHaveProperty('captainId');
+    } finally {
+      channel.client.disconnect();
+      await app.get(CaptainsService).goOffline(captainId, new Date());
+    }
+  });
+
+  it("ends a captain's connection when the captain signs in on another device (CA §4.9)", async () => {
+    const { captainId, phone } = await captainSignedIn();
+    const first = subscribed(
+      await realtimeToken('captain', await captainDevice(phone)),
+      `captain:${captainId}`,
+    );
+    try {
+      expect(await first.outcome).toBe('subscribed');
+      // Past the resend wait of the first code (otp.resend_after_sec).
+      await sql.query(
+        "UPDATE identity.app_sign_in_codes SET created_at = created_at - interval '5 minutes'",
+      );
+      await captainDevice(phone);
+      expect(await first.disconnected).toBe(4501);
+    } finally {
+      first.client.disconnect();
     }
   });
 });

@@ -9,13 +9,16 @@ import { MerchantsModule } from '../merchants/index.js';
 import { NotificationsModule, NotificationsWorkerModule } from '../notifications/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { ActiveOrders } from './active-orders.js';
+import { AdminOrdersController } from './admin-orders.controller.js';
 import { CustomerOrdersController } from './customer-orders.controller.js';
 import { CustomerQuoteController } from './customer-quote.controller.js';
 import { MerchantOrdersController } from './merchant-orders.controller.js';
 import { OrderChannelAccess } from './order-channel.js';
+import { OrderAssignmentsModule } from './order-assignments.js';
 import { OrderCommands } from './order-commands.js';
 import { OrderPartitions } from './order-partitions.js';
 import { OrderTimers, OrderTimersWorker } from './order-timers.js';
+import { OperationsViews } from './operations-views.js';
 import { OrdersService } from './orders.service.js';
 export type { OrderView } from './order-views.js';
 import { OutboxRelay, OutboxRelayWorker } from './outbox-relay.js';
@@ -36,8 +39,14 @@ import { QuoteService } from './quote.service.js';
     CustomersModule,
     CaptainsModule,
     NotificationsModule,
+    OrderAssignmentsModule,
   ],
-  controllers: [CustomerQuoteController, CustomerOrdersController, MerchantOrdersController],
+  controllers: [
+    CustomerQuoteController,
+    CustomerOrdersController,
+    MerchantOrdersController,
+    AdminOrdersController,
+  ],
   providers: [
     ActiveOrders,
     QuoteService,
@@ -45,6 +54,7 @@ import { QuoteService } from './quote.service.js';
     OrderCommands,
     OrderTimers,
     OrderChannelAccess,
+    OperationsViews,
   ],
   exports: [QuoteService, OrdersService],
 })
@@ -58,6 +68,13 @@ export class OrderingModule {}
 })
 export class OrderingWorkerModule {}
 
+export {
+  type AssignmentActor,
+  type AssignmentChange,
+  type DispatchOrder,
+  OrderAssignments,
+  OrderAssignmentsModule,
+} from './order-assignments.js';
 export {
   type OrderRefusal,
   OrderRefusedError,

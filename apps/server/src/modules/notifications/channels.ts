@@ -4,5 +4,8 @@
 // Every signed-in device of the restaurant: its orders.
 export const merchantChannel = (restaurantId: string): string => `merchant:${restaurantId}`;
 
+// The captain's device: offers and the assigned order (CA §15).
+export const captainChannel = (captainId: string): string => `captain:${captainId}`;
+
 // The customer's devices while the order is active: its status.
 export const orderChannel = (orderId: string): string => `order:${orderId}`;

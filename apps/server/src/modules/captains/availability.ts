@@ -23,6 +23,8 @@ export interface AvailabilityInput {
   // app.captain.min_version; null for none.
   minVersion: string | null;
   simulatedLocation: boolean;
+  // CA §7.1: the captain has an active order (AP §9.12.6: no stacking in V1).
+  activeOrder: boolean;
 }
 
 // CA §7.2: a reason the «متصل» switch is refused, in the table's order.
@@ -37,11 +39,12 @@ export type OnlineBlock =
 // CA §7.1, §7.2: why an online captain gets no offers.
 export type NoOffersReason = 'cash_limit' | 'closed_due' | 'simulated_location';
 
-// CA §7.1. Busy and last-order mode need an active order (the ordering
-// slices).
+// CA §7.1. Last-order mode comes with the delivery slices.
 export type Availability =
   | { state: 'offline' }
   | { state: 'online_available'; since: Date }
+  // «مشغول»: an active order; no offers in V1 (no stacking, AP §9.12.6).
+  | { state: 'busy'; since: Date }
   | { state: 'not_receiving_offers'; since: Date; reasons: NoOffersReason[] }
   | { state: 'suspended'; reason: string; until: Date | null };
 
@@ -100,6 +103,7 @@ export function availability(input: AvailabilityInput, now: Date): Availability 
   }
   const since = input.onlineSince;
   if (input.status === 'terminated' || since === null) return { state: 'offline' };
+  if (input.activeOrder) return { state: 'busy', since };
   const reasons: NoOffersReason[] = [];
   if (input.custodyUsage >= input.custodyLimit) reasons.push('cash_limit');
   if (input.closedDue > input.remitTolerance) {
