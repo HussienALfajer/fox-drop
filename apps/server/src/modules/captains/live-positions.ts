@@ -10,6 +10,12 @@ export interface LivePosition {
   recordedAt: Date;
 }
 
+// A captain near a point, and where.
+export interface NearbyCaptain {
+  captainId: string;
+  position: Point;
+}
+
 // The hash outlives the last point by this many seconds, so an app that died
 // online leaves no position for long.
 const POSITION_TTL_SECONDS = 600;
@@ -78,7 +84,7 @@ export class LivePositions {
     point: Point,
     radiusMetres: number,
     now: Date,
-  ): Promise<string[] | null> {
+  ): Promise<NearbyCaptain[] | null> {
     try {
       const members = (await this.valkey.geosearch(
         cityKey(cityId),
@@ -88,17 +94,23 @@ export class LivePositions {
         'BYRADIUS',
         radiusMetres,
         'm',
+        'WITHCOORD',
         'ASC',
-      )) as string[];
+      )) as [string, [string, string]][];
       if (members.length === 0) return [];
       const pipeline = this.valkey.pipeline();
-      for (const captainId of members) pipeline.hget(captainKey(captainId), 'recordedAt');
+      for (const [captainId] of members) pipeline.hget(captainKey(captainId), 'recordedAt');
       const recorded = (await pipeline.exec()) ?? [];
       const since = now.getTime() - LIVE_POSITION_MAX_AGE_MS;
-      return members.filter((_, index) => {
-        const value = recorded[index]?.[1];
-        return typeof value === 'string' && Number(value) >= since;
-      });
+      return members
+        .filter((_, index) => {
+          const value = recorded[index]?.[1];
+          return typeof value === 'string' && Number(value) >= since;
+        })
+        .map(([captainId, [longitude, latitude]]) => ({
+          captainId,
+          position: { latitude: Number(latitude), longitude: Number(longitude) },
+        }));
     } catch (error) {
       this.logger.warn({ err: error }, 'the live positions could not be read');
       return null;
