@@ -3,6 +3,7 @@ import {
   Browsers,
   BufferJSON,
   DisconnectReason,
+  getContentType,
   initAuthCreds,
   isJidBroadcast,
   isJidGroup,
@@ -11,12 +12,18 @@ import {
   isPnUser,
   makeCacheableSignalKeyStore,
   makeWASocket,
+  normalizeMessageContent,
   proto,
   type SignalDataSet,
   type SignalDataTypeMap,
   type SignalKeyStore,
+  type WAMessage,
 } from 'baileys';
-import type { WhatsAppConnect, WhatsAppSessionStore } from './whatsapp-client.js';
+import type {
+  WhatsAppClosedReason,
+  WhatsAppConnect,
+  WhatsAppSessionStore,
+} from './whatsapp-client.js';
 
 // The WhatsApp library of architecture §8.3.1: Baileys (owner decision
 // 2026-11-06), the multi-device protocol without a browser. This file is the
@@ -52,7 +59,7 @@ function libraryLogger(): ILogger {
   return library;
 }
 
-function keyStore(session: WhatsAppSessionStore): SignalKeyStore {
+export function keyStore(session: WhatsAppSessionStore): SignalKeyStore {
   return {
     get: async <T extends keyof SignalDataTypeMap>(type: T, ids: string[]) => {
       const found: Record<string, SignalDataTypeMap[T]> = {};
@@ -80,9 +87,66 @@ function keyStore(session: WhatsAppSessionStore): SignalKeyStore {
   };
 }
 
-export const baileysConnect: WhatsAppConnect = async (session, events) => {
-  const stored = await session.read('creds');
-  const creds = stored === null ? initAuthCreds() : JSON.parse(stored, BufferJSON.reviver);
+// Writes run one after the other, in the library's order, and a read waits
+// for the writes before it: two upserts of one key on two pool connections
+// could otherwise commit out of order. drained() waits for the last write.
+export function orderedSession(
+  session: WhatsAppSessionStore,
+): WhatsAppSessionStore & { drained(): Promise<void> } {
+  let writes: Promise<void> = Promise.resolve();
+  return {
+    read: async (key) => {
+      await writes;
+      return session.read(key);
+    },
+    write: (entries) => {
+      const next = writes.then(() => session.write(entries));
+      writes = next.catch(() => undefined);
+      return next;
+    },
+    drained: () => writes,
+  };
+}
+
+// A session WhatsApp ended (401, the device unlinked) or refused (403, a ban)
+// only comes back with a new pairing; anything else reconnects.
+export function closedReason(statusCode: number | undefined): WhatsAppClosedReason {
+  return statusCode === DisconnectReason.loggedOut || statusCode === DisconnectReason.forbidden
+    ? 'logged_out'
+    : 'lost';
+}
+
+// The kinds of message a person writes, as opposed to receipts, reactions,
+// edits, deletions and the other protocol messages.
+const WRITTEN = new Set([
+  'conversation',
+  'extendedTextMessage',
+  'imageMessage',
+  'videoMessage',
+  'audioMessage',
+  'documentMessage',
+  'stickerMessage',
+  'contactMessage',
+  'contactsArrayMessage',
+  'locationMessage',
+  'liveLocationMessage',
+]);
+
+// The chat to answer when a person wrote to the number in their own chat,
+// never a group, list, status, channel or WhatsApp's own account.
+export function writtenChat(message: WAMessage): string | null {
+  const chat = message.key.remoteJid;
+  if (message.key.fromMe || !chat || chat === '0@s.whatsapp.net') return null;
+  if (isJidGroup(chat) || isJidBroadcast(chat) || isJidNewsletter(chat)) return null;
+  if (!isPnUser(chat) && !isLidUser(chat)) return null;
+  const type = getContentType(normalizeMessageContent(message.message));
+  return type && WRITTEN.has(type) ? chat : null;
+}
+
+export const baileysConnect: WhatsAppConnect = async (stored, events) => {
+  const session = orderedSession(stored);
+  const saved = await session.read('creds');
+  const creds = saved === null ? initAuthCreds() : JSON.parse(saved, BufferJSON.reviver);
   const logger = libraryLogger();
   const socket = makeWASocket({
     auth: { creds, keys: makeCacheableSignalKeyStore(keyStore(session), logger) },
@@ -95,7 +159,7 @@ export const baileysConnect: WhatsAppConnect = async (session, events) => {
   });
 
   socket.ev.on('creds.update', () => {
-    void session
+    session
       .write({ creds: JSON.stringify(creds, BufferJSON.replacer) })
       .catch((error: unknown) => logger.error({ err: error }, 'whatsapp session not saved'));
   });
@@ -103,19 +167,15 @@ export const baileysConnect: WhatsAppConnect = async (session, events) => {
     if (qr) events.qr(qr);
     if (connection === 'open' && socket.user) events.open(phoneOf(socket.user.id));
     if (connection === 'close') {
-      const status = (lastDisconnect?.error as { output?: { statusCode?: number } } | undefined)
-        ?.output?.statusCode;
-      events.closed(status === DisconnectReason.loggedOut ? 'logged_out' : 'lost');
+      const error = lastDisconnect?.error as { output?: { statusCode?: number } } | undefined;
+      events.closed(closedReason(error?.output?.statusCode));
     }
   });
   socket.ev.on('messages.upsert', ({ messages, type }) => {
     if (type !== 'notify') return;
     for (const message of messages) {
-      const chat = message.key.remoteJid;
-      if (message.key.fromMe || !message.message || !chat) continue;
-      // A person's own chat only: never groups, lists, statuses or channels.
-      if (isJidGroup(chat) || isJidBroadcast(chat) || isJidNewsletter(chat)) continue;
-      if (isPnUser(chat) || isLidUser(chat)) events.incoming(chat);
+      const chat = writtenChat(message);
+      if (chat) events.incoming(chat);
     }
   });
 
@@ -130,9 +190,10 @@ export const baileysConnect: WhatsAppConnect = async (session, events) => {
     reply: async (chat, text) => {
       await socket.sendMessage(chat, { text });
     },
-    close: () => {
-      socket.end(undefined);
-      return Promise.resolve();
+    // Waits for the session's last write, so a stop never loses it.
+    close: async () => {
+      await socket.end(undefined);
+      await session.drained();
     },
   };
 };

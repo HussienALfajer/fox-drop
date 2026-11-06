@@ -35,12 +35,20 @@ export class OtpSenderNumbers {
     entries: Map<string, string | null>,
     now: Date,
   ): Promise<SenderNumber> {
+    const phoneHash = this.secrets.phoneHash(phone);
     return this.database.db.transaction(async (tx) => {
+      // Pairing a number again replaces its earlier session.
+      await tx
+        .update(otpSenderNumbers)
+        .set({ status: 'disconnected', disconnectedAt: now })
+        .where(
+          and(eq(otpSenderNumbers.phoneHash, phoneHash), eq(otpSenderNumbers.status, 'active')),
+        );
       const [number] = await tx
         .insert(otpSenderNumbers)
         .values({
           phoneEncrypted: this.secrets.encrypt(phone),
-          phoneHash: this.secrets.phoneHash(phone),
+          phoneHash,
           status: 'active',
           pairedAt: now,
         })

@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import {
   Inject,
   Injectable,
@@ -16,6 +15,7 @@ import {
   decodeSendPayload,
   ready,
   safeJson,
+  SEND_DEADLINE_MARGIN_MS,
   SEND_ANSWERS_CHANNEL,
   SEND_REQUESTS_KEY,
   type SendAnswer,
@@ -124,16 +124,22 @@ export class OtpSenderService implements OnApplicationBootstrap, OnApplicationSh
       qr: () => {
         // A stored session never asks for a QR code; this one is no longer
         // valid, and only the pairing command can pair the number again.
-        void this.lost(connection, 'logged_out');
+        this.whenLost(connection, 'logged_out');
       },
       open: () => {
         connection.open = true;
         this.logger.log('otp sender connected');
       },
-      closed: (reason) => void this.lost(connection, reason),
+      closed: (reason) => this.whenLost(connection, reason),
       incoming: (chat) => void this.answerIncoming(connection, chat),
     });
     this.connection = connection;
+  }
+
+  private whenLost(connection: Connection, reason: WhatsAppClosedReason): void {
+    this.lost(connection, reason).catch((error: unknown) =>
+      this.logger.error({ err: error }, 'otp sender number not marked disconnected'),
+    );
   }
 
   private async lost(connection: Connection, reason: WhatsAppClosedReason): Promise<void> {
@@ -172,22 +178,30 @@ export class OtpSenderService implements OnApplicationBootstrap, OnApplicationSh
     }
   }
 
-  // Answers one request. One past its deadline is dropped unsent: the API has
-  // already answered unavailable and rolled its code back.
+  // Answers one request. One with less than the margin left is dropped
+  // unsent: the API answers unavailable and rolls its code back.
   async answer(request: SendRequest, now = new Date()): Promise<SendResult | null> {
-    if (request.deadline <= now.getTime()) return null;
+    const latest = request.deadline - SEND_DEADLINE_MARGIN_MS;
+    if (latest <= now.getTime()) return null;
     const { phone, code } = decodeSendPayload(this.secrets, request);
-    const result = await this.deliver(phone, code, now);
+    const result = await this.deliver(phone, code, now, latest);
     const answer: SendAnswer = { id: request.id, result };
     await this.valkey.publish(SEND_ANSWERS_CHANNEL, JSON.stringify(answer));
     return result;
   }
 
-  private async deliver(phone: string, code: string, now: Date): Promise<SendResult> {
+  private async deliver(
+    phone: string,
+    code: string,
+    now: Date,
+    latest: number,
+  ): Promise<SendResult> {
     const connection = this.connection;
     if (!connection?.open) return 'unavailable';
     try {
       if (!(await this.onWhatsApp(connection.client, phone, now))) return 'not_on_whatsapp';
+      // The check may take a while; the code must still be valid on arrival.
+      if (Date.now() >= latest) return 'unavailable';
       await connection.client.sendText(phone, codeMessage(code));
       return 'sent';
     } catch (error) {
@@ -215,14 +229,21 @@ export class OtpSenderService implements OnApplicationBootstrap, OnApplicationSh
     return true;
   }
 
-  // §8.3.3 item 9: one fixed reply per chat. The mark lives in Valkey, so
-  // losing it costs one more reply at most.
+  // §8.3.3 item 9: one fixed reply per chat. The mark lives in Valkey, by the
+  // chat's keyed hash (an address may be a phone number), so losing it costs
+  // one more reply at most; a reply that fails leaves no mark.
   private async answerIncoming(connection: Connection, chat: string): Promise<void> {
+    if (!connection.open) return;
+    const key = `identity:otp:replied:${this.secrets.phoneHash(chat)}`;
     try {
-      const key = `identity:otp:replied:${createHash('sha256').update(chat).digest('hex')}`;
       const first = await this.valkey.set(key, '1', 'EX', REPLIED_SECONDS, 'NX');
-      if (first !== 'OK' || !connection.open) return;
-      await connection.client.reply(chat, replyMessage(process.env.SUPPORT_WHATSAPP_NUMBER));
+      if (first !== 'OK') return;
+      try {
+        await connection.client.reply(chat, replyMessage(process.env.SUPPORT_WHATSAPP_NUMBER));
+      } catch (error) {
+        await this.valkey.del(key);
+        throw error;
+      }
     } catch (error) {
       this.logger.warn({ err: error }, 'otp sender reply not sent');
     }

@@ -17,7 +17,7 @@ import type { WhatsAppClient } from './whatsapp-client.js';
 const PAIRING_TIMEOUT_MS = 3 * 60_000;
 // After WhatsApp opens the session, the library uploads its keys; wait for
 // them before saving.
-const SETTLE_MS = 5_000;
+const SETTLE_MS = 10_000;
 
 function fail(message: string): never {
   process.stderr.write(`${message}\n`);
@@ -41,18 +41,21 @@ const paired = await new Promise<string>((resolve, reject) => {
   const start = async () => {
     client = await baileysConnect(session, {
       qr: (code) => {
-        void QRCode.toString(code, { type: 'terminal', small: true }).then((picture) =>
-          process.stdout.write(
-            `\nScan with WhatsApp on the sending number: Linked devices › Link a device.\n${picture}\n`,
-          ),
+        QRCode.toString(code, { type: 'terminal', small: true }).then(
+          (picture) =>
+            process.stdout.write(
+              `\nScan with WhatsApp on the sending number: Linked devices › Link a device.\n${picture}\n`,
+            ),
+          (error: unknown) =>
+            process.stderr.write(`The QR code could not be drawn: ${String(error)}\n`),
         );
       },
       open: (phone) => {
         setTimeout(() => {
           done = true;
           clearTimeout(timer);
-          void client?.close();
-          resolve(phone);
+          // Closing waits for the session's last write.
+          (client?.close() ?? Promise.resolve()).then(() => resolve(phone), reject);
         }, SETTLE_MS);
       },
       closed: (reason) => {

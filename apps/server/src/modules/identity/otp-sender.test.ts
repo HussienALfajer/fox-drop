@@ -12,8 +12,10 @@ import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
 import {
   encodeSendRequest,
+  MAX_WAITING_SENDS,
   QueuedCodeSender,
   SEND_ANSWER_TIMEOUT_MS,
+  SEND_DEADLINE_MARGIN_MS,
   SEND_REQUESTS_KEY,
 } from './code-send-queue.js';
 import { codeMessage, replyMessage } from './otp-messages.js';
@@ -99,6 +101,7 @@ beforeAll(async () => {
   sql = new pg.Pool({ connectionString: database.appUrl });
   db = createDatabase(database.appUrl);
   valkey = new Valkey(cache.url);
+  await valkey.ping();
   secrets = new IdentitySecrets(key);
   numbers = new OtpSenderNumbers(db, secrets);
 }, 300_000);
@@ -123,6 +126,26 @@ describe('without an otp-sender', () => {
     expect(await answer).toBe('unavailable');
     await queued.onApplicationShutdown();
     await valkey.del(SEND_REQUESTS_KEY);
+  });
+
+  it('answers unavailable at once beyond three waiting requests, or while Valkey is away', async () => {
+    const queued = new QueuedCodeSender(valkey, secrets, 500);
+    const waiting = [1, 2, 3].map(() => queued.send(newPhone(), '482913'));
+    await pause(50);
+    const started = Date.now();
+    expect(await queued.send(newPhone(), '482913')).toBe('unavailable');
+    expect(Date.now() - started).toBeLessThan(100);
+    expect(await Promise.all(waiting)).toEqual(['unavailable', 'unavailable', 'unavailable']);
+    expect(await valkey.llen(SEND_REQUESTS_KEY)).toBe(MAX_WAITING_SENDS);
+    await queued.onApplicationShutdown();
+    await valkey.del(SEND_REQUESTS_KEY);
+
+    const away = new Valkey(cache.url, { lazyConnect: true, enableOfflineQueue: false });
+    const offline = new QueuedCodeSender(away, secrets);
+    const before = Date.now();
+    expect(await offline.send(newPhone(), '482913')).toBe('unavailable');
+    expect(Date.now() - before).toBeLessThan(100);
+    away.disconnect();
   });
 
   it('waits ten seconds by default', () => {
@@ -205,7 +228,7 @@ describe('the otp-sender', () => {
       expect(whatsapp.checks).toBe(checks + 1);
 
       const later = new Date(Date.now() + (ON_WHATSAPP_CACHE_DAYS + 1) * 24 * 60 * 60 * 1000);
-      const request = encodeSendRequest(secrets, phone, '654321', later.getTime() + 1000);
+      const request = encodeSendRequest(secrets, phone, '654321', later.getTime() + 10_000);
       expect(await sender.answer(request, later)).toBe('sent');
       expect(whatsapp.checks).toBe(checks + 2);
     });
@@ -223,11 +246,16 @@ describe('the otp-sender', () => {
       expect(rows).toHaveLength(0);
     });
 
-    it('drops a request past its deadline unsent', async () => {
+    it('drops a request too close to its deadline unsent', async () => {
       const phone = newPhone();
       whatsapp.onWhatsApp.add(phone);
       const sent = whatsapp.sent.length;
-      const request = encodeSendRequest(secrets, phone, '482913', Date.now() - 1);
+      const request = encodeSendRequest(
+        secrets,
+        phone,
+        '482913',
+        Date.now() + SEND_DEADLINE_MARGIN_MS - 1,
+      );
       expect(await sender.answer(request)).toBeNull();
       expect(whatsapp.sent).toHaveLength(sent);
     });
@@ -314,5 +342,21 @@ describe('the otp-sender', () => {
       expect(none.statusCode).toBe(400);
       expect(none.json()).toMatchObject({ error: 'not_on_whatsapp' });
     });
+  });
+});
+
+describe('pairing a number again', () => {
+  it('replaces its earlier session', async () => {
+    const phone = '+963900000003';
+    const first = await numbers.savePaired(phone, new Map(), new Date());
+    const second = await numbers.savePaired(phone, new Map([['creds', '{}']]), new Date());
+    const { rows } = await sql.query<{ id: string; status: string }>(
+      'SELECT id, status FROM identity.otp_sender_numbers WHERE phone_hash = $1 ORDER BY paired_at',
+      [secrets.phoneHash(phone)],
+    );
+    expect(rows).toEqual([
+      { id: first.id, status: 'disconnected' },
+      { id: second.id, status: 'active' },
+    ]);
   });
 });

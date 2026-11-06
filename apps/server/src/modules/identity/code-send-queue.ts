@@ -21,6 +21,14 @@ export const SEND_ANSWER_TIMEOUT_MS = 10_000;
 // the sender's blocking pop wait longer than that by design.
 export const BLOCKING_COMMAND_TIMEOUT_MS = 30_000;
 
+// Requests of one API process that may wait at once: the sender answers one
+// at a time, and every waiting request holds a pool connection (10).
+export const MAX_WAITING_SENDS = 3;
+const SUBSCRIBE_TIMEOUT_MS = 2_000;
+// The sender drops a request with less time left than this, so a code never
+// arrives after the API has answered unavailable and rolled it back.
+export const SEND_DEADLINE_MARGIN_MS = 3_000;
+
 export const sendRequestSchema = z.object({
   id: z.uuid(),
   // {phone, code} as JSON, encrypted.
@@ -71,11 +79,20 @@ export class QueuedCodeSender implements CodeSender {
   ) {}
 
   async send(phone: string, code: string): Promise<SendResult> {
+    // The caller holds a database connection and the number's lock while it
+    // waits, so a missing Valkey or a backlog answers at once instead.
+    if (this.valkey.status !== 'ready' || this.waiting.size >= MAX_WAITING_SENDS) {
+      return 'unavailable';
+    }
+    let subscriber: Valkey;
     try {
-      await this.subscribe();
+      subscriber = await this.subscribe();
     } catch {
       return 'unavailable';
     }
+    // While the subscriber reconnects an answer would be missed, and the
+    // code sent after the API gave up.
+    if (subscriber.status !== 'ready') return 'unavailable';
     const request = encodeSendRequest(this.secrets, phone, code, Date.now() + this.timeoutMs);
     const answer = new Promise<SendResult>((resolve) => {
       const timer = setTimeout(() => {
@@ -109,7 +126,7 @@ export class QueuedCodeSender implements CodeSender {
       // The client reconnects and subscribes again on its own; requests made
       // meanwhile time out.
       subscriber.on('error', () => undefined);
-      await ready(subscriber, this.timeoutMs);
+      await ready(subscriber, SUBSCRIBE_TIMEOUT_MS);
       subscriber.on('message', (_channel: string, message: string) => {
         const answer = sendAnswerSchema.safeParse(safeJson(message));
         if (answer.success) this.waiting.get(answer.data.id)?.(answer.data.result);
