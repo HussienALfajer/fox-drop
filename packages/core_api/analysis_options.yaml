@@ -13,4 +13,6 @@ analyzer:
     unnecessary_this: ignore
     unused_import: ignore
     use_function_type_syntax_for_parameters: ignore
+    # An optional header, such as X-Firebase-AppCheck, is an `if` element.
+    use_null_aware_elements: ignore
     use_super_parameters: ignore
