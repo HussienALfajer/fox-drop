@@ -85,6 +85,10 @@ export class DeliveryBooking {
     away: { reason: (typeof awayReasons)[number]; note: string | null } | null,
   ): Promise<void> {
     if (order.captainId === null) throw new Error(`order ${order.id} has no captain`);
+    // AP §8.4: a discount needs platform.discount_cost or
+    // merchant.discount_share, which come with codes (Phase 2); until then
+    // the clearing account would not settle.
+    if (order.discount !== 0n) throw new Error(`order ${order.id} has a discount, not booked yet`);
     const version = order.version + 1;
     await tx
       .update(orders)

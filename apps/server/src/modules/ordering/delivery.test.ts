@@ -690,6 +690,7 @@ async function orderAtDoor(
       received?: object[];
       change?: object[];
       amountDue?: string;
+      amountDueCurrency?: string;
       shortfall?: object | null;
       away?: object | null;
     } = {},
@@ -703,7 +704,10 @@ async function orderAtDoor(
       payload: {
         received: payment.received ?? TRY('28000'),
         change: payment.change ?? [],
-        amountDue: { amount: payment.amountDue ?? '28000', currency: 'TRY' },
+        amountDue: {
+          amount: payment.amountDue ?? '28000',
+          currency: payment.amountDueCurrency ?? 'TRY',
+        },
         shortfall: payment.shortfall ?? null,
         away: payment.away ?? null,
         location: {
@@ -849,6 +853,56 @@ describe('POST /v1/captain/orders/{orderId}/deliver (CA §9.7–9.8)', () => {
       },
       recordedBy: { type: 'captain', id: door.captain.captainId, reason: null },
     });
+    const list = (await door.ops.get(`/v1/admin/orders/shortfalls?cityId=${azaz}`)).json();
+    expect(
+      list.shortfalls.find((each: { orderId: string }) => each.orderId === door.order.id),
+    ).toMatchObject({
+      captainId: door.captain.captainId,
+      amountDue: { amount: '28000', currency: 'TRY' },
+      netReceived: { amount: '25000', currency: 'TRY' },
+      shortfall: { amount: '3000', currency: 'TRY' },
+      reason: 'customer_short',
+    });
+  });
+
+  it("refuses another captain's delivery with unknown_order", async () => {
+    const door = await orderAtDoor();
+    const other = await onlineCaptain();
+    const answer = await app.inject({
+      method: 'POST',
+      url: `/v1/captain/orders/${door.order.id}/deliver`,
+      headers: { ...other.headers, 'idempotency-key': randomUUID() },
+      payload: {
+        received: TRY('28000'),
+        change: [],
+        amountDue: { amount: '28000', currency: 'TRY' },
+        shortfall: null,
+        away: null,
+        location: {
+          ...atCustomer,
+          accuracyMetres: 10,
+          recordedAt: new Date().toISOString(),
+          simulated: false,
+        },
+      },
+    });
+    expect(answer.statusCode).toBe(404);
+  });
+
+  it("books a test order's pay to platform.test_cost, with no commission (AP §9.6.3)", async () => {
+    const door = await orderAtDoor();
+    await sql.query('UPDATE ordering.orders SET test_order = true WHERE id = $1', [door.order.id]);
+    const testCost = await platform('platform.test_cost');
+    const before = await platformNow();
+    const restaurantBefore = await owned(restaurant, 'merchant.account');
+    expect((await door.deliver()).statusCode).toBe(200);
+    expect((await platform('platform.test_cost')) - testCost).toBe(2_500n);
+    const moved = delta(before, await platformNow());
+    expect(moved['platform.revenue_commission']).toBe(0n);
+    expect(moved['platform.captain_pay']).toBe(0n);
+    expect(moved['platform.order_clearing']).toBe(-24_000n);
+    expect((await owned(restaurant, 'merchant.account')) - restaurantBefore).toBe(0n);
+    expect(await owned(door.captain.captainId, 'captain.earnings')).toBe(2_500n);
   });
 
   it('refuses a net above the amount due, and a stale amount due', async () => {
@@ -860,6 +914,10 @@ describe('POST /v1/captain/orders/{orderId}/deliver (CA §9.7–9.8)', () => {
     expect(stale.statusCode).toBe(409);
     expect(stale.json().error).toBe('amount_due_changed');
     expect(stale.json().order.collect).toEqual({ amount: '28000', currency: 'TRY' });
+    const otherCurrency = await door.deliver({ amountDueCurrency: 'USD' });
+    expect(otherCurrency.json().error).toBe('amount_due_changed');
+    const huge = await door.deliver({ received: TRY('1234567890123456') });
+    expect(huge.statusCode).toBe(400);
     const odd = await door.deliver({ received: [{ currency: 'EUR', amount: '1000' }] });
     expect(odd.json().error).toBe('currency_not_accepted');
     const repeated = await door.deliver({ received: [...TRY('14000'), ...TRY('14000')] });
@@ -987,6 +1045,35 @@ describe('POST /v1/admin/orders/{orderId}/record-delivery (AP §9.3.2)', () => {
     });
     expect(again.statusCode).toBe(409);
     expect(again.json().error).toBe('order_state_changed');
+  });
+
+  it('records it from arrived too, and needs a reason for a shortfall', async () => {
+    const door = await orderAtDoor();
+    const body = {
+      received: TRY('25000'),
+      change: [],
+      amountDue: { amount: '28000', currency: 'TRY' },
+      reason: 'الكابتن بلا هاتف',
+    };
+    const missing = await door.ops.post(`/v1/admin/orders/${door.order.id}/record-delivery`, {
+      ...body,
+      shortfall: null,
+    });
+    expect(missing.statusCode).toBe(409);
+    expect(missing.json()).toMatchObject({
+      error: 'shortfall_reason_required',
+      shortfall: { amount: '3000', currency: 'TRY' },
+    });
+    const answer = await door.ops.post(`/v1/admin/orders/${door.order.id}/record-delivery`, {
+      ...body,
+      shortfall: { reason: 'counting_error', note: null },
+    });
+    expect(answer.statusCode).toBe(200);
+    expect((await collectionRow(door.order.id))[0]).toMatchObject({
+      shortfall: '3000',
+      shortfall_reason: 'counting_error',
+      recorded_by_type: 'admin',
+    });
   });
 
   it('needs operations.manage', async () => {
@@ -1140,6 +1227,8 @@ describe('the door payment in another currency (AP §8.6, CA §9.7)', () => {
     });
     expect(answer.statusCode).toBe(200);
     expect(answer.json().summary.custodyChange.amount).toBe('4000');
+    // CA §10.2: every currency at its current rate, so 7 USD less 248.40 TRY.
+    expect(answer.json().summary.handInToday).toEqual({ amount: '4000', currency: 'TRY' });
     // AP §8.6: the captain hands back exactly the currencies received.
     expect(await owned(door.captain.captainId, 'captain.custody', 'USD')).toBe(700n);
     expect(await owned(door.captain.captainId, 'captain.custody')).toBe(-24_840n);
@@ -1149,5 +1238,21 @@ describe('the door payment in another currency (AP §8.6, CA §9.7)', () => {
     // The platform's USD position against its TRY value.
     expect(usd['platform.fx_rounding']).toBe(700n);
     expect(delta(beforeTry, await platformNow())['platform.fx_rounding']).toBe(-28_840n);
+  });
+
+  it('books a gap within rounding beside the conversion', async () => {
+    const door = await orderAtDoor();
+    const beforeTry = await platformNow();
+    // 7 USD = 288.40 TRY; 8 TRY back leaves 280.40: 0.40 over, within half
+    // of 0.50 USD (10.30 TRY).
+    const answer = await door.deliver({
+      received: [{ currency: 'USD', amount: '700' }],
+      change: TRY('800'),
+    });
+    expect(answer.statusCode).toBe(200);
+    const moved = delta(beforeTry, await platformNow());
+    expect(moved['platform.order_clearing']).toBe(-24_000n);
+    // −288.40 for the USD's value, +0.40 gained in rounding.
+    expect(moved['platform.fx_rounding']).toBe(-28_800n);
   });
 });

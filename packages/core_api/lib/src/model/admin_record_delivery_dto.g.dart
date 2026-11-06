@@ -8,9 +8,9 @@ part of 'admin_record_delivery_dto.dart';
 
 class _$AdminRecordDeliveryDto extends AdminRecordDeliveryDto {
   @override
-  final BuiltList<MerchantPickupDisputeDtoReceivedLinesInner> received;
+  final BuiltList<AdminRecordDeliveryDtoReceivedInner> received;
   @override
-  final BuiltList<MerchantPickupDisputeDtoReceivedLinesInner> change;
+  final BuiltList<AdminRecordDeliveryDtoReceivedInner> change;
   @override
   final AdminRecordDeliveryDtoAmountDue amountDue;
   @override
@@ -77,19 +77,16 @@ class AdminRecordDeliveryDtoBuilder
     implements Builder<AdminRecordDeliveryDto, AdminRecordDeliveryDtoBuilder> {
   _$AdminRecordDeliveryDto? _$v;
 
-  ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>? _received;
-  ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner> get received =>
-      _$this._received ??=
-          ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>();
-  set received(
-    ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>? received,
-  ) => _$this._received = received;
+  ListBuilder<AdminRecordDeliveryDtoReceivedInner>? _received;
+  ListBuilder<AdminRecordDeliveryDtoReceivedInner> get received =>
+      _$this._received ??= ListBuilder<AdminRecordDeliveryDtoReceivedInner>();
+  set received(ListBuilder<AdminRecordDeliveryDtoReceivedInner>? received) =>
+      _$this._received = received;
 
-  ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>? _change;
-  ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner> get change =>
-      _$this._change ??=
-          ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>();
-  set change(ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>? change) =>
+  ListBuilder<AdminRecordDeliveryDtoReceivedInner>? _change;
+  ListBuilder<AdminRecordDeliveryDtoReceivedInner> get change =>
+      _$this._change ??= ListBuilder<AdminRecordDeliveryDtoReceivedInner>();
+  set change(ListBuilder<AdminRecordDeliveryDtoReceivedInner>? change) =>
       _$this._change = change;
 
   AdminRecordDeliveryDtoAmountDueBuilder? _amountDue;

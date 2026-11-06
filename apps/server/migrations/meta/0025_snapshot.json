@@ -1,5 +1,5 @@
 {
-  "id": "ba91a4e9-0eab-4ae3-aa3e-003c99a98f09",
+  "id": "c2b2dc1d-252f-422c-ad24-eecc60de3756",
   "prevId": "386c9be8-f915-410a-9445-6bda041e7abe",
   "version": "7",
   "dialect": "postgresql",
@@ -5896,6 +5896,28 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "collections_shortfalls": {
+          "name": "collections_shortfalls",
+          "columns": [
+            {
+              "expression": "city_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "recorded_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"ordering\".\"collections\".\"shortfall\" > 0",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -6369,6 +6391,13 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
+        },
+        "test_order": {
+          "name": "test_order",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "rate_snapshot": {
           "name": "rate_snapshot",

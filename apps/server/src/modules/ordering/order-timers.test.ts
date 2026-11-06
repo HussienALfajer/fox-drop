@@ -11,6 +11,7 @@ import { Jobs } from '../../jobs/jobs.module.js';
 import { QUEUES } from '../../jobs/job-queue.js';
 import { createBackgroundContext } from '../../roles/start-role.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
+import { CaptainsService } from '../captains/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService, type Point } from '../geo/index.js';
 import { CODE_SENDER, type DevelopmentCodeSender } from '../identity/index.js';
@@ -58,6 +59,22 @@ beforeAll(async () => {
   const fx = app.get(FxService);
   await fx.setCityCurrency(azaz, { currency: 'TRY', displayOrder: 1, enabled: true }, change);
   await fx.setBaseCurrency(azaz, 'TRY', change);
+  // AP §9.12.5: a pay table in force, which placing needs (captain_pay_unset).
+  const payRate = {
+    basePay: 2500n,
+    includedMetres: 3000,
+    perExtraKm: 500n,
+    waitingPerMinute: 0n,
+    minimumPay: 2500n,
+  };
+  await app.get(CaptainsService).setPayTable(
+    azaz,
+    {
+      currency: 'TRY',
+      rates: { walking: payRate, bicycle: payRate, motorbike: payRate, car: payRate },
+    },
+    change,
+  );
   const { SettingsService } = await import('../settings/index.js');
   const settings = app.get(SettingsService);
   await settings.update('dispatch.capacity_check', { cityId: azaz }, false, bySystem);

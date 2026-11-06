@@ -378,6 +378,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/orders/{orderId}/assign': 'operations.manage',
   'GET /v1/admin/orders/{orderId}/captains': 'operations.manage',
   'GET /v1/admin/orders': 'operations.read',
+  'GET /v1/admin/orders/shortfalls': 'operations.read',
   'GET /v1/admin/orders/{orderId}': 'operations.read',
   'GET /v1/admin/test-access/undeclared': 'undeclared',
   'GET /v1/admin/test-access/operations': 'operations.manage',

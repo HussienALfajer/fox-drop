@@ -133,6 +133,7 @@ class CustomerQuoteDto extends createZodDto(
             'minimum_not_in_base_currency',
             'delivery_unpriced',
             'rates_unavailable',
+            'captain_pay_unset',
             'one_order_at_a_time',
             'active_order_limit',
             'no_captain_nearby',

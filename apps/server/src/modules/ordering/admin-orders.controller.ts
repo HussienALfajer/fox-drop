@@ -108,6 +108,26 @@ class AdminBoardDto extends createZodDto(
   z.object({ orders: z.array(card).describe('Every live order, oldest first.') }),
 ) {}
 
+class AdminShortfallsDto extends createZodDto(
+  z.object({
+    shortfalls: z
+      .array(
+        z.object({
+          orderId: z.uuid(),
+          number: z.string(),
+          captainId: z.uuid(),
+          amountDue: money,
+          netReceived: money,
+          shortfall: money,
+          reason: z.enum(shortfallReasons).describe("The captain's reason (K16)."),
+          note: z.string().nullable(),
+          recordedAt: z.iso.datetime(),
+        }),
+      )
+      .describe('«نقص في التحصيل» (AP §8.6), newest first; all open until resolution is built.'),
+  }),
+) {}
+
 class AdminOrderParamsDto extends createZodDto(z.object({ orderId: z.uuid() })) {}
 
 class AdminRecordArrivalDto extends createZodDto(
@@ -481,6 +501,27 @@ export class AdminOrdersController {
     const item = await this.views.order(orderId, new Date());
     if (item === null) throw new Error(`order ${orderId} not found`);
     return cardBody(item);
+  }
+
+  // AP §8.6: the open collection shortfalls of the city, «نقص في التحصيل».
+  @Get('shortfalls')
+  @RequirePermission('operations.read')
+  @ZodResponse({ status: 200, type: AdminShortfallsDto })
+  async shortfalls(@Query() query: AdminBoardQueryDto) {
+    const money = (amount: bigint, currency: string) => ({ amount: amount.toString(), currency });
+    return {
+      shortfalls: (await this.views.shortfalls(query.cityId)).map((each) => ({
+        orderId: each.orderId,
+        number: each.number.toString(),
+        captainId: each.captainId,
+        amountDue: money(each.amountDue, each.currency),
+        netReceived: money(each.netReceived, each.currency),
+        shortfall: money(each.amount, each.currency),
+        reason: each.reason,
+        note: each.note,
+        recordedAt: each.recordedAt.toISOString(),
+      })),
+    };
   }
 
   @Get()

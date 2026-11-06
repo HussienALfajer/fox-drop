@@ -57,8 +57,11 @@ export 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custod
 export 'package:core_api/src/model/admin_record_arrival_dto.dart';
 export 'package:core_api/src/model/admin_record_delivery_dto.dart';
 export 'package:core_api/src/model/admin_record_delivery_dto_amount_due.dart';
+export 'package:core_api/src/model/admin_record_delivery_dto_received_inner.dart';
 export 'package:core_api/src/model/admin_record_delivery_dto_shortfall.dart';
 export 'package:core_api/src/model/admin_session_dto_output.dart';
+export 'package:core_api/src/model/admin_shortfalls_dto_output.dart';
+export 'package:core_api/src/model/admin_shortfalls_dto_output_shortfalls_inner.dart';
 export 'package:core_api/src/model/backup_codes_dto_output.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order.dart';

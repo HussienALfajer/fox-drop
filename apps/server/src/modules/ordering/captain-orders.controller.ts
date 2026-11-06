@@ -251,10 +251,23 @@ export const shortfallGiven = z
   });
 
 // AP §8.6, CA §9.7: the door payment, as the captain or operations record it.
+// A line's amount, capped at 15 digits so it never nears the bigint limit.
+const doorLine = z.object({
+  amount: z
+    .string()
+    .regex(/^\d{1,15}$/)
+    .describe('Integer minor units (AP §8.6).'),
+  currency: z.string().length(3),
+});
+
 export const doorPayment = {
-  received: paymentLines.describe('What the customer paid, one line per currency.'),
+  received: z
+    .array(doorLine)
+    .min(1)
+    .max(5)
+    .describe('What the customer paid, one line per currency.'),
   change: z
-    .array(money)
+    .array(doorLine)
     .max(5)
     .describe('The change given back, one line per currency; a tip is recorded as given (K14).'),
   amountDue: money.describe(
@@ -276,7 +289,7 @@ export function doorCollection(body: {
   return {
     received: linesOfBody(body.received),
     change: linesOfBody(body.change),
-    amountDue: BigInt(body.amountDue.amount),
+    amountDue: { amount: BigInt(body.amountDue.amount), currency: body.amountDue.currency },
     shortfall: body.shortfall,
   };
 }

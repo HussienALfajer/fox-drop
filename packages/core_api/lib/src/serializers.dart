@@ -56,8 +56,11 @@ import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custod
 import 'package:core_api/src/model/admin_record_arrival_dto.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_amount_due.dart';
+import 'package:core_api/src/model/admin_record_delivery_dto_received_inner.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_shortfall.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
+import 'package:core_api/src/model/admin_shortfalls_dto_output.dart';
+import 'package:core_api/src/model/admin_shortfalls_dto_output_shortfalls_inner.dart';
 import 'package:core_api/src/model/backup_codes_dto_output.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order.dart';
@@ -293,8 +296,11 @@ part 'serializers.g.dart';
   AdminRecordArrivalDto,
   AdminRecordDeliveryDto,
   AdminRecordDeliveryDtoAmountDue,
+  AdminRecordDeliveryDtoReceivedInner,
   AdminRecordDeliveryDtoShortfall,
   AdminSessionDtoOutput,
+  AdminShortfallsDtoOutput,
+  AdminShortfallsDtoOutputShortfallsInner,
   BackupCodesDtoOutput,
   CaptainActiveOrderDtoOutput,
   CaptainActiveOrderDtoOutputOrder,
@@ -608,6 +614,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminShortfallsDtoOutputShortfallsInner),
+            ]),
+            () => ListBuilder<AdminShortfallsDtoOutputShortfallsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
             ]),
             () => ListBuilder<CaptainWentOfflineDtoOutputHandIn>(),
@@ -655,6 +667,12 @@ Serializers serializers =
               FullType(CustomerQuoteDtoOutputProblemsInner),
             ]),
             () => ListBuilder<CustomerQuoteDtoOutputProblemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRecordDeliveryDtoReceivedInner),
+            ]),
+            () => ListBuilder<AdminRecordDeliveryDtoReceivedInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

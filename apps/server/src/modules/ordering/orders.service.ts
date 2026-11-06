@@ -136,6 +136,9 @@ export class OrdersService implements OnModuleInit {
       this.settings.get('order.merchant_auto_cancel_min', { cityId }),
     ]);
 
+    // The quote's captain_pay_unset checked it just before.
+    if (payTable === null) throw new Error(`city ${cityId} has no pay table in force`);
+
     // RA §8.2–8.3: the restaurant is late from the first, and the
     // countdown ends when the job runs.
     const acceptAlertAt = new Date(now.getTime() + acceptAlertMin * 60_000);
@@ -197,7 +200,10 @@ export class OrdersService implements OnModuleInit {
             deliveryFree: quote.deliveryFree,
             feeRuleId,
             commissionBp,
-            payTableId: payTable?.id ?? null,
+            payTableId: payTable.id,
+            // AP §9.6.3: a test restaurant's order, flagged for its money and
+            // the reports.
+            testOrder: restaurant.accountStatus === 'test',
             rateSnapshot: plain(kept),
             payIn: quote.payIn?.currency ?? null,
             note: command.note,

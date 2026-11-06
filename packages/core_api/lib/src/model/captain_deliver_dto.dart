@@ -7,8 +7,8 @@ import 'package:core_api/src/model/admin_record_delivery_dto_amount_due.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/captain_arrive_dto_location.dart';
 import 'package:core_api/src/model/captain_deliver_dto_away.dart';
+import 'package:core_api/src/model/admin_record_delivery_dto_received_inner.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_shortfall.dart';
-import 'package:core_api/src/model/merchant_pickup_dispute_dto_received_lines_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -28,11 +28,11 @@ abstract class CaptainDeliverDto
     implements Built<CaptainDeliverDto, CaptainDeliverDtoBuilder> {
   /// What the customer paid, one line per currency.
   @BuiltValueField(wireName: r'received')
-  BuiltList<MerchantPickupDisputeDtoReceivedLinesInner> get received;
+  BuiltList<AdminRecordDeliveryDtoReceivedInner> get received;
 
   /// The change given back, one line per currency; a tip is recorded as given (K14).
   @BuiltValueField(wireName: r'change')
-  BuiltList<MerchantPickupDisputeDtoReceivedLinesInner> get change;
+  BuiltList<AdminRecordDeliveryDtoReceivedInner> get change;
 
   @BuiltValueField(wireName: r'amountDue')
   AdminRecordDeliveryDtoAmountDue get amountDue;
@@ -76,14 +76,14 @@ class _$CaptainDeliverDtoSerializer
     yield serializers.serialize(
       object.received,
       specifiedType: const FullType(BuiltList, [
-        FullType(MerchantPickupDisputeDtoReceivedLinesInner),
+        FullType(AdminRecordDeliveryDtoReceivedInner),
       ]),
     );
     yield r'change';
     yield serializers.serialize(
       object.change,
       specifiedType: const FullType(BuiltList, [
-        FullType(MerchantPickupDisputeDtoReceivedLinesInner),
+        FullType(AdminRecordDeliveryDtoReceivedInner),
       ]),
     );
     yield r'amountDue';
@@ -144,10 +144,10 @@ class _$CaptainDeliverDtoSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(MerchantPickupDisputeDtoReceivedLinesInner),
+                      FullType(AdminRecordDeliveryDtoReceivedInner),
                     ]),
                   )
-                  as BuiltList<MerchantPickupDisputeDtoReceivedLinesInner>;
+                  as BuiltList<AdminRecordDeliveryDtoReceivedInner>;
           result.received.replace(valueDes);
           break;
         case r'change':
@@ -155,10 +155,10 @@ class _$CaptainDeliverDtoSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(MerchantPickupDisputeDtoReceivedLinesInner),
+                      FullType(AdminRecordDeliveryDtoReceivedInner),
                     ]),
                   )
-                  as BuiltList<MerchantPickupDisputeDtoReceivedLinesInner>;
+                  as BuiltList<AdminRecordDeliveryDtoReceivedInner>;
           result.change.replace(valueDes);
           break;
         case r'amountDue':

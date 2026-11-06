@@ -27,9 +27,11 @@ CREATE TABLE "ordering"."collections" (
 	CONSTRAINT "collections_recorded_by" CHECK (("recorded_by_type" = 'captain' AND "reason" IS NULL) OR ("recorded_by_type" = 'admin' AND "reason" IS NOT NULL AND "recorded_by_device" IS NULL))
 );
 --> statement-breakpoint
+ALTER TABLE "ordering"."orders" ADD COLUMN "test_order" boolean DEFAULT false NOT NULL;--> statement-breakpoint
 ALTER TABLE "ordering"."orders" ADD COLUMN "delivered_at" timestamp with time zone;--> statement-breakpoint
 ALTER TABLE "ordering"."orders" ADD COLUMN "outcome" text;--> statement-breakpoint
 ALTER TABLE "ordering"."collections" ADD CONSTRAINT "collections_order_id_order_placed_at_orders_id_placed_at_fk" FOREIGN KEY ("order_id","order_placed_at") REFERENCES "ordering"."orders"("id","placed_at") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "collections_one_per_order" ON "ordering"."collections" USING btree ("order_id");--> statement-breakpoint
 CREATE INDEX "collections_captain" ON "ordering"."collections" USING btree ("captain_id","recorded_at");--> statement-breakpoint
+CREATE INDEX "collections_shortfalls" ON "ordering"."collections" USING btree ("city_id","recorded_at") WHERE "shortfall" > 0;--> statement-breakpoint
 ALTER TABLE "ordering"."orders" ADD CONSTRAINT "orders_delivery" CHECK (("status" = 'delivered') = ("delivered_at" IS NOT NULL) AND ("status" IN ('delivered', 'failed')) = ("outcome" IS NOT NULL) AND ("outcome" IS NULL OR "outcome" IN ('normal', 'free', 'fake', 'damaged', 'wrong_refused', 'failed_other')));

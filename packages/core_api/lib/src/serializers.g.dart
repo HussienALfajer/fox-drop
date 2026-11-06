@@ -74,9 +74,13 @@ Serializers _$serializers =
           ..add(AdminRecordArrivalDto.serializer)
           ..add(AdminRecordDeliveryDto.serializer)
           ..add(AdminRecordDeliveryDtoAmountDue.serializer)
+          ..add(AdminRecordDeliveryDtoReceivedInner.serializer)
           ..add(AdminRecordDeliveryDtoShortfall.serializer)
           ..add(AdminRecordDeliveryDtoShortfallReasonEnum.serializer)
           ..add(AdminSessionDtoOutput.serializer)
+          ..add(AdminShortfallsDtoOutput.serializer)
+          ..add(AdminShortfallsDtoOutputShortfallsInner.serializer)
+          ..add(AdminShortfallsDtoOutputShortfallsInnerReasonEnum.serializer)
           ..add(BackupCodesDtoOutput.serializer)
           ..add(CaptainActiveOrderDtoOutput.serializer)
           ..add(CaptainActiveOrderDtoOutputOrder.serializer)
@@ -431,6 +435,36 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminRecordDeliveryDtoReceivedInner),
+            ]),
+            () => ListBuilder<AdminRecordDeliveryDtoReceivedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRecordDeliveryDtoReceivedInner),
+            ]),
+            () => ListBuilder<AdminRecordDeliveryDtoReceivedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRecordDeliveryDtoReceivedInner),
+            ]),
+            () => ListBuilder<AdminRecordDeliveryDtoReceivedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRecordDeliveryDtoReceivedInner),
+            ]),
+            () => ListBuilder<AdminRecordDeliveryDtoReceivedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminShortfallsDtoOutputShortfallsInner),
+            ]),
+            () => ListBuilder<AdminShortfallsDtoOutputShortfallsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(CaptainActiveOrderDtoOutputOrderLinesInner),
             ]),
             () => ListBuilder<CaptainActiveOrderDtoOutputOrderLinesInner>(),
@@ -702,30 +736,6 @@ Serializers _$serializers =
                 ListBuilder<
                   MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner
                 >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(MerchantPickupDisputeDtoReceivedLinesInner),
-            ]),
-            () => ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(MerchantPickupDisputeDtoReceivedLinesInner),
-            ]),
-            () => ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(MerchantPickupDisputeDtoReceivedLinesInner),
-            ]),
-            () => ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(MerchantPickupDisputeDtoReceivedLinesInner),
-            ]),
-            () => ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

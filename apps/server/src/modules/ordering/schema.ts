@@ -112,8 +112,12 @@ export const orders = ordering.table(
     // geo's fee rule version the fee was priced with.
     feeRuleId: uuid('fee_rule_id').notNull(),
     commissionBp: integer('commission_bp').notNull(),
-    // captains' pay table in force at placing; null while the city has none.
+    // captains' pay table in force at placing; null only for an order placed
+    // before slice 1.13, when placing did not need one.
     payTableId: uuid('pay_table_id'),
+    // AP §9.6.3: placed at a test restaurant: no commission, the captain's pay
+    // booked to platform.test_cost, and left out of the reports.
+    testOrder: boolean('test_order').notNull().default(false),
     // fx's RateSnapshot, its bigints as strings (AP §8.6).
     rateSnapshot: jsonb('rate_snapshot').notNull(),
     // «سأدفع بـ» (CU §10.5); null for «لم أحدد».
@@ -518,6 +522,9 @@ export const collections = ordering.table(
     }),
     uniqueIndex('collections_one_per_order').on(table.orderId),
     index('collections_captain').on(table.captainId, table.recordedAt),
+    index('collections_shortfalls')
+      .on(table.cityId, table.recordedAt)
+      .where(sql`${table.shortfall} > 0`),
     check(
       'collections_money',
       sql`${table.amountDue} >= 0 AND ${table.shortfall} >= 0 AND ${table.basePay} >= 0 AND ${table.distancePay} >= 0 AND ${table.topUpPay} >= 0 AND ${table.waitingPay} >= 0 AND ${table.waitingMinutes} >= 0`,

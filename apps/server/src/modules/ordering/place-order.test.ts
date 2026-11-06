@@ -7,6 +7,7 @@ import { ApiModule } from '../../api.module.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
 import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
+import { CaptainsService } from '../captains/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService, type Point } from '../geo/index.js';
 import {
@@ -93,6 +94,22 @@ beforeAll(async () => {
   fx = app.get(FxService);
   await fx.setCityCurrency(azaz, { currency: 'TRY', displayOrder: 1, enabled: true }, change);
   await fx.setBaseCurrency(azaz, 'TRY', change);
+  // AP §9.12.5: a pay table in force, which placing needs (captain_pay_unset).
+  const payRate = {
+    basePay: 2500n,
+    includedMetres: 3000,
+    perExtraKm: 500n,
+    waitingPerMinute: 0n,
+    minimumPay: 2500n,
+  };
+  await app.get(CaptainsService).setPayTable(
+    azaz,
+    {
+      currency: 'TRY',
+      rates: { walking: payRate, bicycle: payRate, motorbike: payRate, car: payRate },
+    },
+    change,
+  );
   await fx.setCityCurrency(azaz, { currency: 'USD', displayOrder: 2, enabled: false }, change);
   await fx.setRate(azaz, 'USD', { value: '40', direction: 'base_per_unit' }, fin);
   await fx.setCityCurrency(azaz, { currency: 'USD', displayOrder: 2, enabled: true }, change);
@@ -392,7 +409,8 @@ describe('the active-order limits (D23, RA §7.4)', () => {
       await sql.query(
         `UPDATE ordering.orders SET status = 'delivered', accepted_at = now(), prep_min = 20,
            promised_at = now(), search_start_at = now(), prep_late_alert_at = now(),
-           ready_at = now(), picked_up_at = now(), ready_by_pickup = false
+           ready_at = now(), picked_up_at = now(), ready_by_pickup = false,
+           delivered_at = now(), outcome = 'normal'
          WHERE id = $1`,
         [answer.json().order.id],
       );

@@ -8,6 +8,8 @@ import { Jobs } from '../../jobs/jobs.module.js';
 import { type AuditRequestContext, AuditService } from '../audit/index.js';
 import { CaptainsRefusedError, CaptainsService } from '../captains/index.js';
 import { CustomersService } from '../customers/index.js';
+import { FxService } from '../fx/index.js';
+import { LedgerService } from '../ledger/index.js';
 import { type Point, straightLineMetres } from '../geo/index.js';
 import { CustomerAccountsService, PhoneCipher } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
@@ -151,6 +153,8 @@ export class CaptainOrders {
     private readonly customerAccounts: CustomerAccountsService,
     private readonly phones: PhoneCipher,
     private readonly booking: DeliveryBooking,
+    private readonly ledger: LedgerService,
+    private readonly fx: FxService,
   ) {}
 
   // CA §9: the order assigned to the captain until it ends, or null (no
@@ -424,7 +428,8 @@ export class CaptainOrders {
     collection: DoorCollection,
     now: Date,
   ): Promise<Delivery> {
-    if (collection.amountDue !== order.total) {
+    const base = snapshotOf(order.rateSnapshot).baseCurrency;
+    if (collection.amountDue.amount !== order.total || collection.amountDue.currency !== base) {
       throw new CaptainOrderRefusedError(
         'amount_due_changed',
         'the amount due changed',
@@ -446,7 +451,7 @@ export class CaptainOrders {
         'the net received is short of the amount due',
         null,
         null,
-        { amount: payment.shortfall, currency: snapshotOf(order.rateSnapshot).baseCurrency },
+        { amount: payment.shortfall, currency: base },
       );
     }
     if (order.captainId === null) throw new Error(`order ${order.id} has no captain`);
@@ -460,19 +465,17 @@ export class CaptainOrders {
         arrivedAtMerchantAt: orders.arrivedAtMerchantAt,
         captainWaitingAlertAt: orders.captainWaitingAlertAt,
         pickedUpAt: orders.pickedUpAt,
+        testOrder: orders.testOrder,
       })
       .from(orders)
       .where(orderKey(order.id, order.placedAt));
-    const [captain, restaurant] = await Promise.all([
-      this.captains.captain(order.captainId, now),
-      this.merchants.restaurant(order.restaurantId, now),
-    ]);
+    const captain = await this.captains.captain(order.captainId, now);
     if (!money?.acceptedAt || money.prepMin === null || !money.pickedUpAt) {
       throw new Error(`order ${order.id} was not picked up`);
     }
     if (!captain) throw new Error(`captain ${order.captainId} not found`);
-    if (!restaurant) throw new Error(`restaurant ${order.restaurantId} not found`);
-    // A city publishes its pay table before its first order (AP §9.12.5).
+    // Placing needs a pay table in force (captain_pay_unset); only an order
+    // placed before slice 1.13 can lack one.
     if (money.payTableId === null) throw new Error(`order ${order.id} kept no pay table`);
     const waiting = waitingMinutes({
       acceptedAt: money.acceptedAt,
@@ -496,11 +499,8 @@ export class CaptainOrders {
       shortfall: payment.shortfall > 0n ? collection.shortfall : null,
       pay,
       waitingMinutes: waiting,
-      // AP §9.6.3: a test restaurant's order posts no commission.
-      commission:
-        restaurant.accountStatus === 'test'
-          ? null
-          : commission(order.itemsValue, money.commissionBp),
+      // AP §9.6.3: a test order, flagged at placing, posts no commission.
+      commission: money.testOrder ? null : commission(order.itemsValue, money.commissionBp),
     };
   }
 
@@ -526,7 +526,6 @@ export class CaptainOrders {
       )
       .where(and(eq(collections.orderId, key.id), eq(collections.orderPlacedAt, key.placedAt)));
     if (!row) throw new Error(`order ${key.id} has no collection`);
-    const state = await this.captains.state(row.captainId, now);
     const orderPay = row.basePay + row.distancePay + row.topUpPay;
     return {
       orderId: key.id,
@@ -540,8 +539,30 @@ export class CaptainOrders {
         total: orderPay + row.waitingPay,
       },
       custodyChange: row.netReceived - row.itemsValue,
-      handInToday: state.custody.usage,
+      handInToday: await this.custodyTotal(row.captainId, now),
     };
+  }
+
+  // CA §9.8, §10.2: «عليك تسليم اليوم», the captain's custody in every
+  // currency at current rates, in the base; below zero the desk owes the
+  // captain («لك عند المكتب»).
+  private async custodyTotal(
+    captainId: string,
+    now: Date,
+  ): Promise<{ amount: bigint; currency: string }> {
+    const captain = await this.captains.captain(captainId, now);
+    if (!captain) throw new Error(`captain ${captainId} not found`);
+    const [accounts, { base, toBase }] = await Promise.all([
+      this.ledger.ownerAccounts(captain.cityId, captainId, 'captain.custody'),
+      this.fx.currentValue(captain.cityId),
+    ]);
+    let total = 0n;
+    for (const account of accounts) {
+      const { amount } = await this.ledger.balance(account.id);
+      total +=
+        account.currency === base || amount === 0n ? amount : toBase(amount, account.currency);
+    }
+    return { amount: total, currency: base };
   }
 
   // CA §9.4, RA §8.10 items 1-2: «دفعت للمطعم واستلمت الطلب» with the lines
@@ -922,7 +943,7 @@ type OrderAtStart = {
 export interface DoorCollection {
   received: PaymentLine[];
   change: PaymentLine[];
-  amountDue: bigint;
+  amountDue: { amount: bigint; currency: string };
   shortfall: { reason: ShortfallReason; note: string | null } | null;
 }
 
@@ -930,7 +951,10 @@ function collectionHash(collection: DoorCollection) {
   return {
     received: storedLines(collection.received),
     change: storedLines(collection.change),
-    amountDue: collection.amountDue.toString(),
+    amountDue: {
+      amount: collection.amountDue.amount.toString(),
+      currency: collection.amountDue.currency,
+    },
     shortfall: collection.shortfall,
   };
 }
