@@ -19,6 +19,8 @@ import 'package:core_api/src/model/customer_location_dto_output.dart';
 import 'package:core_api/src/model/customer_new_address_dto.dart';
 import 'package:core_api/src/model/customer_profile_dto_output.dart';
 import 'package:core_api/src/model/customer_refresh_dto.dart';
+import 'package:core_api/src/model/customer_restaurant_list_dto_output.dart';
+import 'package:core_api/src/model/customer_restaurant_page_dto_output.dart';
 import 'package:core_api/src/model/customer_save_profile_dto.dart';
 import 'package:core_api/src/model/customer_session_dto_output.dart';
 import 'package:core_api/src/model/customer_sign_in_dto.dart';
@@ -508,6 +510,197 @@ class CustomerApi {
     }
 
     return Response<CustomerSignedOutDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// customerBrowsingList
+  ///
+  ///
+  /// Parameters:
+  /// * [latitude]
+  /// * [longitude]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [CustomerRestaurantListDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<CustomerRestaurantListDtoOutput>> customerBrowsingList({
+    required String latitude,
+    required String longitude,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/customer/restaurants';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      r'latitude': encodeQueryParameter(
+        _serializers,
+        latitude,
+        const FullType(String),
+      ),
+      r'longitude': encodeQueryParameter(
+        _serializers,
+        longitude,
+        const FullType(String),
+      ),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    CustomerRestaurantListDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    CustomerRestaurantListDtoOutput,
+                  ),
+                )
+                as CustomerRestaurantListDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<CustomerRestaurantListDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// customerBrowsingPage
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [latitude]
+  /// * [longitude]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [CustomerRestaurantPageDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<CustomerRestaurantPageDtoOutput>> customerBrowsingPage({
+    required String restaurantId,
+    required String latitude,
+    required String longitude,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/customer/restaurants/{restaurantId}'.replaceAll(
+      '{'
+      r'restaurantId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        restaurantId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      r'latitude': encodeQueryParameter(
+        _serializers,
+        latitude,
+        const FullType(String),
+      ),
+      r'longitude': encodeQueryParameter(
+        _serializers,
+        longitude,
+        const FullType(String),
+      ),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    CustomerRestaurantPageDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    CustomerRestaurantPageDtoOutput,
+                  ),
+                )
+                as CustomerRestaurantPageDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<CustomerRestaurantPageDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

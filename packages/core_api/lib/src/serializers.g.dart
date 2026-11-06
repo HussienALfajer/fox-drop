@@ -62,6 +62,38 @@ Serializers _$serializers =
           ..add(CustomerProfileDtoOutputProfile.serializer)
           ..add(CustomerProfileDtoOutputProfileGenderEnum.serializer)
           ..add(CustomerRefreshDto.serializer)
+          ..add(CustomerRestaurantListDtoOutput.serializer)
+          ..add(CustomerRestaurantListDtoOutputRestaurantsInner.serializer)
+          ..add(
+            CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee
+                .serializer,
+          )
+          ..add(
+            CustomerRestaurantListDtoOutputRestaurantsInnerEstimate.serializer,
+          )
+          ..add(CustomerRestaurantListDtoOutputRestaurantsInnerState.serializer)
+          ..add(
+            CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum
+                .serializer,
+          )
+          ..add(CustomerRestaurantPageDtoOutput.serializer)
+          ..add(CustomerRestaurantPageDtoOutputDeliveryFee.serializer)
+          ..add(CustomerRestaurantPageDtoOutputMenuInner.serializer)
+          ..add(CustomerRestaurantPageDtoOutputMenuInnerItemsInner.serializer)
+          ..add(
+            CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInner
+                .serializer,
+          )
+          ..add(
+            CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInnerOptionsInner
+                .serializer,
+          )
+          ..add(
+            CustomerRestaurantPageDtoOutputMenuInnerItemsInnerUnavailableReasonEnum
+                .serializer,
+          )
+          ..add(CustomerRestaurantPageDtoOutputMenuInnerWindow.serializer)
+          ..add(CustomerRestaurantPageDtoOutputScheduleInner.serializer)
           ..add(CustomerSaveProfileDto.serializer)
           ..add(CustomerSaveProfileDtoGenderEnum.serializer)
           ..add(CustomerSessionDtoOutput.serializer)
@@ -177,6 +209,46 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(CustomerRestaurantListDtoOutputRestaurantsInner),
+            ]),
+            () =>
+                ListBuilder<CustomerRestaurantListDtoOutputRestaurantsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CustomerRestaurantPageDtoOutputMenuInnerItemsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerRestaurantPageDtoOutputMenuInnerItemsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInnerOptionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(MerchantMenuDtoOutputCategoriesInner),
             ]),
             () => ListBuilder<MerchantMenuDtoOutputCategoriesInner>(),
@@ -278,6 +350,42 @@ Serializers _$serializers =
               const FullType(SettingEntryDtoOutputEditRolesEnum),
             ]),
             () => ListBuilder<SettingEntryDtoOutputEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(num)]),
+            () => ListBuilder<num>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerRestaurantPageDtoOutputScheduleInner),
+            ]),
+            () => ListBuilder<CustomerRestaurantPageDtoOutputScheduleInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerRestaurantPageDtoOutputMenuInner),
+            ]),
+            () => ListBuilder<CustomerRestaurantPageDtoOutputMenuInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

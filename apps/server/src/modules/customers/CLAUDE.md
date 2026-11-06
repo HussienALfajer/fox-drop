@@ -1,6 +1,6 @@
 # customers module
 
-The customers' profiles and saved addresses (architecture §4.2; CU §5.3, §7). Trust, strikes and dues (AP §8.8) join with their slices.
+The customers' profiles and saved addresses (architecture §4.2; CU §5.3, §7), and their browsing of the restaurants that deliver to a point (CU §8.2, §8.4, §9.1–9.4). Trust, strikes and dues (AP §8.8) join with their slices.
 
 ## Rules
 
@@ -10,13 +10,17 @@ The customers' profiles and saved addresses (architecture §4.2; CU §5.3, §7).
 - **Votes (CU §7.2):** `POST /v1/customer/zone-votes` (public) records the point through `GeoService.castVote`; geo owns the votes and their rules.
 - **Saved addresses (CU §7.3):** `addresses`, never deleted (`deleted_at`), up to 10 (`MAX_ADDRESSES`, `409 address_limit`), one default (a partial unique index): the first address is the default, `isDefault` or `PUT …/default` moves it (never to one outside every active zone, `409 outside_zones`), and deleting the default passes it to the newest remaining address inside a zone, or else the newest. The pin must be inside an active zone when saved or edited (`409 outside_zones`); the city comes from `GeoService.locate`. «الحي» is not stored: each read names the active zone at the pin, and null is «خارج منطقة التوصيل حالياً» (Q6). Changes of one customer's addresses take turns on an advisory lock.
 - **Contact number (U5, Q5):** null is the account's own number (the app sends null when the customer keeps it); another Syrian or Turkish mobile is kept encrypted with identity's key (`PhoneCipher`, architecture §15.3) and needs «اسم المستلم» (a `CHECK` and the route's schema).
+- **Browsing (CU §8.2, §9; owner decision 2026-11-06: one plain list in Phase 1):** `BrowsingService` and `customer-browsing.controller.ts`, public for guests (CU §5.1). `GET /v1/customer/restaurants` lists the cards of `coveringRestaurants` for the point: open first, then busy and paused, then closed (holiday closes included), each group in the restaurants' own order; empty outside every zone. A card has the estimate range, the fee to the point before any item (`deliveryFee` with `itemsValue` 0, null while the city has no fee rule), and the state as customers see it (`MerchantsService.storefrontState`: the holiday or operations message, the next opening while closed by the schedule). `GET /v1/customer/restaurants/{id}` adds the description, minimum order, free-delivery threshold, weekly schedule, `deliversHere` and the menu; a restaurant customers do not see (not `active` or not visible) answers `404`.
+- **The menu customers see (CU §9.3):** read through `MerchantsService.menu(id, now)` only. Hidden categories and items are left out; a category keeps its daily `window` (minutes on the city clock). An unavailable item keeps its place with `unavailableReason`: `unavailable` («غير متوفر حالياً») when any switch holding it back (its own, its category's, the options of a required group with none left) is off until turned back on; else `tomorrow` («يتوفر غداً») when some are off until the next cutoff; else `window` («متوفر من {الساعة}»), its category's window. `fromPrice` («من {أقل سعر}») is set when a required group has an option with a price delta: the price with each required group's cheapest available choices, and none when an option is in another currency. The item's `photoKey` is null until the object storage arrives (T7).
+- **The estimate (CU §8.4, docs/domain/03):** `estimateRange` and `tripMinutes` (`delivery-estimate.ts`): default prep + busy-mode minutes + the trip at `order.eta_speed_kmh` + `order.eta_buffer_min`, from a multiple of 5 to 10 minutes later. The trip is the motorbike's distance (`GeoService.distance`, so `pricing.distance_method` applies), as the fee's is. Ratings are not built: `rating` and `ratingCount` are always null, «جديد». A card measures the trip once: a distance-band fee's distance, or else `GeoService.distance`. A restaurant suspended between the list and its card is left out; its page answers `404`.
 - **Snapshots (Q6):** an order keeps its own copy of the address (slice 1.8), so editing or deleting one changes no order.
 
 ## Not yet
 
 - Idempotency keys on the address commands (CU §15, §4.5): they arrive with the order command's mechanism (slice 1.8); until then a lost answer retried adds a second address.
-- A request limit on the public vote route: the deploy slice's per-IP limits in nginx (architecture §15.5) must cover `/v1/customer/zone-votes`.
+- A request limit on the public routes: the deploy slice's per-IP limits in nginx (architecture §15.5) must cover `/v1/customer/zone-votes` and `/v1/customer/restaurants`, whose cards each read the database and OSRM.
 - Recognising the account's own number typed as another contact number (it then asks for a recipient).
-- Favourites (CU §9.6) and the price report (§9.5): Phase 2 (owner decision 2026-11-06).
+- Home sections, banners, categories, search, favourites (CU §8.1, §8.3, §9.6) and the price report (§9.5): Phase 2 (owner decision 2026-11-06).
+- One road distance per card: the OSRM `table` matrix replaces it when lists grow.
 - Account states (CU §5.5), closing the account (§5.6), trust, strikes and dues (AP §8.8).
 - The panel's customer screens (AP §9.8).

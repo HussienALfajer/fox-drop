@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { checkWeeklySchedule, currentPeriod, type OpeningPeriod } from './hours.js';
+import {
+  checkWeeklySchedule,
+  currentPeriod,
+  inDailyWindow,
+  nextOpening,
+  type OpeningPeriod,
+} from './hours.js';
 
 // The weekly schedule of RA §10: periods per weekday, one may cross midnight
 // and belongs to the day it starts, none overlap, each lasts 30 minutes or
@@ -110,5 +116,42 @@ describe('currentPeriod', () => {
     expect(
       currentPeriod([period(5, '00:00', '00:00')], at('2026-11-06T23:59:00'), timeZone),
     ).toEqual({ endsAt: at('2026-11-07T00:00:00') });
+  });
+});
+
+describe('nextOpening', () => {
+  const schedule = [period(5, '10:00', '14:00'), period(5, '18:00', '02:00')];
+
+  it('is the next opening minute of the week, later the same day or a week on', () => {
+    expect(nextOpening(schedule, at('2026-11-06T15:20:30'), timeZone)).toEqual(
+      at('2026-11-06T18:00:00'),
+    );
+    expect(nextOpening(schedule, at('2026-11-06T09:59:59'), timeZone)).toEqual(
+      at('2026-11-06T10:00:00'),
+    );
+    expect(nextOpening(schedule, at('2026-11-07T03:00:00'), timeZone)).toEqual(
+      at('2026-11-13T10:00:00'),
+    );
+  });
+
+  it('is null without any period', () => {
+    expect(nextOpening([], at('2026-11-06T12:00:00'), timeZone)).toBeNull();
+  });
+});
+
+describe('inDailyWindow', () => {
+  it('holds from the first minute to before the last, on the city clock', () => {
+    const breakfast = { startsAt: hm('06:00'), endsAt: hm('12:00') };
+    expect(inDailyWindow(breakfast, at('2026-11-06T06:00:00'), timeZone)).toBe(true);
+    expect(inDailyWindow(breakfast, at('2026-11-06T11:59:00'), timeZone)).toBe(true);
+    expect(inDailyWindow(breakfast, at('2026-11-06T12:00:00'), timeZone)).toBe(false);
+    expect(inDailyWindow(breakfast, at('2026-11-06T05:59:00'), timeZone)).toBe(false);
+  });
+
+  it('crosses midnight when the end is not after the start', () => {
+    const night = { startsAt: hm('22:00'), endsAt: hm('02:00') };
+    expect(inDailyWindow(night, at('2026-11-06T23:30:00'), timeZone)).toBe(true);
+    expect(inDailyWindow(night, at('2026-11-07T01:30:00'), timeZone)).toBe(true);
+    expect(inDailyWindow(night, at('2026-11-07T02:00:00'), timeZone)).toBe(false);
   });
 });

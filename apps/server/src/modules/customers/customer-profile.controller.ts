@@ -23,6 +23,7 @@ import {
   CustomersRefusedError,
   CustomersService,
 } from './customers.service.js';
+import { pointQuery } from './point-query.js';
 import { addressLabels, genders } from './schema.js';
 
 // CU §5.3: Arabic or Latin letters, with spaces and «-»; Arabic marks such
@@ -41,8 +42,6 @@ const personName = (max: number) =>
 const latitude = z.number().min(-90).max(90);
 const longitude = z.number().min(-180).max(180);
 const location = z.object({ latitude, longitude });
-// A query value: a number, never an empty string read as 0.
-const coordinate = z.string().min(1).pipe(z.coerce.number());
 
 const profile = z.object({
   firstName: personName(30).describe('«الاسم»: 2 to 30 Arabic or Latin letters, spaces and «-».'),
@@ -121,12 +120,7 @@ class CustomerAddressParamsDto extends createZodDto(z.object({ addressId: z.uuid
 
 class CustomerAddressDeletedDto extends createZodDto(z.object({ status: z.literal('deleted') })) {}
 
-class CustomerLocationQueryDto extends createZodDto(
-  z.object({
-    latitude: coordinate.pipe(latitude),
-    longitude: coordinate.pipe(longitude),
-  }),
-) {}
+class CustomerLocationQueryDto extends createZodDto(pointQuery) {}
 
 class CustomerLocationDto extends createZodDto(
   z.object({

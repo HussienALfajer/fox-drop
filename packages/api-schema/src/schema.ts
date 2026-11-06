@@ -820,6 +820,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/restaurants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerBrowsingList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/restaurants/{restaurantId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerBrowsingPage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1562,6 +1594,172 @@ export interface components {
         CustomerAddressDeletedDto_Output: {
             /** @constant */
             status: "deleted";
+        };
+        CustomerRestaurantListDto_Output: {
+            /** @description CU §8.2: open first, then busy and paused, then closed. */
+            restaurants: {
+                /** Format: uuid */
+                id: string;
+                nameAr: string;
+                nameEn: string | null;
+                category: string | null;
+                logoKey: string | null;
+                coverKey: string | null;
+                /** @description The average rating; null is «جديد» (Q16). Ratings arrive with their slice. */
+                rating: number | null;
+                /** @description The number of ratings on the page (CU §9.1). */
+                ratingCount: number | null;
+                /** @description CU §8.4: «{fromMin}–{toMin} د». */
+                estimate: {
+                    fromMin: number;
+                    toMin: number;
+                };
+                /** @description To the point; null while the city has no fee rule in its base currency. */
+                deliveryFee: {
+                    fee: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
+                    /** @description «توصيل مجاني». */
+                    free: boolean;
+                } | null;
+                /** @description Only open takes orders. */
+                state: {
+                    /**
+                     * @description CU §9.2: open; «المطعم مشغول حالياً، جرّب بعد قليل»; «المطعم متوقف مؤقتاً…»; «مغلق — يفتح…»; «مغلق حتى {التاريخ}».
+                     * @enum {string}
+                     */
+                    state: "open" | "busy" | "paused" | "closed" | "holiday";
+                    /** @description Open with busy mode on: «قد يستغرق الطلب وقتاً أطول قليلاً». */
+                    busyMode: boolean;
+                    /** @description The end of a pause or a holiday close; null for a pause until resumed. */
+                    until: string | null;
+                    /** @description While closed by the schedule: its next opening. */
+                    opensAt: string | null;
+                    /** @description A holiday close's message, or an operations pause's. */
+                    message: string | null;
+                };
+            }[];
+        };
+        CustomerRestaurantPageDto_Output: {
+            /** Format: uuid */
+            id: string;
+            nameAr: string;
+            nameEn: string[];
+            category: string[];
+            logoKey: string[];
+            coverKey: string[];
+            /** @description The average rating; null is «جديد» (Q16). Ratings arrive with their slice. */
+            rating: number[];
+            /** @description The number of ratings on the page (CU §9.1). */
+            ratingCount: number | null;
+            /** @description CU §8.4: «{fromMin}–{toMin} د». */
+            estimate: {
+                fromMin: number;
+                toMin: number;
+            };
+            /** @description To the point; null while the city has no fee rule in its base currency. */
+            deliveryFee: {
+                fee: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+                /** @description «توصيل مجاني». */
+                free: boolean;
+            } | null;
+            /** @description Only open takes orders. */
+            state: {
+                /**
+                 * @description CU §9.2: open; «المطعم مشغول حالياً، جرّب بعد قليل»; «المطعم متوقف مؤقتاً…»; «مغلق — يفتح…»; «مغلق حتى {التاريخ}».
+                 * @enum {string}
+                 */
+                state: "open" | "busy" | "paused" | "closed" | "holiday";
+                /** @description Open with busy mode on: «قد يستغرق الطلب وقتاً أطول قليلاً». */
+                busyMode: boolean;
+                /** @description The end of a pause or a holiday close; null for a pause until resumed. */
+                until: string | null;
+                /** @description While closed by the schedule: its next opening. */
+                opensAt: string | null;
+                /** @description A holiday close's message, or an operations pause's. */
+                message: string | null;
+            };
+            description: string[];
+            minimumOrder: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+            /** @description «توصيل مجاني للطلبات من {المبلغ} فأكثر»; null without a threshold. */
+            freeDeliveryFrom: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            } | null;
+            /** @description «أوقات العمل» (RA §10). */
+            schedule: {
+                /** @description 0 Sunday to 6 Saturday. */
+                weekday: number;
+                /** @description Minutes after midnight on the city clock. */
+                opensAt: number;
+                /** @description Not after opensAt: crosses midnight. */
+                closesAt: number;
+            }[];
+            /** @description Whether the restaurant covers the point; when false, the fee and estimate are no offer and nothing can be added. */
+            deliversHere: boolean;
+            menu: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                /** @description Minutes after midnight on the city clock; «متوفر من {الساعة}» outside it. */
+                window: {
+                    startsAt: number;
+                    endsAt: number;
+                } | null;
+                items: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    description: string | null;
+                    /** @description Null until the object storage arrives (T7). */
+                    photoKey: string | null;
+                    price: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
+                    /** @description «من {أقل سعر}» when a required group changes it. */
+                    fromPrice: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    available: boolean;
+                    /** @description «يتوفر غداً», «متوفر من {الساعة}» (its category window) or «غير متوفر حالياً». */
+                    unavailableReason: ("tomorrow" | "window" | "unavailable") | null;
+                    optionGroups: {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                        /** @description 0 is an add-on group; 1 or more is «إجباري». */
+                        minChoices: number;
+                        maxChoices: number;
+                        options: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string;
+                            priceDelta: {
+                                /** @description Integer minor units (AP §8.6). */
+                                amount: string;
+                                currency: string;
+                            };
+                            /** @description Faded and not pickable when false. */
+                            available: boolean;
+                        }[];
+                    }[];
+                }[];
+            }[];
         };
     };
     responses: never;
@@ -2803,6 +3001,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomerAddressDto_Output"];
+                };
+            };
+        };
+    };
+    customerBrowsingList: {
+        parameters: {
+            query: {
+                latitude: string;
+                longitude: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerRestaurantListDto_Output"];
+                };
+            };
+        };
+    };
+    customerBrowsingPage: {
+        parameters: {
+            query: {
+                latitude: string;
+                longitude: string;
+            };
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerRestaurantPageDto_Output"];
                 };
             };
         };

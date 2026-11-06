@@ -14,7 +14,10 @@ Slice 1.7, customer browsing and the quote (`docs/roadmap.md`, Phase 1): account
     - [x] `GeoService.locate` (the city and zone of a point) and the covering restaurants (`MerchantsService.coveringRestaurants`), for the three cases of CU §7.1; the vote route.
     - [x] The profile routes (account completion, CU §5.3) and the saved address routes (CU §7.3).
     - [x] `checker`, the `reviewer`, the pull request.
-  - PR 2, `feat/customer-browsing`: the restaurant list for a point with its card data (CU §8.2), the delivery estimate range (CU §8.4, docs/domain/03), the restaurant page, menu and item options (CU §9.1–9.4).
+  - PR 2, `feat/customer-browsing`:
+    - [x] The estimate range (CU §8.4, docs/domain/03), the test first; the next opening and the category windows in `merchants`.
+    - [x] The restaurant list for a point with its card data (CU §8.2), the restaurant page, menu and item options (CU §9.1–9.4).
+    - [x] `checker`, the `reviewer`, the pull request.
   - PR 3, `feat/customer-quote`: the failing tests first for the quote's money and checks; the cart lines and the versioned quote in `ordering` (CU §10.1–10.3, §10.5–10.6; AP §8.4, §8.6); the handover to slice 1.8.
 
 ## Notes from earlier slices
