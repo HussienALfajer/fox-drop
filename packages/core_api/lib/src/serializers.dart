@@ -39,14 +39,30 @@ import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart'
 import 'package:core_api/src/model/change_roles_dto.dart';
 import 'package:core_api/src/model/complete_setup_dto.dart';
 import 'package:core_api/src/model/create_user_dto.dart';
+import 'package:core_api/src/model/customer_address_deleted_dto_output.dart';
+import 'package:core_api/src/model/customer_address_dto_output.dart';
+import 'package:core_api/src/model/customer_address_fields_dto.dart';
+import 'package:core_api/src/model/customer_address_list_dto_output.dart';
+import 'package:core_api/src/model/customer_address_list_dto_output_addresses_inner.dart';
+import 'package:core_api/src/model/customer_address_list_dto_output_addresses_inner_location.dart';
 import 'package:core_api/src/model/customer_code_request_dto.dart';
 import 'package:core_api/src/model/customer_code_sent_dto_output.dart';
+import 'package:core_api/src/model/customer_location_dto_output.dart';
+import 'package:core_api/src/model/customer_location_dto_output_zone.dart';
+import 'package:core_api/src/model/customer_new_address_dto.dart';
+import 'package:core_api/src/model/customer_new_address_dto_location.dart';
+import 'package:core_api/src/model/customer_profile_dto_output.dart';
+import 'package:core_api/src/model/customer_profile_dto_output_profile.dart';
 import 'package:core_api/src/model/customer_refresh_dto.dart';
+import 'package:core_api/src/model/customer_save_profile_dto.dart';
 import 'package:core_api/src/model/customer_session_dto_output.dart';
 import 'package:core_api/src/model/customer_sign_in_dto.dart';
 import 'package:core_api/src/model/customer_signed_in_dto_output.dart';
 import 'package:core_api/src/model/customer_signed_out_dto_output.dart';
 import 'package:core_api/src/model/customer_tokens_dto_output.dart';
+import 'package:core_api/src/model/customer_zone_vote_dto.dart';
+import 'package:core_api/src/model/customer_zone_vote_dto_location.dart';
+import 'package:core_api/src/model/customer_zone_voted_dto_output.dart';
 import 'package:core_api/src/model/done_dto_output.dart';
 import 'package:core_api/src/model/merchant_availability_dto.dart';
 import 'package:core_api/src/model/merchant_availability_saved_dto_output.dart';
@@ -115,14 +131,30 @@ part 'serializers.g.dart';
   ChangeRolesDto,
   CompleteSetupDto,
   CreateUserDto,
+  CustomerAddressDeletedDtoOutput,
+  CustomerAddressDtoOutput,
+  CustomerAddressFieldsDto,
+  CustomerAddressListDtoOutput,
+  CustomerAddressListDtoOutputAddressesInner,
+  CustomerAddressListDtoOutputAddressesInnerLocation,
   CustomerCodeRequestDto,
   CustomerCodeSentDtoOutput,
+  CustomerLocationDtoOutput,
+  CustomerLocationDtoOutputZone,
+  CustomerNewAddressDto,
+  CustomerNewAddressDtoLocation,
+  CustomerProfileDtoOutput,
+  CustomerProfileDtoOutputProfile,
   CustomerRefreshDto,
+  CustomerSaveProfileDto,
   CustomerSessionDtoOutput,
   CustomerSignInDto,
   CustomerSignedInDtoOutput,
   CustomerSignedOutDtoOutput,
   CustomerTokensDtoOutput,
+  CustomerZoneVoteDto,
+  CustomerZoneVoteDtoLocation,
+  CustomerZoneVotedDtoOutput,
   DoneDtoOutput,
   MerchantAvailabilityDto,
   MerchantAvailabilitySavedDtoOutput,
@@ -191,6 +223,12 @@ Serializers serializers =
               FullType(MerchantMenuDtoOutputCategoriesInnerItemsInner),
             ]),
             () => ListBuilder<MerchantMenuDtoOutputCategoriesInnerItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CustomerAddressListDtoOutputAddressesInner),
+            ]),
+            () => ListBuilder<CustomerAddressListDtoOutputAddressesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

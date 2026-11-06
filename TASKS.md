@@ -7,14 +7,15 @@ The handover note between sessions: the current task, its branch, its plan, and 
 Slice 1.7, customer browsing and the quote (`docs/roadmap.md`, Phase 1): account completion, the delivery point, restaurants that cover it, the restaurant page and item options, the cart, the versioned quote.
 
 - **Specs:** CU §5.3 (account completion), CU §7 (location and addresses, the three cases of §7.1, the votes of §7.2), CU §8 (finding food), CU §9 (restaurant page and items), CU §10.1–10.6 (cart, minimum order and free delivery, checkout, codes, «سأدفع بـ», the quote and the pre-order checks), the customer settings of CU Appendix A, AP §8.4 (order money) and §8.6 (currencies), architecture §4.2 (`customers` owns profiles and addresses; `ordering` owns the quote).
-- **Branch:** `feat/customer-browsing` (or one branch per pull request, as the owner splits it).
-- **Ask the owner first:** the split into pull requests (this slice spans the customer profile, addresses, browsing, the restaurant page, the cart and the quote, larger than 1.6, which took two), which parts of CU §8 (home sections, search, filters) are in Phase 1 given the design stop (logic only), promo codes (CU §10.4) in or out of Phase 1, and the open items the cited sections leave to the owner (`docs/product/v1/customer-app/18-open-items.md`).
-- **Plan (draft, to confirm with the owner):**
-  - [ ] The failing tests first: the quote's money (items, options, the restaurant's item discounts, the delivery fee with its rule version, the minimum order, the rate snapshot and its versions), the pre-order checks of CU §10.6.
-  - [ ] The `customers` schema through the `db-migration` skill: the profile fields of CU §5.3 and the saved addresses with their points; the account completion route.
-  - [ ] Browsing: the restaurants that cover a point (`MerchantsService` for the menu through `menu(id, now)`, `GeoService.zoneAt` for the three cases of CU §7.1), the restaurant page and item options.
-  - [ ] The cart and the versioned quote in `ordering`: the fee through `GeoService.deliveryFee` (its `ruleId`), the rates through `FxService.snapshot` (their versions), the capacity check stubbed until dispatch (AP §9.12.6) or asked of the owner.
-  - [ ] `checker`, the `reviewer`, the pull request, the handover to slice 1.8.
+- **Owner decisions 2026-11-06:** three pull requests, server and API only like the earlier slices; CU §8 in Phase 1 is one plain list of the restaurants that cover the point (card data: delivery fee, estimate range, state badge, open first) and the restaurant page, while home sections, banners, categories, search, favourites and the price report wait for Phase 2; promo codes (CU §10.4) wait for Phase 2, so the quote's discount is 0 with its place kept; the pre-order checks with data are built (zone and coverage, restaurant state, items, options and prices, minimum order, platform hours, app version and maintenance), and the capacity check (until dispatch), the active-order limit (slice 1.8), account blocks, the terms version and the emergency stop pass until their slices. Votes (CU §7.2): a device votes once within 500 m of its earlier votes, and a vote farther than 50 km from every active zone is kept with no city.
+- **Plan:**
+  - PR 1, `feat/customer-profile-addresses`:
+    - [x] The `customers` schema through the `db-migration` skill: the profile of CU §5.3 and the saved addresses of CU §7.3; geo's votes (CU §7.2).
+    - [x] `GeoService.locate` (the city and zone of a point) and the covering restaurants (`MerchantsService.coveringRestaurants`), for the three cases of CU §7.1; the vote route.
+    - [x] The profile routes (account completion, CU §5.3) and the saved address routes (CU §7.3).
+    - [x] `checker`, the `reviewer`, the pull request.
+  - PR 2, `feat/customer-browsing`: the restaurant list for a point with its card data (CU §8.2), the delivery estimate range (CU §8.4, docs/domain/03), the restaurant page, menu and item options (CU §9.1–9.4).
+  - PR 3, `feat/customer-quote`: the failing tests first for the quote's money and checks; the cart lines and the versioned quote in `ordering` (CU §10.1–10.3, §10.5–10.6; AP §8.4, §8.6); the handover to slice 1.8.
 
 ## Notes from earlier slices
 
@@ -114,4 +115,4 @@ Slice 1.7, customer browsing and the quote (`docs/roadmap.md`, Phase 1): account
 
 ## Next
 
-Build slice 1.7: customer browsing and the quote (the plan above), after the owner confirms its split into pull requests.
+Build slice 1.7: customer browsing and the quote (the plan above).

@@ -39,16 +39,41 @@ Serializers _$serializers =
           ..add(CompleteSetupDto.serializer)
           ..add(CreateUserDto.serializer)
           ..add(CreateUserDtoRolesEnum.serializer)
+          ..add(CustomerAddressDeletedDtoOutput.serializer)
+          ..add(CustomerAddressDeletedDtoOutputStatusEnum.serializer)
+          ..add(CustomerAddressDtoOutput.serializer)
+          ..add(CustomerAddressDtoOutputLabelEnum.serializer)
+          ..add(CustomerAddressFieldsDto.serializer)
+          ..add(CustomerAddressFieldsDtoLabelEnum.serializer)
+          ..add(CustomerAddressListDtoOutput.serializer)
+          ..add(CustomerAddressListDtoOutputAddressesInner.serializer)
+          ..add(CustomerAddressListDtoOutputAddressesInnerLabelEnum.serializer)
+          ..add(CustomerAddressListDtoOutputAddressesInnerLocation.serializer)
           ..add(CustomerCodeRequestDto.serializer)
           ..add(CustomerCodeSentDtoOutput.serializer)
           ..add(CustomerCodeSentDtoOutputChannelEnum.serializer)
+          ..add(CustomerLocationDtoOutput.serializer)
+          ..add(CustomerLocationDtoOutputStateEnum.serializer)
+          ..add(CustomerLocationDtoOutputZone.serializer)
+          ..add(CustomerNewAddressDto.serializer)
+          ..add(CustomerNewAddressDtoLabelEnum.serializer)
+          ..add(CustomerNewAddressDtoLocation.serializer)
+          ..add(CustomerProfileDtoOutput.serializer)
+          ..add(CustomerProfileDtoOutputProfile.serializer)
+          ..add(CustomerProfileDtoOutputProfileGenderEnum.serializer)
           ..add(CustomerRefreshDto.serializer)
+          ..add(CustomerSaveProfileDto.serializer)
+          ..add(CustomerSaveProfileDtoGenderEnum.serializer)
           ..add(CustomerSessionDtoOutput.serializer)
           ..add(CustomerSignInDto.serializer)
           ..add(CustomerSignedInDtoOutput.serializer)
           ..add(CustomerSignedOutDtoOutput.serializer)
           ..add(CustomerSignedOutDtoOutputStatusEnum.serializer)
           ..add(CustomerTokensDtoOutput.serializer)
+          ..add(CustomerZoneVoteDto.serializer)
+          ..add(CustomerZoneVoteDtoLocation.serializer)
+          ..add(CustomerZoneVotedDtoOutput.serializer)
+          ..add(CustomerZoneVotedDtoOutputStatusEnum.serializer)
           ..add(DoneDtoOutput.serializer)
           ..add(DoneDtoOutputStatusEnum.serializer)
           ..add(MerchantAvailabilityDto.serializer)
@@ -146,6 +171,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(CustomerAddressListDtoOutputAddressesInner),
+            ]),
+            () => ListBuilder<CustomerAddressListDtoOutputAddressesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(MerchantMenuDtoOutputCategoriesInner),
             ]),
             () => ListBuilder<MerchantMenuDtoOutputCategoriesInner>(),
@@ -201,6 +232,10 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

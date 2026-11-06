@@ -724,6 +724,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/location": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerProfileLocation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/zone-votes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerProfileVote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerProfileProfile"];
+        put: operations["customerProfileSaveProfile"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/addresses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerProfileAddresses"];
+        put?: never;
+        post: operations["customerProfileAddAddress"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/addresses/{addressId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["customerProfileUpdateAddress"];
+        post?: never;
+        delete: operations["customerProfileDeleteAddress"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/addresses/{addressId}/default": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["customerProfileSetDefaultAddress"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1281,6 +1377,191 @@ export interface components {
         CaptainLocationsSavedDto_Output: {
             /** @description The new points kept. */
             accepted: number;
+        };
+        CustomerLocationDto_Output: {
+            /**
+             * @description CU §7.1: the home screen; «لا توجد مطاعم توصل إلى موقعك حالياً»; «قريباً في منطقتك» with the vote.
+             * @enum {string}
+             */
+            state: "served" | "no_restaurants" | "outside_zones";
+            /** @description The zone the point is in, the neighbourhood of an unsaved point. */
+            zone: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            } | null;
+        };
+        CustomerZoneVoteDto: {
+            /**
+             * Format: uuid
+             * @description The app installation, generated once by the app and kept until it is removed.
+             */
+            deviceId: string;
+            location: {
+                latitude: number;
+                longitude: number;
+            };
+        };
+        CustomerZoneVotedDto_Output: {
+            /**
+             * @description Either way the app shows «شكراً، سنخبرك عندما نصل إلى منطقتك».
+             * @enum {string}
+             */
+            status: "recorded" | "already_voted";
+        };
+        CustomerProfileDto_Output: {
+            /** @description false until «أكمل بياناتك» is sent (CU §5.3). */
+            completed: boolean;
+            profile: {
+                /** @description «الاسم»: 2 to 30 Arabic or Latin letters, spaces and «-». */
+                firstName: string;
+                /** @description «الكنية», optional, the same rule. */
+                lastName: string | null;
+                /**
+                 * @description «ذكر» male or «أنثى» female.
+                 * @enum {string}
+                 */
+                gender: "male" | "female";
+                /** @description «تاريخ الميلاد», optional, a past date. */
+                birthday: string | null;
+            } | null;
+        };
+        CustomerSaveProfileDto: {
+            /** @description «الاسم»: 2 to 30 Arabic or Latin letters, spaces and «-». */
+            firstName: string;
+            /** @description «الكنية», optional, the same rule. */
+            lastName: string | null;
+            /**
+             * @description «ذكر» male or «أنثى» female.
+             * @enum {string}
+             */
+            gender: "male" | "female";
+            /** @description «تاريخ الميلاد», optional, a past date. */
+            birthday: string | null;
+            /** @description «أوافق على الشروط وسياسة الخصوصية»: needed the first time only. */
+            acceptTerms: boolean;
+        };
+        CustomerAddressListDto_Output: {
+            addresses: {
+                /** @description The pin, inside an active zone (CU §7.1). */
+                location: {
+                    latitude: number;
+                    longitude: number;
+                };
+                /**
+                 * @description «البيت», «العمل» or «آخر».
+                 * @enum {string}
+                 */
+                label: "home" | "work" | "other";
+                /** @description The name of an «آخر» address; null otherwise. */
+                customLabel: string | null;
+                /** @description «الشارع والبناء». */
+                street: string;
+                /** @description «الطابق والشقة», optional. */
+                floor: string | null;
+                /** @description «بالقرب من». */
+                landmark: string;
+                /** @description «رقم التواصل»; null is the account's own number. */
+                contactPhone: string | null;
+                /** @description «اسم المستلم», needed with another contact number (Q5). */
+                recipientName: string | null;
+                /** @description «توجيهات للكابتن», optional. */
+                directions: string | null;
+                /** Format: uuid */
+                id: string;
+                isDefault: boolean;
+                /** @description «الحي», the zone name; null is «خارج منطقة التوصيل حالياً» (Q6). */
+                neighbourhood: string | null;
+            }[];
+        };
+        CustomerNewAddressDto: {
+            /** @description The pin, inside an active zone (CU §7.1). */
+            location: {
+                latitude: number;
+                longitude: number;
+            };
+            /**
+             * @description «البيت», «العمل» or «آخر».
+             * @enum {string}
+             */
+            label: "home" | "work" | "other";
+            /** @description The name of an «آخر» address; null otherwise. */
+            customLabel: string | null;
+            /** @description «الشارع والبناء». */
+            street: string;
+            /** @description «الطابق والشقة», optional. */
+            floor: string | null;
+            /** @description «بالقرب من». */
+            landmark: string;
+            /** @description «رقم التواصل»; null is the account's own number. */
+            contactPhone: string | null;
+            /** @description «اسم المستلم», needed with another contact number (Q5). */
+            recipientName: string | null;
+            /** @description «توجيهات للكابتن», optional. */
+            directions: string | null;
+            /** @description Make it the default; the first address always is. */
+            isDefault: boolean;
+        };
+        CustomerAddressDto_Output: {
+            /** @description The pin, inside an active zone (CU §7.1). */
+            location: {
+                latitude: number;
+                longitude: number;
+            };
+            /**
+             * @description «البيت», «العمل» or «آخر».
+             * @enum {string}
+             */
+            label: "home" | "work" | "other";
+            /** @description The name of an «آخر» address; null otherwise. */
+            customLabel: string | null;
+            /** @description «الشارع والبناء». */
+            street: string;
+            /** @description «الطابق والشقة», optional. */
+            floor: string | null;
+            /** @description «بالقرب من». */
+            landmark: string;
+            /** @description «رقم التواصل»; null is the account's own number. */
+            contactPhone: string | null;
+            /** @description «اسم المستلم», needed with another contact number (Q5). */
+            recipientName: string | null;
+            /** @description «توجيهات للكابتن», optional. */
+            directions: string | null;
+            /** Format: uuid */
+            id: string;
+            isDefault: boolean;
+            /** @description «الحي», the zone name; null is «خارج منطقة التوصيل حالياً» (Q6). */
+            neighbourhood: string[];
+        };
+        CustomerAddressFieldsDto: {
+            /** @description The pin, inside an active zone (CU §7.1). */
+            location: {
+                latitude: number;
+                longitude: number;
+            };
+            /**
+             * @description «البيت», «العمل» or «آخر».
+             * @enum {string}
+             */
+            label: "home" | "work" | "other";
+            /** @description The name of an «آخر» address; null otherwise. */
+            customLabel: string | null;
+            /** @description «الشارع والبناء». */
+            street: string;
+            /** @description «الطابق والشقة», optional. */
+            floor: string | null;
+            /** @description «بالقرب من». */
+            landmark: string;
+            /** @description «رقم التواصل»; null is the account's own number. */
+            contactPhone: string | null;
+            /** @description «اسم المستلم», needed with another contact number (Q5). */
+            recipientName: string | null;
+            /** @description «توجيهات للكابتن», optional. */
+            directions: string | null;
+        };
+        CustomerAddressDeletedDto_Output: {
+            /** @constant */
+            status: "deleted";
         };
     };
     responses: never;
@@ -2317,6 +2598,211 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainLocationsSavedDto_Output"];
+                };
+            };
+        };
+    };
+    customerProfileLocation: {
+        parameters: {
+            query: {
+                latitude: string;
+                longitude: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerLocationDto_Output"];
+                };
+            };
+        };
+    };
+    customerProfileVote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerZoneVoteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerZoneVotedDto_Output"];
+                };
+            };
+        };
+    };
+    customerProfileProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerProfileDto_Output"];
+                };
+            };
+        };
+    };
+    customerProfileSaveProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerSaveProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerProfileDto_Output"];
+                };
+            };
+        };
+    };
+    customerProfileAddresses: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerAddressListDto_Output"];
+                };
+            };
+        };
+    };
+    customerProfileAddAddress: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerNewAddressDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerAddressDto_Output"];
+                };
+            };
+        };
+    };
+    customerProfileUpdateAddress: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                addressId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerAddressFieldsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerAddressDto_Output"];
+                };
+            };
+        };
+    };
+    customerProfileDeleteAddress: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                addressId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerAddressDeletedDto_Output"];
+                };
+            };
+        };
+    };
+    customerProfileSetDefaultAddress: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                addressId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerAddressDto_Output"];
                 };
             };
         };
