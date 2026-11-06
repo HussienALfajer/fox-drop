@@ -194,6 +194,8 @@ export 'package:core_api/src/model/customer_zone_vote_dto.dart';
 export 'package:core_api/src/model/customer_zone_vote_dto_location.dart';
 export 'package:core_api/src/model/customer_zone_voted_dto_output.dart';
 export 'package:core_api/src/model/done_dto_output.dart';
+export 'package:core_api/src/model/emergency_sign_in_code_dto_output.dart';
+export 'package:core_api/src/model/emergency_sign_in_code_request_dto.dart';
 export 'package:core_api/src/model/merchant_accept_dto.dart';
 export 'package:core_api/src/model/merchant_availability_dto.dart';
 export 'package:core_api/src/model/merchant_availability_saved_dto_output.dart';

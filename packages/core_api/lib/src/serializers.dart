@@ -193,6 +193,8 @@ import 'package:core_api/src/model/customer_zone_vote_dto.dart';
 import 'package:core_api/src/model/customer_zone_vote_dto_location.dart';
 import 'package:core_api/src/model/customer_zone_voted_dto_output.dart';
 import 'package:core_api/src/model/done_dto_output.dart';
+import 'package:core_api/src/model/emergency_sign_in_code_dto_output.dart';
+import 'package:core_api/src/model/emergency_sign_in_code_request_dto.dart';
 import 'package:core_api/src/model/merchant_accept_dto.dart';
 import 'package:core_api/src/model/merchant_availability_dto.dart';
 import 'package:core_api/src/model/merchant_availability_saved_dto_output.dart';
@@ -439,6 +441,8 @@ part 'serializers.g.dart';
   CustomerZoneVoteDtoLocation,
   CustomerZoneVotedDtoOutput,
   DoneDtoOutput,
+  EmergencySignInCodeDtoOutput,
+  EmergencySignInCodeRequestDto,
   MerchantAcceptDto,
   MerchantAvailabilityDto,
   MerchantAvailabilitySavedDtoOutput,

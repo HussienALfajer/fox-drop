@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm';
 import { Valkey } from 'iovalkey';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -179,6 +179,25 @@ export class AppSignInService {
       await tx.execute(
         sql`SELECT pg_advisory_xact_lock(hashtextextended(${`identity.app_code:${phoneHash}`}, 0))`,
       );
+      // An emergency code (W4) is never replaced by a code request while it
+      // is open (owner decision 2026-11-07), so neither the person's own
+      // resend nor anyone who knows the number can end the code operations
+      // read out.
+      const [emergency] = await tx
+        .select({ expiresAt: appSignInCodes.expiresAt })
+        .from(appSignInCodes)
+        .where(
+          and(
+            eq(appSignInCodes.party, request.party),
+            eq(appSignInCodes.phoneHash, phoneHash),
+            isNull(appSignInCodes.endedAt),
+            isNotNull(appSignInCodes.issuedBy),
+          ),
+        );
+      const emergencyMs = emergency ? emergency.expiresAt.getTime() - now.getTime() : 0;
+      if (emergencyMs > 0) {
+        throw new CodeRequestRefusedError('resend_wait', Math.ceil(emergencyMs / 1000));
+      }
       const [last] = await tx
         .select({ createdAt: appSignInCodes.createdAt })
         .from(appSignInCodes)
@@ -266,9 +285,11 @@ export class AppSignInService {
           ),
         )
         .for('update');
+      // An emergency code has no device (W4): the first device that enters
+      // it signs in.
       if (
         !code ||
-        code.deviceId !== request.deviceId ||
+        (code.deviceId !== null && code.deviceId !== request.deviceId) ||
         now.getTime() >= code.expiresAt.getTime() ||
         code.attempts >= maxAttempts
       ) {

@@ -80,6 +80,8 @@ export const adminPermissions = [
   'captains.suspend',
   'captains.final_payout',
   'exports.phone_numbers',
+  // W4 (owner decision 2026-11-07): the emergency sign-in code.
+  'sign_in.emergency_code',
 ] as const;
 
 export type AdminPermission = (typeof adminPermissions)[number];

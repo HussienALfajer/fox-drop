@@ -26,7 +26,7 @@
 - Clients are generated in CI: Dart (`openapi-generator`, `dart-dio`) for the Flutter apps, TypeScript (`openapi-typescript`, `openapi-fetch`) for the web. A breaking change fails the build of a client.
 - Separate route groups per product: `/admin/*`, `/merchant/*`, `/captain/*`, `/customer/*`. Each group has its own guards and rate limits.
 - Versioned under `/v1`. Apps also send their app version; the server can refuse versions below `app.*.min_version` (AP §9.14).
-- **Idempotency:** every command carries an `Idempotency-Key` header (RA §4.7). The server stores the key with the response for 24 hours and returns the stored response for a repeat.
+- **Idempotency:** every command carries an `Idempotency-Key` header (RA §4.7). The server stores the key with the response for 24 hours and returns the stored response for a repeat. Exception: a command whose answer is a secret shown once (the emergency sign-in code, §8.3.5) takes no key, since storing its response would store the secret; a repeat issues a new one.
 - **Optimistic concurrency:** commands on an order carry the order version they were made against. A stale command returns `409` with the current state, which the apps explain (RA §4.7).
 - **Server time:** every response carries a `Server-Time` header. The apps compute their clock offset from it (RA §4.7).
 - **Light and heavy reads are separate** (CU §4.5): lists come first from a cheap cached call, estimates and fees after.

@@ -596,6 +596,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/emergency-sign-in-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["emergencySignInIssue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/settings": {
         parameters: {
             query?: never;
@@ -1749,6 +1765,28 @@ export interface components {
              * @enum {string}
              */
             status: "active" | "standby";
+        };
+        EmergencySignInCodeRequestDto: {
+            /**
+             * @description The captain app or the restaurant app; customers are not covered.
+             * @enum {string}
+             */
+            party: "captain" | "merchant";
+            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            phone: string;
+            /** @description Why, kept in the audit log (owner decision 2026-11-07). */
+            reason: string;
+        };
+        EmergencySignInCodeDto_Output: {
+            /** @description Shown once; read out to the person, who types it in the app. */
+            code: string;
+            /** Format: date-time */
+            expiresAt: string;
+            /**
+             * Format: uuid
+             * @description The captain or restaurant user account it signs in to.
+             */
+            accountId: string;
         };
         SettingListDto_Output: {
             settings: {
@@ -4950,6 +4988,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SenderPoolDto_Output"];
+                };
+            };
+        };
+    };
+    emergencySignInIssue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmergencySignInCodeRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmergencySignInCodeDto_Output"];
                 };
             };
         };

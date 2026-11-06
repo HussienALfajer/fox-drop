@@ -17,6 +17,7 @@
 2. The server sends a code over WhatsApp, the only channel in V1 (`otp.channel_order`, technology-stack §8.3), with `otp.validity_min` (5), `otp.max_attempts` (5) and `otp.resend_after_sec` (60) (AP Appendix A).
 3. If the number belongs to no restaurant: «هذا الرقم غير مسجّل لدى أي مطعم في FOX DROP» with call and WhatsApp buttons for the team. There is no self-signup.
 4. If the restaurant's account is `draft`: «حساب مطعمك قيد الإعداد. سنتواصل معك عند جاهزيته.»
+   - **When no code can be sent** (the sending numbers are down), the error offers «لديّ رمز من العمليات» (owner decision 2026-11-07): it opens the code screen for the number entered, with a button to call operations, who can issue an emergency sign-in code after verifying the user by phone (technology-stack §8.3.5).
 5. **First sign-in on a device (app):**
    1. Name the device, for example «كاشير 1» or «تابلت المطبخ».
    2. Run the device check (§4.5). It can be skipped, but the yellow banner stays until it passes.
