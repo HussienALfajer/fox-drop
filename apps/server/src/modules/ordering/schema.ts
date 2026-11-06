@@ -106,7 +106,7 @@ export const orders = ordering.table(
     recipientName: text('recipient_name'),
     directions: text('directions'),
     // AP §8.1: a cancelled order records why and whether food had been
-    // prepared; merchant_no_response is the automatic cancellation (§8.3),
+    // prepared; merchant_auto_cancel is the automatic cancellation (§8.3),
     // an unanswered order of the restaurant.
     cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
     cancelReason: text('cancel_reason'),
@@ -243,5 +243,9 @@ export const outbox = ordering.table(
     payload: jsonb('payload').notNull(),
     publishedAt: timestamp('published_at', { withTimezone: true }),
   },
-  (table) => [index('outbox_unpublished').on(table.id).where(sql`${table.publishedAt} IS NULL`)],
+  (table) => [
+    index('outbox_unpublished')
+      .on(table.id)
+      .where(sql`${table.publishedAt} IS NULL`),
+  ],
 );

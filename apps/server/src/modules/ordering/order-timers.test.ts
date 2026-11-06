@@ -204,7 +204,7 @@ describe('the automatic cancellation (AP §8.3)', () => {
     expect(await orderOf(order.id)).toEqual({
       status: 'cancelled',
       version: 2,
-      cancel_reason: 'merchant_no_response',
+      cancel_reason: 'merchant_auto_cancel',
       food_prepared: false,
     });
     const events = await sql.query(
@@ -216,7 +216,7 @@ describe('the automatic cancellation (AP §8.3)', () => {
       from_status: 'placed',
       to_status: 'cancelled',
       actor_type: 'system',
-      reason: 'merchant_no_response',
+      reason: 'merchant_auto_cancel',
     });
     const outbox = await sql.query(
       'SELECT type, payload FROM ordering.outbox WHERE order_id = $1 ORDER BY id',
@@ -226,7 +226,7 @@ describe('the automatic cancellation (AP §8.3)', () => {
     expect(outbox.rows[1].payload).toMatchObject({
       status: 'cancelled',
       version: 2,
-      reason: 'merchant_no_response',
+      reason: 'merchant_auto_cancel',
     });
     // A repeated or late job is harmless.
     expect(await timers.merchantAutoCancel(job, new Date())).toBe(false);
@@ -268,7 +268,7 @@ describe('the automatic cancellation (AP §8.3)', () => {
       }
       expect(await orderOf(order.id)).toMatchObject({
         status: 'cancelled',
-        cancel_reason: 'merchant_no_response',
+        cancel_reason: 'merchant_auto_cancel',
       });
     } finally {
       delete process.env.PROCESS_ROLE;

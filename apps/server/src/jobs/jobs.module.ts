@@ -12,6 +12,11 @@ export class Jobs implements OnApplicationShutdown {
   private readonly logger = new Logger('Jobs');
   private started: Promise<PgBoss> | undefined;
 
+  // Connects now, so a caller can do it before opening a transaction.
+  async ready(): Promise<void> {
+    await this.boss();
+  }
+
   // A job, sent in the caller's transaction with { db: inTransaction(tx) }.
   async send(name: QueueName, data: object, options: SendOptions): Promise<string | null> {
     return (await this.boss()).send(name, data, options);
@@ -43,6 +48,9 @@ export class Jobs implements OnApplicationShutdown {
       this.logger.error({ err: error }, 'the job queue failed');
       reportError(error);
     });
+    // Slow queries, backlogs, bloated indexes the application role cannot
+    // rebuild.
+    boss.on('warning', (warning) => this.logger.warn({ warning }, 'job queue warning'));
     return boss.start();
   }
 }

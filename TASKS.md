@@ -17,7 +17,7 @@ Slice 1.8, placing the order (`docs/roadmap.md`, Phase 1): the atomic re-check, 
 - **Pull request 2, `feat/order-timers`:** the timers and the outbox.
   - [x] pg-boss installed by the migration role, `Jobs` in the shared layer, the worker running the queues.
   - [x] The outbox table written in each transition's transaction (E3, E4), and the automatic cancellation after `order.merchant_auto_cancel_min` (AP §8.3), which re-reads the order and acts only on the same state and version.
-  - [ ] `checker`, the `reviewer`, the pull request.
+  - [x] `checker`, the `reviewer` (its findings fixed: retries with backoff, waiting for pg-boss upgrade steps, a maintenance pass proved as the application role, warnings logged, the system's own cancel reason), the pull request. Orders placed before this pull request have no timer; none exist outside the tests, since staging signs no customer in until the WhatsApp sender (slice 1.14).
 - **Pull request 3, `feat/capacity-check`:** the capacity check (AP §9.12.6) in the quote and at placing, while `dispatch.capacity_check` is on: an online, active captain within `dispatch.search_radius_km` of the restaurant, under the cash limit, not blocked, whose vehicle is allowed for the trip; then the handover to slice 1.9.
 
 ## Notes from earlier slices

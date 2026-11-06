@@ -4,6 +4,7 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { QUEUES } from '../../jobs/job-queue.js';
 import { Jobs } from '../../jobs/jobs.module.js';
+import { reportError } from '../../observability/error-tracking.js';
 import { lockOrder, recordTransition } from './order-events.js';
 import { orders } from './schema.js';
 
@@ -16,9 +17,10 @@ export interface AutoCancelJob {
   version: number;
 }
 
-// AP §8.3: the reason of the automatic cancellation, «المطعم لم يستجب», which
-// also counts the order as unanswered by the restaurant.
-export const MERCHANT_NO_RESPONSE = 'merchant_no_response';
+// AP §8.3: the reason of the automatic cancellation, «المطعم لم يستجب», kept
+// for the system alone: it is what counts the order as unanswered by the
+// restaurant (RA §11), which an operations cancellation never does.
+export const MERCHANT_AUTO_CANCEL = 'merchant_auto_cancel';
 
 // The order's timers when they fire. Each re-reads the order under its lock
 // and acts only on the state and version it was set for, so a late or
@@ -40,7 +42,7 @@ export class OrderTimers {
           status: 'cancelled',
           version,
           cancelledAt: now,
-          cancelReason: MERCHANT_NO_RESPONSE,
+          cancelReason: MERCHANT_AUTO_CANCEL,
           foodPrepared: false,
         })
         .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
@@ -50,13 +52,12 @@ export class OrderTimers {
         to: 'cancelled',
         version,
         actor: { type: 'system', id: null },
-        reason: MERCHANT_NO_RESPONSE,
+        reason: MERCHANT_AUTO_CANCEL,
         at: now,
       });
       return true;
     });
   }
-
 }
 
 // The worker's handlers of the order timers.
@@ -72,8 +73,18 @@ export class OrderTimersWorker implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     await this.jobs.work<AutoCancelJob>(QUEUES.merchantAutoCancel, async (batch) => {
       for (const job of batch) {
-        if (await this.timers.merchantAutoCancel(job.data, new Date())) {
-          this.logger.log({ orderId: job.data.orderId }, 'cancelled: no restaurant response');
+        try {
+          if (await this.timers.merchantAutoCancel(job.data, new Date())) {
+            this.logger.log({ orderId: job.data.orderId }, 'cancelled: no restaurant response');
+          }
+        } catch (error) {
+          // pg-boss tries it again (QUEUE_OPTIONS); each failure is reported.
+          this.logger.error(
+            { err: error, orderId: job.data.orderId },
+            'automatic cancellation failed',
+          );
+          reportError(error);
+          throw error;
         }
       }
     });

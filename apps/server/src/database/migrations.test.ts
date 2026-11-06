@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { PgBoss } from 'pg-boss';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { createJobQueue, QUEUES } from '../jobs/job-queue.js';
 import { createDatabase, type Database } from './database.js';
 import { runMigrations } from './migrate.js';
 import { startTestDatabase, type TestDatabase } from './test-database.js';
@@ -558,6 +560,25 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
     await expect(appQuery('CREATE TABLE pgboss.extra (id int)')).rejects.toThrow(
       /permission denied/,
     );
+    await expect(appQuery('UPDATE pgboss.version SET version = 0')).rejects.toThrow(
+      /permission denied/,
+    );
+  });
+
+  it('let the application role send, work and maintain jobs', async () => {
+    const boss: PgBoss = createJobQueue(database.appUrl, false);
+    boss.on('error', () => undefined);
+    await boss.start();
+    try {
+      const id = await boss.send(QUEUES.merchantAutoCancel, { test: true });
+      const [job] = await boss.fetch(QUEUES.merchantAutoCancel);
+      expect(job?.id).toBe(id);
+      await boss.complete(QUEUES.merchantAutoCancel, id!);
+      // A whole maintenance pass, as the worker runs it.
+      await boss.supervise();
+    } finally {
+      await boss.stop({ graceful: false });
+    }
   });
 
   it.each([

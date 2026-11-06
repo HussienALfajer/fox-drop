@@ -22,13 +22,7 @@ import { recordTransition } from './order-events.js';
 import type { AutoCancelJob } from './order-timers.js';
 import { type Quote, type QuoteRequest, QuoteRefusedError, QuoteService } from './quote.service.js';
 import type { QuoteMoney } from './quote.js';
-import {
-  idempotencyKeys,
-  orderLines,
-  orderNumbers,
-  orders,
-  type orderStatuses,
-} from './schema.js';
+import { idempotencyKeys, orderLines, orderNumbers, orders, type orderStatuses } from './schema.js';
 
 type OrderStatus = (typeof orderStatuses)[number];
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
@@ -180,6 +174,8 @@ export class OrdersService implements OnModuleInit {
       this.settings.get('order.merchant_auto_cancel_min', { cityId }),
     ]);
 
+    // pg-boss connects before the locks are taken, never while they are held.
+    await this.jobs.ready();
     let placed: { id: string; placedAt: Date };
     try {
       placed = await this.database.db.transaction(async (tx) => {
