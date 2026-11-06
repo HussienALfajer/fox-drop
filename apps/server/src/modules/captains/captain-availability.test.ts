@@ -120,6 +120,10 @@ describe('the availability routes (CA §7)', () => {
     expect(offline.json()).toEqual({ handIn: null });
     expect((await call(headers, 'GET', '/v1/captain/availability')).json().availability).toEqual({
       state: 'offline',
+      since: null,
+      reasons: [],
+      suspensionReason: null,
+      suspendedUntil: null,
     });
   });
 
@@ -208,6 +212,8 @@ describe('the location route (CA §4.3, architecture §7.3)', () => {
       state: 'not_receiving_offers',
       since: expect.any(String),
       reasons: ['simulated_location'],
+      suspensionReason: null,
+      suspendedUntil: null,
     });
     await sendPoints(headers, [point(new Date(Date.now() + 2_000))]);
     expect((await call(headers, 'GET', '/v1/captain/availability')).json().availability.state).toBe(

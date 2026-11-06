@@ -1217,25 +1217,15 @@ export interface components {
         CaptainAvailabilityDto_Output: {
             /** @description CA §7.1: «غير متصل», «متصل متاح», «لا تصلك عروض» with its reasons, «موقوف». */
             availability: {
-                /** @constant */
-                state: "offline";
-            } | {
-                /** @constant */
-                state: "online_available";
-                /** Format: date-time */
-                since: string;
-            } | {
-                /** @constant */
-                state: "not_receiving_offers";
-                /** Format: date-time */
-                since: string;
+                /** @enum {string} */
+                state: "offline" | "online_available" | "not_receiving_offers" | "suspended";
+                /** @description Online since; null unless online. */
+                since: string | null;
+                /** @description Why no offers arrive; empty unless not_receiving_offers. */
                 reasons: ("cash_limit" | "closed_due" | "simulated_location")[];
-            } | {
-                /** @constant */
-                state: "suspended";
-                reason: string;
-                /** @description Null: until further notice. */
-                until: string | null;
+                suspensionReason: string | null;
+                /** @description While suspended: the end, or null until further notice. */
+                suspendedUntil: string | null;
             };
             custody: {
                 /** @description The cash held, in the base currency (AP §8.5.3). */

@@ -29,21 +29,21 @@ const money = z.object({
   currency: z.string().length(3),
 });
 
+// One object with nullable parts rather than a union, which the generated
+// Dart client cannot read without another package.
 const availability = z
-  .discriminatedUnion('state', [
-    z.object({ state: z.literal('offline') }),
-    z.object({ state: z.literal('online_available'), since: z.iso.datetime() }),
-    z.object({
-      state: z.literal('not_receiving_offers'),
-      since: z.iso.datetime(),
-      reasons: z.array(z.enum(['cash_limit', 'closed_due', 'simulated_location'])),
-    }),
-    z.object({
-      state: z.literal('suspended'),
-      reason: z.string(),
-      until: z.iso.datetime().nullable().describe('Null: until further notice.'),
-    }),
-  ])
+  .object({
+    state: z.enum(['offline', 'online_available', 'not_receiving_offers', 'suspended']),
+    since: z.iso.datetime().nullable().describe('Online since; null unless online.'),
+    reasons: z
+      .array(z.enum(['cash_limit', 'closed_due', 'simulated_location']))
+      .describe('Why no offers arrive; empty unless not_receiving_offers.'),
+    suspensionReason: z.string().nullable(),
+    suspendedUntil: z.iso
+      .datetime()
+      .nullable()
+      .describe('While suspended: the end, or null until further notice.'),
+  })
   .describe('CA §7.1: «غير متصل», «متصل متاح», «لا تصلك عروض» with its reasons, «موقوف».');
 
 class CaptainAvailabilityDto extends createZodDto(
@@ -181,20 +181,13 @@ function moneyBody(money: Money) {
 }
 
 function availabilityBody(state: Availability) {
-  switch (state.state) {
-    case 'offline':
-      return state;
-    case 'online_available':
-      return { state: state.state, since: state.since.toISOString() };
-    case 'not_receiving_offers':
-      return { state: state.state, since: state.since.toISOString(), reasons: state.reasons };
-    case 'suspended':
-      return {
-        state: state.state,
-        reason: state.reason,
-        until: state.until?.toISOString() ?? null,
-      };
-  }
+  return {
+    state: state.state,
+    since: 'since' in state ? state.since.toISOString() : null,
+    reasons: state.state === 'not_receiving_offers' ? state.reasons : [],
+    suspensionReason: state.state === 'suspended' ? state.reason : null,
+    suspendedUntil: state.state === 'suspended' ? (state.until?.toISOString() ?? null) : null,
+  };
 }
 
 function stateBody({ availability: state, custody }: CaptainState) {

@@ -3377,102 +3377,70 @@
         "type": "object",
         "properties": {
           "availability": {
-            "oneOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "state": {
-                    "type": "string",
-                    "const": "offline"
-                  }
-                },
-                "required": [
-                  "state"
-                ],
-                "additionalProperties": false
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "offline",
+                  "online_available",
+                  "not_receiving_offers",
+                  "suspended"
+                ]
               },
-              {
-                "type": "object",
-                "properties": {
-                  "state": {
-                    "type": "string",
-                    "const": "online_available"
-                  },
-                  "since": {
-                    "type": "string",
-                    "format": "date-time",
-                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                  }
-                },
-                "required": [
-                  "state",
-                  "since"
-                ],
-                "additionalProperties": false
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "state": {
-                    "type": "string",
-                    "const": "not_receiving_offers"
-                  },
-                  "since": {
+              "since": {
+                "anyOf": [
+                  {
                     "type": "string",
                     "format": "date-time",
                     "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                   },
-                  "reasons": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "enum": [
-                        "cash_limit",
-                        "closed_due",
-                        "simulated_location"
-                      ]
-                    }
+                  {
+                    "type": "null"
                   }
-                },
-                "required": [
-                  "state",
-                  "since",
-                  "reasons"
                 ],
-                "additionalProperties": false
+                "description": "Online since; null unless online."
               },
-              {
-                "type": "object",
-                "properties": {
-                  "state": {
-                    "type": "string",
-                    "const": "suspended"
-                  },
-                  "reason": {
-                    "type": "string"
-                  },
-                  "until": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "format": "date-time",
-                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ],
-                    "description": "Null: until further notice."
-                  }
+              "reasons": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "cash_limit",
+                    "closed_due",
+                    "simulated_location"
+                  ]
                 },
-                "required": [
-                  "state",
-                  "reason",
-                  "until"
+                "description": "Why no offers arrive; empty unless not_receiving_offers."
+              },
+              "suspensionReason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "suspendedUntil": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
                 ],
-                "additionalProperties": false
+                "description": "While suspended: the end, or null until further notice."
               }
+            },
+            "required": [
+              "state",
+              "since",
+              "reasons",
+              "suspensionReason",
+              "suspendedUntil"
             ],
+            "additionalProperties": false,
             "description": "CA §7.1: «غير متصل», «متصل متاح», «لا تصلك عروض» with its reasons, «موقوف»."
           },
           "custody": {

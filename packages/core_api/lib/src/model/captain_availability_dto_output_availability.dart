@@ -3,14 +3,9 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/captain_availability_dto_output_availability_one_of2.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/captain_availability_dto_output_availability_one_of.dart';
-import 'package:core_api/src/model/captain_availability_dto_output_availability_one_of3.dart';
-import 'package:core_api/src/model/captain_availability_dto_output_availability_one_of1.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
-import 'package:one_of/one_of.dart';
 
 part 'captain_availability_dto_output_availability.g.dart';
 
@@ -18,10 +13,10 @@ part 'captain_availability_dto_output_availability.g.dart';
 ///
 /// Properties:
 /// * [state]
-/// * [since]
-/// * [reasons]
-/// * [reason]
-/// * [until] - Null: until further notice.
+/// * [since] - Online since; null unless online.
+/// * [reasons] - Why no offers arrive; empty unless not_receiving_offers.
+/// * [suspensionReason]
+/// * [suspendedUntil] - While suspended: the end, or null until further notice.
 @BuiltValue()
 abstract class CaptainAvailabilityDtoOutputAvailability
     implements
@@ -29,8 +24,25 @@ abstract class CaptainAvailabilityDtoOutputAvailability
           CaptainAvailabilityDtoOutputAvailability,
           CaptainAvailabilityDtoOutputAvailabilityBuilder
         > {
-  /// One Of [CaptainAvailabilityDtoOutputAvailabilityOneOf], [CaptainAvailabilityDtoOutputAvailabilityOneOf1], [CaptainAvailabilityDtoOutputAvailabilityOneOf2], [CaptainAvailabilityDtoOutputAvailabilityOneOf3]
-  OneOf get oneOf;
+  @BuiltValueField(wireName: r'state')
+  CaptainAvailabilityDtoOutputAvailabilityStateEnum get state;
+  // enum stateEnum {  offline,  online_available,  not_receiving_offers,  suspended,  };
+
+  /// Online since; null unless online.
+  @BuiltValueField(wireName: r'since')
+  DateTime? get since;
+
+  /// Why no offers arrive; empty unless not_receiving_offers.
+  @BuiltValueField(wireName: r'reasons')
+  BuiltList<CaptainAvailabilityDtoOutputAvailabilityReasonsEnum> get reasons;
+  // enum reasonsEnum {  cash_limit,  closed_due,  simulated_location,  };
+
+  @BuiltValueField(wireName: r'suspensionReason')
+  String? get suspensionReason;
+
+  /// While suspended: the end, or null until further notice.
+  @BuiltValueField(wireName: r'suspendedUntil')
+  DateTime? get suspendedUntil;
 
   CaptainAvailabilityDtoOutputAvailability._();
 
@@ -61,7 +73,43 @@ class _$CaptainAvailabilityDtoOutputAvailabilitySerializer
     Serializers serializers,
     CaptainAvailabilityDtoOutputAvailability object, {
     FullType specifiedType = FullType.unspecified,
-  }) sync* {}
+  }) sync* {
+    yield r'state';
+    yield serializers.serialize(
+      object.state,
+      specifiedType: const FullType(
+        CaptainAvailabilityDtoOutputAvailabilityStateEnum,
+      ),
+    );
+    yield r'since';
+    yield object.since == null
+        ? null
+        : serializers.serialize(
+            object.since,
+            specifiedType: const FullType.nullable(DateTime),
+          );
+    yield r'reasons';
+    yield serializers.serialize(
+      object.reasons,
+      specifiedType: const FullType(BuiltList, [
+        FullType(CaptainAvailabilityDtoOutputAvailabilityReasonsEnum),
+      ]),
+    );
+    yield r'suspensionReason';
+    yield object.suspensionReason == null
+        ? null
+        : serializers.serialize(
+            object.suspensionReason,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'suspendedUntil';
+    yield object.suspendedUntil == null
+        ? null
+        : serializers.serialize(
+            object.suspendedUntil,
+            specifiedType: const FullType.nullable(DateTime),
+          );
+  }
 
   @override
   Object serialize(
@@ -69,11 +117,87 @@ class _$CaptainAvailabilityDtoOutputAvailabilitySerializer
     CaptainAvailabilityDtoOutputAvailability object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final oneOf = object.oneOf;
-    return serializers.serialize(
-      oneOf.value,
-      specifiedType: FullType(oneOf.valueType),
-    )!;
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
+  }
+
+  void _deserializeProperties(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+    required List<Object?> serializedList,
+    required CaptainAvailabilityDtoOutputAvailabilityBuilder result,
+    required List<Object?> unhandled,
+  }) {
+    for (var i = 0; i < serializedList.length; i += 2) {
+      final key = serializedList[i] as String;
+      final value = serializedList[i + 1];
+      switch (key) {
+        case r'state':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainAvailabilityDtoOutputAvailabilityStateEnum,
+                    ),
+                  )
+                  as CaptainAvailabilityDtoOutputAvailabilityStateEnum;
+          result.state = valueDes;
+          break;
+        case r'since':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
+          if (valueDes == null) continue;
+          result.since = valueDes;
+          break;
+        case r'reasons':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(
+                        CaptainAvailabilityDtoOutputAvailabilityReasonsEnum,
+                      ),
+                    ]),
+                  )
+                  as BuiltList<
+                    CaptainAvailabilityDtoOutputAvailabilityReasonsEnum
+                  >;
+          result.reasons.replace(valueDes);
+          break;
+        case r'suspensionReason':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.suspensionReason = valueDes;
+          break;
+        case r'suspendedUntil':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
+          if (valueDes == null) continue;
+          result.suspendedUntil = valueDes;
+          break;
+        default:
+          unhandled.add(key);
+          unhandled.add(value);
+          break;
+      }
+    }
   }
 
   @override
@@ -83,22 +207,32 @@ class _$CaptainAvailabilityDtoOutputAvailabilitySerializer
     FullType specifiedType = FullType.unspecified,
   }) {
     final result = CaptainAvailabilityDtoOutputAvailabilityBuilder();
-    Object? oneOfDataSrc;
-    final targetType = const FullType(OneOf, [
-      FullType(CaptainAvailabilityDtoOutputAvailabilityOneOf),
-      FullType(CaptainAvailabilityDtoOutputAvailabilityOneOf1),
-      FullType(CaptainAvailabilityDtoOutputAvailabilityOneOf2),
-      FullType(CaptainAvailabilityDtoOutputAvailabilityOneOf3),
-    ]);
-    oneOfDataSrc = serialized;
-    result.oneOf =
-        serializers.deserialize(oneOfDataSrc, specifiedType: targetType)
-            as OneOf;
+    final serializedList = (serialized as Iterable<Object?>).toList();
+    final unhandled = <Object?>[];
+    _deserializeProperties(
+      serializers,
+      serialized,
+      specifiedType: specifiedType,
+      serializedList: serializedList,
+      unhandled: unhandled,
+      result: result,
+    );
     return result.build();
   }
 }
 
 class CaptainAvailabilityDtoOutputAvailabilityStateEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'offline')
+  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum offline =
+      _$captainAvailabilityDtoOutputAvailabilityStateEnum_offline;
+  @BuiltValueEnumConst(wireName: r'online_available')
+  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum
+  onlineAvailable =
+      _$captainAvailabilityDtoOutputAvailabilityStateEnum_onlineAvailable;
+  @BuiltValueEnumConst(wireName: r'not_receiving_offers')
+  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum
+  notReceivingOffers =
+      _$captainAvailabilityDtoOutputAvailabilityStateEnum_notReceivingOffers;
   @BuiltValueEnumConst(wireName: r'suspended')
   static const CaptainAvailabilityDtoOutputAvailabilityStateEnum suspended =
       _$captainAvailabilityDtoOutputAvailabilityStateEnum_suspended;

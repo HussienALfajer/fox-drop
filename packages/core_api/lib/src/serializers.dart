@@ -18,10 +18,6 @@ import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/backup_codes_dto_output.dart';
 import 'package:core_api/src/model/captain_availability_dto_output.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_availability.dart';
-import 'package:core_api/src/model/captain_availability_dto_output_availability_one_of.dart';
-import 'package:core_api/src/model/captain_availability_dto_output_availability_one_of1.dart';
-import 'package:core_api/src/model/captain_availability_dto_output_availability_one_of2.dart';
-import 'package:core_api/src/model/captain_availability_dto_output_availability_one_of3.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_custody.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_custody_closed_due.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_custody_limit.dart';
@@ -98,10 +94,6 @@ part 'serializers.g.dart';
   BackupCodesDtoOutput,
   CaptainAvailabilityDtoOutput,
   CaptainAvailabilityDtoOutputAvailability,
-  CaptainAvailabilityDtoOutputAvailabilityOneOf,
-  CaptainAvailabilityDtoOutputAvailabilityOneOf1,
-  CaptainAvailabilityDtoOutputAvailabilityOneOf2,
-  CaptainAvailabilityDtoOutputAvailabilityOneOf3,
   CaptainAvailabilityDtoOutputCustody,
   CaptainAvailabilityDtoOutputCustodyClosedDue,
   CaptainAvailabilityDtoOutputCustodyLimit,

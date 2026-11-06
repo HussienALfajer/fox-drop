@@ -12,26 +12,8 @@ Serializers _$serializers =
           ..add(BackupCodesDtoOutput.serializer)
           ..add(CaptainAvailabilityDtoOutput.serializer)
           ..add(CaptainAvailabilityDtoOutputAvailability.serializer)
-          ..add(CaptainAvailabilityDtoOutputAvailabilityOneOf.serializer)
-          ..add(CaptainAvailabilityDtoOutputAvailabilityOneOf1.serializer)
-          ..add(
-            CaptainAvailabilityDtoOutputAvailabilityOneOf1StateEnum.serializer,
-          )
-          ..add(CaptainAvailabilityDtoOutputAvailabilityOneOf2.serializer)
-          ..add(
-            CaptainAvailabilityDtoOutputAvailabilityOneOf2ReasonsEnum
-                .serializer,
-          )
-          ..add(
-            CaptainAvailabilityDtoOutputAvailabilityOneOf2StateEnum.serializer,
-          )
-          ..add(CaptainAvailabilityDtoOutputAvailabilityOneOf3.serializer)
-          ..add(
-            CaptainAvailabilityDtoOutputAvailabilityOneOf3StateEnum.serializer,
-          )
-          ..add(
-            CaptainAvailabilityDtoOutputAvailabilityOneOfStateEnum.serializer,
-          )
+          ..add(CaptainAvailabilityDtoOutputAvailabilityReasonsEnum.serializer)
+          ..add(CaptainAvailabilityDtoOutputAvailabilityStateEnum.serializer)
           ..add(CaptainAvailabilityDtoOutputCustody.serializer)
           ..add(CaptainAvailabilityDtoOutputCustodyClosedDue.serializer)
           ..add(CaptainAvailabilityDtoOutputCustodyLimit.serializer)
@@ -136,12 +118,12 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(
-                CaptainAvailabilityDtoOutputAvailabilityOneOf2ReasonsEnum,
+                CaptainAvailabilityDtoOutputAvailabilityReasonsEnum,
               ),
             ]),
             () =>
                 ListBuilder<
-                  CaptainAvailabilityDtoOutputAvailabilityOneOf2ReasonsEnum
+                  CaptainAvailabilityDtoOutputAvailabilityReasonsEnum
                 >(),
           )
           ..addBuilderFactory(
