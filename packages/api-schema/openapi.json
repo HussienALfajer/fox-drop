@@ -4132,6 +4132,7 @@
                 "enum": [
                   "offline",
                   "online_available",
+                  "busy",
                   "not_receiving_offers",
                   "suspended"
                 ]
@@ -4189,7 +4190,7 @@
               "suspendedUntil"
             ],
             "additionalProperties": false,
-            "description": "CA §7.1: «غير متصل», «متصل متاح», «لا تصلك عروض» with its reasons, «موقوف»."
+            "description": "CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «لا تصلك عروض» with its reasons, «موقوف»."
           },
           "custody": {
             "type": "object",

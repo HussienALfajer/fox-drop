@@ -9,6 +9,8 @@ import { orders, type orderStatuses } from './schema.js';
 type OrderStatus = (typeof orderStatuses)[number];
 type Executor = Pick<NodePgDatabase, 'select'>;
 
+// AP §9.12.6: a captain's assigned order counts until it ends.
+const CAPTAIN_ACTIVE: OrderStatus[] = ['accepted', 'ready', 'picked_up', 'arrived'];
 // RA §7.4: a restaurant's orders count until pickup or their end.
 const RESTAURANT_ACTIVE: OrderStatus[] = ['placed', 'accepted', 'ready'];
 // D23, CU §5.5: a customer's orders count until they end; RA §8.2: the
@@ -42,6 +44,20 @@ export class ActiveOrders {
 
   restaurant(restaurantId: string, executor: Executor = this.database.db): Promise<number> {
     return countOrders(executor, eq(orders.restaurantId, restaurantId), RESTAURANT_ACTIVE);
+  }
+
+  // Which of these captains have an active order now.
+  async captains(
+    captainIds: string[],
+    executor: Executor = this.database.db,
+  ): Promise<Set<string>> {
+    if (captainIds.length === 0) return new Set();
+    const rows = await executor
+      .select({ captainId: orders.captainId })
+      .from(orders)
+      .where(and(inArray(orders.captainId, captainIds), inArray(orders.status, CAPTAIN_ACTIVE)))
+      .groupBy(orders.captainId);
+    return new Set(rows.map((row) => row.captainId!));
   }
 
   async rules(cityId: string): Promise<CustomerLimitRules> {

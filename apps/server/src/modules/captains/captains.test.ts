@@ -507,8 +507,14 @@ describe('going online and offline (CA §7.2, §7.5)', () => {
 describe('CaptainsService.eligibleNear (AP §9.12.6)', () => {
   const restaurant = { latitude: 36.587, longitude: 37.046 };
   const near = { latitude: 36.588, longitude: 37.047 };
-  const online = async (point: { latitude: number; longitude: number }, simulatedLater = false) => {
-    const { cityId, id } = await captain();
+  const online = async (
+    point: { latitude: number; longitude: number },
+    simulatedLater = false,
+    inCity?: string,
+  ) => {
+    const { cityId, id } = inCity
+      ? { cityId: inCity, id: await captains.createCaptain(inCity, motorbike, change) }
+      : await captain();
     const now = new Date();
     await captains.goOnline(id, device, now);
     const points = [{ ...point, accuracyMetres: 8, recordedAt: now, simulated: false }];
@@ -575,5 +581,54 @@ describe('CaptainsService.eligibleNear (AP §9.12.6)', () => {
   it('leaves out an online captain who receives no offers (a simulated location)', async () => {
     const { cityId } = await online(near, true);
     expect(await captains.eligibleNear(cityId, restaurant, 500, new Date())).toBe(false);
+  });
+
+  it('makes a captain with an active order busy: no offers, and no going offline (CA §7.1, §15)', async () => {
+    const { cityId, id } = await online(near);
+    captains.useActiveOrders((ids) => Promise.resolve(new Set(ids.filter((each) => each === id))));
+    try {
+      expect((await captains.state(id, new Date())).availability.state).toBe('busy');
+      expect(await captains.nearestEligible(cityId, restaurant, 500, new Date())).toBeNull();
+      const [seen] = (await captains.candidates(cityId, restaurant, 500, new Date())).filter(
+        (each) => each.captainId === id,
+      );
+      expect(seen?.reasons).toEqual(['busy']);
+      await expect(captains.goOffline(id, new Date())).rejects.toMatchObject({
+        refusal: 'active_order',
+      });
+    } finally {
+      captains.useActiveOrders(() => Promise.resolve(new Set()));
+    }
+    await captains.goOffline(id, new Date());
+  });
+
+  it('lists every online captain of the city with why it cannot take the trip (AP §9.3.2)', async () => {
+    const { cityId, id } = await online(near);
+    // About 5.5 km east, beyond the 3 km search radius.
+    const far = await online({ latitude: 36.587, longitude: 37.108 }, false, cityId);
+    const simulated = await online(near, true, cityId);
+    try {
+      const mine = async (tripMetres: number) =>
+        new Map(
+          (await captains.candidates(cityId, restaurant, tripMetres, new Date())).map((each) => [
+            each.captainId,
+            each,
+          ]),
+        );
+      const listed = await mine(500);
+      expect(listed.get(id)).toMatchObject({ name: expect.any(String), vehicle: 'motorbike' });
+      expect(listed.get(id)!.reasons).toEqual([]);
+      expect(listed.get(id)!.straightMetres).toBeGreaterThan(100);
+      expect(listed.get(id)!.straightMetres).toBeLessThan(200);
+      expect(listed.get(far.id)!.reasons).toEqual(['out_of_range']);
+      expect(listed.get(simulated.id)!.reasons).toEqual(['simulated_location']);
+      // Nearest first.
+      const order = [...listed.keys()];
+      expect(order.indexOf(id)).toBeLessThan(order.indexOf(far.id));
+      // A motorbike takes trips up to dispatch.max_distance_km.motorbike (10 km).
+      expect((await mine(12_000)).get(id)!.reasons).toEqual(['vehicle_not_allowed']);
+    } finally {
+      for (const each of [id, far.id, simulated.id]) await captains.goOffline(each, new Date());
+    }
   });
 });

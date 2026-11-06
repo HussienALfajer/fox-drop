@@ -9,7 +9,7 @@ import 'package:built_value/serializer.dart';
 
 part 'captain_availability_dto_output_availability.g.dart';
 
-/// CA §7.1: «غير متصل», «متصل متاح», «لا تصلك عروض» with its reasons, «موقوف».
+/// CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «لا تصلك عروض» with its reasons, «موقوف».
 ///
 /// Properties:
 /// * [state]
@@ -26,7 +26,7 @@ abstract class CaptainAvailabilityDtoOutputAvailability
         > {
   @BuiltValueField(wireName: r'state')
   CaptainAvailabilityDtoOutputAvailabilityStateEnum get state;
-  // enum stateEnum {  offline,  online_available,  not_receiving_offers,  suspended,  };
+  // enum stateEnum {  offline,  online_available,  busy,  not_receiving_offers,  suspended,  };
 
   /// Online since; null unless online.
   @BuiltValueField(wireName: r'since')
@@ -229,6 +229,9 @@ class CaptainAvailabilityDtoOutputAvailabilityStateEnum extends EnumClass {
   static const CaptainAvailabilityDtoOutputAvailabilityStateEnum
   onlineAvailable =
       _$captainAvailabilityDtoOutputAvailabilityStateEnum_onlineAvailable;
+  @BuiltValueEnumConst(wireName: r'busy')
+  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum busy =
+      _$captainAvailabilityDtoOutputAvailabilityStateEnum_busy;
   @BuiltValueEnumConst(wireName: r'not_receiving_offers')
   static const CaptainAvailabilityDtoOutputAvailabilityStateEnum
   notReceivingOffers =

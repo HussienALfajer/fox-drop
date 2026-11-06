@@ -1487,10 +1487,10 @@ export interface components {
             } | null;
         };
         CaptainAvailabilityDto_Output: {
-            /** @description CA §7.1: «غير متصل», «متصل متاح», «لا تصلك عروض» with its reasons, «موقوف». */
+            /** @description CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «لا تصلك عروض» with its reasons, «موقوف». */
             availability: {
                 /** @enum {string} */
-                state: "offline" | "online_available" | "not_receiving_offers" | "suspended";
+                state: "offline" | "online_available" | "busy" | "not_receiving_offers" | "suspended";
                 /** @description Online since; null unless online. */
                 since: string | null;
                 /** @description Why no offers arrive; empty unless not_receiving_offers. */

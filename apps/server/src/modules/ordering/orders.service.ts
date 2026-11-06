@@ -83,9 +83,13 @@ export class OrdersService implements OnModuleInit {
     private readonly jobs: Jobs,
   ) {}
 
-  // RA §7.4: the restaurant is busy at its maximum active orders.
+  // RA §7.4: the restaurant is busy at its maximum active orders. CA §7.1:
+  // a captain with an active order is busy (AP §9.12.6, no stacking).
   onModuleInit(): void {
     this.merchants.countActiveOrders((restaurantId) => this.activeOrders.restaurant(restaurantId));
+    this.captains.useActiveOrders((captainIds, executor) =>
+      this.activeOrders.captains(captainIds, executor),
+    );
   }
 
   async place(command: PlaceOrder, now: Date): Promise<OrderView> {

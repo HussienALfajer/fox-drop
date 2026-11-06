@@ -5,7 +5,7 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { FxService } from '../fx/index.js';
-import { GeoService, lastCutoff, type Point } from '../geo/index.js';
+import { GeoService, lastCutoff, type Point, straightLineMetres } from '../geo/index.js';
 import { type JournalType, LedgerService } from '../ledger/index.js';
 import { lockCityCurrencies, SettingsService, type Vehicle, vehicles } from '../settings/index.js';
 import {
@@ -29,7 +29,8 @@ export type CaptainsRefusal =
   | 'reason_required'
   | 'online_blocked'
   | 'not_online'
-  | 'invalid_location';
+  | 'invalid_location'
+  | 'active_order';
 
 // A change the captains module refuses, with the reason the routes map to
 // their own answers; going online carries its blocks (CA §7.2).
@@ -114,6 +115,42 @@ export interface CaptainState {
 }
 
 type Executor = Pick<NodePgDatabase, 'select' | 'execute'>;
+
+// Which of these captains have an active order (AP §9.12.6), read by the
+// module that owns the orders (ordering registers it), through the executor
+// given, so a transaction sees its own writes.
+export type ActiveOrderLookup = (
+  captainIds: string[],
+  executor: Pick<NodePgDatabase, 'select'>,
+) => Promise<Set<string>>;
+
+// AP §9.3.2: why a captain near the restaurant cannot take an order now; the
+// assignment picker greys them out with it. The maximum pickup amount (C4)
+// joins with its slice.
+export type IneligibleReason =
+  | 'busy'
+  | 'cash_limit'
+  | 'closed_due'
+  | 'simulated_location'
+  | 'out_of_range'
+  | 'vehicle_not_allowed';
+
+// An online captain seen from a restaurant (AP §9.3.2, §9.12.6): the live
+// position, the straight-line distance to it and the reasons the captain
+// cannot take the order; eligible with none.
+export interface Candidate {
+  captainId: string;
+  name: string;
+  vehicle: Vehicle;
+  position: Point;
+  straightMetres: number;
+  custody: Custody;
+  reasons: IneligibleReason[];
+}
+
+// The picker lists every online captain of the city with a live position,
+// greying out those beyond dispatch.search_radius_km; a city is far smaller.
+const CITY_LIST_RADIUS_METRES = 100_000;
 type Tx = Parameters<Parameters<Database['db']['transaction']>[0]>[0];
 
 // AP §8.5.4: the desk entries posted after the cutoff settle the closed days.
@@ -142,6 +179,8 @@ const PAY_TABLE_NOTICE_MS = 7 * 86_400_000;
 @Injectable()
 export class CaptainsService implements OnModuleInit {
   private readonly logger = new Logger('CaptainsService');
+  // None until ordering registers its lookup (useActiveOrders).
+  private activeOrders: ActiveOrderLookup = () => Promise.resolve(new Set());
 
   constructor(
     @Inject(DATABASE) private readonly database: Database,
@@ -167,6 +206,12 @@ export class CaptainsService implements OnModuleInit {
               ORDER BY effective_from DESC, id DESC LIMIT 1))`);
       return rows;
     });
+  }
+
+  // The ordering module tells which captains have an active order, so
+  // captains never reads its tables.
+  useActiveOrders(lookup: ActiveOrderLookup): void {
+    this.activeOrders = lookup;
   }
 
   // AP §9.7.1: an activated captain, with the vehicle and the cash limit the
@@ -471,14 +516,9 @@ export class CaptainsService implements OnModuleInit {
   }
 
   // The nearest eligible captain within dispatch.search_radius_km of the
-  // restaurant now, with its vehicle and live position, or null. Eligible is
-  // online and receiving offers (active, under the cash limit, not blocked
-  // for unhanded cash: `availability`), with a vehicle allowed for the trip.
-  // No active order passes until orders are assigned (slice 1.11); the
-  // maximum pickup amount is ignored, as AP §9.12.6 says. The live positions
-  // come from Valkey, or from the locations table when Valkey cannot answer
-  // (architecture §5.7), nearest first by the straight line. A captain whose
-  // state cannot be read is skipped.
+  // restaurant now, with its vehicle and live position, or null (the capacity
+  // check and the search start). Eligible is a candidate without a reason
+  // (candidates); the maximum pickup amount is ignored, as AP §9.12.6 says.
   async nearestEligible(
     cityId: string,
     restaurant: Point,
@@ -486,27 +526,83 @@ export class CaptainsService implements OnModuleInit {
     now: Date,
   ): Promise<(NearbyCaptain & { vehicle: Vehicle }) | null> {
     const radiusMetres = (await this.settings.get('dispatch.search_radius_km', { cityId })) * 1000;
+    const [first] = await this.scan(cityId, restaurant, tripMetres, now, radiusMetres, true);
+    return first
+      ? { captainId: first.captainId, position: first.position, vehicle: first.vehicle }
+      : null;
+  }
+
+  // AP §9.3.2, the assignment picker: every online captain of the city with a
+  // live position, nearest to the restaurant first by the straight line, each
+  // with the reasons it cannot take an order of this trip now (AP §9.12.6):
+  // busy with an active order, at the cash limit, blocked for unhanded cash,
+  // a simulated location, beyond dispatch.search_radius_km, or a vehicle
+  // whose dispatch.max_distance_km.<vehicle> is below the trip.
+  async candidates(
+    cityId: string,
+    restaurant: Point,
+    tripMetres: number,
+    now: Date,
+  ): Promise<Candidate[]> {
+    const radiusMetres = (await this.settings.get('dispatch.search_radius_km', { cityId })) * 1000;
+    return this.scan(cityId, restaurant, tripMetres, now, radiusMetres, false);
+  }
+
+  // The live positions come from Valkey, or from the locations table when
+  // Valkey cannot answer (architecture §5.7), nearest first; then, with the
+  // city's rules read once, each captain's record and state. A captain whose
+  // state cannot be read (such as a currency without a rate) is logged and
+  // left out, never failing the quote. With firstEligible, only the nearest
+  // eligible one within the radius, reading no further than it.
+  private async scan(
+    cityId: string,
+    restaurant: Point,
+    tripMetres: number,
+    now: Date,
+    radiusMetres: number,
+    firstEligible: boolean,
+  ): Promise<Candidate[]> {
+    const listRadius = firstEligible ? radiusMetres : CITY_LIST_RADIUS_METRES;
     const nearby =
-      (await this.positions.near(cityId, restaurant, radiusMetres, now)) ??
-      (await this.nearFromLocations(cityId, restaurant, radiusMetres, now));
-    if (nearby.length === 0) return null;
+      (await this.positions.near(cityId, restaurant, listRadius, now)) ??
+      (await this.nearFromLocations(cityId, restaurant, listRadius, now));
+    if (nearby.length === 0) return [];
     const rules = await this.cityRules(cityId, now);
-    const allowed = new Map<Vehicle, boolean>();
+    const maxMetres = new Map<Vehicle, number>();
+    const found: Candidate[] = [];
     for (const captain of nearby) {
       try {
         const row = await this.row(this.database.db, captain.captainId);
         if (row.cityId !== cityId) continue;
-        if (!allowed.has(row.vehicle)) {
+        let vehicleMax = maxMetres.get(row.vehicle);
+        if (vehicleMax === undefined) {
           const maxKm = await this.settings.get(`dispatch.max_distance_km.${row.vehicle}`, {
             cityId,
           });
-          allowed.set(row.vehicle, tripMetres <= maxKm * 1000);
+          vehicleMax = maxKm * 1000;
+          maxMetres.set(row.vehicle, vehicleMax);
         }
-        if (!allowed.get(row.vehicle)) continue;
+        if (firstEligible && tripMetres > vehicleMax) continue;
         const input = await this.input(this.database.db, row, rules);
-        if (availability(input.availability, now).state === 'online_available') {
-          return { ...captain, vehicle: row.vehicle };
-        }
+        const state = availability(input.availability, now);
+        if (state.state === 'offline' || state.state === 'suspended') continue;
+        const straightMetres = Math.round(straightLineMetres(captain.position, restaurant));
+        const reasons: IneligibleReason[] = [];
+        if (state.state === 'busy') reasons.push('busy');
+        if (state.state === 'not_receiving_offers') reasons.push(...state.reasons);
+        if (straightMetres > radiusMetres) reasons.push('out_of_range');
+        if (tripMetres > vehicleMax) reasons.push('vehicle_not_allowed');
+        if (firstEligible && reasons.length > 0) continue;
+        found.push({
+          captainId: row.id,
+          name: row.name,
+          vehicle: row.vehicle,
+          position: captain.position,
+          straightMetres,
+          custody: input.custody,
+          reasons,
+        });
+        if (firstEligible) return found;
       } catch (error) {
         this.logger.warn(
           { err: error, captainId: captain.captainId },
@@ -514,7 +610,7 @@ export class CaptainsService implements OnModuleInit {
         );
       }
     }
-    return null;
+    return found;
   }
 
   // The newest real point of each open online period within the radius, no
@@ -599,6 +695,11 @@ export class CaptainsService implements OnModuleInit {
     const rules = await this.cityRules(cityId, now);
     const ended = await this.database.db.transaction(async (tx) => {
       await this.lockCaptain(tx, captainId);
+      // CA §15: not with an active order; an assignment locks the captain
+      // too, so none can slip in between.
+      if ((await this.activeOrders([captainId], tx)).size > 0) {
+        throw new CaptainsRefusedError('active_order', 'the captain has an active order');
+      }
       return this.endOnline(tx, captainId, 'captain', now);
     });
     if (ended !== null) await this.positions.remove(cityId, captainId, ended);
@@ -754,6 +855,7 @@ export class CaptainsService implements OnModuleInit {
         appVersion: open?.appVersion ?? null,
         minVersion: rules.minVersion,
         simulatedLocation: latest?.simulated ?? false,
+        activeOrder: open ? (await this.activeOrders([row.id], executor)).size > 0 : false,
       },
       custody,
     };

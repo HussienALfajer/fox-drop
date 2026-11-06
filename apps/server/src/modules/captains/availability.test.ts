@@ -21,6 +21,7 @@ const ready: AvailabilityInput = {
   appVersion: '1.2.0',
   minVersion: '1.2.0',
   simulatedLocation: false,
+  activeOrder: false,
 };
 
 describe('onlineBlocks', () => {
@@ -147,6 +148,16 @@ describe('availability', () => {
   it('stops offers while a simulated location is reported', () => {
     expect(availability({ ...online, simulatedLocation: true }, now).state).toBe(
       'not_receiving_offers',
+    );
+  });
+
+  it('is busy with an active order, whatever else stops offers (CA §7.1)', () => {
+    expect(availability({ ...online, activeOrder: true }, now)).toEqual({
+      state: 'busy',
+      since: online.onlineSince,
+    });
+    expect(availability({ ...online, activeOrder: true, custodyUsage: 400_000n }, now).state).toBe(
+      'busy',
     );
   });
 
