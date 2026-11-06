@@ -171,6 +171,7 @@ Serializers _$serializers =
           ..add(ChangeRolesDto.serializer)
           ..add(ChangeRolesDtoRolesEnum.serializer)
           ..add(CompleteSetupDto.serializer)
+          ..add(ContactDtoOutput.serializer)
           ..add(CreateUserDto.serializer)
           ..add(CreateUserDtoRolesEnum.serializer)
           ..add(CustomerActiveOrdersDtoOutput.serializer)
@@ -804,6 +805,14 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

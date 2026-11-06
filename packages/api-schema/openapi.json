@@ -3370,6 +3370,84 @@
           "captain"
         ]
       }
+    },
+    "/v1/merchant/contact": {
+      "get": {
+        "operationId": "merchantContactGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/captain/contact": {
+      "get": {
+        "operationId": "captainContactGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/customer/contact": {
+      "get": {
+        "operationId": "customerContactGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
     }
   },
   "info": {
@@ -15033,6 +15111,30 @@
         },
         "required": [
           "offer"
+        ],
+        "additionalProperties": false
+      },
+      "ContactDto_Output": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "description": "The support phone number in E.164, or null.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "whatsapp": {
+            "description": "The support WhatsApp number in E.164, or null.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "phone",
+          "whatsapp"
         ],
         "additionalProperties": false
       }

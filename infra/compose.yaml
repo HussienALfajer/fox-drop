@@ -110,6 +110,9 @@ services:
       PROCESS_ROLE: api
       # App Check on the code requests (§8.3.3 item 1).
       FIREBASE_PROJECT_NUMBER: ${FIREBASE_PROJECT_NUMBER:-}
+      # The support numbers the apps show (AP §9.13 contact info).
+      SUPPORT_PHONE_NUMBER: ${SUPPORT_PHONE_NUMBER:-}
+      SUPPORT_WHATSAPP_NUMBER: ${SUPPORT_WHATSAPP_NUMBER:-}
       CENTRIFUGO_TOKEN_SECRET: ${CENTRIFUGO_TOKEN_SECRET:?}
       CENTRIFUGO_PROXY_SECRET: ${CENTRIFUGO_PROXY_SECRET:?}
     ports:

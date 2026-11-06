@@ -12,6 +12,11 @@ import { CaptainsService } from '../captains/index.js';
 import { FxService } from '../fx/index.js';
 import { CaptainAccountRefusedError, CaptainAccountsService } from './captain-accounts.service.js';
 import { CODE_SENDER, type DevelopmentCodeSender } from './code-sender.js';
+import { DATABASE } from '../../database/database.module.js';
+import type { Database } from '../../database/database.js';
+import { AuditService } from '../audit/index.js';
+import { changePlaceholderPhone } from './placeholder-phone.js';
+import { IDENTITY_SECRETS, type IdentitySecrets } from './secrets.js';
 
 // The captain app's sign-in (CA §4.9) on the app sign-in engine, served by the
 // API app as in production, on a fresh database and Valkey.
@@ -247,5 +252,56 @@ describe('the captain app sign-in (CA §4.9)', () => {
     });
     expect(out.json()).toEqual({ status: 'signed_out' });
     expect((await session(accessToken)).statusCode).toBe(401);
+  });
+});
+
+// Slice 1.14: the placeholder accounts of development and staging take a real
+// number by a server command (placeholder-phone-command.ts).
+function changePhone(from: string, to: string, environment = 'staging') {
+  return changePlaceholderPhone(
+    {
+      db: app.get<Database>(DATABASE).db,
+      audit: app.get(AuditService),
+      secrets: app.get<IdentitySecrets>(IDENTITY_SECRETS),
+    },
+    { party: 'captain', from, to },
+    environment,
+  );
+}
+
+describe('the placeholder phone command (slice 1.14)', () => {
+  it('moves the captain to the new number, which signs in, and audits no number', async () => {
+    const { phone, accountId } = await captain();
+    const next = newPhone();
+    expect(await changePhone(phone, next)).toEqual({ accountId });
+    const signedIn = await signIn(next);
+    expect(signedIn.statusCode).toBe(200);
+    expect(signedIn.json().accountId).toBe(accountId);
+    expect((await requestCode(phone, randomUUID())).statusCode).toBe(200);
+    expect(sender.lastCode(phone)).toBeUndefined();
+    const { rows } = await sql.query(
+      "SELECT changes::text AS changes FROM audit.events WHERE action = 'captain_account.phone_change' AND target_id = $1",
+      [accountId],
+    );
+    expect(rows).toHaveLength(1);
+    expect(rows[0].changes).not.toContain(next.slice(1));
+    expect(rows[0].changes).not.toContain(phone.slice(1));
+  });
+
+  it('refuses a taken number, an unknown one, a malformed one and production', async () => {
+    const first = await captain();
+    const second = await captain();
+    await expect(changePhone(first.phone, second.phone)).rejects.toMatchObject({
+      refusal: 'phone_taken',
+    });
+    await expect(changePhone(newPhone(), newPhone())).rejects.toMatchObject({
+      refusal: 'not_found',
+    });
+    await expect(changePhone(first.phone, '0944000000')).rejects.toMatchObject({
+      refusal: 'invalid_phone',
+    });
+    await expect(changePhone(first.phone, newPhone(), 'production')).rejects.toMatchObject({
+      refusal: 'wrong_environment',
+    });
   });
 });

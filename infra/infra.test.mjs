@@ -108,6 +108,8 @@ test('every environment names the settings compose.yaml and nginx need', () => {
     'CENTRIFUGO_PORT',
     // The otp-sender's reply (architecture §8.3.3 item 9); may be empty.
     'SUPPORT_WHATSAPP_NUMBER',
+    // The apps' support call button (AP §9.13 contact info); may be empty.
+    'SUPPORT_PHONE_NUMBER',
     // App Check (architecture §8.3.3 item 1); may be empty.
     'FIREBASE_PROJECT_NUMBER',
   ];
