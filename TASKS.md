@@ -4,12 +4,23 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Before slice 1.14 (`docs/roadmap.md`, Phase 1): the real WhatsApp sender (`otp-sender`, the sender pool, warm-up, App Check; architecture §8.3.3) and the emergency sign-in procedure (architecture §22 item 1). Slice 1.14, the walking skeleton on staging with real phones, waits for it, and its screens wait for the owner's answer on the UI/UX and the design system.
+Slice W1, the real WhatsApp sender with one number (`docs/roadmap.md`, Phase 1, before slice 1.14). The pool (W2), App Check (W3) and the emergency sign-in (W4) follow, one pull request each.
 
-- **Specs:** architecture §8.3 (§8.3.1 the port, §8.3.3 the sender, its pool and warm-up, App Check), §22 item 1; `apps/server/src/modules/identity/CLAUDE.md` («Code sender»).
-- **Branch:** to name with the owner, after the split.
-- **Ask the owner first:** the WhatsApp provider and accounts (numbers for the sender pool, who owns them), whether App Check is in this task or with the apps, the emergency sign-in procedure, the split into pull requests; then use the `slice-plan` skill.
-- **Plan:** to write as a checklist once the owner has answered.
+- **Specs:** architecture §4.4 (`otp-sender` role), §8.3.1 (the `CodeSender` port), §8.3.3 items 3, 8, 9 and 10; `apps/server/src/modules/identity/CLAUDE.md` («Code sender»); `infra/CLAUDE.md` for the staging container.
+- **Owner decisions 2026-11-06:** the Baileys library; two or more dedicated numbers are ready (the owner completes each business profile and keeps the numbers in normal use while warming); App Check on the server in W3; the emergency code in W4.
+- **Branch:** `feat/whatsapp-sender`.
+- **Design note:** the API must still answer `not_on_whatsapp` (400) and `unavailable` (503), so it puts the send request on a Valkey queue and waits for the sender's short answer within a timeout (no answer means `unavailable`, and the code row rolls back as today). The API never loads Baileys.
+- **Plan:**
+  - [ ] Read architecture §8.3 and the identity module's code sender, request limits and sign-in tests; check Baileys' current version, licence and its auth-state and on-WhatsApp APIs.
+  - [ ] A `WhatsAppClient` interface in the `otp-sender` role that hides Baileys, with a fake for the tests.
+  - [ ] Migration (`db-migration` skill): the sender's session credentials, encrypted with the identity secrets, and the on-WhatsApp cache (30 days), in the owning module's schema.
+  - [ ] The send protocol over Valkey: request with a correlation id, answer `sent`, `not_on_whatsapp` or `unavailable`, a timeout; a `QueuedCodeSender` adapter in the API for staging and production, `DevelopmentCodeSender` unchanged in development. Failing tests first.
+  - [ ] The sender: the on-WhatsApp check (cached), the fixed message (architecture §8.3.3 item 8), the one fixed reply to an incoming message pointing to the support number, reconnect from stored credentials.
+  - [ ] A server command that pairs a number and prints its QR code in the terminal (the panel screen waits for the design).
+  - [ ] The `otp-sender` container in `infra/compose.yaml` and staging, with memory limits; update the `deploy` skill if its steps change.
+  - [ ] Update `apps/server/src/modules/identity/CLAUDE.md` and the `.env.example` keys (fake values only).
+  - [ ] `checker`, then `reviewer`; pull request; after the merge, the owner pairs a number on staging and receives a code.
+- **Open items with proposed defaults (W2, W4):** the emergency code lives 15 minutes, needs a new operations permission and is available at any time; the sender alerts show in the pool's read and go to Sentry until the alerts feed of AP §9.1.3 exists.
 
 ## Notes from earlier slices
 
