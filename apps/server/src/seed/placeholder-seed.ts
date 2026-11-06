@@ -9,7 +9,11 @@ import {
 } from '../modules/captains/index.js';
 import { FxModule, FxService } from '../modules/fx/index.js';
 import { GeoModule, GeoRefusedError, GeoService } from '../modules/geo/index.js';
-import { IdentityModule, MerchantAccountsService } from '../modules/identity/index.js';
+import {
+  CaptainAccountsService,
+  IdentityModule,
+  MerchantAccountsService,
+} from '../modules/identity/index.js';
 import {
   type MerchantChange,
   MerchantsModule,
@@ -108,7 +112,9 @@ const azazPay: PayRate = {
 };
 
 // The demo captain (owner decision 2026-11-06): an activated motorbike
-// captain with a cash limit of 3000 TRY.
+// captain with a cash limit of 3000 TRY, and a number no one holds: in
+// development the code sender prints their sign-in code.
+const demoCaptainPhone = '+963900000003';
 const demoCaptain: NewCaptain = {
   name: 'كابتن فوكس التجريبي',
   vehicle: 'motorbike',
@@ -131,6 +137,7 @@ export class PlaceholderSeed {
     private readonly merchants: MerchantsService,
     private readonly merchantAccounts: MerchantAccountsService,
     private readonly captains: CaptainsService,
+    private readonly captainAccounts: CaptainAccountsService,
     @Inject(DATABASE) private readonly database: Database,
   ) {}
 
@@ -256,8 +263,14 @@ export class PlaceholderSeed {
           change,
         );
       }
-      if ((await this.captains.captainIds(cityId)).length > 0) return;
-      await this.captains.createCaptain(cityId, demoCaptain, change);
+      const captains = await this.captains.captainIds(cityId);
+      const demo = captains.find((entry) => entry.name === demoCaptain.name);
+      if (demo === undefined && captains.length > 0) return;
+      const id = demo?.id ?? (await this.captains.createCaptain(cityId, demoCaptain, change));
+      // Apart, so a run that stopped between them is finished.
+      if ((await this.captainAccounts.accountOf(id)) === null) {
+        await this.captainAccounts.addAccount(id, demoCaptainPhone, change);
+      }
     } finally {
       await client
         .query("SELECT pg_advisory_unlock(hashtextextended('seed:demo-captain', 0))")

@@ -3,6 +3,7 @@ import {
   type CanActivate,
   type ExecutionContext,
   ForbiddenException,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -11,7 +12,11 @@ import type { FastifyRequest } from 'fastify';
 import { ROUTE_ACCESS, type RouteAccess } from '../../http/access.js';
 import { ROUTE_GROUP, type RouteGroup } from '../../http/route-groups.js';
 import { AdminSessionsService } from './admin-sessions.service.js';
-import { type AppParty, AppSessionsService } from './app-sessions.service.js';
+import {
+  type AppParty,
+  AppSessionsService,
+  SignedInElsewhereError,
+} from './app-sessions.service.js';
 
 // Architecture §10.3: an HTTP-only, secure, same-site cookie. The __Host-
 // prefix makes the browser refuse it unless it is secure, has no domain and
@@ -39,13 +44,21 @@ export class RouteAccessGuard implements CanActivate {
     const group = this.reflector.get<RouteGroup | undefined>(ROUTE_GROUP, context.getClass());
     const request = context.switchToHttp().getRequest<FastifyRequest>();
     if (access.kind === 'app_session') {
-      // The app of the route's group; the captain app joins with its sign-in.
+      // The app of the route's group.
       const party: AppParty | undefined =
-        group === 'customer' || group === 'merchant' ? group : undefined;
+        group === 'customer' || group === 'merchant' || group === 'captain' ? group : undefined;
       if (!party) throw new ForbiddenException();
       const header = request.headers.authorization;
       const accessToken = header?.startsWith('Bearer ') ? header.slice('Bearer '.length) : '';
-      const session = accessToken ? await this.appSessions.authenticate(party, accessToken) : null;
+      const session = accessToken
+        ? await this.appSessions.authenticate(party, accessToken).catch((error: unknown) => {
+            if (!(error instanceof SignedInElsewhereError)) throw error;
+            throw new UnauthorizedException({
+              statusCode: HttpStatus.UNAUTHORIZED,
+              error: 'other_device',
+            });
+          })
+        : null;
       if (!session) throw new UnauthorizedException();
       request.appSession = session;
       return true;

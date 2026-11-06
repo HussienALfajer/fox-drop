@@ -4,6 +4,7 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import type { AuditRequestContext } from '../audit/index.js';
 import { AppSigningKeys, type SigningKey } from './app-signing-keys.js';
+import { type CaptainAccount, CaptainAccountsService } from './captain-accounts.service.js';
 import { type MerchantAccount, MerchantAccountsService } from './merchant-accounts.service.js';
 import {
   appParties,
@@ -27,6 +28,9 @@ export interface AppSession {
   // A restaurant user's restaurant and role (RA §5.1, §5.4), read at every
   // request; null for the other apps.
   merchant: MerchantAccount | null;
+  // A captain's record (CA §4.9), read at every request; null for the other
+  // apps.
+  captain: CaptainAccount | null;
 }
 
 export interface AppTokens {
@@ -39,10 +43,20 @@ export interface AppTokens {
 // many seconds of its first use is a retry whose answer was lost, not a reuse.
 export const REFRESH_RETRY_GRACE_SECONDS = 10;
 
-// Any refusal of a refresh token: unknown, already used, or its session ended.
+// Any refusal of a refresh token: unknown, already used, or its session
+// ended. other_device: a captain signed in on another device (CA §4.9, K5), so
+// the app shows «سُجّل دخولك من جهاز آخر».
 export class RefreshRefusedError extends Error {
-  constructor() {
+  constructor(readonly reason: 'other_device' | null = null) {
     super('refresh refused');
+  }
+}
+
+// A valid access token whose session ended because the captain signed in on
+// another device (CA §4.9, K5).
+export class SignedInElsewhereError extends Error {
+  constructor() {
+    super('signed in on another device');
   }
 }
 
@@ -59,10 +73,13 @@ export class AppSessionsService {
     @Inject(DATABASE) private readonly database: Database,
     private readonly keys: AppSigningKeys,
     private readonly merchantAccounts: MerchantAccountsService,
+    private readonly captainAccounts: CaptainAccountsService,
   ) {}
 
   // Called by the sign-in inside its transaction. A device holds one session
-  // per app: an earlier one on the same device ends.
+  // per app: an earlier one on the same device ends. A captain is signed in
+  // on one device at a time (CA §4.9, K5): the sessions of their other
+  // devices end, and those devices show «سُجّل دخولك من جهاز آخر».
   async start(
     tx: Executor,
     party: AppParty,
@@ -82,6 +99,9 @@ export class AppSessionsService {
           isNull(appSessions.endedAt),
         ),
       );
+    if (party === 'captain') {
+      await this.endAll(tx, party, accountId, 'other_device', now);
+    }
     const [session] = await tx
       .insert(appSessions)
       .values({
@@ -104,9 +124,10 @@ export class AppSessionsService {
     const signingKey = await this.keys.signingKey(now);
     const hash = tokenHash(refreshToken);
     // A restaurant user refreshes only while their restaurant lets them sign
-    // in (RA §5.5). Its status is read through the merchants module, on a
-    // connection of its own, so before the transaction.
-    const merchantAllowed = await this.merchantAllowed(hash);
+    // in (RA §5.5), a captain while their contract runs (CA §4.9). The status
+    // is read through the merchants or captains module, on a connection of
+    // its own, so before the transaction.
+    const partyAllowed = await this.partyAllowed(hash, now);
     const result = await this.database.db.transaction(async (tx) => {
       // The session row first, then the token: every refresh of a session
       // takes turns on the session row, so none can deadlock another.
@@ -116,6 +137,7 @@ export class AppSessionsService {
           party: appSessions.party,
           accountId: appSessions.accountId,
           endedAt: appSessions.endedAt,
+          endReason: appSessions.endReason,
           lastUsedTokenId: appSessions.lastUsedTokenId,
         })
         .from(appSessions)
@@ -129,6 +151,7 @@ export class AppSessionsService {
           ),
         )
         .for('update');
+      if (session?.endReason === 'other_device') return 'other_device' as const;
       if (!session || session.endedAt) return null;
       const [token] = await tx
         .select({
@@ -150,7 +173,7 @@ export class AppSessionsService {
         await this.end(tx, session.id, 'refresh_reuse', now);
         return null;
       }
-      if (!(await this.accountIsActive(tx, session.party, session.accountId, merchantAllowed))) {
+      if (!(await this.accountIsActive(tx, session.party, session.accountId, partyAllowed))) {
         return null;
       }
       if (retry) {
@@ -178,6 +201,7 @@ export class AppSessionsService {
       const { id, party, accountId } = session;
       return this.issue(tx, { id, party, accountId }, signingKey, now);
     });
+    if (result === 'other_device') throw new RefreshRefusedError('other_device');
     if (!result) throw new RefreshRefusedError();
     return result;
   }
@@ -193,17 +217,22 @@ export class AppSessionsService {
     const claims = await this.keys.verify(accessToken, party, now);
     if (!claims) return null;
     const [open] = await this.database.db
-      .select({ id: appSessions.id, deviceId: appSessions.deviceId })
+      .select({
+        id: appSessions.id,
+        deviceId: appSessions.deviceId,
+        endedAt: appSessions.endedAt,
+        endReason: appSessions.endReason,
+      })
       .from(appSessions)
       .where(
         and(
           eq(appSessions.id, claims.sessionId),
           eq(appSessions.party, party),
           eq(appSessions.accountId, claims.accountId),
-          isNull(appSessions.endedAt),
         ),
       );
-    if (!open) return null;
+    if (open?.endReason === 'other_device') throw new SignedInElsewhereError();
+    if (!open || open.endedAt) return null;
     let merchant: MerchantAccount | null = null;
     if (party === 'merchant') {
       // RA §5.5: a cashier's access ends with the restaurant's termination,
@@ -211,12 +240,19 @@ export class AppSessionsService {
       merchant = await this.merchantAccounts.account(this.database.db, claims.accountId);
       if (merchant === null || !(await this.merchantAccounts.mayUse(merchant))) return null;
     }
+    let captain: CaptainAccount | null = null;
+    if (party === 'captain') {
+      // CA §4.9: a terminated captain's sessions end with the contract.
+      captain = await this.captainAccounts.account(this.database.db, claims.accountId);
+      if (captain === null || !(await this.captainAccounts.mayUse(captain, now))) return null;
+    }
     return {
       id: claims.sessionId,
       party,
       accountId: claims.accountId,
       deviceId: open.deviceId,
       merchant,
+      captain,
     };
   }
 
@@ -283,30 +319,37 @@ export class AppSessionsService {
     return { accessToken: access.token, accessTokenExpiresAt: access.expiresAt, refreshToken };
   }
 
-  // Whether the restaurant user of a refresh token's session may still use
-  // the app; true for any other token, which the transaction checks.
-  private async merchantAllowed(hash: string): Promise<boolean> {
+  // Whether the restaurant user or the captain of a refresh token's session
+  // may still use the app; true for any other token, which the transaction
+  // checks.
+  private async partyAllowed(hash: string, now: Date): Promise<boolean> {
     const [session] = await this.database.db
       .select({ party: appSessions.party, accountId: appSessions.accountId })
       .from(appSessions)
       .innerJoin(appRefreshTokens, eq(appRefreshTokens.sessionId, appSessions.id))
       .where(eq(appRefreshTokens.tokenHash, hash));
-    if (session?.party !== 'merchant') return true;
-    const account = await this.merchantAccounts.account(this.database.db, session.accountId);
-    return account !== null && (await this.merchantAccounts.mayUse(account));
+    if (session?.party === 'merchant') {
+      const account = await this.merchantAccounts.account(this.database.db, session.accountId);
+      return account !== null && (await this.merchantAccounts.mayUse(account));
+    }
+    if (session?.party === 'captain') {
+      const account = await this.captainAccounts.account(this.database.db, session.accountId);
+      return account !== null && (await this.captainAccounts.mayUse(account, now));
+    }
+    return true;
   }
 
   private async accountIsActive(
     executor: Pick<Database['db'], 'select'>,
     party: AppParty,
     accountId: string,
-    merchantAllowed: boolean,
+    partyAllowed: boolean,
   ): Promise<boolean> {
     switch (party) {
       case 'merchant':
-        return (
-          merchantAllowed && (await this.merchantAccounts.account(executor, accountId)) !== null
-        );
+        return partyAllowed && (await this.merchantAccounts.account(executor, accountId)) !== null;
+      case 'captain':
+        return partyAllowed && (await this.captainAccounts.account(executor, accountId)) !== null;
       case 'customer': {
         const [account] = await executor
           .select({ status: customerAccounts.status })

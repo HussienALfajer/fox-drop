@@ -7,7 +7,7 @@ import { startTestDatabase, type TestDatabase } from '../database/test-database.
 import { CaptainsService } from '../modules/captains/index.js';
 import { FxService } from '../modules/fx/index.js';
 import { GeoService } from '../modules/geo/index.js';
-import { MerchantAccountsService } from '../modules/identity/index.js';
+import { CaptainAccountsService, MerchantAccountsService } from '../modules/identity/index.js';
 import { MerchantsService } from '../modules/merchants/index.js';
 import { SettingsService } from '../modules/settings/index.js';
 import { startTestValkey, type TestValkey } from '../valkey/test-valkey.js';
@@ -160,6 +160,10 @@ describe('the placeholder seed', () => {
       vehicle: 'motorbike',
       status: 'active',
       custodyLimit: { amount: 300_000n, currency: 'TRY' },
+    });
+    await expect(moduleRef.get(CaptainAccountsService).accountOf(ids[0]!.id)).resolves.toEqual({
+      id: expect.any(String),
+      captainId: ids[0]!.id,
     });
   });
 

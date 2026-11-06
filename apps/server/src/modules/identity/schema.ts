@@ -229,9 +229,9 @@ export const adminSessions = identity.table(
 );
 
 // The apps whose users sign in with a phone and a WhatsApp code (architecture
-// §8.3, §15.1): the customer app and the restaurant app so far (owner decision
-// 2026-11-05); the captain app joins with its accounts.
-export const appParties = ['customer', 'merchant'] as const;
+// §8.3, §15.1; owner decision 2026-11-05): the customer, restaurant and
+// captain apps.
+export const appParties = ['customer', 'merchant', 'captain'] as const;
 
 export const appSignInCodeEndReasons = ['used', 'replaced', 'attempts_exhausted'] as const;
 
@@ -261,7 +261,10 @@ export const appSignInCodes = identity.table(
       .on(table.party, table.phoneHash)
       .where(sql`${table.endedAt} IS NULL`),
     index('app_sign_in_codes_number_created').on(table.phoneHash, table.createdAt),
-    check('app_sign_in_codes_party_values', sql`${table.party} IN ('customer', 'merchant')`),
+    check(
+      'app_sign_in_codes_party_values',
+      sql`${table.party} IN ('customer', 'merchant', 'captain')`,
+    ),
     check(
       'app_sign_in_codes_end_reason_values',
       sql`${table.endReason} IN ('used', 'replaced', 'attempts_exhausted')`,
@@ -331,11 +334,28 @@ export const merchantAccounts = identity.table(
   ],
 );
 
+// A captain's sign-in (CA §4.9): one number per captain record, never created
+// by sign-in; OPS change the number (a later slice). The captain and its city
+// belong to captains and geo: plain columns here.
+export const captainAccounts = identity.table('captain_accounts', {
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
+  cityId: uuid('city_id').notNull(),
+  captainId: uuid('captain_id').notNull().unique(),
+  // The E.164 phone, encrypted, and its keyed hash to find it by.
+  phoneEncrypted: text('phone_encrypted').notNull(),
+  phoneHash: text('phone_hash').notNull().unique(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// other_device: a captain signed in on another device (CA §4.9, K5).
 export const appSessionEndReasons = [
   'sign_out',
   'sign_out_everywhere',
   'refresh_reuse',
   'new_sign_in',
+  'other_device',
 ] as const;
 
 // A signed-in app installation (architecture §15.1): one refresh token family.
@@ -367,10 +387,10 @@ export const appSessions = identity.table(
     index('app_sessions_open_device')
       .on(table.party, table.deviceId)
       .where(sql`${table.endedAt} IS NULL`),
-    check('app_sessions_party_values', sql`${table.party} IN ('customer', 'merchant')`),
+    check('app_sessions_party_values', sql`${table.party} IN ('customer', 'merchant', 'captain')`),
     check(
       'app_sessions_end_reason_values',
-      sql`${table.endReason} IN ('sign_out', 'sign_out_everywhere', 'refresh_reuse', 'new_sign_in')`,
+      sql`${table.endReason} IN ('sign_out', 'sign_out_everywhere', 'refresh_reuse', 'new_sign_in', 'other_device')`,
     ),
     check(
       'app_sessions_ended_with_reason',

@@ -10,6 +10,30 @@ Serializers _$serializers =
     (Serializers().toBuilder()
           ..add(AdminSessionDtoOutput.serializer)
           ..add(BackupCodesDtoOutput.serializer)
+          ..add(CaptainAvailabilityDtoOutput.serializer)
+          ..add(CaptainAvailabilityDtoOutputAvailability.serializer)
+          ..add(CaptainAvailabilityDtoOutputAvailabilityReasonsEnum.serializer)
+          ..add(CaptainAvailabilityDtoOutputAvailabilityStateEnum.serializer)
+          ..add(CaptainAvailabilityDtoOutputCustody.serializer)
+          ..add(CaptainAvailabilityDtoOutputCustodyClosedDue.serializer)
+          ..add(CaptainAvailabilityDtoOutputCustodyLimit.serializer)
+          ..add(CaptainAvailabilityDtoOutputCustodyUsage.serializer)
+          ..add(CaptainCodeRequestDto.serializer)
+          ..add(CaptainCodeSentDtoOutput.serializer)
+          ..add(CaptainCodeSentDtoOutputChannelEnum.serializer)
+          ..add(CaptainGoOnlineDto.serializer)
+          ..add(CaptainLocationsDto.serializer)
+          ..add(CaptainLocationsDtoPointsInner.serializer)
+          ..add(CaptainLocationsSavedDtoOutput.serializer)
+          ..add(CaptainRefreshDto.serializer)
+          ..add(CaptainSessionDtoOutput.serializer)
+          ..add(CaptainSignInDto.serializer)
+          ..add(CaptainSignedInDtoOutput.serializer)
+          ..add(CaptainSignedOutDtoOutput.serializer)
+          ..add(CaptainSignedOutDtoOutputStatusEnum.serializer)
+          ..add(CaptainTokensDtoOutput.serializer)
+          ..add(CaptainWentOfflineDtoOutput.serializer)
+          ..add(CaptainWentOfflineDtoOutputHandIn.serializer)
           ..add(ChangeRolesDto.serializer)
           ..add(ChangeRolesDtoRolesEnum.serializer)
           ..add(CompleteSetupDto.serializer)
@@ -91,6 +115,23 @@ Serializers _$serializers =
           ..add(TeamUsersDtoOutputUsersInnerStatusEnum.serializer)
           ..add(TotpEnrolmentDtoOutput.serializer)
           ..add(UpdateSettingDto.serializer)
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CaptainAvailabilityDtoOutputAvailabilityReasonsEnum,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainAvailabilityDtoOutputAvailabilityReasonsEnum
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainLocationsDtoPointsInner),
+            ]),
+            () => ListBuilder<CaptainLocationsDtoPointsInner>(),
+          )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(ChangeRolesDtoRolesEnum),
