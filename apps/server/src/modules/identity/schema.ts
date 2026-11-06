@@ -238,7 +238,9 @@ export const appSignInCodeEndReasons = ['used', 'replaced', 'attempts_exhausted'
 
 // An app sign-in code (architecture §8.3.2): only its keyed hash, with the
 // number (by its keyed hash), the device and the expiry. One open code per
-// number and app: a new request ends the old one.
+// number and app: a new request ends the old one. An emergency code (W4,
+// architecture §22 item 1) is issued by an admin with a reason and has no
+// device: the first device that enters it signs in.
 export const appSignInCodes = identity.table(
   'app_sign_in_codes',
   {
@@ -247,8 +249,12 @@ export const appSignInCodes = identity.table(
       .default(sql`uuidv7()`),
     party: text('party', { enum: appParties }).notNull(),
     phoneHash: text('phone_hash').notNull(),
-    // The app installation that asked for it; only it can use the code.
-    deviceId: text('device_id').notNull(),
+    // The app installation that asked for it; only it can use the code. Null
+    // for an emergency code.
+    deviceId: text('device_id'),
+    // The admin account that issued an emergency code, and why.
+    issuedBy: uuid('issued_by'),
+    issueReason: text('issue_reason'),
     codeHash: text('code_hash').notNull(),
     // Wrong codes entered so far (otp.max_attempts).
     attempts: integer('attempts').notNull().default(0),
@@ -273,6 +279,10 @@ export const appSignInCodes = identity.table(
     check(
       'app_sign_in_codes_ended_with_reason',
       sql`(${table.endedAt} IS NULL) = (${table.endReason} IS NULL)`,
+    ),
+    check(
+      'app_sign_in_codes_device_or_issuer',
+      sql`(${table.deviceId} IS NULL) = (${table.issuedBy} IS NOT NULL) AND (${table.issuedBy} IS NULL) = (${table.issueReason} IS NULL) AND (${table.issuedBy} IS NULL OR ${table.party} <> 'customer')`,
     ),
   ],
 );

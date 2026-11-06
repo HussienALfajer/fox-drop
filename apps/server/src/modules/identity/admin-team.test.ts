@@ -189,6 +189,7 @@ const specifiedGrants: Record<string, AdminPermission[]> = {
     'customers.block',
     'captains.suspend',
     'exports.phone_numbers',
+    'sign_in.emergency_code',
   ],
   SUP: [
     'dashboard.read',
@@ -315,6 +316,7 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/admin/otp-sender-numbers': 'settings.read',
   'PUT /v1/admin/otp-sender-numbers/{numberId}/status': 'settings.manage',
   'POST /v1/admin/otp-sender-numbers/{numberId}/disable': 'settings.manage',
+  'POST /v1/admin/emergency-sign-in-codes': 'sign_in.emergency_code',
   'GET /v1/admin/settings': { editRoles: ['OWN', 'OPS', 'FIN'] },
   'PUT /v1/admin/settings/{key}': settingRoles,
   'POST /v1/admin/settings/{key}/reset': settingRoles,

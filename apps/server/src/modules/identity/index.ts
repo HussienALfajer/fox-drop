@@ -20,6 +20,8 @@ import { APP_CHECK_VERIFIER, appCheckVerifierFromEnvironment } from './app-check
 import { CODE_SENDER, codeSenderFromEnvironment } from './code-sender.js';
 import { CustomerAccountsService } from './customer-accounts.service.js';
 import { CustomerAuthController } from './customer-auth.controller.js';
+import { EmergencySignInController } from './emergency-sign-in.controller.js';
+import { EmergencySignInService } from './emergency-sign-in.service.js';
 import { MerchantAccountsService } from './merchant-accounts.service.js';
 import { MerchantAuthController } from './merchant-auth.controller.js';
 import { OtpSenderNumbersController } from './otp-sender-numbers.controller.js';
@@ -49,6 +51,7 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
     MerchantAuthController,
     CaptainAuthController,
     OtpSenderNumbersController,
+    EmergencySignInController,
   ],
   providers: [
     { provide: IDENTITY_SECRETS, useFactory: identitySecretsFromEnvironment },
@@ -71,6 +74,7 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
     PhoneCipher,
     RouteAccessGuard,
     OtpSenderPoolService,
+    EmergencySignInService,
   ],
   exports: [
     AdminSessionsService,

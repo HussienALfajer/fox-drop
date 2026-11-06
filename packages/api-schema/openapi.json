@@ -1265,6 +1265,42 @@
         ]
       }
     },
+    "/v1/admin/emergency-sign-in-codes": {
+      "post": {
+        "operationId": "emergencySignInIssue",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmergencySignInCodeRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmergencySignInCodeDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/settings": {
       "get": {
         "operationId": "settingsList",
@@ -4638,6 +4674,62 @@
         "required": [
           "status"
         ]
+      },
+      "EmergencySignInCodeRequestDto": {
+        "type": "object",
+        "properties": {
+          "party": {
+            "type": "string",
+            "enum": [
+              "captain",
+              "merchant"
+            ],
+            "description": "The captain app or the restaurant app; customers are not covered."
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
+            "description": "The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Why, kept in the audit log (owner decision 2026-11-07)."
+          }
+        },
+        "required": [
+          "party",
+          "phone",
+          "reason"
+        ]
+      },
+      "EmergencySignInCodeDto_Output": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^\\d{6}$",
+            "description": "Shown once; read out to the person, who types it in the app."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "accountId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "The captain or restaurant user account it signs in to."
+          }
+        },
+        "required": [
+          "code",
+          "expiresAt",
+          "accountId"
+        ],
+        "additionalProperties": false
       },
       "SettingListDto_Output": {
         "type": "object",

@@ -266,9 +266,11 @@ export class AppSignInService {
           ),
         )
         .for('update');
+      // An emergency code has no device (W4): the first device that enters
+      // it signs in.
       if (
         !code ||
-        code.deviceId !== request.deviceId ||
+        (code.deviceId !== null && code.deviceId !== request.deviceId) ||
         now.getTime() >= code.expiresAt.getTime() ||
         code.attempts >= maxAttempts
       ) {
