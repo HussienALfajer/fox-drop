@@ -9,10 +9,11 @@ Slice W2, the sender pool (`docs/roadmap.md`, Phase 1, before slice 1.14). App C
 - **Specs:** architecture §8.3.3 items 6, 7, 11–14; AP §9.1.3 (the two alerts), §9.14 (Settings, «أرقام إرسال الرموز»); `apps/server/src/modules/identity/CLAUDE.md` («The otp-sender process», «WhatsApp library», «Pairing»).
 - **Branch:** `feat/whatsapp-sender-pool`.
 - **Builds on W1:** `OtpSenderService` sends from the latest `active` row of `identity.otp_sender_numbers` (states `active`, `disconnected`); requests arrive one at a time on `identity:otp:send:requests`; pairing is `otp-sender-pair-command.ts`. The settings `otp.sender_per_minute_max`, `otp.sender_daily_max`, `otp.send_jitter_sec` and `otp.sender_warmup_caps` already exist in the catalogue.
-- **Open items with proposed defaults (ask the owner first):** the warm-up steps last two or three days each (§8.3.3 item 6 says «over two weeks»); the throttle threshold (a failure rate over a window, not in the specs); the sender alerts show in the pool's read and go to Sentry until the alerts feed of AP §9.1.3 exists; the emergency code (W4) lives 15 minutes, needs a new operations permission and is available at any time.
+- **Owner decisions 2026-11-06:** a warm-up step lasts 3 days (a new setting `otp.sender_warmup_step_days`, so 50 → 800 takes 15 days, then full and `active`); a `warming` number sends real codes within its step's cap, only when no `active` number can; a number whose last 20 sends (at least 10) failed 30% or more is `throttled` for 60 minutes, then returns to its earlier state; the two alerts show in the pool's read and go to Sentry until the alerts feed of AP §9.1.3 exists.
+- **Still open for W4:** the emergency code lives 15 minutes, needs a new operations permission and is available at any time (ask the owner at W4).
 - **Plan:**
-  - [ ] Ask the owner the open items above.
-  - [ ] Migration (`db-migration` skill): the states `warming`, `active`, `standby`, `throttled`, `disconnected`, `banned`; the warm-up start; daily counts per number (sent, failed) in the owning schema.
+  - [x] Ask the owner the open items above.
+  - [x] Migration (`db-migration` skill): the states `warming`, `active`, `standby`, `throttled`, `disconnected`, `banned`; the warm-up start; daily counts per number (sent, failed) in the owning schema.
   - [ ] Several sessions at once in `OtpSenderService`, rotation over the active numbers, failover to the next on a disconnect, throttle or ban. Failing tests first.
   - [ ] Pacing per number (per minute, per day, warm-up cap) and the jitter between sends, with a short queue; the API's 10-second timeout still holds.
   - [ ] Health counts and automatic throttling; the library's delivery and read receipts where Baileys exposes them.

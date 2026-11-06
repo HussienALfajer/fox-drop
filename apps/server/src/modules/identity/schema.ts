@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   bigint,
   check,
+  date,
   index,
   inet,
   integer,
@@ -435,7 +436,18 @@ export const appSigningKeys = identity.table('app_signing_keys', {
 // 4 and 10), paired by the server command. W1 sends from the latest active
 // one; the pool's states (§8.3.3 item 11) arrive with W2. A number logged out
 // by WhatsApp becomes disconnected and is paired again.
-export const otpSenderNumberStatuses = ['active', 'disconnected'] as const;
+// The sender pool's states (architecture §8.3.3 item 11). warming sends
+// within its warm-up step's cap; standby is kept connected but sends nothing;
+// throttled rests until throttled_until; disconnected (WhatsApp logged it out)
+// and banned (WhatsApp refused it) wait for a new pairing.
+export const otpSenderNumberStatuses = [
+  'warming',
+  'active',
+  'standby',
+  'throttled',
+  'disconnected',
+  'banned',
+] as const;
 
 export const otpSenderNumbers = identity.table(
   'otp_sender_numbers',
@@ -448,16 +460,54 @@ export const otpSenderNumbers = identity.table(
     phoneHash: text('phone_hash').notNull(),
     status: text('status', { enum: otpSenderNumberStatuses }).notNull(),
     pairedAt: timestamp('paired_at', { withTimezone: true }).notNull(),
+    // When WhatsApp stopped the number (disconnected or banned).
     disconnectedAt: timestamp('disconnected_at', { withTimezone: true }),
+    // The warm-up's first day, kept until the number becomes active, so a
+    // number paired again resumes its warm-up.
+    warmupStartedAt: timestamp('warmup_started_at', { withTimezone: true }),
+    throttledUntil: timestamp('throttled_until', { withTimezone: true }),
+    // The state a throttled number returns to.
+    throttledFrom: text('throttled_from', { enum: ['warming', 'active'] }),
+    // OWN disabled the number, or it was paired again: never used again.
+    disabledAt: timestamp('disabled_at', { withTimezone: true }),
   },
   (table) => [
     index('otp_sender_numbers_status_paired').on(table.status, table.pairedAt),
-    check('otp_sender_numbers_status_values', sql`${table.status} IN ('active', 'disconnected')`),
+    check(
+      'otp_sender_numbers_status_values',
+      sql`${table.status} IN ('warming', 'active', 'standby', 'throttled', 'disconnected', 'banned')`,
+    ),
     check(
       'otp_sender_numbers_disconnected_at',
-      sql`(${table.status} = 'disconnected') = (${table.disconnectedAt} IS NOT NULL)`,
+      sql`(${table.status} IN ('disconnected', 'banned')) = (${table.disconnectedAt} IS NOT NULL)`,
+    ),
+    check(
+      'otp_sender_numbers_warmup',
+      sql`(${table.status} <> 'warming' OR ${table.warmupStartedAt} IS NOT NULL) AND (${table.status} <> 'active' OR ${table.warmupStartedAt} IS NULL)`,
+    ),
+    check(
+      'otp_sender_numbers_throttled',
+      sql`(${table.status} = 'throttled') = (${table.throttledUntil} IS NOT NULL) AND (${table.status} = 'throttled') = (${table.throttledFrom} IS NOT NULL) AND ${table.throttledFrom} IN ('warming', 'active')`,
     ),
   ],
+);
+
+// A number's counts per day in Asia/Damascus (architecture §8.3.3 items 7,
+// 12): sends attempted (sent and failed count towards the daily caps) and the
+// receipts WhatsApp gave back.
+export const otpSenderDailyCounts = identity.table(
+  'otp_sender_daily_counts',
+  {
+    numberId: uuid('number_id')
+      .notNull()
+      .references(() => otpSenderNumbers.id),
+    day: date('day', { mode: 'string' }).notNull(),
+    sent: integer('sent').notNull().default(0),
+    failed: integer('failed').notNull().default(0),
+    delivered: integer('delivered').notNull().default(0),
+    read: integer('read').notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.numberId, table.day] })],
 );
 
 // A number's WhatsApp session (architecture §8.3.3 item 10): the library's
