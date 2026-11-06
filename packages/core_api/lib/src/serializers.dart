@@ -16,6 +16,30 @@ import 'package:core_api/src/model/date.dart';
 
 import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/backup_codes_dto_output.dart';
+import 'package:core_api/src/model/captain_availability_dto_output.dart';
+import 'package:core_api/src/model/captain_availability_dto_output_availability.dart';
+import 'package:core_api/src/model/captain_availability_dto_output_availability_one_of.dart';
+import 'package:core_api/src/model/captain_availability_dto_output_availability_one_of1.dart';
+import 'package:core_api/src/model/captain_availability_dto_output_availability_one_of2.dart';
+import 'package:core_api/src/model/captain_availability_dto_output_availability_one_of3.dart';
+import 'package:core_api/src/model/captain_availability_dto_output_custody.dart';
+import 'package:core_api/src/model/captain_availability_dto_output_custody_closed_due.dart';
+import 'package:core_api/src/model/captain_availability_dto_output_custody_limit.dart';
+import 'package:core_api/src/model/captain_availability_dto_output_custody_usage.dart';
+import 'package:core_api/src/model/captain_code_request_dto.dart';
+import 'package:core_api/src/model/captain_code_sent_dto_output.dart';
+import 'package:core_api/src/model/captain_go_online_dto.dart';
+import 'package:core_api/src/model/captain_locations_dto.dart';
+import 'package:core_api/src/model/captain_locations_dto_points_inner.dart';
+import 'package:core_api/src/model/captain_locations_saved_dto_output.dart';
+import 'package:core_api/src/model/captain_refresh_dto.dart';
+import 'package:core_api/src/model/captain_session_dto_output.dart';
+import 'package:core_api/src/model/captain_sign_in_dto.dart';
+import 'package:core_api/src/model/captain_signed_in_dto_output.dart';
+import 'package:core_api/src/model/captain_signed_out_dto_output.dart';
+import 'package:core_api/src/model/captain_tokens_dto_output.dart';
+import 'package:core_api/src/model/captain_went_offline_dto_output.dart';
+import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart';
 import 'package:core_api/src/model/change_roles_dto.dart';
 import 'package:core_api/src/model/complete_setup_dto.dart';
 import 'package:core_api/src/model/create_user_dto.dart';
@@ -72,6 +96,30 @@ part 'serializers.g.dart';
 @SerializersFor([
   AdminSessionDtoOutput,
   BackupCodesDtoOutput,
+  CaptainAvailabilityDtoOutput,
+  CaptainAvailabilityDtoOutputAvailability,
+  CaptainAvailabilityDtoOutputAvailabilityOneOf,
+  CaptainAvailabilityDtoOutputAvailabilityOneOf1,
+  CaptainAvailabilityDtoOutputAvailabilityOneOf2,
+  CaptainAvailabilityDtoOutputAvailabilityOneOf3,
+  CaptainAvailabilityDtoOutputCustody,
+  CaptainAvailabilityDtoOutputCustodyClosedDue,
+  CaptainAvailabilityDtoOutputCustodyLimit,
+  CaptainAvailabilityDtoOutputCustodyUsage,
+  CaptainCodeRequestDto,
+  CaptainCodeSentDtoOutput,
+  CaptainGoOnlineDto,
+  CaptainLocationsDto,
+  CaptainLocationsDtoPointsInner,
+  CaptainLocationsSavedDtoOutput,
+  CaptainRefreshDto,
+  CaptainSessionDtoOutput,
+  CaptainSignInDto,
+  CaptainSignedInDtoOutput,
+  CaptainSignedOutDtoOutput,
+  CaptainTokensDtoOutput,
+  CaptainWentOfflineDtoOutput,
+  CaptainWentOfflineDtoOutputHandIn,
   ChangeRolesDto,
   CompleteSetupDto,
   CreateUserDto,
@@ -163,6 +211,12 @@ Serializers serializers =
               FullType(TeamUsersDtoOutputUsersInnerOpenSessionsInner),
             ]),
             () => ListBuilder<TeamUsersDtoOutputUsersInnerOpenSessionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainLocationsDtoPointsInner),
+            ]),
+            () => ListBuilder<CaptainLocationsDtoPointsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

@@ -1,11 +1,14 @@
 import { sql } from 'drizzle-orm';
 import {
   bigint,
+  boolean,
   check,
+  customType,
   index,
   integer,
   pgSchema,
   primaryKey,
+  real,
   text,
   timestamp,
   uniqueIndex,
@@ -18,6 +21,11 @@ import { captainStatuses } from './availability.js';
 // availability and the pay table. Cities belong to geo, the captain's sign-in
 // to identity and the money to the ledger: their ids are plain columns here.
 export const captains = pgSchema('captains');
+
+// A PostGIS point in WGS 84, written and read through SQL only.
+const point = customType<{ data: string; driverData: string }>({
+  dataType: () => 'geometry(Point,4326)',
+});
 
 const createdAt = () => timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
 const vehicleValues = sql.raw(vehicles.map((vehicle) => `'${vehicle}'`).join(', '));
@@ -147,5 +155,28 @@ export const payRates = captains.table(
       sql`${table.basePay} >= 0 AND ${table.perExtraKm} >= 0 AND ${table.waitingPerMinute} >= 0
           AND ${table.minimumPay} >= 0 AND ${table.includedMetres} >= 0`,
     ),
+  ],
+);
+
+// CA §4.3, architecture §7.3: the points a captain's app sent while online,
+// for routes and disputes; the live position is in Valkey. Partitioned by
+// the month the point was recorded, append-only. A point sent again (a retry)
+// is the same row.
+export const locations = captains.table(
+  'locations',
+  {
+    captainId: uuid('captain_id').notNull(),
+    cityId: uuid('city_id').notNull(),
+    // On the phone, which queues the points recorded without a signal.
+    recordedAt: timestamp('recorded_at', { withTimezone: true }).notNull(),
+    receivedAt: timestamp('received_at', { withTimezone: true }).notNull(),
+    location: point('location').notNull(),
+    accuracyMetres: real('accuracy_metres').notNull(),
+    // A mock-location app on Android or isSimulatedBySoftware on iOS (CA §4.3).
+    simulated: boolean('simulated').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.captainId, table.recordedAt] }),
+    check('locations_accuracy', sql`${table.accuracyMetres} >= 0`),
   ],
 );

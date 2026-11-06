@@ -8,6 +8,11 @@ import { VALKEY } from '../../valkey/valkey.module.js';
 import type { AuditRequestContext } from '../audit/index.js';
 import { SettingsService } from '../settings/index.js';
 import { type AppParty, AppSessionsService, type AppTokens } from './app-sessions.service.js';
+import {
+  type CaptainAccount,
+  CaptainAccountsService,
+  CaptainSignInRefusedError,
+} from './captain-accounts.service.js';
 import { CODE_SENDER, type CodeSender } from './code-sender.js';
 import {
   type MerchantAccount,
@@ -59,6 +64,8 @@ export interface AppSignIn extends AppTokens {
   newAccount: boolean;
   // The restaurant user's account (RA §5.1), for the restaurant app.
   merchant: MerchantAccount | null;
+  // The captain's account (CA §4.9), for the captain app.
+  captain: CaptainAccount | null;
 }
 
 // Architecture §8.3.2: app sign-in with a 6-digit code sent to the phone. The
@@ -76,6 +83,7 @@ export class AppSignInService {
     private readonly settings: SettingsService,
     private readonly sessions: AppSessionsService,
     private readonly merchantAccounts: MerchantAccountsService,
+    private readonly captainAccounts: CaptainAccountsService,
   ) {
     this.limits = new RequestLimits(valkey);
   }
@@ -126,6 +134,11 @@ export class AppSignInService {
     if (request.party === 'merchant') {
       const merchant = await this.merchantAccounts.signInAccount(phoneHash);
       if (typeof merchant === 'string') throw new MerchantSignInRefusedError(merchant);
+    }
+    // CA §4.9: likewise a captain, never created by sign-in.
+    if (request.party === 'captain') {
+      const captain = await this.captainAccounts.signInAccount(phoneHash, now);
+      if (typeof captain === 'string') throw new CaptainSignInRefusedError(captain);
     }
 
     return this.database.db.transaction(async (tx) => {
@@ -207,6 +220,8 @@ export class AppSignInService {
     // merchants module, on a connection of its own.
     const merchant =
       request.party === 'merchant' ? await this.merchantAccounts.signInAccount(phoneHash) : null;
+    const captain =
+      request.party === 'captain' ? await this.captainAccounts.signInAccount(phoneHash, now) : null;
     const result = await this.database.db.transaction(async (tx) => {
       const [code] = await tx
         .select()
@@ -248,11 +263,16 @@ export class AppSignInService {
         .where(eq(appSignInCodes.id, code.id));
 
       if (typeof merchant === 'string') return new MerchantSignInRefusedError(merchant);
-      const account =
-        merchant === null
-          ? await this.findOrCreateCustomer(tx, request.phone, phoneHash, now)
-          : await this.stillNotRemoved(tx, merchant);
-      if (account === null) return new MerchantSignInRefusedError('not_registered');
+      if (typeof captain === 'string') return new CaptainSignInRefusedError(captain);
+      let account: { id: string; created: boolean } | null;
+      if (merchant !== null) {
+        account = await this.stillNotRemoved(tx, merchant);
+        if (account === null) return new MerchantSignInRefusedError('not_registered');
+      } else if (captain !== null) {
+        account = { id: captain.id, created: false };
+      } else {
+        account = await this.findOrCreateCustomer(tx, request.phone, phoneHash, now);
+      }
       const tokens = await this.sessions.start(
         tx,
         request.party,
@@ -266,10 +286,15 @@ export class AppSignInService {
         accountId: account.id,
         newAccount: account.created,
         merchant,
+        captain,
         ...tokens,
       };
     });
-    if (result instanceof SignInCodeRefusedError || result instanceof MerchantSignInRefusedError) {
+    if (
+      result instanceof SignInCodeRefusedError ||
+      result instanceof MerchantSignInRefusedError ||
+      result instanceof CaptainSignInRefusedError
+    ) {
       throw result;
     }
     return result;

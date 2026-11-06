@@ -1,5 +1,5 @@
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
-import { and, desc, eq, isNull, lte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, isNull, lte, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -16,8 +16,9 @@ import {
   type OnlineBlock,
   onlineBlocks,
 } from './availability.js';
+import { LivePositions } from './live-positions.js';
 import { checkPayRate, type PayRate } from './pay.js';
-import { captainRecords, onlinePeriods, payRates, payTables } from './schema.js';
+import { captainRecords, locations, onlinePeriods, payRates, payTables } from './schema.js';
 
 export type CaptainsRefusal =
   | 'unknown_captain'
@@ -26,7 +27,9 @@ export type CaptainsRefusal =
   | 'not_in_base_currency'
   | 'status_change_not_allowed'
   | 'reason_required'
-  | 'online_blocked';
+  | 'online_blocked'
+  | 'not_online'
+  | 'invalid_location';
 
 // A change the captains module refuses, with the reason the routes map to
 // their own answers; going online carries its blocks (CA §7.2).
@@ -92,6 +95,19 @@ export interface Custody {
   lastCutoff: Date;
 }
 
+// One point the app sends while online (CA §4.3), every 10 seconds, or
+// queued while it had no signal.
+export interface LocationPoint {
+  latitude: number;
+  longitude: number;
+  accuracyMetres: number;
+  recordedAt: Date;
+  simulated: boolean;
+}
+
+// A point recorded later than this after the server's clock is refused.
+const LOCATION_CLOCK_SKEW_MS = 60_000;
+
 export interface CaptainState {
   availability: Availability;
   custody: Custody;
@@ -132,6 +148,7 @@ export class CaptainsService implements OnModuleInit {
     private readonly geo: GeoService,
     private readonly ledger: LedgerService,
     private readonly audit: AuditService,
+    private readonly positions: LivePositions,
   ) {}
 
   // The cash limits and the pay tables in force or to come are in the city's
@@ -245,7 +262,7 @@ export class CaptainsService implements OnModuleInit {
     if (change.until != null && change.until <= now) {
       throw new CaptainsRefusedError('invalid_captain', 'a suspension ends after now');
     }
-    await this.database.db.transaction(async (tx) => {
+    const cityId = await this.database.db.transaction(async (tx) => {
       const row = await this.lockCaptain(tx, captainId);
       const current = captainOf(row, now).status;
       if (!statusChanges[current].includes(status)) {
@@ -285,7 +302,9 @@ export class CaptainsService implements OnModuleInit {
         },
         tx,
       );
+      return row.cityId;
     });
+    if (status !== 'active') await this.positions.remove(cityId, captainId);
   }
 
   // AP §9.7.5: a new cash limit, effective immediately, with a reason.
@@ -487,11 +506,59 @@ export class CaptainsService implements OnModuleInit {
       await this.lockCaptain(tx, captainId);
       await this.endOnline(tx, captainId, 'captain', now);
     });
+    await this.positions.remove(cityId, captainId);
     // After the offline commits, so reading the cash can never undo it.
     const row = await this.row(this.database.db, captainId);
     const { custody } = await this.input(this.database.db, row, rules);
     const held = custody.usage.amount;
     return { handIn: held > rules.remitTolerance ? { ...custody.usage } : null };
+  }
+
+  // CA §4.3, architecture §7.3: the points of an online captain, kept for
+  // routes and disputes, the newest as the live position. Points recorded
+  // before going online are dropped, since nothing is collected offline; a
+  // point sent again is kept once. An offline captain's points are refused.
+  async recordLocations(
+    captainId: string,
+    points: LocationPoint[],
+    now: Date,
+  ): Promise<{ accepted: number }> {
+    for (const point of points) {
+      if (point.recordedAt.getTime() > now.getTime() + LOCATION_CLOCK_SKEW_MS) {
+        throw new CaptainsRefusedError('invalid_location', 'a point is recorded in the future');
+      }
+      if (!Number.isFinite(point.accuracyMetres) || point.accuracyMetres < 0) {
+        throw new CaptainsRefusedError('invalid_location', 'the accuracy is metres, 0 or more');
+      }
+    }
+    const row = await this.row(this.database.db, captainId);
+    const [open] = await this.database.db
+      .select({ startedAt: onlinePeriods.startedAt })
+      .from(onlinePeriods)
+      .where(and(eq(onlinePeriods.captainId, captainId), isNull(onlinePeriods.endedAt)));
+    if (!open) throw new CaptainsRefusedError('not_online', 'the captain is offline');
+    const kept = points.filter((point) => point.recordedAt >= open.startedAt);
+    if (kept.length === 0) return { accepted: 0 };
+    const inserted = await this.database.db
+      .insert(locations)
+      .values(
+        kept.map((point) => ({
+          captainId,
+          cityId: row.cityId,
+          recordedAt: point.recordedAt,
+          receivedAt: now,
+          location: sql`ST_SetSRID(ST_MakePoint(${point.longitude}, ${point.latitude}), 4326)`,
+          accuracyMetres: point.accuracyMetres,
+          simulated: point.simulated,
+        })),
+      )
+      .onConflictDoNothing()
+      .returning({ recordedAt: locations.recordedAt });
+    const newest = kept.reduce((latest, point) =>
+      point.recordedAt > latest.recordedAt ? point : latest,
+    );
+    await this.positions.set(row.cityId, captainId, newest);
+    return { accepted: inserted.length };
   }
 
   // The city's rules the state reads, outside any transaction: settings take
@@ -526,6 +593,16 @@ export class CaptainsService implements OnModuleInit {
       .from(onlinePeriods)
       .where(and(eq(onlinePeriods.captainId, row.id), isNull(onlinePeriods.endedAt)));
     const custody = await this.custody(executor, row, rules.lastCutoff, rules.warnPct);
+    // CA §4.3: the newest point of this online period says whether the
+    // location is simulated now.
+    const [latest] = open
+      ? await executor
+          .select({ simulated: locations.simulated })
+          .from(locations)
+          .where(and(eq(locations.captainId, row.id), gte(locations.recordedAt, open.startedAt)))
+          .orderBy(desc(locations.recordedAt))
+          .limit(1)
+      : [];
     return {
       availability: {
         // As stored: the rules read a suspension past its end as active.
@@ -543,8 +620,7 @@ export class CaptainsService implements OnModuleInit {
         remitOnlineGraceHours: rules.graceHours,
         appVersion: open?.appVersion ?? null,
         minVersion: rules.minVersion,
-        // Reported with the location (CA §4.3), from the location routes.
-        simulatedLocation: false,
+        simulatedLocation: latest?.simulated ?? false,
       },
       custody,
     };

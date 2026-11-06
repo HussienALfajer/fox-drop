@@ -468,6 +468,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/auth/code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainAuthRequestCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/auth/sign-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainAuthSignIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainAuthRefresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/auth/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainAuthCurrent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/auth/sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainAuthSignOut"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/settings": {
         parameters: {
             query?: never;
@@ -574,6 +654,70 @@ export interface paths {
         get?: never;
         put: operations["merchantMenuSetAvailability"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainAvailabilityState"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/availability/online": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainAvailabilityOnline"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/availability/offline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainAvailabilityOffline"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/location": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainAvailabilityLocation"];
         delete?: never;
         options?: never;
         head?: never;
@@ -843,6 +987,71 @@ export interface components {
             /** @constant */
             status: "signed_out";
         };
+        CaptainCodeRequestDto: {
+            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            phone: string;
+            /**
+             * Format: uuid
+             * @description The app installation, generated once by the app and kept until it is removed.
+             */
+            deviceId: string;
+        };
+        CaptainCodeSentDto_Output: {
+            /**
+             * @description Where the code went (architecture §8.3.4).
+             * @constant
+             */
+            channel: "whatsapp";
+            /** @description When the app may offer «إعادة الإرسال». */
+            resendAfterSec: number;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        CaptainSignInDto: {
+            /** @description The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx. */
+            phone: string;
+            /**
+             * Format: uuid
+             * @description The app installation, generated once by the app and kept until it is removed.
+             */
+            deviceId: string;
+            code: string;
+        };
+        CaptainSignedInDto_Output: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: uuid */
+            captainId: string;
+            /** @description A JWT for the Authorization header, valid 15 minutes. */
+            accessToken: string;
+            /** Format: date-time */
+            accessTokenExpiresAt: string;
+            /** @description Used once at /refresh for a new pair; using it twice signs the device out. */
+            refreshToken: string;
+        };
+        CaptainRefreshDto: {
+            refreshToken: string;
+        };
+        CaptainTokensDto_Output: {
+            /** @description A JWT for the Authorization header, valid 15 minutes. */
+            accessToken: string;
+            /** Format: date-time */
+            accessTokenExpiresAt: string;
+            /** @description Used once at /refresh for a new pair; using it twice signs the device out. */
+            refreshToken: string;
+        };
+        CaptainSessionDto_Output: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: uuid */
+            captainId: string;
+            /** Format: uuid */
+            sessionId: string;
+        };
+        CaptainSignedOutDto_Output: {
+            /** @constant */
+            status: "signed_out";
+        };
         SettingListDto_Output: {
             settings: {
                 key: string;
@@ -1004,6 +1213,84 @@ export interface components {
                 /** @description «حتى الغد»: on again at this time; null: «حتى أعيده». */
                 until: string | null;
             } | null;
+        };
+        CaptainAvailabilityDto_Output: {
+            /** @description CA §7.1: «غير متصل», «متصل متاح», «لا تصلك عروض» with its reasons, «موقوف». */
+            availability: {
+                /** @constant */
+                state: "offline";
+            } | {
+                /** @constant */
+                state: "online_available";
+                /** Format: date-time */
+                since: string;
+            } | {
+                /** @constant */
+                state: "not_receiving_offers";
+                /** Format: date-time */
+                since: string;
+                reasons: ("cash_limit" | "closed_due" | "simulated_location")[];
+            } | {
+                /** @constant */
+                state: "suspended";
+                reason: string;
+                /** @description Null: until further notice. */
+                until: string | null;
+            };
+            custody: {
+                /** @description The cash held, in the base currency (AP §8.5.3). */
+                usage: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+                limit: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+                /** @description At captain.custody_warn_pct of the limit or more. */
+                warn: boolean;
+                /** @description Due from closed business days (AP §8.5.4). */
+                closedDue: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+                /** Format: date-time */
+                lastCutoff: string;
+            };
+        };
+        CaptainGoOnlineDto: {
+            appVersion: string;
+            /** @description A mock-location app is active (Android) or isSimulatedBySoftware (iOS). */
+            simulatedLocation: boolean;
+        };
+        CaptainWentOfflineDto_Output: {
+            /** @description CA §7.5: the cash to hand in, above captain.remit_tolerance, or null. */
+            handIn: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            } | null;
+        };
+        CaptainLocationsDto: {
+            /** @description Every 10 seconds, or the points queued without a signal (CA §4.3). */
+            points: {
+                latitude: number;
+                longitude: number;
+                accuracyMetres: number;
+                /**
+                 * Format: date-time
+                 * @description On the server clock (CA §4.6).
+                 */
+                recordedAt: string;
+                simulated: boolean;
+            }[];
+        };
+        CaptainLocationsSavedDto_Output: {
+            /** @description The new points kept. */
+            accepted: number;
         };
     };
     responses: never;
@@ -1677,6 +1964,118 @@ export interface operations {
             };
         };
     };
+    captainAuthRequestCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainCodeRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainCodeSentDto_Output"];
+                };
+            };
+        };
+    };
+    captainAuthSignIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainSignInDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainSignedInDto_Output"];
+                };
+            };
+        };
+    };
+    captainAuthRefresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainRefreshDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainTokensDto_Output"];
+                };
+            };
+        };
+    };
+    captainAuthCurrent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainSessionDto_Output"];
+                };
+            };
+        };
+    };
+    captainAuthSignOut: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainSignedOutDto_Output"];
+                };
+            };
+        };
+    };
     settingsList: {
         parameters: {
             query: {
@@ -1840,6 +2239,94 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantAvailabilitySavedDto_Output"];
+                };
+            };
+        };
+    };
+    captainAvailabilityState: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainAvailabilityDto_Output"];
+                };
+            };
+        };
+    };
+    captainAvailabilityOnline: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainGoOnlineDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainAvailabilityDto_Output"];
+                };
+            };
+        };
+    };
+    captainAvailabilityOffline: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainWentOfflineDto_Output"];
+                };
+            };
+        };
+    };
+    captainAvailabilityLocation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainLocationsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainLocationsSavedDto_Output"];
                 };
             };
         };

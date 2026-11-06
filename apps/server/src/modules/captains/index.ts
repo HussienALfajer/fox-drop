@@ -5,17 +5,35 @@ import { FxModule } from '../fx/index.js';
 import { GeoModule } from '../geo/index.js';
 import { LedgerModule } from '../ledger/index.js';
 import { SettingsModule } from '../settings/index.js';
+import { ValkeyModule } from '../../valkey/valkey.module.js';
+import { CaptainAvailabilityController } from './captain-availability.controller.js';
 import { CaptainsService } from './captains.service.js';
+import { LivePositions } from './live-positions.js';
+import { LocationPartitions } from './location-partitions.js';
 
 // The captains module (architecture §4.2): the captain record, its cash
-// limit and availability, and the city's pay table. Other modules read them
+// limit, availability and location, and the city's pay table. Other modules read them
 // through CaptainsService only.
 @Module({
-  imports: [DatabaseModule, SettingsModule, FxModule, GeoModule, LedgerModule, AuditModule],
-  providers: [CaptainsService],
+  imports: [
+    DatabaseModule,
+    ValkeyModule,
+    SettingsModule,
+    FxModule,
+    GeoModule,
+    LedgerModule,
+    AuditModule,
+  ],
+  controllers: [CaptainAvailabilityController],
+  providers: [CaptainsService, LivePositions],
   exports: [CaptainsService],
 })
 export class CaptainsModule {}
+
+// The worker role's upkeep of the captains module: the locations' monthly
+// partitions.
+@Module({ imports: [DatabaseModule], providers: [LocationPartitions] })
+export class CaptainsWorkerModule {}
 
 export type { Availability, CaptainStatus, NoOffersReason, OnlineBlock } from './availability.js';
 export { orderPay, type PayRate } from './pay.js';
@@ -27,6 +45,7 @@ export {
   CaptainsRefusedError,
   CaptainsService,
   type Custody,
+  type LocationPoint,
   type Money,
   type NewCaptain,
   type PayTable,

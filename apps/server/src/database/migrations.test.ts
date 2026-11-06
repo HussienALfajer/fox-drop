@@ -422,7 +422,25 @@ describe('the captains tables (AP §9.7, §9.12.5; CA §7)', () => {
     await expect(appQuery(open)).rejects.toThrow(/online_periods_one_open/);
   });
 
+  const thisMonth = `captains.locations_${new Date().toISOString().slice(0, 7).replace('-', '_')}`;
+
+  it('have a locations partition for last month, this month and the next', async () => {
+    const { rows } = await appQuery(
+      "SELECT count(*)::int AS n FROM pg_inherits WHERE inhparent = 'captains.locations'::regclass",
+    );
+    expect(rows).toEqual([{ n: 3 }]);
+  });
+
+  it('keep one row per captain and recorded time', async () => {
+    const point = `INSERT INTO captains.locations (captain_id, city_id, recorded_at, received_at, location, accuracy_metres, simulated) VALUES ('0190f3a0-0000-7000-8000-0000000000c1', ${azaz}, date_trunc('hour', now()), now(), ST_SetSRID(ST_MakePoint(37.05, 36.59), 4326), 8, false)`;
+    await appQuery(point);
+    await expect(appQuery(point)).rejects.toThrow(/duplicate key/);
+  });
+
   it.each([
+    ['change a location', 'UPDATE captains.locations SET simulated = true'],
+    ['change a location partition', `UPDATE ${thisMonth} SET simulated = true`],
+    ['delete a location', 'DELETE FROM captains.locations'],
     ['change a pay table version', "UPDATE captains.pay_tables SET reason = 'x'"],
     ['change a pay rate', 'UPDATE captains.pay_rates SET base_pay = 1'],
     ['delete a captain', 'DELETE FROM captains.captains'],

@@ -92,6 +92,20 @@
       "when": 1793950848685,
       "tag": "0012_captains_record_pay_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793952151809,
+      "tag": "0013_identity_captain_accounts",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793952377705,
+      "tag": "0014_captains_locations",
+      "breakpoints": true
     }
   ]
 }
