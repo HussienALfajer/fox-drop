@@ -8067,6 +8067,57 @@
                   "type": "string",
                   "pattern": "^-?\\d+$",
                   "description": "«قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11)."
+                },
+                "captainTrack": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "searching",
+                        "offered",
+                        "assigned",
+                        "at_merchant",
+                        "pickup_pending",
+                        "picked_up",
+                        "at_customer",
+                        "done"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts."
+                },
+                "captain": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "firstName": {
+                          "type": "string"
+                        },
+                        "vehicle": {
+                          "type": "string",
+                          "enum": [
+                            "walking",
+                            "bicycle",
+                            "motorbike",
+                            "car"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "firstName",
+                        "vehicle"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "From assignment (RA §8.9); the photo and the ETA come with their slices."
                 }
               },
               "required": [
@@ -8083,7 +8134,9 @@
                 "note",
                 "lines",
                 "currency",
-                "itemsValue"
+                "itemsValue",
+                "captainTrack",
+                "captain"
               ],
               "additionalProperties": false
             },
@@ -8366,6 +8419,57 @@
                 "type": "string",
                 "pattern": "^-?\\d+$",
                 "description": "«قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11)."
+              },
+              "captainTrack": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "searching",
+                      "offered",
+                      "assigned",
+                      "at_merchant",
+                      "pickup_pending",
+                      "picked_up",
+                      "at_customer",
+                      "done"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts."
+              },
+              "captain": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "firstName": {
+                        "type": "string"
+                      },
+                      "vehicle": {
+                        "type": "string",
+                        "enum": [
+                          "walking",
+                          "bicycle",
+                          "motorbike",
+                          "car"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "firstName",
+                      "vehicle"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "From assignment (RA §8.9); the photo and the ETA come with their slices."
               }
             },
             "required": [
@@ -8382,7 +8486,9 @@
               "note",
               "lines",
               "currency",
-              "itemsValue"
+              "itemsValue",
+              "captainTrack",
+              "captain"
             ],
             "additionalProperties": false
           }
@@ -9706,7 +9812,8 @@
                       "open",
                       "accepted",
                       "declined",
-                      "expired"
+                      "expired",
+                      "withdrawn"
                     ]
                   },
                   "orderId": {
@@ -9933,7 +10040,8 @@
                   "open",
                   "accepted",
                   "declined",
-                  "expired"
+                  "expired",
+                  "withdrawn"
                 ]
               },
               "orderId": {

@@ -18,8 +18,9 @@ import {
 export const dispatch = pgSchema('dispatch');
 
 // CA §8.3, AP §9.7.4: an offer is open until the captain accepts or declines
-// it, or dispatch.offer_timeout_sec passes («انتهت المهلة»).
-export const offerStatuses = ['open', 'accepted', 'declined', 'expired'] as const;
+// it, or dispatch.offer_timeout_sec passes («انتهت المهلة»); withdrawn when
+// the captain went offline first.
+export const offerStatuses = ['open', 'accepted', 'declined', 'expired', 'withdrawn'] as const;
 
 // AP §9.3.2: operations' manual offer; automatic offers join with automatic
 // dispatch (D6: manual at launch).
@@ -67,7 +68,7 @@ export const offers = dispatch.table(
     index('offers_order').on(table.orderId, table.offeredAt),
     check(
       'offers_status_values',
-      sql`${table.status} IN ('open', 'accepted', 'declined', 'expired')`,
+      sql`${table.status} IN ('open', 'accepted', 'declined', 'expired', 'withdrawn')`,
     ),
     check('offers_kind_values', sql`${table.kind} IN ('manual')`),
     check('offers_manual_by', sql`${table.kind} <> 'manual' OR ${table.offeredBy} IS NOT NULL`),

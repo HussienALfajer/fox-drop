@@ -158,6 +158,7 @@ export 'package:core_api/src/model/merchant_order_dto_output.dart';
 export 'package:core_api/src/model/merchant_orders_dto_output.dart';
 export 'package:core_api/src/model/merchant_orders_dto_output_orders_inner.dart';
 export 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_acceptance.dart';
+export 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain.dart';
 export 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
 export 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
 export 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner_options_inner.dart';

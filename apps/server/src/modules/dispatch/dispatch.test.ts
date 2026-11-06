@@ -32,6 +32,8 @@ let database: TestDatabase;
 let cache: TestValkey;
 let app: NestFastifyApplication;
 let sql: pg.Pool;
+// The migration role, to move an offer back in time.
+let migrator: pg.Pool;
 let db: Database;
 let azaz: string;
 let restaurant: string;
@@ -64,6 +66,7 @@ beforeAll(async () => {
   process.env.IDENTITY_ENCRYPTION_KEY = randomBytes(32).toString('base64');
   process.env.FOX_DROP_ENVIRONMENT = 'development';
   sql = new pg.Pool({ connectionString: database.appUrl });
+  migrator = new pg.Pool({ connectionString: database.migratorUrl });
   db = createDatabase(database.appUrl);
   app = await createApiApp(ApiModule);
   await app.init();
@@ -131,6 +134,7 @@ afterAll(async () => {
   await app?.close();
   await db?.pool.end();
   await sql?.end();
+  await migrator?.end();
   await Promise.all([database?.stop(), cache?.stop()]);
 });
 
@@ -406,8 +410,9 @@ describe('POST /v1/admin/orders/{orderId}/assign as an offer (AP §9.3.2, CA §8
       const offer = (await (await admin(['OPS'])).assign(order.id, captain.captainId)).json().order
         .offer;
       const job = { offerId: offer.id, orderId: order.id, orderPlacedAt: order.placedAt };
-      expect(await dispatch.expire(job, new Date())).toBe(true);
-      expect(await dispatch.expire(job, new Date())).toBe(false);
+      const due = new Date(Date.now() + 46 * SECOND);
+      expect(await dispatch.expire(job, due)).toBe(true);
+      expect(await dispatch.expire(job, due)).toBe(false);
       expect((await offerRow(offer.id)).status).toBe('expired');
       // Its search had not started yet: no track until it does.
       expect(await orderRow(order.id)).toMatchObject({ captain_track: null });
@@ -615,5 +620,189 @@ describe('the operations board and order detail (AP §9.2, §9.3.1)', () => {
     expect((await (await admin(['DATA'])).get(`/v1/admin/orders?cityId=${azaz}`)).statusCode).toBe(
       403,
     );
+  });
+});
+
+describe('dispatch under races and repeats (AP §9.12.6, architecture §5.3)', () => {
+  it('gives one captain one order when two assigns race, and one order one captain', async () => {
+    const ops = await admin(['OPS']);
+    const captain = await onlineCaptain();
+    const [a, b] = [await acceptedOrder(), await acceptedOrder()];
+    const both = await Promise.all([
+      ops.assign(a.id, captain.captainId),
+      ops.assign(b.id, captain.captainId),
+    ]);
+    expect(both.map((each) => each.statusCode).sort()).toEqual([200, 409]);
+    const order = await acceptedOrder();
+    const [first, second] = [await onlineCaptain(), await onlineCaptain()];
+    const raced = await Promise.all([
+      ops.assign(order.id, first.captainId),
+      ops.assign(order.id, second.captainId),
+    ]);
+    expect(raced.map((each) => each.statusCode).sort()).toEqual([200, 409]);
+    const open = await sql.query(
+      "SELECT count(*)::int AS n FROM dispatch.offers WHERE order_id = $1 AND status = 'open'",
+      [order.id],
+    );
+    expect(open.rows[0].n).toBe(1);
+  });
+
+  it('answers a repeated assign once, and refuses its key with another command (422)', async () => {
+    const ops = await admin(['OPS']);
+    const captain = await onlineCaptain();
+    const order = await acceptedOrder();
+    const key = randomUUID();
+    const first = await ops.assign(order.id, captain.captainId, key);
+    const repeat = await ops.assign(order.id, captain.captainId, key);
+    expect(repeat.statusCode).toBe(200);
+    expect(repeat.json().order.offer.id).toBe(first.json().order.offer.id);
+    const other = await onlineCaptain();
+    expect((await ops.assign(order.id, other.captainId, key)).statusCode).toBe(422);
+  });
+
+  it('refuses accepting an offer past its time before the worker expired it, and frees the order', async () => {
+    const ops = await admin(['OPS']);
+    const captain = await onlineCaptain();
+    const order = await acceptedOrder();
+    const offer = (await ops.assign(order.id, captain.captainId)).json().order.offer;
+    await migrator.query(
+      "UPDATE dispatch.offers SET offered_at = offered_at - interval '1 minute', expires_at = expires_at - interval '1 minute' WHERE id = $1",
+      [offer.id],
+    );
+    const late = await captain.call('POST', `/v1/captain/offers/${offer.id}/accept`);
+    expect(late.json().error).toBe('offer_unavailable');
+    expect((await captain.call('GET', '/v1/captain/offers/current')).json().offer).toBeNull();
+    // Operations may offer the order again at once: the late offer expires.
+    const other = await onlineCaptain();
+    const again = await ops.assign(order.id, other.captainId);
+    expect(again.statusCode).toBe(200);
+    expect((await offerRow(offer.id)).status).toBe('expired');
+  });
+
+  it('withdraws the open offer when the captain goes offline, freeing the order', async () => {
+    const ops = await admin(['OPS']);
+    const captain = await onlineCaptain();
+    const order = await acceptedOrder();
+    const offer = (await ops.assign(order.id, captain.captainId)).json().order.offer;
+    expect((await captain.call('POST', '/v1/captain/availability/offline')).statusCode).toBe(200);
+    expect((await offerRow(offer.id)).status).toBe('withdrawn');
+    expect(await orderRow(order.id)).toMatchObject({ captain_track: null });
+    expect((await ops.assign(order.id, (await onlineCaptain()).captainId)).statusCode).toBe(200);
+  });
+
+  it('starts the C3 run again after a decline and after going offline (CA §7.4)', async () => {
+    const dispatch = app.get(DispatchService);
+    const captain = await onlineCaptain();
+    const ops = await admin(['OPS']);
+    const offerAndExpire = async () => {
+      const order = await acceptedOrder();
+      const offer = (await ops.assign(order.id, captain.captainId)).json().order.offer;
+      const job = { offerId: offer.id, orderId: order.id, orderPlacedAt: order.placedAt };
+      await migrator.query(
+        "UPDATE dispatch.offers SET offered_at = offered_at - interval '1 minute', expires_at = expires_at - interval '1 minute' WHERE id = $1",
+        [offer.id],
+      );
+      expect(await dispatch.expire(job, new Date())).toBe(true);
+    };
+    await offerAndExpire();
+    await offerAndExpire();
+    const declined = await acceptedOrder();
+    const offer = (await ops.assign(declined.id, captain.captainId)).json().order.offer;
+    await captain.call('POST', `/v1/captain/offers/${offer.id}/decline`);
+    await offerAndExpire();
+    const state = async () =>
+      (await captain.call('GET', '/v1/captain/availability')).json().availability.state;
+    expect(await state()).toBe('online_available');
+    // Offline and back: the earlier expired offers no longer count.
+    await captain.call('POST', '/v1/captain/availability/offline');
+    const captains = app.get(CaptainsService);
+    const now = new Date();
+    await captains.goOnline(
+      captain.captainId,
+      { appVersion: '1.0.0', simulatedLocation: false },
+      now,
+    );
+    await captains.recordLocations(
+      captain.captainId,
+      [{ ...captainSpot, accuracyMetres: 8, recordedAt: now, simulated: false }],
+      new Date(now.getTime() + 1),
+    );
+    await offerAndExpire();
+    expect(await state()).toBe('online_available');
+  });
+
+  it('refuses an order that ended, a captain of another city and a customer on the captain routes', async () => {
+    const ops = await admin(['OPS']);
+    const captain = await onlineCaptain();
+    const order = await acceptedOrder();
+    await sql.query(
+      "UPDATE ordering.orders SET status = 'cancelled', version = version + 1, cancelled_at = now(), cancel_reason = 'test', food_prepared = false WHERE id = $1",
+      [order.id],
+    );
+    expect((await ops.assign(order.id, captain.captainId)).json().error).toBe(
+      'order_not_assignable',
+    );
+    const elsewhere = (
+      await sql.query("INSERT INTO geo.cities (code, name) VALUES ('ZZ', 'أخرى') RETURNING id")
+    ).rows[0].id as string;
+    const stranger = (await onlineCaptain()).captainId;
+    await sql.query('UPDATE captains.captains SET city_id = $1 WHERE id = $2', [
+      elsewhere,
+      stranger,
+    ]);
+    expect((await ops.assign((await acceptedOrder()).id, stranger)).statusCode).toBe(404);
+    const customer = await appSignIn('customer', phoneNumber());
+    const refused = await app.inject({
+      method: 'GET',
+      url: '/v1/captain/offers/current',
+      headers: customer,
+    });
+    expect(refused.statusCode).toBe(401);
+  });
+
+  it('lets the application role change only the answer of an offer (AP §9.7.4)', async () => {
+    const captain = await onlineCaptain();
+    const order = await acceptedOrder();
+    const offer = (await (await admin(['OPS'])).assign(order.id, captain.captainId)).json().order
+      .offer;
+    await expect(
+      sql.query('UPDATE dispatch.offers SET pickup_metres = 1 WHERE id = $1', [offer.id]),
+    ).rejects.toThrow(/permission denied/);
+  });
+
+  it('shows the restaurant the captain line (RA §8.1, §8.9)', async () => {
+    const settings = app.get(SettingsService);
+    await settings.update(
+      'dispatch.manual_assign_requires_accept',
+      { cityId: azaz },
+      false,
+      bySystem,
+    );
+    try {
+      const order = await acceptedOrder();
+      const captain = await onlineCaptain();
+      await (await admin(['OPS'])).assign(order.id, captain.captainId);
+      const phone = phoneNumber();
+      await app
+        .get(MerchantAccountsService)
+        .addAccount(restaurant, { role: 'owner', name: 'owner', phone }, change);
+      const board = await app.inject({
+        method: 'GET',
+        url: '/v1/merchant/orders',
+        headers: await appSignIn('merchant', phone),
+      });
+      const card = (board.json().orders as { id: string }[]).find((each) => each.id === order.id);
+      expect(card).toMatchObject({
+        captainTrack: 'assigned',
+        captain: { firstName: 'كابتن', vehicle: 'motorbike' },
+      });
+    } finally {
+      await settings.update(
+        'dispatch.manual_assign_requires_accept',
+        { cityId: azaz },
+        true,
+        bySystem,
+      );
+    }
   });
 });

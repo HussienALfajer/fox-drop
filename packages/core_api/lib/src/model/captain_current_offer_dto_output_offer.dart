@@ -43,7 +43,7 @@ abstract class CaptainCurrentOfferDtoOutputOffer
 
   @BuiltValueField(wireName: r'status')
   CaptainCurrentOfferDtoOutputOfferStatusEnum get status;
-  // enum statusEnum {  open,  accepted,  declined,  expired,  };
+  // enum statusEnum {  open,  accepted,  declined,  expired,  withdrawn,  };
 
   @BuiltValueField(wireName: r'orderId')
   String get orderId;
@@ -388,6 +388,9 @@ class CaptainCurrentOfferDtoOutputOfferStatusEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'expired')
   static const CaptainCurrentOfferDtoOutputOfferStatusEnum expired =
       _$captainCurrentOfferDtoOutputOfferStatusEnum_expired;
+  @BuiltValueEnumConst(wireName: r'withdrawn')
+  static const CaptainCurrentOfferDtoOutputOfferStatusEnum withdrawn =
+      _$captainCurrentOfferDtoOutputOfferStatusEnum_withdrawn;
 
   static Serializer<CaptainCurrentOfferDtoOutputOfferStatusEnum>
   get serializer => _$captainCurrentOfferDtoOutputOfferStatusEnumSerializer;

@@ -181,6 +181,8 @@ export class CaptainsService implements OnModuleInit {
   private readonly logger = new Logger('CaptainsService');
   // None until ordering registers its lookup (useActiveOrders).
   private activeOrders: ActiveOrderLookup = () => Promise.resolve(new Set());
+  // Told once a captain's online period ended and committed (onWentOffline).
+  private readonly offlineListeners: ((captainId: string, now: Date) => Promise<void>)[] = [];
 
   constructor(
     @Inject(DATABASE) private readonly database: Database,
@@ -212,6 +214,33 @@ export class CaptainsService implements OnModuleInit {
   // captains never reads its tables.
   useActiveOrders(lookup: ActiveOrderLookup): void {
     this.activeOrders = lookup;
+  }
+
+  // Dispatch withdraws a captain's open offer once the captain is offline
+  // (going offline, a suspension, a termination), so the order is free again
+  // at once. A listener that fails is logged and never undoes the offline.
+  onWentOffline(listener: (captainId: string, now: Date) => Promise<void>): void {
+    this.offlineListeners.push(listener);
+  }
+
+  // The start of the captain's open online period, or null while offline:
+  // C3 counts the offers of this period only (CA §7.4).
+  async onlineSince(captainId: string): Promise<Date | null> {
+    const [open] = await this.database.db
+      .select({ startedAt: onlinePeriods.startedAt })
+      .from(onlinePeriods)
+      .where(and(eq(onlinePeriods.captainId, captainId), isNull(onlinePeriods.endedAt)));
+    return open?.startedAt ?? null;
+  }
+
+  private async wentOffline(captainId: string, now: Date): Promise<void> {
+    for (const listener of this.offlineListeners) {
+      try {
+        await listener(captainId, now);
+      } catch (error) {
+        this.logger.error({ err: error, captainId }, 'an offline listener failed');
+      }
+    }
   }
 
   // AP §9.7.1: an activated captain, with the vehicle and the cash limit the
@@ -352,7 +381,10 @@ export class CaptainsService implements OnModuleInit {
       );
       return { cityId: row.cityId, ended };
     });
-    if (ended !== null) await this.positions.remove(cityId, captainId, ended);
+    if (ended !== null) {
+      await this.positions.remove(cityId, captainId, ended);
+      await this.wentOffline(captainId, now);
+    }
   }
 
   // AP §9.7.5: a new cash limit, effective immediately, with a reason.
@@ -575,6 +607,7 @@ export class CaptainsService implements OnModuleInit {
     });
     if (ended === null) return false;
     await this.positions.remove(cityId, captainId, ended);
+    await this.wentOffline(captainId, now);
     return true;
   }
 
@@ -747,7 +780,10 @@ export class CaptainsService implements OnModuleInit {
       }
       return this.endOnline(tx, captainId, 'captain', now);
     });
-    if (ended !== null) await this.positions.remove(cityId, captainId, ended);
+    if (ended !== null) {
+      await this.positions.remove(cityId, captainId, ended);
+      await this.wentOffline(captainId, now);
+    }
     // After the offline commits, so reading the cash can never undo it.
     const row = await this.row(this.database.db, captainId);
     const { custody } = await this.input(this.database.db, row, rules);

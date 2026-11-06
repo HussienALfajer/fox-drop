@@ -727,6 +727,9 @@ describe("the order's reads, for the screens and the polling fallback (CU §4.3,
       lines: [{ name: 'شاورما', quantity: 1, options: [], note: null, lineTotal: '12000' }],
       currency: 'TRY',
       itemsValue: '12000',
+      // No captain before the search starts (RA §8.1).
+      captainTrack: null,
+      captain: null,
     });
 
     // RA §8.2: an order leaves the board when it ends.

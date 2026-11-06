@@ -67,7 +67,8 @@ export async function recordTransition(
     from: OrderStatus | null;
     to: OrderStatus;
     version: number;
-    // device: a restaurant user's app installation (RA §18).
+    // device: a restaurant user's or a captain's app installation (RA §18,
+    // CA §15).
     actor: {
       type: 'customer' | 'restaurant' | 'captain' | 'admin' | 'system';
       id: string | null;

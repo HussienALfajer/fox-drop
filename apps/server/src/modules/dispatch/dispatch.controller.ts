@@ -134,7 +134,7 @@ class CaptainOfferParamsDto extends createZodDto(z.object({ offerId: z.uuid() })
 const offer = z
   .object({
     id: z.uuid(),
-    status: z.enum(['open', 'accepted', 'declined', 'expired']),
+    status: z.enum(['open', 'accepted', 'declined', 'expired', 'withdrawn']),
     orderId: z.uuid(),
     number: z.string(),
     fromOperations: z.boolean().describe('«تعيين من العمليات» (CA §8.4).'),
@@ -320,6 +320,7 @@ export class CaptainOffersController {
             offerId: params.offerId,
             captainId: captainOf(session),
             accountId: session.accountId,
+            deviceId: session.deviceId,
             idempotencyKey,
           },
           new Date(),
@@ -345,6 +346,7 @@ export class CaptainOffersController {
             offerId: params.offerId,
             captainId: captainOf(session),
             accountId: session.accountId,
+            deviceId: session.deviceId,
             idempotencyKey,
           },
           new Date(),

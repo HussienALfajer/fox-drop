@@ -2,6 +2,7 @@ import { and, asc, desc, eq, inArray, type SQL, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { equivalent, type RateSnapshot } from '../fx/index.js';
 import type { Point } from '../geo/index.js';
+import type { CaptainTrack } from './order-events.js';
 import type { QuoteMoney } from './quote.js';
 import { orderEvents, orderLines, orders, type orderStatuses } from './schema.js';
 
@@ -32,6 +33,9 @@ export interface OrderView {
   acceptance: { at: Date; prepMin: number; promisedAt: Date; device: string | null } | null;
   // RA §8.8: «الطلب جاهز».
   readyAt: Date | null;
+  // AP §8.2: the captain track, and the captain from assignment.
+  captainTrack: CaptainTrack | null;
+  captainId: string | null;
   cancellation: { at: Date; reason: string } | null;
   currency: string;
   money: QuoteMoney;
@@ -87,6 +91,8 @@ export async function readOrders(
       prepMin: orders.prepMin,
       promisedAt: orders.promisedAt,
       readyAt: orders.readyAt,
+      captainTrack: orders.captainTrack,
+      captainId: orders.captainId,
       cancelledAt: orders.cancelledAt,
       cancelReason: orders.cancelReason,
       currency: orders.currency,
@@ -181,6 +187,8 @@ export async function readOrders(
             }
           : null,
       readyAt: row.readyAt,
+      captainTrack: row.captainTrack,
+      captainId: row.captainId,
       cancellation:
         row.cancelledAt && row.cancelReason
           ? { at: row.cancelledAt, reason: row.cancelReason }

@@ -76,9 +76,76 @@ _$merchantOrdersDtoOutputOrdersInnerStatusEnumValues =
       ],
     );
 
+const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum
+_$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_searching =
+    const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum._('searching');
+const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum
+_$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_offered =
+    const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum._('offered');
+const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum
+_$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_assigned =
+    const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum._('assigned');
+const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum
+_$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_atMerchant =
+    const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum._('atMerchant');
+const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum
+_$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_pickupPending =
+    const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum._('pickupPending');
+const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum
+_$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_pickedUp =
+    const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum._('pickedUp');
+const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum
+_$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_atCustomer =
+    const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum._('atCustomer');
+const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum
+_$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_done =
+    const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum._('done');
+
+MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum
+_$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnumValueOf(String name) {
+  switch (name) {
+    case 'searching':
+      return _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_searching;
+    case 'offered':
+      return _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_offered;
+    case 'assigned':
+      return _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_assigned;
+    case 'atMerchant':
+      return _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_atMerchant;
+    case 'pickupPending':
+      return _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_pickupPending;
+    case 'pickedUp':
+      return _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_pickedUp;
+    case 'atCustomer':
+      return _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_atCustomer;
+    case 'done':
+      return _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_done;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum>
+_$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnumValues =
+    BuiltSet<MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum>(
+      const <MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum>[
+        _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_searching,
+        _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_offered,
+        _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_assigned,
+        _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_atMerchant,
+        _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_pickupPending,
+        _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_pickedUp,
+        _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_atCustomer,
+        _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_done,
+      ],
+    );
+
 Serializer<MerchantOrdersDtoOutputOrdersInnerStatusEnum>
 _$merchantOrdersDtoOutputOrdersInnerStatusEnumSerializer =
     _$MerchantOrdersDtoOutputOrdersInnerStatusEnumSerializer();
+Serializer<MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum>
+_$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnumSerializer =
+    _$MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnumSerializer();
 
 class _$MerchantOrdersDtoOutputOrdersInnerStatusEnumSerializer
     implements
@@ -130,6 +197,56 @@ class _$MerchantOrdersDtoOutputOrdersInnerStatusEnumSerializer
   );
 }
 
+class _$MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnumSerializer
+    implements
+        PrimitiveSerializer<
+          MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum
+        > {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'searching': 'searching',
+    'offered': 'offered',
+    'assigned': 'assigned',
+    'atMerchant': 'at_merchant',
+    'pickupPending': 'pickup_pending',
+    'pickedUp': 'picked_up',
+    'atCustomer': 'at_customer',
+    'done': 'done',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'searching': 'searching',
+    'offered': 'offered',
+    'assigned': 'assigned',
+    'at_merchant': 'atMerchant',
+    'pickup_pending': 'pickupPending',
+    'picked_up': 'pickedUp',
+    'at_customer': 'atCustomer',
+    'done': 'done',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum,
+  ];
+  @override
+  final String wireName = 'MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$MerchantOrdersDtoOutputOrdersInner
     extends MerchantOrdersDtoOutputOrdersInner {
   @override
@@ -160,6 +277,10 @@ class _$MerchantOrdersDtoOutputOrdersInner
   final String currency;
   @override
   final String itemsValue;
+  @override
+  final MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum? captainTrack;
+  @override
+  final MerchantOrdersDtoOutputOrdersInnerCaptain? captain;
 
   factory _$MerchantOrdersDtoOutputOrdersInner([
     void Function(MerchantOrdersDtoOutputOrdersInnerBuilder)? updates,
@@ -180,6 +301,8 @@ class _$MerchantOrdersDtoOutputOrdersInner
     required this.lines,
     required this.currency,
     required this.itemsValue,
+    this.captainTrack,
+    this.captain,
   }) : super._();
   @override
   MerchantOrdersDtoOutputOrdersInner rebuild(
@@ -207,7 +330,9 @@ class _$MerchantOrdersDtoOutputOrdersInner
         note == other.note &&
         lines == other.lines &&
         currency == other.currency &&
-        itemsValue == other.itemsValue;
+        itemsValue == other.itemsValue &&
+        captainTrack == other.captainTrack &&
+        captain == other.captain;
   }
 
   @override
@@ -227,6 +352,8 @@ class _$MerchantOrdersDtoOutputOrdersInner
     _$hash = $jc(_$hash, lines.hashCode);
     _$hash = $jc(_$hash, currency.hashCode);
     _$hash = $jc(_$hash, itemsValue.hashCode);
+    _$hash = $jc(_$hash, captainTrack.hashCode);
+    _$hash = $jc(_$hash, captain.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -247,7 +374,9 @@ class _$MerchantOrdersDtoOutputOrdersInner
           ..add('note', note)
           ..add('lines', lines)
           ..add('currency', currency)
-          ..add('itemsValue', itemsValue))
+          ..add('itemsValue', itemsValue)
+          ..add('captainTrack', captainTrack)
+          ..add('captain', captain))
         .toString();
   }
 }
@@ -328,6 +457,19 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
   String? get itemsValue => _$this._itemsValue;
   set itemsValue(String? itemsValue) => _$this._itemsValue = itemsValue;
 
+  MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum? _captainTrack;
+  MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum? get captainTrack =>
+      _$this._captainTrack;
+  set captainTrack(
+    MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum? captainTrack,
+  ) => _$this._captainTrack = captainTrack;
+
+  MerchantOrdersDtoOutputOrdersInnerCaptainBuilder? _captain;
+  MerchantOrdersDtoOutputOrdersInnerCaptainBuilder get captain =>
+      _$this._captain ??= MerchantOrdersDtoOutputOrdersInnerCaptainBuilder();
+  set captain(MerchantOrdersDtoOutputOrdersInnerCaptainBuilder? captain) =>
+      _$this._captain = captain;
+
   MerchantOrdersDtoOutputOrdersInnerBuilder() {
     MerchantOrdersDtoOutputOrdersInner._defaults(this);
   }
@@ -349,6 +491,8 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
       _lines = $v.lines.toBuilder();
       _currency = $v.currency;
       _itemsValue = $v.itemsValue;
+      _captainTrack = $v.captainTrack;
+      _captain = $v.captain?.toBuilder();
       _$v = null;
     }
     return this;
@@ -417,6 +561,8 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
               r'MerchantOrdersDtoOutputOrdersInner',
               'itemsValue',
             ),
+            captainTrack: captainTrack,
+            captain: _captain?.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -429,6 +575,9 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
 
         _$failedField = 'lines';
         lines.build();
+
+        _$failedField = 'captain';
+        _captain?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'MerchantOrdersDtoOutputOrdersInner',

@@ -157,6 +157,7 @@ import 'package:core_api/src/model/merchant_order_dto_output.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_acceptance.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner_options_inner.dart';
@@ -334,6 +335,7 @@ part 'serializers.g.dart';
   MerchantOrdersDtoOutput,
   MerchantOrdersDtoOutputOrdersInner,
   MerchantOrdersDtoOutputOrdersInnerAcceptance,
+  MerchantOrdersDtoOutputOrdersInnerCaptain,
   MerchantOrdersDtoOutputOrdersInnerCustomer,
   MerchantOrdersDtoOutputOrdersInnerLinesInner,
   MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner,

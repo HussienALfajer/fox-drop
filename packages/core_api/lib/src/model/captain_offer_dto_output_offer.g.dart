@@ -18,6 +18,9 @@ _$captainOfferDtoOutputOfferStatusEnum_declined =
 const CaptainOfferDtoOutputOfferStatusEnum
 _$captainOfferDtoOutputOfferStatusEnum_expired =
     const CaptainOfferDtoOutputOfferStatusEnum._('expired');
+const CaptainOfferDtoOutputOfferStatusEnum
+_$captainOfferDtoOutputOfferStatusEnum_withdrawn =
+    const CaptainOfferDtoOutputOfferStatusEnum._('withdrawn');
 
 CaptainOfferDtoOutputOfferStatusEnum
 _$captainOfferDtoOutputOfferStatusEnumValueOf(String name) {
@@ -30,6 +33,8 @@ _$captainOfferDtoOutputOfferStatusEnumValueOf(String name) {
       return _$captainOfferDtoOutputOfferStatusEnum_declined;
     case 'expired':
       return _$captainOfferDtoOutputOfferStatusEnum_expired;
+    case 'withdrawn':
+      return _$captainOfferDtoOutputOfferStatusEnum_withdrawn;
     default:
       throw ArgumentError(name);
   }
@@ -43,6 +48,7 @@ _$captainOfferDtoOutputOfferStatusEnumValues =
         _$captainOfferDtoOutputOfferStatusEnum_accepted,
         _$captainOfferDtoOutputOfferStatusEnum_declined,
         _$captainOfferDtoOutputOfferStatusEnum_expired,
+        _$captainOfferDtoOutputOfferStatusEnum_withdrawn,
       ],
     );
 
@@ -57,12 +63,14 @@ class _$CaptainOfferDtoOutputOfferStatusEnumSerializer
     'accepted': 'accepted',
     'declined': 'declined',
     'expired': 'expired',
+    'withdrawn': 'withdrawn',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'open': 'open',
     'accepted': 'accepted',
     'declined': 'declined',
     'expired': 'expired',
+    'withdrawn': 'withdrawn',
   };
 
   @override

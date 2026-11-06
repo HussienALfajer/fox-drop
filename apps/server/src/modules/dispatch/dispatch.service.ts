@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { and, desc, eq, ne } from 'drizzle-orm';
+import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
+import { and, desc, eq, gt, gte, lt, ne } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -16,7 +16,7 @@ import {
 import type { Vehicle } from '../settings/index.js';
 import { GeoService, lastCutoff, type Point, tripMinutes } from '../geo/index.js';
 import { MerchantsService } from '../merchants/index.js';
-import { type DispatchOrder, OrderAssignments } from '../ordering/index.js';
+import { type AssignmentActor, type DispatchOrder, OrderAssignments } from '../ordering/index.js';
 import { SettingsService } from '../settings/index.js';
 import { idempotencyKeys, offers } from './schema.js';
 
@@ -123,8 +123,10 @@ export interface AdminCommand {
 export interface CaptainCommand {
   offerId: string;
   captainId: string;
-  // The captain's app account, whose keys these are.
+  // The captain's app account, whose keys these are, and the app
+  // installation (CA §15).
   accountId: string;
+  deviceId: string;
   idempotencyKey: string;
 }
 
@@ -133,7 +135,7 @@ export interface CaptainCommand {
 // within dispatch.offer_timeout_sec, or the offer expires. Every command locks
 // the order first, then the captain, as ordering's commands do.
 @Injectable()
-export class DispatchService {
+export class DispatchService implements OnModuleInit {
   private readonly logger = new Logger('DispatchService');
 
   constructor(
@@ -146,6 +148,10 @@ export class DispatchService {
     private readonly geo: GeoService,
     private readonly audit: AuditService,
   ) {}
+
+  onModuleInit(): void {
+    this.captains.onWentOffline((captainId, now) => this.withdraw(captainId, now));
+  }
 
   // AP §9.3.2 «تعيين كابتن»: with dispatch.manual_assign_requires_accept the
   // captain gets an offer for dispatch.offer_timeout_sec (CA §8.4); without
@@ -168,7 +174,9 @@ export class DispatchService {
     if (earlier !== null) return this.state(earlier.orderId);
     const order = await this.assignments.find(command.orderId);
     if (order === null) throw new DispatchRefusedError('unknown_order', 'no such order');
-    if (!this.assignments.assignable(order)) throw this.notAssignable();
+    // An open offer is checked under the lock, where one past its time
+    // expires first.
+    if (!this.assignments.assignable({ ...order, captainTrack: null })) throw this.notAssignable();
     const restaurant = await this.merchants.restaurant(order.restaurantId, now);
     if (!restaurant) throw new Error(`restaurant ${order.restaurantId} not found`);
     const captain = await this.captains.captain(command.captainId, now);
@@ -204,16 +212,18 @@ export class DispatchService {
       if (!locked) throw new Error(`order ${order.id} not found`);
       const repeat = await this.replay(tx, command.admin.accountId, command, hash, now);
       if (repeat !== null) return true;
-      if (!this.assignments.assignable(locked)) return false;
+      // An offer past its time that the worker has not expired yet.
+      const current = await this.expireLate(tx, locked, now);
+      if (!this.assignments.assignable(current)) return false;
       await this.lockFreeCaptain(tx, lockCaptain, command.captainId);
       const actor = { type: 'admin' as const, id: command.admin.accountId };
       let offerId: string | null = null;
       if (shown !== null) {
         const expiresAt = new Date(now.getTime() + timeoutSec * 1000);
-        offerId = await this.openOffer(tx, locked, command, shown, now, expiresAt);
+        offerId = await this.openOffer(tx, current, command, shown, now, expiresAt);
         await this.assignments.change(
           tx,
-          locked,
+          current,
           { type: 'order.offered', captainId: command.captainId },
           actor,
           now,
@@ -221,7 +231,7 @@ export class DispatchService {
       } else {
         await this.assignments.change(
           tx,
-          locked,
+          current,
           { type: 'order.assigned', captainId: command.captainId },
           actor,
           now,
@@ -238,7 +248,7 @@ export class DispatchService {
           cityId: order.cityId,
           action: 'order.assign_captain',
           target: { type: 'order', id: order.id },
-          before: { captainTrack: locked.captainTrack, captainId: null },
+          before: { captainTrack: current.captainTrack, captainId: null },
           after: {
             captainTrack: shown !== null ? 'offered' : 'assigned',
             captainId: command.captainId,
@@ -273,35 +283,102 @@ export class DispatchService {
   // goes offline (C3, AP §9.7.6). True when it expired the offer.
   async expire(job: OfferExpiryJob, now: Date): Promise<boolean> {
     await this.jobs.ready();
-    const expired = await this.database.db.transaction(async (tx) => {
+    const outcome = await this.database.db.transaction(async (tx) => {
       const order = await this.assignments.lock(tx, job.orderId, new Date(job.orderPlacedAt));
       const offer = await lockOffer(tx, job.offerId);
-      if (!order || !offer || offer.status !== 'open') return null;
-      await closeOffer(tx, offer.id, 'expired', now);
-      await this.assignments.change(
-        tx,
-        order,
-        { type: 'order.offer_closed', captainId: offer.captainId, reason: 'expired' },
-        { type: 'system', id: null },
-        now,
-      );
-      return offer;
+      if (!order || !offer) return null;
+      if (offer.status !== 'open') return { offer, expired: false };
+      // The job may start early by the database's clock: the captain keeps
+      // the whole time, and the queue tries again.
+      if (now < offer.expiresAt) throw new Error(`offer ${offer.id} is not due yet`);
+      await this.close(tx, order, offer, 'expired', now);
+      return { offer, expired: true };
     });
-    if (expired === null) return false;
+    // C3 runs again with a retry after it failed, once the offer expired.
+    if (outcome?.offer.status === 'expired' || outcome?.expired) {
+      await this.offlineAfterUnanswered(outcome.offer, now);
+    }
+    return outcome?.expired ?? false;
+  }
+
+  // C3, CA §7.4: offline when the captain's last
+  // captain.offer_expiry_offline_count answered offers of this online period
+  // all expired; an acceptance, a decline or going offline starts the run
+  // again.
+  private async offlineAfterUnanswered(offer: OfferRow, now: Date): Promise<void> {
+    const since = await this.captains.onlineSince(offer.captainId);
+    if (since === null) return;
     const count = await this.settings.get('captain.offer_expiry_offline_count', {
-      cityId: expired.cityId,
+      cityId: offer.cityId,
     });
     const last = await this.database.db
       .select({ status: offers.status })
       .from(offers)
-      .where(and(eq(offers.captainId, expired.captainId), ne(offers.status, 'open')))
+      .where(
+        and(
+          eq(offers.captainId, offer.captainId),
+          ne(offers.status, 'open'),
+          gte(offers.offeredAt, since),
+        ),
+      )
       .orderBy(desc(offers.offeredAt))
       .limit(count);
     if (last.length === count && last.every((each) => each.status === 'expired')) {
-      await this.captains.offlineForUnansweredOffers(expired.captainId, now);
-      this.logger.log({ captainId: expired.captainId }, 'offline after unanswered offers (C3)');
+      if (await this.captains.offlineForUnansweredOffers(offer.captainId, now)) {
+        this.logger.log({ captainId: offer.captainId }, 'offline after unanswered offers (C3)');
+      }
     }
-    return true;
+  }
+
+  // An open offer of the locked order past its time, which the worker has
+  // not expired yet, expires now; the order as it is then.
+  private async expireLate(tx: Tx, order: DispatchOrder, now: Date): Promise<DispatchOrder> {
+    if (order.captainTrack !== 'offered') return order;
+    const [open] = await tx
+      .select()
+      .from(offers)
+      .where(and(eq(offers.orderId, order.id), eq(offers.status, 'open')))
+      .for('update');
+    if (!open || now < open.expiresAt) return order;
+    return this.close(tx, order, open, 'expired', now);
+  }
+
+  // Closes an open offer and returns its order to «بحاجة لتعيين»
+  // (order.offer_closed).
+  private async close(
+    tx: Tx,
+    order: DispatchOrder,
+    offer: OfferRow,
+    status: 'declined' | 'expired' | 'withdrawn',
+    now: Date,
+    actor: AssignmentActor = { type: 'system', id: null },
+  ): Promise<DispatchOrder> {
+    await closeOffer(tx, offer.id, status, now);
+    return this.assignments.change(
+      tx,
+      order,
+      { type: 'order.offer_closed', captainId: offer.captainId, reason: status },
+      actor,
+      now,
+    );
+  }
+
+  // The captain went offline (CA §7.5, a suspension, a termination, C3): an
+  // offer still open is withdrawn, so operations can offer the order again
+  // at once.
+  async withdraw(captainId: string, now: Date): Promise<void> {
+    const [open] = await this.database.db
+      .select()
+      .from(offers)
+      .where(and(eq(offers.captainId, captainId), eq(offers.status, 'open')));
+    if (!open) return;
+    await this.jobs.ready();
+    await this.database.db.transaction(async (tx) => {
+      const order = await this.assignments.lock(tx, open.orderId, open.orderPlacedAt);
+      const offer = await lockOffer(tx, open.id);
+      if (!order || !offer || offer.status !== 'open') return;
+      await this.close(tx, order, offer, 'withdrawn', now);
+    });
   }
 
   // AP §9.3.2, the assignment picker: every online captain of the city with
@@ -331,13 +408,14 @@ export class DispatchService {
     ]);
     // «طلبات اليوم»: since the business day began (finance.business_day_cutoff).
     const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
-    const dayStart = lastCutoff(now, hours * 60 + minutes, timeZone ?? 'UTC');
+    if (timeZone === null) throw new Error(`city ${order.cityId} has no time zone`);
+    const dayStart = lastCutoff(now, hours * 60 + minutes, timeZone);
     const ids = candidates.map((candidate) => candidate.captainId);
     const [today, rates] = await Promise.all([
       this.assignments.assignedSince(ids, dayStart),
       this.acceptanceRates(ids, window),
     ]);
-    return Promise.all(
+    const listed = await Promise.all(
       candidates.map(async (candidate) => {
         const inRange = !candidate.reasons.includes('out_of_range');
         const distance = inRange
@@ -358,6 +436,9 @@ export class DispatchService {
           acceptanceRate: rates.get(candidate.captainId) ?? null,
         };
       }),
+    );
+    return listed.sort(
+      (a, b) => a.distanceMetres - b.distanceMetres || a.ordersToday - b.ordersToday,
     );
   }
 
@@ -398,13 +479,15 @@ export class DispatchService {
   }
 
   // The order's dispatch state now: its track, captain and open offer.
-  async state(orderId: string): Promise<DispatchState> {
+  async state(orderId: string, now = new Date()): Promise<DispatchState> {
     const order = await this.assignments.find(orderId);
     if (order === null) throw new Error(`order ${orderId} not found`);
     const [offer] = await this.database.db
       .select({ id: offers.id, captainId: offers.captainId, expiresAt: offers.expiresAt })
       .from(offers)
-      .where(and(eq(offers.orderId, orderId), eq(offers.status, 'open')));
+      .where(
+        and(eq(offers.orderId, orderId), eq(offers.status, 'open'), gt(offers.expiresAt, now)),
+      );
     return {
       orderId: order.id,
       number: order.number,
@@ -441,7 +524,7 @@ export class DispatchService {
       const repeat = await this.replay(tx, command.accountId, command, hash, now);
       if (repeat !== null) return true;
       if (locked.status !== 'open' || locked.expiresAt <= now) return false;
-      const actor = { type: 'captain' as const, id: command.captainId };
+      const actor = { type: 'captain' as const, id: command.captainId, device: command.deviceId };
       if (response === 'accepted') {
         const free =
           order.captainId === null &&
@@ -457,14 +540,7 @@ export class DispatchService {
           now,
         );
       } else {
-        await closeOffer(tx, offer.id, 'declined', now);
-        await this.assignments.change(
-          tx,
-          order,
-          { type: 'order.offer_closed', captainId: command.captainId, reason: 'declined' },
-          actor,
-          now,
-        );
+        await this.close(tx, order, locked, 'declined', now, actor);
       }
       await keepKey(tx, command.accountId, command.idempotencyKey, hash, order, offer.id, now);
       return true;
@@ -650,7 +726,7 @@ async function lockOffer(tx: Tx, offerId: string): Promise<OfferRow | undefined>
 async function closeOffer(
   tx: Tx,
   offerId: string,
-  status: 'accepted' | 'declined' | 'expired',
+  status: 'accepted' | 'declined' | 'expired' | 'withdrawn',
   now: Date,
 ): Promise<void> {
   await tx.update(offers).set({ status, respondedAt: now }).where(eq(offers.id, offerId));
@@ -674,10 +750,20 @@ async function keepKey(
     offerId,
     createdAt: now,
   };
-  await tx
+  // An older key is used again; one another command took meanwhile (two
+  // sent at once about different orders) refuses this one, which rolls back.
+  const [taken] = await tx
     .insert(idempotencyKeys)
     .values({ accountId, key, ...kept })
-    .onConflictDoUpdate({ target: [idempotencyKeys.accountId, idempotencyKeys.key], set: kept });
+    .onConflictDoUpdate({
+      target: [idempotencyKeys.accountId, idempotencyKeys.key],
+      set: kept,
+      setWhere: lt(idempotencyKeys.createdAt, new Date(now.getTime() - KEY_LIFETIME_MS)),
+    })
+    .returning({ key: idempotencyKeys.key });
+  if (!taken) {
+    throw new DispatchRefusedError('idempotency_key_reused', 'the key came with another command');
+  }
 }
 
 function commandHash(command: unknown): string {

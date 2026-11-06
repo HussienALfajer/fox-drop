@@ -222,6 +222,9 @@ Serializers _$serializers =
           ..add(MerchantOrdersDtoOutput.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInner.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerAcceptance.serializer)
+          ..add(MerchantOrdersDtoOutputOrdersInnerCaptain.serializer)
+          ..add(MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum.serializer)
+          ..add(MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerCustomer.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerLinesInner.serializer)
           ..add(

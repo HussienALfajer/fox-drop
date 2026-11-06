@@ -52,12 +52,14 @@ export interface DispatchOrder {
 // opened, an offer closed (declined or expired), a captain assigned.
 export type AssignmentChange =
   | { type: 'order.offered'; captainId: string }
-  | { type: 'order.offer_closed'; captainId: string; reason: 'declined' | 'expired' }
+  | { type: 'order.offer_closed'; captainId: string; reason: 'declined' | 'expired' | 'withdrawn' }
   | { type: 'order.assigned'; captainId: string };
 
 export interface AssignmentActor {
   type: 'captain' | 'admin' | 'system';
   id: string | null;
+  // CA §15: the captain's app installation the command ran on.
+  device?: string;
 }
 
 // The orders' side of dispatch (architecture §4.2): the dispatch module owns

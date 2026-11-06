@@ -29,7 +29,7 @@ CREATE TABLE "dispatch"."offers" (
 	"pickup_metres" integer NOT NULL,
 	"pay" bigint,
 	"pay_currency" text,
-	CONSTRAINT "offers_status_values" CHECK ("status" IN ('open', 'accepted', 'declined', 'expired')),
+	CONSTRAINT "offers_status_values" CHECK ("status" IN ('open', 'accepted', 'declined', 'expired', 'withdrawn')),
 	CONSTRAINT "offers_kind_values" CHECK ("kind" IN ('manual')),
 	CONSTRAINT "offers_manual_by" CHECK ("kind" <> 'manual' OR "offered_by" IS NOT NULL),
 	CONSTRAINT "offers_response" CHECK (("status" = 'open') = ("responded_at" IS NULL) AND "expires_at" > "offered_at"),
@@ -41,4 +41,6 @@ CREATE UNIQUE INDEX "offers_one_open_per_order" ON "dispatch"."offers" USING btr
 CREATE UNIQUE INDEX "offers_one_open_per_captain" ON "dispatch"."offers" USING btree ("captain_id") WHERE "status" = 'open';--> statement-breakpoint
 CREATE INDEX "offers_captain_offered" ON "dispatch"."offers" USING btree ("captain_id","offered_at" DESC NULLS LAST);--> statement-breakpoint
 CREATE INDEX "offers_order" ON "dispatch"."offers" USING btree ("order_id","offered_at");--> statement-breakpoint
-ALTER TABLE "captains"."online_periods" ADD CONSTRAINT "online_periods_end_reason_values" CHECK ("end_reason" IN ('captain', 'suspended', 'terminated', 'offers_expired'));
+ALTER TABLE "captains"."online_periods" ADD CONSTRAINT "online_periods_end_reason_values" CHECK ("end_reason" IN ('captain', 'suspended', 'terminated', 'offers_expired'));--> statement-breakpoint
+REVOKE UPDATE ON "dispatch"."offers" FROM fox_drop_app;--> statement-breakpoint
+GRANT UPDATE ("status", "responded_at") ON "dispatch"."offers" TO fox_drop_app;

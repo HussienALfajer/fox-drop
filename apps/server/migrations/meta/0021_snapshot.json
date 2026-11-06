@@ -1083,7 +1083,7 @@
       "checkConstraints": {
         "offers_status_values": {
           "name": "offers_status_values",
-          "value": "\"dispatch\".\"offers\".\"status\" IN ('open', 'accepted', 'declined', 'expired')"
+          "value": "\"dispatch\".\"offers\".\"status\" IN ('open', 'accepted', 'declined', 'expired', 'withdrawn')"
         },
         "offers_kind_values": {
           "name": "offers_kind_values",

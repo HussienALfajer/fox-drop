@@ -16,6 +16,7 @@ import { z } from 'zod';
 import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { MerchantController } from '../../http/route-groups.js';
+import { CaptainsService } from '../captains/index.js';
 import { CustomersService } from '../customers/index.js';
 import type { AppSession } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
@@ -23,7 +24,7 @@ import { minor } from './customer-quote.controller.js';
 import { type MerchantCommand, OrderCommandRefusedError, OrderCommands } from './order-commands.js';
 import type { OrderView } from './order-views.js';
 import { OrdersService } from './orders.service.js';
-import { orderStatuses } from './schema.js';
+import { captainTracks, orderStatuses } from './schema.js';
 
 const boardOrder = z.object({
   id: z.uuid(),
@@ -87,6 +88,19 @@ const boardOrder = z.object({
   itemsValue: minor.describe(
     '«قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11).',
   ),
+  captainTrack: z
+    .enum(captainTracks)
+    .nullable()
+    .describe(
+      'The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts.',
+    ),
+  captain: z
+    .object({
+      firstName: z.string(),
+      vehicle: z.enum(['walking', 'bicycle', 'motorbike', 'car']),
+    })
+    .nullable()
+    .describe('From assignment (RA §8.9); the photo and the ETA come with their slices.'),
 });
 
 class MerchantOrdersDto extends createZodDto(
@@ -135,6 +149,7 @@ export class MerchantOrdersController {
     private readonly commands: OrderCommands,
     private readonly merchants: MerchantsService,
     private readonly customers: CustomersService,
+    private readonly captains: CaptainsService,
   ) {}
 
   @Get('orders')
@@ -244,6 +259,13 @@ export class MerchantOrdersController {
   // the total, the address, a phone, the promised time or operations' alert
   // moments.
   private async boardOrders(restaurantId: string, orders: OrderView[]) {
+    const captainIds = [...new Set(orders.flatMap((order) => order.captainId ?? []))];
+    const now = new Date();
+    const captains = new Map(
+      (await Promise.all(captainIds.map((id) => this.captains.captain(id, now)))).flatMap(
+        (captain) => (captain ? [[captain.id, captain] as const] : []),
+      ),
+    );
     const [firstNames, deviceNames] = await Promise.all([
       this.customers.firstNames([...new Set(orders.map((order) => order.customerAccountId))]),
       this.merchants.deviceNames(restaurantId, [
@@ -284,6 +306,15 @@ export class MerchantOrdersController {
       })),
       currency: order.currency,
       itemsValue: order.money.itemsValue.toString(),
+      captainTrack: order.captainTrack,
+      captain: captainLine(order.captainId === null ? undefined : captains.get(order.captainId)),
     }));
   }
+}
+
+// RA §8.9: the captain's first name and vehicle, never the phone number.
+function captainLine(
+  captain: { name: string; vehicle: 'walking' | 'bicycle' | 'motorbike' | 'car' } | undefined,
+) {
+  return captain ? { firstName: captain.name.split(' ')[0]!, vehicle: captain.vehicle } : null;
 }

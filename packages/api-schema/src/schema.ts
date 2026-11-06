@@ -2441,6 +2441,14 @@ export interface components {
                 currency: string;
                 /** @description «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11). */
                 itemsValue: string;
+                /** @description The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts. */
+                captainTrack: ("searching" | "offered" | "assigned" | "at_merchant" | "pickup_pending" | "picked_up" | "at_customer" | "done") | null;
+                /** @description From assignment (RA §8.9); the photo and the ETA come with their slices. */
+                captain: {
+                    firstName: string;
+                    /** @enum {string} */
+                    vehicle: "walking" | "bicycle" | "motorbike" | "car";
+                } | null;
             }[];
             /** @description The accept prompt's prep-time chooser (RA §8.5). */
             prepTime: {
@@ -2514,6 +2522,14 @@ export interface components {
                 currency: string;
                 /** @description «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11). */
                 itemsValue: string;
+                /** @description The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts. */
+                captainTrack: ("searching" | "offered" | "assigned" | "at_merchant" | "pickup_pending" | "picked_up" | "at_customer" | "done") | null;
+                /** @description From assignment (RA §8.9); the photo and the ETA come with their slices. */
+                captain: {
+                    firstName: string;
+                    /** @enum {string} */
+                    vehicle: "walking" | "bicycle" | "motorbike" | "car";
+                } | null;
             };
         };
         AdminBoardDto_Output: {
@@ -2797,7 +2813,7 @@ export interface components {
                 /** Format: uuid */
                 id: string;
                 /** @enum {string} */
-                status: "open" | "accepted" | "declined" | "expired";
+                status: "open" | "accepted" | "declined" | "expired" | "withdrawn";
                 /** Format: uuid */
                 orderId: string;
                 number: string;
@@ -2857,7 +2873,7 @@ export interface components {
                 /** Format: uuid */
                 id: string;
                 /** @enum {string} */
-                status: "open" | "accepted" | "declined" | "expired";
+                status: "open" | "accepted" | "declined" | "expired" | "withdrawn";
                 /** Format: uuid */
                 orderId: string;
                 number: string;

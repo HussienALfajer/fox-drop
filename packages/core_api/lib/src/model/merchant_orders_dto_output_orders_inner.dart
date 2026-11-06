@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_acceptance.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
 import 'package:built_value/built_value.dart';
@@ -29,6 +30,8 @@ part 'merchant_orders_dto_output_orders_inner.g.dart';
 /// * [lines]
 /// * [currency]
 /// * [itemsValue] - «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11).
+/// * [captainTrack] - The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts.
+/// * [captain]
 @BuiltValue()
 abstract class MerchantOrdersDtoOutputOrdersInner
     implements
@@ -86,6 +89,14 @@ abstract class MerchantOrdersDtoOutputOrdersInner
   /// «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11).
   @BuiltValueField(wireName: r'itemsValue')
   String get itemsValue;
+
+  /// The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts.
+  @BuiltValueField(wireName: r'captainTrack')
+  MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum? get captainTrack;
+  // enum captainTrackEnum {  searching,  offered,  assigned,  at_merchant,  pickup_pending,  picked_up,  at_customer,  done,  };
+
+  @BuiltValueField(wireName: r'captain')
+  MerchantOrdersDtoOutputOrdersInnerCaptain? get captain;
 
   MerchantOrdersDtoOutputOrdersInner._();
 
@@ -203,6 +214,24 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
       object.itemsValue,
       specifiedType: const FullType(String),
     );
+    yield r'captainTrack';
+    yield object.captainTrack == null
+        ? null
+        : serializers.serialize(
+            object.captainTrack,
+            specifiedType: const FullType.nullable(
+              MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum,
+            ),
+          );
+    yield r'captain';
+    yield object.captain == null
+        ? null
+        : serializers.serialize(
+            object.captain,
+            specifiedType: const FullType.nullable(
+              MerchantOrdersDtoOutputOrdersInnerCaptain,
+            ),
+          );
   }
 
   @override
@@ -366,6 +395,30 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
                   as String;
           result.itemsValue = valueDes;
           break;
+        case r'captainTrack':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum,
+                    ),
+                  )
+                  as MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum?;
+          if (valueDes == null) continue;
+          result.captainTrack = valueDes;
+          break;
+        case r'captain':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      MerchantOrdersDtoOutputOrdersInnerCaptain,
+                    ),
+                  )
+                  as MerchantOrdersDtoOutputOrdersInnerCaptain?;
+          if (valueDes == null) continue;
+          result.captain.replace(valueDes);
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -435,4 +488,46 @@ class MerchantOrdersDtoOutputOrdersInnerStatusEnum extends EnumClass {
       _$merchantOrdersDtoOutputOrdersInnerStatusEnumValues;
   static MerchantOrdersDtoOutputOrdersInnerStatusEnum valueOf(String name) =>
       _$merchantOrdersDtoOutputOrdersInnerStatusEnumValueOf(name);
+}
+
+/// The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts.
+class MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'searching')
+  static const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum searching =
+      _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_searching;
+  @BuiltValueEnumConst(wireName: r'offered')
+  static const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum offered =
+      _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_offered;
+  @BuiltValueEnumConst(wireName: r'assigned')
+  static const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum assigned =
+      _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_assigned;
+  @BuiltValueEnumConst(wireName: r'at_merchant')
+  static const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum atMerchant =
+      _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_atMerchant;
+  @BuiltValueEnumConst(wireName: r'pickup_pending')
+  static const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum
+  pickupPending =
+      _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_pickupPending;
+  @BuiltValueEnumConst(wireName: r'picked_up')
+  static const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum pickedUp =
+      _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_pickedUp;
+  @BuiltValueEnumConst(wireName: r'at_customer')
+  static const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum atCustomer =
+      _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_atCustomer;
+  @BuiltValueEnumConst(wireName: r'done')
+  static const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum done =
+      _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnum_done;
+
+  static Serializer<MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum>
+  get serializer =>
+      _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnumSerializer;
+
+  const MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum._(String name)
+    : super(name);
+
+  static BuiltSet<MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum>
+  get values => _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnumValues;
+  static MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum valueOf(
+    String name,
+  ) => _$merchantOrdersDtoOutputOrdersInnerCaptainTrackEnumValueOf(name);
 }
