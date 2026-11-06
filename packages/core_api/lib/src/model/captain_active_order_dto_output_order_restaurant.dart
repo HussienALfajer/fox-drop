@@ -14,6 +14,7 @@ part 'captain_active_order_dto_output_order_restaurant.g.dart';
 /// Properties:
 /// * [name]
 /// * [address]
+/// * [phone] - «اتصال بالمطعم» opens the dialer with it.
 /// * [location]
 @BuiltValue()
 abstract class CaptainActiveOrderDtoOutputOrderRestaurant
@@ -27,6 +28,10 @@ abstract class CaptainActiveOrderDtoOutputOrderRestaurant
 
   @BuiltValueField(wireName: r'address')
   String? get address;
+
+  /// «اتصال بالمطعم» opens the dialer with it.
+  @BuiltValueField(wireName: r'phone')
+  String? get phone;
 
   @BuiltValueField(wireName: r'location')
   CaptainActiveOrderDtoOutputOrderRestaurantLocation get location;
@@ -72,6 +77,13 @@ class _$CaptainActiveOrderDtoOutputOrderRestaurantSerializer
         ? null
         : serializers.serialize(
             object.address,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'phone';
+    yield object.phone == null
+        ? null
+        : serializers.serialize(
+            object.phone,
             specifiedType: const FullType.nullable(String),
           );
     yield r'location';
@@ -126,6 +138,16 @@ class _$CaptainActiveOrderDtoOutputOrderRestaurantSerializer
                   as String?;
           if (valueDes == null) continue;
           result.address = valueDes;
+          break;
+        case r'phone':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.phone = valueDes;
           break;
         case r'location':
           final valueDes =

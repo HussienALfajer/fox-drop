@@ -13,6 +13,8 @@ class _$CaptainActiveOrderDtoOutputOrderRestaurant
   @override
   final String? address;
   @override
+  final String? phone;
+  @override
   final CaptainActiveOrderDtoOutputOrderRestaurantLocation location;
 
   factory _$CaptainActiveOrderDtoOutputOrderRestaurant([
@@ -23,6 +25,7 @@ class _$CaptainActiveOrderDtoOutputOrderRestaurant
   _$CaptainActiveOrderDtoOutputOrderRestaurant._({
     required this.name,
     this.address,
+    this.phone,
     required this.location,
   }) : super._();
   @override
@@ -40,6 +43,7 @@ class _$CaptainActiveOrderDtoOutputOrderRestaurant
     return other is CaptainActiveOrderDtoOutputOrderRestaurant &&
         name == other.name &&
         address == other.address &&
+        phone == other.phone &&
         location == other.location;
   }
 
@@ -48,6 +52,7 @@ class _$CaptainActiveOrderDtoOutputOrderRestaurant
     var _$hash = 0;
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, address.hashCode);
+    _$hash = $jc(_$hash, phone.hashCode);
     _$hash = $jc(_$hash, location.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -60,6 +65,7 @@ class _$CaptainActiveOrderDtoOutputOrderRestaurant
           )
           ..add('name', name)
           ..add('address', address)
+          ..add('phone', phone)
           ..add('location', location))
         .toString();
   }
@@ -81,6 +87,10 @@ class CaptainActiveOrderDtoOutputOrderRestaurantBuilder
   String? get address => _$this._address;
   set address(String? address) => _$this._address = address;
 
+  String? _phone;
+  String? get phone => _$this._phone;
+  set phone(String? phone) => _$this._phone = phone;
+
   CaptainActiveOrderDtoOutputOrderRestaurantLocationBuilder? _location;
   CaptainActiveOrderDtoOutputOrderRestaurantLocationBuilder get location =>
       _$this._location ??=
@@ -98,6 +108,7 @@ class CaptainActiveOrderDtoOutputOrderRestaurantBuilder
     if ($v != null) {
       _name = $v.name;
       _address = $v.address;
+      _phone = $v.phone;
       _location = $v.location.toBuilder();
       _$v = null;
     }
@@ -131,6 +142,7 @@ class CaptainActiveOrderDtoOutputOrderRestaurantBuilder
               'name',
             ),
             address: address,
+            phone: phone,
             location: location.build(),
           );
     } catch (_) {

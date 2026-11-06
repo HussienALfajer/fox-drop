@@ -47,6 +47,7 @@ const activeOrder = z
     restaurant: z.object({
       name: z.string(),
       address: z.string().nullable(),
+      phone: z.string().nullable().describe('«اتصال بالمطعم» opens the dialer with it.'),
       location: point.describe('On the map, with the route and «ابدأ الملاحة».'),
     }),
     preparation: z.object({
@@ -150,7 +151,8 @@ export class CaptainOrdersController {
   // CA §9.2 «وصلت إلى المطعم». 409 too_far_from_restaurant with the distance
   // («اقترب من المطعم لتأكيد الوصول»), weak_location (worse than 100 m:
   // «إشارة الموقع ضعيفة — اتصل بالعمليات لتسجيل وصولك»),
-  // simulated_location, not_online, order_state_changed with the order as it
+  // simulated_location, stale_location (a fix older than a minute),
+  // not_online, order_state_changed with the order as it
   // is now; 404 unknown_order; 400 invalid_location; 422
   // idempotency_key_reused.
   @Post(':orderId/arrive')

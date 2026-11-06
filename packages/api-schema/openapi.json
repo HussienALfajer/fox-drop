@@ -8287,7 +8287,7 @@
                       "type": "null"
                     }
                   ],
-                  "description": "Null until the captain arrives (RA §8.9)."
+                  "description": "While the captain waits at the restaurant (RA §8.9), else null."
                 }
               },
               "required": [
@@ -8670,7 +8670,7 @@
                     "type": "null"
                   }
                 ],
-                "description": "Null until the captain arrives (RA §8.9)."
+                "description": "While the captain waits at the restaurant (RA §8.9), else null."
               }
             },
             "required": [
@@ -10139,6 +10139,13 @@
                           "null"
                         ]
                       },
+                      "phone": {
+                        "description": "«اتصال بالمطعم» opens the dialer with it.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
                       "location": {
                         "type": "object",
                         "properties": {
@@ -10160,6 +10167,7 @@
                     "required": [
                       "name",
                       "address",
+                      "phone",
                       "location"
                     ],
                     "additionalProperties": false
@@ -10455,6 +10463,13 @@
                       "null"
                     ]
                   },
+                  "phone": {
+                    "description": "«اتصال بالمطعم» opens the dialer with it.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
                   "location": {
                     "type": "object",
                     "properties": {
@@ -10476,6 +10491,7 @@
                 "required": [
                   "name",
                   "address",
+                  "phone",
                   "location"
                 ],
                 "additionalProperties": false

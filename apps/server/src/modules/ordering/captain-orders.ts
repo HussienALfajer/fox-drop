@@ -21,6 +21,9 @@ const MINUTE_MS = 60_000;
 // CA Appendix A: a fix worse than this is a weak signal, «إشارة الموقع ضعيفة —
 // اتصل بالعمليات لتسجيل وصولك» (K3); operations record the arrival instead.
 export const WEAK_GPS_METRES = 100;
+// C6 uses the latest fix: one older than this proves no arrival now (the app
+// sends a fix every 10 seconds while online, CA §4.3).
+export const FIX_MAX_AGE_MS = 60_000;
 
 export type CaptainOrderRefusal =
   | 'unknown_order'
@@ -28,6 +31,7 @@ export type CaptainOrderRefusal =
   | 'too_far_from_restaurant'
   | 'weak_location'
   | 'simulated_location'
+  | 'stale_location'
   | 'invalid_location'
   | 'not_online'
   | 'idempotency_key_reused';
@@ -80,7 +84,7 @@ export interface AdminOrderCommand {
 // from.
 export interface CaptainActiveOrder {
   order: OrderView;
-  restaurant: { name: string; address: string | null; location: Point };
+  restaurant: { name: string; address: string | null; phone: string | null; location: Point };
 }
 
 // The captain's side of an order (CA §9, §15) and operations' commands on the
@@ -111,7 +115,7 @@ export class CaptainOrders {
 
   // CA §9.2 (C6): «وصلت إلى المطعم», only within
   // captain.merchant_arrival_radius_m of the restaurant by the fix sent,
-  // which is recorded (CA §15); a weak or simulated fix is refused, and
+  // which is recorded (CA §15); a weak, old or simulated fix is refused, and
   // operations record the arrival instead (K3).
   async arrive(
     command: CaptainOrderCommand & { location: CommandLocation },
@@ -134,6 +138,9 @@ export class CaptainOrders {
     await this.recordLocation(command.captainId, command.location, now);
     if (command.location.simulated) {
       throw new CaptainOrderRefusedError('simulated_location', 'a simulated location');
+    }
+    if (now.getTime() - command.location.recordedAt.getTime() > FIX_MAX_AGE_MS) {
+      throw new CaptainOrderRefusedError('stale_location', 'the fix is not recent');
     }
     if (command.location.accuracyMetres > WEAK_GPS_METRES) {
       throw new CaptainOrderRefusedError('weak_location', 'the location is not accurate enough');
@@ -243,6 +250,7 @@ export class CaptainOrders {
       version,
       actor: by.actor,
       reason: by.reason,
+      publicReason: null,
       at: now,
       captainTrack: 'at_merchant',
     });
@@ -331,6 +339,7 @@ export class CaptainOrders {
       restaurant: {
         name: restaurant.nameAr,
         address: restaurant.address,
+        phone: restaurant.phone,
         location: restaurant.location,
       },
     };

@@ -263,7 +263,7 @@ async function onlineCaptain(point: Point = captainSpot) {
       },
     });
   const active = () => app.inject({ method: 'GET', url: '/v1/captain/orders/active', headers });
-  return { captainId, arrive, active };
+  return { captainId, headers, arrive, active };
 }
 
 // An accepted order assigned directly to a new online captain.
@@ -374,6 +374,47 @@ describe('POST /v1/captain/orders/{orderId}/arrive (CA §9.2, C6)', () => {
     expect((await orderRow(order.id)).captain_track).toBe('assigned');
   });
 
+  it('refuses a fix older than a minute (C6: the latest fix)', async () => {
+    const { order, captain } = await assignedOrder();
+    const answer = await app.inject({
+      method: 'POST',
+      url: `/v1/captain/orders/${order.id}/arrive`,
+      headers: { ...captain.headers, 'idempotency-key': randomUUID() },
+      payload: {
+        location: {
+          ...atDoor,
+          accuracyMetres: 10,
+          recordedAt: new Date(Date.now() - 2 * MINUTE).toISOString(),
+          simulated: false,
+        },
+      },
+    });
+    expect(answer.statusCode).toBe(409);
+    expect(answer.json().error).toBe('stale_location');
+  });
+
+  it('records the arrival at a ready order, and refuses a reused key', async () => {
+    const { order, captain } = await assignedOrder();
+    const ready = await app.inject({
+      method: 'POST',
+      url: `/v1/merchant/orders/${order.id}/ready`,
+      headers: { ...order.cashier, 'idempotency-key': randomUUID() },
+    });
+    expect(ready.statusCode).toBe(200);
+    const key = randomUUID();
+    const arrived = await captain.arrive(order.id, atDoor, { key });
+    expect(arrived.statusCode).toBe(200);
+    expect(arrived.json().order).toMatchObject({
+      status: 'ready',
+      captainTrack: 'at_merchant',
+      preparation: { ready: true },
+    });
+    const other = await assignedOrder();
+    expect((await other.captain.arrive(other.order.id, atDoor, { key })).statusCode).toBe(200);
+    // The same key on another order is another command (architecture §5.3).
+    expect((await captain.arrive(other.order.id, atDoor, { key })).statusCode).toBe(422);
+  });
+
   it("answers 404 for another captain's order", async () => {
     const { order } = await assignedOrder();
     const other = await onlineCaptain();
@@ -431,6 +472,12 @@ describe('POST /v1/admin/orders/{orderId}/record-arrival (AP §9.3.2)', () => {
     );
     expect(audit.rows).toEqual([{ actor_id: ops.accountId, reason: 'إشارة الموقع ضعيفة' }]);
     expect((await captain.active()).json().order.captainTrack).toBe('at_merchant');
+    // AP §10, RA §8.4: the note never leaves on the apps' channels.
+    const outbox = await sql.query(
+      "SELECT payload FROM ordering.outbox WHERE order_id = $1 AND type = 'order.captain_arrived'",
+      [order.id],
+    );
+    expect(outbox.rows[0].payload.reason).toBeNull();
     const again = await ops.recordArrival(order.id, 'مرة ثانية');
     expect(again.statusCode).toBe(409);
     expect(again.json()).toMatchObject({
@@ -446,5 +493,32 @@ describe('POST /v1/admin/orders/{orderId}/record-arrival (AP §9.3.2)', () => {
     expect(refused.statusCode).toBe(409);
     expect(refused.json().error).toBe('order_state_changed');
     expect((await ops.recordArrival(order.id, ' ')).statusCode).toBe(400);
+    expect((await ops.recordArrival(randomUUID(), 'لا طلب')).statusCode).toBe(404);
+  });
+
+  it('answers a repeat of the key with the order, and refuses it with another reason', async () => {
+    const { order, ops } = await assignedOrder();
+    const key = randomUUID();
+    expect((await ops.recordArrival(order.id, 'إشارة ضعيفة', key)).statusCode).toBe(200);
+    const version = (await orderRow(order.id)).version;
+    const repeat = await ops.recordArrival(order.id, 'إشارة ضعيفة', key);
+    expect(repeat.statusCode).toBe(200);
+    expect(repeat.json().order.captainTrack).toBe('at_merchant');
+    expect((await orderRow(order.id)).version).toBe(version);
+    expect((await ops.recordArrival(order.id, 'سبب آخر', key)).statusCode).toBe(422);
+  });
+
+  it('lets one of a captain arrival and an operations arrival sent together through', async () => {
+    const { order, captain, ops } = await assignedOrder();
+    const answers = await Promise.all([
+      captain.arrive(order.id),
+      ops.recordArrival(order.id, 'إشارة ضعيفة'),
+    ]);
+    expect(answers.map((answer) => answer.statusCode).sort()).toEqual([200, 409]);
+    const events = await sql.query(
+      "SELECT count(*)::int AS n FROM ordering.order_events WHERE order_id = $1 AND type = 'order.captain_arrived'",
+      [order.id],
+    );
+    expect(events.rows[0].n).toBe(1);
   });
 });

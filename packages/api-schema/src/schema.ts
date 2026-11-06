@@ -2497,7 +2497,7 @@ export interface components {
                     /** @enum {string} */
                     vehicle: "walking" | "bicycle" | "motorbike" | "car";
                 } | null;
-                /** @description Null until the captain arrives (RA §8.9). */
+                /** @description While the captain waits at the restaurant (RA §8.9), else null. */
                 captainArrival: {
                     /**
                      * Format: date-time
@@ -2591,7 +2591,7 @@ export interface components {
                     /** @enum {string} */
                     vehicle: "walking" | "bicycle" | "motorbike" | "car";
                 } | null;
-                /** @description Null until the captain arrives (RA §8.9). */
+                /** @description While the captain waits at the restaurant (RA §8.9), else null. */
                 captainArrival: {
                     /**
                      * Format: date-time
@@ -2907,6 +2907,8 @@ export interface components {
                 restaurant: {
                     name: string;
                     address: string | null;
+                    /** @description «اتصال بالمطعم» opens the dialer with it. */
+                    phone: string | null;
                     /** @description On the map, with the route and «ابدأ الملاحة». */
                     location: {
                         latitude: number;
@@ -2988,6 +2990,8 @@ export interface components {
                 restaurant: {
                     name: string;
                     address: string | null;
+                    /** @description «اتصال بالمطعم» opens the dialer with it. */
+                    phone: string | null;
                     /** @description On the map, with the route and «ابدأ الملاحة». */
                     location: {
                         latitude: number;

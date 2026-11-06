@@ -113,7 +113,7 @@ const boardOrder = z.object({
         ),
     })
     .nullable()
-    .describe('Null until the captain arrives (RA §8.9).'),
+    .describe('While the captain waits at the restaurant (RA §8.9), else null.'),
 });
 
 class MerchantOrdersDto extends createZodDto(
@@ -321,10 +321,16 @@ export class MerchantOrdersController {
       itemsValue: order.money.itemsValue.toString(),
       captainTrack: order.captainTrack,
       captain: captainLine(order.captainId === null ? undefined : captains.get(order.captainId)),
-      captainArrival: order.captainArrival && {
-        at: order.captainArrival.at.toISOString(),
-        waitingAlertAt: order.captainArrival.waitingAlertAt.toISOString(),
-      },
+      // RA §8.9: only while the captain waits at the restaurant, so the app
+      // never chimes after pickup.
+      captainArrival:
+        order.captainArrival &&
+        (order.captainTrack === 'at_merchant' || order.captainTrack === 'pickup_pending')
+          ? {
+              at: order.captainArrival.at.toISOString(),
+              waitingAlertAt: order.captainArrival.waitingAlertAt.toISOString(),
+            }
+          : null,
     }));
   }
 }
