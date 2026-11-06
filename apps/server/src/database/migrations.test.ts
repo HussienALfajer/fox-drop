@@ -561,6 +561,7 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
     expect(rows).toEqual([
       { name: 'ordering-merchant-auto-cancel' },
       { name: 'ordering-outbox-relay' },
+      { name: 'ordering-pickup-auto-confirm' },
       { name: 'ordering-search-start' },
     ]);
     await expect(appQuery('CREATE TABLE pgboss.extra (id int)')).rejects.toThrow(

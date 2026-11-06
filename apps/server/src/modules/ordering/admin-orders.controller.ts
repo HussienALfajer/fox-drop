@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   ConflictException,
   Get,
@@ -21,6 +22,9 @@ import { AdminController } from '../../http/route-groups.js';
 import { CustomersService } from '../customers/index.js';
 import type { AdminSession } from '../identity/index.js';
 import { CaptainOrderRefusedError, CaptainOrders } from './captain-orders.js';
+import { linesBody, linesOfBody, paymentLines } from './captain-orders.controller.js';
+import { OrderCommandRefusedError } from './order-commands.js';
+import { PickupCommands } from './pickup-commands.js';
 import { minor } from './customer-quote.controller.js';
 import { type OperationsOrder, OperationsViews } from './operations-views.js';
 import { captainTracks, orderStatuses } from './schema.js';
@@ -34,10 +38,11 @@ const alerts = z
       'no_captain',
       'no_captain_after_ready',
       'captain_waiting',
+      'pickup_disputed',
     ]),
   )
   .describe(
-    'AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم».',
+    'AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام».',
   );
 
 const card = z.object({
@@ -68,6 +73,7 @@ const card = z.object({
     needsAssignment: z.boolean().describe('«بحاجة لتعيين» (AP §8.3).'),
     note: z.boolean().describe('«ملاحظة».'),
     newCustomer: z.boolean().describe('«زبون جديد»: no delivered order yet.'),
+    pickupPending: z.boolean().describe('«بانتظار تأكيد الاستلام» (AP §9.2.1).'),
   }),
   moments: z
     .object({
@@ -93,6 +99,13 @@ class AdminOrderParamsDto extends createZodDto(z.object({ orderId: z.uuid() })) 
 
 class AdminRecordArrivalDto extends createZodDto(
   z.object({ reason: z.string().trim().min(1).max(500).describe('Required (AP §9.3.2).') }),
+) {}
+
+class AdminConfirmPickupDto extends createZodDto(
+  z.object({
+    lines: paymentLines.describe("The agreed lines, prefilled from the captain's last request."),
+    reason: z.string().trim().min(1).max(500).describe('Required (AP §9.3.2).'),
+  }),
 ) {}
 
 class AdminOrderCardDto extends createZodDto(z.object({ order: card })) {}
@@ -141,6 +154,37 @@ class AdminOrderDto extends createZodDto(
         total: minor,
         pickupPayment: minor.describe('Paid by the captain at pickup (D26: the items value).'),
       }),
+      pickup: z.object({
+        at: z.iso.datetime().nullable(),
+        readyNotPressed: z.boolean().describe('«لم يُضغط جاهز».'),
+        requests: z
+          .array(
+            z.object({
+              id: z.uuid(),
+              status: z.enum(['open', 'confirmed', 'rejected', 'voided']),
+              outcome: z
+                .enum([
+                  'restaurant',
+                  'automatic',
+                  'operations',
+                  'amount_incorrect',
+                  'incomplete',
+                  'cancelled',
+                ])
+                .nullable(),
+              captainId: z.uuid(),
+              lines: paymentLines.describe('Paid by the captain.'),
+              bookedLines: paymentLines.nullable().describe('Booked at confirmation.'),
+              receivedLines: paymentLines
+                .nullable()
+                .describe('What the restaurant says it received.'),
+              openedAt: z.iso.datetime(),
+              closedAt: z.iso.datetime().nullable(),
+              closedBy: z.object({ type: z.string(), id: z.uuid().nullable() }).nullable(),
+            }),
+          )
+          .describe("Newest first; the last one's lines prefill «تأكيد الاستلام نيابة عن المطعم»."),
+      }),
       timeline: z.array(
         z.object({
           version: z.int(),
@@ -177,6 +221,7 @@ function cardBody(item: OperationsOrder) {
       needsAssignment: item.needsAssignment,
       note: order.note !== null,
       newCustomer: item.newCustomer,
+      pickupPending: item.pickupPending,
     },
     moments: {
       acceptAlertAt: at(item.moments.acceptAlertAt),
@@ -199,7 +244,61 @@ export class AdminOrdersController {
     private readonly views: OperationsViews,
     private readonly customers: CustomersService,
     private readonly captainOrders: CaptainOrders,
+    private readonly pickups: PickupCommands,
   ) {}
+
+  // AP §9.3.2 «تأكيد الاستلام نيابة عن المطعم», for OWN and OPS: the order
+  // accepted or ready and the assigned captain at the restaurant; the
+  // pickup is booked with the admin's lines (AP §8.1). 409 amount_mismatch,
+  // currency_not_accepted, order_state_changed with the order as it is now;
+  // 400 invalid_lines; 404 unknown_order; 422 idempotency_key_reused.
+  @Post(':orderId/confirm-pickup')
+  @RequirePermission('operations.manage')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOrderCardDto })
+  async confirmPickup(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminConfirmPickupDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.pickups.confirmForRestaurant(
+        {
+          orderId: params.orderId,
+          admin: { accountId: session.accountId, roles: session.roles },
+          context: requestContext(request),
+          reason: body.reason,
+          lines: linesOfBody(body.lines),
+          idempotencyKey,
+        },
+        new Date(),
+      );
+    } catch (error) {
+      if (!(error instanceof OrderCommandRefusedError)) throw error;
+      const { refusal } = error;
+      if (refusal === 'unknown_order') {
+        throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: refusal });
+      }
+      if (refusal === 'idempotency_key_reused') {
+        throw new UnprocessableEntityException({
+          statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: refusal,
+        });
+      }
+      if (refusal === 'invalid_lines') {
+        throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: refusal });
+      }
+      throw new ConflictException({
+        statusCode: HttpStatus.CONFLICT,
+        error: refusal,
+        order: await this.card(params.orderId),
+      });
+    }
+    return { order: await this.card(params.orderId) };
+  }
 
   // AP §9.3.2 «تسجيل وصول الكابتن», for OWN and OPS when GPS fails at the
   // restaurant (CA §9.2): the assigned captain's track becomes at_merchant.
@@ -323,6 +422,22 @@ export class AdminOrdersController {
           rounding: order.money.rounding.toString(),
           total: order.money.total.toString(),
           pickupPayment: order.money.itemsValue.toString(),
+        },
+        pickup: {
+          at: order.pickup?.at.toISOString() ?? null,
+          readyNotPressed: order.pickup?.readyByPickup ?? false,
+          requests: item.pickupRequests.map((request) => ({
+            id: request.id,
+            status: request.status,
+            outcome: request.outcome,
+            captainId: request.captainId,
+            lines: linesBody(request.lines),
+            bookedLines: request.bookedLines && linesBody(request.bookedLines),
+            receivedLines: request.receivedLines && linesBody(request.receivedLines),
+            openedAt: request.openedAt.toISOString(),
+            closedAt: request.closedAt?.toISOString() ?? null,
+            closedBy: request.closedBy && { type: request.closedBy.type, id: request.closedBy.id },
+          })),
         },
         timeline: timeline.map((event) => ({ ...event, at: event.at.toISOString() })),
       },

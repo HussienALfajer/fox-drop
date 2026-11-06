@@ -19,6 +19,9 @@ export const QUEUES = {
   outboxRelay: 'ordering-outbox-relay',
   // AP §8.3: an offer the captain did not answer in dispatch.offer_timeout_sec.
   offerExpiry: 'dispatch-offer-expiry',
+  // AP §8.1, RA §8.10: a pickup request the restaurant did not answer in
+  // order.pickup_confirm_timeout_sec.
+  pickupAutoConfirm: 'ordering-pickup-auto-confirm',
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];

@@ -10,6 +10,7 @@ Serializers _$serializers =
     (Serializers().toBuilder()
           ..add(AdminAssignDto.serializer)
           ..add(AdminBoardDtoOutput.serializer)
+          ..add(AdminConfirmPickupDto.serializer)
           ..add(AdminDispatchStateDtoOutput.serializer)
           ..add(AdminDispatchStateDtoOutputOrder.serializer)
           ..add(AdminDispatchStateDtoOutputOrderCaptainTrackEnum.serializer)
@@ -36,6 +37,15 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderLinesInner.serializer)
           ..add(AdminOrderDtoOutputOrderLinesInnerOptionsInner.serializer)
           ..add(AdminOrderDtoOutputOrderMoney.serializer)
+          ..add(AdminOrderDtoOutputOrderPickup.serializer)
+          ..add(AdminOrderDtoOutputOrderPickupRequestsInner.serializer)
+          ..add(AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy.serializer)
+          ..add(
+            AdminOrderDtoOutputOrderPickupRequestsInnerOutcomeEnum.serializer,
+          )
+          ..add(
+            AdminOrderDtoOutputOrderPickupRequestsInnerStatusEnum.serializer,
+          )
           ..add(AdminOrderDtoOutputOrderStatusEnum.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInner.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerActor.serializer)
@@ -57,7 +67,16 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputOrderCaptainTrackEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderCollect.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderLinesInner.serializer)
+          ..add(CaptainActiveOrderDtoOutputOrderPickup.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderPickupPayment.serializer)
+          ..add(CaptainActiveOrderDtoOutputOrderPickupRequest.serializer)
+          ..add(CaptainActiveOrderDtoOutputOrderPickupRequestAmount.serializer)
+          ..add(
+            CaptainActiveOrderDtoOutputOrderPickupRequestOutcomeEnum.serializer,
+          )
+          ..add(
+            CaptainActiveOrderDtoOutputOrderPickupRequestStatusEnum.serializer,
+          )
           ..add(CaptainActiveOrderDtoOutputOrderPreparation.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderRestaurant.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderRestaurantLocation.serializer)
@@ -93,7 +112,12 @@ Serializers _$serializers =
           ..add(CaptainOrderDtoOutput.serializer)
           ..add(CaptainOrderDtoOutputOrder.serializer)
           ..add(CaptainOrderDtoOutputOrderCaptainTrackEnum.serializer)
+          ..add(CaptainOrderDtoOutputOrderPickup.serializer)
+          ..add(CaptainOrderDtoOutputOrderPickupRequest.serializer)
+          ..add(CaptainOrderDtoOutputOrderPickupRequestOutcomeEnum.serializer)
+          ..add(CaptainOrderDtoOutputOrderPickupRequestStatusEnum.serializer)
           ..add(CaptainOrderDtoOutputOrderStatusEnum.serializer)
+          ..add(CaptainPickupRequestDto.serializer)
           ..add(CaptainRefreshDto.serializer)
           ..add(CaptainSessionDtoOutput.serializer)
           ..add(CaptainSignInDto.serializer)
@@ -238,6 +262,13 @@ Serializers _$serializers =
           ..add(MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice.serializer)
           ..add(MerchantMenuDtoOutputCategoriesInnerSwitchedOff.serializer)
           ..add(MerchantOrderDtoOutput.serializer)
+          ..add(MerchantOrderDtoOutputOrder.serializer)
+          ..add(MerchantOrderDtoOutputOrderCaptainTrackEnum.serializer)
+          ..add(MerchantOrderDtoOutputOrderPickup.serializer)
+          ..add(MerchantOrderDtoOutputOrderPickupRequest.serializer)
+          ..add(MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum.serializer)
+          ..add(MerchantOrderDtoOutputOrderPickupRequestStatusEnum.serializer)
+          ..add(MerchantOrderDtoOutputOrderStatusEnum.serializer)
           ..add(MerchantOrdersDtoOutput.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInner.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerAcceptance.serializer)
@@ -250,8 +281,20 @@ Serializers _$serializers =
           ..add(
             MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner.serializer,
           )
+          ..add(MerchantOrdersDtoOutputOrdersInnerPickup.serializer)
+          ..add(MerchantOrdersDtoOutputOrdersInnerPickupRequest.serializer)
+          ..add(
+            MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum
+                .serializer,
+          )
+          ..add(
+            MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum
+                .serializer,
+          )
           ..add(MerchantOrdersDtoOutputOrdersInnerStatusEnum.serializer)
           ..add(MerchantOrdersDtoOutputPrepTime.serializer)
+          ..add(MerchantPickupDisputeDto.serializer)
+          ..add(MerchantPickupDisputeDtoReceivedLinesInner.serializer)
           ..add(MerchantRefreshDto.serializer)
           ..add(MerchantRestaurantDtoOutput.serializer)
           ..add(MerchantRestaurantDtoOutputAccountStatusEnum.serializer)
@@ -331,6 +374,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminOrderDtoOutputOrderPickupRequestsInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderPickupRequestsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminPickerDtoOutputCaptainsInner),
             ]),
             () => ListBuilder<AdminPickerDtoOutputCaptainsInner>(),
@@ -363,6 +412,30 @@ Serializers _$serializers =
                 ListBuilder<
                   CaptainAvailabilityDtoOutputAvailabilityReasonsEnum
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+            ]),
+            () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+            ]),
+            () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+            ]),
+            () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+            ]),
+            () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -547,6 +620,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(MerchantOrdersDtoOutputOrdersInnerLinesInner),
+            ]),
+            () => ListBuilder<MerchantOrdersDtoOutputOrdersInnerLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(
                 MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner,
               ),
@@ -566,6 +645,24 @@ Serializers _$serializers =
                 ListBuilder<
                   MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantPickupDisputeDtoReceivedLinesInner),
+            ]),
+            () => ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantPickupDisputeDtoReceivedLinesInner),
+            ]),
+            () => ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantPickupDisputeDtoReceivedLinesInner),
+            ]),
+            () => ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -705,6 +802,30 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+            ]),
+            () => ListBuilder<CaptainWentOfflineDtoOutputHandIn?>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+            ]),
+            () => ListBuilder<CaptainWentOfflineDtoOutputHandIn?>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+            ]),
+            () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+            ]),
+            () => ListBuilder<CaptainWentOfflineDtoOutputHandIn?>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(
                 CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
               ),
@@ -713,6 +834,24 @@ Serializers _$serializers =
                 ListBuilder<
                   CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+            ]),
+            () => ListBuilder<CaptainWentOfflineDtoOutputHandIn?>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+            ]),
+            () => ListBuilder<CaptainWentOfflineDtoOutputHandIn?>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+            ]),
+            () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
           ))
         .build();
 

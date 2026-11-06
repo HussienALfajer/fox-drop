@@ -388,10 +388,11 @@ describe('the active-order limits (D23, RA §7.4)', () => {
     for (let index = 0; index < 3; index += 1) {
       const answer = await place(headers);
       placed.push(answer.json().order.id);
-      // A delivered order was accepted (a CHECK).
+      // A delivered order was accepted and picked up (CHECKs).
       await sql.query(
         `UPDATE ordering.orders SET status = 'delivered', accepted_at = now(), prep_min = 20,
-           promised_at = now(), search_start_at = now(), prep_late_alert_at = now()
+           promised_at = now(), search_start_at = now(), prep_late_alert_at = now(),
+           ready_at = now(), picked_up_at = now(), ready_by_pickup = false
          WHERE id = $1`,
         [answer.json().order.id],
       );
@@ -731,6 +732,13 @@ describe("the order's reads, for the screens and the polling fallback (CU §4.3,
       captainTrack: null,
       captain: null,
       captainArrival: null,
+      pickup: {
+        request: null,
+        pickedUpAt: null,
+        readyNotPressed: false,
+        disputeUntil: null,
+        disputedAt: null,
+      },
     });
 
     // RA §8.2: an order leaves the board when it ends.

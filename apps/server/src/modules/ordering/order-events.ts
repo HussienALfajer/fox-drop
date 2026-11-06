@@ -53,7 +53,14 @@ export type OrderEventType =
   | 'order.offer_closed'
   | 'order.assigned'
   // CA §9.2: the captain reached the restaurant (track at_merchant).
-  | 'order.captain_arrived';
+  | 'order.captain_arrived'
+  // RA §8.10, AP §8.1: a pickup request opened (track pickup_pending), a
+  // request the restaurant rejected (back to at_merchant), the pickup
+  // (status picked_up) and a dispute after it.
+  | 'order.pickup_requested'
+  | 'order.pickup_rejected'
+  | 'order.picked_up'
+  | 'order.pickup_disputed';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that

@@ -17,6 +17,7 @@ import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { CaptainController } from '../../http/route-groups.js';
 import type { AppSession } from '../identity/index.js';
+import type { PickupRequestView } from './pickup-views.js';
 import {
   type CaptainActiveOrder,
   CaptainOrderRefusedError,
@@ -27,6 +28,60 @@ import { minor } from './customer-quote.controller.js';
 import { captainTracks, orderStatuses } from './schema.js';
 
 const money = z.object({ amount: minor, currency: z.string().length(3) });
+// RA §8.10: one line per currency, the amounts in minor units.
+export const paymentLines = z.array(money).min(1).max(5);
+
+const pickupRequest = z
+  .object({
+    id: z.uuid(),
+    status: z.enum(['open', 'confirmed', 'rejected', 'voided']),
+    outcome: z
+      .enum([
+        'restaurant',
+        'automatic',
+        'operations',
+        'amount_incorrect',
+        'incomplete',
+        'cancelled',
+      ])
+      .nullable()
+      .describe(
+        'confirmed: «تم الاستلام», or «أكّدت العمليات الاستلام» for operations; rejected: amount_incorrect «المطعم يفيد بأنه استلم {المبلغ}. أكمل المبلغ ثم أعد التأكيد.», incomplete «المطعم يفيد بأن الطلب غير مكتمل. راجع الأصناف معه.»',
+      ),
+    amount: money.describe('The pickup payment of the request.'),
+    lines: paymentLines.describe('The lines the captain paid.'),
+    receivedLines: paymentLines
+      .nullable()
+      .describe('What the restaurant says it received, on «المبلغ غير صحيح».'),
+    openedAt: z.iso.datetime(),
+    confirmBy: z.iso
+      .datetime()
+      .describe('«بانتظار تأكيد المطعم» counts down to it while open (CA §9.4).'),
+    closedAt: z.iso.datetime().nullable(),
+  })
+  .describe('A pickup request (RA §8.10).');
+
+export function linesBody(lines: { currency: string; amount: bigint }[]) {
+  return lines.map((line) => ({ currency: line.currency, amount: line.amount.toString() }));
+}
+
+export function linesOfBody(lines: { currency: string; amount: string }[]) {
+  return lines.map((line) => ({ currency: line.currency, amount: BigInt(line.amount) }));
+}
+
+function pickupRequestBody(request: PickupRequestView) {
+  return {
+    id: request.id,
+    status: request.status,
+    outcome: request.outcome,
+    amount: { amount: request.amount.amount.toString(), currency: request.amount.currency },
+    lines: linesBody(request.lines),
+    receivedLines: request.receivedLines && linesBody(request.receivedLines),
+    openedAt: request.openedAt.toISOString(),
+    confirmBy: request.confirmBy.toISOString(),
+    closedAt: request.closedAt?.toISOString() ?? null,
+  };
+}
 const point = z.object({ latitude: z.number(), longitude: z.number() });
 
 const activeOrder = z
@@ -77,6 +132,19 @@ const activeOrder = z
     note: z.string().nullable().describe("The customer's note."),
     pickupPayment: money.describe('«تدفع للمطعم» (D26: the items value).'),
     collect: money.describe('«تقبض من الزبون».'),
+    pickup: z
+      .object({
+        proposedLines: paymentLines.describe(
+          '«ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): the whole amount in the base currency in Phase 1.',
+        ),
+        request: pickupRequest.nullable().describe('The latest request, or null.'),
+        pickedUpAt: z.iso.datetime().nullable(),
+        disputedAt: z.iso
+          .datetime()
+          .nullable()
+          .describe('«فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات».'),
+      })
+      .describe('Step 2 and the pickup request (CA §9.3–9.4).'),
   })
   .describe('The active order (CA §9); the customer block joins with the delivery slice.');
 
@@ -99,9 +167,16 @@ const commandLocation = z
   })
   .describe('The latest GPS fix.');
 
+class CaptainPickupRequestDto extends createZodDto(
+  z.object({
+    lines: paymentLines.describe('The currency lines paid, the proposed ones or the own split.'),
+    location: commandLocation,
+  }),
+) {}
+
 class CaptainArriveDto extends createZodDto(z.object({ location: commandLocation })) {}
 
-function activeOrderBody({ order, restaurant }: CaptainActiveOrder) {
+function activeOrderBody({ order, restaurant, pickupRequest, pickupDispute }: CaptainActiveOrder) {
   if (order.captainTrack === null) throw new Error(`order ${order.id} has no captain track`);
   if (order.acceptance === null) throw new Error(`order ${order.id} was never accepted`);
   const money = (amount: bigint) => ({ amount: amount.toString(), currency: order.currency });
@@ -130,6 +205,12 @@ function activeOrderBody({ order, restaurant }: CaptainActiveOrder) {
     note: order.note,
     pickupPayment: money(order.money.itemsValue),
     collect: money(order.money.total),
+    pickup: {
+      proposedLines: [money(order.money.itemsValue)],
+      request: pickupRequest && pickupRequestBody(pickupRequest),
+      pickedUpAt: order.pickup?.at.toISOString() ?? null,
+      disputedAt: pickupDispute?.at.toISOString() ?? null,
+    },
   };
 }
 
@@ -183,6 +264,42 @@ export class CaptainOrdersController {
       ),
     }));
   }
+
+  // CA §9.4 «دفعت للمطعم واستلمت الطلب», at the restaurant: the request waits
+  // for the restaurant for order.pickup_confirm_timeout_sec. 409
+  // amount_mismatch («المبلغ لا يطابق المطلوب»), currency_not_accepted (the
+  // base currency only in Phase 1), order_state_changed (not at the
+  // restaurant, a request already open, picked up); 400 invalid_lines,
+  // invalid_location; 404 unknown_order; 422 idempotency_key_reused.
+  @Post(':orderId/pickup-request')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CaptainOrderDto })
+  async requestPickup(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: CaptainOrderParamsDto,
+    @Body() body: CaptainPickupRequestDto,
+  ) {
+    const captainId = captainOf(session);
+    return refusalsAsHttp(captainId, this.orders, async () => ({
+      order: activeOrderBody(
+        await this.orders.requestPickup(
+          {
+            orderId: params.orderId,
+            captainId,
+            accountId: session.accountId,
+            deviceId: session.deviceId,
+            idempotencyKey,
+            lines: linesOfBody(body.lines),
+            location: { ...body.location, recordedAt: new Date(body.location.recordedAt) },
+          },
+          new Date(),
+        ),
+      ),
+    }));
+  }
 }
 
 // The refusals as HTTP answers; a state that changed answers the captain's
@@ -200,7 +317,7 @@ async function refusalsAsHttp<T>(
     if (refusal === 'unknown_order') {
       throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: refusal });
     }
-    if (refusal === 'invalid_location') {
+    if (refusal === 'invalid_location' || refusal === 'invalid_lines') {
       throw new BadRequestException({
         statusCode: HttpStatus.BAD_REQUEST,
         error: refusal,

@@ -14,6 +14,7 @@ part 'admin_order_card_dto_output_order_badges.g.dart';
 /// * [needsAssignment] - «بحاجة لتعيين» (AP §8.3).
 /// * [note] - «ملاحظة».
 /// * [newCustomer] - «زبون جديد»: no delivered order yet.
+/// * [pickupPending] - «بانتظار تأكيد الاستلام» (AP §9.2.1).
 @BuiltValue()
 abstract class AdminOrderCardDtoOutputOrderBadges
     implements
@@ -32,6 +33,10 @@ abstract class AdminOrderCardDtoOutputOrderBadges
   /// «زبون جديد»: no delivered order yet.
   @BuiltValueField(wireName: r'newCustomer')
   bool get newCustomer;
+
+  /// «بانتظار تأكيد الاستلام» (AP §9.2.1).
+  @BuiltValueField(wireName: r'pickupPending')
+  bool get pickupPending;
 
   AdminOrderCardDtoOutputOrderBadges._();
 
@@ -76,6 +81,11 @@ class _$AdminOrderCardDtoOutputOrderBadgesSerializer
     yield r'newCustomer';
     yield serializers.serialize(
       object.newCustomer,
+      specifiedType: const FullType(bool),
+    );
+    yield r'pickupPending';
+    yield serializers.serialize(
+      object.pickupPending,
       specifiedType: const FullType(bool),
     );
   }
@@ -131,6 +141,15 @@ class _$AdminOrderCardDtoOutputOrderBadgesSerializer
                   )
                   as bool;
           result.newCustomer = valueDes;
+          break;
+        case r'pickupPending':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.pickupPending = valueDes;
           break;
         default:
           unhandled.add(key);

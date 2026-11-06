@@ -38,6 +38,9 @@ export interface OrderView {
   captainId: string | null;
   // CA §9.2, RA §8.9: «وصل الكابتن», and the waiting alert's moment.
   captainArrival: { at: Date; waitingAlertAt: Date } | null;
+  // AP §8.1: the pickup, and whether ready was recorded at it («لم يُضغط
+  // جاهز», S8).
+  pickup: { at: Date; readyByPickup: boolean } | null;
   cancellation: { at: Date; reason: string } | null;
   currency: string;
   money: QuoteMoney;
@@ -97,6 +100,8 @@ export async function readOrders(
       captainId: orders.captainId,
       arrivedAtMerchantAt: orders.arrivedAtMerchantAt,
       captainWaitingAlertAt: orders.captainWaitingAlertAt,
+      pickedUpAt: orders.pickedUpAt,
+      readyByPickup: orders.readyByPickup,
       cancelledAt: orders.cancelledAt,
       cancelReason: orders.cancelReason,
       currency: orders.currency,
@@ -197,6 +202,10 @@ export async function readOrders(
         row.arrivedAtMerchantAt && row.captainWaitingAlertAt
           ? { at: row.arrivedAtMerchantAt, waitingAlertAt: row.captainWaitingAlertAt }
           : null,
+      pickup:
+        row.pickedUpAt && row.readyByPickup !== null
+          ? { at: row.pickedUpAt, readyByPickup: row.readyByPickup }
+          : null,
       cancellation:
         row.cancelledAt && row.cancelReason
           ? { at: row.cancelledAt, reason: row.cancelReason }
@@ -253,7 +262,7 @@ export function orderKey(id: string, placedAt: Date): SQL | undefined {
 }
 
 // The stored snapshot (its bigints as strings) back as fx's RateSnapshot.
-function snapshotOf(stored: unknown): RateSnapshot {
+export function snapshotOf(stored: unknown): RateSnapshot {
   const plain = stored as {
     cityId: string;
     baseCurrency: string;

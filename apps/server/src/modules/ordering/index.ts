@@ -12,6 +12,9 @@ import { AuditModule } from '../audit/index.js';
 import { ActiveOrders } from './active-orders.js';
 import { CaptainOrders } from './captain-orders.js';
 import { CaptainOrdersController } from './captain-orders.controller.js';
+import { PickupBooking, PickupTimersWorker } from './pickup-booking.js';
+import { PickupCommands } from './pickup-commands.js';
+import { LedgerModule } from '../ledger/index.js';
 import { AdminOrdersController } from './admin-orders.controller.js';
 import { CustomerOrdersController } from './customer-orders.controller.js';
 import { CustomerQuoteController } from './customer-quote.controller.js';
@@ -36,6 +39,7 @@ import { QuoteService } from './quote.service.js';
     DatabaseModule,
     JobsModule,
     AuditModule,
+    LedgerModule,
     SettingsModule,
     FxModule,
     GeoModule,
@@ -61,6 +65,8 @@ import { QuoteService } from './quote.service.js';
     OrderChannelAccess,
     OperationsViews,
     CaptainOrders,
+    PickupBooking,
+    PickupCommands,
   ],
   exports: [QuoteService, OrdersService],
 })
@@ -69,8 +75,16 @@ export class OrderingModule {}
 // The worker keeps the orders' monthly partitions a month ahead, runs their
 // timers (AP §8.3) and relays the outbox (architecture §5.5).
 @Module({
-  imports: [DatabaseModule, JobsModule, NotificationsWorkerModule],
-  providers: [OrderPartitions, OrderTimers, OrderTimersWorker, OutboxRelay, OutboxRelayWorker],
+  imports: [DatabaseModule, JobsModule, LedgerModule, NotificationsWorkerModule],
+  providers: [
+    OrderPartitions,
+    OrderTimers,
+    OrderTimersWorker,
+    PickupBooking,
+    PickupTimersWorker,
+    OutboxRelay,
+    OutboxRelayWorker,
+  ],
 })
 export class OrderingWorkerModule {}
 

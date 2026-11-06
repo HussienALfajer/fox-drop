@@ -155,6 +155,9 @@ _$adminOrderCardDtoOutputOrderAlertsEnum_noCaptainAfterReady =
 const AdminOrderCardDtoOutputOrderAlertsEnum
 _$adminOrderCardDtoOutputOrderAlertsEnum_captainWaiting =
     const AdminOrderCardDtoOutputOrderAlertsEnum._('captainWaiting');
+const AdminOrderCardDtoOutputOrderAlertsEnum
+_$adminOrderCardDtoOutputOrderAlertsEnum_pickupDisputed =
+    const AdminOrderCardDtoOutputOrderAlertsEnum._('pickupDisputed');
 
 AdminOrderCardDtoOutputOrderAlertsEnum
 _$adminOrderCardDtoOutputOrderAlertsEnumValueOf(String name) {
@@ -169,6 +172,8 @@ _$adminOrderCardDtoOutputOrderAlertsEnumValueOf(String name) {
       return _$adminOrderCardDtoOutputOrderAlertsEnum_noCaptainAfterReady;
     case 'captainWaiting':
       return _$adminOrderCardDtoOutputOrderAlertsEnum_captainWaiting;
+    case 'pickupDisputed':
+      return _$adminOrderCardDtoOutputOrderAlertsEnum_pickupDisputed;
     default:
       throw ArgumentError(name);
   }
@@ -183,6 +188,7 @@ _$adminOrderCardDtoOutputOrderAlertsEnumValues =
         _$adminOrderCardDtoOutputOrderAlertsEnum_noCaptain,
         _$adminOrderCardDtoOutputOrderAlertsEnum_noCaptainAfterReady,
         _$adminOrderCardDtoOutputOrderAlertsEnum_captainWaiting,
+        _$adminOrderCardDtoOutputOrderAlertsEnum_pickupDisputed,
       ],
     );
 
@@ -301,6 +307,7 @@ class _$AdminOrderCardDtoOutputOrderAlertsEnumSerializer
     'noCaptain': 'no_captain',
     'noCaptainAfterReady': 'no_captain_after_ready',
     'captainWaiting': 'captain_waiting',
+    'pickupDisputed': 'pickup_disputed',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -308,6 +315,7 @@ class _$AdminOrderCardDtoOutputOrderAlertsEnumSerializer
     'no_captain': 'noCaptain',
     'no_captain_after_ready': 'noCaptainAfterReady',
     'captain_waiting': 'captainWaiting',
+    'pickup_disputed': 'pickupDisputed',
   };
 
   @override

@@ -27,6 +27,7 @@ export {
   type Balance,
   type LedgerAccount,
   type LedgerEntry,
+  type LedgerActor,
   type LedgerExecutor,
   LedgerRefusal,
   LedgerService,

@@ -6,6 +6,7 @@
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_acceptance.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain_arrival.dart';
@@ -34,6 +35,7 @@ part 'merchant_orders_dto_output_orders_inner.g.dart';
 /// * [captainTrack] - The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts.
 /// * [captain]
 /// * [captainArrival]
+/// * [pickup]
 @BuiltValue()
 abstract class MerchantOrdersDtoOutputOrdersInner
     implements
@@ -102,6 +104,9 @@ abstract class MerchantOrdersDtoOutputOrdersInner
 
   @BuiltValueField(wireName: r'captainArrival')
   MerchantOrdersDtoOutputOrdersInnerCaptainArrival? get captainArrival;
+
+  @BuiltValueField(wireName: r'pickup')
+  MerchantOrdersDtoOutputOrdersInnerPickup get pickup;
 
   MerchantOrdersDtoOutputOrdersInner._();
 
@@ -246,6 +251,11 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
               MerchantOrdersDtoOutputOrdersInnerCaptainArrival,
             ),
           );
+    yield r'pickup';
+    yield serializers.serialize(
+      object.pickup,
+      specifiedType: const FullType(MerchantOrdersDtoOutputOrdersInnerPickup),
+    );
   }
 
   @override
@@ -444,6 +454,17 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
                   as MerchantOrdersDtoOutputOrdersInnerCaptainArrival?;
           if (valueDes == null) continue;
           result.captainArrival.replace(valueDes);
+          break;
+        case r'pickup':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      MerchantOrdersDtoOutputOrdersInnerPickup,
+                    ),
+                  )
+                  as MerchantOrdersDtoOutputOrdersInnerPickup;
+          result.pickup.replace(valueDes);
           break;
         default:
           unhandled.add(key);

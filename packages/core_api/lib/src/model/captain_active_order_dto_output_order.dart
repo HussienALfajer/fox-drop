@@ -8,6 +8,7 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_collect
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_payment.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_lines_inner.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
 import 'package:built_value/built_value.dart';
@@ -31,6 +32,7 @@ part 'captain_active_order_dto_output_order.g.dart';
 /// * [note] - The customer's note.
 /// * [pickupPayment]
 /// * [collect]
+/// * [pickup]
 @BuiltValue()
 abstract class CaptainActiveOrderDtoOutputOrder
     implements
@@ -83,6 +85,9 @@ abstract class CaptainActiveOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'collect')
   CaptainActiveOrderDtoOutputOrderCollect get collect;
+
+  @BuiltValueField(wireName: r'pickup')
+  CaptainActiveOrderDtoOutputOrderPickup get pickup;
 
   CaptainActiveOrderDtoOutputOrder._();
 
@@ -192,6 +197,11 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
     yield serializers.serialize(
       object.collect,
       specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderCollect),
+    );
+    yield r'pickup';
+    yield serializers.serialize(
+      object.pickup,
+      specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderPickup),
     );
   }
 
@@ -348,6 +358,17 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
                   )
                   as CaptainActiveOrderDtoOutputOrderCollect;
           result.collect.replace(valueDes);
+          break;
+        case r'pickup':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainActiveOrderDtoOutputOrderPickup,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderPickup;
+          result.pickup.replace(valueDes);
           break;
         default:
           unhandled.add(key);

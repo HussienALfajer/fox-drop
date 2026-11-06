@@ -19,7 +19,15 @@ const MINUTE_MS = 60_000;
 const PROMISE_STEP_MS = 5 * MINUTE_MS;
 
 export type OrderCommandRefusal =
-  'unknown_order' | 'order_state_changed' | 'invalid_prep_time' | 'idempotency_key_reused';
+  | 'unknown_order'
+  | 'order_state_changed'
+  | 'invalid_prep_time'
+  | 'idempotency_key_reused'
+  // RA §8.10: payment lines (pickup-commands.ts).
+  | 'invalid_lines'
+  | 'currency_not_accepted'
+  | 'amount_mismatch'
+  | 'pickup_already_disputed';
 
 // A restaurant command the order refuses; order_state_changed carries the
 // order as it is now, which the app explains (RA §4.7).

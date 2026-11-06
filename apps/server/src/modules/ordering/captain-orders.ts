@@ -3,6 +3,7 @@ import { and, eq, inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
+import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { type AuditRequestContext, AuditService } from '../audit/index.js';
 import { CaptainsRefusedError, CaptainsService } from '../captains/index.js';
@@ -12,8 +13,21 @@ import { SettingsService } from '../settings/index.js';
 import { CAPTAIN_ACTIVE } from './order-assignments.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
 import { lockOrder, type OrderRow, recordTransition } from './order-events.js';
-import { orderKey, readOrders, type OrderView } from './order-views.js';
-import { orders } from './schema.js';
+import { orderKey, readOrders, snapshotOf, type OrderView } from './order-views.js';
+import {
+  checkLines,
+  lockForPickup,
+  type PaymentLine,
+  type PickupAutoConfirmJob,
+  storedLines,
+} from './pickup-booking.js';
+import {
+  type PickupDisputeView,
+  pickupDisputesOf,
+  type PickupRequestView,
+  pickupRequestsOf,
+} from './pickup-views.js';
+import { orders, pickupRequests } from './schema.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 
@@ -34,6 +48,9 @@ export type CaptainOrderRefusal =
   | 'stale_location'
   | 'invalid_location'
   | 'not_online'
+  | 'invalid_lines'
+  | 'currency_not_accepted'
+  | 'amount_mismatch'
   | 'idempotency_key_reused';
 
 // A command on an order that the order or the captain refuses;
@@ -84,6 +101,10 @@ export interface AdminOrderCommand {
 // from.
 export interface CaptainActiveOrder {
   order: OrderView;
+  // CA §9.4: the latest pickup request and the restaurant's dispute after
+  // the pickup, if any.
+  pickupRequest: PickupRequestView | null;
+  pickupDispute: PickupDisputeView | null;
   restaurant: { name: string; address: string | null; phone: string | null; location: Point };
 }
 
@@ -165,6 +186,91 @@ export class CaptainOrders {
       await this.writeArrival(tx, locked, thresholdMin, now, {
         actor: { type: 'captain', id: command.captainId, device: command.deviceId },
         reason: null,
+      });
+      await keepKey(tx, command.accountId, command.idempotencyKey, requestHash, order, now);
+      return true;
+    });
+    if (!done) throw await this.stateChanged(order);
+    return this.answer(order, now);
+  }
+
+  // CA §9.4, RA §8.10 items 1-2: «دفعت للمطعم واستلمت الطلب» with the lines
+  // the captain paid, at the restaurant (track at_merchant), checked against
+  // the pickup payment (AP §8.1). It opens the request (track
+  // pickup_pending) with its automatic confirmation after
+  // order.pickup_confirm_timeout_sec. The item check (C7) is the app's: the
+  // payment section appears only once every item is ticked.
+  async requestPickup(
+    command: CaptainOrderCommand & { lines: PaymentLine[]; location: CommandLocation },
+    now: Date,
+  ): Promise<CaptainActiveOrder> {
+    const requestHash = commandHash({
+      verb: 'request_pickup',
+      orderId: command.orderId,
+      lines: storedLines(command.lines),
+    });
+    const earlier = await this.replay(command.accountId, command, requestHash, now);
+    if (earlier !== null) return this.answer(earlier, now);
+    const order = await this.captainsOrder(command);
+    if (!requestable(order, command.captainId)) {
+      throw await this.refusedState(order, command.accountId, command, requestHash, now);
+    }
+    const refusal = checkLines(snapshotOf(order.rateSnapshot), command.lines, order.itemsValue);
+    if (refusal !== null) {
+      throw new CaptainOrderRefusedError(refusal, 'the payment lines do not match the pickup');
+    }
+    const timeoutSec = await this.settings.get('order.pickup_confirm_timeout_sec', {
+      cityId: order.cityId,
+    });
+    await this.recordLocation(command.captainId, command.location, now);
+    await this.jobs.ready();
+    const done = await this.database.db.transaction(async (tx) => {
+      const locked = await lockForPickup(tx, order.id, order.placedAt);
+      if (!locked) throw new Error(`order ${order.id} not found`);
+      if ((await this.replay(command.accountId, command, requestHash, now, tx)) !== null) {
+        return true;
+      }
+      if (!requestable(locked, command.captainId)) return false;
+      const confirmBy = new Date(now.getTime() + timeoutSec * 1000);
+      const [request] = await tx
+        .insert(pickupRequests)
+        .values({
+          orderId: order.id,
+          orderPlacedAt: order.placedAt,
+          cityId: locked.cityId,
+          captainId: command.captainId,
+          // RA §8.10 item 2: always the order's current pickup payment.
+          currency: locked.currency,
+          amount: locked.itemsValue,
+          lines: storedLines(command.lines),
+          openedAt: now,
+          confirmBy,
+          status: 'open',
+        })
+        .returning({ id: pickupRequests.id });
+      const version = locked.version + 1;
+      await tx
+        .update(orders)
+        .set({ version, captainTrack: 'pickup_pending' })
+        .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
+      await recordTransition(tx, this.jobs, locked, {
+        type: 'order.pickup_requested',
+        from: locked.status,
+        to: locked.status,
+        version,
+        actor: { type: 'captain', id: command.captainId, device: command.deviceId },
+        reason: null,
+        at: now,
+        captainTrack: 'pickup_pending',
+      });
+      const job: PickupAutoConfirmJob = {
+        requestId: request!.id,
+        orderId: order.id,
+        placedAt: order.placedAt.toISOString(),
+      };
+      await this.jobs.send(QUEUES.pickupAutoConfirm, job, {
+        startAfter: confirmBy,
+        db: inTransaction(tx),
       });
       await keepKey(tx, command.accountId, command.idempotencyKey, requestHash, order, now);
       return true;
@@ -289,6 +395,8 @@ export class CaptainOrders {
         status: orders.status,
         captainTrack: orders.captainTrack,
         captainId: orders.captainId,
+        itemsValue: orders.itemsValue,
+        rateSnapshot: orders.rateSnapshot,
       })
       .from(orders)
       .where(eq(orders.id, orderId));
@@ -334,8 +442,14 @@ export class CaptainOrders {
   private async withRestaurant(order: OrderView, now: Date): Promise<CaptainActiveOrder> {
     const restaurant = await this.merchants.restaurant(order.restaurantId, now);
     if (!restaurant) throw new Error(`restaurant ${order.restaurantId} not found`);
+    const [requests, disputes] = await Promise.all([
+      pickupRequestsOf(this.database.db, [order.id]),
+      pickupDisputesOf(this.database.db, [order.id]),
+    ]);
     return {
       order,
+      pickupRequest: requests.get(order.id)?.[0] ?? null,
+      pickupDispute: disputes.get(order.id) ?? null,
       restaurant: {
         name: restaurant.nameAr,
         address: restaurant.address,
@@ -381,6 +495,20 @@ function arrivable(
   );
 }
 
+// RA §8.10 rules: accepted or ready, the assigned captain at the restaurant
+// with no open request (the track would be pickup_pending). The blocks of an
+// item-unavailable report and an unacknowledged edit come with them.
+function requestable(
+  order: Pick<OrderAtStart, 'status' | 'captainTrack' | 'captainId'>,
+  captainId: string,
+): boolean {
+  return (
+    (order.status === 'accepted' || order.status === 'ready') &&
+    order.captainTrack === 'at_merchant' &&
+    order.captainId === captainId
+  );
+}
+
 type OrderAtStart = {
   id: string;
   placedAt: Date;
@@ -389,4 +517,6 @@ type OrderAtStart = {
   status: OrderView['status'];
   captainTrack: OrderView['captainTrack'];
   captainId: string | null;
+  itemsValue: bigint;
+  rateSnapshot: unknown;
 };

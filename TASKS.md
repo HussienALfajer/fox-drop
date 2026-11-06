@@ -19,10 +19,10 @@ Slice 1.12, pickup (`docs/roadmap.md`, Phase 1): arrival within 150 m, the item 
 
 ### Pull request 2: `feat/pickup`
 
-- [ ] The pickup request (CA §9.4, RA §8.10): payment lines checked against the pickup payment, track `pickup_pending`, the 60-second automatic confirmation job.
-- [ ] The atomic pickup (AP §8.1): `custody.pay_merchant` and `picked_up` in one transaction, by the restaurant, automatically or by operations on its behalf; `ready` recorded with «لم يُضغط جاهز» when it was not pressed.
-- [ ] The restaurant's refusals: «المبلغ غير صحيح» with the lines received (operations' «خلاف على مبلغ الاستلام» moment) and «الطلب غير مكتمل»; track back to `at_merchant`.
-- [ ] The dispute after confirmation within `order.pickup_dispute_window_min`: a report linked to the order, the captain told on their channel.
+- [x] The pickup request (CA §9.4, RA §8.10): payment lines checked against the pickup payment, track `pickup_pending`, the 60-second automatic confirmation job.
+- [x] The atomic pickup (AP §8.1): `custody.pay_merchant` and `picked_up` in one transaction, by the restaurant, automatically or by operations on its behalf; `ready` recorded with «لم يُضغط جاهز» when it was not pressed.
+- [x] The restaurant's refusals: «المبلغ غير صحيح» with the lines received (operations' «خلاف على مبلغ الاستلام» moment) and «الطلب غير مكتمل»; track back to `at_merchant`.
+- [x] The dispute after confirmation within `order.pickup_dispute_window_min`: a report linked to the order, the captain told on their channel.
 - [ ] Docs, review, roadmap and handover to slice 1.13.
 
 ## Notes from earlier slices

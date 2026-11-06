@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/captain_active_order_dto_output_order_preparation.dart';
+import 'package:core_api/src/model/captain_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_payment.dart';
@@ -31,6 +32,7 @@ part 'captain_order_dto_output_order.g.dart';
 /// * [note] - The customer's note.
 /// * [pickupPayment]
 /// * [collect]
+/// * [pickup]
 @BuiltValue()
 abstract class CaptainOrderDtoOutputOrder
     implements
@@ -80,6 +82,9 @@ abstract class CaptainOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'collect')
   CaptainActiveOrderDtoOutputOrderCollect get collect;
+
+  @BuiltValueField(wireName: r'pickup')
+  CaptainOrderDtoOutputOrderPickup get pickup;
 
   CaptainOrderDtoOutputOrder._();
 
@@ -187,6 +192,11 @@ class _$CaptainOrderDtoOutputOrderSerializer
     yield serializers.serialize(
       object.collect,
       specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderCollect),
+    );
+    yield r'pickup';
+    yield serializers.serialize(
+      object.pickup,
+      specifiedType: const FullType(CaptainOrderDtoOutputOrderPickup),
     );
   }
 
@@ -343,6 +353,17 @@ class _$CaptainOrderDtoOutputOrderSerializer
                   )
                   as CaptainActiveOrderDtoOutputOrderCollect;
           result.collect.replace(valueDes);
+          break;
+        case r'pickup':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainOrderDtoOutputOrderPickup,
+                    ),
+                  )
+                  as CaptainOrderDtoOutputOrderPickup;
+          result.pickup.replace(valueDes);
           break;
         default:
           unhandled.add(key);

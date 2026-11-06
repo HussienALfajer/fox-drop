@@ -964,6 +964,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/orders/{orderId}/pickup/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantOrdersConfirmPickup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orders/{orderId}/pickup/dispute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantOrdersDisputePickup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orders/{orderId}/pickup/incomplete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantOrdersPickupIncomplete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/confirm-pickup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersConfirmPickup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/record-arrival": {
         parameters: {
             query?: never;
@@ -1038,6 +1102,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["captainOrdersArrive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/orders/{orderId}/pickup-request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainOrdersRequestPickup"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2510,6 +2590,45 @@ export interface components {
                      */
                     waitingAlertAt: string;
                 } | null;
+                /** @description The pickup confirmation (RA §8.10). */
+                pickup: {
+                    /** @description The latest request; while open every device rings with the pickup prompt (RA §8.10 item 3). */
+                    request: {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        status: "open" | "confirmed" | "rejected" | "voided";
+                        /** @description automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام»; the other devices close the prompt with «أكّد {اسم الجهاز} الاستلام» or «أبلغ … أن المبلغ غير صحيح». */
+                        outcome: ("restaurant" | "automatic" | "operations" | "amount_incorrect" | "incomplete" | "cancelled") | null;
+                        amount: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        };
+                        /** @description «400 ₺» or «5 $ + 195 ₺». */
+                        lines: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        }[];
+                        /** @description The lines in the base currency, by the order rates. */
+                        baseEquivalent: string;
+                        /**
+                         * Format: date-time
+                         * @description «يُؤكَّد تلقائياً خلال {ث} ث» counts down to it.
+                         */
+                        confirmBy: string;
+                        closedAt: string | null;
+                        closedByDeviceName: string | null;
+                    } | null;
+                    /** @description «تم الاستلام». */
+                    pickedUpAt: string | null;
+                    /** @description «لم يُضغط جاهز» (S8). */
+                    readyNotPressed: boolean;
+                    /** @description «المبلغ غير صحيح» stays on the order until then after the pickup (RA §8.10 item 8); null once disputed or before the pickup. */
+                    disputeUntil: string | null;
+                    disputedAt: string | null;
+                };
             }[];
             /** @description The accept prompt's prep-time chooser (RA §8.5). */
             prepTime: {
@@ -2604,9 +2723,62 @@ export interface components {
                      */
                     waitingAlertAt: string;
                 } | null;
+                /** @description The pickup confirmation (RA §8.10). */
+                pickup: {
+                    /** @description The latest request; while open every device rings with the pickup prompt (RA §8.10 item 3). */
+                    request: {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        status: "open" | "confirmed" | "rejected" | "voided";
+                        /** @description automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام»; the other devices close the prompt with «أكّد {اسم الجهاز} الاستلام» or «أبلغ … أن المبلغ غير صحيح». */
+                        outcome: ("restaurant" | "automatic" | "operations" | "amount_incorrect" | "incomplete" | "cancelled") | null;
+                        amount: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        };
+                        /** @description «400 ₺» or «5 $ + 195 ₺». */
+                        lines: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        }[];
+                        /** @description The lines in the base currency, by the order rates. */
+                        baseEquivalent: string;
+                        /**
+                         * Format: date-time
+                         * @description «يُؤكَّد تلقائياً خلال {ث} ث» counts down to it.
+                         */
+                        confirmBy: string;
+                        closedAt: string | null;
+                        closedByDeviceName: string | null;
+                    } | null;
+                    /** @description «تم الاستلام». */
+                    pickedUpAt: string | null;
+                    /** @description «لم يُضغط جاهز» (S8). */
+                    readyNotPressed: boolean;
+                    /** @description «المبلغ غير صحيح» stays on the order until then after the pickup (RA §8.10 item 8); null once disputed or before the pickup. */
+                    disputeUntil: string | null;
+                    disputedAt: string | null;
+                };
             };
         };
-        AdminRecordArrivalDto: {
+        MerchantPickupDisputeDto: {
+            /** @description What the restaurant actually received, prefilled with the captain's lines. */
+            receivedLines: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            }[];
+        };
+        AdminConfirmPickupDto: {
+            /** @description The agreed lines, prefilled from the captain's last request. */
+            lines: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            }[];
             /** @description Required (AP §9.3.2). */
             reason: string;
         };
@@ -2660,6 +2832,8 @@ export interface components {
                     note: boolean;
                     /** @description «زبون جديد»: no delivered order yet. */
                     newCustomer: boolean;
+                    /** @description «بانتظار تأكيد الاستلام» (AP §9.2.1). */
+                    pickupPending: boolean;
                 };
                 /** @description The alerts' moments, so the panel raises each when it passes. */
                 moments: {
@@ -2672,9 +2846,13 @@ export interface components {
                     captainArrivedAt: string | null;
                     captainWaitingAlertAt: string | null;
                 };
-                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم». */
-                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting")[];
+                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام». */
+                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting" | "pickup_disputed")[];
             };
+        };
+        AdminRecordArrivalDto: {
+            /** @description Required (AP §9.3.2). */
+            reason: string;
         };
         AdminBoardDto_Output: {
             /** @description Every live order, oldest first. */
@@ -2727,6 +2905,8 @@ export interface components {
                     note: boolean;
                     /** @description «زبون جديد»: no delivered order yet. */
                     newCustomer: boolean;
+                    /** @description «بانتظار تأكيد الاستلام» (AP §9.2.1). */
+                    pickupPending: boolean;
                 };
                 /** @description The alerts' moments, so the panel raises each when it passes. */
                 moments: {
@@ -2739,8 +2919,8 @@ export interface components {
                     captainArrivedAt: string | null;
                     captainWaitingAlertAt: string | null;
                 };
-                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم». */
-                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting")[];
+                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام». */
+                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting" | "pickup_disputed")[];
             }[];
         };
         AdminOrderDto_Output: {
@@ -2793,6 +2973,8 @@ export interface components {
                     note: boolean;
                     /** @description «زبون جديد»: no delivered order yet. */
                     newCustomer: boolean;
+                    /** @description «بانتظار تأكيد الاستلام» (AP §9.2.1). */
+                    pickupPending: boolean;
                 };
                 /** @description The alerts' moments, so the panel raises each when it passes. */
                 moments: {
@@ -2805,8 +2987,8 @@ export interface components {
                     captainArrivedAt: string | null;
                     captainWaitingAlertAt: string | null;
                 };
-                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم». */
-                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting")[];
+                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام». */
+                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting" | "pickup_disputed")[];
                 promisedAt: string | null;
                 acceptance: {
                     /** Format: date-time */
@@ -2868,6 +3050,46 @@ export interface components {
                     total: string;
                     /** @description Paid by the captain at pickup (D26: the items value). */
                     pickupPayment: string;
+                };
+                pickup: {
+                    at: string | null;
+                    /** @description «لم يُضغط جاهز». */
+                    readyNotPressed: boolean;
+                    /** @description Newest first; the last one's lines prefill «تأكيد الاستلام نيابة عن المطعم». */
+                    requests: {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        status: "open" | "confirmed" | "rejected" | "voided";
+                        outcome: ("restaurant" | "automatic" | "operations" | "amount_incorrect" | "incomplete" | "cancelled") | null;
+                        /** Format: uuid */
+                        captainId: string;
+                        /** @description Paid by the captain. */
+                        lines: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        }[];
+                        /** @description Booked at confirmation. */
+                        bookedLines: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        }[] | null;
+                        /** @description What the restaurant says it received. */
+                        receivedLines: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        }[] | null;
+                        /** Format: date-time */
+                        openedAt: string;
+                        closedAt: string | null;
+                        closedBy: {
+                            type: string;
+                            id: string | null;
+                        } | null;
+                    }[];
                 };
                 timeline: {
                     version: number;
@@ -2957,6 +3179,53 @@ export interface components {
                     amount: string;
                     currency: string;
                 };
+                /** @description Step 2 and the pickup request (CA §9.3–9.4). */
+                pickup: {
+                    /** @description «ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): the whole amount in the base currency in Phase 1. */
+                    proposedLines: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    }[];
+                    /** @description The latest request, or null. */
+                    request: {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        status: "open" | "confirmed" | "rejected" | "voided";
+                        /** @description confirmed: «تم الاستلام», or «أكّدت العمليات الاستلام» for operations; rejected: amount_incorrect «المطعم يفيد بأنه استلم {المبلغ}. أكمل المبلغ ثم أعد التأكيد.», incomplete «المطعم يفيد بأن الطلب غير مكتمل. راجع الأصناف معه.» */
+                        outcome: ("restaurant" | "automatic" | "operations" | "amount_incorrect" | "incomplete" | "cancelled") | null;
+                        /** @description The pickup payment of the request. */
+                        amount: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        };
+                        /** @description The lines the captain paid. */
+                        lines: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        }[];
+                        /** @description What the restaurant says it received, on «المبلغ غير صحيح». */
+                        receivedLines: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        }[] | null;
+                        /** Format: date-time */
+                        openedAt: string;
+                        /**
+                         * Format: date-time
+                         * @description «بانتظار تأكيد المطعم» counts down to it while open (CA §9.4).
+                         */
+                        confirmBy: string;
+                        closedAt: string | null;
+                    } | null;
+                    pickedUpAt: string | null;
+                    /** @description «فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات». */
+                    disputedAt: string | null;
+                };
             } | null;
         };
         CaptainArriveDto: {
@@ -3040,6 +3309,71 @@ export interface components {
                     amount: string;
                     currency: string;
                 };
+                /** @description Step 2 and the pickup request (CA §9.3–9.4). */
+                pickup: {
+                    /** @description «ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): the whole amount in the base currency in Phase 1. */
+                    proposedLines: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    }[];
+                    /** @description The latest request, or null. */
+                    request: {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        status: "open" | "confirmed" | "rejected" | "voided";
+                        /** @description confirmed: «تم الاستلام», or «أكّدت العمليات الاستلام» for operations; rejected: amount_incorrect «المطعم يفيد بأنه استلم {المبلغ}. أكمل المبلغ ثم أعد التأكيد.», incomplete «المطعم يفيد بأن الطلب غير مكتمل. راجع الأصناف معه.» */
+                        outcome: ("restaurant" | "automatic" | "operations" | "amount_incorrect" | "incomplete" | "cancelled") | null;
+                        /** @description The pickup payment of the request. */
+                        amount: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        };
+                        /** @description The lines the captain paid. */
+                        lines: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        }[];
+                        /** @description What the restaurant says it received, on «المبلغ غير صحيح». */
+                        receivedLines: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        }[] | null;
+                        /** Format: date-time */
+                        openedAt: string;
+                        /**
+                         * Format: date-time
+                         * @description «بانتظار تأكيد المطعم» counts down to it while open (CA §9.4).
+                         */
+                        confirmBy: string;
+                        closedAt: string | null;
+                    } | null;
+                    pickedUpAt: string | null;
+                    /** @description «فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات». */
+                    disputedAt: string | null;
+                };
+            };
+        };
+        CaptainPickupRequestDto: {
+            /** @description The currency lines paid, the proposed ones or the own split. */
+            lines: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            }[];
+            /** @description The latest GPS fix. */
+            location: {
+                latitude: number;
+                longitude: number;
+                accuracyMetres: number;
+                /** Format: date-time */
+                recordedAt: string;
+                /** @description The device reports a mock location. */
+                simulated: boolean;
             };
         };
         RealtimeTokenDto_Output: {
@@ -4690,6 +5024,114 @@ export interface operations {
             };
         };
     };
+    merchantOrdersConfirmPickup: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderDto_Output"];
+                };
+            };
+        };
+    };
+    merchantOrdersDisputePickup: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantPickupDisputeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderDto_Output"];
+                };
+            };
+        };
+    };
+    merchantOrdersPickupIncomplete: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersConfirmPickup: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminConfirmPickupDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCardDto_Output"];
+                };
+            };
+        };
+    };
     adminOrdersRecordArrival: {
         parameters: {
             query?: never;
@@ -4798,6 +5240,35 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["CaptainArriveDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainOrderDto_Output"];
+                };
+            };
+        };
+    };
+    captainOrdersRequestPickup: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainPickupRequestDto"];
             };
         };
         responses: {
