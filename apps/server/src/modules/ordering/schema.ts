@@ -105,9 +105,19 @@ export const orders = ordering.table(
     contactPhoneEncrypted: text('contact_phone_encrypted'),
     recipientName: text('recipient_name'),
     directions: text('directions'),
+    // AP §8.1: a cancelled order records why and whether food had been
+    // prepared; merchant_auto_cancel is the automatic cancellation (§8.3),
+    // an unanswered order of the restaurant.
+    cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
+    cancelReason: text('cancel_reason'),
+    foodPrepared: boolean('food_prepared'),
   },
   (table) => [
     primaryKey({ columns: [table.id, table.placedAt] }),
+    check(
+      'orders_cancellation',
+      sql`(${table.status} = 'cancelled') = (${table.cancelledAt} IS NOT NULL AND ${table.cancelReason} IS NOT NULL AND ${table.foodPrepared} IS NOT NULL)`,
+    ),
     index('orders_city_number').on(table.cityId, table.number),
     index('orders_customer_status').on(table.customerAccountId, table.status),
     index('orders_restaurant_status').on(table.restaurantId, table.status),
@@ -215,4 +225,27 @@ export const idempotencyKeys = ordering.table(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   (table) => [primaryKey({ columns: [table.accountId, table.key] })],
+);
+
+// Architecture §5.5, E4: the events that leave the server, written in the
+// transaction of their change. The relay (slice 1.9) publishes them in id
+// order to Centrifugo and push, at least once, and marks them published.
+export const outbox = ordering.table(
+  'outbox',
+  {
+    id: bigint('id', { mode: 'bigint' }).primaryKey().generatedAlwaysAsIdentity(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    // Such as order.placed; the payload is its typed, versioned body.
+    type: text('type').notNull(),
+    orderId: uuid('order_id').notNull(),
+    orderVersion: integer('order_version').notNull(),
+    payload: jsonb('payload').notNull(),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('outbox_unpublished')
+      .on(table.id)
+      .where(sql`${table.publishedAt} IS NULL`),
+  ],
 );

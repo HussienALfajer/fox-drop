@@ -188,9 +188,10 @@ async function place(
 
 // An order leaves the restaurant's and the customer's active orders.
 const end = (orderId: string) =>
-  sql.query("UPDATE ordering.orders SET status = 'cancelled', version = 2 WHERE id = $1", [
-    orderId,
-  ]);
+  sql.query(
+    "UPDATE ordering.orders SET status = 'cancelled', version = 2, cancelled_at = now(), cancel_reason = 'customer', food_prepared = false WHERE id = $1",
+    [orderId],
+  );
 
 describe('POST /v1/customer/orders (CU §10.7)', () => {
   it('places the order as the quote priced it, numbered from 10001, with its snapshots', async () => {
@@ -310,16 +311,21 @@ describe('POST /v1/customer/orders (CU §10.7)', () => {
 
   it('refuses a blocking problem with 409 order_blocked and keeps nothing', async () => {
     const headers = await signedIn();
-    const before = (await sql.query('SELECT count(*)::int AS n FROM ordering.orders')).rows[0].n;
+    // E3, E4: no order, no outbox row and no timer.
+    const counts = async () =>
+      (
+        await sql.query(
+          "SELECT (SELECT count(*)::int FROM ordering.orders) + (SELECT count(*)::int FROM ordering.outbox) + (SELECT count(*)::int FROM pgboss.job WHERE name = 'ordering-merchant-auto-cancel') AS n",
+        )
+      ).rows[0].n;
+    const before = await counts();
     const answer = await place(headers, { lines: cart(randomUUID()) });
     expect(answer.statusCode).toBe(409);
     expect(answer.json().error).toBe('order_blocked');
     expect(answer.json().quote.problems).toContainEqual(
       expect.objectContaining({ code: 'item_not_found', line: 0 }),
     );
-    expect((await sql.query('SELECT count(*)::int AS n FROM ordering.orders')).rows[0].n).toBe(
-      before,
-    );
+    expect(await counts()).toBe(before);
   });
 
   it('refuses a note with a phone number (Q25) and a command without its key', async () => {
@@ -384,7 +390,7 @@ describe('the active-order limits (D23, RA §7.4)', () => {
       expect.objectContaining({ code: 'active_order_limit' }),
     );
     await sql.query(
-      "UPDATE ordering.orders SET status = 'cancelled' WHERE status = 'placed' AND restaurant_id = $1",
+      "UPDATE ordering.orders SET status = 'cancelled', cancelled_at = now(), cancel_reason = 'customer', food_prepared = false WHERE status = 'placed' AND restaurant_id = $1",
       [restaurant],
     );
   });

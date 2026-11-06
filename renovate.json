@@ -27,6 +27,13 @@
       "schedule": ["* 0-6 1 1,4,7,10 *"]
     },
     {
+      "description": "A pg-boss update may change its schema version, which the running server refuses: its own pull request, approved by the owner (apps/server/CLAUDE.md, Jobs and timers).",
+      "matchPackageNames": ["pg-boss"],
+      "groupName": null,
+      "automerge": false,
+      "dependencyDashboardApproval": true
+    },
+    {
       "description": "NestJS stays on 11.x until nestjs-zod supports NestJS 12 (apps/server/CLAUDE.md).",
       "matchPackageNames": ["@nestjs/**"],
       "matchUpdateTypes": ["major"],

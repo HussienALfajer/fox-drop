@@ -4,6 +4,8 @@ import { and, asc, eq, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
+import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
+import { Jobs } from '../../jobs/jobs.module.js';
 import { CaptainsService } from '../captains/index.js';
 import {
   type CustomersRefusal,
@@ -14,17 +16,13 @@ import {
 import { FxRefusedError, FxService, type RateSnapshot } from '../fx/index.js';
 import type { Point } from '../geo/index.js';
 import { MerchantsService } from '../merchants/index.js';
+import { SettingsService } from '../settings/index.js';
 import { ActiveOrders } from './active-orders.js';
+import { recordTransition } from './order-events.js';
+import type { AutoCancelJob } from './order-timers.js';
 import { type Quote, type QuoteRequest, QuoteRefusedError, QuoteService } from './quote.service.js';
 import type { QuoteMoney } from './quote.js';
-import {
-  idempotencyKeys,
-  orderEvents,
-  orderLines,
-  orderNumbers,
-  orders,
-  type orderStatuses,
-} from './schema.js';
+import { idempotencyKeys, orderLines, orderNumbers, orders, type orderStatuses } from './schema.js';
 
 type OrderStatus = (typeof orderStatuses)[number];
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
@@ -120,6 +118,8 @@ export class OrdersService implements OnModuleInit {
     private readonly merchants: MerchantsService,
     private readonly captains: CaptainsService,
     private readonly fx: FxService,
+    private readonly settings: SettingsService,
+    private readonly jobs: Jobs,
   ) {}
 
   // RA §7.4: the restaurant is busy at its maximum active orders.
@@ -168,11 +168,14 @@ export class OrdersService implements OnModuleInit {
       throw new Error(`restaurant ${restaurant.id} has no commission in effect`);
     }
     const { cityId } = restaurant;
-    const [rules, payTable] = await Promise.all([
+    const [rules, payTable, autoCancelMin] = await Promise.all([
       this.activeOrders.rules(cityId),
       this.captains.payTable(cityId, now),
+      this.settings.get('order.merchant_auto_cancel_min', { cityId }),
     ]);
 
+    // pg-boss connects before the locks are taken, never while they are held.
+    await this.jobs.ready();
     let placed: { id: string; placedAt: Date };
     try {
       placed = await this.database.db.transaction(async (tx) => {
@@ -260,16 +263,33 @@ export class OrdersService implements OnModuleInit {
             note: line.note,
           })),
         );
-        await tx.insert(orderEvents).values({
-          orderId: id,
-          orderPlacedAt: now,
-          version: 1,
-          cityId,
-          at: now,
-          fromStatus: null,
-          toStatus: 'placed',
-          actorType: 'customer',
-          actorId: command.accountId,
+        await recordTransition(
+          tx,
+          {
+            id,
+            placedAt: now,
+            cityId,
+            number,
+            restaurantId: restaurant.id,
+            customerAccountId: command.accountId,
+            status: 'placed',
+            version: 1,
+          },
+          {
+            type: 'order.placed',
+            from: null,
+            to: 'placed',
+            version: 1,
+            actor: { type: 'customer', id: command.accountId },
+            reason: null,
+            at: now,
+          },
+        );
+        // AP §8.3: the timer exists exactly when the placed order does.
+        const job: AutoCancelJob = { orderId: id, placedAt: now.toISOString(), version: 1 };
+        await this.jobs.send(QUEUES.merchantAutoCancel, job, {
+          startAfter: new Date(now.getTime() + autoCancelMin * 60_000),
+          db: inTransaction(tx),
         });
         const key = { requestHash, orderId: id, orderPlacedAt: now, createdAt: now };
         // A key older than 24 hours is used again (architecture §5.3).

@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import pg from 'pg';
+import { installJobQueue } from '../jobs/job-queue.js';
 
 // apps/server/migrations, from src/database in tests and dist/database in the image.
 export const MIGRATIONS_FOLDER = fileURLToPath(new URL('../../migrations', import.meta.url));
@@ -20,6 +21,8 @@ export async function runMigrations(connectionString: string): Promise<void> {
   try {
     await client.query('SELECT pg_advisory_lock($1)', [MIGRATION_LOCK]);
     await migrate(drizzle({ client }), { migrationsFolder: MIGRATIONS_FOLDER });
+    // pg-boss's own schema, installed or upgraded by the same role.
+    await installJobQueue(connectionString);
   } finally {
     await client.end();
   }
