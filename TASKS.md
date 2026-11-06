@@ -4,23 +4,27 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 1.7, customer browsing and the quote (`docs/roadmap.md`, Phase 1): account completion, the delivery point, restaurants that cover it, the restaurant page and item options, the cart, the versioned quote.
+Slice 1.8, placing the order (`docs/roadmap.md`, Phase 1): the atomic re-check, the rate snapshot, the order number, idempotency, the capacity check, the automatic cancellation timer through pg-boss.
 
-- **Specs:** CU §5.3 (account completion), CU §7 (location and addresses, the three cases of §7.1, the votes of §7.2), CU §8 (finding food), CU §9 (restaurant page and items), CU §10.1–10.6 (cart, minimum order and free delivery, checkout, codes, «سأدفع بـ», the quote and the pre-order checks), the customer settings of CU Appendix A, AP §8.4 (order money) and §8.6 (currencies), architecture §4.2 (`customers` owns profiles and addresses; `ordering` owns the quote).
-- **Owner decisions 2026-11-06:** three pull requests, server and API only like the earlier slices; CU §8 in Phase 1 is one plain list of the restaurants that cover the point (card data: delivery fee, estimate range, state badge, open first) and the restaurant page, while home sections, banners, categories, search, favourites and the price report wait for Phase 2; promo codes (CU §10.4) wait for Phase 2, so the quote's discount is 0 with its place kept; the pre-order checks with data are built (zone and coverage, restaurant state, items, options and prices, minimum order, platform hours, app version and maintenance), and the capacity check (until dispatch), the active-order limit (slice 1.8), account blocks, the terms version and the emergency stop pass until their slices. Votes (CU §7.2): a device votes once within 500 m of its earlier votes, and a vote farther than 50 km from every active zone is kept with no city.
-- **Plan:**
-  - PR 1, `feat/customer-profile-addresses`:
-    - [x] The `customers` schema through the `db-migration` skill: the profile of CU §5.3 and the saved addresses of CU §7.3; geo's votes (CU §7.2).
-    - [x] `GeoService.locate` (the city and zone of a point) and the covering restaurants (`MerchantsService.coveringRestaurants`), for the three cases of CU §7.1; the vote route.
-    - [x] The profile routes (account completion, CU §5.3) and the saved address routes (CU §7.3).
-    - [x] `checker`, the `reviewer`, the pull request.
-  - PR 2, `feat/customer-browsing`:
-    - [x] The estimate range (CU §8.4, docs/domain/03), the test first; the next opening and the category windows in `merchants`.
-    - [x] The restaurant list for a point with its card data (CU §8.2), the restaurant page, menu and item options (CU §9.1–9.4).
-    - [x] `checker`, the `reviewer`, the pull request.
-  - PR 3, `feat/customer-quote`: the failing tests first for the quote's money and checks; the cart lines and the versioned quote in `ordering` (CU §10.1–10.3, §10.5–10.6; AP §8.4, §8.6); the handover to slice 1.8.
+- **Specs:** CU §10.7 (placing the order, Q10, Q11), CU §7.3–7.4 (the address snapshot, the unsaved address, Q6), CU §10.3 (the order note, Q25), CU §5.5 (the active-order limit, D23), AP §8.1 (order states), AP §8.3 (timers: the automatic cancellation), AP §8.4 and §8.6 (the money and the rate snapshot the order keeps), AP §4.8 (order numbers), AP §9.12.6 (the capacity check), RA §7.4 (the maximum active orders), architecture §4.3 (transactions, the outbox), §5.4–5.5 (pg-boss), docs/domain/01 and 03.
+- **Branch:** `feat/place-order`.
+- **Ask the owner first:** the split into pull requests; whether the capacity check runs in Phase 1 with manual dispatch only (D6), since `dispatch.capacity_check` is on by default and needs the eligible captains nearby (AP §9.12.6); the first number of a city's order sequence (AP §4.8: sequential per city, shown as `#10423`); how a guest's unsaved address is kept on the order.
+- **Plan (draft, to confirm with the owner):**
+  - [ ] The failing tests first: the order's state at placing, the money it keeps (AP §8.4), the refusal on a changed quote version, fee rule or rate version (CU §10.7), the active-order limit (D23), idempotency, the cancellation timer.
+  - [ ] The `ordering` schema through the `db-migration` skill: the order with its lines, money, rate snapshot, address snapshot, notes and «سأدفع بـ»; the order number; the idempotency keys; the order events (append-only).
+  - [ ] The order command: one transaction that re-runs the quote (`QuoteService` with the transaction as executor, `GeoService.deliveryFee` and `MerchantsService.menu` too), calls `FxService.snapshotForOrder`, counts the restaurant's active orders under its lock (RA §7.4) and the customer's (D23), and writes the timer and the outbox row (E3, E4).
+  - [ ] pg-boss in the worker and the automatic cancellation (AP §8.3).
+  - [ ] `checker`, the `reviewer`, the pull request, the handover to slice 1.9.
 
 ## Notes from earlier slices
+
+- Slice 1.7 added the customers' side before the order (`apps/server/src/modules/customers/CLAUDE.md`, `apps/server/src/modules/ordering/CLAUDE.md`; owner decisions 2026-11-06): three pull requests, server and API only. `customers` owns the profile of «أكمل بياناتك» (terms accepted on the first save), the saved addresses (up to 10, one default, the pin in an active zone, another contact number encrypted with `PhoneCipher` from identity) and the browsing routes; `geo` locates a point (the app knows no city) and keeps the votes (one per device within 500 m, no city beyond 50 km of every active zone); `merchants` lists the restaurants that cover a point, gives the storefront state and now applies category windows; `ordering` holds the quote and the estimate.
+- Phase 1 scope (owner decisions 2026-11-06): one plain list of restaurants and the restaurant page; home sections, banners, categories, search, favourites, the price report and promo codes wait for Phase 2, so the quote's discount is 0. The quote runs every check with data; the capacity check, the active-order limit, account states, the terms version and the emergency stop pass until their slices.
+- For slice 1.8: re-run the quote inside the order's transaction and compare its `version` (lines' prices, money, equivalents, rate versions, blocking problems); `GeoService.deliveryFee`, `MerchantsService.menu` and `FxService.snapshot` read through the pool today, so give them the transaction; keep the address as a snapshot (Q6), with «الحي» from the zone at placing; the order note is up to 200 characters with no run of 7 or more digits (Q25), like the item note; `MerchantsService.operatingState` counts 0 active orders until ordering counts them (RA §7.4).
+- `customers` imports `estimateRange` and `tripMinutes` from `ordering`. When `ordering` needs `customers` (the address, account states, the D23 limit), move the estimate to a module both can import, or the two `index.ts` files form an import cycle around decorated Nest classes.
+- Idempotency keys are not built yet: CU §15 also lists the address commands, so the mechanism of slice 1.8 should serve them too (a lost answer to «إضافة عنوان» retried adds a second address today).
+- The deploy slice's per-IP limits in nginx (architecture §15.5) must cover the public customer routes: `/v1/customer/zone-votes`, `/v1/customer/restaurants` and `/v1/customer/quote`, whose answers each read the database and OSRM.
+- Not built yet for customers: recognising the account's own number typed as another contact number, ratings (`rating` and `ratingCount` are null, «جديد»), images (`logoKey`, `coverKey`, `photoKey` are null until the object storage, T7), one road distance per card instead of the OSRM `table` matrix, account states (CU §5.5) and closing the account.
 
 - Slice 1.6 added the captain (`apps/server/src/modules/captains/CLAUDE.md`, `apps/server/src/modules/identity/CLAUDE.md`; owner decisions 2026-11-06): the captain record with vehicle, status and a cash limit in the base currency; the city's pay table versions (a city's first in force when published, every later one 7 days or more after; extra metres pro rata, rounded down); going online and offline with every block of CA §7.2 except documents (K6) and terms (K7); the location in the partitioned `captains.locations` table and the live position in Valkey (`captains:online:<cityId>`, `captains:position:<id>`).
 - Placeholders in development and staging: one pay table for every vehicle (25 TRY including 3 km, 5 TRY per extra km, minimum 25 TRY) and a demo motorbike captain «كابتن فوكس التجريبي» with a 3000 TRY cash limit and the fake number +963900000003 (the development code sender prints its code).
@@ -118,4 +122,4 @@ Slice 1.7, customer browsing and the quote (`docs/roadmap.md`, Phase 1): account
 
 ## Next
 
-Build slice 1.7: customer browsing and the quote (the plan above).
+Build slice 1.8: placing the order (the plan above), after the owner confirms its split into pull requests and the questions above.

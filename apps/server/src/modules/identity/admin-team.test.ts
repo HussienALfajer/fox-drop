@@ -326,6 +326,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/customer/zone-votes': 'public',
   'GET /v1/customer/restaurants': 'public',
   'GET /v1/customer/restaurants/{restaurantId}': 'public',
+  'POST /v1/customer/quote': 'public',
   'GET /v1/customer/profile': 'app_session',
   'PUT /v1/customer/profile': 'app_session',
   'GET /v1/customer/addresses': 'app_session',

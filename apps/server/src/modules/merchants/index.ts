@@ -19,7 +19,7 @@ import { MerchantsService } from './merchants.service.js';
 export class MerchantsModule {}
 
 export type { CommissionVersion } from './commission.js';
-export type { OpeningPeriod } from './hours.js';
+export { currentPeriod, nextOpening, type OpeningPeriod } from './hours.js';
 export type { AccountStatus, OperatingState, PauseSource } from './operating-state.js';
 export { takesOrders } from './operating-state.js';
 export { devicePlatforms } from './schema.js';

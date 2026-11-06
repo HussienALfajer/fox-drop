@@ -61,6 +61,21 @@ Serializers _$serializers =
           ..add(CustomerProfileDtoOutput.serializer)
           ..add(CustomerProfileDtoOutputProfile.serializer)
           ..add(CustomerProfileDtoOutputProfileGenderEnum.serializer)
+          ..add(CustomerQuoteDtoOutput.serializer)
+          ..add(CustomerQuoteDtoOutputEstimate.serializer)
+          ..add(CustomerQuoteDtoOutputFreeDelivery.serializer)
+          ..add(CustomerQuoteDtoOutputLinesInner.serializer)
+          ..add(CustomerQuoteDtoOutputLinesInnerOptionsInner.serializer)
+          ..add(CustomerQuoteDtoOutputMinimumOrder.serializer)
+          ..add(CustomerQuoteDtoOutputMoney.serializer)
+          ..add(CustomerQuoteDtoOutputProblemsInner.serializer)
+          ..add(CustomerQuoteDtoOutputProblemsInnerCodeEnum.serializer)
+          ..add(CustomerQuoteDtoOutputRatesInner.serializer)
+          ..add(CustomerQuoteDtoOutputRestaurant.serializer)
+          ..add(CustomerQuoteDtoOutputRestaurantStateEnum.serializer)
+          ..add(CustomerQuoteRequestDto.serializer)
+          ..add(CustomerQuoteRequestDtoLinesInner.serializer)
+          ..add(CustomerQuoteRequestDtoLocation.serializer)
           ..add(CustomerRefreshDto.serializer)
           ..add(CustomerRestaurantListDtoOutput.serializer)
           ..add(CustomerRestaurantListDtoOutputRestaurantsInner.serializer)
@@ -209,6 +224,42 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(CustomerQuoteDtoOutputLinesInner),
+            ]),
+            () => ListBuilder<CustomerQuoteDtoOutputLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+            ]),
+            () => ListBuilder<CaptainWentOfflineDtoOutputHandIn?>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerQuoteDtoOutputRatesInner),
+            ]),
+            () => ListBuilder<CustomerQuoteDtoOutputRatesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerQuoteDtoOutputProblemsInner),
+            ]),
+            () => ListBuilder<CustomerQuoteDtoOutputProblemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerQuoteDtoOutputLinesInnerOptionsInner),
+            ]),
+            () => ListBuilder<CustomerQuoteDtoOutputLinesInnerOptionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerQuoteRequestDtoLinesInner),
+            ]),
+            () => ListBuilder<CustomerQuoteRequestDtoLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(CustomerRestaurantListDtoOutputRestaurantsInner),
             ]),
             () =>
@@ -304,6 +355,10 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

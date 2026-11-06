@@ -260,6 +260,7 @@ describe('GeoService.deliveryFee (AP §9.12.3)', () => {
       currency: 'TRY',
       free: false,
       ruleId,
+      freeDeliveryFrom: null,
       distance: null,
     });
     expect(calls).toEqual([]);

@@ -1,0 +1,293 @@
+import { Injectable } from '@nestjs/common';
+import { equivalent, FxRefusedError, FxService, type RateSnapshot } from '../fx/index.js';
+import { type Distance, GeoRefusedError, GeoService, type Point } from '../geo/index.js';
+import { MerchantsService, type StorefrontState } from '../merchants/index.js';
+import { SettingsService } from '../settings/index.js';
+import { estimateRange, tripMinutes } from './delivery-estimate.js';
+import { platformOpening } from './platform-hours.js';
+import {
+  type CartLine,
+  type LineProblem,
+  type PricedLine,
+  priceLines,
+  type QuoteMoney,
+  quoteMoney,
+  quoteVersion,
+  thresholds,
+  versionBelow,
+} from './quote.js';
+
+// CU §10.6: the problems that block ordering, each with the action the app
+// offers (Appendix C). A line problem names its line.
+export type QuoteProblemCode =
+  | 'update_required'
+  | 'maintenance'
+  | 'platform_closed'
+  | 'outside_zones'
+  | 'not_covered'
+  | 'restaurant_closed'
+  | 'below_minimum_order'
+  | 'minimum_not_in_base_currency'
+  | 'delivery_unpriced'
+  | 'rates_unavailable'
+  | LineProblem;
+
+export interface QuoteProblem {
+  code: QuoteProblemCode;
+  // The index of the cart line, for a line problem.
+  line: number | null;
+  // platform_closed: when the platform opens next.
+  opensAt: Date | null;
+}
+
+export interface QuoteRequest {
+  restaurantId: string;
+  location: Point;
+  lines: CartLine[];
+  // «سأدفع بـ» (CU §10.5): an accepted currency, or null for «لم أحدد».
+  payIn: string | null;
+  appVersion: string;
+}
+
+export interface Quote {
+  version: string;
+  restaurant: { id: string; state: StorefrontState };
+  lines: PricedLine[];
+  currency: string;
+  money: QuoteMoney;
+  deliveryFree: boolean;
+  // The total in every other accepted currency, each by its own rounding
+  // (AP §8.6).
+  equivalents: { currency: string; amount: bigint }[];
+  // «ستدفع حوالي {المبلغ} {العملة}»; null for «لم أحدد», and for a currency
+  // the city no longer accepts, since the choice is not binding (CU §10.5).
+  payIn: { currency: string; amount: bigint } | null;
+  estimate: { fromMin: number; toMin: number };
+  minimumOrder: { amount: bigint; currency: string; reached: boolean; missing: bigint };
+  freeDelivery: { threshold: bigint; reached: boolean; missing: bigint } | null;
+  // The exchange-rate version (AP §8.6): each currency's rate version.
+  rates: { currency: string; rateVersionId: string | null }[];
+  problems: QuoteProblem[];
+}
+
+export type QuoteRefusal = 'unknown_restaurant';
+
+// A quote the server cannot answer at all, as opposed to a problem it shows.
+export class QuoteRefusedError extends Error {
+  override readonly name = 'QuoteRefusedError';
+  constructor(
+    readonly refusal: QuoteRefusal,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+// The trip is measured as the delivery fee is, by the motorbike's distance
+// (owner decision 2026-11-06), before any captain is known.
+const TRIP_VEHICLE = 'motorbike';
+
+// CU §10.6: the versioned quote of a cart for a delivery point. Every check
+// with data is run (owner decision 2026-11-06); the capacity check (until
+// dispatch), the active-order limit (slice 1.8), account states, the terms
+// version, the emergency stop and codes (Phase 2) pass until their slices.
+@Injectable()
+export class QuoteService {
+  constructor(
+    private readonly settings: SettingsService,
+    private readonly fx: FxService,
+    private readonly geo: GeoService,
+    private readonly merchants: MerchantsService,
+  ) {}
+
+  async quote(request: QuoteRequest, now: Date): Promise<Quote> {
+    const restaurant = await this.merchants.restaurant(request.restaurantId, now);
+    if (restaurant === null || restaurant.accountStatus !== 'active' || !restaurant.visible) {
+      throw new QuoteRefusedError('unknown_restaurant', 'no restaurant customers see');
+    }
+    const { cityId } = restaurant;
+    const point = request.location;
+    const problems: QuoteProblem[] = [];
+    const problem = (
+      code: QuoteProblemCode,
+      line: number | null = null,
+      opensAt: Date | null = null,
+    ) => problems.push({ code, line, opensAt });
+
+    const [maintenance, minVersion, hours, timeZone, zone, covers, state, menu, snapshot] =
+      await Promise.all([
+        this.settings.get('app.<app>.maintenance', { parameter: 'customer' }),
+        this.settings.get('app.<app>.min_version', { parameter: 'customer' }),
+        this.settings.get('platform.hours', { cityId }),
+        this.geo.cityTimeZone(cityId),
+        this.geo.zoneAt(cityId, point),
+        this.merchants.covers(restaurant.id, point),
+        this.merchants.storefrontState(restaurant.id, now),
+        this.merchants.menu(restaurant.id, now),
+        this.snapshot(cityId),
+      ]);
+    if (timeZone === null) throw new Error(`restaurant ${restaurant.id} is in an unknown city`);
+    // Suspended since it was read: customers no longer see it.
+    if (!storefront(state)) {
+      throw new QuoteRefusedError('unknown_restaurant', 'no restaurant customers see');
+    }
+
+    if (minVersion !== null && versionBelow(request.appVersion, minVersion)) {
+      problem('update_required');
+    }
+    if (maintenance.enabled) problem('maintenance');
+    const platform = platformOpening(hours, now, timeZone);
+    if (!platform.open) problem('platform_closed', null, platform.opensAt);
+    if (zone === null) problem('outside_zones');
+    else if (!covers) problem('not_covered');
+    if (state.state.state !== 'open') problem('restaurant_closed');
+
+    const baseCurrency = snapshot?.baseCurrency ?? (await this.fx.baseCurrency(cityId));
+    if (snapshot === null) problem('rates_unavailable');
+    const lines = priceLines(menu, request.lines, baseCurrency);
+    lines.forEach((line, index) => {
+      for (const code of line.problems) problem(code, index);
+    });
+    const itemsValue = lines.reduce((sum, line) => sum + (line.lineTotal ?? 0n), 0n);
+
+    const fee = await this.deliveryFee(cityId, restaurant.location, point, itemsValue);
+    if (fee === null) problem('delivery_unpriced');
+    // The free-delivery threshold of the rule the fee was priced with.
+    const freeDeliveryFrom = fee?.freeDeliveryFrom ?? null;
+    const status = thresholds({
+      itemsValue,
+      minimumOrder: restaurant.minimumOrder.amount,
+      freeDeliveryFrom,
+    });
+    // Until the first order locks the base, a minimum order may be in another
+    // of the city's currencies (merchants): it cannot be compared then.
+    const minimumInBase = restaurant.minimumOrder.currency === baseCurrency;
+    if (!minimumInBase) problem('minimum_not_in_base_currency');
+    else if (!status.minimumOrder.reached) problem('below_minimum_order');
+
+    const base = snapshot?.currencies.find((entry) => entry.code === snapshot.baseCurrency);
+    const money = quoteMoney({
+      itemsValue,
+      deliveryFee: fee?.fee ?? 0n,
+      // Codes wait for Phase 2 (owner decision 2026-11-06).
+      discount: 0n,
+      rounding: base ? { unitMinor: base.roundingUnitMinor, mode: base.roundingMode } : null,
+    });
+    const equivalents =
+      snapshot === null
+        ? []
+        : snapshot.currencies
+            .filter((entry) => entry.code !== snapshot.baseCurrency)
+            .map((entry) => ({
+              currency: entry.code,
+              amount: equivalent(snapshot, money.total, entry.code),
+            }));
+    const rates = (snapshot?.currencies ?? []).map((entry) => ({
+      currency: entry.code,
+      rateVersionId: entry.rateVersionId,
+    }));
+
+    const [speedKmh, bufferMin] = await Promise.all([
+      this.settings.get('order.eta_speed_kmh', { cityId }),
+      this.settings.get('order.eta_buffer_min', { cityId }),
+    ]);
+    const distance =
+      fee?.distance ??
+      (await this.geo.distance(restaurant.location, point, { vehicle: TRIP_VEHICLE }));
+
+    return {
+      version: quoteVersion({
+        lines: request.lines.map((line, index) => ({
+          itemId: line.itemId,
+          optionIds: line.optionIds,
+          quantity: line.quantity,
+          unitPrice: lines[index]!.unitPrice,
+        })),
+        money,
+        equivalents,
+        rateVersions: rates,
+        problems: problems.map(({ code, line }) => ({ code, line })),
+      }),
+      restaurant: { id: restaurant.id, state },
+      lines,
+      currency: baseCurrency ?? restaurant.minimumOrder.currency,
+      money,
+      deliveryFree: fee?.free ?? false,
+      equivalents,
+      payIn: payInOf(request.payIn, money.total, baseCurrency, equivalents),
+      estimate: estimateRange({
+        prepMin: restaurant.defaultPrepMin,
+        busyExtraMin: state.state.state === 'open' ? state.state.busyExtraMin : null,
+        tripMin: tripMinutes(distance.metres, speedKmh),
+        bufferMin,
+      }),
+      minimumOrder: { ...restaurant.minimumOrder, ...status.minimumOrder },
+      freeDelivery:
+        status.freeDelivery === null || freeDeliveryFrom === null
+          ? null
+          : { threshold: freeDeliveryFrom, ...status.freeDelivery },
+      rates,
+      problems,
+    };
+  }
+
+  // The rates of a quote (AP §8.6); null while the city cannot have one, such
+  // as a currency without its rounding unit.
+  private async snapshot(cityId: string): Promise<RateSnapshot | null> {
+    try {
+      return await this.fx.snapshot(cityId);
+    } catch (error) {
+      if (error instanceof FxRefusedError) return null;
+      throw error;
+    }
+  }
+
+  // The fee for this items value (AP §9.12.3), with the distance a
+  // distance-band rule measured; null while the city has no fee rule in its
+  // base currency.
+  private async deliveryFee(
+    cityId: string,
+    from: Point,
+    to: Point,
+    itemsValue: bigint,
+  ): Promise<{
+    fee: bigint;
+    free: boolean;
+    freeDeliveryFrom: bigint | null;
+    distance: Distance | null;
+  } | null> {
+    try {
+      const { fee, free, freeDeliveryFrom, distance } = await this.geo.deliveryFee(cityId, {
+        from,
+        to,
+        itemsValue,
+      });
+      return { fee, free: free || fee === 0n, freeDeliveryFrom, distance };
+    } catch (error) {
+      if (
+        error instanceof GeoRefusedError &&
+        (error.refusal === 'no_fee_rule' || error.refusal === 'fee_not_in_base_currency')
+      ) {
+        return null;
+      }
+      throw error;
+    }
+  }
+}
+
+function payInOf(
+  payIn: string | null,
+  total: bigint,
+  baseCurrency: string | null,
+  equivalents: { currency: string; amount: bigint }[],
+): Quote['payIn'] {
+  if (payIn === null) return null;
+  if (payIn === baseCurrency) return { currency: payIn, amount: total };
+  return equivalents.find((entry) => entry.currency === payIn) ?? null;
+}
+
+// The states customers see (CU §9.2); draft, suspended and terminated
+// restaurants are not shown.
+function storefront({ state }: StorefrontState): boolean {
+  return ['open', 'busy', 'paused', 'closed', 'holiday'].includes(state.state);
+}

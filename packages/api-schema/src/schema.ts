@@ -852,6 +852,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerQuoteQuote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1759,6 +1775,124 @@ export interface components {
                         }[];
                     }[];
                 }[];
+            }[];
+        };
+        CustomerQuoteRequestDto: {
+            /** Format: uuid */
+            restaurantId: string;
+            /** @description The delivery point: the address pin or the selected point. */
+            location: {
+                latitude: number;
+                longitude: number;
+            };
+            lines: {
+                /** Format: uuid */
+                itemId: string;
+                optionIds: string[];
+                /** @description 1 to 20 per line (fixed). */
+                quantity: number;
+                /** @description «مثلاً: بدون بصل», up to 100 characters; no phone number. */
+                note: string | null;
+                /** @description The unit price the customer last saw, with the options; a change is price_changed. */
+                knownUnitPrice: string;
+            }[];
+            /** @description «سأدفع بـ»: an accepted currency, or null for «لم أحدد» (CU §10.5); one no longer accepted gives payIn null. */
+            payIn: string | null;
+            appVersion: string;
+        };
+        CustomerQuoteDto_Output: {
+            /** @description Changes only with a money line, an equivalent, the rates or a blocking problem; the order command carries it. */
+            version: string;
+            restaurant: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                state: "open" | "busy" | "paused" | "closed" | "holiday";
+                busyMode: boolean;
+                until: string | null;
+                opensAt: string | null;
+                message: string | null;
+            };
+            lines: {
+                /** Format: uuid */
+                itemId: string;
+                /** @description Null for an item no longer on the menu. */
+                name: string | null;
+                quantity: number;
+                note: string | null;
+                options: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    priceDelta: string;
+                }[];
+                /** @description Null for a line that cannot be ordered. */
+                unitPrice: string | null;
+                lineTotal: string | null;
+            }[];
+            /** @description The base currency of every money line. */
+            currency: string;
+            money: {
+                /** @description «قيمة الأصناف». */
+                itemsValue: string;
+                /** @description «رسوم التوصيل». */
+                deliveryFee: string;
+                /** @description «مجاني». */
+                deliveryFree: boolean;
+                /** @description «الخصم»; 0 until codes arrive. */
+                discount: string;
+                /** @description «تقريب», shown only when not 0. */
+                rounding: string;
+                /** @description «المجموع». */
+                total: string;
+            };
+            /** @description «أو {المبلغ} $ · {المبلغ} ل.س»: each other accepted currency, by its rounding. */
+            equivalents: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            }[];
+            /** @description «ستدفع حوالي {المبلغ} {العملة}». */
+            payIn: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            } | null;
+            /** @description «يصل خلال {fromMin}–{toMin} د». */
+            estimate: {
+                fromMin: number;
+                toMin: number;
+            };
+            minimumOrder: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+                reached: boolean;
+                /** @description «أضف {المبلغ} لتصل إلى الحد الأدنى ({الحد})». */
+                missing: string;
+            };
+            freeDelivery: {
+                /** @description Integer minor units (AP §8.6). */
+                threshold: string;
+                /** @description «توصيلك مجاني». */
+                reached: boolean;
+                /** @description «أضف {المبلغ} لتحصل على توصيل مجاني». */
+                missing: string;
+            } | null;
+            /** @description The exchange-rate version: null for the base currency. */
+            rates: {
+                currency: string;
+                rateVersionId: string | null;
+            }[];
+            /** @description CU §10.6: every one blocks ordering; the texts are in Appendix C. */
+            problems: {
+                /** @enum {string} */
+                code: "update_required" | "maintenance" | "platform_closed" | "outside_zones" | "not_covered" | "restaurant_closed" | "below_minimum_order" | "minimum_not_in_base_currency" | "delivery_unpriced" | "rates_unavailable" | "item_not_found" | "item_unavailable" | "option_not_found" | "option_unavailable" | "options_invalid" | "price_not_in_base_currency" | "price_changed";
+                /** @description The cart line, for a line problem. */
+                line: number | null;
+                /** @description platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}». */
+                opensAt: string | null;
             }[];
         };
     };
@@ -3049,6 +3183,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomerRestaurantPageDto_Output"];
+                };
+            };
+        };
+    };
+    customerQuoteQuote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerQuoteRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerQuoteDto_Output"];
                 };
             };
         };

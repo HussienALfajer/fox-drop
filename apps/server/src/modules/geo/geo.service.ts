@@ -56,8 +56,10 @@ export interface DeliveryFee {
   fee: bigint;
   currency: string;
   free: boolean;
-  // The rule version it was priced with.
+  // The rule version it was priced with, and that rule's free-delivery
+  // threshold (null without one).
   ruleId: string;
+  freeDeliveryFrom: bigint | null;
   // The distance of a distance-band rule; null for a flat one.
   distance: Distance | null;
 }
@@ -493,7 +495,14 @@ export class GeoService implements OnModuleInit {
         ? await this.distance(from, to, { vehicle: FEE_VEHICLE })
         : null;
     const { fee, free } = deliveryFeeFor(rule, { itemsValue, metres: distance?.metres });
-    return { fee, currency: rule.currency, free, ruleId: rule.id, distance };
+    return {
+      fee,
+      currency: rule.currency,
+      free,
+      ruleId: rule.id,
+      freeDeliveryFrom: rule.freeDeliveryFrom,
+      distance,
+    };
   }
 }
 
