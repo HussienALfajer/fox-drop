@@ -15,7 +15,9 @@ Slice 1.9, real time (`docs/roadmap.md`, Phase 1): the outbox relay, Centrifugo 
     - [x] The `notifications` module: connection tokens per app (`POST /v1/{merchant,customer}/realtime/token`), the subscription proxy (`@RealtimeProxy()`, `X-Centrifugo-Proxy-Secret`) checking the session and the channel (`merchant:{restaurant_id}`, `order:{order_id}`), the publisher; Centrifugo's channels in `infra/centrifugo/config.yaml`, the local `compose.yaml` and `.env.example`.
     - [x] The relay in the worker: a pg-boss job with every transition, a run at start; end to end through a real Centrifugo to a `centrifuge` client (`order-realtime.test.ts`).
     - [x] Staging prepared: `provision.sh` adds the Centrifugo secrets, nginx proxies `/connection/websocket` to port 3113.
-    - [ ] `checker`, the `reviewer`, the pull request; after the merge, `provision.sh` on staging.
+    - [x] `checker` and the `reviewer` (no blocking finding; the seven should-fix ones fixed in `fix(realtime): the review…`).
+    - [ ] Pull request 42 merged (GitHub auto-merge with a merge commit once CI passes); then `provision.sh` on staging from `main` (the `deploy` skill), which adds the Centrifugo secrets and the nginx route.
+  - **Stopped at:** pull request 42 open with auto-merge on, waiting for CI. Next: once it is merged, provision staging, then pull request 2 from an up-to-date `main`.
   - Pull request 2, `feat/realtime-reads`: the polling fallback and Centrifugo on staging.
     - [ ] The order reads for the polling fallback with the order version: the restaurant's incoming orders (RA §8) and the customer's order (CU §11).
     - [ ] Centrifugo in `infra/compose.yaml` with the server's `CENTRIFUGO_*` (its proxies call `http://api:3000` on the environment's network); deploy and check a connection on staging. Staging's outbox has rows from before real time: the first run would publish old `order.placed` events to restaurant devices, so decide first whether to mark the rows older than the channels' history (10 minutes) published without sending them.
