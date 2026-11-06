@@ -38,6 +38,7 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderLinesInnerOptionsInner.serializer)
           ..add(AdminOrderDtoOutputOrderMoney.serializer)
           ..add(AdminOrderDtoOutputOrderPickup.serializer)
+          ..add(AdminOrderDtoOutputOrderPickupDispute.serializer)
           ..add(AdminOrderDtoOutputOrderPickupRequestsInner.serializer)
           ..add(AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy.serializer)
           ..add(
@@ -793,6 +794,12 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(int)]),
             () => ListBuilder<int>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+            ]),
+            () => ListBuilder<CaptainWentOfflineDtoOutputHandIn?>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

@@ -2598,7 +2598,7 @@ export interface components {
                         id: string;
                         /** @enum {string} */
                         status: "open" | "confirmed" | "rejected" | "voided";
-                        /** @description automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام»; the other devices close the prompt with «أكّد {اسم الجهاز} الاستلام» or «أبلغ … أن المبلغ غير صحيح». */
+                        /** @description automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام». */
                         outcome: ("restaurant" | "automatic" | "operations" | "amount_incorrect" | "incomplete" | "cancelled") | null;
                         amount: {
                             /** @description Integer minor units (AP §8.6). */
@@ -2619,6 +2619,8 @@ export interface components {
                          */
                         confirmBy: string;
                         closedAt: string | null;
+                        /** @description The other devices close the prompt with «أكّد {اسم المستخدم} الاستلام» or «أبلغ {اسم المستخدم} أن المبلغ غير صحيح» (RA §8.10). */
+                        closedByUserName: string | null;
                         closedByDeviceName: string | null;
                     } | null;
                     /** @description «تم الاستلام». */
@@ -2731,7 +2733,7 @@ export interface components {
                         id: string;
                         /** @enum {string} */
                         status: "open" | "confirmed" | "rejected" | "voided";
-                        /** @description automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام»; the other devices close the prompt with «أكّد {اسم الجهاز} الاستلام» or «أبلغ … أن المبلغ غير صحيح». */
+                        /** @description automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام». */
                         outcome: ("restaurant" | "automatic" | "operations" | "amount_incorrect" | "incomplete" | "cancelled") | null;
                         amount: {
                             /** @description Integer minor units (AP §8.6). */
@@ -2752,6 +2754,8 @@ export interface components {
                          */
                         confirmBy: string;
                         closedAt: string | null;
+                        /** @description The other devices close the prompt with «أكّد {اسم المستخدم} الاستلام» or «أبلغ {اسم المستخدم} أن المبلغ غير صحيح» (RA §8.10). */
+                        closedByUserName: string | null;
                         closedByDeviceName: string | null;
                     } | null;
                     /** @description «تم الاستلام». */
@@ -3088,8 +3092,27 @@ export interface components {
                         closedBy: {
                             type: string;
                             id: string | null;
+                            /** @description The restaurant's app installation. */
+                            device: string | null;
                         } | null;
                     }[];
+                    /** @description «خلاف على دفعة الاستلام» after the pickup (RA §8.10 item 8), always urgent. */
+                    dispute: {
+                        /** Format: date-time */
+                        at: string;
+                        /**
+                         * Format: uuid
+                         * @description The restaurant user.
+                         */
+                        accountId: string;
+                        device: string;
+                        /** @description What the restaurant says it received. */
+                        receivedLines: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        }[];
+                    } | null;
                 };
                 timeline: {
                     version: number;

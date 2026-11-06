@@ -1,5 +1,5 @@
 {
-  "id": "8ad05d4d-3d95-4b5f-abcf-25acd4e47a3f",
+  "id": "d1653028-9f99-4d15-8b45-b8400f33b634",
   "prevId": "9adc9ac0-697d-49cf-9572-7f9a22a2e0f1",
   "version": "7",
   "dialect": "postgresql",
@@ -6743,6 +6743,21 @@
             }
           ],
           "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pickup_disputes_request": {
+          "name": "pickup_disputes_request",
+          "columns": [
+            {
+              "expression": "pickup_request_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}

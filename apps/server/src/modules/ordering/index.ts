@@ -14,6 +14,7 @@ import { CaptainOrders } from './captain-orders.js';
 import { CaptainOrdersController } from './captain-orders.controller.js';
 import { PickupBooking, PickupTimersWorker } from './pickup-booking.js';
 import { PickupCommands } from './pickup-commands.js';
+import { IdentityModule } from '../identity/index.js';
 import { LedgerModule } from '../ledger/index.js';
 import { AdminOrdersController } from './admin-orders.controller.js';
 import { CustomerOrdersController } from './customer-orders.controller.js';
@@ -40,6 +41,7 @@ import { QuoteService } from './quote.service.js';
     JobsModule,
     AuditModule,
     LedgerModule,
+    IdentityModule,
     SettingsModule,
     FxModule,
     GeoModule,

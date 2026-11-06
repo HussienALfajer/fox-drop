@@ -8593,7 +8593,7 @@
                                   "type": "null"
                                 }
                               ],
-                              "description": "automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام»; the other devices close the prompt with «أكّد {اسم الجهاز} الاستلام» or «أبلغ … أن المبلغ غير صحيح»."
+                              "description": "automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام»."
                             },
                             "amount": {
                               "type": "object",
@@ -8664,6 +8664,13 @@
                                 }
                               ]
                             },
+                            "closedByUserName": {
+                              "description": "The other devices close the prompt with «أكّد {اسم المستخدم} الاستلام» or «أبلغ {اسم المستخدم} أن المبلغ غير صحيح» (RA §8.10).",
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
                             "closedByDeviceName": {
                               "type": [
                                 "string",
@@ -8680,6 +8687,7 @@
                             "baseEquivalent",
                             "confirmBy",
                             "closedAt",
+                            "closedByUserName",
                             "closedByDeviceName"
                           ],
                           "additionalProperties": false
@@ -9166,7 +9174,7 @@
                                 "type": "null"
                               }
                             ],
-                            "description": "automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام»; the other devices close the prompt with «أكّد {اسم الجهاز} الاستلام» or «أبلغ … أن المبلغ غير صحيح»."
+                            "description": "automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام»."
                           },
                           "amount": {
                             "type": "object",
@@ -9237,6 +9245,13 @@
                               }
                             ]
                           },
+                          "closedByUserName": {
+                            "description": "The other devices close the prompt with «أكّد {اسم المستخدم} الاستلام» or «أبلغ {اسم المستخدم} أن المبلغ غير صحيح» (RA §8.10).",
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
                           "closedByDeviceName": {
                             "type": [
                               "string",
@@ -9253,6 +9268,7 @@
                           "baseEquivalent",
                           "confirmBy",
                           "closedAt",
+                          "closedByUserName",
                           "closedByDeviceName"
                         ],
                         "additionalProperties": false
@@ -10851,11 +10867,19 @@
                                       "type": "null"
                                     }
                                   ]
+                                },
+                                "device": {
+                                  "description": "The restaurant's app installation.",
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
                                 }
                               },
                               "required": [
                                 "type",
-                                "id"
+                                "id",
+                                "device"
                               ],
                               "additionalProperties": false
                             },
@@ -10880,12 +10904,73 @@
                       "additionalProperties": false
                     },
                     "description": "Newest first; the last one's lines prefill «تأكيد الاستلام نيابة عن المطعم»."
+                  },
+                  "dispute": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "accountId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                            "description": "The restaurant user."
+                          },
+                          "device": {
+                            "type": "string"
+                          },
+                          "receivedLines": {
+                            "minItems": 1,
+                            "maxItems": 5,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "amount": {
+                                  "type": "string",
+                                  "pattern": "^-?\\d+$",
+                                  "description": "Integer minor units (AP §8.6)."
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "minLength": 3,
+                                  "maxLength": 3
+                                }
+                              },
+                              "required": [
+                                "amount",
+                                "currency"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "description": "What the restaurant says it received."
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "accountId",
+                          "device",
+                          "receivedLines"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«خلاف على دفعة الاستلام» after the pickup (RA §8.10 item 8), always urgent."
                   }
                 },
                 "required": [
                   "at",
                   "readyNotPressed",
-                  "requests"
+                  "requests",
+                  "dispute"
                 ],
                 "additionalProperties": false
               },

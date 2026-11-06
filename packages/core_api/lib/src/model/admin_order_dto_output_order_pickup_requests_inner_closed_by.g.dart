@@ -12,6 +12,8 @@ class _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy
   final String type;
   @override
   final String? id;
+  @override
+  final String? device;
 
   factory _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy([
     void Function(AdminOrderDtoOutputOrderPickupRequestsInnerClosedByBuilder)?
@@ -24,6 +26,7 @@ class _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy
   _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy._({
     required this.type,
     this.id,
+    this.device,
   }) : super._();
   @override
   AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy rebuild(
@@ -41,7 +44,8 @@ class _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy
     if (identical(other, this)) return true;
     return other is AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy &&
         type == other.type &&
-        id == other.id;
+        id == other.id &&
+        device == other.device;
   }
 
   @override
@@ -49,6 +53,7 @@ class _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy
     var _$hash = 0;
     _$hash = $jc(_$hash, type.hashCode);
     _$hash = $jc(_$hash, id.hashCode);
+    _$hash = $jc(_$hash, device.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -59,7 +64,8 @@ class _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy
             r'AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy',
           )
           ..add('type', type)
-          ..add('id', id))
+          ..add('id', id)
+          ..add('device', device))
         .toString();
   }
 }
@@ -80,6 +86,10 @@ class AdminOrderDtoOutputOrderPickupRequestsInnerClosedByBuilder
   String? get id => _$this._id;
   set id(String? id) => _$this._id = id;
 
+  String? _device;
+  String? get device => _$this._device;
+  set device(String? device) => _$this._device = device;
+
   AdminOrderDtoOutputOrderPickupRequestsInnerClosedByBuilder() {
     AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy._defaults(this);
   }
@@ -89,6 +99,7 @@ class AdminOrderDtoOutputOrderPickupRequestsInnerClosedByBuilder
     if ($v != null) {
       _type = $v.type;
       _id = $v.id;
+      _device = $v.device;
       _$v = null;
     }
     return this;
@@ -120,6 +131,7 @@ class AdminOrderDtoOutputOrderPickupRequestsInnerClosedByBuilder
             'type',
           ),
           id: id,
+          device: device,
         );
     replace(_$result);
     return _$result;

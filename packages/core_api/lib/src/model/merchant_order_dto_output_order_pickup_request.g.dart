@@ -214,6 +214,8 @@ class _$MerchantOrderDtoOutputOrderPickupRequest
   @override
   final DateTime? closedAt;
   @override
+  final String? closedByUserName;
+  @override
   final String? closedByDeviceName;
 
   factory _$MerchantOrderDtoOutputOrderPickupRequest([
@@ -230,6 +232,7 @@ class _$MerchantOrderDtoOutputOrderPickupRequest
     required this.baseEquivalent,
     required this.confirmBy,
     this.closedAt,
+    this.closedByUserName,
     this.closedByDeviceName,
   }) : super._();
   @override
@@ -253,6 +256,7 @@ class _$MerchantOrderDtoOutputOrderPickupRequest
         baseEquivalent == other.baseEquivalent &&
         confirmBy == other.confirmBy &&
         closedAt == other.closedAt &&
+        closedByUserName == other.closedByUserName &&
         closedByDeviceName == other.closedByDeviceName;
   }
 
@@ -267,6 +271,7 @@ class _$MerchantOrderDtoOutputOrderPickupRequest
     _$hash = $jc(_$hash, baseEquivalent.hashCode);
     _$hash = $jc(_$hash, confirmBy.hashCode);
     _$hash = $jc(_$hash, closedAt.hashCode);
+    _$hash = $jc(_$hash, closedByUserName.hashCode);
     _$hash = $jc(_$hash, closedByDeviceName.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -285,6 +290,7 @@ class _$MerchantOrderDtoOutputOrderPickupRequest
           ..add('baseEquivalent', baseEquivalent)
           ..add('confirmBy', confirmBy)
           ..add('closedAt', closedAt)
+          ..add('closedByUserName', closedByUserName)
           ..add('closedByDeviceName', closedByDeviceName))
         .toString();
   }
@@ -339,6 +345,11 @@ class MerchantOrderDtoOutputOrderPickupRequestBuilder
   DateTime? get closedAt => _$this._closedAt;
   set closedAt(DateTime? closedAt) => _$this._closedAt = closedAt;
 
+  String? _closedByUserName;
+  String? get closedByUserName => _$this._closedByUserName;
+  set closedByUserName(String? closedByUserName) =>
+      _$this._closedByUserName = closedByUserName;
+
   String? _closedByDeviceName;
   String? get closedByDeviceName => _$this._closedByDeviceName;
   set closedByDeviceName(String? closedByDeviceName) =>
@@ -359,6 +370,7 @@ class MerchantOrderDtoOutputOrderPickupRequestBuilder
       _baseEquivalent = $v.baseEquivalent;
       _confirmBy = $v.confirmBy;
       _closedAt = $v.closedAt;
+      _closedByUserName = $v.closedByUserName;
       _closedByDeviceName = $v.closedByDeviceName;
       _$v = null;
     }
@@ -410,6 +422,7 @@ class MerchantOrderDtoOutputOrderPickupRequestBuilder
               'confirmBy',
             ),
             closedAt: closedAt,
+            closedByUserName: closedByUserName,
             closedByDeviceName: closedByDeviceName,
           );
     } catch (_) {

@@ -15,12 +15,13 @@ part 'merchant_orders_dto_output_orders_inner_pickup_request.g.dart';
 /// Properties:
 /// * [id]
 /// * [status]
-/// * [outcome] - automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام»; the other devices close the prompt with «أكّد {اسم الجهاز} الاستلام» or «أبلغ … أن المبلغ غير صحيح».
+/// * [outcome] - automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام».
 /// * [amount]
 /// * [lines] - «400 ₺» or «5 $ + 195 ₺».
 /// * [baseEquivalent] - The lines in the base currency, by the order rates.
 /// * [confirmBy] - «يُؤكَّد تلقائياً خلال {ث} ث» counts down to it.
 /// * [closedAt]
+/// * [closedByUserName] - The other devices close the prompt with «أكّد {اسم المستخدم} الاستلام» or «أبلغ {اسم المستخدم} أن المبلغ غير صحيح» (RA §8.10).
 /// * [closedByDeviceName]
 @BuiltValue()
 abstract class MerchantOrdersDtoOutputOrdersInnerPickupRequest
@@ -36,7 +37,7 @@ abstract class MerchantOrdersDtoOutputOrdersInnerPickupRequest
   MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum get status;
   // enum statusEnum {  open,  confirmed,  rejected,  voided,  };
 
-  /// automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام»; the other devices close the prompt with «أكّد {اسم الجهاز} الاستلام» or «أبلغ … أن المبلغ غير صحيح».
+  /// automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام».
   @BuiltValueField(wireName: r'outcome')
   MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum? get outcome;
   // enum outcomeEnum {  restaurant,  automatic,  operations,  amount_incorrect,  incomplete,  cancelled,  };
@@ -58,6 +59,10 @@ abstract class MerchantOrdersDtoOutputOrdersInnerPickupRequest
 
   @BuiltValueField(wireName: r'closedAt')
   DateTime? get closedAt;
+
+  /// The other devices close the prompt with «أكّد {اسم المستخدم} الاستلام» or «أبلغ {اسم المستخدم} أن المبلغ غير صحيح» (RA §8.10).
+  @BuiltValueField(wireName: r'closedByUserName')
+  String? get closedByUserName;
 
   @BuiltValueField(wireName: r'closedByDeviceName')
   String? get closedByDeviceName;
@@ -149,6 +154,13 @@ class _$MerchantOrdersDtoOutputOrdersInnerPickupRequestSerializer
         : serializers.serialize(
             object.closedAt,
             specifiedType: const FullType.nullable(DateTime),
+          );
+    yield r'closedByUserName';
+    yield object.closedByUserName == null
+        ? null
+        : serializers.serialize(
+            object.closedByUserName,
+            specifiedType: const FullType.nullable(String),
           );
     yield r'closedByDeviceName';
     yield object.closedByDeviceName == null
@@ -267,6 +279,16 @@ class _$MerchantOrdersDtoOutputOrdersInnerPickupRequestSerializer
           if (valueDes == null) continue;
           result.closedAt = valueDes;
           break;
+        case r'closedByUserName':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.closedByUserName = valueDes;
+          break;
         case r'closedByDeviceName':
           final valueDes =
               serializers.deserialize(
@@ -338,7 +360,7 @@ class MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum
   ) => _$merchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnumValueOf(name);
 }
 
-/// automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام»; the other devices close the prompt with «أكّد {اسم الجهاز} الاستلام» or «أبلغ … أن المبلغ غير صحيح».
+/// automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام».
 class MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum
     extends EnumClass {
   @BuiltValueEnumConst(wireName: r'restaurant')

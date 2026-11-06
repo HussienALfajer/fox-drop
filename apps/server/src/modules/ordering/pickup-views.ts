@@ -1,10 +1,11 @@
-import { desc, inArray } from 'drizzle-orm';
+import { and, desc, inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { snapshotOf } from './order-views.js';
 import { baseTotal, linesOf, type PaymentLine } from './pickup-booking.js';
 import { orders, pickupDisputes, pickupRequests } from './schema.js';
 
 type Executor = Pick<NodePgDatabase, 'select'>;
+type OrderKey = { id: string; placedAt: Date };
 
 // A pickup request as the apps read it (RA §8.10, CA §9.4).
 export interface PickupRequestView {
@@ -31,16 +32,20 @@ export interface PickupRequestView {
 // RA §8.10 item 8: the restaurant's dispute after the pickup.
 export interface PickupDisputeView {
   at: Date;
+  // The restaurant user and the app installation.
+  accountId: string;
+  device: string;
   receivedLines: PaymentLine[];
 }
 
 // Each order's requests, newest first.
 export async function pickupRequestsOf(
   executor: Executor,
-  orderIds: string[],
+  keys: OrderKey[],
 ): Promise<Map<string, PickupRequestView[]>> {
   const found = new Map<string, PickupRequestView[]>();
-  if (orderIds.length === 0) return found;
+  if (keys.length === 0) return found;
+  const orderIds = keys.map((key) => key.id);
   const rows = await executor
     .select()
     .from(pickupRequests)
@@ -54,7 +59,15 @@ export async function pickupRequestsOf(
             await executor
               .select({ id: orders.id, rateSnapshot: orders.rateSnapshot })
               .from(orders)
-              .where(inArray(orders.id, [...new Set(rows.map((row) => row.orderId))]))
+              .where(
+                and(
+                  inArray(orders.id, orderIds),
+                  inArray(
+                    orders.placedAt,
+                    keys.map((key) => key.placedAt),
+                  ),
+                ),
+              )
           ).map((order) => [order.id, snapshotOf(order.rateSnapshot)] as const),
         );
   for (const row of rows) {
@@ -85,9 +98,10 @@ export async function pickupRequestsOf(
 
 export async function pickupDisputesOf(
   executor: Executor,
-  orderIds: string[],
+  keys: OrderKey[],
 ): Promise<Map<string, PickupDisputeView>> {
-  if (orderIds.length === 0) return new Map();
+  if (keys.length === 0) return new Map();
+  const orderIds = keys.map((key) => key.id);
   const rows = await executor
     .select()
     .from(pickupDisputes)
@@ -95,7 +109,12 @@ export async function pickupDisputesOf(
   return new Map(
     rows.map((row) => [
       row.orderId,
-      { at: row.createdAt, receivedLines: linesOf(row.receivedLines) },
+      {
+        at: row.createdAt,
+        accountId: row.accountId,
+        device: row.device,
+        receivedLines: linesOf(row.receivedLines),
+      },
     ]),
   );
 }

@@ -164,6 +164,7 @@ async function admin(roles: string[]) {
     app.inject({ method: 'POST', url, cookies, headers: { 'idempotency-key': key }, payload });
   return {
     accountId,
+    cookies,
     get: (url: string) => app.inject({ method: 'GET', url, cookies }),
     assign: (orderId: string, captainId: string) =>
       post(`/v1/admin/orders/${orderId}/assign`, { captainId }),
@@ -447,7 +448,12 @@ describe('the pickup (AP §8.1, RA §8.10 item 4)', () => {
       status: 'picked_up',
       captainTrack: 'picked_up',
       pickup: {
-        request: { status: 'confirmed', outcome: 'restaurant', closedByDeviceName: 'كاشير' },
+        request: {
+          status: 'confirmed',
+          outcome: 'restaurant',
+          closedByUserName: 'cashier',
+          closedByDeviceName: 'كاشير',
+        },
         readyNotPressed: true,
         disputedAt: null,
       },
@@ -494,8 +500,15 @@ describe('the pickup (AP §8.1, RA §8.10 item 4)', () => {
       await sql.query('SELECT placed_at FROM ordering.orders WHERE id = $1', [at.order.id])
     ).rows[0].placed_at.toISOString();
     const booking = app.get(PickupBooking);
-    // Early by the clock: tried again later, the restaurant keeps its minute.
-    await expect(booking.autoConfirm(job, new Date())).rejects.toThrow('not due yet');
+    // Early by both clocks: sent again for its moment, the restaurant keeps
+    // its minute.
+    expect(await booking.autoConfirm(job, new Date())).toBe(false);
+    const jobs = await sql.query(
+      "SELECT start_after FROM pgboss.job WHERE name = 'ordering-pickup-auto-confirm' AND data->>'requestId' = $1",
+      [request.id],
+    );
+    expect(jobs.rows).toHaveLength(2);
+    expect((await pickupRow(at.order.id)).status).toBe('accepted');
     const due = new Date(new Date(request.confirmBy).getTime() + SECOND);
     expect(await booking.autoConfirm(job, due)).toBe(true);
     expect(await booking.autoConfirm(job, due)).toBe(false);
@@ -541,8 +554,17 @@ describe("the restaurant's refusals (RA §8.10 items 6-7)", () => {
       .json()
       .orders.find((entry: { id: string }) => entry.id === at.order.id);
     expect(card.alerts).toContain('pickup_disputed');
-    // The captain pays the difference and asks again; the alert resolves.
+    // AP §8.1: the customer's channel never learns of it.
+    const rejected = await sql.query(
+      "SELECT payload FROM ordering.outbox WHERE order_id = $1 AND type = 'order.pickup_rejected'",
+      [at.order.id],
+    );
+    expect(rejected.rows[0].payload.reason).toBeNull();
+    // The alert stays while the captain asks again, until the pickup.
     expect((await at.requestPickup()).statusCode).toBe(200);
+    const waiting = (await at.ops.get(`/v1/admin/orders/${at.order.id}`)).json().order;
+    expect(waiting.alerts).toContain('pickup_disputed');
+    expect(waiting.badges.pickupPending).toBe(true);
     expect((await at.restaurant('confirm')).statusCode).toBe(200);
     const after = (await at.ops.get(`/v1/admin/orders/${at.order.id}`)).json().order;
     expect(after.alerts).not.toContain('pickup_disputed');
@@ -597,6 +619,9 @@ describe('the dispute after the pickup (RA §8.10 item 8)', () => {
     const again = await at.restaurant('dispute', { receivedLines: TRY('23000') });
     expect(again.statusCode).toBe(409);
     expect(again.json().error).toBe('pickup_already_disputed');
+    // AP §9.3.1: operations see the report with the amount received.
+    const detail = (await at.ops.get(`/v1/admin/orders/${at.order.id}`)).json().order;
+    expect(detail.pickup.dispute).toMatchObject({ receivedLines: TRY('23000') });
   });
 
   it('refuses a dispute once the window has closed', async () => {
@@ -635,7 +660,13 @@ describe('POST /v1/admin/orders/{orderId}/confirm-pickup (AP §9.3.2)', () => {
       "SELECT payload FROM ordering.outbox WHERE order_id = $1 AND type = 'order.picked_up'",
       [at.order.id],
     );
-    expect(outbox.rows[0].payload.reason).toBe('operations');
+    expect(outbox.rows[0].payload.reason).toBeNull();
+    const detail = (await ops.get(`/v1/admin/orders/${at.order.id}`)).json().order;
+    expect(detail.pickup.requests[0]).toMatchObject({
+      outcome: 'operations',
+      bookedLines: TRY('24000'),
+      closedBy: { type: 'admin', id: ops.accountId, device: null },
+    });
   });
 
   it('confirms without a request, and refuses lines off the pickup payment', async () => {
@@ -650,5 +681,119 @@ describe('POST /v1/admin/orders/{orderId}/confirm-pickup (AP §9.3.2)', () => {
     const again = await ops.confirmPickup(at.order.id, TRY('24000'), 'مرة ثانية');
     expect(again.statusCode).toBe(409);
     expect(again.json().error).toBe('order_state_changed');
+  });
+});
+
+describe('who may answer, keys and races (architecture §5.3)', () => {
+  it("answers 404 for another captain's or another restaurant's order", async () => {
+    const at = await captainAtRestaurant();
+    const other = await captainAtRestaurant();
+    expect((await at.requestPickup()).statusCode).toBe(200);
+    const foreign = await app.inject({
+      method: 'POST',
+      url: `/v1/captain/orders/${at.order.id}/pickup-request`,
+      headers: { ...other.captain.headers, 'idempotency-key': randomUUID() },
+      payload: {
+        lines: TRY('24000'),
+        location: {
+          ...atDoor,
+          accuracyMetres: 10,
+          recordedAt: new Date().toISOString(),
+          simulated: false,
+        },
+      },
+    });
+    expect(foreign.statusCode).toBe(404);
+    // A restaurant user of another restaurant.
+    const merchants = app.get(MerchantsService);
+    const elsewhere = await merchants.createRestaurant(
+      azaz,
+      {
+        nameAr: 'مطعم آخر',
+        location: centre,
+        coverage: { kind: 'radius', radiusMetres: 1000 },
+        minimumOrder: { amount: 10_000n, currency: 'TRY' },
+        commissionBp: 1500,
+        defaultPrepMin: 20,
+      },
+      change,
+    );
+    await merchants.setAccountStatus(elsewhere, 'active', change);
+    const phone = phoneNumber();
+    await app
+      .get(MerchantAccountsService)
+      .addAccount(elsewhere, { role: 'owner', name: 'owner', phone }, change);
+    const stranger = await appSignIn('merchant', phone);
+    for (const path of ['confirm', 'incomplete', 'dispute']) {
+      const answer = await app.inject({
+        method: 'POST',
+        url: `/v1/merchant/orders/${at.order.id}/pickup/${path}`,
+        headers: { ...stranger, 'idempotency-key': randomUUID() },
+        ...(path === 'dispute' ? { payload: { receivedLines: TRY('20000') } } : {}),
+      });
+      expect(answer.statusCode).toBe(404);
+    }
+  });
+
+  it('answers a repeated request with the order, and refuses the key with other lines', async () => {
+    const at = await captainAtRestaurant();
+    const key = randomUUID();
+    expect((await at.requestPickup(TRY('24000'), key)).statusCode).toBe(200);
+    const repeat = await at.requestPickup(TRY('24000'), key);
+    expect(repeat.statusCode).toBe(200);
+    expect(repeat.json().order.captainTrack).toBe('pickup_pending');
+    const requests = await sql.query(
+      'SELECT count(*)::int AS n FROM ordering.pickup_requests WHERE order_id = $1',
+      [at.order.id],
+    );
+    expect(requests.rows[0].n).toBe(1);
+    expect((await at.requestPickup(TRY('24100'), key)).statusCode).toBe(422);
+    // The dispute's lines in another currency are refused as the captain's.
+    const usd = await at.restaurant('dispute', {
+      receivedLines: [{ currency: 'USD', amount: '500' }],
+    });
+    expect(usd.statusCode).toBe(409);
+    expect(usd.json().error).toBe('currency_not_accepted');
+  });
+
+  it('books one pickup when the restaurant and the automatic confirmation run together', async () => {
+    const at = await captainAtRestaurant();
+    const request = (await at.requestPickup()).json().order.pickup.request;
+    const placedAt = (
+      await sql.query('SELECT placed_at FROM ordering.orders WHERE id = $1', [at.order.id])
+    ).rows[0].placed_at.toISOString();
+    const due = new Date(new Date(request.confirmBy).getTime() + SECOND);
+    const [answer, automatic] = await Promise.all([
+      at.restaurant('confirm'),
+      app
+        .get(PickupBooking)
+        .autoConfirm({ requestId: request.id, orderId: at.order.id, placedAt }, due),
+    ]);
+    expect([answer.statusCode === 200, automatic].filter(Boolean)).toHaveLength(1);
+    expect(await custody(at.captain.captainId)).toBe(-24_000n);
+    const pickups = await sql.query(
+      "SELECT count(*)::int AS n FROM ordering.order_events WHERE order_id = $1 AND type = 'order.picked_up'",
+      [at.order.id],
+    );
+    expect(pickups.rows[0].n).toBe(1);
+  });
+
+  it('answers a repeated operations confirmation with the order', async () => {
+    const at = await captainAtRestaurant();
+    const ops = await admin(['OPS']);
+    const key = randomUUID();
+    const confirm = () =>
+      app.inject({
+        method: 'POST',
+        url: `/v1/admin/orders/${at.order.id}/confirm-pickup`,
+        cookies: ops.cookies,
+        headers: { 'idempotency-key': key },
+        payload: { lines: TRY('24000'), reason: 'لا يرد المطعم' },
+      });
+    expect((await confirm()).statusCode).toBe(200);
+    const repeat = await confirm();
+    expect(repeat.statusCode).toBe(200);
+    expect(repeat.json().order.status).toBe('picked_up');
+    expect(await custody(at.captain.captainId)).toBe(-24_000n);
   });
 });

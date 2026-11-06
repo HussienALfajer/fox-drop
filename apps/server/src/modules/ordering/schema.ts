@@ -424,6 +424,7 @@ export const pickupDisputes = ordering.table(
       foreignColumns: [orders.id, orders.placedAt],
     }),
     uniqueIndex('pickup_disputes_one_per_order').on(table.orderId),
+    index('pickup_disputes_request').on(table.pickupRequestId),
     check('pickup_disputes_status_values', sql`${table.status} IN ('open')`),
   ],
 );

@@ -13,6 +13,8 @@ class _$AdminOrderDtoOutputOrderPickup extends AdminOrderDtoOutputOrderPickup {
   final bool readyNotPressed;
   @override
   final BuiltList<AdminOrderDtoOutputOrderPickupRequestsInner> requests;
+  @override
+  final AdminOrderDtoOutputOrderPickupDispute? dispute;
 
   factory _$AdminOrderDtoOutputOrderPickup([
     void Function(AdminOrderDtoOutputOrderPickupBuilder)? updates,
@@ -22,6 +24,7 @@ class _$AdminOrderDtoOutputOrderPickup extends AdminOrderDtoOutputOrderPickup {
     this.at,
     required this.readyNotPressed,
     required this.requests,
+    this.dispute,
   }) : super._();
   @override
   AdminOrderDtoOutputOrderPickup rebuild(
@@ -38,7 +41,8 @@ class _$AdminOrderDtoOutputOrderPickup extends AdminOrderDtoOutputOrderPickup {
     return other is AdminOrderDtoOutputOrderPickup &&
         at == other.at &&
         readyNotPressed == other.readyNotPressed &&
-        requests == other.requests;
+        requests == other.requests &&
+        dispute == other.dispute;
   }
 
   @override
@@ -47,6 +51,7 @@ class _$AdminOrderDtoOutputOrderPickup extends AdminOrderDtoOutputOrderPickup {
     _$hash = $jc(_$hash, at.hashCode);
     _$hash = $jc(_$hash, readyNotPressed.hashCode);
     _$hash = $jc(_$hash, requests.hashCode);
+    _$hash = $jc(_$hash, dispute.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -56,7 +61,8 @@ class _$AdminOrderDtoOutputOrderPickup extends AdminOrderDtoOutputOrderPickup {
     return (newBuiltValueToStringHelper(r'AdminOrderDtoOutputOrderPickup')
           ..add('at', at)
           ..add('readyNotPressed', readyNotPressed)
-          ..add('requests', requests))
+          ..add('requests', requests)
+          ..add('dispute', dispute))
         .toString();
   }
 }
@@ -86,6 +92,12 @@ class AdminOrderDtoOutputOrderPickupBuilder
     ListBuilder<AdminOrderDtoOutputOrderPickupRequestsInner>? requests,
   ) => _$this._requests = requests;
 
+  AdminOrderDtoOutputOrderPickupDisputeBuilder? _dispute;
+  AdminOrderDtoOutputOrderPickupDisputeBuilder get dispute =>
+      _$this._dispute ??= AdminOrderDtoOutputOrderPickupDisputeBuilder();
+  set dispute(AdminOrderDtoOutputOrderPickupDisputeBuilder? dispute) =>
+      _$this._dispute = dispute;
+
   AdminOrderDtoOutputOrderPickupBuilder() {
     AdminOrderDtoOutputOrderPickup._defaults(this);
   }
@@ -96,6 +108,7 @@ class AdminOrderDtoOutputOrderPickupBuilder
       _at = $v.at;
       _readyNotPressed = $v.readyNotPressed;
       _requests = $v.requests.toBuilder();
+      _dispute = $v.dispute?.toBuilder();
       _$v = null;
     }
     return this;
@@ -127,12 +140,15 @@ class AdminOrderDtoOutputOrderPickupBuilder
               'readyNotPressed',
             ),
             requests: requests.build(),
+            dispute: _dispute?.build(),
           );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'requests';
         requests.build();
+        _$failedField = 'dispute';
+        _dispute?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminOrderDtoOutputOrderPickup',

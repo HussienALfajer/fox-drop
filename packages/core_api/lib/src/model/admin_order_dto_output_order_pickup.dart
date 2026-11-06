@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_requests_inner.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_pickup_dispute.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -16,6 +17,7 @@ part 'admin_order_dto_output_order_pickup.g.dart';
 /// * [at]
 /// * [readyNotPressed] - «لم يُضغط جاهز».
 /// * [requests] - Newest first; the last one's lines prefill «تأكيد الاستلام نيابة عن المطعم».
+/// * [dispute]
 @BuiltValue()
 abstract class AdminOrderDtoOutputOrderPickup
     implements
@@ -33,6 +35,9 @@ abstract class AdminOrderDtoOutputOrderPickup
   /// Newest first; the last one's lines prefill «تأكيد الاستلام نيابة عن المطعم».
   @BuiltValueField(wireName: r'requests')
   BuiltList<AdminOrderDtoOutputOrderPickupRequestsInner> get requests;
+
+  @BuiltValueField(wireName: r'dispute')
+  AdminOrderDtoOutputOrderPickupDispute? get dispute;
 
   AdminOrderDtoOutputOrderPickup._();
 
@@ -83,6 +88,15 @@ class _$AdminOrderDtoOutputOrderPickupSerializer
         FullType(AdminOrderDtoOutputOrderPickupRequestsInner),
       ]),
     );
+    yield r'dispute';
+    yield object.dispute == null
+        ? null
+        : serializers.serialize(
+            object.dispute,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderPickupDispute,
+            ),
+          );
   }
 
   @override
@@ -139,6 +153,18 @@ class _$AdminOrderDtoOutputOrderPickupSerializer
                   )
                   as BuiltList<AdminOrderDtoOutputOrderPickupRequestsInner>;
           result.requests.replace(valueDes);
+          break;
+        case r'dispute':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderPickupDispute,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderPickupDispute?;
+          if (valueDes == null) continue;
+          result.dispute.replace(valueDes);
           break;
         default:
           unhandled.add(key);

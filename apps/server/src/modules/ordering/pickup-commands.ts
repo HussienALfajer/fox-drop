@@ -50,12 +50,12 @@ export class PickupCommands {
 
   // Each order's pickup requests, newest first, and its dispute after the
   // pickup, for the reads.
-  requests(orderIds: string[]) {
-    return pickupRequestsOf(this.database.db, orderIds);
+  requests(keys: { id: string; placedAt: Date }[]) {
+    return pickupRequestsOf(this.database.db, keys);
   }
 
-  disputes(orderIds: string[]) {
-    return pickupDisputesOf(this.database.db, orderIds);
+  disputes(keys: { id: string; placedAt: Date }[]) {
+    return pickupDisputesOf(this.database.db, keys);
   }
 
   // RA §8.10 item 4: «تأكيد الاستلام».
@@ -286,6 +286,7 @@ export class PickupCommands {
       version,
       actor: restaurantActor(command),
       reason: outcome,
+      publicReason: null,
       at: now,
       captainTrack: 'at_merchant',
     });

@@ -13,6 +13,7 @@ part 'admin_order_dto_output_order_pickup_requests_inner_closed_by.g.dart';
 /// Properties:
 /// * [type]
 /// * [id]
+/// * [device] - The restaurant's app installation.
 @BuiltValue()
 abstract class AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy
     implements
@@ -25,6 +26,10 @@ abstract class AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy
 
   @BuiltValueField(wireName: r'id')
   String? get id;
+
+  /// The restaurant's app installation.
+  @BuiltValueField(wireName: r'device')
+  String? get device;
 
   AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy._();
 
@@ -75,6 +80,13 @@ class _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBySerializer
             object.id,
             specifiedType: const FullType.nullable(String),
           );
+    yield r'device';
+    yield object.device == null
+        ? null
+        : serializers.serialize(
+            object.device,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -120,6 +132,16 @@ class _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBySerializer
                   as String?;
           if (valueDes == null) continue;
           result.id = valueDes;
+          break;
+        case r'device':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.device = valueDes;
           break;
         default:
           unhandled.add(key);

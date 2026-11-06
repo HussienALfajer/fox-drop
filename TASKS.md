@@ -24,6 +24,7 @@ Slice 1.12, pickup (`docs/roadmap.md`, Phase 1): arrival within 150 m, the item 
 - [x] The restaurant's refusals: «المبلغ غير صحيح» with the lines received (operations' «خلاف على مبلغ الاستلام» moment) and «الطلب غير مكتمل»; track back to `at_merchant`.
 - [x] The dispute after confirmation within `order.pickup_dispute_window_min`: a report linked to the order, the captain told on their channel.
 - [ ] Docs, review, roadmap and handover to slice 1.13.
+- For slice 1.13: the restaurant's board lists orders until `arrived`, so an order delivered within `order.pickup_dispute_window_min` of its pickup leaves the board with its «المبلغ غير صحيح» button (RA §8.10 item 8), though the command still accepts it: keep such orders on the board, or give the button another place.
 
 ## Notes from earlier slices
 

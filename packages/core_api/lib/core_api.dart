@@ -38,6 +38,7 @@ export 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart
 export 'package:core_api/src/model/admin_order_dto_output_order_lines_inner_options_inner.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_money.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_pickup.dart';
+export 'package:core_api/src/model/admin_order_dto_output_order_pickup_dispute.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_pickup_requests_inner.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_pickup_requests_inner_closed_by.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.dart';

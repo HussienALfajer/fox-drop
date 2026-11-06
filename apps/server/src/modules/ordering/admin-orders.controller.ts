@@ -180,10 +180,25 @@ class AdminOrderDto extends createZodDto(
                 .describe('What the restaurant says it received.'),
               openedAt: z.iso.datetime(),
               closedAt: z.iso.datetime().nullable(),
-              closedBy: z.object({ type: z.string(), id: z.uuid().nullable() }).nullable(),
+              closedBy: z
+                .object({
+                  type: z.string(),
+                  id: z.uuid().nullable(),
+                  device: z.string().nullable().describe("The restaurant's app installation."),
+                })
+                .nullable(),
             }),
           )
           .describe("Newest first; the last one's lines prefill «تأكيد الاستلام نيابة عن المطعم»."),
+        dispute: z
+          .object({
+            at: z.iso.datetime(),
+            accountId: z.uuid().describe('The restaurant user.'),
+            device: z.string(),
+            receivedLines: paymentLines.describe('What the restaurant says it received.'),
+          })
+          .nullable()
+          .describe('«خلاف على دفعة الاستلام» after the pickup (RA §8.10 item 8), always urgent.'),
       }),
       timeline: z.array(
         z.object({
@@ -436,8 +451,14 @@ export class AdminOrdersController {
             receivedLines: request.receivedLines && linesBody(request.receivedLines),
             openedAt: request.openedAt.toISOString(),
             closedAt: request.closedAt?.toISOString() ?? null,
-            closedBy: request.closedBy && { type: request.closedBy.type, id: request.closedBy.id },
+            closedBy: request.closedBy,
           })),
+          dispute: item.pickupDispute && {
+            at: item.pickupDispute.at.toISOString(),
+            accountId: item.pickupDispute.accountId,
+            device: item.pickupDispute.device,
+            receivedLines: linesBody(item.pickupDispute.receivedLines),
+          },
         },
         timeline: timeline.map((event) => ({ ...event, at: event.at.toISOString() })),
       },

@@ -1,9 +1,9 @@
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
-import { QUEUES } from '../../jobs/job-queue.js';
+import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { reportError } from '../../observability/error-tracking.js';
 import { type RateSnapshot, toBase } from '../fx/index.js';
@@ -185,6 +185,9 @@ export class PickupBooking {
       version,
       actor: by.actor,
       reason: by.outcome,
+      // AP §8.1: the customer sees the status only; the restaurant and the
+      // captain read the outcome from their order.
+      publicReason: null,
       at: now,
       captainTrack: 'picked_up',
     });
@@ -202,10 +205,19 @@ export class PickupBooking {
         .where(eq(pickupRequests.id, job.requestId))
         .for('update');
       if (!request || request.status !== 'open' || !pickable(order)) return false;
-      // A job that starts early by the database's clock is tried again, so
-      // the restaurant keeps its whole minute.
-      if (request.confirmBy.getTime() > now.getTime()) {
-        throw new Error(`pickup request ${request.id} is not due yet`);
+      // pg-boss starts the job by the database's clock, and confirm_by came
+      // from the API's: due by either clock. One early by both (a clock
+      // moved) is sent again for its moment, so the restaurant keeps its
+      // whole minute.
+      const [{ dbNow }] = (await tx.execute<{ dbNow: Date }>(sql`SELECT now() AS "dbNow"`))
+        .rows as [{ dbNow: Date }];
+      const latest = Math.max(now.getTime(), new Date(dbNow).getTime());
+      if (request.confirmBy.getTime() > latest) {
+        await this.jobs.send(QUEUES.pickupAutoConfirm, job, {
+          startAfter: request.confirmBy,
+          db: inTransaction(tx),
+        });
+        return false;
       }
       await this.complete(
         tx,

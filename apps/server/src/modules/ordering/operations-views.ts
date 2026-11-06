@@ -7,7 +7,12 @@ import { MerchantsService } from '../merchants/index.js';
 import { UNTIL_ENDED } from './active-orders.js';
 import type { CaptainTrack } from './order-events.js';
 import { orderKey, readOrders, type OrderView } from './order-views.js';
-import { type PickupRequestView, pickupRequestsOf } from './pickup-views.js';
+import {
+  type PickupDisputeView,
+  pickupDisputesOf,
+  type PickupRequestView,
+  pickupRequestsOf,
+} from './pickup-views.js';
 import { orderEvents, orders } from './schema.js';
 
 // AP §9.1.3, §8.3: operations' alerts, each from its moment (owner decision
@@ -57,6 +62,8 @@ export interface OperationsOrder {
   pickupPending: boolean;
   // AP §9.3.1: every pickup request, newest first.
   pickupRequests: PickupRequestView[];
+  // RA §8.10 item 8: the restaurant's dispute after the pickup.
+  pickupDispute: PickupDisputeView | null;
   newCustomer: boolean;
 }
 
@@ -156,7 +163,10 @@ export class OperationsViews {
       .where(and(inArray(orders.customerAccountId, customerIds), eq(orders.status, 'delivered')))
       .groupBy(orders.customerAccountId);
     const regulars = new Set(delivered.map((row) => row.customerAccountId));
-    const requests = await pickupRequestsOf(this.database.db, ids);
+    const [requests, disputes] = await Promise.all([
+      pickupRequestsOf(this.database.db, views),
+      pickupDisputesOf(this.database.db, views),
+    ]);
     const names = await this.merchants.names([...new Set(views.map((view) => view.restaurantId))]);
     const captainIds = [...new Set(extras.flatMap((row) => row.captainId ?? []))];
     const captains = new Map(
@@ -188,8 +198,11 @@ export class OperationsViews {
       if (waiting && atRestaurant && passed(view.captainArrival?.waitingAlertAt ?? null)) {
         alerts.push('captain_waiting');
       }
-      const latest = requests.get(view.id)?.[0];
-      if (waiting && latest?.outcome === 'amount_incorrect') alerts.push('pickup_disputed');
+      // RA §8.10 item 6.4: until the pickup completes or the order ends.
+      const amountDisputed = (requests.get(view.id) ?? []).some(
+        (request) => request.outcome === 'amount_incorrect',
+      );
+      if (waiting && amountDisputed) alerts.push('pickup_disputed');
       return {
         order: view,
         restaurantName: names.get(view.restaurantId)?.nameAr ?? '',
@@ -227,6 +240,7 @@ export class OperationsViews {
         needsAssignment: more.captainTrack === 'searching',
         pickupPending: more.captainTrack === 'pickup_pending',
         pickupRequests: requests.get(view.id) ?? [],
+        pickupDispute: disputes.get(view.id) ?? null,
         newCustomer: !regulars.has(view.customerAccountId),
       };
     });

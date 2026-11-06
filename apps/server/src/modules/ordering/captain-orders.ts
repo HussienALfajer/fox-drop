@@ -443,8 +443,8 @@ export class CaptainOrders {
     const restaurant = await this.merchants.restaurant(order.restaurantId, now);
     if (!restaurant) throw new Error(`restaurant ${order.restaurantId} not found`);
     const [requests, disputes] = await Promise.all([
-      pickupRequestsOf(this.database.db, [order.id]),
-      pickupDisputesOf(this.database.db, [order.id]),
+      pickupRequestsOf(this.database.db, [order]),
+      pickupDisputesOf(this.database.db, [order]),
     ]);
     return {
       order,

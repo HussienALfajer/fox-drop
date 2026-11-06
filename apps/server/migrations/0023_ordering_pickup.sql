@@ -49,6 +49,7 @@ ALTER TABLE "ordering"."pickup_disputes" ADD CONSTRAINT "pickup_disputes_pickup_
 ALTER TABLE "ordering"."pickup_disputes" ADD CONSTRAINT "pickup_disputes_order_id_order_placed_at_orders_id_placed_at_fk" FOREIGN KEY ("order_id","order_placed_at") REFERENCES "ordering"."orders"("id","placed_at") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "ordering"."pickup_requests" ADD CONSTRAINT "pickup_requests_order_id_order_placed_at_orders_id_placed_at_fk" FOREIGN KEY ("order_id","order_placed_at") REFERENCES "ordering"."orders"("id","placed_at") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "pickup_disputes_one_per_order" ON "ordering"."pickup_disputes" USING btree ("order_id");--> statement-breakpoint
+CREATE INDEX "pickup_disputes_request" ON "ordering"."pickup_disputes" USING btree ("pickup_request_id");--> statement-breakpoint
 CREATE INDEX "pickup_requests_order" ON "ordering"."pickup_requests" USING btree ("order_id","opened_at");--> statement-breakpoint
 CREATE UNIQUE INDEX "pickup_requests_one_open_per_order" ON "ordering"."pickup_requests" USING btree ("order_id") WHERE "status" = 'open';--> statement-breakpoint
 ALTER TABLE "ordering"."orders" ADD CONSTRAINT "orders_pickup" CHECK (("picked_up_at" IS NULL) = ("ready_by_pickup" IS NULL) AND ("status" NOT IN ('picked_up', 'arrived', 'delivered', 'failed') OR ("picked_up_at" IS NOT NULL AND "ready_at" IS NOT NULL)));

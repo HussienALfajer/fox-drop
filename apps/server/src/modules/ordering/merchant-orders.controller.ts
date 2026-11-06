@@ -18,7 +18,7 @@ import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { MerchantController } from '../../http/route-groups.js';
 import { CaptainsService } from '../captains/index.js';
 import { CustomersService } from '../customers/index.js';
-import type { AppSession } from '../identity/index.js';
+import { type AppSession, MerchantAccountsService } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 import { linesBody, linesOfBody, paymentLines } from './captain-orders.controller.js';
@@ -134,14 +134,18 @@ const boardOrder = z.object({
               'cancelled',
             ])
             .nullable()
-            .describe(
-              'automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام»; the other devices close the prompt with «أكّد {اسم الجهاز} الاستلام» or «أبلغ … أن المبلغ غير صحيح».',
-            ),
+            .describe('automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام».'),
           amount: z.object({ amount: minor, currency: z.string().length(3) }),
           lines: paymentLines.describe('«400 ₺» or «5 $ + 195 ₺».'),
           baseEquivalent: minor.describe('The lines in the base currency, by the order rates.'),
           confirmBy: z.iso.datetime().describe('«يُؤكَّد تلقائياً خلال {ث} ث» counts down to it.'),
           closedAt: z.iso.datetime().nullable(),
+          closedByUserName: z
+            .string()
+            .nullable()
+            .describe(
+              'The other devices close the prompt with «أكّد {اسم المستخدم} الاستلام» or «أبلغ {اسم المستخدم} أن المبلغ غير صحيح» (RA §8.10).',
+            ),
           closedByDeviceName: z.string().nullable(),
         })
         .nullable()
@@ -217,6 +221,7 @@ export class MerchantOrdersController {
     private readonly customers: CustomersService,
     private readonly captains: CaptainsService,
     private readonly pickups: PickupCommands,
+    private readonly accounts: MerchantAccountsService,
     private readonly settings: SettingsService,
   ) {}
 
@@ -287,8 +292,8 @@ export class MerchantOrdersController {
 
   // RA §8.10 items 6 and 8 «المبلغ غير صحيح»: rejects an open request, or,
   // within order.pickup_dispute_window_min after the pickup, records the
-  // dispute. 409 pickup_already_disputed, order_state_changed; 400
-  // invalid_lines, currency_not_accepted.
+  // dispute. 409 pickup_already_disputed, currency_not_accepted,
+  // order_state_changed; 400 invalid_lines.
   @Post('orders/:orderId/pickup/dispute')
   @AppSignedIn()
   @Idempotent()
@@ -348,11 +353,7 @@ export class MerchantOrdersController {
       if (refusal === 'unknown_order') {
         throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: refusal });
       }
-      if (
-        refusal === 'invalid_prep_time' ||
-        refusal === 'invalid_lines' ||
-        refusal === 'currency_not_accepted'
-      ) {
+      if (refusal === 'invalid_prep_time' || refusal === 'invalid_lines') {
         throw new BadRequestException({
           statusCode: HttpStatus.BAD_REQUEST,
           error: refusal,
@@ -397,11 +398,12 @@ export class MerchantOrdersController {
         (captain) => (captain ? [[captain.id, captain] as const] : []),
       ),
     );
-    const ids = orders.map((order) => order.id);
-    const [requests, disputes] = await Promise.all([
-      this.pickups.requests(ids),
-      this.pickups.disputes(ids),
+    const [requests, disputes, users] = await Promise.all([
+      this.pickups.requests(orders),
+      this.pickups.disputes(orders),
+      this.accounts.accounts(restaurantId),
     ]);
+    const userNames = new Map(users.map((user) => [user.id, user.name]));
     const latest = new Map([...requests].map(([orderId, list]) => [orderId, list[0]!] as const));
     const [firstNames, deviceNames] = await Promise.all([
       this.customers.firstNames([...new Set(orders.map((order) => order.customerAccountId))]),
@@ -470,6 +472,7 @@ export class MerchantOrdersController {
         disputes.get(order.id)?.at ?? null,
         windowMin,
         deviceNames,
+        userNames,
       ),
     }));
   }
@@ -490,6 +493,7 @@ function pickupBody(
   disputedAt: Date | null,
   windowMin: number,
   deviceNames: Map<string, string>,
+  userNames: Map<string, string | null>,
 ) {
   return {
     request: request && {
@@ -501,6 +505,10 @@ function pickupBody(
       baseEquivalent: request.baseEquivalent.toString(),
       confirmBy: request.confirmBy.toISOString(),
       closedAt: request.closedAt?.toISOString() ?? null,
+      closedByUserName:
+        request.closedBy?.type === 'restaurant' && request.closedBy.id !== null
+          ? (userNames.get(request.closedBy.id) ?? null)
+          : null,
       closedByDeviceName:
         request.closedBy?.device == null
           ? null
