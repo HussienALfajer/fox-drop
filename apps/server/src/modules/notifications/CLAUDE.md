@@ -17,7 +17,7 @@ Push, in-app messages, real-time publishing and sound levels (architecture §4.2
 
 - `captain:`, `customer:`, `ops:` and `ops_map:` channels (§6.2), with their first publishers. A captain's sign-in that ends their other device's session (`other_device`) runs inside the sign-in's transaction and calls no `notifyEnded` yet; the captain channel's slice adds it.
 - The termination of a restaurant does not end its sessions, so its devices' connections stop at their token's expiry (15 minutes); the termination's slice disconnects them.
-- Presence and the restaurant devices' heartbeats (RA §4.3, §4.6, architecture §6.3), owner decision 2026-11-06: later, with the receiving-device rule. The connection's user being the session makes presence per device.
+- Presence and the restaurant devices' heartbeats (RA §4.3, §4.6, architecture §6.3), owner decision 2026-11-06: later, with the receiving-device rule. `infra/centrifugo/config.yaml` sets no `client.ping_interval` yet (Centrifugo's default is 25 s, the spec's heartbeat 20 s and disconnect 60 s): set it with that work. The connection's user being the session makes presence per device.
 - Push (FCM, APNs), owner decision 2026-11-06: later; the outbox relay is where it joins, and AP §8.3's apology on an automatic cancellation with it.
 - A Valkey engine for Centrifugo, so history survives a restart and several Centrifugo nodes share it.
 - `allowed_origins` for the web apps' connections (the panel's live board).

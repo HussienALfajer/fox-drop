@@ -132,13 +132,16 @@ export class OrdersService implements OnModuleInit {
       throw new Error(`restaurant ${restaurant.id} has no commission in effect`);
     }
     const { cityId } = restaurant;
-    const [rules, payTable, autoCancelMin] = await Promise.all([
+    const [rules, payTable, acceptAlertMin, autoCancelMin] = await Promise.all([
       this.activeOrders.rules(cityId),
       this.captains.payTable(cityId, now),
+      this.settings.get('order.merchant_accept_alert_min', { cityId }),
       this.settings.get('order.merchant_auto_cancel_min', { cityId }),
     ]);
 
-    // RA §8.3: the restaurant's countdown ends when the job runs.
+    // RA §8.2–8.3: the restaurant is late from the first, and the
+    // countdown ends when the job runs.
+    const acceptAlertAt = new Date(now.getTime() + acceptAlertMin * 60_000);
     const autoCancelAt = new Date(now.getTime() + autoCancelMin * 60_000);
 
     // pg-boss connects before the locks are taken, never while they are held.
@@ -199,6 +202,7 @@ export class OrdersService implements OnModuleInit {
             rateSnapshot: plain(kept),
             payIn: quote.payIn?.currency ?? null,
             note: command.note,
+            acceptAlertAt,
             autoCancelAt,
             estimateFromMin: quote.estimate.fromMin,
             estimateToMin: quote.estimate.toMin,

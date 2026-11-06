@@ -19,6 +19,7 @@ part 'merchant_orders_dto_output_orders_inner.g.dart';
 /// * [status] - AP §8.1; the board column (RA §8.1–8.2).
 /// * [version] - Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3).
 /// * [placedAt]
+/// * [acceptAlertAt] - While placed from then: the card turns red and the prompt adds «تأخرتم في الرد — سيتصل بكم فريق العمليات» (RA §8.2–8.3).
 /// * [autoCancelAt] - «يُلغى تلقائياً خلال {د:ث}» counts down to it while placed (RA §8.3).
 /// * [customer]
 /// * [note] - The customer's note.
@@ -50,6 +51,10 @@ abstract class MerchantOrdersDtoOutputOrdersInner
 
   @BuiltValueField(wireName: r'placedAt')
   DateTime get placedAt;
+
+  /// While placed from then: the card turns red and the prompt adds «تأخرتم في الرد — سيتصل بكم فريق العمليات» (RA §8.2–8.3).
+  @BuiltValueField(wireName: r'acceptAlertAt')
+  DateTime? get acceptAlertAt;
 
   /// «يُلغى تلقائياً خلال {د:ث}» counts down to it while placed (RA §8.3).
   @BuiltValueField(wireName: r'autoCancelAt')
@@ -129,6 +134,13 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
       object.placedAt,
       specifiedType: const FullType(DateTime),
     );
+    yield r'acceptAlertAt';
+    yield object.acceptAlertAt == null
+        ? null
+        : serializers.serialize(
+            object.acceptAlertAt,
+            specifiedType: const FullType.nullable(DateTime),
+          );
     yield r'autoCancelAt';
     yield object.autoCancelAt == null
         ? null
@@ -235,6 +247,16 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
                   )
                   as DateTime;
           result.placedAt = valueDes;
+          break;
+        case r'acceptAlertAt':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
+          if (valueDes == null) continue;
+          result.acceptAlertAt = valueDes;
           break;
         case r'autoCancelAt':
           final valueDes =

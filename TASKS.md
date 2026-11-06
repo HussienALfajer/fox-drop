@@ -20,7 +20,8 @@ Slice 1.9, real time (`docs/roadmap.md`, Phase 1): the outbox relay, Centrifugo 
   - Pull request 2, `feat/realtime-reads`: the polling fallback and Centrifugo on staging.
     - [x] The order reads for the polling fallback with the order version: the restaurant's board (`GET /v1/merchant/orders`, RA §8.2–8.4, with `auto_cancel_at` for the countdown) and the customer's order and active orders (`GET /v1/customer/orders/{orderId}`, `/active`, CU §11, §6).
     - [x] Centrifugo in `infra/compose.yaml` with the server's `CENTRIFUGO_*` (its proxies call `http://api:3000` on the environment's network), checked by `infra.test.mjs`.
-    - [ ] Before the merge: mark staging's outbox rows from before real time published, without sending them (test data only; every such order has long been cancelled), so the first run does not ring old orders on restaurant devices. After the deploy: check a connection on staging.
+    - [x] Staging's outbox before the merge: checked on 2026-11-06, it has no rows and no order was ever placed there, so the first relay run sends nothing old.
+    - [ ] After the deploy: check Centrifugo and a connection on staging.
     - [ ] `checker`, the `reviewer`, the pull request, the handover to slice 1.10.
 
 ## Notes from earlier slices

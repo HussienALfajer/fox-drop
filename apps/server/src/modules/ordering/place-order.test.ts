@@ -652,10 +652,27 @@ describe("the order's reads, for the screens and the polling fallback (CU §4.3,
     const headers = await signedIn();
     const empty = await app.inject({ method: 'GET', url: '/v1/customer/orders/active', headers });
     expect(empty.json()).toEqual({ orders: [] });
-    const { order } = (await place(headers)).json();
-    const active = await app.inject({ method: 'GET', url: '/v1/customer/orders/active', headers });
-    expect(active.json().orders.map((each: { id: string }) => each.id)).toEqual([order.id]);
-    await end(order.id);
+    const settings = app.get(SettingsService);
+    await settings.update('customer.new_max_active_orders', { cityId: azaz }, 2, bySystem);
+    try {
+      const older = (await place(headers)).json().order;
+      const newer = (await place(headers)).json().order;
+      const active = await app.inject({
+        method: 'GET',
+        url: '/v1/customer/orders/active',
+        headers,
+      });
+      expect(active.json().orders.map((each: { id: string }) => each.id)).toEqual([
+        newer.id,
+        older.id,
+      ]);
+      await end(older.id);
+      const left = await app.inject({ method: 'GET', url: '/v1/customer/orders/active', headers });
+      expect(left.json().orders.map((each: { id: string }) => each.id)).toEqual([newer.id]);
+      await end(newer.id);
+    } finally {
+      await settings.update('customer.new_max_active_orders', { cityId: azaz }, 1, bySystem);
+    }
     const after = await app.inject({ method: 'GET', url: '/v1/customer/orders/active', headers });
     expect(after.json()).toEqual({ orders: [] });
   });
@@ -664,7 +681,21 @@ describe("the order's reads, for the screens and the polling fallback (CU §4.3,
     const { id: own, item } = await restaurantWith('مطعم اللوحة');
     const lines = cart(item, 1);
     const cook = await merchantSignedIn(own);
-    const first = (await place(await signedIn(), { restaurantId: own, lines })).json().order;
+    const completed = await signedIn();
+    const saved = await app.inject({
+      method: 'PUT',
+      url: '/v1/customer/profile',
+      headers: completed,
+      payload: {
+        firstName: 'سامر',
+        lastName: 'الحلبي',
+        gender: 'male',
+        birthday: null,
+        acceptTerms: true,
+      },
+    });
+    expect(saved.statusCode).toBe(200);
+    const first = (await place(completed, { restaurantId: own, lines })).json().order;
     const second = (await place(await signedIn(), { restaurantId: own, lines })).json().order;
     const elsewhere = (await place(await signedIn())).json().order;
 
@@ -672,15 +703,20 @@ describe("the order's reads, for the screens and the polling fallback (CU §4.3,
     expect(board.statusCode).toBe(200);
     const { orders } = board.json();
     expect(orders.map((each: { id: string }) => each.id)).toEqual([first.id, second.id]);
+    // A customer who has not completed the account has no name yet.
+    expect(orders[1].customer).toEqual({ firstName: null, neighbourhood: 'المركز' });
     expect(orders[0]).toEqual({
       id: first.id,
       number: first.number,
       status: 'placed',
       version: 1,
       placedAt: first.placedAt,
-      // RA §8.3: order.merchant_auto_cancel_min (7) after placing.
+      // RA §8.2–8.3: order.merchant_accept_alert_min (3) and
+      // order.merchant_auto_cancel_min (7) after placing.
+      acceptAlertAt: new Date(Date.parse(first.placedAt) + 3 * 60_000).toISOString(),
       autoCancelAt: new Date(Date.parse(first.placedAt) + 7 * 60_000).toISOString(),
-      customer: { firstName: null, neighbourhood: 'المركز' },
+      // The first name only, never the last name (RA §8.4).
+      customer: { firstName: 'سامر', neighbourhood: 'المركز' },
       note: 'الرجاء الاتصال عند الوصول',
       lines: [{ name: 'شاورما', quantity: 1, options: [], note: null, lineTotal: '12000' }],
       currency: 'TRY',

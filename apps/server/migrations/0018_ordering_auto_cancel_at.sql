@@ -1,1 +1,0 @@
-ALTER TABLE "ordering"."orders" ADD COLUMN "auto_cancel_at" timestamp with time zone;

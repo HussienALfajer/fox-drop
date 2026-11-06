@@ -69,7 +69,21 @@ test("Centrifugo runs development's image and calls this environment's API", () 
       ['customer', 'http://api:3000/v1/customer/realtime/subscribe'],
     ],
   );
-  assert.equal(compose['x-server-environment'].CENTRIFUGO_API_URL, 'http://centrifugo:8000/api');
+  // Only the API and the worker get its settings, and only the API the
+  // token and proxy secrets.
+  const realtime = (name) =>
+    Object.keys(compose.services[name].environment)
+      .filter((key) => key.startsWith('CENTRIFUGO_'))
+      .toSorted();
+  assert.deepEqual(realtime('api'), [
+    'CENTRIFUGO_API_KEY',
+    'CENTRIFUGO_API_URL',
+    'CENTRIFUGO_PROXY_SECRET',
+    'CENTRIFUGO_TOKEN_SECRET',
+  ]);
+  assert.deepEqual(realtime('worker'), ['CENTRIFUGO_API_KEY', 'CENTRIFUGO_API_URL']);
+  for (const name of ['dispatcher', 'otp-sender']) assert.deepEqual(realtime(name), []);
+  assert.equal(compose.services.api.environment.CENTRIFUGO_API_URL, 'http://centrifugo:8000/api');
 });
 
 test('nginx replaces X-Forwarded-For with the address it sees', () => {

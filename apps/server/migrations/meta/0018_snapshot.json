@@ -1,5 +1,5 @@
 {
-  "id": "56b46d4f-618d-45f3-8769-149817b9427e",
+  "id": "ed8d254e-31ce-4539-8ccc-f9d38263d5c5",
   "prevId": "53eadadb-ff32-4057-831e-d526a5912ec8",
   "version": "7",
   "dialect": "postgresql",
@@ -5891,6 +5891,12 @@
         "note": {
           "name": "note",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accept_alert_at": {
+          "name": "accept_alert_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },

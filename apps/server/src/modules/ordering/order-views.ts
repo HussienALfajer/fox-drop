@@ -22,8 +22,9 @@ export interface OrderView {
   // ignore an event not newer than the version they show.
   version: number;
   placedAt: Date;
-  // RA §8.3: the automatic cancellation's countdown; null for an order
-  // placed before slice 1.9.
+  // RA §8.2–8.3: late to answer from the first, cancelled automatically at
+  // the second; null for an order placed before slice 1.9.
+  acceptAlertAt: Date | null;
   autoCancelAt: Date | null;
   cancellation: { at: Date; reason: string } | null;
   currency: string;
@@ -74,6 +75,7 @@ export async function readOrders(
       status: orders.status,
       version: orders.version,
       placedAt: orders.placedAt,
+      acceptAlertAt: orders.acceptAlertAt,
       autoCancelAt: orders.autoCancelAt,
       cancelledAt: orders.cancelledAt,
       cancelReason: orders.cancelReason,
@@ -102,7 +104,11 @@ export async function readOrders(
     })
     .from(orders)
     .where(where)
-    .orderBy(newestFirst ? desc(orders.placedAt) : asc(orders.placedAt), asc(orders.id));
+    .orderBy(
+      ...(newestFirst
+        ? [desc(orders.placedAt), desc(orders.id)]
+        : [asc(orders.placedAt), asc(orders.id)]),
+    );
   if (rows.length === 0) return [];
   const lines = await executor
     .select()
@@ -131,6 +137,7 @@ export async function readOrders(
       status: row.status,
       version: row.version,
       placedAt: row.placedAt,
+      acceptAlertAt: row.acceptAlertAt,
       autoCancelAt: row.autoCancelAt,
       cancellation:
         row.cancelledAt && row.cancelReason

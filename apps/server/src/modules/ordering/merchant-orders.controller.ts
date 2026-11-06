@@ -7,7 +7,6 @@ import { CustomersService } from '../customers/index.js';
 import type { AppSession } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { minor } from './customer-quote.controller.js';
-import type { OrderView } from './order-views.js';
 import { OrdersService } from './orders.service.js';
 import { orderStatuses } from './schema.js';
 
@@ -25,6 +24,12 @@ class MerchantOrdersDto extends createZodDto(
               'Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3).',
             ),
           placedAt: z.iso.datetime(),
+          acceptAlertAt: z.iso
+            .datetime()
+            .nullable()
+            .describe(
+              'While placed from then: the card turns red and the prompt adds «تأخرتم في الرد — سيتصل بكم فريق العمليات» (RA §8.2–8.3).',
+            ),
           autoCancelAt: z.iso
             .datetime()
             .nullable()
@@ -83,32 +88,33 @@ export class MerchantOrdersController {
       });
     }
     const orders = await this.orders.restaurantActiveOrders(restaurantId);
-    return { orders: await Promise.all(orders.map((order) => this.orderBody(order))) };
-  }
-
-  private async orderBody(order: OrderView) {
-    const profile = await this.customers.profile(order.customerAccountId);
+    const firstNames = await this.customers.firstNames([
+      ...new Set(orders.map((order) => order.customerAccountId)),
+    ]);
     return {
-      id: order.id,
-      number: order.number.toString(),
-      status: order.status,
-      version: order.version,
-      placedAt: order.placedAt.toISOString(),
-      autoCancelAt: order.autoCancelAt?.toISOString() ?? null,
-      customer: {
-        firstName: profile?.firstName ?? null,
-        neighbourhood: order.address.neighbourhood,
-      },
-      note: order.note,
-      lines: order.lines.map((line) => ({
-        name: line.name,
-        quantity: line.quantity,
-        options: line.options.map((option) => ({ name: option.name })),
-        note: line.note,
-        lineTotal: line.lineTotal.toString(),
+      orders: orders.map((order) => ({
+        id: order.id,
+        number: order.number.toString(),
+        status: order.status,
+        version: order.version,
+        placedAt: order.placedAt.toISOString(),
+        acceptAlertAt: order.acceptAlertAt?.toISOString() ?? null,
+        autoCancelAt: order.autoCancelAt?.toISOString() ?? null,
+        customer: {
+          firstName: firstNames.get(order.customerAccountId) ?? null,
+          neighbourhood: order.address.neighbourhood,
+        },
+        note: order.note,
+        lines: order.lines.map((line) => ({
+          name: line.name,
+          quantity: line.quantity,
+          options: line.options.map((option) => ({ name: option.name })),
+          note: line.note,
+          lineTotal: line.lineTotal.toString(),
+        })),
+        currency: order.currency,
+        itemsValue: order.money.itemsValue.toString(),
       })),
-      currency: order.currency,
-      itemsValue: order.money.itemsValue.toString(),
     };
   }
 }

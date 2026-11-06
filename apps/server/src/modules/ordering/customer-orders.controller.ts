@@ -151,7 +151,10 @@ export class CustomerOrdersController {
   @ZodResponse({ status: 200, type: CustomerActiveOrdersDto })
   async active(@CurrentAppSession() session: AppSession) {
     const orders = await this.orders.customerActiveOrders(session.accountId);
-    return { orders: await Promise.all(orders.map((order) => this.orderBody(order))) };
+    const names = await this.merchants.names([
+      ...new Set(orders.map((order) => order.restaurantId)),
+    ]);
+    return { orders: orders.map((order) => orderBody(order, names)) };
   }
 
   // 404 unknown_order for another customer's order.
@@ -163,7 +166,7 @@ export class CustomerOrdersController {
     if (!order) {
       throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: 'unknown_order' });
     }
-    return { order: await this.orderBody(order) };
+    return { order: await this.withNames(order) };
   }
 
   // 409 quote_changed or order_blocked with the new quote, which shows the
@@ -202,7 +205,7 @@ export class CustomerOrdersController {
         },
         new Date(),
       );
-      return { order: await this.orderBody(order) };
+      return { order: await this.withNames(order) };
     } catch (error) {
       if (!(error instanceof OrderRefusedError)) throw error;
       const { refusal, quote } = error;
@@ -223,47 +226,54 @@ export class CustomerOrdersController {
     }
   }
 
-  // What the customer sees of the order: never the commission or the
-  // captain's pay (CU §11.1).
-  private async orderBody(order: OrderView) {
-    const restaurant = await this.merchants.restaurant(order.restaurantId);
-    if (!restaurant) throw new Error(`order ${order.id} has an unknown restaurant`);
-    return {
-      id: order.id,
-      number: text(order.number),
-      status: order.status,
-      version: order.version,
-      placedAt: order.placedAt.toISOString(),
-      cancellation: order.cancellation && {
-        at: order.cancellation.at.toISOString(),
-        reason: order.cancellation.reason,
-      },
-      restaurant: { id: restaurant.id, nameAr: restaurant.nameAr, nameEn: restaurant.nameEn },
-      currency: order.currency,
-      money: {
-        itemsValue: text(order.money.itemsValue),
-        deliveryFee: text(order.money.deliveryFee),
-        deliveryFree: order.deliveryFree,
-        discount: text(order.money.discount),
-        rounding: text(order.money.rounding),
-        total: text(order.money.total),
-      },
-      equivalents: order.equivalents.map((entry) => ({
-        currency: entry.currency,
-        amount: text(entry.amount),
-      })),
-      lines: order.lines.map((line) => ({
-        ...line,
-        options: line.options.map((option) => ({ ...option, priceDelta: text(option.priceDelta) })),
-        unitPrice: text(line.unitPrice),
-        lineTotal: text(line.lineTotal),
-      })),
-      payIn: order.payIn,
-      note: order.note,
-      estimate: order.estimate,
-      address: order.address,
-    };
+  private async withNames(order: OrderView) {
+    return orderBody(order, await this.merchants.names([order.restaurantId]));
   }
+}
+
+// What the customer sees of the order: never the commission or the
+// captain's pay (CU §11.1).
+function orderBody(
+  order: OrderView,
+  names: Map<string, { nameAr: string; nameEn: string | null }>,
+) {
+  const restaurant = names.get(order.restaurantId);
+  if (!restaurant) throw new Error(`order ${order.id} has an unknown restaurant`);
+  return {
+    id: order.id,
+    number: text(order.number),
+    status: order.status,
+    version: order.version,
+    placedAt: order.placedAt.toISOString(),
+    cancellation: order.cancellation && {
+      at: order.cancellation.at.toISOString(),
+      reason: order.cancellation.reason,
+    },
+    restaurant: { id: order.restaurantId, ...restaurant },
+    currency: order.currency,
+    money: {
+      itemsValue: text(order.money.itemsValue),
+      deliveryFee: text(order.money.deliveryFee),
+      deliveryFree: order.deliveryFree,
+      discount: text(order.money.discount),
+      rounding: text(order.money.rounding),
+      total: text(order.money.total),
+    },
+    equivalents: order.equivalents.map((entry) => ({
+      currency: entry.currency,
+      amount: text(entry.amount),
+    })),
+    lines: order.lines.map((line) => ({
+      ...line,
+      options: line.options.map((option) => ({ ...option, priceDelta: text(option.priceDelta) })),
+      unitPrice: text(line.unitPrice),
+      lineTotal: text(line.lineTotal),
+    })),
+    payIn: order.payIn,
+    note: order.note,
+    estimate: order.estimate,
+    address: order.address,
+  };
 }
 
 const text = (value: bigint) => value.toString();

@@ -143,6 +143,8 @@ class _$MerchantOrdersDtoOutputOrdersInner
   @override
   final DateTime placedAt;
   @override
+  final DateTime? acceptAlertAt;
+  @override
   final DateTime? autoCancelAt;
   @override
   final MerchantOrdersDtoOutputOrdersInnerCustomer customer;
@@ -165,6 +167,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
     required this.status,
     required this.version,
     required this.placedAt,
+    this.acceptAlertAt,
     this.autoCancelAt,
     required this.customer,
     this.note,
@@ -190,6 +193,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
         status == other.status &&
         version == other.version &&
         placedAt == other.placedAt &&
+        acceptAlertAt == other.acceptAlertAt &&
         autoCancelAt == other.autoCancelAt &&
         customer == other.customer &&
         note == other.note &&
@@ -206,6 +210,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, version.hashCode);
     _$hash = $jc(_$hash, placedAt.hashCode);
+    _$hash = $jc(_$hash, acceptAlertAt.hashCode);
     _$hash = $jc(_$hash, autoCancelAt.hashCode);
     _$hash = $jc(_$hash, customer.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
@@ -224,6 +229,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
           ..add('status', status)
           ..add('version', version)
           ..add('placedAt', placedAt)
+          ..add('acceptAlertAt', acceptAlertAt)
           ..add('autoCancelAt', autoCancelAt)
           ..add('customer', customer)
           ..add('note', note)
@@ -262,6 +268,11 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
   DateTime? _placedAt;
   DateTime? get placedAt => _$this._placedAt;
   set placedAt(DateTime? placedAt) => _$this._placedAt = placedAt;
+
+  DateTime? _acceptAlertAt;
+  DateTime? get acceptAlertAt => _$this._acceptAlertAt;
+  set acceptAlertAt(DateTime? acceptAlertAt) =>
+      _$this._acceptAlertAt = acceptAlertAt;
 
   DateTime? _autoCancelAt;
   DateTime? get autoCancelAt => _$this._autoCancelAt;
@@ -305,6 +316,7 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
       _status = $v.status;
       _version = $v.version;
       _placedAt = $v.placedAt;
+      _acceptAlertAt = $v.acceptAlertAt;
       _autoCancelAt = $v.autoCancelAt;
       _customer = $v.customer.toBuilder();
       _note = $v.note;
@@ -362,6 +374,7 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
               r'MerchantOrdersDtoOutputOrdersInner',
               'placedAt',
             ),
+            acceptAlertAt: acceptAlertAt,
             autoCancelAt: autoCancelAt,
             customer: customer.build(),
             note: note,

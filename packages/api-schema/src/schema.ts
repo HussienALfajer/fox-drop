@@ -2236,6 +2236,8 @@ export interface components {
                 version: number;
                 /** Format: date-time */
                 placedAt: string;
+                /** @description While placed from then: the card turns red and the prompt adds «تأخرتم في الرد — سيتصل بكم فريق العمليات» (RA §8.2–8.3). */
+                acceptAlertAt: string | null;
                 /** @description «يُلغى تلقائياً خلال {د:ث}» counts down to it while placed (RA §8.3). */
                 autoCancelAt: string | null;
                 /** @description Never the phone number, the last name or the full address (RA §8.4). */

@@ -24,6 +24,14 @@ x-server: &server
   networks: [default, osrm]
   mem_limit: 384m
 
+# Real time (architecture §6): the API and the worker publish through
+# Centrifugo's HTTP API on this network; only the API signs connection tokens
+# and checks the subscription proxy's secret (§15: each process gets the
+# secrets it uses).
+x-centrifugo-publish: &centrifugo-publish
+  CENTRIFUGO_API_URL: http://centrifugo:8000/api
+  CENTRIFUGO_API_KEY: ${CENTRIFUGO_API_KEY:?}
+
 x-server-environment: &server-environment
   FOX_DROP_ENVIRONMENT: ${FOXDROP_ENV:?}
   # Sentry's release (§16); the image carries it too.
@@ -40,13 +48,6 @@ x-server-environment: &server-environment
   OSRM_MOTORBIKE_URL: http://osrm-motorbike:5000
   OSRM_BICYCLE_URL: http://osrm-bicycle:5000
   OSRM_WALKING_URL: http://osrm-walking:5000
-  # Real time (architecture §6): the API signs connection tokens and checks
-  # the subscription proxy's secret; the API and the worker publish through
-  # Centrifugo's HTTP API on this network.
-  CENTRIFUGO_API_URL: http://centrifugo:8000/api
-  CENTRIFUGO_TOKEN_SECRET: ${CENTRIFUGO_TOKEN_SECRET:?}
-  CENTRIFUGO_API_KEY: ${CENTRIFUGO_API_KEY:?}
-  CENTRIFUGO_PROXY_SECRET: ${CENTRIFUGO_PROXY_SECRET:?}
 
 services:
   postgres:
@@ -105,8 +106,10 @@ services:
   api:
     <<: *server
     environment:
-      <<: *server-environment
+      <<: [*server-environment, *centrifugo-publish]
       PROCESS_ROLE: api
+      CENTRIFUGO_TOKEN_SECRET: ${CENTRIFUGO_TOKEN_SECRET:?}
+      CENTRIFUGO_PROXY_SECRET: ${CENTRIFUGO_PROXY_SECRET:?}
     ports:
       - 127.0.0.1:${API_PORT:?}:3000
     healthcheck:
@@ -123,7 +126,7 @@ services:
   worker:
     <<: *server
     environment:
-      <<: *server-environment
+      <<: [*server-environment, *centrifugo-publish]
       PROCESS_ROLE: worker
 
   dispatcher:
