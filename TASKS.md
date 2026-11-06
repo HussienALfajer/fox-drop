@@ -4,20 +4,17 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 1.14, the walking skeleton on staging (`docs/roadmap.md`, Phase 1). The real WhatsApp sender (W1, W2), App Check on the server (W3) and the emergency sign-in (W4) it waited for are merged.
+Slice 1.14a, panel sign-in and the emergency code (`docs/roadmap.md`, Phase 1, slice 1.14; owner approval of the split 2026-11-07).
 
-- **Roadmap line:** the whole cycle on real phones. The apps send the App Check token, and the captain and restaurant apps offer «لديّ رمز من العمليات» when no code can be sent (RA §5.2, CA §4.9, architecture §8.3.5).
-- **Specs:** Phase 1's definition in `docs/roadmap.md` (owner decisions 2026-11-05: functional, unstyled screens with logic kept apart from presentation); the customer, restaurant and captain app sections the cycle crosses (CU §5, §7–§10; RA §5, §8; CA §4.9, §7–§9); architecture §8.3.3 item 1 and §8.3.4–8.3.5, §11, §17.
-- **Branch:** one per pull request, named when the split is approved.
-- **Open items to ask the owner first:**
-  - The design stop: slices 1.11–1.13 left every screen for the design. Does 1.14 build the functional, unstyled screens of Phase 1's definition now, or wait for the UI/UX and design system?
-  - The split into pull requests (the `slice-plan` skill): this slice spans the three Flutter apps, the panel's operations screens and staging, so it is several pull requests.
-  - Firebase: the project, App Check with Play Integrity and App Attest for the apps' identifiers, `FIREBASE_PROJECT_NUMBER` on staging, and when to turn `otp.app_check_required` on.
-  - The phones and the people for the test on staging, and the paired sending numbers.
-  - The panel: the emergency sign-in screen and «أرقام إرسال الرموز» wait for the design; where the emergency screen lives (the captain's profile, the restaurant's users, or both).
+- **Roadmap line:** the setup link with TOTP enrolment and backup codes, sign-in with password and TOTP, sign-out, and the «رمز دخول طارئ» screen (AP §5.1–5.2, architecture §8.3.5). The owner signs in to the panel on staging and issues a code.
+- **Specs:** AP §5.1–5.2, AP §6.1 (the panel hides what the session's permissions do not allow), architecture §8.3.5 and §10, the emergency sign-in in `apps/server/src/modules/identity/CLAUDE.md`. The API exists: `POST /v1/admin/auth/setup/totp`, `/setup/complete`, `/sign-in`, `/sign-out`, `GET /v1/admin/auth/session`, `POST /v1/admin/emergency-sign-in-codes`.
+- **Owner decisions 2026-11-07:** functional, unstyled screens (plain HTML, no styling), logic apart from presentation.
+- **Branch:** `feat/panel-sign-in`.
 - **Plan:**
-  - [ ] Ask the owner the open items above.
-  - [ ] Split the slice with `slice-plan` and get the split approved; then write one checklist per pull request here.
+  - [ ] Setup: the `/setup#token=` page (password, the QR code of `otpauthUri` and the secret, the first TOTP code, the 10 backup codes shown once).
+  - [ ] Sign-in and the session: the sign-in page (login, password, TOTP or backup code), the session read guarding the other routes, sign-out, and a refusal that sends back to sign-in when the session ends.
+  - [ ] The «رمز دخول طارئ» page: the app, the number and the reason; the code and its expiry shown once; shown only with `sign_in.emergency_code`.
+  - [ ] Playwright tests for each page; review; pull request.
 
 ## Notes from earlier slices
 
@@ -166,4 +163,4 @@ Slice 1.14, the walking skeleton on staging (`docs/roadmap.md`, Phase 1). The re
 
 ## Next
 
-Build slice 1.14 once W4 is merged (`docs/roadmap.md`).
+After 1.14a, slice 1.14b (`docs/roadmap.md`).
