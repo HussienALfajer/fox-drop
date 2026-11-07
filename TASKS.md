@@ -8,8 +8,12 @@ Slice 1.14h, the whole cycle on staging (`docs/roadmap.md`, Phase 1, slice 1.14;
 
 - **Roadmap line:** the run book, fixes from the run on real phones, and the ledger checked against AP §8.4. The owner runs the whole cycle on real phones.
 - **Specs:** AP §8.4 (`docs/domain/04-order-money.md`, the order's money and its journals), AP §8.1 (the pickup), §8.5 (custody), §8.6 (the door payment); the definitions of done of the four parties (CU §19, RA §19, CA §19, AP §14); architecture §17 (staging) and the `deploy` skill (the staging APKs, the server's containers).
-- **Branch:** `chore/staging-cycle` (or `fix/` per fix found, as the owner prefers).
-- **Plan:** to write at the slice's start; ask the owner first how to split it (a run book pull request, then one per fix found?), when the run on phones happens, and who plays each party (the customer, the restaurant owner, the captain, operations in the panel). Then: the run book in `docs/` (staging addresses, the APKs from CI, the accounts and numbers set by the server command, each step of the cycle with what each party sees, and the ledger queries that check AP §8.4's lines for the delivered order); deploy `main` to staging; the owner's run; each fix found, with its test first.
+- **Owner decisions 2026-11-07:** a run book pull request first, then one `fix/` pull request per finding of the run, each with its test first; the run today, in Azaz itself; the owner plays every party alone (three phones and the panel on a computer).
+- **Plan:**
+  - [x] `fix/ringtone-compile-sdk`: the restaurant APK had failed in `staging-apks` since slice 1.14e (`flutter_ringtone_player` compiles against android-33); raise that plugin's compileSdk in the restaurant and captain apps, and build the three release APKs on every pull request (`android-release`).
+  - [ ] `docs/staging-cycle-runbook`: the run book (`docs/runbooks/staging-cycle.md`) and the ledger check (`infra/server/check-order-ledger.sql`); `main` deployed to staging with three green APKs.
+  - [ ] The owner's run on phones; the ledger check on the delivered order.
+  - [ ] One `fix/` pull request per finding, test first.
 
 ## Notes from earlier slices
 
