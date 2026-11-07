@@ -50,4 +50,32 @@ void main() {
       expect(text, matches(RegExp(r'\d')));
     }
   });
+
+  // The formatters of AP §4.7 and CU §4.6.
+  test('money, times, dates, durations and distances', () {
+    final l10n = lookupAppLocalizations(const Locale('ar'));
+    expect(l10n.formatMoney('41000', 'TRY'), '410 ₺');
+    expect(l10n.formatMoney('1050', 'USD'), r'10.50 $');
+    expect(l10n.formatMoney('5', 'SYP'), '0.05 ل.س');
+    expect(l10n.formatMoney('-250', 'TRY'), '-2.50 ₺');
+    expect(l10n.formatMoney('100', 'EUR'), '1 EUR');
+    expect(l10n.formatMinuteOfDay(0), '12:00 ص');
+    expect(l10n.formatMinuteOfDay(9 * 60 + 5), '9:05 ص');
+    expect(l10n.formatMinuteOfDay(12 * 60), '12:00 م');
+    expect(l10n.formatMinuteOfDay(23 * 60 + 30), '11:30 م');
+    expect(l10n.formatDate(DateTime(2026, 3, 7)), '07/03/2026');
+    expect(l10n.weekdayName(0), 'الأحد');
+    expect(l10n.weekdayName(6), 'السبت');
+    expect(l10n.durationMinutes(12), '12 د');
+    expect(l10n.formatDistance(850), '850 م');
+    expect(l10n.formatDistance(2400), '2.4 كم');
+    for (final text in [
+      l10n.formatMoney('123456789', 'SYP'),
+      l10n.formatTime(DateTime(2026, 11, 5, 18, 30)),
+      l10n.formatDate(DateTime(2026, 11, 5)),
+      l10n.formatDistance(1234),
+    ]) {
+      expect(text, isNot(matches(_easternDigits)));
+    }
+  });
 }

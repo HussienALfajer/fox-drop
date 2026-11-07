@@ -357,6 +357,222 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'هذا الرقم غير مسجّل ككابتن في FOX DROP'**
   String get captainNotRegistered;
+
+  /// An amount with its currency's symbol or code, such as «410 ₺» or «10.50 $» (CU §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{amount} {symbol}'**
+  String money(String amount, String symbol);
+
+  /// A 12-hour time before noon (CU §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{clock} ص'**
+  String timeMorning(String clock);
+
+  /// A 12-hour time from noon (CU §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{clock} م'**
+  String timeEvening(String clock);
+
+  /// A duration in minutes, such as «12 د» (CU §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} د'**
+  String durationMinutes(int count);
+
+  /// A distance below 1 km, such as «850 م» (CU §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} م'**
+  String distanceMetres(int count);
+
+  /// A distance from 1 km, such as «2.4 كم» (CU §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} كم'**
+  String distanceKilometres(String count);
+
+  /// A weekday's name.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأحد'**
+  String get weekdaySunday;
+
+  /// A weekday's name.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاثنين'**
+  String get weekdayMonday;
+
+  /// A weekday's name.
+  ///
+  /// In ar, this message translates to:
+  /// **'الثلاثاء'**
+  String get weekdayTuesday;
+
+  /// A weekday's name.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأربعاء'**
+  String get weekdayWednesday;
+
+  /// A weekday's name.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخميس'**
+  String get weekdayThursday;
+
+  /// A weekday's name.
+  ///
+  /// In ar, this message translates to:
+  /// **'الجمعة'**
+  String get weekdayFriday;
+
+  /// A weekday's name.
+  ///
+  /// In ar, this message translates to:
+  /// **'السبت'**
+  String get weekdaySaturday;
+
+  /// The new account's details screen (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'أكمل بياناتك'**
+  String get customerProfileTitle;
+
+  /// The first name field (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم'**
+  String get customerProfileFirstName;
+
+  /// The last name field, optional (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكنية'**
+  String get customerProfileLastName;
+
+  /// Under a name that breaks CU §5.3's rule; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب من 2 إلى 30 حرفاً عربياً أو لاتينياً'**
+  String get customerProfileInvalidName;
+
+  /// The gender choice (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'الجنس'**
+  String get customerProfileGender;
+
+  /// A gender choice (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'ذكر'**
+  String get customerProfileMale;
+
+  /// A gender choice (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'أنثى'**
+  String get customerProfileFemale;
+
+  /// Shown when no gender is chosen; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر الجنس'**
+  String get customerProfileGenderRequired;
+
+  /// The optional birthday, from a date picker (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'تاريخ الميلاد'**
+  String get customerProfileBirthday;
+
+  /// The required terms checkbox (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'أوافق على الشروط وسياسة الخصوصية'**
+  String get customerProfileTerms;
+
+  /// Shown when the terms are not ticked; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'يجب الموافقة على الشروط للمتابعة'**
+  String get customerProfileTermsRequired;
+
+  /// Saves a form.
+  ///
+  /// In ar, this message translates to:
+  /// **'حفظ'**
+  String get customerSave;
+
+  /// A save the server refused or did not answer.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الحفظ، حاول مجدداً'**
+  String get customerSaveFailed;
+
+  /// The first open asks for the delivery point (CU §7.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'أين نوصل طلبك؟'**
+  String get customerWhereToDeliver;
+
+  /// Takes the phone's position as the delivery point (CU §7.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'استخدم موقعي الحالي'**
+  String get customerUseMyLocation;
+
+  /// Inside a zone, but no restaurant covers the point (CU §7.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد مطاعم توصل إلى موقعك حالياً'**
+  String get customerNoRestaurantsHere;
+
+  /// The point is outside every zone (CU §7.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'قريباً في منطقتك'**
+  String get customerComingSoon;
+
+  /// Votes for the point's area (CU §7.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'صوّت لمنطقتك'**
+  String get customerVote;
+
+  /// After a vote (CU §7.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'شكراً، سنخبرك عندما نصل إلى منطقتك'**
+  String get customerVoteThanks;
+
+  /// The phone's location service is off; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'خدمة الموقع متوقفة في هاتفك. شغّلها ثم حاول مجدداً.'**
+  String get customerLocationServiceOff;
+
+  /// The location permission was refused; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسمح للتطبيق بالوصول إلى موقعك لنعرف أين نوصل طلبك.'**
+  String get customerLocationDenied;
+
+  /// No position came in time; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحديد موقعك الآن. حاول مجدداً.'**
+  String get customerLocationFailed;
+
+  /// Repeats what failed.
+  ///
+  /// In ar, this message translates to:
+  /// **'حاول مجدداً'**
+  String get customerTryAgain;
 }
 
 class _AppLocalizationsDelegate

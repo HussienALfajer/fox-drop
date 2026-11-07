@@ -156,4 +156,127 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get captainNotRegistered => 'هذا الرقم غير مسجّل ككابتن في FOX DROP';
+
+  @override
+  String money(String amount, String symbol) {
+    return '$amount $symbol';
+  }
+
+  @override
+  String timeMorning(String clock) {
+    return '$clock ص';
+  }
+
+  @override
+  String timeEvening(String clock) {
+    return '$clock م';
+  }
+
+  @override
+  String durationMinutes(int count) {
+    return '$count د';
+  }
+
+  @override
+  String distanceMetres(int count) {
+    return '$count م';
+  }
+
+  @override
+  String distanceKilometres(String count) {
+    return '$count كم';
+  }
+
+  @override
+  String get weekdaySunday => 'الأحد';
+
+  @override
+  String get weekdayMonday => 'الاثنين';
+
+  @override
+  String get weekdayTuesday => 'الثلاثاء';
+
+  @override
+  String get weekdayWednesday => 'الأربعاء';
+
+  @override
+  String get weekdayThursday => 'الخميس';
+
+  @override
+  String get weekdayFriday => 'الجمعة';
+
+  @override
+  String get weekdaySaturday => 'السبت';
+
+  @override
+  String get customerProfileTitle => 'أكمل بياناتك';
+
+  @override
+  String get customerProfileFirstName => 'الاسم';
+
+  @override
+  String get customerProfileLastName => 'الكنية';
+
+  @override
+  String get customerProfileInvalidName =>
+      'اكتب من 2 إلى 30 حرفاً عربياً أو لاتينياً';
+
+  @override
+  String get customerProfileGender => 'الجنس';
+
+  @override
+  String get customerProfileMale => 'ذكر';
+
+  @override
+  String get customerProfileFemale => 'أنثى';
+
+  @override
+  String get customerProfileGenderRequired => 'اختر الجنس';
+
+  @override
+  String get customerProfileBirthday => 'تاريخ الميلاد';
+
+  @override
+  String get customerProfileTerms => 'أوافق على الشروط وسياسة الخصوصية';
+
+  @override
+  String get customerProfileTermsRequired => 'يجب الموافقة على الشروط للمتابعة';
+
+  @override
+  String get customerSave => 'حفظ';
+
+  @override
+  String get customerSaveFailed => 'تعذّر الحفظ، حاول مجدداً';
+
+  @override
+  String get customerWhereToDeliver => 'أين نوصل طلبك؟';
+
+  @override
+  String get customerUseMyLocation => 'استخدم موقعي الحالي';
+
+  @override
+  String get customerNoRestaurantsHere => 'لا توجد مطاعم توصل إلى موقعك حالياً';
+
+  @override
+  String get customerComingSoon => 'قريباً في منطقتك';
+
+  @override
+  String get customerVote => 'صوّت لمنطقتك';
+
+  @override
+  String get customerVoteThanks => 'شكراً، سنخبرك عندما نصل إلى منطقتك';
+
+  @override
+  String get customerLocationServiceOff =>
+      'خدمة الموقع متوقفة في هاتفك. شغّلها ثم حاول مجدداً.';
+
+  @override
+  String get customerLocationDenied =>
+      'اسمح للتطبيق بالوصول إلى موقعك لنعرف أين نوصل طلبك.';
+
+  @override
+  String get customerLocationFailed => 'تعذّر تحديد موقعك الآن. حاول مجدداً.';
+
+  @override
+  String get customerTryAgain => 'حاول مجدداً';
 }
