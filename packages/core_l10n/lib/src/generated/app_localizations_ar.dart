@@ -719,9 +719,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerStatusDelivered => 'تم التسليم';
 
   @override
-  String get customerStatusCancelled => 'نعتذر، أُلغي طلبك';
-
-  @override
   String customerArrivesAbout(String time) {
     return 'يصل حوالي $time';
   }
@@ -1006,4 +1003,70 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get merchantClose => 'إغلاق';
+
+  @override
+  String get customerStepConfirm => 'تأكيد المطعم';
+
+  @override
+  String get customerStepPreparing => 'التحضير';
+
+  @override
+  String get customerStepOnTheWay => 'في الطريق';
+
+  @override
+  String get customerStepAtDoor => 'عند الباب';
+
+  @override
+  String get customerStepDelivered => 'التسليم';
+
+  @override
+  String customerCaptainToRestaurant(String name) {
+    return 'الكابتن $name في طريقه إلى المطعم';
+  }
+
+  @override
+  String customerCaptainAtRestaurant(String name) {
+    return 'الكابتن $name وصل إلى المطعم';
+  }
+
+  @override
+  String get customerAwaitingCaptain => 'ينتظر الكابتن';
+
+  @override
+  String get customerCaptainCollecting => 'الكابتن يستلم طلبك الآن';
+
+  @override
+  String customerCaptainPickedUp(String name) {
+    return 'الكابتن $name استلم طلبك';
+  }
+
+  @override
+  String customerPrepareAmount(String amount) {
+    return 'جهّز $amount';
+  }
+
+  @override
+  String get customerEnjoy => 'بالعافية!';
+
+  @override
+  String get customerNoRestaurantResponse => 'لم يرد المطعم على طلبك، نعتذر';
+
+  @override
+  String get customerRejected => 'نعتذر، لم يقبل المطعم طلبك';
+
+  @override
+  String get customerCancelled => 'أُلغي طلبك';
+
+  @override
+  String get customerDeliveryFailed => 'تعذّر التسليم';
+
+  @override
+  String customerActiveOrder(String restaurant, String status) {
+    return 'طلبك من $restaurant: $status';
+  }
+
+  @override
+  String customerActiveOrders(int count) {
+    return 'طلباتك النشطة: $count';
+  }
 }

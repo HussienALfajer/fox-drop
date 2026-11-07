@@ -99,7 +99,7 @@ class OrderScreen extends ConsumerWidget {
               title: Text(captainLineText(l10n, line, now)),
               subtitle: captain == null
                   ? null
-                  : Text(vehicleText(l10n, captain.vehicle.name)),
+                  : Text(l10n.vehicleName(captain.vehicle.name)),
             ),
           if (pickup.pickedUpAt != null)
             ListTile(
@@ -156,10 +156,3 @@ class OrderScreen extends ConsumerWidget {
     );
   }
 }
-
-String vehicleText(AppLocalizations l10n, String vehicle) => switch (vehicle) {
-  'walking' => l10n.vehicleWalking,
-  'bicycle' => l10n.vehicleBicycle,
-  'car' => l10n.vehicleCar,
-  _ => l10n.vehicleMotorbike,
-};

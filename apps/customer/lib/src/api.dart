@@ -1,5 +1,8 @@
 import 'package:core_api/core_api.dart';
 import 'package:core_auth/core_auth.dart';
+import 'package:core_realtime/core_realtime.dart';
+import 'package:core_time/core_time.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -30,6 +33,40 @@ final authApiProvider = Provider<CoreApi>((ref) => apiClient(apiBaseUrl()));
 /// sends the session's token and renews it.
 final coreApiProvider = Provider<CoreApi>((ref) {
   final api = apiClient(apiBaseUrl());
-  api.dio.interceptors.add(customerAuth.interceptor(ref, api.dio));
+  api.dio.interceptors
+    ..add(ServerTimeInterceptor(ref.watch(serverClockProvider)))
+    ..add(customerAuth.interceptor(ref, api.dio));
   return api;
+});
+
+/// The server's clock, which every countdown uses (RA §4.7, CU §4.3).
+final serverClockProvider = Provider<ServerClock>((ref) => ServerClock());
+
+/// Centrifugo's address: `--dart-define=REALTIME_URL=...`, or derived from
+/// the API's (`packages/core_realtime/CLAUDE.md`).
+const _realtimeUrl = String.fromEnvironment('REALTIME_URL');
+
+/// The app's one real-time connection (architecture §6.1), with a token from
+/// `POST /v1/customer/realtime/token`; it opens with an order screen and
+/// closes with the last one.
+final realtimeTransportProvider = Provider<RealtimeTransport>((ref) {
+  return CentrifugeTransport(
+    url: _realtimeUrl.isNotEmpty ? _realtimeUrl : realtimeUrl(apiBaseUrl()),
+    token: () async {
+      final session = await ref.read(customerAuth.session.future);
+      if (session is! SignedIn) throw const RealtimeSignedOut();
+      try {
+        final answer = await ref
+            .read(coreApiProvider)
+            .getCustomerApi()
+            .customerRealtimeToken();
+        return answer.data!.token;
+      } on DioException catch (error) {
+        if (error.response?.statusCode == 401) {
+          throw const RealtimeSignedOut();
+        }
+        rethrow;
+      }
+    },
+  );
 });

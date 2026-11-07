@@ -16,7 +16,7 @@ Slice 1.14e, the restaurant board and real time (`docs/roadmap.md`, Phase 1, sli
   - [x] Server: the customer's order read gains the captain (first name, vehicle, at the restaurant or not) for CU §11.2–11.3, never the captain track as such.
   - [x] The restaurant board: four columns (tabs on phones) with counts, late counts, sorting, cards with the captain line and the column's timer, the detail, accept with the prep-time chooser, «الطلب جاهز», the pickup prompt with «تأكيد الاستلام», «المبلغ غير صحيح» and «الطلب غير مكتمل», the dispute after pickup, «جارٍ الإرسال…» and the 409 explanations, the offline bar (RA §4.7, §8.1–8.11).
   - [x] The ring: a new order and a pickup request ring until handled on any device; the chimes of RA §8.3, §8.7, §8.9 and the offline chime; the screen kept on (RA §4.4).
-  - [ ] The customer's live order screen: titles and subtitles of CU §11.2, the five-step progress, «يصل حوالي», the captain card, the endings of CU §11.9, and the home's active order (CU §11).
+  - [x] The customer's live order screen: titles and subtitles of CU §11.2, the five-step progress, «يصل حوالي», the captain card, the endings of CU §11.9, and the home's active order (CU §11).
   - [ ] Docs: the packages' `CLAUDE.md`, the apps' rules, the roadmap and the handover.
 - The server side exists (the ordering module's board, accept, ready and pickup routes, the realtime token and the `order:{id}` channels; `apps/server/src/modules/ordering/CLAUDE.md`, `apps/server/src/modules/notifications/CLAUDE.md`).
 

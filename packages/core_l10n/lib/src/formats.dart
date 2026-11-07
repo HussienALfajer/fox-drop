@@ -79,6 +79,14 @@ extension Formats on AppLocalizations {
   String weekdayOf(DateTime time) =>
       weekdayName(_onCityClock(time).weekday % 7);
 
+  /// A captain's vehicle as the API names it (CU §11.3).
+  String vehicleName(String vehicle) => switch (vehicle) {
+    'walking' => vehicleWalking,
+    'bicycle' => vehicleBicycle,
+    'car' => vehicleCar,
+    _ => vehicleMotorbike,
+  };
+
   /// A countdown as minutes and seconds, «6:59» (RA §8.3).
   String formatCountdown(Duration left) {
     final seconds = left.isNegative ? 0 : left.inSeconds;

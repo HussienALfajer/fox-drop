@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:core_realtime/core_realtime.dart';
 import 'package:customer/src/location/position.dart';
 
 /// Azaz's centre, inside the test zone.
@@ -19,4 +22,15 @@ class FakePositionSource implements PositionSource {
     calls.add((timeLimit: timeLimit, ask: ask));
     return result;
   }
+}
+
+/// The real-time channel without Centrifugo: tests send the signals.
+class FakeTransport implements RealtimeTransport {
+  final channels = <String, StreamController<RealtimeSignal>>{};
+
+  @override
+  Stream<RealtimeSignal> channel(String name) =>
+      (channels[name] = StreamController<RealtimeSignal>()).stream;
+
+  void send(String name, RealtimeSignal signal) => channels[name]!.add(signal);
 }

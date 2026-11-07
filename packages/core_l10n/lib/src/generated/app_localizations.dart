@@ -1300,12 +1300,6 @@ abstract class AppLocalizations {
   /// **'تم التسليم'**
   String get customerStatusDelivered;
 
-  /// A rejected, cancelled or failed order until slice 1.14e shows its reason (CU Appendix C).
-  ///
-  /// In ar, this message translates to:
-  /// **'نعتذر، أُلغي طلبك'**
-  String get customerStatusCancelled;
-
   /// The promised time (CU §8.4).
   ///
   /// In ar, this message translates to:
@@ -1725,6 +1719,114 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'إغلاق'**
   String get merchantClose;
+
+  /// Progress step (CU §11.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد المطعم'**
+  String get customerStepConfirm;
+
+  /// Progress step (CU §11.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'التحضير'**
+  String get customerStepPreparing;
+
+  /// Progress step (CU §11.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'في الطريق'**
+  String get customerStepOnTheWay;
+
+  /// Progress step (CU §11.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'عند الباب'**
+  String get customerStepAtDoor;
+
+  /// Progress step (CU §11.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'التسليم'**
+  String get customerStepDelivered;
+
+  /// Captain assigned before pickup (CU §11.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن {name} في طريقه إلى المطعم'**
+  String customerCaptainToRestaurant(String name);
+
+  /// Captain at the restaurant (CU §11.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن {name} وصل إلى المطعم'**
+  String customerCaptainAtRestaurant(String name);
+
+  /// Ready, no captain at the restaurant (CU §11.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'ينتظر الكابتن'**
+  String get customerAwaitingCaptain;
+
+  /// Ready with the captain there (CU §11.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن يستلم طلبك الآن'**
+  String get customerCaptainCollecting;
+
+  /// Picked up (CU §11.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن {name} استلم طلبك'**
+  String customerCaptainPickedUp(String name);
+
+  /// At the door (CU §11.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'جهّز {amount}'**
+  String customerPrepareAmount(String amount);
+
+  /// Delivered (CU §11.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'بالعافية!'**
+  String get customerEnjoy;
+
+  /// Cancelled for no restaurant response (CU §11.9).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يرد المطعم على طلبك، نعتذر'**
+  String get customerNoRestaurantResponse;
+
+  /// Rejected by the restaurant (CU §11.9).
+  ///
+  /// In ar, this message translates to:
+  /// **'نعتذر، لم يقبل المطعم طلبك'**
+  String get customerRejected;
+
+  /// Cancelled by operations (CU §11.9); the reason joins it with the cancellations that write one.
+  ///
+  /// In ar, this message translates to:
+  /// **'أُلغي طلبك'**
+  String get customerCancelled;
+
+  /// Failed after pickup (CU §11.9).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر التسليم'**
+  String get customerDeliveryFailed;
+
+  /// The active-order bar (CU §6).
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبك من {restaurant}: {status}'**
+  String customerActiveOrder(String restaurant, String status);
+
+  /// The active-order bar with several orders (CU §6); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلباتك النشطة: {count}'**
+  String customerActiveOrders(int count);
 }
 
 class _AppLocalizationsDelegate

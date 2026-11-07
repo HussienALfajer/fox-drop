@@ -11,6 +11,8 @@ import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'fakes.dart';
+
 const accountId = '00000000-0000-4000-8000-000000000001';
 
 /// The customer app on a [FakeServer], with memory stores: no server or
@@ -38,6 +40,7 @@ class TestApp {
   final secure = MemorySecureStore();
   final device = MemoryDeviceStore();
   final List<Override> overrides;
+  final transport = FakeTransport();
   late final ProviderContainer container;
 
   /// The profile answer of a customer who completed «أكمل بياناتك».
@@ -68,11 +71,14 @@ class TestApp {
         }),
         customerAuth.store.overrideWithValue(secure),
         deviceStoreProvider.overrideWithValue(device),
+        realtimeTransportProvider.overrideWithValue(transport),
         ...overrides,
       ],
       retry: (retryCount, error) => null,
     );
-    addTearDown(container.dispose);
+    addTearDown(() {
+      if (!_done) container.dispose();
+    });
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -81,6 +87,16 @@ class TestApp {
     );
     await tester.pumpAndSettle();
   }
+
+  /// Ends the app inside the test, so live order screens stop their polling
+  /// before Flutter checks for pending timers.
+  Future<void> done(WidgetTester tester) async {
+    await tester.pumpWidget(const SizedBox());
+    container.dispose();
+    _done = true;
+  }
+
+  bool _done = false;
 
   /// The JSON body of the only request to [path].
   Map<String, dynamic> bodyOf(String path, {int index = 0}) {
