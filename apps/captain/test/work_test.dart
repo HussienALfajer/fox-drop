@@ -65,21 +65,18 @@ void main() {
       expect(dueIn(total, [usd], 'USD'), [usd, total]);
     });
 
-    test('computes the change in the one currency received', () {
-      const due = [Money('41000', 'TRY'), Money('1000', 'USD')];
+    test('computes the change in the base currency only', () {
+      const due = Money('41000', 'TRY');
       expect(
         changeDue([const Money('50000', 'TRY')], due),
         const Money('9000', 'TRY'),
       );
       expect(
-        changeDue([const Money('2000', 'USD')], due),
-        const Money('1000', 'USD'),
-      );
-      expect(
         changeDue([const Money('40000', 'TRY')], due),
         const Money('-1000', 'TRY'),
       );
-      // Two currencies need the order's rates: the server checks them.
+      // Another currency needs the order's rates: the server checks it.
+      expect(changeDue([const Money('2000', 'USD')], due), isNull);
       expect(
         changeDue([
           const Money('1000', 'USD'),
@@ -309,6 +306,22 @@ void main() {
         expect(tracker.queued, 0);
       },
     );
+
+    test('a point seen offline is the latest but never sent', () {
+      tracker.see(fixAt(restaurant));
+      expect(tracker.latest, isNotNull);
+      expect(tracker.queued, 0);
+    });
+
+    test('a session that ends stops everything and drops the points', () async {
+      tracker.start();
+      source.move(restaurant);
+      await Future<void>.delayed(Duration.zero);
+      tracker.reset();
+      expect(tracker.tracking, isFalse);
+      expect(tracker.queued, 0);
+      expect(tracker.latest, isNull);
+    });
 
     test(
       'stops collecting when stopped, still sending what it holds',

@@ -2445,6 +2445,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'متابعة العمل'**
   String get captainKeepWorking;
+
+  /// «تم التسليم» pressed without the shortfall reason (K16). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر السبب'**
+  String get captainChooseReason;
 }
 
 class _AppLocalizationsDelegate

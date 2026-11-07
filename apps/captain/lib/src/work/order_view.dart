@@ -34,10 +34,16 @@ class OrderView extends ConsumerWidget {
         Text(l10n.captainOrderItems(order.number, order.itemCount)),
         switch (step) {
           1 => _ToRestaurant(order: order),
-          // A refusal for missing items starts the item check again.
+          // A refusal for missing items, or other lines, starts the item
+          // check again (C7).
           2 => _AtRestaurant(
             key: ValueKey(
-              '${order.id} ${refused?.outcome == RequestOutcome.incomplete ? refused!.id : ''}',
+              [
+                order.id,
+                if (refused?.outcome == RequestOutcome.incomplete) refused!.id,
+                for (final line in order.lines)
+                  '${line.quantity} ${line.name} ${line.options.map((o) => o.name).join(',')} ${line.note}',
+              ].join('|'),
             ),
             order: order,
           ),
@@ -107,6 +113,7 @@ class _ToRestaurant extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    ref.watch(tickProvider);
     final clock = ref.watch(serverClockProvider);
     final restaurant = order.restaurant;
     final location = restaurant.location;
@@ -185,6 +192,7 @@ class _AtRestaurantState extends ConsumerState<_AtRestaurant> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    ref.watch(tickProvider);
     final clock = ref.watch(serverClockProvider);
     final order = widget.order;
     final open = openRequest(order);

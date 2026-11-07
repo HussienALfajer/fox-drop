@@ -783,5 +783,7 @@
   "captainEndWork": "إنهاء العمل",
   "@captainEndWork": {"description": "Goes offline from the summary (CA §9.8)."},
   "captainKeepWorking": "متابعة العمل",
-  "@captainKeepWorking": {"description": "Closes the summary, still online (CA §9.8). The spec gives no wording."}
+  "@captainKeepWorking": {"description": "Closes the summary, still online (CA §9.8). The spec gives no wording."},
+  "captainChooseReason": "اختر السبب",
+  "@captainChooseReason": {"description": "«تم التسليم» pressed without the shortfall reason (K16). The spec gives no wording."}
 }

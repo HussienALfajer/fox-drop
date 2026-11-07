@@ -32,10 +32,26 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
   /// The server's answer to the last «تم التسليم», when it refused.
   Notice? _refused;
   bool _invalid = false;
+  bool _reasonMissing = false;
 
   ActiveOrder get _order => widget.order;
 
-  Money get _amountDue => Money(_order.collect.amount, _order.collect.currency);
+  Money _collect(ActiveOrder order) =>
+      Money(order.collect.amount, order.collect.currency);
+
+  /// The amount due the screen shows, which the command carries (CA §9.7
+  /// item 4): a change by operations shows «تغيّر المبلغ المطلوب إلى …».
+  late Money _amountDue = _collect(widget.order);
+
+  @override
+  void didUpdateWidget(PaymentForm old) {
+    super.didUpdateWidget(old);
+    final now = _collect(widget.order);
+    if (now != _amountDue) {
+      _amountDue = now;
+      _refused = AmountDueChanged(now);
+    }
+  }
 
   List<Money> get _due => dueIn(_amountDue, [
     for (final e in _order.customer.collectEquivalents.nonNulls)
@@ -59,7 +75,9 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
   List<Money>? _lines(Map<String, TextEditingController> fields) {
     final lines = <Money>[];
     for (final MapEntry(key: currency, value: field) in fields.entries) {
-      if (field.text.trim().isEmpty) continue;
+      final text = field.text.trim();
+      // Nothing, or a zero the captain typed in a change field.
+      if (text.isEmpty || RegExp(r'^0+(?:[.,]0+)?$').hasMatch(text)) continue;
       final minor = minorOf(field.text);
       if (minor == null) return null;
       lines.add(Money(minor, currency));
@@ -78,11 +96,12 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
     });
   }
 
-  /// CA §9.7 item 3: the change, in the currency received.
+  /// CA §9.7 item 3: the change in the base currency, when the money came
+  /// in it.
   void _onReceived() {
     _refused = null;
     final received = _lines(_received);
-    final change = received == null ? null : changeDue(received, _due);
+    final change = received == null ? null : changeDue(received, _amountDue);
     for (final field in _change.values) {
       field.clear();
     }
@@ -91,22 +110,10 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
     }
   }
 
-  /// The shortfall the app can see: every line in one currency and the net
-  /// below the amount due in it.
-  Money? _shortfall(List<Money> received, List<Money> change) {
-    final all = [...received, ...change];
-    if (all.isEmpty) return null;
-    final currency = all.first.currency;
-    if (all.any((l) => l.currency != currency)) return null;
-    final due = _due.where((m) => m.currency == currency).firstOrNull;
-    if (due == null) return null;
-    BigInt sum(List<Money> lines) =>
-        lines.fold(BigInt.zero, (total, line) => total + line.minor);
-    final short = due.minor - (sum(received) - sum(change));
-    return short > BigInt.zero ? Money(short.toString(), currency) : null;
-  }
-
-  Future<void> _deliver(Money? shortfall) async {
+  // A shortfall is the server's to find: a gap within half the largest
+  // rounding unit of the lines' currencies is rounding (AP §8.6), and only
+  // the server has the rounding units and rates.
+  Future<void> _deliver() async {
     final received = _lines(_received);
     final change = _lines(_change);
     if (received == null || change == null || received.isEmpty) {
@@ -114,15 +121,18 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
       return;
     }
     setState(() => _invalid = false);
-    final needsReason =
-        shortfall != null || _refused is ShortfallReasonRequired;
+    final needsReason = _refused is ShortfallReasonRequired;
     final reason = needsReason && _shortReason != null
         ? Reason(
             _shortReason!,
             _shortReason == 'other' ? _shortNote.text.trim() : null,
           )
         : null;
-    if (needsReason && (reason == null || reason.note?.isEmpty == true)) return;
+    if (needsReason && (reason == null || reason.note?.isEmpty == true)) {
+      setState(() => _reasonMissing = true);
+      return;
+    }
+    setState(() => _reasonMissing = false);
     final commands = ref.read(commandsProvider.notifier);
     final pin = _order.customer.location;
     final fix = ref.read(locationTrackerProvider).latest;
@@ -160,12 +170,11 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
     final l10n = AppLocalizations.of(context);
     final due = _due;
     final received = _lines(_received) ?? const <Money>[];
-    final change = _lines(_change) ?? const <Money>[];
-    final computed = changeDue(received, due);
+    final computed = changeDue(received, _amountDue);
     final refused = _refused;
     final shortfall = refused is ShortfallReasonRequired
         ? refused.shortfall
-        : _shortfall(received, change);
+        : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -241,9 +250,10 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
               decoration: InputDecoration(labelText: l10n.captainOtherHint),
             ),
         ],
+        if (_reasonMissing) Text(l10n.captainChooseReason),
         if (refused != null && refused is! ShortfallReasonRequired)
           Text(l10n.noticeText(refused)),
-        _DeliverButton(order: _order, onPressed: () => _deliver(shortfall)),
+        _DeliverButton(order: _order, onPressed: _deliver),
       ],
     );
   }

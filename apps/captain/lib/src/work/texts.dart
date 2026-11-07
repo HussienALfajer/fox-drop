@@ -44,7 +44,12 @@ extension CaptainTexts on AppLocalizations {
         value is String ? DateTime.tryParse(value) : null;
     return switch (block['kind']) {
       'closed_due' => captainBlockClosedDue(
-        at(block['cutoff']) == null ? '' : formatDate(at(block['cutoff'])!),
+        // The cutoff closes the business day before it (CA §4.7).
+        at(block['cutoff']) == null
+            ? ''
+            : formatDate(
+                at(block['cutoff'])!.subtract(const Duration(days: 1)),
+              ),
         formatMoney(text(block['amount']), currency),
       ),
       'cash_limit' => captainNoOffersCashLimit(

@@ -1459,4 +1459,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get captainKeepWorking => 'متابعة العمل';
+
+  @override
+  String get captainChooseReason => 'اختر السبب';
 }

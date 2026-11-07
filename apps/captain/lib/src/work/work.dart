@@ -95,6 +95,12 @@ final workProvider = StreamProvider.autoDispose<LiveState<Work>>((ref) {
   return feed.watch();
 });
 
+/// Ticks once a second while watched: every countdown and «منذ» timer
+/// watches it and reads the server clock (CA §4.6).
+final tickProvider = StreamProvider.autoDispose<int>(
+  (ref) => Stream.periodic(const Duration(seconds: 1), (count) => count),
+);
+
 /// Fetches the state again, after a command's answer.
 void refreshWork(Ref ref) {
   if (ref.exists(workFeedProvider)) ref.read(workFeedProvider)?.refresh();

@@ -19,12 +19,15 @@ class OfferSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    ref.watch(tickProvider);
     final clock = ref.watch(serverClockProvider);
     final sending = ref.watch(commandsProvider).contains(offer.id);
     final pay = offer.pay;
     final preparation = offer.preparation;
     final readyAt = preparation.readyAt;
     Future<void> answer(bool accept) async {
+      // The sheet closes once answered, so the message goes to the home's.
+      final messenger = ScaffoldMessenger.of(context);
       final answered = ref.read(answeredProvider);
       answered.offers.add(offer.id);
       if (accept) answered.orders.add(offer.orderId);
@@ -32,10 +35,16 @@ class OfferSheet extends ConsumerWidget {
       final notice = accept
           ? await commands.accept(offer.id)
           : await commands.decline(offer.id);
-      if (notice != null && context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.noticeText(notice))));
+      // Refused for another reason, the offer is still open: it shows and
+      // rings again.
+      if (notice != null && notice is! OfferUnavailable) {
+        answered.offers.remove(offer.id);
+        answered.orders.remove(offer.orderId);
+      }
+      if (notice != null) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.noticeText(notice))),
+        );
       }
     }
 

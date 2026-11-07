@@ -152,8 +152,11 @@ class Commands extends Notifier<Set<String>> {
     final source = ref.read(locationSourceProvider);
     final problem = await source.ensureAccess();
     if (problem != null) return LocationNeeded(problem);
+    // The mock-location check needs a position (CA §7.2); it is kept as
+    // the latest but never sent, since the captain is still offline.
     final fix = await source.current();
-    if (fix != null) _tracker.remember(fix);
+    if (fix == null) return const LocationNeeded(LocationProblem.failed);
+    _tracker.see(fix);
     final version = await ref.read(appVersionProvider.future);
     final (_, notice) = await _send(
       'availability',
@@ -162,7 +165,7 @@ class Commands extends Notifier<Set<String>> {
         captainGoOnlineDto: CaptainGoOnlineDto(
           (b) => b
             ..appVersion = _plainVersion(version)
-            ..simulatedLocation = fix?.simulated ?? false,
+            ..simulatedLocation = fix.simulated,
         ),
       ),
     );
@@ -310,21 +313,27 @@ class Commands extends Notifier<Set<String>> {
     Future<Object?> Function(String key, CaptainArriveDtoLocation location)
     call,
   ) async {
-    final fix = await _freshFix();
-    if (fix == null) {
+    final first = await _freshFix();
+    if (first == null) {
       return LocationNeeded(
         await ref.read(locationSourceProvider).ensureAccess(),
       );
     }
-    final location = CaptainArriveDtoLocation(
-      (l) => l
-        ..latitude = fix.latitude
-        ..longitude = fix.longitude
-        ..accuracyMetres = fix.accuracyMetres
-        ..recordedAt = fix.recordedAt
-        ..simulated = fix.simulated,
-    );
-    return (await _send(orderId, body, (key) => call(key, location))).$2;
+    // Each attempt takes the latest fix, so a retry on weak internet never
+    // sends one past the server's minute; the key leaves the fix out.
+    var fix = first;
+    return (await _send(orderId, body, (key) async {
+      fix = await _freshFix() ?? fix;
+      final location = CaptainArriveDtoLocation(
+        (l) => l
+          ..latitude = fix.latitude
+          ..longitude = fix.longitude
+          ..accuracyMetres = fix.accuracyMetres
+          ..recordedAt = fix.recordedAt
+          ..simulated = fix.simulated,
+      );
+      return call(key, location);
+    })).$2;
   }
 
   Future<Fix?> _freshFix() async {

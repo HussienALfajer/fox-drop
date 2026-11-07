@@ -11,6 +11,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../api.dart';
+import '../auth.dart';
+import 'package:core_auth/core_auth.dart';
 
 /// One GPS point, its time on the server's clock (CA §4.6).
 class Fix {
@@ -208,6 +210,22 @@ class LocationTracker {
   /// A position taken for a command, kept as the latest.
   void remember(Fix fix) => _record(fix);
 
+  /// A position taken while offline: the latest, never sent (CA §4.3).
+  void see(Fix fix) {
+    _latest = onServerClock(fix);
+    _changes.add(_latest!);
+  }
+
+  /// The session ended: nothing more is collected or sent, and the points
+  /// held are dropped, since the server would refuse them.
+  void reset() {
+    unawaited(_tracking?.cancel());
+    _tracking = null;
+    _queue.clear();
+    _latest = null;
+    _stopTimer();
+  }
+
   void _record(Fix fix) {
     final point = onServerClock(fix);
     _latest = point;
@@ -274,6 +292,11 @@ final locationTrackerProvider = Provider<LocationTracker>((ref) {
           );
     },
   );
+  // A sign-out while online (another device, a released device, K5) stops
+  // the tracking and its foreground service at once.
+  ref.listen(captainAuth.session, (previous, next) {
+    if (next.value is! SignedIn) tracker.reset();
+  });
   ref.onDispose(tracker.dispose);
   return tracker;
 });

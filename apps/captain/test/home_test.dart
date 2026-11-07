@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:captain/src/auth.dart';
 import 'package:captain/src/work/location.dart';
 import 'package:core_auth/testing.dart';
 import 'package:flutter/material.dart';
@@ -330,22 +332,39 @@ void main() {
     await app.live(tester);
     await tester.enterText(find.byKey(const Key('received-TRY')), '400');
     await tester.pump();
-    // One currency: the app sees the shortfall itself.
-    expect(find.text('المبلغ المقبوض أقل من المطلوب بـ 10 ₺'), findsOneWidget);
-    await app.tapVisible(tester, find.text('خطأ في العد'));
-    await tester.pump();
+    // Only the server knows what is rounding (AP §8.6).
+    expect(find.textContaining('أقل من المطلوب'), findsNothing);
     app.server.on('/v1/captain/orders/$orderId/deliver', [
+      FakeAnswer(409, {
+        'error': 'shortfall_reason_required',
+        'shortfall': moneyJson('1000'),
+      }),
       FakeAnswer(200, summaryJson()),
     ]);
+    await app.tapVisible(tester, find.text('تم التسليم'));
+    await app.settle(tester);
+    expect(find.text('المبلغ المقبوض أقل من المطلوب بـ 10 ₺'), findsOneWidget);
+    expect(
+      bodyOf(app, '/v1/captain/orders/$orderId/deliver')['shortfall'],
+      isNull,
+    );
+    // Without a reason nothing is sent.
+    await app.tapVisible(tester, find.text('تم التسليم'));
+    await tester.pump();
+    expect(find.text('اختر السبب'), findsOneWidget);
+    expect(app.server.to('/v1/captain/orders/$orderId/deliver'), hasLength(1));
+    await app.tapVisible(tester, find.text('خطأ في العد'));
+    await tester.pump();
     await app.tapVisible(tester, find.text('تم التسليم'));
     await app.settle(tester);
     final deliver = bodyOf(app, '/v1/captain/orders/$orderId/deliver');
     expect(deliver['received'], [moneyJson('40000')]);
     expect(deliver['shortfall'], {'reason': 'counting_error', 'note': null});
+    expect(find.text('ربحت من هذا الطلب: 35 ₺'), findsOneWidget);
     await app.done(tester);
   });
 
-  testWidgets('computes the change in the currency received (CA §9.7)', (
+  testWidgets('computes the change in the base currency (CA §9.7)', (
     tester,
   ) async {
     final app = TestApp();
@@ -370,6 +389,139 @@ void main() {
       moneyJson('8000'),
     ]);
     expect(find.text('سجّل الباقي الذي أعدته للزبون'), findsOneWidget);
+    await app.done(tester);
+  });
+
+  testWidgets('sends a command again with the same key until the server '
+      'answers (CA §4.6)', (tester) async {
+    final app = TestApp();
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [orderJson()],
+    );
+    await app.pump(tester);
+    await app.live(tester);
+    app.location.move(restaurant);
+    await app.settle(tester);
+    app.server.on('/v1/captain/orders/$orderId/arrive', [
+      const FakeAnswer.none(),
+      const FakeAnswer(503, {'error': 'unavailable'}),
+      FakeAnswer(200, {'order': orderJson(track: 'at_merchant', version: 4)}),
+    ]);
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [orderJson(track: 'at_merchant', version: 4)],
+    );
+    await app.tapVisible(tester, find.text('وصلت إلى المطعم'));
+    await app.settle(tester);
+    final calls = app.server.to('/v1/captain/orders/$orderId/arrive');
+    expect(calls, hasLength(3));
+    expect(
+      calls.map((c) => c.headers['Idempotency-Key']).toSet(),
+      hasLength(1),
+    );
+    expect(find.text('الخطوة 2 من 4: عند المطعم'), findsOneWidget);
+
+    // A new command has a new key.
+    await app.tapVisible(tester, find.text('2 × شاورما'));
+    await tester.pump();
+    app.server.on('/v1/captain/orders/$orderId/pickup-request', [
+      const FakeAnswer(409, {'error': 'amount_mismatch'}),
+    ]);
+    await app.tapVisible(tester, find.text('دفعت للمطعم واستلمت الطلب'));
+    await app.settle(tester);
+    expect(
+      app.server
+          .to('/v1/captain/orders/$orderId/pickup-request')
+          .single
+          .headers['Idempotency-Key'],
+      isNot(calls.first.headers['Idempotency-Key']),
+    );
+    expect(find.text('المبلغ لا يطابق المطلوب'), findsOneWidget);
+    await app.done(tester);
+  });
+
+  testWidgets('counts the pickup request down on the server clock (CA §9.4)', (
+    tester,
+  ) async {
+    final app = TestApp();
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [orderJson(track: 'pickup_pending', request: requestJson())],
+    );
+    await app.pump(tester);
+    await app.live(tester);
+    expect(find.text('1:00'), findsOneWidget);
+    expect(find.text('تنتظر منذ 3 د'), findsOneWidget);
+    await app.advance(tester, const Duration(seconds: 5));
+    await app.advance(tester, const Duration(seconds: 1));
+    expect(find.text('0:54'), findsOneWidget);
+    await app.done(tester);
+  });
+
+  testWidgets('a sign-out while online stops the location (CA §4.3)', (
+    tester,
+  ) async {
+    final app = TestApp();
+    app.work(availability: [availabilityJson(state: 'online_available')]);
+    await app.pump(tester);
+    await app.live(tester);
+    final tracker = app.container.read(locationTrackerProvider);
+    expect(tracker.tracking, isTrue);
+    app.server.on('/v1/captain/auth/sign-out', [const FakeAnswer(200, {})]);
+    // Not awaited: the sign-out completes while the frames are pumped.
+    unawaited(app.container.read(captainAuth.session.notifier).signOut());
+    await app.settle(tester);
+    expect(find.text('رقم الهاتف'), findsOneWidget);
+    expect(tracker.tracking, isFalse);
+    expect(tracker.queued, 0);
+    await app.done(tester);
+  });
+
+  testWidgets('an acceptance refused for another reason rings again '
+      '(CA §8.3)', (tester) async {
+    final app = TestApp();
+    app.work(
+      availability: [availabilityJson(state: 'online_available')],
+      offers: [offerJson()],
+    );
+    await app.pump(tester);
+    await app.live(tester);
+    app.server.on('/v1/captain/offers/$offerId/accept', [
+      const FakeAnswer(422, {'error': 'idempotency_key_reused'}),
+    ]);
+    await tester.tap(find.text('قبول'));
+    await app.settle(tester);
+    await app.advance(tester, const Duration(seconds: 1));
+    expect(find.text('تعذّر الإرسال، حاول مرة أخرى.'), findsOneWidget);
+    expect(find.text('عرض جديد'), findsOneWidget);
+    expect(app.ringer.ringing, isTrue);
+    await app.done(tester);
+  });
+
+  testWidgets('says when operations changed the amount due (CA §9.7)', (
+    tester,
+  ) async {
+    final app = TestApp();
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [orderJson(status: 'arrived', track: 'at_customer')],
+    );
+    app.location.fix = fixAt(pin);
+    await app.pump(tester);
+    await app.live(tester);
+    final changed = orderJson(
+      status: 'arrived',
+      track: 'at_customer',
+      version: 9,
+    )..['collect'] = moneyJson('45000');
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [changed],
+    );
+    app.transport.event('order.edited', 9);
+    await app.settle(tester);
+    expect(find.text('تغيّر المبلغ المطلوب إلى 450 ₺'), findsOneWidget);
     await app.done(tester);
   });
 }

@@ -79,18 +79,18 @@ List<Money> dueIn(Money total, List<Money> equivalents, String? payIn) {
   ];
 }
 
-/// The change the customer is due (CA §9.7 item 3) when everything was
-/// received in one currency: the received amount less the amount due in it.
-/// Null for several currencies, which the app cannot convert without the
-/// order's rates: the captain records the change and the server checks it.
-Money? changeDue(List<Money> received, List<Money> due) {
+/// The change the customer is due in the base currency (CA §9.7 item 3),
+/// when everything was received in it: the received amount less the amount
+/// due. Null for money in another currency, which the app cannot convert
+/// without the order's rates: the captain records the change and the server
+/// checks it.
+Money? changeDue(List<Money> received, Money amountDue) {
   if (received.isEmpty) return null;
-  final currency = received.first.currency;
-  if (received.any((line) => line.currency != currency)) return null;
-  final dueHere = due.where((m) => m.currency == currency).firstOrNull;
-  if (dueHere == null) return null;
+  if (received.any((line) => line.currency != amountDue.currency)) {
+    return null;
+  }
   final paid = received.fold(BigInt.zero, (sum, line) => sum + line.minor);
-  return Money((paid - dueHere.minor).toString(), currency);
+  return Money((paid - amountDue.minor).toString(), amountDue.currency);
 }
 
 /// The door payment the captain records (CA §9.7).

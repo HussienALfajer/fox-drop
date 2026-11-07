@@ -125,11 +125,16 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
   Timer? _offlineChime;
   String? _expiredFetched;
   late final Ringer _ringer = ref.read(ringerProvider);
+  late final void Function(bool on) _keepScreenOn = ref.read(
+    keepScreenOnProvider,
+  );
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Read now: the provider cannot be read in dispose.
+    _keepScreenOn;
     _tick = Timer.periodic(const Duration(seconds: 1), (_) => _onTick());
   }
 
@@ -139,6 +144,7 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
     _tick?.cancel();
     _offlineChime?.cancel();
     _ringer.stop();
+    _keepScreenOn(false);
     super.dispose();
   }
 
@@ -178,6 +184,9 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     ref.listen(workProvider, (previous, next) {
+      // While loading (a sign-out, a new session) the provider still holds
+      // the last state, which must not start the location again.
+      if (next.isLoading) return;
       final before = previous?.value?.value;
       final after = next.value?.value;
       final live = next.value?.live ?? false;
@@ -194,7 +203,7 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
       } else {
         tracker.stop();
       }
-      ref.read(keepScreenOnProvider)(after.online);
+      _keepScreenOn(after.online);
       if (identical(before, after)) return;
       final now = ref.read(serverClockProvider).now();
       for (final alert in alertStep(
@@ -209,7 +218,14 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
     });
     final work = _work;
     final now = ref.watch(serverClockProvider).now();
-    final offer = ringingOffer(work, now, ref.watch(answeredProvider).offers);
+    final ringing = ringingOffer(work, now, ref.watch(answeredProvider).offers);
+    // An answer on its way keeps the sheet, with «جارٍ الإرسال…».
+    final sending = work?.offer;
+    final offer =
+        ringing ??
+        (sending != null && ref.watch(commandsProvider).contains(sending.id)
+            ? sending
+            : null);
     final summary = ref.watch(summaryProvider);
     final handIn = ref.watch(handInProvider);
     return PopScope(
@@ -314,8 +330,16 @@ class _SummaryCard extends ConsumerWidget {
             onPressed: sending
                 ? null
                 : () async {
+                    final messenger = ScaffoldMessenger.of(context);
                     close();
-                    await ref.read(commandsProvider.notifier).goOffline();
+                    final notice = await ref
+                        .read(commandsProvider.notifier)
+                        .goOffline();
+                    if (notice != null) {
+                      messenger.showSnackBar(
+                        SnackBar(content: Text(l10n.noticeText(notice))),
+                      );
+                    }
                   },
             child: Text(l10n.captainEndWork),
           ),
