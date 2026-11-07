@@ -96,8 +96,12 @@ class SignInController extends Notifier<SignInState> {
         phone: phone,
         resendAt: _scope.clock().add(Duration(seconds: sent.resendAfterSec)),
       );
-    } on AuthRefusal catch (refusal) {
+    } on Object catch (error) {
       if (!ref.mounted) return;
+      // The secure store or the session may fail too; never stay busy.
+      final refusal = error is AuthRefusal
+          ? error
+          : const AuthRefusal(AuthRefusal.failed);
       // A code is still open for this number, such as an emergency code from
       // operations, which a request never replaces: enter it.
       if (refusal.error == 'resend_wait') {
@@ -157,8 +161,12 @@ class SignInController extends Notifier<SignInState> {
       await session.start(accountId, tokens);
       if (!ref.mounted) return;
       state = SignInState(country: state.country);
-    } on AuthRefusal catch (refusal) {
+    } on Object catch (error) {
       if (!ref.mounted) return;
+      // The secure store or the session may fail too; never stay busy.
+      final refusal = error is AuthRefusal
+          ? error
+          : const AuthRefusal(AuthRefusal.failed);
       state = SignInState(
         step: SignInStep.code,
         country: state.country,

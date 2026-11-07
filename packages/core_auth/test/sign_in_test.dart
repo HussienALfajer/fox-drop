@@ -76,7 +76,7 @@ void main() {
       (session as SignedIn).accountId,
       '00000000-0000-4000-8000-000000000001',
     );
-    expect(h.store.values['session.refresh_token'], 'refresh-1');
+    expect(h.store.values['session'], contains('refresh-1'));
   });
 
   test('a wrong code shows the tries left and stays on the code', () async {

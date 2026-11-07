@@ -4,6 +4,7 @@ library;
 
 export 'src/auth_party.dart';
 export 'src/auth_scope.dart';
+export 'src/client.dart';
 export 'src/phone.dart';
 export 'src/session.dart';
 export 'src/sign_in.dart';

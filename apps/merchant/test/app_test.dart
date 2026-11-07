@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:core_auth/testing.dart';
 import 'package:core_storage/core_storage.dart';
 import 'package:flutter/material.dart';
@@ -21,13 +23,15 @@ Map<String, Object?> _session({required bool deviceNamed}) => {
 };
 
 Map<String, String> _signedIn() => {
-  'session.access_token': 'access-0',
-  'session.access_expires_at': DateTime.now()
-      .add(const Duration(minutes: 10))
-      .toUtc()
-      .toIso8601String(),
-  'session.refresh_token': 'refresh-0',
-  'session.account_id': _accountId,
+  'session': jsonEncode({
+    'accessToken': 'access-0',
+    'accessTokenExpiresAt': DateTime.now()
+        .add(const Duration(minutes: 10))
+        .toUtc()
+        .toIso8601String(),
+    'refreshToken': 'refresh-0',
+    'accountId': _accountId,
+  }),
 };
 
 class _App {

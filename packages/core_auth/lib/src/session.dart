@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:core_storage/core_storage.dart';
@@ -39,10 +40,9 @@ class SignedIn extends SessionState {
   final String accountId;
 }
 
-const _accessKey = 'session.access_token';
-const _accessExpiresKey = 'session.access_expires_at';
-const _refreshKey = 'session.refresh_token';
-const _accountKey = 'session.account_id';
+/// The session's tokens and account, stored as one value so a crash never
+/// leaves a new access token beside a used refresh token.
+const _sessionKey = 'session';
 const _deviceKey = 'device.id';
 
 /// The app's session (architecture §15.1, CU §5.4): the tokens in the secure
@@ -53,6 +53,7 @@ class SessionController extends AsyncNotifier<SessionState> {
 
   final AuthScope _scope;
   AuthTokens? _tokens;
+  String? _accountId;
   Future<bool>? _refreshing;
 
   SecureStore get _store => ref.read(_scope.store);
@@ -61,22 +62,29 @@ class SessionController extends AsyncNotifier<SessionState> {
 
   @override
   Future<SessionState> build() async {
-    final values = await Future.wait([
-      _store.read(_accessKey),
-      _store.read(_accessExpiresKey),
-      _store.read(_refreshKey),
-      _store.read(_accountKey),
-    ]);
-    final expiresAt = DateTime.tryParse(values[1] ?? '');
-    if (values.any((value) => value == null) || expiresAt == null) {
+    try {
+      final stored = await _store.read(_sessionKey);
+      if (stored == null) return const SignedOut();
+      final value = jsonDecode(stored) as Map<String, dynamic>;
+      final expiresAt = DateTime.parse(value['accessTokenExpiresAt'] as String);
+      _tokens = AuthTokens(
+        accessToken: value['accessToken'] as String,
+        accessTokenExpiresAt: expiresAt,
+        refreshToken: value['refreshToken'] as String,
+      );
+      _accountId = value['accountId'] as String;
+      return SignedIn(_accountId!);
+    } on Object {
+      // An unreadable store or value: start signed out rather than stay on
+      // the starting screen.
+      _tokens = null;
+      try {
+        await _store.delete(_sessionKey);
+      } on Object {
+        // Nothing more to do; the next sign-in writes it again.
+      }
       return const SignedOut();
     }
-    _tokens = AuthTokens(
-      accessToken: values[0]!,
-      accessTokenExpiresAt: expiresAt,
-      refreshToken: values[2]!,
-    );
-    return SignedIn(values[3]!);
   }
 
   /// The app installation's id, generated once and kept until the app is
@@ -92,13 +100,14 @@ class SessionController extends AsyncNotifier<SessionState> {
   /// A sign-in succeeded.
   Future<void> start(String accountId, AuthTokens tokens) async {
     await future;
+    _accountId = accountId;
     await _save(tokens);
-    await _store.write(_accountKey, accountId);
     state = AsyncData(SignedIn(accountId));
   }
 
   /// The token for the next call, renewed first when it expires within
-  /// [AuthScope.refreshAhead]; null when signed out.
+  /// [AuthScope.refreshAhead]; null when signed out. The expiry is on this
+  /// device's clock ([AuthParty.localExpiry]).
   Future<String?> accessToken() async {
     await future;
     final tokens = _tokens;
@@ -120,9 +129,15 @@ class SessionController extends AsyncNotifier<SessionState> {
     await future;
     final tokens = _tokens;
     if (tokens == null) return false;
-    for (var attempt = 0; ; attempt++) {
+    final since = Stopwatch()..start();
+    while (true) {
+      final cancel = CancelToken();
+      final timer = Timer(_scope.refreshTryTimeout, cancel.cancel);
       try {
-        final next = await _party.refresh(tokens.refreshToken);
+        final next = await _party.refresh(
+          tokens.refreshToken,
+          cancelToken: cancel,
+        );
         // Signed out while the refresh ran.
         if (!identical(_tokens, tokens)) return _tokens != null;
         await _save(next);
@@ -136,15 +151,15 @@ class SessionController extends AsyncNotifier<SessionState> {
           );
           return false;
         }
-        // The answer may have been lost after the server used the token: the
-        // server accepts the same token again for 10 seconds (the identity
-        // module's REFRESH_RETRY_GRACE_SECONDS), so retry within them.
-        final delays = _scope.refreshRetryDelays;
-        if (refusal.error != AuthRefusal.network || attempt >= delays.length) {
-          return false;
-        }
-        await Future<void>.delayed(delays[attempt]);
+        // The server may have used the token without its answer arriving: it
+        // accepts the same token again within its grace, so try again inside
+        // the window only (AuthScope.refreshRetryWindow).
+        if (!refusal.unanswered) return false;
+        await Future<void>.delayed(_scope.refreshRetryPause);
+        if (since.elapsed >= _scope.refreshRetryWindow) return false;
         if (!identical(_tokens, tokens)) return _tokens != null;
+      } finally {
+        timer.cancel();
       }
     }
   }
@@ -152,38 +167,38 @@ class SessionController extends AsyncNotifier<SessionState> {
   /// Ends the session on this device and forgets its tokens.
   Future<void> end(SessionEndReason reason) async {
     _tokens = null;
-    await Future.wait([
-      _store.delete(_accessKey),
-      _store.delete(_accessExpiresKey),
-      _store.delete(_refreshKey),
-      _store.delete(_accountKey),
-    ]);
-    state = AsyncData(SignedOut(reason));
+    _accountId = null;
+    try {
+      await _store.delete(_sessionKey);
+    } finally {
+      state = AsyncData(SignedOut(reason));
+    }
   }
 
   /// «تسجيل الخروج»: ends the session on the server, then here. Without an
   /// answer from the server the device still signs out.
   Future<void> signOut() async {
-    final token = await accessToken();
-    if (token != null) {
-      try {
-        await _party.signOut(token);
-      } on AuthRefusal {
-        // Signed out here all the same.
-      }
+    try {
+      final token = await accessToken();
+      if (token != null) await _party.signOut(token);
+    } on Object {
+      // Signed out here all the same.
     }
     await end(SessionEndReason.signedOut);
   }
 
   Future<void> _save(AuthTokens tokens) async {
-    await Future.wait([
-      _store.write(_accessKey, tokens.accessToken),
-      _store.write(
-        _accessExpiresKey,
-        tokens.accessTokenExpiresAt.toUtc().toIso8601String(),
-      ),
-      _store.write(_refreshKey, tokens.refreshToken),
-    ]);
+    await _store.write(
+      _sessionKey,
+      jsonEncode({
+        'accessToken': tokens.accessToken,
+        'accessTokenExpiresAt': tokens.accessTokenExpiresAt
+            .toUtc()
+            .toIso8601String(),
+        'refreshToken': tokens.refreshToken,
+        'accountId': _accountId,
+      }),
+    );
     _tokens = tokens;
   }
 }
@@ -214,8 +229,13 @@ class AuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final token = await _session().accessToken();
-    if (token != null) options.headers['Authorization'] = 'Bearer $token';
+    // Dio does not await this handler: every path must call it.
+    try {
+      final token = await _session().accessToken();
+      if (token != null) options.headers['Authorization'] = 'Bearer $token';
+    } on Object {
+      // Sent without a token: the server answers 401.
+    }
     handler.next(options);
   }
 
@@ -228,23 +248,30 @@ class AuthInterceptor extends Interceptor {
     if (err.response?.statusCode != 401 || options.extra[_retried] == true) {
       return handler.next(err);
     }
-    final session = _session();
-    if (AuthRefusal.of(err).error == 'other_device') {
-      await session.end(SessionEndReason.otherDevice);
+    final bool renewed;
+    try {
+      final session = _session();
+      if (AuthRefusal.of(err).error == 'other_device') {
+        await session.end(SessionEndReason.otherDevice);
+        return handler.next(err);
+      }
+      // Another call may have renewed the token since this one left.
+      final sent = options.headers['Authorization'];
+      final current = session.currentAccessToken;
+      renewed =
+          (current != null && sent != 'Bearer $current') ||
+          await session.refresh();
+    } on Object {
       return handler.next(err);
     }
-    // Another call may have renewed the token since this one left.
-    final sent = options.headers['Authorization'];
-    final current = session.currentAccessToken;
-    final renewed =
-        (current != null && sent != 'Bearer $current') ||
-        await session.refresh();
     if (!renewed) return handler.next(err);
     options.extra[_retried] = true;
     try {
       handler.resolve(await _dio.fetch<dynamic>(options));
     } on DioException catch (retryError) {
       handler.next(retryError);
+    } on Object {
+      handler.next(err);
     }
   }
 }

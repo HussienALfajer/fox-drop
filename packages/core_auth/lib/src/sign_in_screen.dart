@@ -177,7 +177,12 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 : l10n.signInResend,
           ),
         ),
-      if (state.operationsCode) _ContactButtons(scope: _scope, whatsapp: false),
+      if (state.operationsCode ||
+          (state.unavailable && _scope.offersOperationsCode))
+        _ContactButtons(scope: _scope, whatsapp: false)
+      else if (refusal?.error == 'not_registered' &&
+          ref.read(_scope.party) is MerchantAuth)
+        _ContactButtons(scope: _scope, whatsapp: true),
       TextButton(
         onPressed: state.busy ? null : controller.editPhone,
         child: Text(l10n.signInEditPhone),

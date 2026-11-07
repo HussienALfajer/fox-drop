@@ -88,13 +88,13 @@ Scan the QR code from WhatsApp on that phone (Linked devices › Link a device) 
 
 ## Real numbers for the test restaurant owner and captain
 
-The placeholder seed's test owner (`+963900000001`), cashier (`+963900000002`) and captain (`+963900000003`) have fake numbers. To sign in on real phones (slice 1.14, owner decision 2026-11-07), move each to a real number on the server, never in the repository; the numbers are not printed:
+The placeholder seed's test owner (`+963900000001`), cashier (`+963900000002`) and captain (`+963900000003`) have fake numbers. To sign in on real phones (slice 1.14, owner decision 2026-11-07), move each to a real number on the server, never in the repository. The real number goes on standard input, typed at a hidden prompt, so it stays out of the shell history and the process list; it is never printed:
 
 ```bash
-cd /srv/foxdrop-staging/current/infra && FOXDROP_RELEASE=$(basename "$(readlink /srv/foxdrop-staging/current)") FOXDROP_HOME=/srv/foxdrop-staging FOXDROP_UID=$(id -u foxdrop-staging) FOXDROP_GID=$(id -g foxdrop-staging) docker compose -p foxdrop-staging --env-file environments/staging.env --env-file /srv/foxdrop-staging/shared/.env run --rm api node dist/modules/identity/placeholder-phone-command.js --party merchant --from +963900000001 --to <owner's real number>
+read -rs -p 'New number (+9639... or +905...): ' number; echo; cd /srv/foxdrop-staging/current/infra && echo "$number" | FOXDROP_RELEASE=$(basename "$(readlink /srv/foxdrop-staging/current)") FOXDROP_HOME=/srv/foxdrop-staging FOXDROP_UID=$(id -u foxdrop-staging) FOXDROP_GID=$(id -g foxdrop-staging) docker compose -p foxdrop-staging --env-file environments/staging.env --env-file /srv/foxdrop-staging/shared/.env run --rm -T api node dist/modules/identity/placeholder-phone-command.js --party merchant --from +963900000001; unset number
 ```
 
-The same with `--party captain --from +963900000003` for the captain. Run it again with the real number as `--from` to move it on. The support numbers the apps show («اتصال بالعمليات», RA §5.2 item 3) are `SUPPORT_PHONE_NUMBER` and `SUPPORT_WHATSAPP_NUMBER` in `infra/environments/staging.env`; empty, the apps hide their buttons.
+The same with `--party captain --from +963900000003` for the captain. To move a real number on, pass it as `--from` (it then shows in the history; clear it with `history -d`). The support numbers the apps show («اتصال بالعمليات», RA §5.2 item 3) are `SUPPORT_PHONE_NUMBER` and `SUPPORT_WHATSAPP_NUMBER` in `infra/environments/staging.env`; empty, the apps hide their buttons.
 
 ## The staging APKs
 

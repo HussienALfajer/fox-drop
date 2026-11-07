@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:captain/src/api.dart';
 import 'package:captain/src/app.dart';
 import 'package:captain/src/auth.dart';
@@ -13,13 +15,15 @@ const _accountId = '00000000-0000-4000-8000-000000000001';
 
 /// The stored session of a signed-in captain.
 Map<String, String> _signedIn() => {
-  'session.access_token': 'access-0',
-  'session.access_expires_at': DateTime.now()
-      .add(const Duration(minutes: 10))
-      .toUtc()
-      .toIso8601String(),
-  'session.refresh_token': 'refresh-0',
-  'session.account_id': _accountId,
+  'session': jsonEncode({
+    'accessToken': 'access-0',
+    'accessTokenExpiresAt': DateTime.now()
+        .add(const Duration(minutes: 10))
+        .toUtc()
+        .toIso8601String(),
+    'refreshToken': 'refresh-0',
+    'accountId': _accountId,
+  }),
 };
 
 class _App {

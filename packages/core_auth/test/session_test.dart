@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:core_api/core_api.dart';
 import 'package:core_auth/core_auth.dart';
@@ -13,18 +14,28 @@ final _now = DateTime.utc(2026, 11, 7, 12);
 /// The stored values of a signed-in captain whose access token expires at
 /// [expiresAt].
 Map<String, String> _signedIn(DateTime expiresAt) => {
-  'session.access_token': 'access-0',
-  'session.access_expires_at': expiresAt.toIso8601String(),
-  'session.refresh_token': 'refresh-0',
-  'session.account_id': 'account-1',
+  'session': jsonEncode({
+    'accessToken': 'access-0',
+    'accessTokenExpiresAt': expiresAt.toIso8601String(),
+    'refreshToken': 'refresh-0',
+    'accountId': 'account-1',
+  }),
 };
+
+/// The stored refresh token, or null when signed out.
+String? _storedRefresh(MemorySecureStore store) {
+  final value = store.values['session'];
+  if (value == null) return null;
+  return (jsonDecode(value) as Map)['refreshToken'] as String;
+}
 
 class _Harness {
   _Harness(Map<String, String> stored) : store = MemorySecureStore(stored) {
     scope = AuthScope(
       party: (ref) => CaptainAuth(server.client()),
       clock: () => _now,
-      refreshRetryDelays: const [Duration.zero, Duration.zero],
+      refreshRetryWindow: const Duration(milliseconds: 60),
+      refreshRetryPause: const Duration(milliseconds: 25),
     );
     container = ProviderContainer(
       overrides: [scope.store.overrideWithValue(store)],
@@ -94,7 +105,7 @@ void main() {
     h.server.gate!.complete();
     expect(await Future.wait(calls), ['access-1', 'access-1', 'access-1']);
     expect(h.server.to(_refresh), hasLength(1));
-    expect(h.store.values['session.refresh_token'], 'refresh-1');
+    expect(_storedRefresh(h.store), 'refresh-1');
   });
 
   test('retries a refresh that got no answer with the same token', () async {
@@ -118,7 +129,7 @@ void main() {
     await h.state();
     h.server.on(_refresh, [const FakeAnswer.none()]);
     expect(await h.session.refresh(), isFalse);
-    expect(h.server.to(_refresh), hasLength(3));
+    expect(h.server.to(_refresh).length, inInclusiveRange(2, 4));
     expect(await h.state(), isA<SignedIn>());
   });
 
@@ -131,7 +142,7 @@ void main() {
     ]);
     expect(await h.session.refresh(), isFalse);
     expect(((await h.state()) as SignedOut).reason, SessionEndReason.ended);
-    expect(h.store.values.keys, isNot(contains('session.refresh_token')));
+    expect(_storedRefresh(h.store), isNull);
   });
 
   test('a captain signed in elsewhere ends with other_device', () async {
@@ -198,6 +209,66 @@ void main() {
     final sent = h.server.to('/v1/captain/auth/sign-out').single;
     expect(sent.headers['Authorization'], 'Bearer access-0');
     expect(((await h.state()) as SignedOut).reason, SessionEndReason.signedOut);
-    expect(h.store.values.keys, isNot(contains('session.access_token')));
+    expect(h.store.values.keys, isNot(contains('session')));
+  });
+
+  test('retries a refresh the proxy answered with 502', () async {
+    final h = _Harness(_signedIn(_now));
+    addTearDown(h.container.dispose);
+    await h.state();
+    h.server.on(_refresh, [
+      const FakeAnswer(502),
+      FakeAnswer(200, tokens('1', _now.add(const Duration(minutes: 15)))),
+    ]);
+    expect(await h.session.refresh(), isTrue);
+    expect(h.server.to(_refresh), hasLength(2));
+  });
+
+  test('a refusal of the API itself is not retried', () async {
+    final h = _Harness(_signedIn(_now));
+    addTearDown(h.container.dispose);
+    await h.state();
+    h.server.on(_refresh, [
+      const FakeAnswer(503, {'error': 'unavailable'}),
+    ]);
+    expect(await h.session.refresh(), isFalse);
+    expect(h.server.to(_refresh), hasLength(1));
+    expect(await h.state(), isA<SignedIn>());
+  });
+
+  test('an unreadable stored session starts signed out', () async {
+    final h = _Harness({'session': 'not json'});
+    addTearDown(h.container.dispose);
+    expect(await h.state(), isA<SignedOut>());
+    expect(h.store.values.keys, isNot(contains('session')));
+  });
+
+  test(
+    'the expiry follows the server clock, not a wrong phone clock',
+    () async {
+      final h = _Harness({});
+      addTearDown(h.container.dispose);
+      // The server's clock is 20 minutes behind this one: its token expiring
+      // 15 minutes after its now has already expired here unless moved.
+      final serverNow = DateTime.now().subtract(const Duration(minutes: 20));
+      h.server.on(_refresh, [
+        FakeAnswer(
+          200,
+          tokens('1', serverNow.add(const Duration(minutes: 15))),
+          {'server-time': '${serverNow.millisecondsSinceEpoch}'},
+        ),
+      ]);
+      final tokens1 = await CaptainAuth(h.server.client()).refresh('refresh-0');
+      final left = tokens1.accessTokenExpiresAt.difference(DateTime.now());
+      expect(left.inMinutes, inInclusiveRange(14, 15));
+    },
+  );
+
+  test('the clients wait longer than the server waits for the sender', () {
+    // The identity module's SEND_ANSWER_TIMEOUT_MS is 10 seconds.
+    expect(receiveTimeout, greaterThan(const Duration(seconds: 12)));
+    final api = apiClient('https://api.example.test');
+    expect(api.dio.options.receiveTimeout, receiveTimeout);
+    expect(api.dio.interceptors.whereType<AuthInterceptor>(), isEmpty);
   });
 }

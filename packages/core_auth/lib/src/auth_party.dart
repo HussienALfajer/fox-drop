@@ -11,6 +11,8 @@ class AuthTokens {
   });
 
   final String accessToken;
+
+  /// On this device's clock (see [AuthParty.localExpiry]).
   final DateTime accessTokenExpiresAt;
   final String refreshToken;
 }
@@ -71,10 +73,19 @@ class AuthRefusal implements Exception {
   /// No answer came from the server.
   static const network = 'network';
 
+  /// Any other failure, such as the secure store failing.
+  static const failed = 'failed';
+
   final String error;
   final int? status;
   final int? retryAfterSec;
   final int? attemptsLeft;
+
+  /// The server may have done the work without its answer reaching the app:
+  /// no answer, or the proxy's 502, 503 or 504 with no error of the API's.
+  bool get unanswered =>
+      error == network ||
+      (const {502, 503, 504}.contains(status) && error.startsWith('http_'));
 
   @override
   String toString() => 'AuthRefusal($error, $status)';
@@ -100,7 +111,7 @@ abstract class AuthParty {
     required String code,
   });
 
-  Future<AuthTokens> refresh(String refreshToken);
+  Future<AuthTokens> refresh(String refreshToken, {CancelToken? cancelToken});
 
   Future<void> signOut(String accessToken);
 
@@ -112,24 +123,42 @@ abstract class AuthParty {
   };
 
   /// Runs [call], turning a refused or failed call into an [AuthRefusal].
-  static Future<T> guard<T>(Future<Response<T>> Function() call) async {
+  static Future<Response<T>> guard<T>(
+    Future<Response<T>> Function() call,
+  ) async {
     try {
       final response = await call();
-      final data = response.data;
-      if (data == null) throw const AuthRefusal('empty_answer');
-      return data;
+      if (response.data == null) throw const AuthRefusal('empty_answer');
+      return response;
     } on DioException catch (exception) {
       throw AuthRefusal.of(exception);
     }
   }
+
+  /// The token's expiry on this device's clock: the server's expiry moved by
+  /// the difference between the answer's `Server-Time` and this clock, so a
+  /// phone whose clock is wrong renews on time (architecture §11.2).
+  static DateTime localExpiry(Response<Object?> response, DateTime expiresAt) {
+    final serverMs = int.tryParse(response.headers.value('server-time') ?? '');
+    if (serverMs == null) return expiresAt;
+    final offset = DateTime.fromMillisecondsSinceEpoch(
+      serverMs,
+      isUtc: true,
+    ).difference(DateTime.now());
+    return expiresAt.subtract(offset);
+  }
 }
 
-AuthTokens _tokens(String access, DateTime expiresAt, String refresh) =>
-    AuthTokens(
-      accessToken: access,
-      accessTokenExpiresAt: expiresAt,
-      refreshToken: refresh,
-    );
+AuthTokens _tokens(
+  Response<Object?> response,
+  String access,
+  DateTime expiresAt,
+  String refresh,
+) => AuthTokens(
+  accessToken: access,
+  accessTokenExpiresAt: AuthParty.localExpiry(response, expiresAt),
+  refreshToken: refresh,
+);
 
 SupportContact _contact(ContactDtoOutput contact) =>
     SupportContact(phone: contact.phone, whatsapp: contact.whatsapp);
@@ -154,7 +183,7 @@ class CustomerAuth extends AuthParty {
         ),
       ),
     );
-    return CodeSent(resendAfterSec: sent.resendAfterSec);
+    return CodeSent(resendAfterSec: sent.data!.resendAfterSec);
   }
 
   @override
@@ -163,7 +192,7 @@ class CustomerAuth extends AuthParty {
     required String deviceId,
     required String code,
   }) async {
-    final s = await AuthParty.guard(
+    final r = await AuthParty.guard(
       () => _routes.customerAuthSignIn(
         customerSignInDto: CustomerSignInDto(
           (b) => b
@@ -173,22 +202,28 @@ class CustomerAuth extends AuthParty {
         ),
       ),
     );
+    final s = r.data!;
     return (
       s.accountId,
-      _tokens(s.accessToken, s.accessTokenExpiresAt, s.refreshToken),
+      _tokens(r, s.accessToken, s.accessTokenExpiresAt, s.refreshToken),
     );
   }
 
   @override
-  Future<AuthTokens> refresh(String refreshToken) async {
-    final t = await AuthParty.guard(
+  Future<AuthTokens> refresh(
+    String refreshToken, {
+    CancelToken? cancelToken,
+  }) async {
+    final r = await AuthParty.guard(
       () => _routes.customerAuthRefresh(
         customerRefreshDto: CustomerRefreshDto(
           (b) => b..refreshToken = refreshToken,
         ),
+        cancelToken: cancelToken,
       ),
     );
-    return _tokens(t.accessToken, t.accessTokenExpiresAt, t.refreshToken);
+    final t = r.data!;
+    return _tokens(r, t.accessToken, t.accessTokenExpiresAt, t.refreshToken);
   }
 
   @override
@@ -198,7 +233,7 @@ class CustomerAuth extends AuthParty {
 
   @override
   Future<SupportContact> contact() async =>
-      _contact(await AuthParty.guard(() => _routes.customerContactGet()));
+      _contact((await AuthParty.guard(_routes.customerContactGet)).data!);
 }
 
 /// The restaurant app (RA §5.2–5.3). [platform] lets the server exempt
@@ -225,7 +260,7 @@ class MerchantAuth extends AuthParty {
         ),
       ),
     );
-    return CodeSent(resendAfterSec: sent.resendAfterSec);
+    return CodeSent(resendAfterSec: sent.data!.resendAfterSec);
   }
 
   @override
@@ -234,7 +269,7 @@ class MerchantAuth extends AuthParty {
     required String deviceId,
     required String code,
   }) async {
-    final s = await AuthParty.guard(
+    final r = await AuthParty.guard(
       () => _routes.merchantAuthSignIn(
         merchantSignInDto: MerchantSignInDto(
           (b) => b
@@ -244,22 +279,28 @@ class MerchantAuth extends AuthParty {
         ),
       ),
     );
+    final s = r.data!;
     return (
       s.accountId,
-      _tokens(s.accessToken, s.accessTokenExpiresAt, s.refreshToken),
+      _tokens(r, s.accessToken, s.accessTokenExpiresAt, s.refreshToken),
     );
   }
 
   @override
-  Future<AuthTokens> refresh(String refreshToken) async {
-    final t = await AuthParty.guard(
+  Future<AuthTokens> refresh(
+    String refreshToken, {
+    CancelToken? cancelToken,
+  }) async {
+    final r = await AuthParty.guard(
       () => _routes.merchantAuthRefresh(
         merchantRefreshDto: MerchantRefreshDto(
           (b) => b..refreshToken = refreshToken,
         ),
+        cancelToken: cancelToken,
       ),
     );
-    return _tokens(t.accessToken, t.accessTokenExpiresAt, t.refreshToken);
+    final t = r.data!;
+    return _tokens(r, t.accessToken, t.accessTokenExpiresAt, t.refreshToken);
   }
 
   @override
@@ -269,7 +310,7 @@ class MerchantAuth extends AuthParty {
 
   @override
   Future<SupportContact> contact() async =>
-      _contact(await AuthParty.guard(() => _routes.merchantContactGet()));
+      _contact((await AuthParty.guard(_routes.merchantContactGet)).data!);
 }
 
 /// The captain app (CA §4.9).
@@ -292,7 +333,7 @@ class CaptainAuth extends AuthParty {
         ),
       ),
     );
-    return CodeSent(resendAfterSec: sent.resendAfterSec);
+    return CodeSent(resendAfterSec: sent.data!.resendAfterSec);
   }
 
   @override
@@ -301,7 +342,7 @@ class CaptainAuth extends AuthParty {
     required String deviceId,
     required String code,
   }) async {
-    final s = await AuthParty.guard(
+    final r = await AuthParty.guard(
       () => _routes.captainAuthSignIn(
         captainSignInDto: CaptainSignInDto(
           (b) => b
@@ -311,22 +352,28 @@ class CaptainAuth extends AuthParty {
         ),
       ),
     );
+    final s = r.data!;
     return (
       s.accountId,
-      _tokens(s.accessToken, s.accessTokenExpiresAt, s.refreshToken),
+      _tokens(r, s.accessToken, s.accessTokenExpiresAt, s.refreshToken),
     );
   }
 
   @override
-  Future<AuthTokens> refresh(String refreshToken) async {
-    final t = await AuthParty.guard(
+  Future<AuthTokens> refresh(
+    String refreshToken, {
+    CancelToken? cancelToken,
+  }) async {
+    final r = await AuthParty.guard(
       () => _routes.captainAuthRefresh(
         captainRefreshDto: CaptainRefreshDto(
           (b) => b..refreshToken = refreshToken,
         ),
+        cancelToken: cancelToken,
       ),
     );
-    return _tokens(t.accessToken, t.accessTokenExpiresAt, t.refreshToken);
+    final t = r.data!;
+    return _tokens(r, t.accessToken, t.accessTokenExpiresAt, t.refreshToken);
   }
 
   @override
@@ -336,5 +383,5 @@ class CaptainAuth extends AuthParty {
 
   @override
   Future<SupportContact> contact() async =>
-      _contact(await AuthParty.guard(() => _routes.captainContactGet()));
+      _contact((await AuthParty.guard(_routes.captainContactGet)).data!);
 }

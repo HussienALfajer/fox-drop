@@ -15,10 +15,9 @@ class AuthScope {
     this.offersOperationsCode = false,
     DateTime Function()? clock,
     this.refreshAhead = const Duration(minutes: 1),
-    this.refreshRetryDelays = const [
-      Duration(seconds: 1),
-      Duration(seconds: 3),
-    ],
+    this.refreshTryTimeout = const Duration(seconds: 3),
+    this.refreshRetryWindow = const Duration(seconds: 7),
+    this.refreshRetryPause = const Duration(milliseconds: 500),
   }) : _party = party,
        clock = clock ?? DateTime.now;
 
@@ -33,9 +32,19 @@ class AuthScope {
   /// How long before its expiry the access token is renewed.
   final Duration refreshAhead;
 
-  /// The waits between tries of a refresh that got no answer; they must stay
-  /// within the server's 10-second retry grace.
-  final List<Duration> refreshRetryDelays;
+  /// How long one refresh try waits for its answer before it counts as lost.
+  final Duration refreshTryTimeout;
+
+  /// A refresh with no answer is tried again with the same token only while
+  /// this much time has passed since its first try: the server accepts the
+  /// same token again for 10 seconds after its first use (the identity
+  /// module's REFRESH_RETRY_GRACE_SECONDS), and a later try is a reuse that
+  /// ends the session. A try started before the window ends reaches the
+  /// server well within the grace.
+  final Duration refreshRetryWindow;
+
+  /// The wait between two tries.
+  final Duration refreshRetryPause;
 
   late final party = Provider<AuthParty>(_party);
 

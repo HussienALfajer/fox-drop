@@ -1,4 +1,5 @@
 import 'package:core_api/core_api.dart';
+import 'package:core_auth/core_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,14 +24,12 @@ String apiBaseUrl() {
 
 /// The client of the sign-in routes, without the session's interceptor
 /// (`packages/core_auth/CLAUDE.md`).
-final authApiProvider = Provider<CoreApi>(
-  (ref) => CoreApi(basePathOverride: apiBaseUrl(), interceptors: []),
-);
+final authApiProvider = Provider<CoreApi>((ref) => apiClient(apiBaseUrl()));
 
 /// The generated client (E6); the only way the app reaches the server. It
 /// sends the session's token and renews it.
 final coreApiProvider = Provider<CoreApi>((ref) {
-  final api = CoreApi(basePathOverride: apiBaseUrl(), interceptors: []);
+  final api = apiClient(apiBaseUrl());
   api.dio.interceptors.add(customerAuth.interceptor(ref, api.dio));
   return api;
 });

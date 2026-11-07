@@ -27,7 +27,8 @@ class HomeScreen extends ConsumerWidget {
               AsyncLoading() => l10n.statusLoading,
             }),
             TextButton(
-              onPressed: () => ref.read(merchantAuth.session.notifier).signOut(),
+              onPressed: () =>
+                  ref.read(merchantAuth.session.notifier).signOut(),
               child: Text(l10n.signOut),
             ),
           ],
