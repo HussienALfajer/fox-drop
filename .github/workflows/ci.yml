@@ -156,6 +156,44 @@ jobs:
   # three apps' staging APKs (Android only), signed with each app's staging
   # key, as artifacts of the run (the deploy skill). The keys are secrets of
   # the staging environment, which only main may use.
+  # The release build of each Android app on every pull request, so a plugin
+  # that breaks it (a compileSdk, an AAR metadata check, R8) fails before the
+  # merge and not in staging-apks. No secret: signed with the debug key and
+  # never kept (the deploy skill, «The staging APKs»).
+  android-release:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [customer, merchant, captain]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read the pinned Flutter version
+        id: flutter
+        run: |
+          version=$(jq -er .flutter .fvmrc)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: ${{ steps.flutter.outputs.version }}
+          cache: true
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - run: dart pub get --enforce-lockfile
+
+      - name: Build the staging release APK
+        working-directory: apps/${{ matrix.app }}
+        run: flutter build apk --flavor staging --release
+
   staging-apks:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [verify]
