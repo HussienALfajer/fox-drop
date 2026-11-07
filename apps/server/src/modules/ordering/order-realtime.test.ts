@@ -30,6 +30,7 @@ import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 import { OrderAlerts } from './order-alerts.js';
 import { OrderTimers } from './order-timers.js';
+import { ResendNotification } from './resend-notification.js';
 
 // Architecture §6.1–6.2, RA §4.3, CU §4.3: the apps connect to Centrifugo
 // with a short-lived token from the API, the API checks every subscription,
@@ -955,5 +956,39 @@ describe("the order's pushes (architecture §8.1, CU §14, RA §16, CA §14)", (
     expect((await eventuallyPushed(orderId, 'merchant.auto_cancelled')).body).toMatch(
       /^أُلغي الطلب #\d+ لعدم الرد \(\d+ من 3 اليوم\)$/,
     );
+  });
+
+  it('pushes the current state again on «إعادة إرسال الإشعار» (AP §9.3.2)', async () => {
+    const orderId = await place(await signedIn('customer'));
+    await eventuallyPushed(orderId, 'merchant.new_order');
+    const resends = app.get(ResendNotification);
+    const command = (to: 'customer' | 'merchant' | 'captain') => ({
+      orderId,
+      to,
+      admin: { accountId: randomUUID(), roles: ['SUP'] },
+      context: { ipAddress: null, device: null },
+    });
+    expect(await resends.resend(command('merchant'), new Date())).toEqual({
+      body: expect.stringMatching(/^طلب جديد #\d+$/) as unknown,
+    });
+    expect(
+      (await pushesOf(orderId)).filter((row) => row.template_key === 'merchant.new_order'),
+    ).toHaveLength(2);
+    await expect(resends.resend(command('customer'), new Date())).rejects.toMatchObject({
+      refusal: 'nothing_to_resend',
+    });
+    await expect(resends.resend(command('captain'), new Date())).rejects.toMatchObject({
+      refusal: 'order_state_changed',
+    });
+    const { rows } = await sql.query(
+      "SELECT changes FROM audit.events WHERE action = 'order.resend_notification' AND target_id = $1",
+      [orderId],
+    );
+    expect(rows.map((row) => row.changes)).toEqual([
+      {
+        to: { before: null, after: 'merchant' },
+        templateKey: { before: null, after: 'merchant.new_order' },
+      },
+    ]);
   });
 });

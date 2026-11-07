@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, gte } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
+import { and, desc, eq, gte, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import type { PushRecipient } from './push-devices.js';
@@ -31,7 +32,7 @@ export interface InboxEntry {
   data: Record<string, string>;
 }
 
-type Executor = Pick<Database['db'], 'insert'>;
+type Executor = Pick<Database['db'], 'insert' | 'select'>;
 
 // Queues pushes in the caller's transaction (E4), so a push exists exactly
 // when what it tells committed; the worker's push relay sends them.
@@ -62,6 +63,52 @@ export class PushQueue {
         })),
       )
       .onConflictDoNothing({ target: pushMessages.source });
+  }
+
+  // AP §9.3.2 «إعادة إرسال الإشعار»: queues again the latest push of the
+  // order to the recipient, which tells its current state. Null when the
+  // order sent the recipient none.
+  async resend(
+    executor: Executor,
+    orderId: string,
+    recipient: PushRecipient,
+    now: Date,
+  ): Promise<{ templateKey: string; body: string } | null> {
+    const whose =
+      recipient.party === 'customer'
+        ? eq(pushMessages.accountId, recipient.accountId)
+        : recipient.party === 'captain'
+          ? eq(pushMessages.captainId, recipient.captainId)
+          : eq(pushMessages.restaurantId, recipient.restaurantId);
+    const [latest] = await executor
+      .select()
+      .from(pushMessages)
+      .where(
+        and(
+          eq(pushMessages.party, recipient.party),
+          whose,
+          sql`${pushMessages.data}->>'orderId' = ${orderId}`,
+        ),
+      )
+      .orderBy(desc(pushMessages.createdAt))
+      .limit(1);
+    if (!latest) return null;
+    await this.enqueue(
+      executor,
+      [
+        {
+          source: `resend:${randomUUID()}`,
+          recipient,
+          templateKey: latest.templateKey,
+          body: latest.body,
+          level: latest.level,
+          priority: latest.priority,
+          data: latest.data,
+        },
+      ],
+      now,
+    );
+    return { templateKey: latest.templateKey, body: latest.body };
   }
 
   // CU §13: a customer's pushes of the last 30 days, newest first.

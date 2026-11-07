@@ -1,0 +1,1 @@
+CREATE INDEX "push_messages_order" ON "notifications"."push_messages" USING btree (("data"->>'orderId'),"created_at" DESC NULLS LAST);

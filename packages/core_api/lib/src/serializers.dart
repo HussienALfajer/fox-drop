@@ -33,6 +33,7 @@ import 'package:core_api/src/model/admin_faq_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_faq_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output_customer_inner.dart';
+import 'package:core_api/src/model/admin_notification_resent_dto_output.dart';
 import 'package:core_api/src/model/admin_notification_text_dto_output.dart';
 import 'package:core_api/src/model/admin_notification_texts_dto_output.dart';
 import 'package:core_api/src/model/admin_notification_texts_dto_output_templates_inner.dart';
@@ -79,6 +80,7 @@ import 'package:core_api/src/model/admin_record_delivery_dto.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_amount_due.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_received_inner.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_shortfall.dart';
+import 'package:core_api/src/model/admin_resend_notification_dto.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output_shortfalls_inner.dart';
@@ -325,6 +327,7 @@ part 'serializers.g.dart';
   AdminFaqDtoOutput,
   AdminFaqsDtoOutput,
   AdminFaqsDtoOutputCustomerInner,
+  AdminNotificationResentDtoOutput,
   AdminNotificationTextDtoOutput,
   AdminNotificationTextsDtoOutput,
   AdminNotificationTextsDtoOutputTemplatesInner,
@@ -371,6 +374,7 @@ part 'serializers.g.dart';
   AdminRecordDeliveryDtoAmountDue,
   AdminRecordDeliveryDtoReceivedInner,
   AdminRecordDeliveryDtoShortfall,
+  AdminResendNotificationDto,
   AdminSessionDtoOutput,
   AdminShortfallsDtoOutput,
   AdminShortfallsDtoOutputShortfallsInner,

@@ -200,6 +200,8 @@ export const pushMessages = notifications.table(
     index('push_messages_pending')
       .on(table.nextAttemptAt)
       .where(sql`${table.sentAt} IS NULL AND ${table.gaveUpAt} IS NULL`),
+    // «إعادة إرسال الإشعار» finds an order's latest push to a party.
+    index('push_messages_order').on(sql`(${table.data}->>'orderId')`, table.createdAt.desc()),
     index('push_messages_customer')
       .on(table.accountId, table.createdAt.desc())
       .where(sql`${table.party} = 'customer'`),

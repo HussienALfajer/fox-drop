@@ -1092,6 +1092,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders/{orderId}/resend-notification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersResendNotification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/confirm-pickup": {
         parameters: {
             query?: never;
@@ -3461,6 +3477,17 @@ export interface components {
                 amount: string;
                 currency: string;
             }[];
+        };
+        AdminResendNotificationDto: {
+            /**
+             * @description The customer, the restaurant's devices or the assigned captain.
+             * @enum {string}
+             */
+            to: "customer" | "merchant" | "captain";
+        };
+        AdminNotificationResentDto_Output: {
+            /** @description The text pushed again. */
+            body: string;
         };
         AdminConfirmPickupDto: {
             /** @description The agreed lines, prefilled from the captain's last request. */
@@ -6738,6 +6765,32 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantOrderDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersResendNotification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminResendNotificationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminNotificationResentDto_Output"];
                 };
             };
         };

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   ConflictException,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -15,7 +16,7 @@ import {
 import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
-import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
+import { CurrentAdminSession, RequirePermission, SignedIn } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
@@ -32,6 +33,7 @@ import {
 import { ORDER_ALERT_CODES } from './order-alerts.js';
 import { OrderCommandRefusedError } from './order-commands.js';
 import { PickupCommands } from './pickup-commands.js';
+import { ResendNotification, ResendRefusedError } from './resend-notification.js';
 import { minor } from './customer-quote.controller.js';
 import { type OperationsOrder, OperationsViews } from './operations-views.js';
 import { captainTracks, orderOutcomes, orderStatuses } from './schema.js';
@@ -115,6 +117,18 @@ class AdminShortfallsDto extends createZodDto(
 ) {}
 
 class AdminOrderParamsDto extends createZodDto(z.object({ orderId: z.uuid() })) {}
+
+class AdminResendNotificationDto extends createZodDto(
+  z.object({
+    to: z
+      .enum(['customer', 'merchant', 'captain'])
+      .describe("The customer, the restaurant's devices or the assigned captain."),
+  }),
+) {}
+
+class AdminNotificationResentDto extends createZodDto(
+  z.object({ body: z.string().describe('The text pushed again.') }),
+) {}
 
 class AdminRecordArrivalDto extends createZodDto(
   z.object({ reason: z.string().trim().min(1).max(500).describe('Required (AP §9.3.2).') }),
@@ -320,7 +334,47 @@ export class AdminOrdersController {
     private readonly customers: CustomersService,
     private readonly captainOrders: CaptainOrders,
     private readonly pickups: PickupCommands,
+    private readonly resends: ResendNotification,
   ) {}
+
+  // AP §9.3.2 «إعادة إرسال الإشعار», for OWN, OPS and SUP (operations.manage
+  // or operations.compensate): the order's latest push to that party, sent
+  // again. 404 unknown_order; 409 order_state_changed (not active, or no
+  // captain), nothing_to_resend.
+  @Post(':orderId/resend-notification')
+  @SignedIn()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminNotificationResentDto })
+  async resendNotification(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminResendNotificationDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    if (
+      !session.permissions.includes('operations.manage') &&
+      !session.permissions.includes('operations.compensate')
+    ) {
+      throw new ForbiddenException();
+    }
+    try {
+      return await this.resends.resend(
+        {
+          orderId: params.orderId,
+          to: body.to,
+          admin: { accountId: session.accountId, roles: session.roles },
+          context: requestContext(request),
+        },
+        new Date(),
+      );
+    } catch (error) {
+      if (!(error instanceof ResendRefusedError)) throw error;
+      if (error.refusal === 'unknown_order') {
+        throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: error.refusal });
+      }
+      throw new ConflictException({ statusCode: HttpStatus.CONFLICT, error: error.refusal });
+    }
+  }
 
   // AP §9.3.2 «تأكيد الاستلام نيابة عن المطعم», for OWN and OPS: the order
   // accepted or ready and the assigned captain at the restaurant; the
