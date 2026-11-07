@@ -4,16 +4,18 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 1.14h, the whole cycle on staging (`docs/roadmap.md`, Phase 1, slice 1.14; owner approval of the split 2026-11-07).
+Phase 2 planning (`docs/roadmap.md`, «Phase 2 onwards»): split Phase 2 into vertical slices with the `slice-plan` skill and get the owner's approval of the split before building any of them.
 
-- **Roadmap line:** the run book, fixes from the run on real phones, and the ledger checked against AP §8.4. The owner runs the whole cycle on real phones.
-- **Specs:** AP §8.4 (`docs/domain/04-order-money.md`, the order's money and its journals), AP §8.1 (the pickup), §8.5 (custody), §8.6 (the door payment); the definitions of done of the four parties (CU §19, RA §19, CA §19, AP §14); architecture §17 (staging) and the `deploy` skill (the staging APKs, the server's containers).
-- **Owner decisions 2026-11-07:** a run book pull request first, then one `fix/` pull request per finding of the run, each with its test first; the run today, in Azaz itself; the owner plays every party alone (three phones and the panel on a computer).
-- **Plan:**
-  - [x] `fix/ringtone-compile-sdk`: the restaurant APK had failed in `staging-apks` since slice 1.14e (`flutter_ringtone_player` compiles against android-33); raise that plugin's compileSdk in the restaurant and captain apps, and build the three release APKs on every pull request (`android-release`).
-  - [ ] `docs/staging-cycle-runbook`: the run book (`docs/runbooks/staging-cycle.md`) and the ledger check (`infra/server/check-order-ledger.sql`); `main` deployed to staging with three green APKs.
-  - [ ] The owner's run on phones; the ledger check on the delivered order.
-  - [ ] One `fix/` pull request per finding, test first.
+- **Owner decision 2026-11-07:** the run of slice 1.14h on real phones is deferred, and Phase 2 starts.
+- **Branch:** none until the split is approved (planning only).
+- **First:** read `docs/roadmap.md` and what Phase 1 left open (the «Not yet» sections of each folder's `CLAUDE.md` and the notes below), ask the owner the order of the features and whether the UI/UX and the design system are ready (the design stop in `CLAUDE.md`: most Phase 2 screens need it).
+
+## Deferred: slice 1.14h, the whole cycle on real phones
+
+- **Done:** the restaurant and captain release APKs build again, and every pull request builds the three (`android-release`, PR 65); the run book `docs/runbooks/staging-cycle.md` and the ledger check `infra/server/check-order-ledger.sql` (PR 66); the whole cycle passed on a local stack (the API, worker and dispatcher roles, PostGIS, Valkey, Centrifugo and OSRM), driven through the API as the four parties: order 10002 from sign-in to delivery with 200 TRY received and 40 TRY change, all 18 ledger lines `ok`, the ten events published through Centrifugo, the panel's board and detail right, and an unanswered order cancelled automatically 1.2 s after its due time.
+- **Open:** the owner's run in Azaz on real phones (App Check from Syria, architecture §22 item 9; the WhatsApp codes; GPS, the radii and the ring on real devices), the ledger check on staging's delivered order, and one `fix/` pull request per finding, test first. Before a run on a later day, `captain.remit_tolerance` on staging (the run book, «Before the run»).
+- **Seen in the local run:** the captain pay was 25.16 TRY, as the pay table gives for a road trip of 3033 m (the run book's 25 TRY assumes under 3 km by road); the panel shows money as «120.00 TRY» and the apps as «120 ₺» (to confirm with the owner, slice 1.14d); the panel's detail of a delivered order still shows «الكابتن عند الزبون منذ…».
+- **Staging access:** SSH to the server timed out from the owner's computer on 2026-11-07 while HTTPS answered; check it (fail2ban) before the run.
 
 ## Notes from earlier slices
 
