@@ -16,7 +16,7 @@ Slice 2.1, Content and reason lists (`docs/roadmap.md`, Phase 2): the reason lis
   - [x] Server: the `content` schema (lists, reasons with code, Arabic label, order, active, «أخرى» with a required text, the customer text where the list has one), the seed of the defaults, the panel's read and edit routes with audit, the apps' read routes; `ordering` validates a reason through `ContentService` instead of its `CHECK`s (`db-migration` skill).
   - [x] The preset order notes at checkout, the FAQs and the captain work rules page; the contact info stored in Content, with `SUPPORT_PHONE_NUMBER` and `SUPPORT_WHATSAPP_NUMBER` as the defaults.
   - [x] Regenerate the API clients (`pnpm generate:api`).
-  - [ ] Unstyled panel page «المحتوى» for the lists, texts, notes, FAQs and contact; the apps read their lists (the captain's away and shortfall reasons, the customer's notes and FAQs).
+  - [x] Unstyled panel page «المحتوى» for the lists, texts, notes, FAQs and contact; the apps read their lists (the captain's away and shortfall reasons, the customer's notes and FAQs).
   - [ ] Tests first for the validation of a reason; then `pnpm verify` through the `checker` agent, the `reviewer` agent, the pull request.
 
 ## Deferred: slice 1.14h, the whole cycle on real phones

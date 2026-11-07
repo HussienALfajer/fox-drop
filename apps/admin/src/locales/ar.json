@@ -262,5 +262,78 @@
       "captainHasOffer": "لدى هذا الكابتن عرض آخر مفتوح.",
       "unknownCaptain": "الكابتن غير موجود."
     }
+  },
+  "content": {
+    "title": "المحتوى",
+    "saved": "حُفظ",
+    "save": "حفظ",
+    "add": "إضافة سبب",
+    "up": "أعلى",
+    "down": "أسفل",
+    "label": "النص",
+    "customerText": "النص للزبون",
+    "genericApology": "نعتذر، لم نتمكن من إكمال طلبك",
+    "needsText": "يحتاج كتابة السبب",
+    "active": "معروض",
+    "fixed": "ثابت (لا يُحذف)",
+    "reasons": {
+      "title": "قوائم الأسباب",
+      "explain": "إلغاء «معروض» يخفي السبب من الاختيارات الجديدة، وتبقى الطلبات السابقة كما سُجّلت."
+    },
+    "list": {
+      "merchant_rejection": "رفض المطعم",
+      "merchant_problem": "مشكلة المطعم في طلب",
+      "item_unavailable_note": "صنف غير متوفر بعد القبول",
+      "merchant_ticket_type": "أنواع تذاكر المطعم",
+      "captain_cannot_complete": "الكابتن لا يستطيع إكمال الطلب",
+      "captain_away": "وصول أو تسليم بعيد عن الدبوس",
+      "shortfall": "تحصيل أقل من المطلوب",
+      "food_after_failed": "الطعام بعد طلب فاشل",
+      "captain_ticket_type": "أنواع تذاكر الكابتن",
+      "captain_problem": "مشكلة الكابتن",
+      "customer_cancel": "إلغاء الزبون",
+      "customer_problem": "مشكلة الزبون",
+      "order_note": "الملاحظات الجاهزة",
+      "restaurant_rating_low": "تقييم المطعم: 1–2 نجوم",
+      "restaurant_rating_mid": "تقييم المطعم: 3 نجوم",
+      "restaurant_rating_high": "تقييم المطعم: 4–5 نجوم",
+      "captain_rating_low": "تقييم الكابتن: 1–2 نجوم",
+      "captain_rating_mid": "تقييم الكابتن: 3 نجوم",
+      "captain_rating_high": "تقييم الكابتن: 4–5 نجوم",
+      "ops_cancel": "إلغاء العمليات",
+      "reassignment": "إعادة التعيين",
+      "captain_suspension": "إيقاف الكابتن",
+      "customer_block": "حظر الزبون",
+      "emergency_stop": "الإيقاف الطارئ",
+      "failed_outcome": "نتائج الطلب الفاشل",
+      "system_cancellation": "الإلغاء التلقائي"
+    },
+    "faq": {
+      "title": "الأسئلة الشائعة",
+      "customer": "أسئلة الزبائن",
+      "captain": "أسئلة الكباتن",
+      "merchant": "أسئلة المطاعم",
+      "question": "السؤال",
+      "answer": "الجواب",
+      "addQuestion": "إضافة سؤال"
+    },
+    "workRules": {
+      "title": "قواعد عمل الكابتن",
+      "explain": "قاعدة في كل سطر"
+    },
+    "contact": {
+      "title": "معلومات التواصل",
+      "phone": "رقم الدعم",
+      "whatsapp": "واتساب الدعم",
+      "explain": "بصيغة دولية مثل +963944000000. الحقل الفارغ يخفي زره في التطبيقات."
+    },
+    "refused": {
+      "listClosed": "لا يمكن إضافة سبب إلى هذه القائمة",
+      "reasonFixed": "هذا السبب ثابت ولا يُحذف",
+      "customerTextNotAllowed": "هذه القائمة بلا نص للزبون",
+      "duplicateLabel": "يوجد سبب بالنص نفسه في القائمة",
+      "invalidOrder": "تغيّرت القائمة، حدّث الصفحة",
+      "invalidValue": "قيمة غير صالحة"
+    }
   }
 }

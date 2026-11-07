@@ -1,5 +1,6 @@
 import { getRouteApi, Link, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
+import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { can, useSignOut } from './session.js';
@@ -35,6 +36,11 @@ export function HomePage() {
           {can(session, OPERATIONS_READ) && (
             <li>
               <Link to="/orders">{t('board.title')}</Link>
+            </li>
+          )}
+          {(can(session, CONTENT_READ) || can(session, CONTENT_FAQS)) && (
+            <li>
+              <Link to="/content">{t('content.title')}</Link>
             </li>
           )}
           {can(session, EMERGENCY_CODE_PERMISSION) && (
