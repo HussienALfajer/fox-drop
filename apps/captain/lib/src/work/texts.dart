@@ -132,18 +132,6 @@ extension CaptainTexts on AppLocalizations {
     _ => captainStepToRestaurant,
   };
 
-  String awayText(String reason) => switch (reason) {
-    'customer_requested_other_place' => captainAwayOtherPlace,
-    'pin_inaccurate' => captainAwayPinInaccurate,
-    _ => captainOther,
-  };
-
-  String shortfallText(String reason) => switch (reason) {
-    'customer_short' => captainShortCustomer,
-    'counting_error' => captainShortCounting,
-    _ => captainOther,
-  };
-
   /// «تغيّرت عهدتك: {+المبلغ}» shows its sign (CA §9.8).
   String signedMoney(String amount, String currency) {
     final text = formatMoney(amount, currency);

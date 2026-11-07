@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../auth.dart';
+import '../content.dart';
 import '../cart/cart.dart';
 import '../device.dart';
 import '../location/delivery_point.dart';
@@ -384,14 +385,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final form = ref.watch(checkoutFormProvider);
     final controller = ref.read(checkoutFormProvider.notifier);
     return [
+      // «الملاحظات الجاهزة» from Content (AP §9.13); none while not read.
       Wrap(
         children: [
-          for (final preset in [
-            l10n.customerNoteCallOnArrival,
-            l10n.customerNoteDontKnock,
-            l10n.customerNoteSendCutlery,
-            l10n.customerNoteNoCutlery,
-          ])
+          for (final preset
+              in ref.watch(contentProvider).value?.orderNotes ??
+                  const <String>[])
             ActionChip(
               label: Text(preset),
               onPressed: () => controller.addPreset(preset),

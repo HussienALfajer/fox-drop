@@ -524,4 +524,27 @@ void main() {
     expect(find.text('تغيّر المبلغ المطلوب إلى 450 ₺'), findsOneWidget);
     await app.done(tester);
   });
+
+  testWidgets('opens the work rules and the FAQ from Content (CA §11.4, §13)', (
+    tester,
+  ) async {
+    final app = TestApp();
+    app.work(availability: [availabilityJson()]);
+    await app.pump(tester);
+    await app.live(tester);
+    await tester.tap(find.text('قواعد العمل'));
+    await app.settle(tester);
+    expect(find.text('العمل حر.'), findsOneWidget);
+    expect(find.text('الخوذة إلزامية.'), findsOneWidget);
+    await tester.tap(find.byType(BackButton));
+    await app.settle(tester);
+    await tester.tap(find.text('الأسئلة الشائعة'));
+    await app.settle(tester);
+    await tester.tap(find.text('متى أستلم أرباحي؟'));
+    await app.settle(tester);
+    expect(find.text('كل يوم خميس.'), findsOneWidget);
+    // Read once for both screens.
+    expect(app.server.to('/v1/captain/content'), hasLength(1));
+    await app.done(tester);
+  });
 }

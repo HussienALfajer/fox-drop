@@ -33,6 +33,11 @@ class HomeScreen extends ConsumerWidget {
               )
             : Text(l10n.customerAppName),
         actions: [
+          // CU §13 «المساعدة»: the customer FAQ set.
+          TextButton(
+            onPressed: () => context.push('/faq'),
+            child: Text(l10n.faqTitle),
+          ),
           if (ref.watch(cartProvider).value?.cart case final cart?)
             TextButton(
               key: const Key('open-cart'),

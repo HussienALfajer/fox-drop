@@ -178,6 +178,33 @@ Map<String, Object?> requestJson({
   'closedAt': status == 'open' ? null : now.toIso8601String(),
 };
 
+Map<String, Object?> _reason(String code, String label, [bool text = false]) =>
+    {'code': code, 'label': label, 'needsText': text};
+
+/// `GET /v1/captain/content` with the defaults of AP Appendix B.
+Map<String, Object?> contentJson() => {
+  'reasons': {
+    'captain_cannot_complete': [_reason('accident', 'حادث')],
+    'captain_away': [
+      _reason('customer_requested_other_place', 'الزبون طلب مكاناً آخر'),
+      _reason('pin_inaccurate', 'موقع الزبون على الخريطة غير دقيق'),
+      _reason('other', 'أخرى', true),
+    ],
+    'shortfall': [
+      _reason('customer_short', 'الزبون لا يملك المبلغ كاملاً'),
+      _reason('counting_error', 'خطأ في العد'),
+      _reason('other', 'أخرى', true),
+    ],
+    'food_after_failed': [_reason('destroyed', 'أُتلف')],
+    'captain_ticket_type': [_reason('other', 'أخرى')],
+    'captain_problem': [_reason('other', 'أخرى')],
+  },
+  'faq': [
+    {'question': 'متى أستلم أرباحي؟', 'answer': 'كل يوم خميس.'},
+  ],
+  'workRules': 'العمل حر.\nالخوذة إلزامية.',
+};
+
 /// The delivery summary of `POST .../deliver`.
 Map<String, Object?> summaryJson() => {
   'summary': {
@@ -305,6 +332,7 @@ class TestApp {
   }
 
   Future<void> pump(WidgetTester tester, {Map<String, String>? stored}) async {
+    server.on('/v1/captain/content', [FakeAnswer(200, contentJson())]);
     server.on('/v1/captain/auth/session', [
       const FakeAnswer(200, {
         'accountId': accountId,

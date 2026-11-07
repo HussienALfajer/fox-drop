@@ -7,6 +7,7 @@ import 'auth.dart';
 import 'browsing/restaurant_screen.dart';
 import 'cart/cart_screen.dart';
 import 'checkout/checkout_screen.dart';
+import 'content.dart';
 import 'home_screen.dart';
 import 'not_found_screen.dart';
 import 'orders/order_screen.dart';
@@ -77,6 +78,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             RestaurantScreen(restaurantId: state.pathParameters['id']!),
       ),
       GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
+      GoRoute(path: '/faq', builder: (context, state) => const FaqScreen()),
       GoRoute(
         path: '/checkout',
         builder: (context, state) => const CheckoutScreen(),

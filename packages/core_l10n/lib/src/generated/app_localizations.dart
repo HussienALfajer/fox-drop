@@ -1084,30 +1084,6 @@ abstract class AppLocalizations {
   /// **'{max} حرفاً على الأكثر'**
   String customerLengthUpTo(int max);
 
-  /// A preset order note (CU Appendix C).
-  ///
-  /// In ar, this message translates to:
-  /// **'اتصل بي عند الوصول'**
-  String get customerNoteCallOnArrival;
-
-  /// A preset order note (CU Appendix C).
-  ///
-  /// In ar, this message translates to:
-  /// **'لا تطرق الباب'**
-  String get customerNoteDontKnock;
-
-  /// A preset order note (CU Appendix C).
-  ///
-  /// In ar, this message translates to:
-  /// **'أرسلوا أدوات طعام'**
-  String get customerNoteSendCutlery;
-
-  /// A preset order note (CU Appendix C).
-  ///
-  /// In ar, this message translates to:
-  /// **'لا أحتاج أدوات طعام'**
-  String get customerNoteNoCutlery;
-
   /// The free note of CU §10.3 item 2; the spec gives no wording.
   ///
   /// In ar, this message translates to:
@@ -2284,24 +2260,6 @@ abstract class AppLocalizations {
   /// **'أنت بعيد عن موقع الزبون. اختر السبب:'**
   String get captainAwayTitle;
 
-  /// Away reason (CA Appendix C).
-  ///
-  /// In ar, this message translates to:
-  /// **'الزبون طلب مكاناً آخر'**
-  String get captainAwayOtherPlace;
-
-  /// Away reason (CA Appendix C).
-  ///
-  /// In ar, this message translates to:
-  /// **'موقع الزبون على الخريطة غير دقيق'**
-  String get captainAwayPinInaccurate;
-
-  /// Other, in a reason list (CA Appendix C).
-  ///
-  /// In ar, this message translates to:
-  /// **'أخرى'**
-  String get captainOther;
-
   /// The text of «أخرى». The spec gives no wording.
   ///
   /// In ar, this message translates to:
@@ -2343,18 +2301,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'المبلغ المقبوض أقل من المطلوب بـ {amount}'**
   String captainShortBy(String amount);
-
-  /// Shortfall reason (CA Appendix C).
-  ///
-  /// In ar, this message translates to:
-  /// **'الزبون لا يملك المبلغ كاملاً'**
-  String get captainShortCustomer;
-
-  /// Shortfall reason (CA Appendix C).
-  ///
-  /// In ar, this message translates to:
-  /// **'خطأ في العد'**
-  String get captainShortCounting;
 
   /// Net above due (CA §9.7).
   ///
@@ -2445,6 +2391,30 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'اختر السبب'**
   String get captainChooseReason;
+
+  /// The FAQ screen (AP §9.13 «الأسئلة الشائعة»).
+  ///
+  /// In ar, this message translates to:
+  /// **'الأسئلة الشائعة'**
+  String get faqTitle;
+
+  /// An empty FAQ set. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد أسئلة بعد'**
+  String get faqEmpty;
+
+  /// Content's lists or texts could not be read. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر التحميل، اضغط لإعادة المحاولة'**
+  String get contentFailed;
+
+  /// The work rules page (CA §11.4). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'قواعد العمل'**
+  String get captainWorkRules;
 }
 
 class _AppLocalizationsDelegate
