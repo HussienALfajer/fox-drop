@@ -120,6 +120,14 @@ The `staging-apks` job passes `FIREBASE_APP_ID`, `FIREBASE_PROJECT_ID`, `FIREBAS
 
 Staging has it on since 2026-11-07 (owner decision, after a sign-in from one phone; the Azaz check is still due). Turn the check on only after staging APKs from a run with the values sign in from phones in Azaz, on each mobile network (architecture §22 item 9: whether Syria reaches App Check's Google services is still to check); the server answers their code requests while the setting is off too. Play Integrity needs Google Play services, so a phone without them can never pass the check once it is on: OWN sets `otp.app_check_required` to `true`. Until the panel has its settings screen: sign in to the staging panel as OWN, open the browser's console on that tab and run `await fetch('/v1/admin/settings/otp.app_check_required', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value: true }) }).then((r) => r.json())` (the session cookie is the panel's, so the call runs as OWN and is audited); `value: false` turns it off. Then a code request without a token answers `403 app_check_failed`, which can be checked with `curl -i -X POST https://<API_HOST>/v1/captain/auth/code -H 'Content-Type: application/json' -d '{"phone":"+963900000000","deviceId":"00000000-0000-4000-8000-000000000000"}'`. If the apps stop getting codes, turn the setting off: codes go out again at once.
 
+## Check an order's money in the ledger
+
+`infra/server/check-order-ledger.sql` checks a delivered order's journals against AP §8.4 and lists its entries (read-only; the owner's run in `docs/runbooks/staging-cycle.md`). As root on the server, with the order's number:
+
+```bash
+docker exec -i foxdrop-staging-postgres-1 psql -U postgres -d fox_drop -v number=<order number> < /srv/foxdrop-staging/current/infra/server/check-order-ledger.sql
+```
+
 ## Restore a backup
 
 1. Copy the dump back, if it is not in `/var/backups/foxdrop-staging/`: set the `RCLONE_CONFIG_FOXDROP*` variables as `backup.sh` does, then `rclone copyto foxdropcrypt:<name> /var/backups/foxdrop-staging/<name>`.

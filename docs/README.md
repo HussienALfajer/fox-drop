@@ -12,6 +12,7 @@ Start here. This page says where each kind of information lives. Each rule has e
 | [`product/v1/customer-app/`](product/v1/customer-app/README.md)     | Customer app V1 spec (CU)                                                                                                               |
 | [`domain/`](domain/README.md)                                       | Shared domain rules (AP §8): order statuses, timers, order money, custody and earnings, currencies, restaurant account, trust, outcomes |
 | [`architecture/`](architecture/README.md)                           | Technology stack and architecture                                                                                                       |
+| [`runbooks/`](runbooks/staging-cycle.md)                            | Run books for the owner's trials on staging, such as the whole order cycle on real phones                                               |
 | [`roadmap.md`](roadmap.md)                                          | Versions V1–V6 and the V1 build phases                                                                                                  |
 | [`open-questions.md`](open-questions.md)                            | Where every open item lives                                                                                                             |
 
