@@ -6,13 +6,78 @@ part of 'update_reason_dto.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const UpdateReasonDtoNoteEnum _$updateReasonDtoNoteEnum_none =
+    const UpdateReasonDtoNoteEnum._('none');
+const UpdateReasonDtoNoteEnum _$updateReasonDtoNoteEnum_optional =
+    const UpdateReasonDtoNoteEnum._('optional');
+const UpdateReasonDtoNoteEnum _$updateReasonDtoNoteEnum_required_ =
+    const UpdateReasonDtoNoteEnum._('required_');
+
+UpdateReasonDtoNoteEnum _$updateReasonDtoNoteEnumValueOf(String name) {
+  switch (name) {
+    case 'none':
+      return _$updateReasonDtoNoteEnum_none;
+    case 'optional':
+      return _$updateReasonDtoNoteEnum_optional;
+    case 'required_':
+      return _$updateReasonDtoNoteEnum_required_;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<UpdateReasonDtoNoteEnum> _$updateReasonDtoNoteEnumValues =
+    BuiltSet<UpdateReasonDtoNoteEnum>(const <UpdateReasonDtoNoteEnum>[
+      _$updateReasonDtoNoteEnum_none,
+      _$updateReasonDtoNoteEnum_optional,
+      _$updateReasonDtoNoteEnum_required_,
+    ]);
+
+Serializer<UpdateReasonDtoNoteEnum> _$updateReasonDtoNoteEnumSerializer =
+    _$UpdateReasonDtoNoteEnumSerializer();
+
+class _$UpdateReasonDtoNoteEnumSerializer
+    implements PrimitiveSerializer<UpdateReasonDtoNoteEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'none': 'none',
+    'optional': 'optional',
+    'required_': 'required',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'none': 'none',
+    'optional': 'optional',
+    'required': 'required_',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[UpdateReasonDtoNoteEnum];
+  @override
+  final String wireName = 'UpdateReasonDtoNoteEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    UpdateReasonDtoNoteEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  UpdateReasonDtoNoteEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => UpdateReasonDtoNoteEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$UpdateReasonDto extends UpdateReasonDto {
   @override
   final String label;
   @override
   final String? customerText;
   @override
-  final bool needsText;
+  final UpdateReasonDtoNoteEnum note;
   @override
   final bool active;
 
@@ -22,7 +87,7 @@ class _$UpdateReasonDto extends UpdateReasonDto {
   _$UpdateReasonDto._({
     required this.label,
     this.customerText,
-    required this.needsText,
+    required this.note,
     required this.active,
   }) : super._();
   @override
@@ -38,7 +103,7 @@ class _$UpdateReasonDto extends UpdateReasonDto {
     return other is UpdateReasonDto &&
         label == other.label &&
         customerText == other.customerText &&
-        needsText == other.needsText &&
+        note == other.note &&
         active == other.active;
   }
 
@@ -47,7 +112,7 @@ class _$UpdateReasonDto extends UpdateReasonDto {
     var _$hash = 0;
     _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, customerText.hashCode);
-    _$hash = $jc(_$hash, needsText.hashCode);
+    _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, active.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -58,7 +123,7 @@ class _$UpdateReasonDto extends UpdateReasonDto {
     return (newBuiltValueToStringHelper(r'UpdateReasonDto')
           ..add('label', label)
           ..add('customerText', customerText)
-          ..add('needsText', needsText)
+          ..add('note', note)
           ..add('active', active))
         .toString();
   }
@@ -76,9 +141,9 @@ class UpdateReasonDtoBuilder
   String? get customerText => _$this._customerText;
   set customerText(String? customerText) => _$this._customerText = customerText;
 
-  bool? _needsText;
-  bool? get needsText => _$this._needsText;
-  set needsText(bool? needsText) => _$this._needsText = needsText;
+  UpdateReasonDtoNoteEnum? _note;
+  UpdateReasonDtoNoteEnum? get note => _$this._note;
+  set note(UpdateReasonDtoNoteEnum? note) => _$this._note = note;
 
   bool? _active;
   bool? get active => _$this._active;
@@ -93,7 +158,7 @@ class UpdateReasonDtoBuilder
     if ($v != null) {
       _label = $v.label;
       _customerText = $v.customerText;
-      _needsText = $v.needsText;
+      _note = $v.note;
       _active = $v.active;
       _$v = null;
     }
@@ -123,10 +188,10 @@ class UpdateReasonDtoBuilder
             'label',
           ),
           customerText: customerText,
-          needsText: BuiltValueNullFieldError.checkNotNull(
-            needsText,
+          note: BuiltValueNullFieldError.checkNotNull(
+            note,
             r'UpdateReasonDto',
-            'needsText',
+            'note',
           ),
           active: BuiltValueNullFieldError.checkNotNull(
             active,

@@ -8,7 +8,7 @@ import {
   MerchantController,
 } from '../../http/route-groups.js';
 import { ContentService } from './content.service.js';
-import type { ContentApp, ReasonList } from './lists.js';
+import { type ContentApp, noteModes, type ReasonList } from './lists.js';
 
 // AP §9.13, CA §4.10, CA §11.4, CU §10.2, RA §15: what each app reads from
 // Content, public like the contact (the work rules are shown before sign-in,
@@ -18,7 +18,9 @@ import type { ContentApp, ReasonList } from './lists.js';
 const reasonChoice = z.object({
   code: z.string().describe('Stable: sent back with a choice, kept by the order.'),
   label: z.string(),
-  needsText: z.boolean().describe('«أخرى»: the choice needs its text, up to 200 characters.'),
+  note: z
+    .enum(noteModes)
+    .describe('Whether the choice takes a note: none, optional or required («أخرى»).'),
 });
 
 const faqItem = z.object({ question: z.string(), answer: z.string() });

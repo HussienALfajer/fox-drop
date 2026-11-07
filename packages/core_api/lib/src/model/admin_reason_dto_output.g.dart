@@ -6,6 +6,75 @@ part of 'admin_reason_dto_output.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const AdminReasonDtoOutputNoteEnum _$adminReasonDtoOutputNoteEnum_none =
+    const AdminReasonDtoOutputNoteEnum._('none');
+const AdminReasonDtoOutputNoteEnum _$adminReasonDtoOutputNoteEnum_optional =
+    const AdminReasonDtoOutputNoteEnum._('optional');
+const AdminReasonDtoOutputNoteEnum _$adminReasonDtoOutputNoteEnum_required_ =
+    const AdminReasonDtoOutputNoteEnum._('required_');
+
+AdminReasonDtoOutputNoteEnum _$adminReasonDtoOutputNoteEnumValueOf(
+  String name,
+) {
+  switch (name) {
+    case 'none':
+      return _$adminReasonDtoOutputNoteEnum_none;
+    case 'optional':
+      return _$adminReasonDtoOutputNoteEnum_optional;
+    case 'required_':
+      return _$adminReasonDtoOutputNoteEnum_required_;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AdminReasonDtoOutputNoteEnum>
+_$adminReasonDtoOutputNoteEnumValues =
+    BuiltSet<AdminReasonDtoOutputNoteEnum>(const <AdminReasonDtoOutputNoteEnum>[
+      _$adminReasonDtoOutputNoteEnum_none,
+      _$adminReasonDtoOutputNoteEnum_optional,
+      _$adminReasonDtoOutputNoteEnum_required_,
+    ]);
+
+Serializer<AdminReasonDtoOutputNoteEnum>
+_$adminReasonDtoOutputNoteEnumSerializer =
+    _$AdminReasonDtoOutputNoteEnumSerializer();
+
+class _$AdminReasonDtoOutputNoteEnumSerializer
+    implements PrimitiveSerializer<AdminReasonDtoOutputNoteEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'none': 'none',
+    'optional': 'optional',
+    'required_': 'required',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'none': 'none',
+    'optional': 'optional',
+    'required': 'required_',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[AdminReasonDtoOutputNoteEnum];
+  @override
+  final String wireName = 'AdminReasonDtoOutputNoteEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminReasonDtoOutputNoteEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminReasonDtoOutputNoteEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AdminReasonDtoOutputNoteEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$AdminReasonDtoOutput extends AdminReasonDtoOutput {
   @override
   final String code;
@@ -14,7 +83,7 @@ class _$AdminReasonDtoOutput extends AdminReasonDtoOutput {
   @override
   final String? customerText;
   @override
-  final bool needsText;
+  final AdminReasonDtoOutputNoteEnum note;
   @override
   final bool fixed;
   @override
@@ -28,7 +97,7 @@ class _$AdminReasonDtoOutput extends AdminReasonDtoOutput {
     required this.code,
     required this.label,
     this.customerText,
-    required this.needsText,
+    required this.note,
     required this.fixed,
     required this.active,
   }) : super._();
@@ -48,7 +117,7 @@ class _$AdminReasonDtoOutput extends AdminReasonDtoOutput {
         code == other.code &&
         label == other.label &&
         customerText == other.customerText &&
-        needsText == other.needsText &&
+        note == other.note &&
         fixed == other.fixed &&
         active == other.active;
   }
@@ -59,7 +128,7 @@ class _$AdminReasonDtoOutput extends AdminReasonDtoOutput {
     _$hash = $jc(_$hash, code.hashCode);
     _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, customerText.hashCode);
-    _$hash = $jc(_$hash, needsText.hashCode);
+    _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, fixed.hashCode);
     _$hash = $jc(_$hash, active.hashCode);
     _$hash = $jf(_$hash);
@@ -72,7 +141,7 @@ class _$AdminReasonDtoOutput extends AdminReasonDtoOutput {
           ..add('code', code)
           ..add('label', label)
           ..add('customerText', customerText)
-          ..add('needsText', needsText)
+          ..add('note', note)
           ..add('fixed', fixed)
           ..add('active', active))
         .toString();
@@ -95,9 +164,9 @@ class AdminReasonDtoOutputBuilder
   String? get customerText => _$this._customerText;
   set customerText(String? customerText) => _$this._customerText = customerText;
 
-  bool? _needsText;
-  bool? get needsText => _$this._needsText;
-  set needsText(bool? needsText) => _$this._needsText = needsText;
+  AdminReasonDtoOutputNoteEnum? _note;
+  AdminReasonDtoOutputNoteEnum? get note => _$this._note;
+  set note(AdminReasonDtoOutputNoteEnum? note) => _$this._note = note;
 
   bool? _fixed;
   bool? get fixed => _$this._fixed;
@@ -117,7 +186,7 @@ class AdminReasonDtoOutputBuilder
       _code = $v.code;
       _label = $v.label;
       _customerText = $v.customerText;
-      _needsText = $v.needsText;
+      _note = $v.note;
       _fixed = $v.fixed;
       _active = $v.active;
       _$v = null;
@@ -153,10 +222,10 @@ class AdminReasonDtoOutputBuilder
             'label',
           ),
           customerText: customerText,
-          needsText: BuiltValueNullFieldError.checkNotNull(
-            needsText,
+          note: BuiltValueNullFieldError.checkNotNull(
+            note,
             r'AdminReasonDtoOutput',
-            'needsText',
+            'note',
           ),
           fixed: BuiltValueNullFieldError.checkNotNull(
             fixed,

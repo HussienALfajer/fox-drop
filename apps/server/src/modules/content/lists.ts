@@ -62,6 +62,11 @@ export function isReasonList(value: string): value is ReasonList {
 // CU Appendix C: a reason without a customer text shows this apology.
 export const GENERIC_CUSTOMER_TEXT = 'نعتذر، لم نتمكن من إكمال طلبك';
 
+// Whether a choice takes a note (AP Appendix B «أخرى» with its text, CU
+// §11.5 «سبب آخر» with an optional one, CU §12.2 a problem's optional note).
+export const noteModes = ['none', 'optional', 'required'] as const;
+export type NoteMode = (typeof noteModes)[number];
+
 // The FAQ sets of AP §9.13, one per audience.
 export const faqAudiences = ['customer', 'captain', 'merchant'] as const;
 export type FaqAudience = (typeof faqAudiences)[number];
@@ -69,7 +74,9 @@ export type FaqAudience = (typeof faqAudiences)[number];
 // The longest texts the panel may store.
 export const LABEL_MAX = 100;
 export const CUSTOMER_TEXT_MAX = 300;
-export const NOTE_MAX = 200;
+// The longest note any flow takes (CU §12.2); a flow may take less, such as
+// the captain's 200 characters.
+export const NOTE_MAX = 300;
 export const FAQ_MAX_ITEMS = 50;
 export const QUESTION_MAX = 200;
 export const ANSWER_MAX = 2000;

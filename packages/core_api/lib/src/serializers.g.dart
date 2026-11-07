@@ -9,6 +9,7 @@ part of 'serializers.dart';
 Serializers _$serializers =
     (Serializers().toBuilder()
           ..add(AddReasonDto.serializer)
+          ..add(AddReasonDtoNoteEnum.serializer)
           ..add(AdminAssignDto.serializer)
           ..add(AdminBoardDtoOutput.serializer)
           ..add(AdminCitiesDtoOutput.serializer)
@@ -77,11 +78,15 @@ Serializers _$serializers =
           ..add(AdminPickerDtoOutputCaptainsInnerReasonsEnum.serializer)
           ..add(AdminPickerDtoOutputCaptainsInnerVehicleEnum.serializer)
           ..add(AdminReasonDtoOutput.serializer)
+          ..add(AdminReasonDtoOutputNoteEnum.serializer)
           ..add(AdminReasonListsDtoOutput.serializer)
           ..add(AdminReasonListsDtoOutputListsInner.serializer)
           ..add(AdminReasonListsDtoOutputListsInnerAppsEnum.serializer)
           ..add(AdminReasonListsDtoOutputListsInnerListEnum.serializer)
           ..add(AdminReasonListsDtoOutputListsInnerReasonsInner.serializer)
+          ..add(
+            AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum.serializer,
+          )
           ..add(AdminReasonOrderDtoOutput.serializer)
           ..add(AdminRecordArrivalDto.serializer)
           ..add(AdminRecordDeliveryDto.serializer)
@@ -317,6 +322,10 @@ Serializers _$serializers =
           ..add(
             MerchantContentDtoOutputReasonsMerchantRejectionInner.serializer,
           )
+          ..add(
+            MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum
+                .serializer,
+          )
           ..add(MerchantDeviceDto.serializer)
           ..add(MerchantDeviceDtoPlatformEnum.serializer)
           ..add(MerchantDeviceSavedDtoOutput.serializer)
@@ -420,6 +429,7 @@ Serializers _$serializers =
           ..add(TeamUsersDtoOutputUsersInnerStatusEnum.serializer)
           ..add(TotpEnrolmentDtoOutput.serializer)
           ..add(UpdateReasonDto.serializer)
+          ..add(UpdateReasonDtoNoteEnum.serializer)
           ..add(UpdateSettingDto.serializer)
           ..addBuilderFactory(
             const FullType(BuiltList, const [

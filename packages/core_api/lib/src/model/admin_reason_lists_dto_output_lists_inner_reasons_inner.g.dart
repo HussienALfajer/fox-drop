@@ -6,6 +6,87 @@ part of 'admin_reason_lists_dto_output_lists_inner_reasons_inner.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum
+_$adminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum_none =
+    const AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum._('none');
+const AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum
+_$adminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum_optional =
+    const AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum._('optional');
+const AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum
+_$adminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum_required_ =
+    const AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum._(
+      'required_',
+    );
+
+AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum
+_$adminReasonListsDtoOutputListsInnerReasonsInnerNoteEnumValueOf(String name) {
+  switch (name) {
+    case 'none':
+      return _$adminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum_none;
+    case 'optional':
+      return _$adminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum_optional;
+    case 'required_':
+      return _$adminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum_required_;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum>
+_$adminReasonListsDtoOutputListsInnerReasonsInnerNoteEnumValues =
+    BuiltSet<AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum>(
+      const <AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum>[
+        _$adminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum_none,
+        _$adminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum_optional,
+        _$adminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum_required_,
+      ],
+    );
+
+Serializer<AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum>
+_$adminReasonListsDtoOutputListsInnerReasonsInnerNoteEnumSerializer =
+    _$AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnumSerializer();
+
+class _$AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnumSerializer
+    implements
+        PrimitiveSerializer<
+          AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum
+        > {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'none': 'none',
+    'optional': 'optional',
+    'required_': 'required',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'none': 'none',
+    'optional': 'optional',
+    'required': 'required_',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum,
+  ];
+  @override
+  final String wireName =
+      'AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$AdminReasonListsDtoOutputListsInnerReasonsInner
     extends AdminReasonListsDtoOutputListsInnerReasonsInner {
   @override
@@ -15,7 +96,7 @@ class _$AdminReasonListsDtoOutputListsInnerReasonsInner
   @override
   final String? customerText;
   @override
-  final bool needsText;
+  final AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum note;
   @override
   final bool fixed;
   @override
@@ -33,7 +114,7 @@ class _$AdminReasonListsDtoOutputListsInnerReasonsInner
     required this.code,
     required this.label,
     this.customerText,
-    required this.needsText,
+    required this.note,
     required this.fixed,
     required this.active,
   }) : super._();
@@ -54,7 +135,7 @@ class _$AdminReasonListsDtoOutputListsInnerReasonsInner
         code == other.code &&
         label == other.label &&
         customerText == other.customerText &&
-        needsText == other.needsText &&
+        note == other.note &&
         fixed == other.fixed &&
         active == other.active;
   }
@@ -65,7 +146,7 @@ class _$AdminReasonListsDtoOutputListsInnerReasonsInner
     _$hash = $jc(_$hash, code.hashCode);
     _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, customerText.hashCode);
-    _$hash = $jc(_$hash, needsText.hashCode);
+    _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, fixed.hashCode);
     _$hash = $jc(_$hash, active.hashCode);
     _$hash = $jf(_$hash);
@@ -80,7 +161,7 @@ class _$AdminReasonListsDtoOutputListsInnerReasonsInner
           ..add('code', code)
           ..add('label', label)
           ..add('customerText', customerText)
-          ..add('needsText', needsText)
+          ..add('note', note)
           ..add('fixed', fixed)
           ..add('active', active))
         .toString();
@@ -107,9 +188,11 @@ class AdminReasonListsDtoOutputListsInnerReasonsInnerBuilder
   String? get customerText => _$this._customerText;
   set customerText(String? customerText) => _$this._customerText = customerText;
 
-  bool? _needsText;
-  bool? get needsText => _$this._needsText;
-  set needsText(bool? needsText) => _$this._needsText = needsText;
+  AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum? _note;
+  AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum? get note =>
+      _$this._note;
+  set note(AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum? note) =>
+      _$this._note = note;
 
   bool? _fixed;
   bool? get fixed => _$this._fixed;
@@ -129,7 +212,7 @@ class AdminReasonListsDtoOutputListsInnerReasonsInnerBuilder
       _code = $v.code;
       _label = $v.label;
       _customerText = $v.customerText;
-      _needsText = $v.needsText;
+      _note = $v.note;
       _fixed = $v.fixed;
       _active = $v.active;
       _$v = null;
@@ -168,10 +251,10 @@ class AdminReasonListsDtoOutputListsInnerReasonsInnerBuilder
             'label',
           ),
           customerText: customerText,
-          needsText: BuiltValueNullFieldError.checkNotNull(
-            needsText,
+          note: BuiltValueNullFieldError.checkNotNull(
+            note,
             r'AdminReasonListsDtoOutputListsInnerReasonsInner',
-            'needsText',
+            'note',
           ),
           fixed: BuiltValueNullFieldError.checkNotNull(
             fixed,

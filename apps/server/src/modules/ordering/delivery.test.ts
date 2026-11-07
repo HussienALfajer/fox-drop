@@ -538,6 +538,27 @@ describe('POST /v1/captain/orders/{orderId}/arrive-at-customer (CA §9.6, K4)', 
     expect(unknown.json().error).toBe('unknown_reason');
   });
 
+  it('replays a repeated arrival after its reason left the list', async () => {
+    const picked = await pickedUpOrder();
+    const key = randomUUID();
+    const away = { reason: 'customer_requested_other_place', note: null };
+    const first = await picked.arriveAtCustomer(farFromCustomer, { away, key });
+    expect(first.statusCode).toBe(200);
+    await sql.query(
+      "UPDATE content.reasons SET active = false WHERE list = 'captain_away' AND code = 'customer_requested_other_place'",
+    );
+    try {
+      // The key's answer is kept; the reason is not checked again.
+      const again = await picked.arriveAtCustomer(farFromCustomer, { away, key });
+      expect(again.statusCode).toBe(200);
+      expect(again.json().order.version).toBe(first.json().order.version);
+    } finally {
+      await sql.query(
+        "UPDATE content.reasons SET active = true WHERE list = 'captain_away' AND code = 'customer_requested_other_place'",
+      );
+    }
+  });
+
   it("keeps the reason's label as chosen when Content renames it", async () => {
     const picked = await pickedUpOrder();
     const answer = await picked.arriveAtCustomer(farFromCustomer, {

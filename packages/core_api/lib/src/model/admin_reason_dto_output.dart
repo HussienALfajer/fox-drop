@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -14,7 +15,7 @@ part 'admin_reason_dto_output.g.dart';
 /// * [code]
 /// * [label]
 /// * [customerText]
-/// * [needsText]
+/// * [note] - Whether the choice takes a note: none, optional, required.
 /// * [fixed] - The code acts on it: it cannot be removed.
 /// * [active] - False once removed: hidden from new choices, kept on orders.
 @BuiltValue()
@@ -29,8 +30,10 @@ abstract class AdminReasonDtoOutput
   @BuiltValueField(wireName: r'customerText')
   String? get customerText;
 
-  @BuiltValueField(wireName: r'needsText')
-  bool get needsText;
+  /// Whether the choice takes a note: none, optional, required.
+  @BuiltValueField(wireName: r'note')
+  AdminReasonDtoOutputNoteEnum get note;
+  // enum noteEnum {  none,  optional,  required,  };
 
   /// The code acts on it: it cannot be removed.
   @BuiltValueField(wireName: r'fixed')
@@ -86,10 +89,10 @@ class _$AdminReasonDtoOutputSerializer
             object.customerText,
             specifiedType: const FullType.nullable(String),
           );
-    yield r'needsText';
+    yield r'note';
     yield serializers.serialize(
-      object.needsText,
-      specifiedType: const FullType(bool),
+      object.note,
+      specifiedType: const FullType(AdminReasonDtoOutputNoteEnum),
     );
     yield r'fixed';
     yield serializers.serialize(
@@ -156,14 +159,14 @@ class _$AdminReasonDtoOutputSerializer
           if (valueDes == null) continue;
           result.customerText = valueDes;
           break;
-        case r'needsText':
+        case r'note':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(bool),
+                    specifiedType: const FullType(AdminReasonDtoOutputNoteEnum),
                   )
-                  as bool;
-          result.needsText = valueDes;
+                  as AdminReasonDtoOutputNoteEnum;
+          result.note = valueDes;
           break;
         case r'fixed':
           final valueDes =
@@ -210,4 +213,27 @@ class _$AdminReasonDtoOutputSerializer
     );
     return result.build();
   }
+}
+
+/// Whether the choice takes a note: none, optional, required.
+class AdminReasonDtoOutputNoteEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'none')
+  static const AdminReasonDtoOutputNoteEnum none =
+      _$adminReasonDtoOutputNoteEnum_none;
+  @BuiltValueEnumConst(wireName: r'optional')
+  static const AdminReasonDtoOutputNoteEnum optional =
+      _$adminReasonDtoOutputNoteEnum_optional;
+  @BuiltValueEnumConst(wireName: r'required')
+  static const AdminReasonDtoOutputNoteEnum required_ =
+      _$adminReasonDtoOutputNoteEnum_required_;
+
+  static Serializer<AdminReasonDtoOutputNoteEnum> get serializer =>
+      _$adminReasonDtoOutputNoteEnumSerializer;
+
+  const AdminReasonDtoOutputNoteEnum._(String name) : super(name);
+
+  static BuiltSet<AdminReasonDtoOutputNoteEnum> get values =>
+      _$adminReasonDtoOutputNoteEnumValues;
+  static AdminReasonDtoOutputNoteEnum valueOf(String name) =>
+      _$adminReasonDtoOutputNoteEnumValueOf(name);
 }

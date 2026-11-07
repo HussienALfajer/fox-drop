@@ -14981,15 +14981,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15006,15 +15011,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15031,15 +15041,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15056,15 +15071,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15122,15 +15142,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15147,15 +15172,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15172,15 +15202,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15197,15 +15232,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15222,15 +15262,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15247,15 +15292,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15320,15 +15370,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15345,15 +15400,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15370,15 +15430,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15395,15 +15460,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15420,15 +15490,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15445,15 +15520,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15470,15 +15550,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15495,15 +15580,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15520,15 +15610,20 @@
                     "label": {
                       "type": "string"
                     },
-                    "needsText": {
-                      "type": "boolean",
-                      "description": "«أخرى»: the choice needs its text, up to 200 characters."
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
                     }
                   },
                   "required": [
                     "code",
                     "label",
-                    "needsText"
+                    "note"
                   ],
                   "additionalProperties": false
                 }
@@ -15649,8 +15744,14 @@
                           "null"
                         ]
                       },
-                      "needsText": {
-                        "type": "boolean"
+                      "note": {
+                        "type": "string",
+                        "enum": [
+                          "none",
+                          "optional",
+                          "required"
+                        ],
+                        "description": "Whether the choice takes a note: none, optional, required."
                       },
                       "fixed": {
                         "type": "boolean",
@@ -15665,7 +15766,7 @@
                       "code",
                       "label",
                       "customerText",
-                      "needsText",
+                      "note",
                       "fixed",
                       "active"
                     ],
@@ -15709,15 +15810,20 @@
             ],
             "description": "Only in the lists with customer texts; null shows the generic apology."
           },
-          "needsText": {
-            "type": "boolean",
-            "description": "«أخرى»: the choice needs its text."
+          "note": {
+            "type": "string",
+            "enum": [
+              "none",
+              "optional",
+              "required"
+            ],
+            "description": "none, optional or required («أخرى» with its text); none in a closed list."
           }
         },
         "required": [
           "label",
           "customerText",
-          "needsText"
+          "note"
         ]
       },
       "AdminReasonDto_Output": {
@@ -15735,8 +15841,14 @@
               "null"
             ]
           },
-          "needsText": {
-            "type": "boolean"
+          "note": {
+            "type": "string",
+            "enum": [
+              "none",
+              "optional",
+              "required"
+            ],
+            "description": "Whether the choice takes a note: none, optional, required."
           },
           "fixed": {
             "type": "boolean",
@@ -15751,7 +15863,7 @@
           "code",
           "label",
           "customerText",
-          "needsText",
+          "note",
           "fixed",
           "active"
         ],
@@ -15777,9 +15889,14 @@
             ],
             "description": "Only in the lists with customer texts; null shows the generic apology."
           },
-          "needsText": {
-            "type": "boolean",
-            "description": "«أخرى»: the choice needs its text."
+          "note": {
+            "type": "string",
+            "enum": [
+              "none",
+              "optional",
+              "required"
+            ],
+            "description": "none, optional or required («أخرى» with its text); none in a closed list."
           },
           "active": {
             "type": "boolean",
@@ -15789,7 +15906,7 @@
         "required": [
           "label",
           "customerText",
-          "needsText",
+          "note",
           "active"
         ]
       },
@@ -15830,8 +15947,14 @@
                     "null"
                   ]
                 },
-                "needsText": {
-                  "type": "boolean"
+                "note": {
+                  "type": "string",
+                  "enum": [
+                    "none",
+                    "optional",
+                    "required"
+                  ],
+                  "description": "Whether the choice takes a note: none, optional, required."
                 },
                 "fixed": {
                   "type": "boolean",
@@ -15846,7 +15969,7 @@
                 "code",
                 "label",
                 "customerText",
-                "needsText",
+                "note",
                 "fixed",
                 "active"
               ],

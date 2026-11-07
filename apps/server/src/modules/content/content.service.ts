@@ -15,6 +15,7 @@ import {
   isReasonList,
   LABEL_MAX,
   listDefinition,
+  type NoteMode,
   NOTE_MAX,
   QUESTION_MAX,
   type ReasonList,
@@ -27,7 +28,7 @@ export interface Reason {
   code: string;
   label: string;
   customerText: string | null;
-  needsText: boolean;
+  note: NoteMode;
   fixed: boolean;
   active: boolean;
 }
@@ -36,7 +37,7 @@ export interface Reason {
 export interface ReasonChoice {
   code: string;
   label: string;
-  needsText: boolean;
+  note: NoteMode;
 }
 
 // What an order keeps of a choice (owner decision 2026-11-07): the code, the
@@ -91,7 +92,7 @@ export interface ContentEdit {
 export interface ReasonFields {
   label: string;
   customerText: string | null;
-  needsText: boolean;
+  note: NoteMode;
 }
 
 const E164 = /^\+[1-9]\d{7,14}$/;
@@ -151,14 +152,14 @@ export class ContentService {
         list,
         rows
           .filter((row) => row.list === list)
-          .map((row) => ({ code: row.code, label: row.label, needsText: row.needsText })),
+          .map((row) => ({ code: row.code, label: row.label, note: row.note })),
       ]),
     );
   }
 
   // A reason chosen in an app or the panel, checked against its list: an
-  // active reason, with a note exactly when it needs one (AP Appendix B
-  // «أخرى» with its text). Answers what the order keeps.
+  // active reason, with a note when it requires one (AP Appendix B «أخرى»
+  // with its text), and none when it takes none. Answers what the order keeps.
   async choose(
     list: ReasonList,
     given: { code: string; note: string | null },
@@ -172,10 +173,10 @@ export class ContentService {
       throw new ContentRefusedError('unknown_reason', `${given.code} is not a reason of ${list}`);
     }
     const note = given.note?.trim() || null;
-    if (row.needsText && note === null) {
+    if (row.note === 'required' && note === null) {
       throw new ContentRefusedError('reason_note_required', `${given.code} needs its text`);
     }
-    if (!row.needsText && note !== null) {
+    if (row.note === 'none' && note !== null) {
       throw new ContentRefusedError('reason_note_not_allowed', `${given.code} takes no text`);
     }
     if (note !== null && note.length > NOTE_MAX) {
@@ -403,7 +404,11 @@ export class ContentService {
         `a customer text has at most ${CUSTOMER_TEXT_MAX} characters`,
       );
     }
-    return { label, customerText, needsText: fields.needsText };
+    // A closed list's reasons take no note (RA R3: no free-text rejection).
+    if (fields.note !== 'none' && listDefinition(list).closed) {
+      throw new ContentRefusedError('invalid_value', `${list} takes no notes`);
+    }
+    return { label, customerText, note: fields.note };
   }
 
   // Two active reasons of a list never read the same.
@@ -456,7 +461,7 @@ function reasonOf(row: typeof reasons.$inferSelect): Reason {
     code: row.code,
     label: row.label,
     customerText: row.customerText,
-    needsText: row.needsText,
+    note: row.note,
     fixed: row.fixed,
     active: row.active,
   };

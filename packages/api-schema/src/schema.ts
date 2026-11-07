@@ -4262,29 +4262,41 @@ export interface components {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
                 merchant_problem: {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
                 item_unavailable_note: {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
                 merchant_ticket_type: {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
             };
             faq: {
@@ -4298,43 +4310,61 @@ export interface components {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
                 captain_away: {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
                 shortfall: {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
                 food_after_failed: {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
                 captain_ticket_type: {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
                 captain_problem: {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
             };
             faq: {
@@ -4351,64 +4381,91 @@ export interface components {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
                 customer_problem: {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
                 order_note: {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
                 restaurant_rating_low: {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
                 restaurant_rating_mid: {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
                 restaurant_rating_high: {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
                 captain_rating_low: {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
                 captain_rating_mid: {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
                 captain_rating_high: {
                     /** @description Stable: sent back with a choice, kept by the order. */
                     code: string;
                     label: string;
-                    /** @description «أخرى»: the choice needs its text, up to 200 characters. */
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                 }[];
             };
             faq: {
@@ -4429,7 +4486,11 @@ export interface components {
                     code: string;
                     label: string;
                     customerText: string | null;
-                    needsText: boolean;
+                    /**
+                     * @description Whether the choice takes a note: none, optional, required.
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
                     /** @description The code acts on it: it cannot be removed. */
                     fixed: boolean;
                     /** @description False once removed: hidden from new choices, kept on orders. */
@@ -4441,14 +4502,21 @@ export interface components {
             label: string;
             /** @description Only in the lists with customer texts; null shows the generic apology. */
             customerText: string | null;
-            /** @description «أخرى»: the choice needs its text. */
-            needsText: boolean;
+            /**
+             * @description none, optional or required («أخرى» with its text); none in a closed list.
+             * @enum {string}
+             */
+            note: "none" | "optional" | "required";
         };
         AdminReasonDto_Output: {
             code: string;
             label: string;
             customerText: string | null;
-            needsText: boolean;
+            /**
+             * @description Whether the choice takes a note: none, optional, required.
+             * @enum {string}
+             */
+            note: "none" | "optional" | "required";
             /** @description The code acts on it: it cannot be removed. */
             fixed: boolean;
             /** @description False once removed: hidden from new choices, kept on orders. */
@@ -4458,8 +4526,11 @@ export interface components {
             label: string;
             /** @description Only in the lists with customer texts; null shows the generic apology. */
             customerText: string | null;
-            /** @description «أخرى»: the choice needs its text. */
-            needsText: boolean;
+            /**
+             * @description none, optional or required («أخرى» with its text); none in a closed list.
+             * @enum {string}
+             */
+            note: "none" | "optional" | "required";
             /** @description False removes it from the list. */
             active: boolean;
         };
@@ -4472,7 +4543,11 @@ export interface components {
                 code: string;
                 label: string;
                 customerText: string | null;
-                needsText: boolean;
+                /**
+                 * @description Whether the choice takes a note: none, optional, required.
+                 * @enum {string}
+                 */
+                note: "none" | "optional" | "required";
                 /** @description The code acts on it: it cannot be removed. */
                 fixed: boolean;
                 /** @description False once removed: hidden from new choices, kept on orders. */

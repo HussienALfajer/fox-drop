@@ -179,7 +179,7 @@ Map<String, Object?> requestJson({
 };
 
 Map<String, Object?> _reason(String code, String label, [bool text = false]) =>
-    {'code': code, 'label': label, 'needsText': text};
+    {'code': code, 'label': label, 'note': text ? 'required' : 'none'};
 
 /// `GET /v1/captain/content` with the defaults of AP Appendix B.
 Map<String, Object?> contentJson() => {

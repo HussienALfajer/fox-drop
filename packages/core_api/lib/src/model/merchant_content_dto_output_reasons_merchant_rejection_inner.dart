@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -13,7 +14,7 @@ part 'merchant_content_dto_output_reasons_merchant_rejection_inner.g.dart';
 /// Properties:
 /// * [code] - Stable: sent back with a choice, kept by the order.
 /// * [label]
-/// * [needsText] - «أخرى»: the choice needs its text, up to 200 characters.
+/// * [note] - Whether the choice takes a note: none, optional or required («أخرى»).
 @BuiltValue()
 abstract class MerchantContentDtoOutputReasonsMerchantRejectionInner
     implements
@@ -28,9 +29,10 @@ abstract class MerchantContentDtoOutputReasonsMerchantRejectionInner
   @BuiltValueField(wireName: r'label')
   String get label;
 
-  /// «أخرى»: the choice needs its text, up to 200 characters.
-  @BuiltValueField(wireName: r'needsText')
-  bool get needsText;
+  /// Whether the choice takes a note: none, optional or required («أخرى»).
+  @BuiltValueField(wireName: r'note')
+  MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum get note;
+  // enum noteEnum {  none,  optional,  required,  };
 
   MerchantContentDtoOutputReasonsMerchantRejectionInner._();
 
@@ -81,10 +83,12 @@ class _$MerchantContentDtoOutputReasonsMerchantRejectionInnerSerializer
       object.label,
       specifiedType: const FullType(String),
     );
-    yield r'needsText';
+    yield r'note';
     yield serializers.serialize(
-      object.needsText,
-      specifiedType: const FullType(bool),
+      object.note,
+      specifiedType: const FullType(
+        MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum,
+      ),
     );
   }
 
@@ -132,14 +136,16 @@ class _$MerchantContentDtoOutputReasonsMerchantRejectionInnerSerializer
                   as String;
           result.label = valueDes;
           break;
-        case r'needsText':
+        case r'note':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(bool),
+                    specifiedType: const FullType(
+                      MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum,
+                    ),
                   )
-                  as bool;
-          result.needsText = valueDes;
+                  as MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum;
+          result.note = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -169,4 +175,39 @@ class _$MerchantContentDtoOutputReasonsMerchantRejectionInnerSerializer
     );
     return result.build();
   }
+}
+
+/// Whether the choice takes a note: none, optional or required («أخرى»).
+class MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum
+    extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'none')
+  static const MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum
+  none = _$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum_none;
+  @BuiltValueEnumConst(wireName: r'optional')
+  static const MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum
+  optional =
+      _$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum_optional;
+  @BuiltValueEnumConst(wireName: r'required')
+  static const MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum
+  required_ =
+      _$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum_required_;
+
+  static Serializer<
+    MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum
+  >
+  get serializer =>
+      _$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnumSerializer;
+
+  const MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum._(
+    String name,
+  ) : super(name);
+
+  static BuiltSet<MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum>
+  get values =>
+      _$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnumValues;
+  static MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum valueOf(
+    String name,
+  ) => _$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnumValueOf(
+    name,
+  );
 }

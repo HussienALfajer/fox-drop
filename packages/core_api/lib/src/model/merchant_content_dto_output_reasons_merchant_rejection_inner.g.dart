@@ -6,6 +6,93 @@ part of 'merchant_content_dto_output_reasons_merchant_rejection_inner.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum
+_$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum_none =
+    const MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum._(
+      'none',
+    );
+const MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum
+_$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum_optional =
+    const MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum._(
+      'optional',
+    );
+const MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum
+_$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum_required_ =
+    const MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum._(
+      'required_',
+    );
+
+MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum
+_$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnumValueOf(
+  String name,
+) {
+  switch (name) {
+    case 'none':
+      return _$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum_none;
+    case 'optional':
+      return _$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum_optional;
+    case 'required_':
+      return _$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum_required_;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum>
+_$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnumValues =
+    BuiltSet<
+      MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum
+    >(const <MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum>[
+      _$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum_none,
+      _$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum_optional,
+      _$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum_required_,
+    ]);
+
+Serializer<MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum>
+_$merchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnumSerializer =
+    _$MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnumSerializer();
+
+class _$MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnumSerializer
+    implements
+        PrimitiveSerializer<
+          MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum
+        > {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'none': 'none',
+    'optional': 'optional',
+    'required_': 'required',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'none': 'none',
+    'optional': 'optional',
+    'required': 'required_',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum,
+  ];
+  @override
+  final String wireName =
+      'MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$MerchantContentDtoOutputReasonsMerchantRejectionInner
     extends MerchantContentDtoOutputReasonsMerchantRejectionInner {
   @override
@@ -13,7 +100,7 @@ class _$MerchantContentDtoOutputReasonsMerchantRejectionInner
   @override
   final String label;
   @override
-  final bool needsText;
+  final MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum note;
 
   factory _$MerchantContentDtoOutputReasonsMerchantRejectionInner([
     void Function(MerchantContentDtoOutputReasonsMerchantRejectionInnerBuilder)?
@@ -26,7 +113,7 @@ class _$MerchantContentDtoOutputReasonsMerchantRejectionInner
   _$MerchantContentDtoOutputReasonsMerchantRejectionInner._({
     required this.code,
     required this.label,
-    required this.needsText,
+    required this.note,
   }) : super._();
   @override
   MerchantContentDtoOutputReasonsMerchantRejectionInner rebuild(
@@ -45,7 +132,7 @@ class _$MerchantContentDtoOutputReasonsMerchantRejectionInner
     return other is MerchantContentDtoOutputReasonsMerchantRejectionInner &&
         code == other.code &&
         label == other.label &&
-        needsText == other.needsText;
+        note == other.note;
   }
 
   @override
@@ -53,7 +140,7 @@ class _$MerchantContentDtoOutputReasonsMerchantRejectionInner
     var _$hash = 0;
     _$hash = $jc(_$hash, code.hashCode);
     _$hash = $jc(_$hash, label.hashCode);
-    _$hash = $jc(_$hash, needsText.hashCode);
+    _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -65,7 +152,7 @@ class _$MerchantContentDtoOutputReasonsMerchantRejectionInner
           )
           ..add('code', code)
           ..add('label', label)
-          ..add('needsText', needsText))
+          ..add('note', note))
         .toString();
   }
 }
@@ -86,9 +173,12 @@ class MerchantContentDtoOutputReasonsMerchantRejectionInnerBuilder
   String? get label => _$this._label;
   set label(String? label) => _$this._label = label;
 
-  bool? _needsText;
-  bool? get needsText => _$this._needsText;
-  set needsText(bool? needsText) => _$this._needsText = needsText;
+  MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum? _note;
+  MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum? get note =>
+      _$this._note;
+  set note(
+    MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum? note,
+  ) => _$this._note = note;
 
   MerchantContentDtoOutputReasonsMerchantRejectionInnerBuilder() {
     MerchantContentDtoOutputReasonsMerchantRejectionInner._defaults(this);
@@ -99,7 +189,7 @@ class MerchantContentDtoOutputReasonsMerchantRejectionInnerBuilder
     if ($v != null) {
       _code = $v.code;
       _label = $v.label;
-      _needsText = $v.needsText;
+      _note = $v.note;
       _$v = null;
     }
     return this;
@@ -135,10 +225,10 @@ class MerchantContentDtoOutputReasonsMerchantRejectionInnerBuilder
             r'MerchantContentDtoOutputReasonsMerchantRejectionInner',
             'label',
           ),
-          needsText: BuiltValueNullFieldError.checkNotNull(
-            needsText,
+          note: BuiltValueNullFieldError.checkNotNull(
+            note,
             r'MerchantContentDtoOutputReasonsMerchantRejectionInner',
-            'needsText',
+            'note',
           ),
         );
     replace(_$result);

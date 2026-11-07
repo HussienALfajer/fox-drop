@@ -28,7 +28,7 @@ class TestApp {
             {
               'code': 'call_on_arrival',
               'label': 'اتصل بي عند الوصول',
-              'needsText': false,
+              'note': 'none',
             },
           ],
           'restaurant_rating_low': <Object?>[],

@@ -93,10 +93,17 @@ function useEdit<Input>(key: readonly string[], run: (input: Input) => Promise<E
   });
 }
 
+export type NoteMode = ReasonEntry['note'];
+
 export interface ReasonForm {
   label: string;
   customerText: string;
-  needsText: boolean;
+  note: NoteMode;
+}
+
+// The form's select gives one of the three modes; anything else is none.
+export function noteMode(value: unknown): NoteMode {
+  return value === 'optional' || value === 'required' ? value : 'none';
 }
 
 // An empty customer text is none: the customer sees the generic apology.
@@ -104,7 +111,7 @@ function fields(form: ReasonForm) {
   return {
     label: form.label.trim(),
     customerText: form.customerText.trim() === '' ? null : form.customerText.trim(),
-    needsText: form.needsText,
+    note: form.note,
   };
 }
 

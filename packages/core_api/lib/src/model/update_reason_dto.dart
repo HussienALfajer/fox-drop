@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -13,7 +14,7 @@ part 'update_reason_dto.g.dart';
 /// Properties:
 /// * [label]
 /// * [customerText] - Only in the lists with customer texts; null shows the generic apology.
-/// * [needsText] - «أخرى»: the choice needs its text.
+/// * [note] - none, optional or required («أخرى» with its text); none in a closed list.
 /// * [active] - False removes it from the list.
 @BuiltValue()
 abstract class UpdateReasonDto
@@ -25,9 +26,10 @@ abstract class UpdateReasonDto
   @BuiltValueField(wireName: r'customerText')
   String? get customerText;
 
-  /// «أخرى»: the choice needs its text.
-  @BuiltValueField(wireName: r'needsText')
-  bool get needsText;
+  /// none, optional or required («أخرى» with its text); none in a closed list.
+  @BuiltValueField(wireName: r'note')
+  UpdateReasonDtoNoteEnum get note;
+  // enum noteEnum {  none,  optional,  required,  };
 
   /// False removes it from the list.
   @BuiltValueField(wireName: r'active')
@@ -71,10 +73,10 @@ class _$UpdateReasonDtoSerializer
             object.customerText,
             specifiedType: const FullType.nullable(String),
           );
-    yield r'needsText';
+    yield r'note';
     yield serializers.serialize(
-      object.needsText,
-      specifiedType: const FullType(bool),
+      object.note,
+      specifiedType: const FullType(UpdateReasonDtoNoteEnum),
     );
     yield r'active';
     yield serializers.serialize(
@@ -127,14 +129,14 @@ class _$UpdateReasonDtoSerializer
           if (valueDes == null) continue;
           result.customerText = valueDes;
           break;
-        case r'needsText':
+        case r'note':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(bool),
+                    specifiedType: const FullType(UpdateReasonDtoNoteEnum),
                   )
-                  as bool;
-          result.needsText = valueDes;
+                  as UpdateReasonDtoNoteEnum;
+          result.note = valueDes;
           break;
         case r'active':
           final valueDes =
@@ -172,4 +174,26 @@ class _$UpdateReasonDtoSerializer
     );
     return result.build();
   }
+}
+
+/// none, optional or required («أخرى» with its text); none in a closed list.
+class UpdateReasonDtoNoteEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'none')
+  static const UpdateReasonDtoNoteEnum none = _$updateReasonDtoNoteEnum_none;
+  @BuiltValueEnumConst(wireName: r'optional')
+  static const UpdateReasonDtoNoteEnum optional =
+      _$updateReasonDtoNoteEnum_optional;
+  @BuiltValueEnumConst(wireName: r'required')
+  static const UpdateReasonDtoNoteEnum required_ =
+      _$updateReasonDtoNoteEnum_required_;
+
+  static Serializer<UpdateReasonDtoNoteEnum> get serializer =>
+      _$updateReasonDtoNoteEnumSerializer;
+
+  const UpdateReasonDtoNoteEnum._(String name) : super(name);
+
+  static BuiltSet<UpdateReasonDtoNoteEnum> get values =>
+      _$updateReasonDtoNoteEnumValues;
+  static UpdateReasonDtoNoteEnum valueOf(String name) =>
+      _$updateReasonDtoNoteEnumValueOf(name);
 }

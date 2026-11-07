@@ -1,5 +1,5 @@
 {
-  "id": "086d3e31-fe9c-41cb-82ae-989abdfd4618",
+  "id": "a5cbe2dc-e9b9-42f8-88bf-7b9fc57448c6",
   "prevId": "1d38aad0-a539-4061-abf5-e7df0789b383",
   "version": "7",
   "dialect": "postgresql",
@@ -656,12 +656,12 @@
           "primaryKey": false,
           "notNull": false
         },
-        "needs_text": {
-          "name": "needs_text",
-          "type": "boolean",
+        "note": {
+          "name": "note",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": false
+          "default": "'none'"
         },
         "fixed": {
           "name": "fixed",
@@ -717,6 +717,10 @@
         "reasons_customer_text": {
           "name": "reasons_customer_text",
           "value": "\"content\".\"reasons\".\"customer_text\" IS NULL OR char_length(\"content\".\"reasons\".\"customer_text\") BETWEEN 1 AND 300"
+        },
+        "reasons_note": {
+          "name": "reasons_note",
+          "value": "\"content\".\"reasons\".\"note\" IN ('none', 'optional', 'required')"
         },
         "reasons_fixed_active": {
           "name": "reasons_fixed_active",

@@ -40,7 +40,7 @@ class _ReasonSheetState extends State<_ReasonSheet> {
   }
 
   bool get _ready =>
-      _chosen != null && (!_chosen!.needsText || _note.text.trim().isNotEmpty);
+      _chosen != null && (!_chosen!.needsNote || _note.text.trim().isNotEmpty);
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +72,7 @@ class _ReasonSheetState extends State<_ReasonSheet> {
               ],
             ),
           ),
-          if (_chosen?.needsText == true)
+          if (_chosen?.takesNote == true)
             TextField(
               key: const Key('reason-note'),
               controller: _note,
@@ -85,7 +85,9 @@ class _ReasonSheetState extends State<_ReasonSheet> {
                 ? () => Navigator.of(context).pop(
                     Reason(
                       _chosen!.code,
-                      _chosen!.needsText ? _note.text.trim() : null,
+                      _chosen!.takesNote && _note.text.trim().isNotEmpty
+                          ? _note.text.trim()
+                          : null,
                     ),
                   )
                 : null,

@@ -63,9 +63,9 @@ describe('the default lists', () => {
   it('answers an app its active reasons in order', async () => {
     const lists = await content.listsFor('captain');
     expect(lists.captain_away).toEqual([
-      { code: 'customer_requested_other_place', label: 'الزبون طلب مكاناً آخر', needsText: false },
-      { code: 'pin_inaccurate', label: 'موقع الزبون على الخريطة غير دقيق', needsText: false },
-      { code: 'other', label: 'أخرى', needsText: true },
+      { code: 'customer_requested_other_place', label: 'الزبون طلب مكاناً آخر', note: 'none' },
+      { code: 'pin_inaccurate', label: 'موقع الزبون على الخريطة غير دقيق', note: 'none' },
+      { code: 'other', label: 'أخرى', note: 'required' },
     ]);
     expect(Object.keys(lists).sort()).toEqual([...captainLists].sort());
   });
@@ -95,6 +95,13 @@ describe('choosing a reason', () => {
     expect(await refusal(content.choose('shortfall', { code: 'customer_short', note: 'x' }))).toBe(
       'reason_note_not_allowed',
     );
+    // CU §11.5: «سبب آخر» takes an optional note.
+    expect(await content.choose('customer_cancel', { code: 'other', note: null })).toMatchObject({
+      note: null,
+    });
+    expect(
+      await content.choose('customer_cancel', { code: 'other', note: 'تأخر كثيراً' }),
+    ).toMatchObject({ note: 'تأخر كثيراً' });
     // A code of another list.
     expect(await refusal(content.choose('shortfall', { code: 'pin_inaccurate', note: null }))).toBe(
       'unknown_reason',
@@ -105,7 +112,7 @@ describe('choosing a reason', () => {
     await content.updateReason(
       'reassignment',
       'connection_lost',
-      { label: 'انقطاع الاتصال', customerText: null, needsText: false, active: false },
+      { label: 'انقطاع الاتصال', customerText: null, note: 'none', active: false },
       edit,
     );
     expect(
@@ -124,7 +131,7 @@ describe('customer texts', () => {
     );
     const added = await content.addReason(
       'ops_cancel',
-      { label: 'سبب جديد', customerText: null, needsText: false },
+      { label: 'سبب جديد', customerText: null, note: 'none' },
       edit,
     );
     expect(await content.customerText('ops_cancel', added.code)).toBe(
@@ -137,7 +144,7 @@ describe("the panel's edits", () => {
   it('adds a reason at the end with a new code, and audits it', async () => {
     const added = await content.addReason(
       'captain_problem',
-      { label: 'الطريق مغلق', customerText: null, needsText: false },
+      { label: 'الطريق مغلق', customerText: null, note: 'none' },
       edit,
     );
     expect(added.code).toMatch(/^custom_[0-9a-f]{8}$/);
@@ -145,7 +152,7 @@ describe("the panel's edits", () => {
     expect(lists.captain_problem!.at(-1)).toEqual({
       code: added.code,
       label: 'الطريق مغلق',
-      needsText: false,
+      note: 'none',
     });
     const { rows } = await sql.query(
       "SELECT action, actor_role FROM audit.events WHERE target_type = 'content' AND target_id = $1",
@@ -155,7 +162,7 @@ describe("the panel's edits", () => {
   });
 
   it('refuses a closed list, a fixed removal, a repeated label and a stray customer text', async () => {
-    const fields = { label: 'جديد', customerText: null, needsText: false };
+    const fields = { label: 'جديد', customerText: null, note: 'none' as const };
     expect(await refusal(content.addReason('merchant_rejection', fields, edit))).toBe(
       'list_closed',
     );
@@ -164,7 +171,7 @@ describe("the panel's edits", () => {
         content.updateReason(
           'captain_problem',
           'pickup_amount',
-          { label: 'مشكلة في مبلغ الاستلام', customerText: null, needsText: false, active: false },
+          { label: 'مشكلة في مبلغ الاستلام', customerText: null, note: 'none', active: false },
           edit,
         ),
       ),
@@ -176,13 +183,24 @@ describe("the panel's edits", () => {
       await refusal(content.addReason('shortfall', { ...fields, customerText: 'نص' }, edit)),
     ).toBe('customer_text_not_allowed');
     expect(await refusal(content.addReason('no_such_list', fields, edit))).toBe('unknown_list');
+    // RA R3: a closed list's reasons take no note.
+    expect(
+      await refusal(
+        content.updateReason(
+          'merchant_rejection',
+          'too_busy',
+          { label: 'ضغط طلبات', customerText: null, note: 'optional', active: true },
+          edit,
+        ),
+      ),
+    ).toBe('invalid_value');
   });
 
   it('changes a label, which a new choice copies', async () => {
     await content.updateReason(
       'shortfall',
       'counting_error',
-      { label: 'خطأ في عدّ النقود', customerText: null, needsText: false, active: true },
+      { label: 'خطأ في عدّ النقود', customerText: null, note: 'none', active: true },
       edit,
     );
     expect((await content.choose('shortfall', { code: 'counting_error', note: null })).label).toBe(

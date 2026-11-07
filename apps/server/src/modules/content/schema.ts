@@ -1,4 +1,5 @@
 import { sql } from 'drizzle-orm';
+import { noteModes } from './lists.js';
 import {
   boolean,
   check,
@@ -30,8 +31,9 @@ export const reasons = content.table(
     label: text('label').notNull(),
     // «نصوص الأسباب للزبون»: what the customer sees, in the lists that have it.
     customerText: text('customer_text'),
-    // «أخرى» with its text: the choice needs a note.
-    needsText: boolean('needs_text').notNull().default(false),
+    // none, optional or required: whether the choice takes a note («أخرى»
+    // with its text).
+    note: text('note', { enum: noteModes }).notNull().default('none'),
     // A reason the code acts on (such as «مشكلة في مبلغ الاستلام», which
     // opens a pickup-dispute ticket) cannot be deactivated.
     fixed: boolean('fixed').notNull().default(false),
@@ -47,6 +49,7 @@ export const reasons = content.table(
       'reasons_customer_text',
       sql`${table.customerText} IS NULL OR char_length(${table.customerText}) BETWEEN 1 AND 300`,
     ),
+    check('reasons_note', sql`${table.note} IN ('none', 'optional', 'required')`),
     check('reasons_fixed_active', sql`NOT ${table.fixed} OR ${table.active}`),
   ],
 );

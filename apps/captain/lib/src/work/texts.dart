@@ -101,6 +101,7 @@ extension CaptainTexts on AppLocalizations {
               : captainAmountDueChanged(moneyOf(amountDue)),
         StateChanged() => captainStateChanged,
         CommandFailed() => captainCommandFailed,
+        ReasonChanged() => captainReasonChanged,
       };
 
   String alertText(Alert alert) => switch (alert) {

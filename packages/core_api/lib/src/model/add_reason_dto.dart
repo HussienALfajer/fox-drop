@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -13,7 +14,7 @@ part 'add_reason_dto.g.dart';
 /// Properties:
 /// * [label]
 /// * [customerText] - Only in the lists with customer texts; null shows the generic apology.
-/// * [needsText] - «أخرى»: the choice needs its text.
+/// * [note] - none, optional or required («أخرى» with its text); none in a closed list.
 @BuiltValue()
 abstract class AddReasonDto
     implements Built<AddReasonDto, AddReasonDtoBuilder> {
@@ -24,9 +25,10 @@ abstract class AddReasonDto
   @BuiltValueField(wireName: r'customerText')
   String? get customerText;
 
-  /// «أخرى»: the choice needs its text.
-  @BuiltValueField(wireName: r'needsText')
-  bool get needsText;
+  /// none, optional or required («أخرى» with its text); none in a closed list.
+  @BuiltValueField(wireName: r'note')
+  AddReasonDtoNoteEnum get note;
+  // enum noteEnum {  none,  optional,  required,  };
 
   AddReasonDto._();
 
@@ -63,10 +65,10 @@ class _$AddReasonDtoSerializer implements PrimitiveSerializer<AddReasonDto> {
             object.customerText,
             specifiedType: const FullType.nullable(String),
           );
-    yield r'needsText';
+    yield r'note';
     yield serializers.serialize(
-      object.needsText,
-      specifiedType: const FullType(bool),
+      object.note,
+      specifiedType: const FullType(AddReasonDtoNoteEnum),
     );
   }
 
@@ -114,14 +116,14 @@ class _$AddReasonDtoSerializer implements PrimitiveSerializer<AddReasonDto> {
           if (valueDes == null) continue;
           result.customerText = valueDes;
           break;
-        case r'needsText':
+        case r'note':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(bool),
+                    specifiedType: const FullType(AddReasonDtoNoteEnum),
                   )
-                  as bool;
-          result.needsText = valueDes;
+                  as AddReasonDtoNoteEnum;
+          result.note = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -150,4 +152,25 @@ class _$AddReasonDtoSerializer implements PrimitiveSerializer<AddReasonDto> {
     );
     return result.build();
   }
+}
+
+/// none, optional or required («أخرى» with its text); none in a closed list.
+class AddReasonDtoNoteEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'none')
+  static const AddReasonDtoNoteEnum none = _$addReasonDtoNoteEnum_none;
+  @BuiltValueEnumConst(wireName: r'optional')
+  static const AddReasonDtoNoteEnum optional = _$addReasonDtoNoteEnum_optional;
+  @BuiltValueEnumConst(wireName: r'required')
+  static const AddReasonDtoNoteEnum required_ =
+      _$addReasonDtoNoteEnum_required_;
+
+  static Serializer<AddReasonDtoNoteEnum> get serializer =>
+      _$addReasonDtoNoteEnumSerializer;
+
+  const AddReasonDtoNoteEnum._(String name) : super(name);
+
+  static BuiltSet<AddReasonDtoNoteEnum> get values =>
+      _$addReasonDtoNoteEnumValues;
+  static AddReasonDtoNoteEnum valueOf(String name) =>
+      _$addReasonDtoNoteEnumValueOf(name);
 }

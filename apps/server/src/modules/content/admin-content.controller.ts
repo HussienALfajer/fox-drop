@@ -26,6 +26,7 @@ import {
   FAQ_MAX_ITEMS,
   faqAudiences,
   LABEL_MAX,
+  noteModes,
   QUESTION_MAX,
   reasonListNames,
   reasonLists,
@@ -39,7 +40,7 @@ const reason = z.object({
   code: z.string(),
   label: z.string(),
   customerText: z.string().nullable(),
-  needsText: z.boolean(),
+  note: z.enum(noteModes).describe('Whether the choice takes a note: none, optional, required.'),
   fixed: z.boolean().describe('The code acts on it: it cannot be removed.'),
   active: z.boolean().describe('False once removed: hidden from new choices, kept on orders.'),
 });
@@ -73,7 +74,9 @@ const reasonFields = {
     .max(CUSTOMER_TEXT_MAX)
     .nullable()
     .describe('Only in the lists with customer texts; null shows the generic apology.'),
-  needsText: z.boolean().describe('«أخرى»: the choice needs its text.'),
+  note: z
+    .enum(noteModes)
+    .describe('none, optional or required («أخرى» with its text); none in a closed list.'),
 };
 
 class AddReasonDto extends createZodDto(z.object(reasonFields)) {}

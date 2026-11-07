@@ -126,10 +126,13 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
     final reason = needsReason && _shortReason != null
         ? Reason(
             _shortReason!.code,
-            _shortReason!.needsText ? _shortNote.text.trim() : null,
+            _shortReason!.takesNote && _shortNote.text.trim().isNotEmpty
+                ? _shortNote.text.trim()
+                : null,
           )
         : null;
-    if (needsReason && (reason == null || reason.note?.isEmpty == true)) {
+    if (needsReason &&
+        (reason == null || (_shortReason!.needsNote && reason.note == null))) {
       setState(() => _reasonMissing = true);
       return;
     }
@@ -163,6 +166,13 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
       notice = await commands.deliver(_order.id, payment(), away);
     }
     if (!mounted) return;
+    if (notice is ReasonChanged) {
+      // The list was read again: the captain chooses from it, and the
+      // shortfall the server asked a reason for still stands.
+      setState(() => _shortReason = null);
+      showNotice(context, notice);
+      return;
+    }
     setState(() => _refused = notice);
   }
 
@@ -255,7 +265,7 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
             ),
             _ => const LinearProgressIndicator(),
           },
-          if (_shortReason?.needsText == true)
+          if (_shortReason?.takesNote == true)
             TextField(
               key: const Key('shortfall-note'),
               controller: _shortNote,

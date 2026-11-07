@@ -13,7 +13,7 @@ const reasons = {
           code: 'pin_inaccurate',
           label: 'موقع الزبون على الخريطة غير دقيق',
           customerText: null,
-          needsText: false,
+          note: 'none',
           fixed: false,
           active: true,
         },
@@ -52,7 +52,7 @@ test('edits a reason of a list', async ({ page }) => {
   expect(sent).toEqual({
     label: 'الدبوس بعيد',
     customerText: null,
-    needsText: false,
+    note: 'none',
     active: true,
   });
 });

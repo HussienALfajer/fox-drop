@@ -560,8 +560,10 @@
   "@customerEnjoy": {"description": "Delivered (CU §11.2)."},
   "customerRejected": "نعتذر، لم يقبل المطعم طلبك",
   "@customerRejected": {"description": "Rejected by the restaurant (CU §11.9)."},
+  "customerNoRestaurantResponse": "لم يرد المطعم على طلبك، نعتذر",
+  "@customerNoRestaurantResponse": {"description": "Cancelled for no restaurant response (CU §11.9)."},
   "customerCancelled": "أُلغي طلبك",
-  "@customerCancelled": {"description": "A cancelled order (CU §11.9); the text of its reason (CU Appendix C) shows under it."},
+  "@customerCancelled": {"description": "Cancelled by operations (CU §11.9); the customer-facing reason (CU Appendix C) shows under it."},
   "customerDeliveryFailed": "تعذّر التسليم",
   "@customerDeliveryFailed": {"description": "Failed after pickup (CU §11.9)."},
   "customerActiveOrder": "طلبك من {restaurant}: {status}",
@@ -773,5 +775,7 @@
   "contentFailed": "تعذّر التحميل، اضغط لإعادة المحاولة",
   "@contentFailed": {"description": "Content's lists or texts could not be read. The spec gives no wording."},
   "captainWorkRules": "قواعد العمل",
-  "@captainWorkRules": {"description": "The work rules page (CA §11.4). The spec gives no wording."}
+  "@captainWorkRules": {"description": "The work rules page (CA §11.4). The spec gives no wording."},
+  "captainReasonChanged": "تغيّرت قائمة الأسباب، اختر السبب من جديد",
+  "@captainReasonChanged": {"description": "The reason sent is no longer in its Content list (AP §9.13). The spec gives no wording."}
 }

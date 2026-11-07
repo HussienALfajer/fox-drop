@@ -10,6 +10,8 @@ import {
   type FaqAudience,
   type FaqItem,
   moved,
+  noteMode,
+  type NoteMode,
   type ReasonEntry,
   type ReasonListEntry,
   useAddReason,
@@ -148,7 +150,7 @@ function ReasonRow({
       code: reason.code,
       label: String(form.get('label')),
       customerText: String(form.get('customerText') ?? ''),
-      needsText: form.get('needsText') === 'on',
+      note: noteMode(form.get('note')),
       active: form.get('active') === 'on',
     });
   }
@@ -170,10 +172,7 @@ function ReasonRow({
             />
           </label>
         )}
-        <label>
-          <input type="checkbox" name="needsText" defaultChecked={reason.needsText} />
-          {t('content.needsText')}
-        </label>
+        {!list.closed && <NoteSelect value={reason.note} />}
         <label>
           <input
             type="checkbox"
@@ -192,6 +191,21 @@ function ReasonRow({
   );
 }
 
+// Whether the choice takes a note; a closed list's reasons take none.
+function NoteSelect({ value }: { value: NoteMode }) {
+  const { t } = useTranslation();
+  return (
+    <label>
+      {t('content.note.label')}
+      <select name="note" defaultValue={value}>
+        <option value="none">{t('content.note.none')}</option>
+        <option value="optional">{t('content.note.optional')}</option>
+        <option value="required">{t('content.note.required')}</option>
+      </select>
+    </label>
+  );
+}
+
 function AddReason({ list }: { list: ReasonListEntry }) {
   const { t } = useTranslation();
   const add = useAddReason();
@@ -204,7 +218,7 @@ function AddReason({ list }: { list: ReasonListEntry }) {
         list: list.list,
         label: String(form.get('label')),
         customerText: String(form.get('customerText') ?? ''),
-        needsText: form.get('needsText') === 'on',
+        note: noteMode(form.get('note')),
       },
       { onSuccess: (result) => result.status === 'saved' && element.reset() },
     );
@@ -223,10 +237,7 @@ function AddReason({ list }: { list: ReasonListEntry }) {
             <input name="customerText" maxLength={300} placeholder={t('content.genericApology')} />
           </label>
         )}
-        <label>
-          <input type="checkbox" name="needsText" />
-          {t('content.needsText')}
-        </label>
+        <NoteSelect value="none" />
         <button type="submit">{t('content.add')}</button>
       </fieldset>
       <Outcome result={add.data} failed={add.isError} />

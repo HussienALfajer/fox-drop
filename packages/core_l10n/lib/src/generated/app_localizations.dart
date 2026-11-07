@@ -1774,7 +1774,13 @@ abstract class AppLocalizations {
   /// **'نعتذر، لم يقبل المطعم طلبك'**
   String get customerRejected;
 
-  /// A cancelled order (CU §11.9); the text of its reason (CU Appendix C) shows under it.
+  /// Cancelled for no restaurant response (CU §11.9).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يرد المطعم على طلبك، نعتذر'**
+  String get customerNoRestaurantResponse;
+
+  /// Cancelled by operations (CU §11.9); the customer-facing reason (CU Appendix C) shows under it.
   ///
   /// In ar, this message translates to:
   /// **'أُلغي طلبك'**
@@ -2415,6 +2421,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'قواعد العمل'**
   String get captainWorkRules;
+
+  /// The reason sent is no longer in its Content list (AP §9.13). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيّرت قائمة الأسباب، اختر السبب من جديد'**
+  String get captainReasonChanged;
 }
 
 class _AppLocalizationsDelegate

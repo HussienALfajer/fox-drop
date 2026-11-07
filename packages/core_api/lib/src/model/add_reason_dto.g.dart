@@ -6,22 +6,84 @@ part of 'add_reason_dto.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const AddReasonDtoNoteEnum _$addReasonDtoNoteEnum_none =
+    const AddReasonDtoNoteEnum._('none');
+const AddReasonDtoNoteEnum _$addReasonDtoNoteEnum_optional =
+    const AddReasonDtoNoteEnum._('optional');
+const AddReasonDtoNoteEnum _$addReasonDtoNoteEnum_required_ =
+    const AddReasonDtoNoteEnum._('required_');
+
+AddReasonDtoNoteEnum _$addReasonDtoNoteEnumValueOf(String name) {
+  switch (name) {
+    case 'none':
+      return _$addReasonDtoNoteEnum_none;
+    case 'optional':
+      return _$addReasonDtoNoteEnum_optional;
+    case 'required_':
+      return _$addReasonDtoNoteEnum_required_;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AddReasonDtoNoteEnum> _$addReasonDtoNoteEnumValues =
+    BuiltSet<AddReasonDtoNoteEnum>(const <AddReasonDtoNoteEnum>[
+      _$addReasonDtoNoteEnum_none,
+      _$addReasonDtoNoteEnum_optional,
+      _$addReasonDtoNoteEnum_required_,
+    ]);
+
+Serializer<AddReasonDtoNoteEnum> _$addReasonDtoNoteEnumSerializer =
+    _$AddReasonDtoNoteEnumSerializer();
+
+class _$AddReasonDtoNoteEnumSerializer
+    implements PrimitiveSerializer<AddReasonDtoNoteEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'none': 'none',
+    'optional': 'optional',
+    'required_': 'required',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'none': 'none',
+    'optional': 'optional',
+    'required': 'required_',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[AddReasonDtoNoteEnum];
+  @override
+  final String wireName = 'AddReasonDtoNoteEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AddReasonDtoNoteEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AddReasonDtoNoteEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AddReasonDtoNoteEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$AddReasonDto extends AddReasonDto {
   @override
   final String label;
   @override
   final String? customerText;
   @override
-  final bool needsText;
+  final AddReasonDtoNoteEnum note;
 
   factory _$AddReasonDto([void Function(AddReasonDtoBuilder)? updates]) =>
       (AddReasonDtoBuilder()..update(updates))._build();
 
-  _$AddReasonDto._({
-    required this.label,
-    this.customerText,
-    required this.needsText,
-  }) : super._();
+  _$AddReasonDto._({required this.label, this.customerText, required this.note})
+    : super._();
   @override
   AddReasonDto rebuild(void Function(AddReasonDtoBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -35,7 +97,7 @@ class _$AddReasonDto extends AddReasonDto {
     return other is AddReasonDto &&
         label == other.label &&
         customerText == other.customerText &&
-        needsText == other.needsText;
+        note == other.note;
   }
 
   @override
@@ -43,7 +105,7 @@ class _$AddReasonDto extends AddReasonDto {
     var _$hash = 0;
     _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, customerText.hashCode);
-    _$hash = $jc(_$hash, needsText.hashCode);
+    _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -53,7 +115,7 @@ class _$AddReasonDto extends AddReasonDto {
     return (newBuiltValueToStringHelper(r'AddReasonDto')
           ..add('label', label)
           ..add('customerText', customerText)
-          ..add('needsText', needsText))
+          ..add('note', note))
         .toString();
   }
 }
@@ -70,9 +132,9 @@ class AddReasonDtoBuilder
   String? get customerText => _$this._customerText;
   set customerText(String? customerText) => _$this._customerText = customerText;
 
-  bool? _needsText;
-  bool? get needsText => _$this._needsText;
-  set needsText(bool? needsText) => _$this._needsText = needsText;
+  AddReasonDtoNoteEnum? _note;
+  AddReasonDtoNoteEnum? get note => _$this._note;
+  set note(AddReasonDtoNoteEnum? note) => _$this._note = note;
 
   AddReasonDtoBuilder() {
     AddReasonDto._defaults(this);
@@ -83,7 +145,7 @@ class AddReasonDtoBuilder
     if ($v != null) {
       _label = $v.label;
       _customerText = $v.customerText;
-      _needsText = $v.needsText;
+      _note = $v.note;
       _$v = null;
     }
     return this;
@@ -112,10 +174,10 @@ class AddReasonDtoBuilder
             'label',
           ),
           customerText: customerText,
-          needsText: BuiltValueNullFieldError.checkNotNull(
-            needsText,
+          note: BuiltValueNullFieldError.checkNotNull(
+            note,
             r'AddReasonDto',
-            'needsText',
+            'note',
           ),
         );
     replace(_$result);

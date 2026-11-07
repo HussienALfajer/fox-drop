@@ -273,7 +273,6 @@
     "label": "النص",
     "customerText": "النص للزبون",
     "genericApology": "نعتذر، لم نتمكن من إكمال طلبك",
-    "needsText": "يحتاج كتابة السبب",
     "active": "معروض",
     "fixed": "ثابت (لا يُحذف)",
     "reasons": {
@@ -334,6 +333,12 @@
       "duplicateLabel": "يوجد سبب بالنص نفسه في القائمة",
       "invalidOrder": "تغيّرت القائمة، حدّث الصفحة",
       "invalidValue": "قيمة غير صالحة"
+    },
+    "note": {
+      "label": "كتابة سبب",
+      "none": "لا",
+      "optional": "اختيارية",
+      "required": "مطلوبة"
     }
   }
 }

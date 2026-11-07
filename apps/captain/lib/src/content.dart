@@ -6,13 +6,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'api.dart';
 
 /// A reason of a Content list (AP §9.13): the code goes back to the server,
-/// the label is shown, and «أخرى» needs its text.
+/// the label is shown, and the note is `none`, `optional` or `required`
+/// («أخرى» with its text).
 class ReasonChoice {
-  const ReasonChoice(this.code, this.label, {this.needsText = false});
+  const ReasonChoice(this.code, this.label, {this.note = 'none'});
 
   final String code;
   final String label;
-  final bool needsText;
+  final String note;
+
+  bool get takesNote => note != 'none';
+  bool get needsNote => note == 'required';
 }
 
 /// What the captain app reads from Content (`GET /v1/captain/content`): the
@@ -41,7 +45,7 @@ List<ReasonChoice> _choices(
   Iterable<MerchantContentDtoOutputReasonsMerchantRejectionInner> list,
 ) => [
   for (final reason in list)
-    ReasonChoice(reason.code, reason.label, needsText: reason.needsText),
+    ReasonChoice(reason.code, reason.label, note: reason.note.name),
 ];
 
 /// Read once and kept; a failed read is read again by the next screen that

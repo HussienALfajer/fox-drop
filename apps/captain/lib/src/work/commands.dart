@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../api.dart';
+import '../content.dart';
 import 'door_payment.dart';
 import 'location.dart';
 import 'work.dart';
@@ -98,6 +99,14 @@ class StateChanged extends Notice {
 /// Any other refusal.
 class CommandFailed extends Notice {
   const CommandFailed();
+}
+
+/// The reason sent is no longer in its Content list, or its note rule
+/// changed (`unknown_reason`, `reason_note_required`,
+/// `reason_note_not_allowed`): the lists are read again, and the captain
+/// chooses again.
+class ReasonChanged extends Notice {
+  const ReasonChanged();
 }
 
 /// The cash to hand in after going offline (CA §7.5), shown once.
@@ -368,7 +377,10 @@ class Commands extends Notifier<Set<String>> {
               status < 500 &&
               status != 408 &&
               status != 429) {
-            return (null, refusal(answer.data));
+            final notice = refusal(answer.data);
+            // The panel changed the list since the app read it.
+            if (notice is ReasonChanged) ref.invalidate(contentProvider);
+            return (null, notice);
           }
           if (!ref.mounted) return (null, null);
           await Future<void>.delayed(backoff(attempt));
@@ -434,6 +446,10 @@ Notice refusal(Object? body) {
       return AmountDueChanged(order is Map ? money(order['collect']) : null);
     case 'order_state_changed' || 'unknown_order':
       return const StateChanged();
+    case 'unknown_reason' ||
+        'reason_note_required' ||
+        'reason_note_not_allowed':
+      return const ReasonChanged();
     default:
       return const CommandFailed();
   }

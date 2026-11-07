@@ -1040,6 +1040,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerRejected => 'نعتذر، لم يقبل المطعم طلبك';
 
   @override
+  String get customerNoRestaurantResponse => 'لم يرد المطعم على طلبك، نعتذر';
+
+  @override
   String get customerCancelled => 'أُلغي طلبك';
 
   @override
@@ -1444,4 +1447,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get captainWorkRules => 'قواعد العمل';
+
+  @override
+  String get captainReasonChanged => 'تغيّرت قائمة الأسباب، اختر السبب من جديد';
 }
