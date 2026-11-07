@@ -96,6 +96,12 @@ cd /srv/foxdrop-staging/current/infra && FOXDROP_RELEASE=$(basename "$(readlink 
 
 The same with `--party captain --from +963900000003` for the captain. Run it again with the real number as `--from` to move it on. The support numbers the apps show («اتصال بالعمليات», RA §5.2 item 3) are `SUPPORT_PHONE_NUMBER` and `SUPPORT_WHATSAPP_NUMBER` in `infra/environments/staging.env`; empty, the apps hide their buttons.
 
+## The staging APKs
+
+Every merge to `main` runs the `staging-apks` job of `.github/workflows/ci.yml` after `verify`: it builds the customer, restaurant and captain apps with `flutter build apk --flavor staging --release`, pointed at `https://<API_HOST of infra/environments/staging.env>`, and keeps each as an artifact of the run for 30 days (`foxdrop-<app>-staging-<run number>`, Android only; owner decisions 2026-11-07). Download them from the run's page (Actions › CI › the run › Artifacts) or with `gh run download <run id> --repo HussienALfajer/fox-drop`. The staging apps have their own IDs (`com.foxdrop.<app>.staging`), so they install beside development builds (`.dev`); Android asks to allow installs from unknown sources.
+
+Each app has its own staging key (architecture §11.4): the secrets `STAGING_<APP>_KEYSTORE` (the PKCS12 key store in base64) and `STAGING_<APP>_KEYSTORE_PASSWORD` of the GitHub `staging` environment, alias `foxdrop`. The owner keeps a copy outside the repository. A new key cannot update an installed app: uninstall the staging app first. A build of the same flavor on a machine without the key is signed with the debug key; never hand it out.
+
 ## Restore a backup
 
 1. Copy the dump back, if it is not in `/var/backups/foxdrop-staging/`: set the `RCLONE_CONFIG_FOXDROP*` variables as `backup.sh` does, then `rclone copyto foxdropcrypt:<name> /var/backups/foxdrop-staging/<name>`.

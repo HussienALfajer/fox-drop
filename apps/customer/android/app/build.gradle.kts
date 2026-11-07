@@ -15,7 +15,7 @@ android {
     }
 
     defaultConfig {
-        // Owner decision 2026-11-05; flavors add their suffix with the deploy slice.
+        // Owner decision 2026-11-05; each flavor adds its suffix below.
         applicationId = "com.foxdrop.customer"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
@@ -29,11 +29,45 @@ android {
         versionName = flutter.versionName
     }
 
+    // Architecture §11.4: development, staging and production, each with its
+    // own app ID, so they install side by side (slice 1.14b). The pubspec's
+    // default-flavor makes `flutter run` build development.
+    flavorDimensions += "environment"
+    productFlavors {
+        create("development") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+        }
+        create("staging") {
+            dimension = "environment"
+            applicationIdSuffix = ".staging"
+        }
+        create("production") {
+            dimension = "environment"
+        }
+    }
+
+    // One signing key per app and environment, kept as CI secrets
+    // (architecture §11.4; the deploy skill): CI decodes the key store and
+    // names it in FOXDROP_KEYSTORE_FILE. Without it a release build is signed
+    // with the debug key, for local tries only; never distribute one.
+    val releaseKeystore = System.getenv("FOXDROP_KEYSTORE_FILE")
+    signingConfigs {
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = file(releaseKeystore)
+                storePassword = System.getenv("FOXDROP_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("FOXDROP_KEY_ALIAS")
+                keyPassword = System.getenv("FOXDROP_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // The debug key until the release slice adds the app's own key
-            // (architecture §11.4); never distribute a build signed with it.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName(
+                if (releaseKeystore != null) "release" else "debug",
+            )
         }
     }
 }

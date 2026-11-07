@@ -151,3 +151,68 @@ jobs:
           SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
           SSH_HOST: ${{ vars.STAGING_SSH_HOST }}
           SSH_KNOWN_HOSTS: ${{ vars.STAGING_SSH_KNOWN_HOSTS }}
+
+  # Slice 1.14b (owner decisions 2026-11-07): every merge to main builds the
+  # three apps' staging APKs (Android only), signed with each app's staging
+  # key, as artifacts of the run (the deploy skill). The keys are secrets of
+  # the staging environment, which only main may use.
+  staging-apks:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [verify]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: customer
+            key: CUSTOMER
+          - app: merchant
+            key: MERCHANT
+          - app: captain
+            key: CAPTAIN
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read the pinned Flutter version
+        id: flutter
+        run: |
+          version=$(jq -er .flutter .fvmrc)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: ${{ steps.flutter.outputs.version }}
+          cache: true
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - run: dart pub get --enforce-lockfile
+
+      # The API address comes from the environment's public settings.
+      - name: Build the signed staging APK
+        working-directory: apps/${{ matrix.app }}
+        run: |
+          api_host=$(grep -E '^API_HOST=' ../../infra/environments/staging.env | cut -d= -f2)
+          printf '%s' "$KEYSTORE" | base64 --decode > "$RUNNER_TEMP/release.jks"
+          export FOXDROP_KEYSTORE_FILE="$RUNNER_TEMP/release.jks"
+          flutter build apk --flavor staging --release \
+            --build-number "$GITHUB_RUN_NUMBER" \
+            --dart-define="API_BASE_URL=https://$api_host"
+          rm "$RUNNER_TEMP/release.jks"
+        env:
+          KEYSTORE: ${{ secrets[format('STAGING_{0}_KEYSTORE', matrix.key)] }}
+          FOXDROP_KEYSTORE_PASSWORD: ${{ secrets[format('STAGING_{0}_KEYSTORE_PASSWORD', matrix.key)] }}
+          FOXDROP_KEY_ALIAS: foxdrop
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: foxdrop-${{ matrix.app }}-staging-${{ github.run_number }}
+          path: apps/${{ matrix.app }}/build/app/outputs/flutter-apk/app-staging-release.apk
+          if-no-files-found: error
+          retention-days: 30

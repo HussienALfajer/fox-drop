@@ -16,7 +16,7 @@ Slice 1.14b, sign-in in the three apps and the staging APKs (`docs/roadmap.md`, 
   - [x] The number and code screens in the three apps (+963 and +90, the refusals and limits of the code request, the resend wait), the restaurant device's name (RA §5.2 item 5), «سُجّل دخولك من جهاز آخر» for the captain; widget tests.
   - [x] «لديّ رمز من العمليات» in the captain and restaurant apps: the code screen without a sent code, for an emergency code.
   - [ ] The server command that sets the number of the placeholder restaurant owner and captain on staging (the `deploy` skill).
-  - [ ] The staging flavor and signed release APKs of the three apps as CI artifacts; the run steps in the `deploy` skill.
+  - [x] The staging flavor and signed release APKs of the three apps as CI artifacts; the run steps in the `deploy` skill.
   - [ ] Review; pull request; the owner signs in on real phones.
 
 ## Notes from earlier slices

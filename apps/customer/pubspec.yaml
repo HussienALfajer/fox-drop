@@ -25,4 +25,6 @@ dev_dependencies:
     sdk: flutter
 
 flutter:
+  # Android's development flavor for `flutter run` (architecture §11.4).
+  default-flavor: development
   uses-material-design: true
