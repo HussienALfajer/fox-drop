@@ -9,7 +9,16 @@ Slice 1.14e, the restaurant board and real time (`docs/roadmap.md`, Phase 1, sli
 - **Roadmap line:** the Centrifugo client with polling as fallback, the ring for a new order, accept with the prep time, «الطلب جاهز», the pickup confirmation or dispute, and the customer's order screen updating live (RA §4.3, §8, CU §11, architecture §6). The order rings at the restaurant and the customer sees each change.
 - **Specs:** RA §4.3, §8 (`docs/product/v1/restaurant-app/08-orders/`), CU §11, architecture §6 and §11.2 (`core_realtime`, `core_time`); the owner decisions of slice 1.14 (functional, unstyled screens, logic apart from presentation; Android only; no push in Phase 1: the open connection and polling).
 - **Branch:** `feat/restaurant-board`.
-- **Plan:** to write at the slice's start from the cited sections, one step per commit; ask the owner whether to split it into several pull requests first (root `CLAUDE.md`). The server side exists (the ordering module's board, accept, ready and pickup routes, the realtime token and the `order:{id}` channels; `apps/server/src/modules/ordering/CLAUDE.md`, `apps/server/src/modules/notifications/CLAUDE.md`).
+- **Owner decisions 2026-11-07:** one pull request; the restaurant app rings while it is open (a looping sound on the alarm stream, the screen kept on while the board shows), the Android foreground service (`core_alerts`) comes later; the phone's default alarm and notification sounds stand in for the bundled sounds until the design.
+- **Plan** (one step per commit):
+  - [ ] `core_time`: the server clock offset from `Server-Time` on every answer, and `serverNow()` for every countdown (RA §4.7, architecture §11.2).
+  - [ ] `core_realtime`: the Centrifugo client (`centrifuge` Dart) with the app's token route, a live feed that fetches the full state, subscribes, ignores events not newer than the version shown, fetches again after a reconnect without recovery, and polls while the socket is down (RA §4.3, CU §4.3, architecture §6).
+  - [ ] Server: the customer's order read gains the captain (first name, vehicle, at the restaurant or not) for CU §11.2–11.3, never the captain track as such.
+  - [ ] The restaurant board: four columns (tabs on phones) with counts, late counts, sorting, cards with the captain line and the column's timer, the detail, accept with the prep-time chooser, «الطلب جاهز», the pickup prompt with «تأكيد الاستلام», «المبلغ غير صحيح» and «الطلب غير مكتمل», the dispute after pickup, «جارٍ الإرسال…» and the 409 explanations, the offline bar (RA §4.7, §8.1–8.11).
+  - [ ] The ring: a new order and a pickup request ring until handled on any device; the chimes of RA §8.3, §8.7, §8.9 and the offline chime; the screen kept on (RA §4.4).
+  - [ ] The customer's live order screen: titles and subtitles of CU §11.2, the five-step progress, «يصل حوالي», the captain card, the endings of CU §11.9, and the home's active order (CU §11).
+  - [ ] Docs: the packages' `CLAUDE.md`, the apps' rules, the roadmap and the handover.
+- The server side exists (the ordering module's board, accept, ready and pickup routes, the realtime token and the `order:{id}` channels; `apps/server/src/modules/ordering/CLAUDE.md`, `apps/server/src/modules/notifications/CLAUDE.md`).
 
 ## Notes from earlier slices
 

@@ -1,0 +1,14 @@
+name: core_time
+description: The server clock of the FOX DROP Flutter apps (architecture §11.2).
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+
+resolution: workspace
+
+dependencies:
+  dio: 5.11.1
+
+dev_dependencies:
+  test: 1.31.1
