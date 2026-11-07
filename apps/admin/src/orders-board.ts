@@ -1,14 +1,16 @@
 import type { components } from '@fox-drop/api-schema';
 import { queryOptions } from '@tanstack/react-query';
 import { api } from './api.js';
+import { pollUnlessLive } from './live.js';
 
 export const OPERATIONS_READ = 'operations.read';
 
 export type OrderCard = components['schemas']['AdminBoardDto_Output']['orders'][number];
 export type OrderStatus = OrderCard['status'];
 
-// Until the ops: channel exists the board and the detail read the server
-// again every 10 seconds (owner decisions 2026-11-06 and 2026-11-07).
+// The board and the detail follow ops:city.{city_id} (live.ts); while its
+// socket is down they read the server again every 10 seconds (owner
+// decisions 2026-11-06 and 2026-11-07).
 export const POLL_MS = 10_000;
 
 export function boardQuery(cityId: string) {
@@ -19,7 +21,7 @@ export function boardQuery(cityId: string) {
       if (!data) throw new Error('The board read failed.');
       return data.orders;
     },
-    refetchInterval: POLL_MS,
+    refetchInterval: pollUnlessLive(cityId, POLL_MS),
     // The board stays open all shift, often behind another tab.
     refetchIntervalInBackground: true,
   });

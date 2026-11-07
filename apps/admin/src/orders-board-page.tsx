@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { chosenCity, citiesQuery } from './cities.js';
 import { useServerNow } from './clock.js';
 import { formatMoney } from './format.js';
+import { useOpsChannel } from './live.js';
 import { alertKeys, badgeKeys, slaKeys, statusKeys, trackKeys } from './order-labels.js';
 import {
   type BoardFilter,
@@ -22,7 +23,7 @@ import {
 const route = getRouteApi('/signed-in/orders');
 
 // «غرفة العمليات» (AP §9.2): every live order of the city in five columns,
-// read again every 10 seconds until the ops: channel exists. A card opens
+// live over ops:city.{city_id}, read again every 10 seconds while it is down. A card opens
 // the order's detail beside the board, which stays visible (§9.2.1).
 export function OrdersBoardPage() {
   const { t } = useTranslation();
@@ -31,6 +32,7 @@ export function OrdersBoardPage() {
   const cities = useQuery(citiesQuery);
   const city = cities.data && chosenCity(cities.data, cityCode);
   const board = useQuery({ ...boardQuery(city?.id ?? ''), enabled: city !== undefined });
+  useOpsChannel(city?.id);
   // The filters belong to the city they were chosen in.
   const [chosen, setChosen] = useState<{ city: string; filter: BoardFilter } | null>(null);
   const now = useServerNow();

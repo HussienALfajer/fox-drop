@@ -1,6 +1,7 @@
 import type { components } from '@fox-drop/api-schema';
 import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from './api.js';
+import { pollUnlessLive } from './live.js';
 import type { AdminSession } from './session.js';
 
 export type AdminAlert = components['schemas']['AdminAlertsDto_Output']['alerts'][number];
@@ -15,8 +16,8 @@ export function receivesAlerts(session: AdminSession | null | undefined): boolea
   return session?.roles.some((role) => RECIPIENT_ROLES.includes(role)) ?? false;
 }
 
-// Until the ops: channel exists the alerts are read again every 10 seconds,
-// like the board (slice 2.2b brings them live).
+// The alerts follow ops:city.{city_id} (live.ts); while its socket is down
+// they are read again every 10 seconds, like the board.
 export const ALERTS_POLL_MS = 10_000;
 
 // AP §7.3: a critical alert's sound repeats until someone acknowledges it,
@@ -33,7 +34,7 @@ export function alertsQuery(cityId: string) {
       if (!data) throw new Error('The alerts read failed.');
       return data.alerts;
     },
-    refetchInterval: ALERTS_POLL_MS,
+    refetchInterval: pollUnlessLive(cityId, ALERTS_POLL_MS),
     // The alarm must sound while the panel is behind another tab.
     refetchIntervalInBackground: true,
   });

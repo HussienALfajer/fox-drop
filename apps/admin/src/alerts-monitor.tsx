@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useAlertAlarm } from './alert-alarm.js';
 import { type AdminAlert, alertsQuery } from './alerts.js';
 import { chosenCity, citiesQuery } from './cities.js';
+import { useOpsChannel } from './live.js';
 import { alertKeys } from './order-labels.js';
 
 // AP §7.2–7.3: on every page of a recipient, the blocking banner that enables
@@ -34,6 +35,7 @@ function CityAlarm({
 }) {
   const { t } = useTranslation();
   const alerts = useQuery(alertsQuery(cityId));
+  useOpsChannel(cityId);
   const describe = useCallback(
     (alert: AdminAlert) => ({
       title: t('alerts.notificationTitle', { label: t(alertKeys[alert.code]) }),
