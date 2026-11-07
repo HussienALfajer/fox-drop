@@ -16,8 +16,8 @@ Slice 1.14d, the customer's order (`docs/roadmap.md`, Phase 1, slice 1.14; owner
   - [x] The delivery point from the phone's location: the zone check, «قريباً في منطقتك» with the vote, «لا توجد مطاعم توصل إلى موقعك حالياً» (CU §7.1, §7.2).
   - [x] The restaurant list and page: cards, states, the menu with availability, the hours (CU §8.2, §8.4, §9.1–9.3, §9.5 badge).
   - [x] The item sheet and the cart: options, quantity, note, one restaurant, kept 24 hours (CU §9.4, §10.1).
-  - [ ] Checkout and the quote: the address, the note, «سأدفع بـ», the money, the thresholds and the problems (CU §7.3–7.4, §10.2–10.6).
-  - [ ] Placing the order: the far-pin check, the command with its key, the refusals and the order screen (CU §7.5, §10.7).
+  - [x] Checkout and the quote: the address, the note, «سأدفع بـ», the money, the thresholds and the problems (CU §7.3–7.4, §10.2–10.6).
+  - [x] Placing the order: the far-pin check, the command with its key, the refusals and the order screen (CU §7.5, §10.7).
 
 ## Notes from earlier slices
 

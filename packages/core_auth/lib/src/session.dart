@@ -92,7 +92,7 @@ class SessionController extends AsyncNotifier<SessionState> {
   Future<String> deviceId() async {
     final stored = await _store.read(_deviceKey);
     if (stored != null) return stored;
-    final id = _uuidV4();
+    final id = uuidV4();
     await _store.write(_deviceKey, id);
     return id;
   }
@@ -203,7 +203,8 @@ class SessionController extends AsyncNotifier<SessionState> {
   }
 }
 
-String _uuidV4() {
+/// A random UUID (version 4), such as an idempotency key.
+String uuidV4() {
   final random = Random.secure();
   final bytes = List<int>.generate(16, (_) => random.nextInt(256));
   bytes[6] = (bytes[6] & 0x0f) | 0x40;

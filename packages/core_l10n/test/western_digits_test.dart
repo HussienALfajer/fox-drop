@@ -59,6 +59,8 @@ void main() {
     expect(l10n.formatMoney('5', 'SYP'), '0.05 ل.س');
     expect(l10n.formatMoney('-250', 'TRY'), '-2.50 ₺');
     expect(l10n.formatMoney('100', 'EUR'), '1 EUR');
+    expect(l10n.currencySymbol('USD'), r'$');
+    expect(l10n.currencySymbol('EUR'), 'EUR');
     expect(l10n.formatMinuteOfDay(0), '12:00 ص');
     expect(l10n.formatMinuteOfDay(9 * 60 + 5), '9:05 ص');
     expect(l10n.formatMinuteOfDay(12 * 60), '12:00 م');

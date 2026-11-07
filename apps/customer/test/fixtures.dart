@@ -144,10 +144,15 @@ Future<TestApp> browsingApp(
   bool signedIn = false,
   Map<String, Object?>? page,
   void Function(TestApp app)? before,
+  FakePositionSource? position,
 }) async {
   final app = TestApp(
     signedIn: signedIn,
-    overrides: [positionSourceProvider.overrideWithValue(FakePositionSource())],
+    overrides: [
+      positionSourceProvider.overrideWithValue(
+        position ?? FakePositionSource(),
+      ),
+    ],
   );
   app.server.on('/v1/customer/location', [
     const FakeAnswer(200, {

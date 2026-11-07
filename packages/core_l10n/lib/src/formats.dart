@@ -31,6 +31,10 @@ extension Formats on AppLocalizations {
     return money('${negative ? '-' : ''}$amount', symbol);
   }
 
+  /// The currency's symbol, or its code when unknown («سأدفع بـ»'s chips).
+  String currencySymbol(String currency) =>
+      _currencies[currency]?.symbol ?? currency;
+
   /// A 12-hour time on the phone's clock, with «ص» or «م».
   String formatTime(DateTime time) {
     final local = time.toLocal();

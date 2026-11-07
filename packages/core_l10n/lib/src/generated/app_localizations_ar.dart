@@ -470,4 +470,259 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get customerFreeDeliveryReached => 'توصيلك مجاني';
+
+  @override
+  String get customerUpdateRequired => 'حدّث التطبيق لتتمكن من الطلب';
+
+  @override
+  String get customerMaintenance => 'FOX DROP في صيانة الآن، حاول بعد قليل';
+
+  @override
+  String customerPlatformClosed(String time) {
+    return 'FOX DROP يستقبل الطلبات من الساعة $time';
+  }
+
+  @override
+  String get customerPlatformClosedNow => 'FOX DROP لا يستقبل الطلبات الآن';
+
+  @override
+  String customerBelowMinimum(String amount) {
+    return 'أضف $amount لتصل إلى الحد الأدنى';
+  }
+
+  @override
+  String get customerOneOrderAtATime =>
+      'يمكنك طلب واحد في كل مرة حتى يكتمل طلبك الحالي';
+
+  @override
+  String get customerActiveOrderLimit => 'وصلت إلى الحد الأقصى للطلبات الجارية';
+
+  @override
+  String get customerNoCaptain => 'الضغط عالٍ الآن، جرّب بعد دقائق';
+
+  @override
+  String customerPriceChanged(String item, String oldPrice, String newPrice) {
+    return 'تغيّر سعر $item من $oldPrice إلى $newPrice';
+  }
+
+  @override
+  String customerItemGone(String item) {
+    return '$item لم يعد متوفراً';
+  }
+
+  @override
+  String get customerCannotPrice => 'لا يمكن الطلب من هذا المطعم الآن';
+
+  @override
+  String get customerAddItems => 'أضف أصنافاً';
+
+  @override
+  String get customerChangeAddress => 'تغيير العنوان';
+
+  @override
+  String get customerRetry => 'إعادة المحاولة';
+
+  @override
+  String get customerDeliveryAddress => 'عنوان التوصيل';
+
+  @override
+  String get customerLabelHome => 'البيت';
+
+  @override
+  String get customerLabelWork => 'العمل';
+
+  @override
+  String get customerLabelOther => 'آخر';
+
+  @override
+  String get customerCustomLabel => 'اسم العنوان';
+
+  @override
+  String get customerOutsideZoneNow => 'خارج منطقة التوصيل حالياً';
+
+  @override
+  String get customerDeliverToCurrentLocation => 'التوصيل إلى موقعي الحالي';
+
+  @override
+  String customerLowAccuracy(String distance) {
+    return 'دقة موقعك $distance. حدّث موقعك إن لم يكن العنوان دقيقاً.';
+  }
+
+  @override
+  String get customerUpdateLocation => 'تحديث الموقع';
+
+  @override
+  String get customerNeighbourhood => 'الحي';
+
+  @override
+  String get customerStreet => 'الشارع والبناء';
+
+  @override
+  String get customerFloor => 'الطابق والشقة';
+
+  @override
+  String get customerLandmark => 'بالقرب من';
+
+  @override
+  String get customerLandmarkHint => 'مثلاً: قرب جامع النور';
+
+  @override
+  String get customerContactPhone => 'رقم التواصل';
+
+  @override
+  String get customerContactPhoneHint => 'رقم حسابك إن تركته فارغاً';
+
+  @override
+  String get customerRecipientName => 'اسم المستلم';
+
+  @override
+  String get customerDirections => 'توجيهات للكابتن';
+
+  @override
+  String get customerDirectionsHint => 'مثلاً: الباب الأزرق بجانب الصيدلية';
+
+  @override
+  String get customerSaveAddress => 'احفظ هذا العنوان';
+
+  @override
+  String customerLengthBetween(int min, int max) {
+    return 'اكتب من $min إلى $max حرفاً';
+  }
+
+  @override
+  String customerLengthUpTo(int max) {
+    return '$max حرفاً على الأكثر';
+  }
+
+  @override
+  String get customerNoteCallOnArrival => 'اتصل بي عند الوصول';
+
+  @override
+  String get customerNoteDontKnock => 'لا تطرق الباب';
+
+  @override
+  String get customerNoteSendCutlery => 'أرسلوا أدوات طعام';
+
+  @override
+  String get customerNoteNoCutlery => 'لا أحتاج أدوات طعام';
+
+  @override
+  String get customerOrderNote => 'ملاحظة للمطعم والكابتن';
+
+  @override
+  String get customerPayIn => 'سأدفع بـ';
+
+  @override
+  String get customerPayInUnset => 'لم أحدد';
+
+  @override
+  String customerPayAbout(String amount) {
+    return 'ستدفع حوالي $amount';
+  }
+
+  @override
+  String get customerCashOnDelivery => 'نقداً عند الاستلام';
+
+  @override
+  String customerArrivesWithin(int from, int to) {
+    return 'يصل خلال $from–$to د';
+  }
+
+  @override
+  String get customerItemsValue => 'قيمة الأصناف';
+
+  @override
+  String get customerDeliveryFee => 'رسوم التوصيل';
+
+  @override
+  String get customerFree => 'مجاني';
+
+  @override
+  String get customerDiscount => 'الخصم';
+
+  @override
+  String get customerRounding => 'تقريب';
+
+  @override
+  String get customerTotal => 'المجموع';
+
+  @override
+  String customerOrEquivalents(String amounts) {
+    return 'أو $amounts';
+  }
+
+  @override
+  String get customerConfirm => 'تأكيد الطلب';
+
+  @override
+  String customerConfirmFor(String total) {
+    return 'تأكيد الطلب — $total';
+  }
+
+  @override
+  String get customerSending => 'جارٍ إرسال طلبك…';
+
+  @override
+  String get customerFarPinTitle => 'هل أنت متأكد من العنوان؟';
+
+  @override
+  String customerFarPinBody(String distance) {
+    return 'النقطة تبعد $distance عن موقعك الحالي.';
+  }
+
+  @override
+  String get customerFarPinSend => 'نعم، أرسل إلى هذا العنوان';
+
+  @override
+  String get customerQuoteChanged =>
+      'تغيّر شيء في طلبك. راجع التفاصيل ثم أكّد مجدداً.';
+
+  @override
+  String get customerOrderBlocked =>
+      'لم نتمكن من إرسال طلبك. راجع المشكلة أعلاه.';
+
+  @override
+  String get customerAddressOutside => 'العنوان خارج منطقة التوصيل';
+
+  @override
+  String get customerSaveAddressFailed => 'تعذّر حفظ العنوان، ولم يُرسل الطلب.';
+
+  @override
+  String get customerSendFailed => 'تعذّر إرسال طلبك، حاول مجدداً.';
+
+  @override
+  String customerOrderNumber(String number) {
+    return '#$number';
+  }
+
+  @override
+  String customerOrderSent(String restaurant) {
+    return 'أرسلنا طلبك إلى $restaurant';
+  }
+
+  @override
+  String get customerStatusPlaced => 'بانتظار تأكيد المطعم';
+
+  @override
+  String get customerStatusAccepted => 'المطعم يحضّر طلبك';
+
+  @override
+  String get customerStatusReady => 'طلبك جاهز';
+
+  @override
+  String get customerStatusPickedUp => 'في الطريق إليك';
+
+  @override
+  String get customerStatusArrived => 'الكابتن عند الباب';
+
+  @override
+  String get customerStatusDelivered => 'تم التسليم';
+
+  @override
+  String get customerStatusCancelled => 'نعتذر، أُلغي طلبك';
+
+  @override
+  String customerArrivesAbout(String time) {
+    return 'يصل حوالي $time';
+  }
 }

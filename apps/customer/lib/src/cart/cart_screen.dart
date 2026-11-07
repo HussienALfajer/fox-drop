@@ -4,11 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../browsing/browsing.dart';
+import '../checkout/problems.dart';
+import '../checkout/quote.dart';
+import '../checkout/quote_widgets.dart';
+import '../device.dart';
 import 'cart.dart';
 import 'item_sheet.dart';
 
-/// The cart (CU §10.1): each line with «−» and «+», «تعديل» and «حذف», then
-/// «متابعة» to checkout. Unstyled until the design.
+/// The cart (CU §10.1, §10.2): each line with «−» and «+», «تعديل» and
+/// «حذف», the changes since adding and the thresholds from the quote, then
+/// «متابعة» to checkout, off below the minimum order (U9). Unstyled until
+/// the design.
 class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
 
@@ -17,6 +23,9 @@ class CartScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(cartProvider).value;
     final cart = state?.cart;
+    final quote = ref.watch(quoteProvider).value;
+    final now = ref.watch(clockProvider)();
+    final belowMinimum = quote != null && !quote.minimumOrder.reached;
     return Scaffold(
       appBar: AppBar(title: Text(cart?.restaurantName ?? l10n.customerCart)),
       body: state == null
@@ -33,11 +42,18 @@ class CartScreen extends ConsumerWidget {
               children: [
                 for (final (index, line) in cart.lines.indexed)
                   _LineTile(index: index, line: line, cart: cart),
+                if (quote != null) ...[
+                  for (final problem in problemViews(l10n, quote, cart, now))
+                    ProblemTile(problem: problem),
+                  Thresholds(quote: quote),
+                ],
                 Padding(
                   padding: const EdgeInsetsDirectional.all(16),
                   child: FilledButton(
                     key: const Key('cart-continue'),
-                    onPressed: () => context.push('/checkout'),
+                    onPressed: belowMinimum
+                        ? null
+                        : () => context.push('/checkout'),
                     child: Text(l10n.customerContinue),
                   ),
                 ),
