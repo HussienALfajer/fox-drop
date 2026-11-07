@@ -724,6 +724,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/cities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCitiesList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/availability": {
         parameters: {
             query?: never;
@@ -1997,6 +2013,18 @@ export interface components {
                 /** @description «حتى الغد»: on again at this time; null: «حتى أعيده». */
                 until: string | null;
             } | null;
+        };
+        AdminCitiesDto_Output: {
+            /** @description The active cities, by name. */
+            cities: {
+                /** Format: uuid */
+                id: string;
+                /** @description Such as AZ (AP §4.8). */
+                code: string;
+                name: string;
+                /** @description The city's clock, such as Asia/Damascus. */
+                timeZone: string;
+            }[];
         };
         CaptainAvailabilityDto_Output: {
             /** @description CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «لا تصلك عروض» with its reasons, «موقوف». */
@@ -5254,6 +5282,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantAvailabilitySavedDto_Output"];
+                };
+            };
+        };
+    };
+    adminCitiesList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCitiesDto_Output"];
                 };
             };
         };

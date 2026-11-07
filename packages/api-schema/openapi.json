@@ -1572,6 +1572,32 @@
         ]
       }
     },
+    "/v1/admin/cities": {
+      "get": {
+        "operationId": "adminCitiesList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCitiesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/captain/availability": {
       "get": {
         "operationId": "captainAvailabilityState",
@@ -5578,6 +5604,47 @@
         },
         "required": [
           "switchedOff"
+        ],
+        "additionalProperties": false
+      },
+      "AdminCitiesDto_Output": {
+        "type": "object",
+        "properties": {
+          "cities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "code": {
+                  "type": "string",
+                  "description": "Such as AZ (AP §4.8)."
+                },
+                "name": {
+                  "type": "string"
+                },
+                "timeZone": {
+                  "type": "string",
+                  "description": "The city's clock, such as Asia/Damascus."
+                }
+              },
+              "required": [
+                "id",
+                "code",
+                "name",
+                "timeZone"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The active cities, by name."
+          }
+        },
+        "required": [
+          "cities"
         ],
         "additionalProperties": false
       },

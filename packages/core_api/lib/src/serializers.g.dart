@@ -10,6 +10,8 @@ Serializers _$serializers =
     (Serializers().toBuilder()
           ..add(AdminAssignDto.serializer)
           ..add(AdminBoardDtoOutput.serializer)
+          ..add(AdminCitiesDtoOutput.serializer)
+          ..add(AdminCitiesDtoOutputCitiesInner.serializer)
           ..add(AdminConfirmPickupDto.serializer)
           ..add(AdminDispatchStateDtoOutput.serializer)
           ..add(AdminDispatchStateDtoOutputOrder.serializer)
@@ -399,6 +401,12 @@ Serializers _$serializers =
           ..add(TeamUsersDtoOutputUsersInnerStatusEnum.serializer)
           ..add(TotpEnrolmentDtoOutput.serializer)
           ..add(UpdateSettingDto.serializer)
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCitiesDtoOutputCitiesInner),
+            ]),
+            () => ListBuilder<AdminCitiesDtoOutputCitiesInner>(),
+          )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(AdminOrderCardDtoOutputOrder),

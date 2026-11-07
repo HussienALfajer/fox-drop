@@ -17,6 +17,8 @@ export 'package:core_api/src/api/merchant_api.dart';
 
 export 'package:core_api/src/model/admin_assign_dto.dart';
 export 'package:core_api/src/model/admin_board_dto_output.dart';
+export 'package:core_api/src/model/admin_cities_dto_output.dart';
+export 'package:core_api/src/model/admin_cities_dto_output_cities_inner.dart';
 export 'package:core_api/src/model/admin_confirm_pickup_dto.dart';
 export 'package:core_api/src/model/admin_dispatch_state_dto_output.dart';
 export 'package:core_api/src/model/admin_dispatch_state_dto_output_order.dart';

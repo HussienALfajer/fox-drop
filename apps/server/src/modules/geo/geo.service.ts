@@ -98,6 +98,16 @@ export class GeoService implements OnModuleInit {
     });
   }
 
+  // The active cities, by name: the panel's city selector (AP §7.2). V1 has
+  // Azaz only; access by city comes with the panel users' cities.
+  async activeCities(): Promise<{ id: string; code: string; name: string; timeZone: string }[]> {
+    return this.database.db
+      .select({ id: cities.id, code: cities.code, name: cities.name, timeZone: cities.timeZone })
+      .from(cities)
+      .where(eq(cities.status, 'active'))
+      .orderBy(asc(cities.name));
+  }
+
   // The city's id by its code, such as AZ; null for an unknown code.
   async cityIdByCode(code: string): Promise<string | null> {
     const [row] = await this.database.db
