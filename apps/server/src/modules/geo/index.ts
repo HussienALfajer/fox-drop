@@ -3,6 +3,7 @@ import { DatabaseModule } from '../../database/database.module.js';
 import { AuditModule } from '../audit/index.js';
 import { FxModule } from '../fx/index.js';
 import { SettingsModule } from '../settings/index.js';
+import { AdminCitiesController } from './admin-cities.controller.js';
 import { ROAD_DISTANCES } from './distance.js';
 import { GeoService } from './geo.service.js';
 import { roadDistancesFromEnvironment } from './osrm-road-distances.js';
@@ -11,6 +12,7 @@ import { roadDistancesFromEnvironment } from './osrm-road-distances.js';
 // the delivery fee. Other modules read them through GeoService only.
 @Module({
   imports: [DatabaseModule, SettingsModule, FxModule, AuditModule],
+  controllers: [AdminCitiesController],
   providers: [GeoService, { provide: ROAD_DISTANCES, useFactory: roadDistancesFromEnvironment }],
   exports: [GeoService],
 })

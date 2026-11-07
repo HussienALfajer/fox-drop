@@ -16,6 +16,8 @@ import 'package:core_api/src/model/date.dart';
 
 import 'package:core_api/src/model/admin_assign_dto.dart';
 import 'package:core_api/src/model/admin_board_dto_output.dart';
+import 'package:core_api/src/model/admin_cities_dto_output.dart';
+import 'package:core_api/src/model/admin_cities_dto_output_cities_inner.dart';
 import 'package:core_api/src/model/admin_confirm_pickup_dto.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order.dart';
@@ -266,6 +268,8 @@ part 'serializers.g.dart';
 @SerializersFor([
   AdminAssignDto,
   AdminBoardDtoOutput,
+  AdminCitiesDtoOutput,
+  AdminCitiesDtoOutputCitiesInner,
   AdminConfirmPickupDto,
   AdminDispatchStateDtoOutput,
   AdminDispatchStateDtoOutputOrder,
@@ -722,6 +726,12 @@ Serializers serializers =
               FullType(MerchantPickupDisputeDtoReceivedLinesInner),
             ]),
             () => ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCitiesDtoOutputCitiesInner),
+            ]),
+            () => ListBuilder<AdminCitiesDtoOutputCitiesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

@@ -53,6 +53,14 @@ const from = { latitude: 36.5866, longitude: 37.0463 };
 const to = { latitude: 36.5901, longitude: 37.0518 };
 const system = { editor: 'system', context: { ipAddress: null, device: null } } as const;
 
+describe('GeoService.activeCities (AP §7.2)', () => {
+  it('lists the active cities with their clock, Azaz from the first migration', async () => {
+    await expect(geo.activeCities()).resolves.toEqual([
+      { id: expect.any(String), code: 'AZ', name: 'أعزاز', timeZone: 'Asia/Damascus' },
+    ]);
+  });
+});
+
 describe('GeoService.distance', () => {
   it('asks the routing service by default (pricing.distance_method road)', async () => {
     await expect(geo.distance(from, to, { vehicle: 'motorbike' })).resolves.toEqual({
