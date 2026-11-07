@@ -5,6 +5,8 @@ import 'package:core_storage/core_storage.dart';
 import 'package:customer/src/api.dart';
 import 'package:customer/src/app.dart';
 import 'package:customer/src/auth.dart';
+import 'package:customer/src/device.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -34,6 +36,7 @@ class TestApp {
 
   final server = FakeServer();
   final secure = MemorySecureStore();
+  final device = MemoryDeviceStore();
   final List<Override> overrides;
   late final ProviderContainer container;
 
@@ -51,6 +54,10 @@ class TestApp {
   ]);
 
   Future<void> pump(WidgetTester tester) async {
+    // A tall phone, so a sheet's last button is on screen.
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     container = ProviderContainer(
       overrides: [
         authApiProvider.overrideWithValue(server.client()),
@@ -60,6 +67,7 @@ class TestApp {
           return api;
         }),
         customerAuth.store.overrideWithValue(secure),
+        deviceStoreProvider.overrideWithValue(device),
         ...overrides,
       ],
       retry: (retryCount, error) => null,

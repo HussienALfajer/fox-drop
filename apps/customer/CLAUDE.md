@@ -6,7 +6,8 @@ The customer app «تطبيق الزبون» (Android, iOS), a Flutter app in th
 
 - `lib/main.dart`: starts App Check (`startAppCheck`, `packages/core_auth/CLAUDE.md`), then runs the app inside a Riverpod `ProviderScope` that gives the scope its token source.
 - `lib/src/app.dart`: `MaterialApp.router`, fixed to Arabic. `lib/src/router.dart`: the go_router routes, as a provider.
-- `lib/src/api.dart`: the API client providers and the server address. `lib/src/auth.dart`: the app's `AuthScope` (`packages/core_auth/CLAUDE.md`). One screen per file next to them, until a feature needs a folder.
+- `lib/src/api.dart`: the API client providers and the server address. `lib/src/auth.dart`: the app's `AuthScope` (`packages/core_auth/CLAUDE.md`). `lib/src/device.dart` (customer): the device store, the clock and the app version. One screen per file next to them, until a feature needs a folder.
+- Feature folders (customer, slice 1.14d): `profile/`, `location/`, `browsing/`, `cart/`, `checkout/`, `orders/`. Each keeps its logic (providers, notifiers, pure functions such as `ItemChoice` or `problemViews`) in plain files and each screen in a `*_screen.dart` or `*_sheet.dart` that only reads that state and calls it (the design stop).
 - `test/`: widget tests, run by `flutter test`.
 - `android/`, `ios/`, `windows/`: written by `flutter create` with the app ID `com.foxdrop.<app>` (owner decision 2026-11-05). Edit them only for a reason, and say it in a comment.
 

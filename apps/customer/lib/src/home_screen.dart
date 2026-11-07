@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'auth.dart';
+import 'browsing/restaurant_list.dart';
+import 'cart/cart.dart';
 import 'location/delivery_point.dart';
 import 'location/position.dart';
 
@@ -29,6 +31,12 @@ class HomeScreen extends ConsumerWidget {
               )
             : Text(l10n.customerAppName),
         actions: [
+          if (ref.watch(cartProvider).value?.cart case final cart?)
+            TextButton(
+              key: const Key('open-cart'),
+              onPressed: () => context.push('/cart'),
+              child: Text(l10n.customerCartCount(cart.lines.length)),
+            ),
           if (signedIn)
             TextButton(
               onPressed: () =>
@@ -55,9 +63,7 @@ class HomeScreen extends ConsumerWidget {
           action: l10n.customerTryAgain,
           onAction: locate,
         ),
-        PointChecked(coverage: PointCoverage.served, :final zoneName) => Center(
-          child: Text(zoneName ?? ''),
-        ),
+        PointChecked(coverage: PointCoverage.served) => const RestaurantList(),
         PointChecked(coverage: PointCoverage.noRestaurants) => _Message(
           text: l10n.customerNoRestaurantsHere,
           action: l10n.customerUseMyLocation,

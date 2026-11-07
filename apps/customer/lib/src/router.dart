@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'auth.dart';
+import 'browsing/restaurant_screen.dart';
+import 'cart/cart_screen.dart';
 import 'home_screen.dart';
 import 'not_found_screen.dart';
 import 'profile/profile.dart';
@@ -67,6 +69,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/sign-in',
         builder: (context, state) => SignInScreen(scope: customerAuth),
       ),
+      GoRoute(
+        path: '/restaurants/:id',
+        builder: (context, state) =>
+            RestaurantScreen(restaurantId: state.pathParameters['id']!),
+      ),
+      GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
       GoRoute(
         path: '/complete-profile',
         builder: (context, state) =>

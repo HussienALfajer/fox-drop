@@ -279,4 +279,195 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get customerTryAgain => 'حاول مجدداً';
+
+  @override
+  String get customerNew => 'جديد';
+
+  @override
+  String customerRating(String rating, int count) {
+    return '$rating ($count)';
+  }
+
+  @override
+  String customerEstimate(int from, int to) {
+    return '$from–$to د';
+  }
+
+  @override
+  String get customerFreeDelivery => 'توصيل مجاني';
+
+  @override
+  String customerDeliveryFeeValue(String amount) {
+    return 'رسوم التوصيل $amount';
+  }
+
+  @override
+  String customerMinimumOrder(String amount) {
+    return 'الحد الأدنى للطلب $amount';
+  }
+
+  @override
+  String customerFreeDeliveryFrom(String amount) {
+    return 'توصيل مجاني للطلبات من $amount فأكثر';
+  }
+
+  @override
+  String get customerRestaurantBusyMode => 'قد يستغرق الطلب وقتاً أطول قليلاً';
+
+  @override
+  String get customerRestaurantBusy => 'المطعم مشغول حالياً، جرّب بعد قليل';
+
+  @override
+  String customerRestaurantPausedFor(String duration) {
+    return 'المطعم متوقف مؤقتاً، يعود خلال $duration';
+  }
+
+  @override
+  String get customerRestaurantPausedSoon => 'المطعم متوقف مؤقتاً، يعود قريباً';
+
+  @override
+  String customerRestaurantOpensAt(String day, String time) {
+    return 'مغلق — يفتح $day $time';
+  }
+
+  @override
+  String customerRestaurantClosedUntil(String date) {
+    return 'مغلق حتى $date';
+  }
+
+  @override
+  String get customerRestaurantClosed => 'مغلق';
+
+  @override
+  String get customerBadgeBusy => 'مشغول';
+
+  @override
+  String get customerBadgePaused => 'متوقف مؤقتاً';
+
+  @override
+  String get customerNotCovered => 'هذا المطعم لا يوصل إلى هذا العنوان';
+
+  @override
+  String get customerSamePrices => 'نفس أسعار المحل';
+
+  @override
+  String get customerSamePricesExplained =>
+      'أسعار هذا المطعم في التطبيق هي نفس أسعاره في المحل. إن وجدت فرقاً فأخبرنا.';
+
+  @override
+  String get customerOk => 'موافق';
+
+  @override
+  String get customerOpeningHours => 'أوقات العمل';
+
+  @override
+  String customerHoursRange(String opens, String closes) {
+    return '$opens – $closes';
+  }
+
+  @override
+  String get customerMenuSearch => 'ابحث في القائمة';
+
+  @override
+  String customerFromPrice(String amount) {
+    return 'من $amount';
+  }
+
+  @override
+  String get customerAvailableTomorrow => 'يتوفر غداً';
+
+  @override
+  String customerAvailableFrom(String time) {
+    return 'متوفر من $time';
+  }
+
+  @override
+  String get customerUnavailable => 'غير متوفر حالياً';
+
+  @override
+  String customerCartCount(int count) {
+    return 'السلة ($count)';
+  }
+
+  @override
+  String get customerRequired => 'إجباري';
+
+  @override
+  String customerChoose(int count) {
+    return 'اختر $count';
+  }
+
+  @override
+  String customerChooseUpTo(int count) {
+    return 'اختر حتى $count';
+  }
+
+  @override
+  String customerChooseBetween(int min, int max) {
+    return 'اختر من $min إلى $max';
+  }
+
+  @override
+  String customerChooseAtLeast(int count) {
+    return 'اختر $count على الأقل';
+  }
+
+  @override
+  String get customerItemNoteHint => 'مثلاً: بدون بصل';
+
+  @override
+  String customerNoteTooLong(int count) {
+    return 'الملاحظة أطول من $count حرفاً';
+  }
+
+  @override
+  String get customerNoPhoneInNote =>
+      'لا تكتب أرقام هواتف في الملاحظة. رقم التواصل يصل إلى الكابتن تلقائياً.';
+
+  @override
+  String customerAddFor(String amount) {
+    return 'أضف — $amount';
+  }
+
+  @override
+  String customerCartOtherRestaurant(String current, String next) {
+    return 'سلتك فيها أصناف من $current. هل تفرغها وتبدأ سلة جديدة من $next؟';
+  }
+
+  @override
+  String get customerNewCart => 'سلة جديدة';
+
+  @override
+  String get customerCancel => 'إلغاء';
+
+  @override
+  String get customerCart => 'السلة';
+
+  @override
+  String get customerCartEmpty => 'سلتك فارغة';
+
+  @override
+  String get customerCartExpired => 'انتهت صلاحية سلتك';
+
+  @override
+  String get customerEdit => 'تعديل';
+
+  @override
+  String get customerRemove => 'حذف';
+
+  @override
+  String get customerContinue => 'متابعة';
+
+  @override
+  String customerBelowMinimumProgress(String amount, String minimum) {
+    return 'أضف $amount لتصل إلى الحد الأدنى ($minimum)';
+  }
+
+  @override
+  String customerFreeDeliveryProgress(String amount) {
+    return 'أضف $amount لتحصل على توصيل مجاني';
+  }
+
+  @override
+  String get customerFreeDeliveryReached => 'توصيلك مجاني';
 }
