@@ -12,6 +12,7 @@ export type RouteAccess =
   | { kind: 'public' }
   | { kind: 'admin_session' }
   | { kind: 'admin_permission'; permission: string }
+  | { kind: 'admin_any_permission'; permissions: string[] }
   | { kind: 'app_session' }
   | { kind: 'optional_app_session' }
   | { kind: 'realtime_proxy' };
@@ -36,6 +37,15 @@ export const SignedIn = () =>
 // An admin route that needs this permission (AP §6.2–6.3).
 export const RequirePermission = (permission: AdminPermission) =>
   SetMetadata(ROUTE_ACCESS, { kind: 'admin_permission', permission } satisfies RouteAccess);
+
+// An admin route that needs any one of these permissions, such as
+// «إعادة إرسال الإشعار» for operations and support (AP §9.3.2). Checked by the
+// guard, before the body is read, so a refusal is always 403.
+export const RequireAnyPermission = (...permissions: AdminPermission[]) =>
+  SetMetadata(ROUTE_ACCESS, {
+    kind: 'admin_any_permission',
+    permissions,
+  } satisfies RouteAccess);
 
 // The session RouteAccessGuard checked for this request.
 export const CurrentAdminSession = createParamDecorator(

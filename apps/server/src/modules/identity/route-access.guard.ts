@@ -80,9 +80,13 @@ export class RouteAccessGuard implements CanActivate {
     const session = token ? await this.sessions.authenticate(token) : null;
     if (!session) throw new UnauthorizedException();
     request.adminSession = session;
+    const held = session.permissions as string[];
+    if (access.kind === 'admin_permission' && !held.includes(access.permission)) {
+      throw new ForbiddenException();
+    }
     if (
-      access.kind === 'admin_permission' &&
-      !(session.permissions as string[]).includes(access.permission)
+      access.kind === 'admin_any_permission' &&
+      !access.permissions.some((permission) => held.includes(permission))
     ) {
       throw new ForbiddenException();
     }

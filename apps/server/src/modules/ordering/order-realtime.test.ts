@@ -5,7 +5,7 @@ import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { Centrifuge, type Subscription } from 'centrifuge';
 import { decodeJwt } from 'jose';
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ApiModule } from '../../api.module.js';
 import { startTestCentrifugo, type TestCentrifugo } from '../../centrifugo/test-centrifugo.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
@@ -37,6 +37,10 @@ import { ResendNotification } from './resend-notification.js';
 // and the outbox relay of the worker publishes the order's events to the
 // restaurant's and the order's channels. The API listens on a real port, so
 // Centrifugo's subscription proxy calls it.
+// Each test waits on Centrifugo and the worker's loops (eventually, up to
+// 10 s a step), so the default 5 s is too short for a full parallel run.
+vi.setConfig({ testTimeout: 30_000 });
+
 let database: TestDatabase;
 let cache: TestValkey;
 let centrifugo: TestCentrifugo;

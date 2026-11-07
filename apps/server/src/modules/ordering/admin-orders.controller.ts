@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Body,
   ConflictException,
-  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -16,7 +15,7 @@ import {
 import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
-import { CurrentAdminSession, RequirePermission, SignedIn } from '../../http/access.js';
+import { CurrentAdminSession, RequireAnyPermission, RequirePermission } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
@@ -338,11 +337,11 @@ export class AdminOrdersController {
   ) {}
 
   // AP §9.3.2 «إعادة إرسال الإشعار», for OWN, OPS and SUP (operations.manage
-  // or operations.compensate): the order's latest push to that party, sent
+  // or operations.compensate, checked by the guard): the order's latest push to that party, sent
   // again. 404 unknown_order; 409 order_state_changed (not active, or no
   // captain), nothing_to_resend.
   @Post(':orderId/resend-notification')
-  @SignedIn()
+  @RequireAnyPermission('operations.manage', 'operations.compensate')
   @HttpCode(200)
   @ZodResponse({ status: 200, type: AdminNotificationResentDto })
   async resendNotification(
@@ -351,12 +350,6 @@ export class AdminOrdersController {
     @CurrentAdminSession() session: AdminSession,
     @Req() request: FastifyRequest,
   ) {
-    if (
-      !session.permissions.includes('operations.manage') &&
-      !session.permissions.includes('operations.compensate')
-    ) {
-      throw new ForbiddenException();
-    }
     try {
       return await this.resends.resend(
         {
