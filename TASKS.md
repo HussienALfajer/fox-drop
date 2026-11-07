@@ -15,9 +15,10 @@ Slice 1.14c, App Check in the apps (`docs/roadmap.md`, Phase 1, slice 1.14; owne
   - [x] The owner's Firebase steps, written for the owner (the `deploy` skill, «App Check»): project, the three staging Android apps, the SHA-256 of each staging key, the Play Integrity API in Google Cloud, Play Integrity verdicts for apps outside Google Play, the GitHub variables and secret.
   - [x] `firebase_app_check` in the apps (`packages/core_auth/CLAUDE.md`, «App Check»): `startAppCheck` in each `main`, Play Integrity in release and the debug provider in debug; `AuthParty.requestCode` sends `X-Firebase-AppCheck`; Windows, iOS and builds without the values send none; tests with a fake token source.
   - [x] CI: the staging APK build passes the Firebase values, warns and builds without App Check while they are missing, fails when only some are set.
-  - [ ] Review; pull request.
+  - [x] Review; pull request (`feat/app-check`).
   - [ ] Blocked on the owner's Firebase steps: `FIREBASE_PROJECT_ID` and `FIREBASE_PROJECT_NUMBER` in `infra/environments/staging.env` (a small pull request), a staging APK from that run signs in, then OWN turns `otp.app_check_required` on and a request without a token answers `403 app_check_failed` (the `deploy` skill, «App Check»).
 
+- **Stopped at (2026-11-07):** the app and CI side is merged; waiting for the owner's Firebase steps (the `deploy` skill, «App Check», steps 1–5), then the project ID and number from the owner for the last plan step. Slice 1.14d can start meanwhile if the owner prefers.
 - **Found in the review:** architecture §14.3 asks for App Check on every request of the captain app; the server checks it on the code requests only (the identity module's `CLAUDE.md`), so the apps send it there only. Extending it is the owner's call, with the captain slices. The Windows restaurant build now carries the Firebase plugins (`firebase_core` and `firebase_app_check` have Windows implementations) though Windows never starts them.
 
 ## Notes from earlier slices
