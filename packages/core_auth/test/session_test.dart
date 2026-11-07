@@ -6,7 +6,7 @@ import 'package:core_storage/core_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'fake_server.dart';
+import 'package:core_auth/testing.dart';
 
 final _now = DateTime.utc(2026, 11, 7, 12);
 
