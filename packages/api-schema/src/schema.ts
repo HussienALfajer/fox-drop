@@ -1556,6 +1556,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminAlertsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/alerts/{alertId}/acknowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminAlertsAcknowledge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/captains": {
         parameters: {
             query?: never;
@@ -3392,8 +3424,8 @@ export interface components {
                     captainArrivedAt: string | null;
                     captainWaitingAlertAt: string | null;
                 };
-                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام», «تسليم بعيد عن العنوان». */
-                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting" | "pickup_disputed" | "away_from_address")[];
+                /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
+                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address")[];
             };
         };
         AdminRecordArrivalDto: {
@@ -3526,8 +3558,8 @@ export interface components {
                     captainArrivedAt: string | null;
                     captainWaitingAlertAt: string | null;
                 };
-                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام», «تسليم بعيد عن العنوان». */
-                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting" | "pickup_disputed" | "away_from_address")[];
+                /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
+                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address")[];
             }[];
         };
         AdminOrderDto_Output: {
@@ -3594,8 +3626,8 @@ export interface components {
                     captainArrivedAt: string | null;
                     captainWaitingAlertAt: string | null;
                 };
-                /** @description AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام», «تسليم بعيد عن العنوان». */
-                alerts: ("restaurant_not_accepted" | "prep_late" | "no_captain" | "no_captain_after_ready" | "captain_waiting" | "pickup_disputed" | "away_from_address")[];
+                /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
+                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address")[];
                 promisedAt: string | null;
                 acceptance: {
                     /** Format: date-time */
@@ -4611,6 +4643,74 @@ export interface components {
             token: string;
             /** Format: date-time */
             expiresAt: string;
+        };
+        AdminAlertsDto_Output: {
+            alerts: {
+                /** Format: uuid */
+                id: string;
+                /**
+                 * @description The rule of AP §9.1.3.
+                 * @enum {string}
+                 */
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address";
+                /**
+                 * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
+                 * @enum {string}
+                 */
+                severity: "critical" | "warning" | "information";
+                /** @enum {string} */
+                subjectType: "order" | "captain" | "otp_pool" | "otp_number";
+                /** @description The order, captain or sending number it is about. */
+                subjectId: string;
+                /** @description For an alert about an order. */
+                orderNumber: string | null;
+                /** @description For an alert about a captain. */
+                captainName: string | null;
+                /** Format: date-time */
+                raisedAt: string;
+                /** @description «استلام»: who took it, which every recipient sees. */
+                acknowledged: {
+                    /** Format: date-time */
+                    at: string;
+                    /** Format: uuid */
+                    byId: string;
+                    byName: string | null;
+                } | null;
+                resolvedAt: string | null;
+            }[];
+        };
+        AdminAlertDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description The rule of AP §9.1.3.
+             * @enum {string}
+             */
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address";
+            /**
+             * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
+             * @enum {string}
+             */
+            severity: "critical" | "warning" | "information";
+            /** @enum {string} */
+            subjectType: "order" | "captain" | "otp_pool" | "otp_number";
+            /** @description The order, captain or sending number it is about. */
+            subjectId: string;
+            /** @description For an alert about an order. */
+            orderNumber: string | null;
+            /** @description For an alert about a captain. */
+            captainName: string | null;
+            /** Format: date-time */
+            raisedAt: string;
+            /** @description «استلام»: who took it, which every recipient sees. */
+            acknowledged: {
+                /** Format: date-time */
+                at: string;
+                /** Format: uuid */
+                byId: string;
+                byName: string | null;
+            } | null;
+            resolvedAt: string | null;
         };
         AdminPickerDto_Output: {
             /** @description Every online captain of the city, nearest to the restaurant first (AP §9.3.2). */
@@ -7132,6 +7232,52 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RealtimeTokenDto_Output"];
+                };
+            };
+        };
+    };
+    adminAlertsList: {
+        parameters: {
+            query: {
+                cityId: string;
+                /** @description open: the alerts list (AP §9.1.3); closed: the latest 100 of the history. */
+                state?: "open" | "closed";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAlertsDto_Output"];
+                };
+            };
+        };
+    };
+    adminAlertsAcknowledge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                alertId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAlertDto_Output"];
                 };
             };
         };

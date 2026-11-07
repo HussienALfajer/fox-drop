@@ -16,6 +16,10 @@ export 'package:core_api/src/api/customer_api.dart';
 export 'package:core_api/src/api/merchant_api.dart';
 
 export 'package:core_api/src/model/add_reason_dto.dart';
+export 'package:core_api/src/model/admin_alert_dto_output.dart';
+export 'package:core_api/src/model/admin_alerts_dto_output.dart';
+export 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner.dart';
+export 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_acknowledged.dart';
 export 'package:core_api/src/model/admin_assign_dto.dart';
 export 'package:core_api/src/model/admin_board_dto_output.dart';
 export 'package:core_api/src/model/admin_cities_dto_output.dart';

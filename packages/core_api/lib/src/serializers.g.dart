@@ -10,6 +10,16 @@ Serializers _$serializers =
     (Serializers().toBuilder()
           ..add(AddReasonDto.serializer)
           ..add(AddReasonDtoNoteEnum.serializer)
+          ..add(AdminAlertDtoOutput.serializer)
+          ..add(AdminAlertDtoOutputCodeEnum.serializer)
+          ..add(AdminAlertDtoOutputSeverityEnum.serializer)
+          ..add(AdminAlertDtoOutputSubjectTypeEnum.serializer)
+          ..add(AdminAlertsDtoOutput.serializer)
+          ..add(AdminAlertsDtoOutputAlertsInner.serializer)
+          ..add(AdminAlertsDtoOutputAlertsInnerAcknowledged.serializer)
+          ..add(AdminAlertsDtoOutputAlertsInnerCodeEnum.serializer)
+          ..add(AdminAlertsDtoOutputAlertsInnerSeverityEnum.serializer)
+          ..add(AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum.serializer)
           ..add(AdminAssignDto.serializer)
           ..add(AdminBoardDtoOutput.serializer)
           ..add(AdminCitiesDtoOutput.serializer)
@@ -431,6 +441,12 @@ Serializers _$serializers =
           ..add(UpdateReasonDto.serializer)
           ..add(UpdateReasonDtoNoteEnum.serializer)
           ..add(UpdateSettingDto.serializer)
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminAlertsDtoOutputAlertsInner),
+            ]),
+            () => ListBuilder<AdminAlertsDtoOutputAlertsInner>(),
+          )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(AdminCitiesDtoOutputCitiesInner),

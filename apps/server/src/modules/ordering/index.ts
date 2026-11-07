@@ -22,6 +22,7 @@ import { AdminOrdersController } from './admin-orders.controller.js';
 import { CustomerOrdersController } from './customer-orders.controller.js';
 import { CustomerQuoteController } from './customer-quote.controller.js';
 import { MerchantOrdersController } from './merchant-orders.controller.js';
+import { OrderAlerts, OrderAlertsWorker } from './order-alerts.js';
 import { OrderChannelAccess } from './order-channel.js';
 import { OrderAssignmentsModule } from './order-assignments.js';
 import { OrderCommands } from './order-commands.js';
@@ -79,10 +80,21 @@ import { QuoteService } from './quote.service.js';
 export class OrderingModule {}
 
 // The worker keeps the orders' monthly partitions a month ahead, runs their
-// timers (AP §8.3) and relays the outbox (architecture §5.5).
+// timers (AP §8.3), syncs their alerts (AP §9.1.3) and relays the outbox
+// (architecture §5.5).
 @Module({
-  imports: [DatabaseModule, JobsModule, LedgerModule, NotificationsWorkerModule, ContentModule],
+  imports: [
+    DatabaseModule,
+    JobsModule,
+    LedgerModule,
+    NotificationsWorkerModule,
+    ContentModule,
+    CaptainsModule,
+    SettingsModule,
+  ],
   providers: [
+    OrderAlerts,
+    OrderAlertsWorker,
     OrderPartitions,
     OrderTimers,
     OrderTimersWorker,

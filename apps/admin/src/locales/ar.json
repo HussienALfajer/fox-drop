@@ -74,6 +74,29 @@
       "reasonMissing": "اكتب سبب إصدار الرمز."
     }
   },
+  "alerts": {
+    "title": "التنبيهات",
+    "bell": "التنبيهات: {{count}}",
+    "enableSound": "اضغط لتفعيل صوت التنبيهات",
+    "empty": "لا توجد تنبيهات مفتوحة",
+    "history": "سجل التنبيهات",
+    "historyEmpty": "لا توجد تنبيهات مغلقة بعد",
+    "severity": {
+      "critical": "حرج",
+      "warning": "تحذير",
+      "information": "معلومة"
+    },
+    "acknowledge": "استلام",
+    "takenBy": "استلمه {{name}} {{time}}",
+    "takenByUnnamed": "استُلم {{time}}",
+    "raisedAt": "رُفع {{time}}",
+    "resolvedAt": "أُغلق {{time}}",
+    "order": "الطلب #{{number}}",
+    "openOrder": "فتح الطلب",
+    "captain": "الكابتن {{name}}",
+    "notificationTitle": "تنبيه حرج: {{label}}",
+    "failed": "تعذّر تحميل التنبيهات"
+  },
   "board": {
     "title": "غرفة العمليات",
     "city": "المدينة",
@@ -127,7 +150,13 @@
       "noCaptainAfterReady": "جاهز بلا كابتن",
       "captainWaiting": "كابتن ينتظر عند المطعم",
       "pickupDisputed": "خلاف على مبلغ الاستلام",
-      "awayFromAddress": "تسليم بعيد عن العنوان"
+      "awayFromAddress": "تسليم بعيد عن العنوان",
+      "captainGpsLost": "انقطع اتصال كابتن أثناء طلب",
+      "deliveryLate": "توصيل متأخر",
+      "collectionShortfall": "نقص في التحصيل",
+      "captainCashLimit": "كابتن بلغ حد العهدة",
+      "codesCannotSend": "لا يمكن إرسال رموز الدخول",
+      "codeNumberStopped": "رقم إرسال الرموز متوقف"
     },
     "badge": {
       "needsAssignment": "بحاجة لتعيين",

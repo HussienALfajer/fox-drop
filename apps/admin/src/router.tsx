@@ -11,6 +11,9 @@ import { OPERATIONS_MANAGE } from './assign-captain.js';
 import { AssignCaptainPage } from './assign-captain-page.js';
 import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
 import { EmergencyCodePage } from './emergency-code-page.js';
+import { receivesAlerts } from './alerts.js';
+import { AlertsMonitor } from './alerts-monitor.js';
+import { AlertsPage } from './alerts-page.js';
 import { HomePage } from './home-page.js';
 import { OrderDetailPage } from './order-detail-page.js';
 import { OPERATIONS_READ } from './orders-board.js';
@@ -63,8 +66,20 @@ const signedInRoute = createRoute({
     if (!session) throw redirect({ to: '/sign-in' });
     return { session };
   },
-  component: Outlet,
+  component: SignedInLayout,
 });
+
+// AP §7.3: a recipient of alerts hears them on every page.
+function SignedInLayout() {
+  const { session } = signedInRoute.useRouteContext();
+  return receivesAlerts(session) ? (
+    <AlertsMonitor>
+      <Outlet />
+    </AlertsMonitor>
+  ) : (
+    <Outlet />
+  );
+}
 
 const homeRoute = createRoute({
   getParentRoute: () => signedInRoute,
@@ -113,6 +128,15 @@ const assignRoute = createRoute({
   component: AssignCaptainPage,
 });
 
+// AP §9.1.3: the alerts list. Any signed-in user may open it; the server
+// answers the alerts the session's roles receive.
+const alertsRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/alerts',
+  validateSearch: citySearch,
+  component: AlertsPage,
+});
+
 // AP §9.13 «المحتوى»: OWN and OPS (content.read), SUP for the FAQs.
 const contentRoute = createRoute({
   getParentRoute: () => signedInRoute,
@@ -132,6 +156,7 @@ const routeTree = rootRoute.addChildren([
     homeRoute,
     emergencyCodeRoute,
     contentRoute,
+    alertsRoute,
     ordersRoute.addChildren([orderRoute.addChildren([assignRoute])]),
   ]),
 ]);

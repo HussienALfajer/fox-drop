@@ -144,20 +144,29 @@ const AdminOrderCardDtoOutputOrderAlertsEnum
 _$adminOrderCardDtoOutputOrderAlertsEnum_restaurantNotAccepted =
     const AdminOrderCardDtoOutputOrderAlertsEnum._('restaurantNotAccepted');
 const AdminOrderCardDtoOutputOrderAlertsEnum
-_$adminOrderCardDtoOutputOrderAlertsEnum_prepLate =
-    const AdminOrderCardDtoOutputOrderAlertsEnum._('prepLate');
-const AdminOrderCardDtoOutputOrderAlertsEnum
 _$adminOrderCardDtoOutputOrderAlertsEnum_noCaptain =
     const AdminOrderCardDtoOutputOrderAlertsEnum._('noCaptain');
 const AdminOrderCardDtoOutputOrderAlertsEnum
 _$adminOrderCardDtoOutputOrderAlertsEnum_noCaptainAfterReady =
     const AdminOrderCardDtoOutputOrderAlertsEnum._('noCaptainAfterReady');
 const AdminOrderCardDtoOutputOrderAlertsEnum
-_$adminOrderCardDtoOutputOrderAlertsEnum_captainWaiting =
-    const AdminOrderCardDtoOutputOrderAlertsEnum._('captainWaiting');
+_$adminOrderCardDtoOutputOrderAlertsEnum_captainGpsLost =
+    const AdminOrderCardDtoOutputOrderAlertsEnum._('captainGpsLost');
 const AdminOrderCardDtoOutputOrderAlertsEnum
 _$adminOrderCardDtoOutputOrderAlertsEnum_pickupDisputed =
     const AdminOrderCardDtoOutputOrderAlertsEnum._('pickupDisputed');
+const AdminOrderCardDtoOutputOrderAlertsEnum
+_$adminOrderCardDtoOutputOrderAlertsEnum_prepLate =
+    const AdminOrderCardDtoOutputOrderAlertsEnum._('prepLate');
+const AdminOrderCardDtoOutputOrderAlertsEnum
+_$adminOrderCardDtoOutputOrderAlertsEnum_captainWaiting =
+    const AdminOrderCardDtoOutputOrderAlertsEnum._('captainWaiting');
+const AdminOrderCardDtoOutputOrderAlertsEnum
+_$adminOrderCardDtoOutputOrderAlertsEnum_deliveryLate =
+    const AdminOrderCardDtoOutputOrderAlertsEnum._('deliveryLate');
+const AdminOrderCardDtoOutputOrderAlertsEnum
+_$adminOrderCardDtoOutputOrderAlertsEnum_collectionShortfall =
+    const AdminOrderCardDtoOutputOrderAlertsEnum._('collectionShortfall');
 const AdminOrderCardDtoOutputOrderAlertsEnum
 _$adminOrderCardDtoOutputOrderAlertsEnum_awayFromAddress =
     const AdminOrderCardDtoOutputOrderAlertsEnum._('awayFromAddress');
@@ -167,16 +176,22 @@ _$adminOrderCardDtoOutputOrderAlertsEnumValueOf(String name) {
   switch (name) {
     case 'restaurantNotAccepted':
       return _$adminOrderCardDtoOutputOrderAlertsEnum_restaurantNotAccepted;
-    case 'prepLate':
-      return _$adminOrderCardDtoOutputOrderAlertsEnum_prepLate;
     case 'noCaptain':
       return _$adminOrderCardDtoOutputOrderAlertsEnum_noCaptain;
     case 'noCaptainAfterReady':
       return _$adminOrderCardDtoOutputOrderAlertsEnum_noCaptainAfterReady;
-    case 'captainWaiting':
-      return _$adminOrderCardDtoOutputOrderAlertsEnum_captainWaiting;
+    case 'captainGpsLost':
+      return _$adminOrderCardDtoOutputOrderAlertsEnum_captainGpsLost;
     case 'pickupDisputed':
       return _$adminOrderCardDtoOutputOrderAlertsEnum_pickupDisputed;
+    case 'prepLate':
+      return _$adminOrderCardDtoOutputOrderAlertsEnum_prepLate;
+    case 'captainWaiting':
+      return _$adminOrderCardDtoOutputOrderAlertsEnum_captainWaiting;
+    case 'deliveryLate':
+      return _$adminOrderCardDtoOutputOrderAlertsEnum_deliveryLate;
+    case 'collectionShortfall':
+      return _$adminOrderCardDtoOutputOrderAlertsEnum_collectionShortfall;
     case 'awayFromAddress':
       return _$adminOrderCardDtoOutputOrderAlertsEnum_awayFromAddress;
     default:
@@ -189,11 +204,14 @@ _$adminOrderCardDtoOutputOrderAlertsEnumValues =
     BuiltSet<AdminOrderCardDtoOutputOrderAlertsEnum>(
       const <AdminOrderCardDtoOutputOrderAlertsEnum>[
         _$adminOrderCardDtoOutputOrderAlertsEnum_restaurantNotAccepted,
-        _$adminOrderCardDtoOutputOrderAlertsEnum_prepLate,
         _$adminOrderCardDtoOutputOrderAlertsEnum_noCaptain,
         _$adminOrderCardDtoOutputOrderAlertsEnum_noCaptainAfterReady,
-        _$adminOrderCardDtoOutputOrderAlertsEnum_captainWaiting,
+        _$adminOrderCardDtoOutputOrderAlertsEnum_captainGpsLost,
         _$adminOrderCardDtoOutputOrderAlertsEnum_pickupDisputed,
+        _$adminOrderCardDtoOutputOrderAlertsEnum_prepLate,
+        _$adminOrderCardDtoOutputOrderAlertsEnum_captainWaiting,
+        _$adminOrderCardDtoOutputOrderAlertsEnum_deliveryLate,
+        _$adminOrderCardDtoOutputOrderAlertsEnum_collectionShortfall,
         _$adminOrderCardDtoOutputOrderAlertsEnum_awayFromAddress,
       ],
     );
@@ -309,20 +327,26 @@ class _$AdminOrderCardDtoOutputOrderAlertsEnumSerializer
     implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderAlertsEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'restaurantNotAccepted': 'restaurant_not_accepted',
-    'prepLate': 'prep_late',
     'noCaptain': 'no_captain',
     'noCaptainAfterReady': 'no_captain_after_ready',
-    'captainWaiting': 'captain_waiting',
+    'captainGpsLost': 'captain_gps_lost',
     'pickupDisputed': 'pickup_disputed',
+    'prepLate': 'prep_late',
+    'captainWaiting': 'captain_waiting',
+    'deliveryLate': 'delivery_late',
+    'collectionShortfall': 'collection_shortfall',
     'awayFromAddress': 'away_from_address',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
-    'prep_late': 'prepLate',
     'no_captain': 'noCaptain',
     'no_captain_after_ready': 'noCaptainAfterReady',
-    'captain_waiting': 'captainWaiting',
+    'captain_gps_lost': 'captainGpsLost',
     'pickup_disputed': 'pickupDisputed',
+    'prep_late': 'prepLate',
+    'captain_waiting': 'captainWaiting',
+    'delivery_late': 'deliveryLate',
+    'collection_shortfall': 'collectionShortfall',
     'away_from_address': 'awayFromAddress',
   };
 

@@ -325,6 +325,8 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/auth/sign-in': 'public',
   'GET /v1/admin/auth/session': 'session',
   'GET /v1/admin/cities': 'session',
+  'GET /v1/admin/alerts': 'session',
+  'POST /v1/admin/alerts/{alertId}/acknowledge': 'session',
   'POST /v1/admin/auth/sign-out': 'session',
   'GET /v1/admin/team/users': 'admin_team.manage',
   'POST /v1/admin/team/users': 'admin_team.manage',

@@ -22,6 +22,9 @@ export const QUEUES = {
   // AP §8.1, RA §8.10: a pickup request the restaurant did not answer in
   // order.pickup_confirm_timeout_sec.
   pickupAutoConfirm: 'ordering-pickup-auto-confirm',
+  // AP §7.3, §9.1.3: sync an order's alerts, after each transition and at
+  // the next moment one may open.
+  orderAlerts: 'ordering-order-alerts',
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];

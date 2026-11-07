@@ -29,6 +29,7 @@ import {
   linesOfBody,
   paymentLines,
 } from './captain-orders.controller.js';
+import { ORDER_ALERT_CODES } from './order-alerts.js';
 import { OrderCommandRefusedError } from './order-commands.js';
 import { PickupCommands } from './pickup-commands.js';
 import { minor } from './customer-quote.controller.js';
@@ -37,19 +38,9 @@ import { captainTracks, orderOutcomes, orderStatuses } from './schema.js';
 
 const money = z.object({ amount: minor, currency: z.string().length(3) });
 const alerts = z
-  .array(
-    z.enum([
-      'restaurant_not_accepted',
-      'prep_late',
-      'no_captain',
-      'no_captain_after_ready',
-      'captain_waiting',
-      'pickup_disputed',
-      'away_from_address',
-    ]),
-  )
+  .array(z.enum(ORDER_ALERT_CODES))
   .describe(
-    'AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام», «تسليم بعيد عن العنوان».',
+    'AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active.',
   );
 
 const card = z.object({

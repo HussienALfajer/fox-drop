@@ -39,7 +39,7 @@ part 'admin_order_dto_output_order.g.dart';
 /// * [total]
 /// * [badges]
 /// * [moments]
-/// * [alerts] - AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام», «تسليم بعيد عن العنوان».
+/// * [alerts] - AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active.
 /// * [promisedAt]
 /// * [acceptance]
 /// * [readyAt]
@@ -105,10 +105,10 @@ abstract class AdminOrderDtoOutputOrder
   @BuiltValueField(wireName: r'moments')
   AdminOrderCardDtoOutputOrderMoments get moments;
 
-  /// AP §9.1.3, §8.3, past their moment: «مطعم لم يقبل», «تحضير متأخر», «طلب بلا كابتن», no captain after ready, «كابتن ينتظر عند المطعم», «خلاف على مبلغ الاستلام», «تسليم بعيد عن العنوان».
+  /// AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active.
   @BuiltValueField(wireName: r'alerts')
   BuiltList<AdminOrderDtoOutputOrderAlertsEnum> get alerts;
-  // enum alertsEnum {  restaurant_not_accepted,  prep_late,  no_captain,  no_captain_after_ready,  captain_waiting,  pickup_disputed,  away_from_address,  };
+  // enum alertsEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  away_from_address,  };
 
   @BuiltValueField(wireName: r'promisedAt')
   DateTime? get promisedAt;
@@ -748,21 +748,30 @@ class AdminOrderDtoOutputOrderAlertsEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'restaurant_not_accepted')
   static const AdminOrderDtoOutputOrderAlertsEnum restaurantNotAccepted =
       _$adminOrderDtoOutputOrderAlertsEnum_restaurantNotAccepted;
-  @BuiltValueEnumConst(wireName: r'prep_late')
-  static const AdminOrderDtoOutputOrderAlertsEnum prepLate =
-      _$adminOrderDtoOutputOrderAlertsEnum_prepLate;
   @BuiltValueEnumConst(wireName: r'no_captain')
   static const AdminOrderDtoOutputOrderAlertsEnum noCaptain =
       _$adminOrderDtoOutputOrderAlertsEnum_noCaptain;
   @BuiltValueEnumConst(wireName: r'no_captain_after_ready')
   static const AdminOrderDtoOutputOrderAlertsEnum noCaptainAfterReady =
       _$adminOrderDtoOutputOrderAlertsEnum_noCaptainAfterReady;
-  @BuiltValueEnumConst(wireName: r'captain_waiting')
-  static const AdminOrderDtoOutputOrderAlertsEnum captainWaiting =
-      _$adminOrderDtoOutputOrderAlertsEnum_captainWaiting;
+  @BuiltValueEnumConst(wireName: r'captain_gps_lost')
+  static const AdminOrderDtoOutputOrderAlertsEnum captainGpsLost =
+      _$adminOrderDtoOutputOrderAlertsEnum_captainGpsLost;
   @BuiltValueEnumConst(wireName: r'pickup_disputed')
   static const AdminOrderDtoOutputOrderAlertsEnum pickupDisputed =
       _$adminOrderDtoOutputOrderAlertsEnum_pickupDisputed;
+  @BuiltValueEnumConst(wireName: r'prep_late')
+  static const AdminOrderDtoOutputOrderAlertsEnum prepLate =
+      _$adminOrderDtoOutputOrderAlertsEnum_prepLate;
+  @BuiltValueEnumConst(wireName: r'captain_waiting')
+  static const AdminOrderDtoOutputOrderAlertsEnum captainWaiting =
+      _$adminOrderDtoOutputOrderAlertsEnum_captainWaiting;
+  @BuiltValueEnumConst(wireName: r'delivery_late')
+  static const AdminOrderDtoOutputOrderAlertsEnum deliveryLate =
+      _$adminOrderDtoOutputOrderAlertsEnum_deliveryLate;
+  @BuiltValueEnumConst(wireName: r'collection_shortfall')
+  static const AdminOrderDtoOutputOrderAlertsEnum collectionShortfall =
+      _$adminOrderDtoOutputOrderAlertsEnum_collectionShortfall;
   @BuiltValueEnumConst(wireName: r'away_from_address')
   static const AdminOrderDtoOutputOrderAlertsEnum awayFromAddress =
       _$adminOrderDtoOutputOrderAlertsEnum_awayFromAddress;

@@ -1,4 +1,5 @@
 import type { components } from '@fox-drop/api-schema';
+import type { AlertCode } from './alerts.js';
 import type { OrderCard, OrderStatus } from './orders-board.js';
 
 type Vehicle = components['schemas']['AdminPickerDto_Output']['captains'][number]['vehicle'];
@@ -36,7 +37,13 @@ export const alertKeys = {
   captain_waiting: 'order.alert.captainWaiting',
   pickup_disputed: 'order.alert.pickupDisputed',
   away_from_address: 'order.alert.awayFromAddress',
-} as const satisfies Record<OrderCard['alerts'][number], string>;
+  captain_gps_lost: 'order.alert.captainGpsLost',
+  delivery_late: 'order.alert.deliveryLate',
+  collection_shortfall: 'order.alert.collectionShortfall',
+  captain_cash_limit: 'order.alert.captainCashLimit',
+  codes_cannot_send: 'order.alert.codesCannotSend',
+  code_number_stopped: 'order.alert.codeNumberStopped',
+} as const satisfies Record<AlertCode, string>;
 
 export const badgeKeys = {
   needsAssignment: 'order.badge.needsAssignment',

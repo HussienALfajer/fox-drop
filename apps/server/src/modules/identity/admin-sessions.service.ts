@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, gt, isNull } from 'drizzle-orm';
+import { and, eq, gt, inArray, isNull } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditExecutor, type AuditRequestContext, AuditService } from '../audit/index.js';
@@ -184,6 +184,17 @@ export class AdminSessionsService {
       .where(and(eq(adminSessions.accountId, accountId), isNull(adminSessions.endedAt)))
       .returning({ id: adminSessions.id });
     return ended.length;
+  }
+
+  // The names of admin accounts, for who took an alert (AP §7.3); an account
+  // without a name (a first OWN) is left out.
+  async names(accountIds: readonly string[]): Promise<Map<string, string>> {
+    if (accountIds.length === 0) return new Map();
+    const rows = await this.database.db
+      .select({ id: adminAccounts.id, name: adminAccounts.name })
+      .from(adminAccounts)
+      .where(inArray(adminAccounts.id, [...new Set(accountIds)]));
+    return new Map(rows.flatMap((row) => (row.name === null ? [] : [[row.id, row.name] as const])));
   }
 
   // The longest a cookie can still be useful, for its Max-Age.
