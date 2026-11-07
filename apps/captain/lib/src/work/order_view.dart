@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api.dart';
 import '../auth.dart';
+import '../content.dart';
 import 'commands.dart';
 import 'door_payment.dart';
 import 'location.dart';
@@ -318,15 +319,13 @@ class _CustomerBlock extends ConsumerWidget {
   }
 }
 
-/// The reason for an arrival or a delivery away from the pin (K4, C9).
-Future<Reason?> pickAway(BuildContext context) {
-  final l10n = AppLocalizations.of(context);
-  return pickReason(
-    context,
-    title: l10n.captainAwayTitle,
-    reasons: awayReasons,
-    label: l10n.awayText,
-  );
+/// The reason for an arrival or a delivery away from the pin (K4, C9),
+/// from Content's captain_away list; null when dismissed or not loaded.
+Future<Reason?> pickAway(BuildContext context, WidgetRef ref) async {
+  final title = AppLocalizations.of(context).captainAwayTitle;
+  final content = await readContent(context, ref);
+  if (content == null || !context.mounted) return null;
+  return pickReason(context, title: title, reasons: content.away);
 }
 
 /// Step 3 (CA §9.5–9.6): to the customer, then «وصلت», with a reason first
@@ -346,13 +345,13 @@ class _ToCustomer extends ConsumerWidget {
       final commands = ref.read(commandsProvider.notifier);
       Reason? away;
       if (distance != null && distance > order.radii.customerMetres) {
-        away = await pickAway(context);
+        away = await pickAway(context, ref);
         if (away == null) return;
       }
       var notice = await commands.arriveAtCustomer(order.id, away);
       // The server measured farther than the phone did.
       if (notice is TooFar && away == null && context.mounted) {
-        away = await pickAway(context);
+        away = await pickAway(context, ref);
         if (away == null) return;
         notice = await commands.arriveAtCustomer(order.id, away);
       }

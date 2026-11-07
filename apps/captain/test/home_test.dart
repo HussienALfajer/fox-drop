@@ -524,4 +524,72 @@ void main() {
     expect(find.text('تغيّر المبلغ المطلوب إلى 450 ₺'), findsOneWidget);
     await app.done(tester);
   });
+
+  testWidgets('opens the work rules and the FAQ from Content (CA §11.4, §13)', (
+    tester,
+  ) async {
+    final app = TestApp();
+    app.work(availability: [availabilityJson()]);
+    await app.pump(tester);
+    await app.live(tester);
+    await tester.tap(find.text('قواعد العمل'));
+    await app.settle(tester);
+    expect(find.text('العمل حر.'), findsOneWidget);
+    expect(find.text('الخوذة إلزامية.'), findsOneWidget);
+    await tester.tap(find.byType(BackButton));
+    await app.settle(tester);
+    await tester.tap(find.text('الأسئلة الشائعة'));
+    await app.settle(tester);
+    await tester.tap(find.text('متى أستلم أرباحي؟'));
+    await app.settle(tester);
+    expect(find.text('كل يوم خميس.'), findsOneWidget);
+    // Read once for both screens.
+    expect(app.server.to('/v1/captain/content'), hasLength(1));
+    await app.done(tester);
+  });
+
+  testWidgets('reads the lists again when a reason was removed (AP §9.13)', (
+    tester,
+  ) async {
+    final app = TestApp();
+    final atCustomer = orderJson(status: 'arrived', track: 'at_customer');
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [atCustomer],
+    );
+    app.location.fix = fixAt(pin);
+    await app.pump(tester);
+    await app.live(tester);
+    await tester.enterText(find.byKey(const Key('received-TRY')), '400');
+    await tester.pump();
+    app.server.on('/v1/captain/orders/$orderId/deliver', [
+      FakeAnswer(409, {
+        'error': 'shortfall_reason_required',
+        'shortfall': moneyJson('1000'),
+      }),
+      const FakeAnswer(400, {'error': 'unknown_reason'}),
+    ]);
+    await app.tapVisible(tester, find.text('تم التسليم'));
+    await app.settle(tester);
+    expect(app.server.to('/v1/captain/content'), hasLength(1));
+    await app.tapVisible(tester, find.text('خطأ في العد'));
+    await tester.pump();
+    final fresh = contentJson();
+    (fresh['reasons']! as Map)['shortfall'] = [
+      {
+        'code': 'customer_short',
+        'label': 'الزبون لا يملك المبلغ كاملاً',
+        'note': 'none',
+      },
+    ];
+    app.server.on('/v1/captain/content', [FakeAnswer(200, fresh)]);
+    await app.tapVisible(tester, find.text('تم التسليم'));
+    await app.settle(tester);
+    expect(find.text('تغيّرت قائمة الأسباب، اختر السبب من جديد'), findsWidgets);
+    expect(app.server.to('/v1/captain/content'), hasLength(2));
+    expect(find.text('خطأ في العد'), findsNothing);
+    // The shortfall still needs a reason, from the list read again.
+    expect(find.text('الزبون لا يملك المبلغ كاملاً'), findsOneWidget);
+    await app.done(tester);
+  });
 }

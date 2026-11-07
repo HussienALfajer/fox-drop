@@ -4,6 +4,7 @@ import 'package:core_l10n/core_l10n.dart';
 import 'package:core_realtime/core_realtime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'api.dart';
 import 'work/alerts.dart';
@@ -27,7 +28,20 @@ class HomeScreen extends ConsumerWidget {
     final live = ref.watch(workProvider).value;
     final work = live?.value;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.captainAppName)),
+      appBar: AppBar(
+        title: Text(l10n.captainAppName),
+        // CA §11.4: the work rules always one tap away; CA §13: the FAQ.
+        actions: [
+          TextButton(
+            onPressed: () => context.push('/work-rules'),
+            child: Text(l10n.captainWorkRules),
+          ),
+          TextButton(
+            onPressed: () => context.push('/faq'),
+            child: Text(l10n.faqTitle),
+          ),
+        ],
+      ),
       body: WorkLayer(
         live: live,
         child: switch (work) {

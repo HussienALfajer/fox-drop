@@ -8,16 +8,24 @@ part of 'serializers.dart';
 
 Serializers _$serializers =
     (Serializers().toBuilder()
+          ..add(AddReasonDto.serializer)
+          ..add(AddReasonDtoNoteEnum.serializer)
           ..add(AdminAssignDto.serializer)
           ..add(AdminBoardDtoOutput.serializer)
           ..add(AdminCitiesDtoOutput.serializer)
           ..add(AdminCitiesDtoOutputCitiesInner.serializer)
           ..add(AdminConfirmPickupDto.serializer)
+          ..add(AdminContactDtoOutput.serializer)
           ..add(AdminDispatchStateDtoOutput.serializer)
           ..add(AdminDispatchStateDtoOutputOrder.serializer)
           ..add(AdminDispatchStateDtoOutputOrderCaptainTrackEnum.serializer)
           ..add(AdminDispatchStateDtoOutputOrderOffer.serializer)
           ..add(AdminDispatchStateDtoOutputOrderStatusEnum.serializer)
+          ..add(AdminFaqDto.serializer)
+          ..add(AdminFaqDtoItemsInner.serializer)
+          ..add(AdminFaqDtoOutput.serializer)
+          ..add(AdminFaqsDtoOutput.serializer)
+          ..add(AdminFaqsDtoOutputCustomerInner.serializer)
           ..add(AdminOrderCardDtoOutput.serializer)
           ..add(AdminOrderCardDtoOutputOrder.serializer)
           ..add(AdminOrderCardDtoOutputOrderAlertsEnum.serializer)
@@ -38,16 +46,12 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderCustomerAddress.serializer)
           ..add(AdminOrderDtoOutputOrderCustomerArrival.serializer)
           ..add(AdminOrderDtoOutputOrderCustomerArrivalAway.serializer)
-          ..add(
-            AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum.serializer,
-          )
           ..add(AdminOrderDtoOutputOrderDelivery.serializer)
           ..add(AdminOrderDtoOutputOrderDeliveryNetReceived.serializer)
           ..add(AdminOrderDtoOutputOrderDeliveryOutcomeEnum.serializer)
           ..add(AdminOrderDtoOutputOrderDeliveryRecordedBy.serializer)
           ..add(AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum.serializer)
           ..add(AdminOrderDtoOutputOrderDeliveryShortfall.serializer)
-          ..add(AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum.serializer)
           ..add(AdminOrderDtoOutputOrderLinesInner.serializer)
           ..add(AdminOrderDtoOutputOrderLinesInnerOptionsInner.serializer)
           ..add(AdminOrderDtoOutputOrderMoney.serializer)
@@ -73,16 +77,30 @@ Serializers _$serializers =
           ..add(AdminPickerDtoOutputCaptainsInnerCustodyUsage.serializer)
           ..add(AdminPickerDtoOutputCaptainsInnerReasonsEnum.serializer)
           ..add(AdminPickerDtoOutputCaptainsInnerVehicleEnum.serializer)
+          ..add(AdminReasonDtoOutput.serializer)
+          ..add(AdminReasonDtoOutputNoteEnum.serializer)
+          ..add(AdminReasonListsDtoOutput.serializer)
+          ..add(AdminReasonListsDtoOutputListsInner.serializer)
+          ..add(AdminReasonListsDtoOutputListsInnerAppsEnum.serializer)
+          ..add(AdminReasonListsDtoOutputListsInnerListEnum.serializer)
+          ..add(AdminReasonListsDtoOutputListsInnerReasonsInner.serializer)
+          ..add(
+            AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum.serializer,
+          )
+          ..add(AdminReasonOrderDtoOutput.serializer)
           ..add(AdminRecordArrivalDto.serializer)
           ..add(AdminRecordDeliveryDto.serializer)
           ..add(AdminRecordDeliveryDtoAmountDue.serializer)
           ..add(AdminRecordDeliveryDtoReceivedInner.serializer)
           ..add(AdminRecordDeliveryDtoShortfall.serializer)
-          ..add(AdminRecordDeliveryDtoShortfallReasonEnum.serializer)
           ..add(AdminSessionDtoOutput.serializer)
           ..add(AdminShortfallsDtoOutput.serializer)
           ..add(AdminShortfallsDtoOutputShortfallsInner.serializer)
-          ..add(AdminShortfallsDtoOutputShortfallsInnerReasonEnum.serializer)
+          ..add(AdminTextsDtoOutput.serializer)
+          ..add(AdminTextsDtoOutputContact.serializer)
+          ..add(AdminUpdateContactDto.serializer)
+          ..add(AdminWorkRulesDto.serializer)
+          ..add(AdminWorkRulesDtoOutput.serializer)
           ..add(BackupCodesDtoOutput.serializer)
           ..add(CaptainActiveOrderDtoOutput.serializer)
           ..add(CaptainActiveOrderDtoOutputOrder.serializer)
@@ -92,10 +110,6 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputOrderCustomer.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderCustomerAddress.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderCustomerArrival.serializer)
-          ..add(
-            CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-                .serializer,
-          )
           ..add(CaptainActiveOrderDtoOutputOrderCustomerLocation.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderLinesInner.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderPickup.serializer)
@@ -115,7 +129,6 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputOrderStatusEnum.serializer)
           ..add(CaptainArriveAtCustomerDto.serializer)
           ..add(CaptainArriveAtCustomerDtoAway.serializer)
-          ..add(CaptainArriveAtCustomerDtoAwayReasonEnum.serializer)
           ..add(CaptainArriveDto.serializer)
           ..add(CaptainArriveDtoLocation.serializer)
           ..add(CaptainAvailabilityDtoOutput.serializer)
@@ -129,6 +142,8 @@ Serializers _$serializers =
           ..add(CaptainCodeRequestDto.serializer)
           ..add(CaptainCodeSentDtoOutput.serializer)
           ..add(CaptainCodeSentDtoOutputChannelEnum.serializer)
+          ..add(CaptainContentDtoOutput.serializer)
+          ..add(CaptainContentDtoOutputReasons.serializer)
           ..add(CaptainCurrentOfferDtoOutput.serializer)
           ..add(CaptainCurrentOfferDtoOutputOffer.serializer)
           ..add(CaptainCurrentOfferDtoOutputOfferCollect.serializer)
@@ -139,7 +154,6 @@ Serializers _$serializers =
           ..add(CaptainCurrentOfferDtoOutputOfferStatusEnum.serializer)
           ..add(CaptainDeliverDto.serializer)
           ..add(CaptainDeliverDtoAway.serializer)
-          ..add(CaptainDeliverDtoAwayReasonEnum.serializer)
           ..add(CaptainDeliverySummaryDtoOutput.serializer)
           ..add(CaptainDeliverySummaryDtoOutputSummary.serializer)
           ..add(CaptainDeliverySummaryDtoOutputSummaryCustodyChange.serializer)
@@ -211,6 +225,8 @@ Serializers _$serializers =
           ..add(CustomerCodeRequestDto.serializer)
           ..add(CustomerCodeSentDtoOutput.serializer)
           ..add(CustomerCodeSentDtoOutputChannelEnum.serializer)
+          ..add(CustomerContentDtoOutput.serializer)
+          ..add(CustomerContentDtoOutputReasons.serializer)
           ..add(CustomerLocationDtoOutput.serializer)
           ..add(CustomerLocationDtoOutputStateEnum.serializer)
           ..add(CustomerLocationDtoOutputZone.serializer)
@@ -300,6 +316,16 @@ Serializers _$serializers =
           ..add(MerchantCodeRequestDtoPlatformEnum.serializer)
           ..add(MerchantCodeSentDtoOutput.serializer)
           ..add(MerchantCodeSentDtoOutputChannelEnum.serializer)
+          ..add(MerchantContentDtoOutput.serializer)
+          ..add(MerchantContentDtoOutputFaqInner.serializer)
+          ..add(MerchantContentDtoOutputReasons.serializer)
+          ..add(
+            MerchantContentDtoOutputReasonsMerchantRejectionInner.serializer,
+          )
+          ..add(
+            MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum
+                .serializer,
+          )
           ..add(MerchantDeviceDto.serializer)
           ..add(MerchantDeviceDtoPlatformEnum.serializer)
           ..add(MerchantDeviceSavedDtoOutput.serializer)
@@ -364,6 +390,7 @@ Serializers _$serializers =
           ..add(MerchantSignedOutDtoOutputStatusEnum.serializer)
           ..add(MerchantTokensDtoOutput.serializer)
           ..add(RealtimeTokenDtoOutput.serializer)
+          ..add(ReorderDto.serializer)
           ..add(ResetSettingDto.serializer)
           ..add(RoleMatrixDtoOutput.serializer)
           ..add(RoleMatrixDtoOutputRolesInner.serializer)
@@ -401,12 +428,44 @@ Serializers _$serializers =
           ..add(TeamUsersDtoOutputUsersInnerOpenSessionsInner.serializer)
           ..add(TeamUsersDtoOutputUsersInnerStatusEnum.serializer)
           ..add(TotpEnrolmentDtoOutput.serializer)
+          ..add(UpdateReasonDto.serializer)
+          ..add(UpdateReasonDtoNoteEnum.serializer)
           ..add(UpdateSettingDto.serializer)
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(AdminCitiesDtoOutputCitiesInner),
             ]),
             () => ListBuilder<AdminCitiesDtoOutputCitiesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminFaqDtoItemsInner),
+            ]),
+            () => ListBuilder<AdminFaqDtoItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminFaqsDtoOutputCustomerInner),
+            ]),
+            () => ListBuilder<AdminFaqsDtoOutputCustomerInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminFaqsDtoOutputCustomerInner),
+            ]),
+            () => ListBuilder<AdminFaqsDtoOutputCustomerInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminFaqsDtoOutputCustomerInner),
+            ]),
+            () => ListBuilder<AdminFaqsDtoOutputCustomerInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminFaqsDtoOutputCustomerInner),
+            ]),
+            () => ListBuilder<AdminFaqsDtoOutputCustomerInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -461,6 +520,32 @@ Serializers _$serializers =
               const FullType(AdminPickerDtoOutputCaptainsInnerReasonsEnum),
             ]),
             () => ListBuilder<AdminPickerDtoOutputCaptainsInnerReasonsEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminReasonListsDtoOutputListsInner),
+            ]),
+            () => ListBuilder<AdminReasonListsDtoOutputListsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminReasonListsDtoOutputListsInnerAppsEnum),
+            ]),
+            () => ListBuilder<AdminReasonListsDtoOutputListsInnerAppsEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminReasonListsDtoOutputListsInnerReasonsInner),
+            ]),
+            () =>
+                ListBuilder<AdminReasonListsDtoOutputListsInnerReasonsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminReasonListsDtoOutputListsInnerReasonsInner),
+            ]),
+            () =>
+                ListBuilder<AdminReasonListsDtoOutputListsInnerReasonsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -706,6 +791,233 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(MerchantContentDtoOutputFaqInner),
+            ]),
+            () => ListBuilder<MerchantContentDtoOutputFaqInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantContentDtoOutputFaqInner),
+            ]),
+            () => ListBuilder<MerchantContentDtoOutputFaqInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantContentDtoOutputFaqInner),
+            ]),
+            () => ListBuilder<MerchantContentDtoOutputFaqInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantContentDtoOutputReasonsMerchantRejectionInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantContentDtoOutputReasonsMerchantRejectionInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(MerchantMenuDtoOutputCategoriesInner),
             ]),
             () => ListBuilder<MerchantMenuDtoOutputCategoriesInner>(),
@@ -837,6 +1149,10 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

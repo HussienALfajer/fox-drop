@@ -238,6 +238,23 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets('a preset note from Content goes into the note (CU §10.3)', (
+    tester,
+  ) async {
+    final app = await _checkout(
+      tester,
+      before: (app) =>
+          app.server.on('/v1/customer/orders', [FakeAnswer(201, _order())]),
+    );
+    await _fillAddress(tester);
+    await tester.ensureVisible(find.text('اتصل بي عند الوصول'));
+    await tester.tap(find.text('اتصل بي عند الوصول'));
+    await tester.pump();
+    await _confirm(tester);
+    expect(app.bodyOf('/v1/customer/orders')['note'], 'اتصل بي عند الوصول');
+    await app.done(tester);
+  });
+
   testWidgets('checks the address and the note before sending', (tester) async {
     final app = await _checkout(tester);
     await tester.enterText(

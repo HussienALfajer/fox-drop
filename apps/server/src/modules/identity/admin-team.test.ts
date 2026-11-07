@@ -292,7 +292,13 @@ describe('roles and permissions as data (AP §6.1–6.3)', () => {
 // and the list with any setting (OWN, OPS for dispatch.mode, FIN for the
 // currencies). An app route needs the app's bearer token, which no admin has.
 type Access =
-  'public' | 'session' | 'app_session' | 'undeclared' | AdminPermission | { editRoles: string[] };
+  | 'public'
+  | 'session'
+  | 'app_session'
+  | 'undeclared'
+  | AdminPermission
+  | { editRoles: string[] }
+  | { anyOf: AdminPermission[] };
 const settingRoles = { editRoles: ['OWN', 'OPS'] };
 const routeAccess: Record<string, Access> = {
   'GET /v1/admin/status': 'public',
@@ -302,6 +308,18 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/merchant/contact': 'public',
   'GET /v1/captain/contact': 'public',
   'GET /v1/customer/contact': 'public',
+  'GET /v1/merchant/content': 'public',
+  'GET /v1/captain/content': 'public',
+  'GET /v1/customer/content': 'public',
+  'GET /v1/admin/content/reasons': 'content.read',
+  'POST /v1/admin/content/reasons/{list}': 'content.manage',
+  'PUT /v1/admin/content/reasons/{list}/{code}': 'content.manage',
+  'POST /v1/admin/content/reasons/{list}/order': 'content.manage',
+  'GET /v1/admin/content/faqs': { anyOf: ['content.read', 'content.faqs'] },
+  'PUT /v1/admin/content/faqs/{audience}': 'content.faqs',
+  'GET /v1/admin/content/texts': 'content.read',
+  'PUT /v1/admin/content/work-rules': 'content.manage',
+  'PUT /v1/admin/content/contact': 'content.manage',
   'POST /v1/admin/auth/setup/totp': 'public',
   'POST /v1/admin/auth/setup/complete': 'public',
   'POST /v1/admin/auth/sign-in': 'public',
@@ -460,7 +478,11 @@ describe('every route with every role (architecture §15.2, AP §14 item 2)', ()
               : !roles || access === 'app_session'
                 ? '401'
                 : typeof access === 'object'
-                  ? roles.some((role) => access.editRoles.includes(role))
+                  ? (
+                      'anyOf' in access
+                        ? access.anyOf.some((permission) => permissions.includes(permission))
+                        : roles.some((role) => access.editRoles.includes(role))
+                    )
                     ? 'through'
                     : '403'
                   : access === 'session' || permissions.includes(access)

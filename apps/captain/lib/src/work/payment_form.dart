@@ -2,6 +2,7 @@ import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../content.dart';
 import 'commands.dart';
 import 'door_payment.dart';
 import 'location.dart';
@@ -26,7 +27,7 @@ class PaymentForm extends ConsumerStatefulWidget {
 class _PaymentFormState extends ConsumerState<PaymentForm> {
   final _received = <String, TextEditingController>{};
   final _change = <String, TextEditingController>{};
-  String? _shortReason;
+  ReasonChoice? _shortReason;
   final _shortNote = TextEditingController();
 
   /// The server's answer to the last «تم التسليم», when it refused.
@@ -124,11 +125,14 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
     final needsReason = _refused is ShortfallReasonRequired;
     final reason = needsReason && _shortReason != null
         ? Reason(
-            _shortReason!,
-            _shortReason == 'other' ? _shortNote.text.trim() : null,
+            _shortReason!.code,
+            _shortReason!.takesNote && _shortNote.text.trim().isNotEmpty
+                ? _shortNote.text.trim()
+                : null,
           )
         : null;
-    if (needsReason && (reason == null || reason.note?.isEmpty == true)) {
+    if (needsReason &&
+        (reason == null || (_shortReason!.needsNote && reason.note == null))) {
       setState(() => _reasonMissing = true);
       return;
     }
@@ -146,7 +150,7 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
     if (!covered &&
         distance != null &&
         distance > _order.radii.customerMetres) {
-      away = await pickAway(context);
+      away = await pickAway(context, ref);
       if (away == null) return;
     }
     DoorPayment payment() => DoorPayment(
@@ -157,11 +161,18 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
     );
     var notice = await commands.deliver(_order.id, payment(), away);
     if (notice is TooFar && away == null && mounted) {
-      away = await pickAway(context);
+      away = await pickAway(context, ref);
       if (away == null) return;
       notice = await commands.deliver(_order.id, payment(), away);
     }
     if (!mounted) return;
+    if (notice is ReasonChanged) {
+      // The list was read again: the captain chooses from it, and the
+      // shortfall the server asked a reason for still stands.
+      setState(() => _shortReason = null);
+      showNotice(context, notice);
+      return;
+    }
     setState(() => _refused = notice);
   }
 
@@ -229,20 +240,32 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
         if (_invalid) Text(l10n.captainInvalidAmount),
         if (shortfall != null) ...[
           Text(l10n.captainShortBy(l10n.moneyOf(shortfall))),
-          RadioGroup<String>(
-            groupValue: _shortReason,
-            onChanged: (value) => setState(() => _shortReason = value),
-            child: Column(
-              children: [
-                for (final reason in shortfallReasons)
-                  RadioListTile<String>(
-                    value: reason,
-                    title: Text(l10n.shortfallText(reason)),
-                  ),
-              ],
+          // K16, from Content's shortfall list.
+          switch (ref.watch(contentProvider)) {
+            AsyncData(value: final content) => RadioGroup<String>(
+              groupValue: _shortReason?.code,
+              onChanged: (code) => setState(
+                () => _shortReason = content.shortfall.firstWhere(
+                  (reason) => reason.code == code,
+                ),
+              ),
+              child: Column(
+                children: [
+                  for (final reason in content.shortfall)
+                    RadioListTile<String>(
+                      value: reason.code,
+                      title: Text(reason.label),
+                    ),
+                ],
+              ),
             ),
-          ),
-          if (_shortReason == 'other')
+            AsyncError() => TextButton(
+              onPressed: () => ref.invalidate(contentProvider),
+              child: Text(l10n.contentFailed),
+            ),
+            _ => const LinearProgressIndicator(),
+          },
+          if (_shortReason?.takesNote == true)
             TextField(
               key: const Key('shortfall-note'),
               controller: _shortNote,

@@ -15,6 +15,8 @@ import { HomePage } from './home-page.js';
 import { OrderDetailPage } from './order-detail-page.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { OrdersBoardPage } from './orders-board-page.js';
+import { CONTENT_FAQS, CONTENT_READ } from './content.js';
+import { ContentPage } from './content-page.js';
 import { can, sessionQuery } from './session.js';
 import { SetupPage } from './setup-page.js';
 import { SignInPage } from './sign-in-page.js';
@@ -111,12 +113,25 @@ const assignRoute = createRoute({
   component: AssignCaptainPage,
 });
 
+// AP §9.13 «المحتوى»: OWN and OPS (content.read), SUP for the FAQs.
+const contentRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/content',
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, CONTENT_READ) && !can(context.session, CONTENT_FAQS)) {
+      throw redirect({ to: '/' });
+    }
+  },
+  component: ContentPage,
+});
+
 const routeTree = rootRoute.addChildren([
   setupRoute,
   signInRoute,
   signedInRoute.addChildren([
     homeRoute,
     emergencyCodeRoute,
+    contentRoute,
     ordersRoute.addChildren([orderRoute.addChildren([assignRoute])]),
   ]),
 ]);

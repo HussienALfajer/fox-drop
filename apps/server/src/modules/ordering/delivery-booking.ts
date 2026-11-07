@@ -15,10 +15,10 @@ import type { DoorPayment } from './door-payment.js';
 import { type OrderRow, recordTransition } from './order-events.js';
 import { snapshotOf } from './order-views.js';
 import { type PaymentLine, storedLines } from './pickup-booking.js';
-import { type awayReasons, collections, orders, type shortfallReasons } from './schema.js';
+import type { ChosenReason } from '../content/index.js';
+import { collections, orders } from './schema.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
-export type ShortfallReason = (typeof shortfallReasons)[number];
 
 // The order as a delivery reads it under its lock (AP §8.4).
 export interface DeliveryOrder extends OrderRow {
@@ -52,7 +52,8 @@ export interface Delivery {
   received: PaymentLine[];
   change: PaymentLine[];
   payment: DoorPayment;
-  shortfall: { reason: ShortfallReason; note: string | null } | null;
+  // K16, checked against Content's shortfall list.
+  shortfall: ChosenReason | null;
   pay: PayParts;
   waitingMinutes: number;
   // AP §8.4: null on a test restaurant's order, which posts none (AP §9.6.3).
@@ -82,7 +83,7 @@ export class DeliveryBooking {
     delivery: Delivery,
     by: DeliveredBy,
     now: Date,
-    away: { reason: (typeof awayReasons)[number]; note: string | null } | null,
+    away: ChosenReason | null,
   ): Promise<void> {
     if (order.captainId === null) throw new Error(`order ${order.id} has no captain`);
     // AP §8.4: a discount needs platform.discount_cost or
@@ -98,7 +99,9 @@ export class DeliveryBooking {
         captainTrack: 'done',
         deliveredAt: now,
         outcome: 'normal',
-        ...(away ? { awayReason: away.reason, awayNote: away.note } : {}),
+        ...(away
+          ? { awayReason: away.code, awayReasonLabel: away.label, awayNote: away.note }
+          : {}),
       })
       .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
     await tx.insert(collections).values({
@@ -112,7 +115,8 @@ export class DeliveryBooking {
       changeLines: storedLines(delivery.change),
       netReceived: delivery.payment.netBase,
       shortfall: delivery.payment.shortfall,
-      shortfallReason: delivery.shortfall?.reason ?? null,
+      shortfallReason: delivery.shortfall?.code ?? null,
+      shortfallReasonLabel: delivery.shortfall?.label ?? null,
       shortfallNote: delivery.shortfall?.note ?? null,
       basePay: delivery.pay.base,
       distancePay: delivery.pay.distance,

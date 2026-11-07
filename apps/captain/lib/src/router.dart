@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'auth.dart';
+import 'content.dart';
 import 'home_screen.dart';
 import 'not_found_screen.dart';
 import 'starting_screen.dart';
@@ -25,6 +26,11 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+      GoRoute(
+        path: '/work-rules',
+        builder: (context, state) => const WorkRulesScreen(),
+      ),
+      GoRoute(path: '/faq', builder: (context, state) => const FaqScreen()),
       GoRoute(
         path: '/starting',
         builder: (context, state) => const StartingScreen(),

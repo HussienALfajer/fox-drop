@@ -33,13 +33,7 @@ import { OrderCommandRefusedError } from './order-commands.js';
 import { PickupCommands } from './pickup-commands.js';
 import { minor } from './customer-quote.controller.js';
 import { type OperationsOrder, OperationsViews } from './operations-views.js';
-import {
-  awayReasons,
-  captainTracks,
-  orderOutcomes,
-  orderStatuses,
-  shortfallReasons,
-} from './schema.js';
+import { captainTracks, orderOutcomes, orderStatuses } from './schema.js';
 
 const money = z.object({ amount: minor, currency: z.string().length(3) });
 const alerts = z
@@ -119,7 +113,8 @@ class AdminShortfallsDto extends createZodDto(
           amountDue: money,
           netReceived: money,
           shortfall: money,
-          reason: z.enum(shortfallReasons).describe("The captain's reason (K16)."),
+          reason: z.string().describe("The captain's reason (K16), its code in Content."),
+          label: z.string().describe('Its label as chosen.'),
           note: z.string().nullable(),
           recordedAt: z.iso.datetime(),
         }),
@@ -176,7 +171,7 @@ class AdminOrderDto extends createZodDto(
             .object({
               at: z.iso.datetime(),
               away: z
-                .object({ reason: z.enum(awayReasons), note: z.string().nullable() })
+                .object({ reason: z.string(), label: z.string(), note: z.string().nullable() })
                 .nullable()
                 .describe('The reason given beyond captain.customer_radius_m (CA §9.6).'),
             })
@@ -260,7 +255,8 @@ class AdminOrderDto extends createZodDto(
           shortfall: z
             .object({
               amount: money,
-              reason: z.enum(shortfallReasons),
+              reason: z.string().describe('The code in Content.'),
+              label: z.string().describe('Its label as chosen.'),
               note: z.string().nullable(),
             })
             .nullable()
@@ -471,7 +467,12 @@ export class AdminOrdersController {
       if (error.refusal === 'unknown_order') {
         throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: error.refusal });
       }
-      if (error.refusal === 'invalid_lines') {
+      if (
+        error.refusal === 'invalid_lines' ||
+        error.refusal === 'unknown_reason' ||
+        error.refusal === 'reason_note_required' ||
+        error.refusal === 'reason_note_not_allowed'
+      ) {
         throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: error.refusal });
       }
       if (error.refusal === 'idempotency_key_reused') {
@@ -518,6 +519,7 @@ export class AdminOrdersController {
         netReceived: money(each.netReceived, each.currency),
         shortfall: money(each.amount, each.currency),
         reason: each.reason,
+        label: each.label ?? each.reason,
         note: each.note,
         recordedAt: each.recordedAt.toISOString(),
       })),
@@ -634,6 +636,7 @@ export class AdminOrdersController {
               currency: order.currency,
             },
             reason: order.delivery.shortfall.reason,
+            label: order.delivery.shortfall.label,
             note: order.delivery.shortfall.note,
           },
           recordedBy: {

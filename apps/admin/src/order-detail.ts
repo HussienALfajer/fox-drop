@@ -59,7 +59,8 @@ export function actorKey(type: string) {
 }
 
 // The codes the server stores as an event's reason, by event type (the
-// offer's answer, the pickup's outcome, the cancellation, the far arrival);
+// offer's answer, the pickup's outcome, the cancellation); a reason from a
+// Content list shows by its stored label in its own section (AP §9.13);
 // an operator's own reason is free text and shows as written. Any other
 // code stays hidden rather than show an English word.
 const reasonKeysByType = {
@@ -78,11 +79,6 @@ const reasonKeysByType = {
     operations: 'order.reason.byOperations',
   },
   'order.cancelled': { merchant_auto_cancel: 'order.reason.merchantAutoCancel' },
-  'order.arrived_at_customer': {
-    customer_requested_other_place: 'order.reason.customerRequestedOtherPlace',
-    pin_inaccurate: 'order.reason.pinInaccurate',
-    other: 'order.reason.other',
-  },
 } as const;
 
 type ReasonKey = {
@@ -118,20 +114,6 @@ export const outcomeKeys = {
   wrong_refused: 'order.outcome.wrongRefused',
   failed_other: 'order.outcome.failedOther',
 } as const satisfies Record<NonNullable<OrderDetail['delivery']>['outcome'], string>;
-
-export const awayKeys = reasonKeysByType['order.arrived_at_customer'] satisfies Record<
-  NonNullable<NonNullable<OrderDetail['customer']['arrival']>['away']>['reason'],
-  string
->;
-
-export const shortfallKeys = {
-  customer_short: 'order.shortfallReason.customerShort',
-  counting_error: 'order.shortfallReason.countingError',
-  other: 'order.shortfallReason.other',
-} as const satisfies Record<
-  NonNullable<NonNullable<OrderDetail['delivery']>['shortfall']>['reason'],
-  string
->;
 
 export const requestStatusKeys = {
   open: 'order.request.open',

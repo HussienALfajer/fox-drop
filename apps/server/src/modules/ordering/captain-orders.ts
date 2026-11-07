@@ -14,16 +14,16 @@ import { type Point, straightLineMetres } from '../geo/index.js';
 import { CustomerAccountsService, PhoneCipher } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
+import {
+  type ChosenReason,
+  ContentRefusedError,
+  ContentService,
+  type ReasonList,
+} from '../content/index.js';
 import { CAPTAIN_ACTIVE } from './order-assignments.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
 import { lockOrder, type OrderRow, recordTransition } from './order-events.js';
-import {
-  type AwayReason,
-  orderKey,
-  readOrders,
-  snapshotOf,
-  type OrderView,
-} from './order-views.js';
+import { orderKey, readOrders, snapshotOf, type OrderView } from './order-views.js';
 import {
   checkLines,
   lockForPickup,
@@ -38,12 +38,7 @@ import {
   pickupRequestsOf,
 } from './pickup-views.js';
 import { collections, orders, pickupRequests } from './schema.js';
-import {
-  type Delivery,
-  DeliveryBooking,
-  lockForDelivery,
-  type ShortfallReason,
-} from './delivery-booking.js';
+import { type Delivery, DeliveryBooking, lockForDelivery } from './delivery-booking.js';
 import { checkDoorPayment, commission, waitingMinutes } from './door-payment.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
@@ -75,6 +70,11 @@ export type CaptainOrderRefusal =
   | 'overpaid'
   // K16: «المبلغ المقبوض أقل من المطلوب بـ {المبلغ}» needs a reason.
   | 'shortfall_reason_required'
+  // A reason that is not an active one of its Content list, or «أخرى»
+  // without its text, or a text with another reason (AP §9.13).
+  | 'unknown_reason'
+  | 'reason_note_required'
+  | 'reason_note_not_allowed'
   | 'idempotency_key_reused';
 
 // A command on an order that the order or the captain refuses;
@@ -157,7 +157,25 @@ export class CaptainOrders {
     private readonly booking: DeliveryBooking,
     private readonly ledger: LedgerService,
     private readonly fx: FxService,
+    private readonly content: ContentService,
   ) {}
+
+  // A reason checked against its Content list, before the transaction.
+  private async chosen(
+    list: ReasonList,
+    given: { reason: string; note: string | null },
+  ): Promise<ChosenReason> {
+    try {
+      return await this.content.choose(list, { code: given.reason, note: given.note });
+    } catch (error) {
+      if (!(error instanceof ContentRefusedError)) throw error;
+      const refusal =
+        error.refusal === 'reason_note_required' || error.refusal === 'reason_note_not_allowed'
+          ? error.refusal
+          : 'unknown_reason';
+      throw new CaptainOrderRefusedError(refusal, error.message);
+    }
+  }
 
   // CA §9: the order assigned to the captain until it ends, or null (no
   // stacking in V1, AP §9.12.6).
@@ -258,7 +276,7 @@ export class CaptainOrders {
       );
     }
     // Within the radius no reason is needed, and none is kept.
-    const away = far ? command.away : null;
+    const away = far && command.away ? await this.chosen('captain_away', command.away) : null;
     await this.jobs.ready();
     const done = await this.database.db.transaction(async (tx) => {
       const locked = await lockOrder(tx, order.id, order.placedAt);
@@ -275,7 +293,8 @@ export class CaptainOrders {
           version,
           captainTrack: 'at_customer',
           arrivedAtCustomerAt: now,
-          awayReason: away?.reason ?? null,
+          awayReason: away?.code ?? null,
+          awayReasonLabel: away?.label ?? null,
           awayNote: away?.note ?? null,
         })
         .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
@@ -285,7 +304,7 @@ export class CaptainOrders {
         to: 'arrived',
         version,
         actor: { type: 'captain', id: command.captainId, device: command.deviceId },
-        reason: away?.reason ?? null,
+        reason: away?.code ?? null,
         // The customer sees «الكابتن عند الباب» only, never the reason.
         publicReason: null,
         at: now,
@@ -337,7 +356,10 @@ export class CaptainOrders {
       );
     }
     // K4: a reason given at the arrival covers the delivery and is kept.
-    const away = far && order.awayReason === null ? command.away : null;
+    const away =
+      far && order.awayReason === null && command.away
+        ? await this.chosen('captain_away', command.away)
+        : null;
     await this.jobs.ready();
     const done = await this.database.db.transaction(async (tx) => {
       const locked = await lockOrder(tx, order.id, order.placedAt);
@@ -498,7 +520,10 @@ export class CaptainOrders {
       change: collection.change,
       payment,
       // A reason sent without a shortfall is not kept.
-      shortfall: payment.shortfall > 0n ? collection.shortfall : null,
+      shortfall:
+        payment.shortfall > 0n && collection.shortfall
+          ? await this.chosen('shortfall', collection.shortfall)
+          : null,
       pay,
       waitingMinutes: waiting,
       // AP §9.6.3: a test order, flagged at placing, posts no commission.
@@ -939,7 +964,7 @@ type OrderAtStart = {
   rateSnapshot: unknown;
   // The customer's pin, and the reason given at the arrival away from it.
   location: Point;
-  awayReason: AwayReason | null;
+  awayReason: string | null;
 };
 
 // The door payment a delivery records (AP §8.6, CA §9.7): the lines
@@ -949,7 +974,8 @@ export interface DoorCollection {
   received: PaymentLine[];
   change: PaymentLine[];
   amountDue: { amount: bigint; currency: string };
-  shortfall: { reason: ShortfallReason; note: string | null } | null;
+  // K16: the reason's code in Content's shortfall list.
+  shortfall: { reason: string; note: string | null } | null;
 }
 
 function collectionHash(collection: DoorCollection) {
@@ -1004,7 +1030,8 @@ function deliverableByOperations(
 // The reason given away from the customer's pin (CA Appendix C), with its
 // text for «أخرى».
 export interface AwayGiven {
-  reason: AwayReason;
+  // The code in Content's captain_away list.
+  reason: string;
   note: string | null;
 }
 

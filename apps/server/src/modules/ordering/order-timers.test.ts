@@ -224,6 +224,11 @@ describe('the automatic cancellation (AP §8.3)', () => {
       cancel_reason: 'merchant_auto_cancel',
       food_prepared: false,
     });
+    // CU Appendix C: the customer's text, copied from Content.
+    const text = await sql.query('SELECT cancel_customer_text FROM ordering.orders WHERE id = $1', [
+      order.id,
+    ]);
+    expect(text.rows[0].cancel_customer_text).toBe('لم يرد المطعم على طلبك');
     const events = await sql.query(
       'SELECT version, from_status, to_status, actor_type, reason FROM ordering.order_events WHERE order_id = $1 ORDER BY version',
       [order.id],

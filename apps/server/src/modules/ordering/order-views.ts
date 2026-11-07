@@ -5,20 +5,24 @@ import type { Point } from '../geo/index.js';
 import type { CaptainTrack } from './order-events.js';
 import type { QuoteMoney } from './quote.js';
 import {
-  type awayReasons,
   collections,
   type orderOutcomes,
   orderEvents,
   orderLines,
   orders,
   type orderStatuses,
-  type shortfallReasons,
 } from './schema.js';
 
 type OrderStatus = (typeof orderStatuses)[number];
-export type AwayReason = (typeof awayReasons)[number];
 export type OrderOutcome = (typeof orderOutcomes)[number];
-type ShortfallReason = (typeof shortfallReasons)[number];
+
+// A reason as the order keeps it (owner decision 2026-11-07): its code in
+// Content's list, its label as chosen and the text of «أخرى».
+export interface RecordedReason {
+  reason: string;
+  label: string;
+  note: string | null;
+}
 
 // Payment lines as stored in jsonb, their amounts as strings (RA §8.10).
 interface PaymentLine {
@@ -69,7 +73,7 @@ export interface OrderView {
   // CA §9.6: «وصلت» at the customer, and the reason given away from the pin
   // (K4), which also covers the delivery.
   customerArrival: { at: Date } | null;
-  away: { reason: AwayReason; note: string | null } | null;
+  away: RecordedReason | null;
   // AP §8.1, §8.6, CA §9.8: «تم التسليم», its outcome and the door payment
   // recorded (CU §11.8 Q23: «استلم الكابتن» and «أعاد لك»).
   delivery: {
@@ -79,10 +83,11 @@ export interface OrderView {
     change: PaymentLine[];
     netReceived: bigint;
     // «نقص في التحصيل» (AP §8.6), with the captain's reason (K16).
-    shortfall: { amount: bigint; reason: ShortfallReason; note: string | null } | null;
+    shortfall: ({ amount: bigint } & RecordedReason) | null;
     recordedBy: { type: string; id: string; reason: string | null };
   } | null;
-  cancellation: { at: Date; reason: string } | null;
+  // The customer's text for it (CU Appendix C), copied at the cancellation.
+  cancellation: { at: Date; reason: string; customerText: string | null } | null;
   currency: string;
   money: QuoteMoney;
   deliveryFree: boolean;
@@ -145,11 +150,13 @@ export async function readOrders(
       readyByPickup: orders.readyByPickup,
       arrivedAtCustomerAt: orders.arrivedAtCustomerAt,
       awayReason: orders.awayReason,
+      awayReasonLabel: orders.awayReasonLabel,
       awayNote: orders.awayNote,
       deliveredAt: orders.deliveredAt,
       outcome: orders.outcome,
       cancelledAt: orders.cancelledAt,
       cancelReason: orders.cancelReason,
+      cancelCustomerText: orders.cancelCustomerText,
       currency: orders.currency,
       itemsValue: orders.itemsValue,
       deliveryFee: orders.deliveryFee,
@@ -273,7 +280,14 @@ export async function readOrders(
           ? { at: row.pickedUpAt, readyByPickup: row.readyByPickup }
           : null,
       customerArrival: row.arrivedAtCustomerAt && { at: row.arrivedAtCustomerAt },
-      away: row.awayReason && { reason: row.awayReason, note: row.awayNote },
+      // The label is null only on a row a version before Content wrote.
+      away: row.awayReason
+        ? {
+            reason: row.awayReason,
+            label: row.awayReasonLabel ?? row.awayReason,
+            note: row.awayNote,
+          }
+        : null,
       delivery:
         row.deliveredAt && row.outcome && collection
           ? {
@@ -286,6 +300,7 @@ export async function readOrders(
                 ? {
                     amount: collection.shortfall,
                     reason: collection.shortfallReason,
+                    label: collection.shortfallReasonLabel ?? collection.shortfallReason,
                     note: collection.shortfallNote,
                   }
                 : null,
@@ -298,7 +313,11 @@ export async function readOrders(
           : null,
       cancellation:
         row.cancelledAt && row.cancelReason
-          ? { at: row.cancelledAt, reason: row.cancelReason }
+          ? {
+              at: row.cancelledAt,
+              reason: row.cancelReason,
+              customerText: row.cancelCustomerText,
+            }
           : null,
       currency: row.currency,
       money: {

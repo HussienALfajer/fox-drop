@@ -23,22 +23,12 @@ class Money {
 class Reason {
   const Reason(this.reason, [this.note]);
 
-  /// The wire value, such as `pin_inaccurate`.
+  /// The reason's code in its Content list, such as `pin_inaccurate`.
   final String reason;
   final String? note;
 
   String get key => '$reason:${note ?? ''}';
 }
-
-/// Arrival or delivery away from the pin (C9, K4).
-const awayReasons = [
-  'customer_requested_other_place',
-  'pin_inaccurate',
-  'other',
-];
-
-/// Collected less than due (K16).
-const shortfallReasons = ['customer_short', 'counting_error', 'other'];
 
 /// Minor-unit digits of the currencies the server seeds (`core_l10n`'s
 /// table): all three have 2.

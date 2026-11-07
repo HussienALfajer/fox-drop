@@ -55,11 +55,6 @@ export const captainTracks = [
 
 export const addressLabels = ['home', 'work', 'other'] as const;
 
-// CA Appendix C (C9, K4): why the captain arrived or delivered away from the
-// pin: «الزبون طلب مكاناً آخر», «موقع الزبون على الخريطة غير دقيق», «أخرى»
-// (with text).
-export const awayReasons = ['customer_requested_other_place', 'pin_inaccurate', 'other'] as const;
-
 // AP §8.9: every order that ends after pickup gets one.
 export const orderOutcomes = [
   'normal',
@@ -69,10 +64,6 @@ export const orderOutcomes = [
   'wrong_refused',
   'failed_other',
 ] as const;
-
-// CA Appendix C (K16): why the captain collected less than due: «الزبون لا
-// يملك المبلغ كاملاً», «خطأ في العد», «أخرى» (with text).
-export const shortfallReasons = ['customer_short', 'counting_error', 'other'] as const;
 
 // AP §4.8: the order numbers are sequential per city, from 10001 (owner
 // decision 2026-11-06). The row is taken last in the order's transaction, so
@@ -180,7 +171,10 @@ export const orders = ordering.table(
     // (CA Appendix C, K4), which covers the delivery too, with its text for
     // «أخرى»; operations see «تسليم بعيد عن العنوان» (AP §9.1.3).
     arrivedAtCustomerAt: timestamp('arrived_at_customer_at', { withTimezone: true }),
-    awayReason: text('away_reason', { enum: awayReasons }),
+    // The reason's code in Content's captain_away list and its label as
+    // chosen (owner decision 2026-11-07); ContentService checks the choice.
+    awayReason: text('away_reason'),
+    awayReasonLabel: text('away_reason_label'),
     awayNote: text('away_note'),
     // AP §8.1, §8.9: «تم التسليم» and the finished order's outcome; only
     // normal so far (the other outcomes come with «تحديد النتيجة»).
@@ -207,6 +201,9 @@ export const orders = ordering.table(
     // an unanswered order of the restaurant.
     cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
     cancelReason: text('cancel_reason'),
+    // The text the customer sees for it (CU Appendix C), copied from Content
+    // when the order is cancelled.
+    cancelCustomerText: text('cancel_customer_text'),
     foodPrepared: boolean('food_prepared'),
   },
   (table) => [
@@ -267,7 +264,7 @@ export const orders = ordering.table(
     ),
     check(
       'orders_away_reason',
-      sql`(${table.awayReason} IS NULL OR ${table.awayReason} IN ('customer_requested_other_place', 'pin_inaccurate', 'other')) AND (${table.awayNote} IS NOT NULL) = (${table.awayReason} IS NOT DISTINCT FROM 'other') AND char_length(${table.awayNote}) BETWEEN 1 AND 200`,
+      sql`(${table.awayReason} IS NOT NULL OR (${table.awayReasonLabel} IS NULL AND ${table.awayNote} IS NULL)) AND char_length(${table.awayNote}) BETWEEN 1 AND 200`,
     ),
     check(
       'orders_delivery',
@@ -500,7 +497,9 @@ export const collections = ordering.table(
     changeLines: jsonb('change_lines').notNull(),
     netReceived: bigint('net_received', { mode: 'bigint' }).notNull(),
     shortfall: bigint('shortfall', { mode: 'bigint' }).notNull(),
-    shortfallReason: text('shortfall_reason', { enum: shortfallReasons }),
+    // The code in Content's shortfall list and its label as chosen.
+    shortfallReason: text('shortfall_reason'),
+    shortfallReasonLabel: text('shortfall_reason_label'),
     shortfallNote: text('shortfall_note'),
     basePay: bigint('base_pay', { mode: 'bigint' }).notNull(),
     distancePay: bigint('distance_pay', { mode: 'bigint' }).notNull(),
@@ -531,7 +530,7 @@ export const collections = ordering.table(
     ),
     check(
       'collections_shortfall',
-      sql`(${table.shortfall} > 0) = (${table.shortfallReason} IS NOT NULL) AND (${table.shortfallReason} IS NULL OR ${table.shortfallReason} IN ('customer_short', 'counting_error', 'other')) AND (${table.shortfallNote} IS NOT NULL) = (${table.shortfallReason} IS NOT DISTINCT FROM 'other') AND char_length(${table.shortfallNote}) BETWEEN 1 AND 200`,
+      sql`(${table.shortfall} > 0) = (${table.shortfallReason} IS NOT NULL) AND (${table.shortfallReason} IS NOT NULL OR (${table.shortfallReasonLabel} IS NULL AND ${table.shortfallNote} IS NULL)) AND char_length(${table.shortfallNote}) BETWEEN 1 AND 200`,
     ),
     check(
       'collections_recorded_by',

@@ -595,18 +595,6 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get customerNoteCallOnArrival => 'اتصل بي عند الوصول';
-
-  @override
-  String get customerNoteDontKnock => 'لا تطرق الباب';
-
-  @override
-  String get customerNoteSendCutlery => 'أرسلوا أدوات طعام';
-
-  @override
-  String get customerNoteNoCutlery => 'لا أحتاج أدوات طعام';
-
-  @override
   String get customerOrderNote => 'ملاحظة للمطعم والكابتن';
 
   @override
@@ -1049,10 +1037,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerEnjoy => 'بالعافية!';
 
   @override
-  String get customerNoRestaurantResponse => 'لم يرد المطعم على طلبك، نعتذر';
+  String get customerRejected => 'نعتذر، لم يقبل المطعم طلبك';
 
   @override
-  String get customerRejected => 'نعتذر، لم يقبل المطعم طلبك';
+  String get customerNoRestaurantResponse => 'لم يرد المطعم على طلبك، نعتذر';
 
   @override
   String get customerCancelled => 'أُلغي طلبك';
@@ -1362,15 +1350,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get captainAwayTitle => 'أنت بعيد عن موقع الزبون. اختر السبب:';
 
   @override
-  String get captainAwayOtherPlace => 'الزبون طلب مكاناً آخر';
-
-  @override
-  String get captainAwayPinInaccurate => 'موقع الزبون على الخريطة غير دقيق';
-
-  @override
-  String get captainOther => 'أخرى';
-
-  @override
   String get captainOtherHint => 'اكتب السبب';
 
   @override
@@ -1394,12 +1373,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String captainShortBy(String amount) {
     return 'المبلغ المقبوض أقل من المطلوب بـ $amount';
   }
-
-  @override
-  String get captainShortCustomer => 'الزبون لا يملك المبلغ كاملاً';
-
-  @override
-  String get captainShortCounting => 'خطأ في العد';
 
   @override
   String get captainOverpaid => 'سجّل الباقي الذي أعدته للزبون';
@@ -1462,4 +1435,19 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get captainChooseReason => 'اختر السبب';
+
+  @override
+  String get faqTitle => 'الأسئلة الشائعة';
+
+  @override
+  String get faqEmpty => 'لا توجد أسئلة بعد';
+
+  @override
+  String get contentFailed => 'تعذّر التحميل، اضغط لإعادة المحاولة';
+
+  @override
+  String get captainWorkRules => 'قواعد العمل';
+
+  @override
+  String get captainReasonChanged => 'تغيّرت قائمة الأسباب، اختر السبب من جديد';
 }

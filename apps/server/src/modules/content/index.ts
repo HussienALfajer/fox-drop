@@ -1,13 +1,42 @@
 import { Module } from '@nestjs/common';
+import { DatabaseModule } from '../../database/database.module.js';
+import { AuditModule } from '../audit/index.js';
+import { AdminContentController } from './admin-content.controller.js';
+import {
+  CaptainContentController,
+  CustomerContentController,
+  MerchantContentController,
+} from './app-content.controller.js';
 import {
   CaptainContactController,
   CustomerContactController,
   MerchantContactController,
 } from './contact.js';
+import { ContentService } from './content.service.js';
 
-// The content module (architecture §4.2): texts, terms versions and reason
-// lists (AP §9.13). So far only the support contact numbers the apps read.
+// The content module (architecture §4.2): the texts and reason lists of AP
+// §9.13, edited in the panel and read by the apps. Other modules check a
+// chosen reason and read a customer text through ContentService.
 @Module({
-  controllers: [MerchantContactController, CaptainContactController, CustomerContactController],
+  imports: [DatabaseModule, AuditModule],
+  controllers: [
+    MerchantContactController,
+    CaptainContactController,
+    CustomerContactController,
+    MerchantContentController,
+    CaptainContentController,
+    CustomerContentController,
+    AdminContentController,
+  ],
+  providers: [ContentService],
+  exports: [ContentService],
 })
 export class ContentModule {}
+
+export {
+  ContentRefusedError,
+  ContentService,
+  type ChosenReason,
+  type ContentRefusal,
+} from './content.service.js';
+export { GENERIC_CUSTOMER_TEXT, type ReasonList } from './lists.js';

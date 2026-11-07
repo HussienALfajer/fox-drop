@@ -101,6 +101,7 @@ extension CaptainTexts on AppLocalizations {
               : captainAmountDueChanged(moneyOf(amountDue)),
         StateChanged() => captainStateChanged,
         CommandFailed() => captainCommandFailed,
+        ReasonChanged() => captainReasonChanged,
       };
 
   String alertText(Alert alert) => switch (alert) {
@@ -130,18 +131,6 @@ extension CaptainTexts on AppLocalizations {
     3 => captainStepToCustomer,
     4 => captainStepAtCustomer,
     _ => captainStepToRestaurant,
-  };
-
-  String awayText(String reason) => switch (reason) {
-    'customer_requested_other_place' => captainAwayOtherPlace,
-    'pin_inaccurate' => captainAwayPinInaccurate,
-    _ => captainOther,
-  };
-
-  String shortfallText(String reason) => switch (reason) {
-    'customer_short' => captainShortCustomer,
-    'counting_error' => captainShortCounting,
-    _ => captainOther,
   };
 
   /// «تغيّرت عهدتك: {+المبلغ}» shows its sign (CA §9.8).

@@ -171,12 +171,34 @@ void main() {
           cancellation: {
             'at': '2026-11-07T12:07:00.000Z',
             'reason': 'merchant_auto_cancel',
+            'text': 'لم يرد المطعم على طلبك',
           },
         ),
       }),
     ]);
     expect(_status(tester), 'لم يرد المطعم على طلبك، نعتذر');
     expect(find.byKey(const Key('step-confirm')), findsNothing);
+    await app.done(tester);
+  });
+
+  testWidgets('an order operations cancelled shows its reason (CU §11.9)', (
+    tester,
+  ) async {
+    final app = await open(tester, [
+      FakeAnswer(200, {
+        'order': _order(
+          status: 'cancelled',
+          version: 3,
+          cancellation: {
+            'at': '2026-11-07T12:07:00.000Z',
+            'reason': 'no_captain',
+            'text': 'لم نجد كابتناً متاحاً لطلبك',
+          },
+        ),
+      }),
+    ]);
+    // The customer-facing reason the order kept from Content (CU Appendix C).
+    expect(_status(tester), 'أُلغي طلبك — لم نجد كابتناً متاحاً لطلبك');
     await app.done(tester);
   });
 

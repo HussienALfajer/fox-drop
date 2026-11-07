@@ -19,6 +19,16 @@ void main() {
     expect(app.server.requests, isEmpty);
   });
 
+  testWidgets('opens the customer FAQ from Content (CU §13)', (tester) async {
+    final app = TestApp();
+    await app.pump(tester);
+    await tester.tap(find.text('الأسئلة الشائعة'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('كيف أدفع ثمن طلبي؟'));
+    await tester.pumpAndSettle();
+    expect(find.text('نقداً للكابتن عند الباب.'), findsOneWidget);
+  });
+
   testWidgets('signs in from home and returns there', (tester) async {
     final app = TestApp();
     app.completedProfile();

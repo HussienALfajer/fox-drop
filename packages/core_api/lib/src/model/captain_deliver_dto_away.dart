@@ -3,7 +3,6 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -12,16 +11,16 @@ part 'captain_deliver_dto_away.g.dart';
 /// Needed beyond captain.customer_radius_m of the pin, unless given at the arrival (K4).
 ///
 /// Properties:
-/// * [reason]
-/// * [note] - The text of «أخرى» only.
+/// * [reason] - The reason's code in its Content list.
+/// * [note] - The text of a reason that needs one («أخرى»), and only of it.
 @BuiltValue()
 abstract class CaptainDeliverDtoAway
     implements Built<CaptainDeliverDtoAway, CaptainDeliverDtoAwayBuilder> {
+  /// The reason's code in its Content list.
   @BuiltValueField(wireName: r'reason')
-  CaptainDeliverDtoAwayReasonEnum get reason;
-  // enum reasonEnum {  customer_requested_other_place,  pin_inaccurate,  other,  };
+  String get reason;
 
-  /// The text of «أخرى» only.
+  /// The text of a reason that needs one («أخرى»), and only of it.
   @BuiltValueField(wireName: r'note')
   String? get note;
 
@@ -58,7 +57,7 @@ class _$CaptainDeliverDtoAwaySerializer
     yield r'reason';
     yield serializers.serialize(
       object.reason,
-      specifiedType: const FullType(CaptainDeliverDtoAwayReasonEnum),
+      specifiedType: const FullType(String),
     );
     yield r'note';
     yield object.note == null
@@ -98,11 +97,9 @@ class _$CaptainDeliverDtoAwaySerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      CaptainDeliverDtoAwayReasonEnum,
-                    ),
+                    specifiedType: const FullType(String),
                   )
-                  as CaptainDeliverDtoAwayReasonEnum;
+                  as String;
           result.reason = valueDes;
           break;
         case r'note':
@@ -142,26 +139,4 @@ class _$CaptainDeliverDtoAwaySerializer
     );
     return result.build();
   }
-}
-
-class CaptainDeliverDtoAwayReasonEnum extends EnumClass {
-  @BuiltValueEnumConst(wireName: r'customer_requested_other_place')
-  static const CaptainDeliverDtoAwayReasonEnum customerRequestedOtherPlace =
-      _$captainDeliverDtoAwayReasonEnum_customerRequestedOtherPlace;
-  @BuiltValueEnumConst(wireName: r'pin_inaccurate')
-  static const CaptainDeliverDtoAwayReasonEnum pinInaccurate =
-      _$captainDeliverDtoAwayReasonEnum_pinInaccurate;
-  @BuiltValueEnumConst(wireName: r'other')
-  static const CaptainDeliverDtoAwayReasonEnum other =
-      _$captainDeliverDtoAwayReasonEnum_other;
-
-  static Serializer<CaptainDeliverDtoAwayReasonEnum> get serializer =>
-      _$captainDeliverDtoAwayReasonEnumSerializer;
-
-  const CaptainDeliverDtoAwayReasonEnum._(String name) : super(name);
-
-  static BuiltSet<CaptainDeliverDtoAwayReasonEnum> get values =>
-      _$captainDeliverDtoAwayReasonEnumValues;
-  static CaptainDeliverDtoAwayReasonEnum valueOf(String name) =>
-      _$captainDeliverDtoAwayReasonEnumValueOf(name);
 }

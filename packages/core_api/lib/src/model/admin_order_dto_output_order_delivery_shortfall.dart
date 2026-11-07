@@ -4,7 +4,6 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart';
-import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -14,7 +13,8 @@ part 'admin_order_dto_output_order_delivery_shortfall.g.dart';
 ///
 /// Properties:
 /// * [amount]
-/// * [reason]
+/// * [reason] - The code in Content.
+/// * [label] - Its label as chosen.
 /// * [note]
 @BuiltValue()
 abstract class AdminOrderDtoOutputOrderDeliveryShortfall
@@ -26,9 +26,13 @@ abstract class AdminOrderDtoOutputOrderDeliveryShortfall
   @BuiltValueField(wireName: r'amount')
   CaptainWentOfflineDtoOutputHandIn? get amount;
 
+  /// The code in Content.
   @BuiltValueField(wireName: r'reason')
-  AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum get reason;
-  // enum reasonEnum {  customer_short,  counting_error,  other,  };
+  String get reason;
+
+  /// Its label as chosen.
+  @BuiltValueField(wireName: r'label')
+  String get label;
 
   @BuiltValueField(wireName: r'note')
   String? get note;
@@ -76,9 +80,12 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfallSerializer
     yield r'reason';
     yield serializers.serialize(
       object.reason,
-      specifiedType: const FullType(
-        AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum,
-      ),
+      specifiedType: const FullType(String),
+    );
+    yield r'label';
+    yield serializers.serialize(
+      object.label,
+      specifiedType: const FullType(String),
     );
     yield r'note';
     yield object.note == null
@@ -130,12 +137,19 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfallSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum,
-                    ),
+                    specifiedType: const FullType(String),
                   )
-                  as AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum;
+                  as String;
           result.reason = valueDes;
+          break;
+        case r'label':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.label = valueDes;
           break;
         case r'note':
           final valueDes =
@@ -174,31 +188,4 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfallSerializer
     );
     return result.build();
   }
-}
-
-class AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum extends EnumClass {
-  @BuiltValueEnumConst(wireName: r'customer_short')
-  static const AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum
-  customerShort =
-      _$adminOrderDtoOutputOrderDeliveryShortfallReasonEnum_customerShort;
-  @BuiltValueEnumConst(wireName: r'counting_error')
-  static const AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum
-  countingError =
-      _$adminOrderDtoOutputOrderDeliveryShortfallReasonEnum_countingError;
-  @BuiltValueEnumConst(wireName: r'other')
-  static const AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum other =
-      _$adminOrderDtoOutputOrderDeliveryShortfallReasonEnum_other;
-
-  static Serializer<AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum>
-  get serializer =>
-      _$adminOrderDtoOutputOrderDeliveryShortfallReasonEnumSerializer;
-
-  const AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum._(String name)
-    : super(name);
-
-  static BuiltSet<AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum>
-  get values => _$adminOrderDtoOutputOrderDeliveryShortfallReasonEnumValues;
-  static AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum valueOf(
-    String name,
-  ) => _$adminOrderDtoOutputOrderDeliveryShortfallReasonEnumValueOf(name);
 }

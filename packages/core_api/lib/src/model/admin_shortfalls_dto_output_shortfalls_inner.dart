@@ -4,7 +4,6 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart';
-import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -19,7 +18,8 @@ part 'admin_shortfalls_dto_output_shortfalls_inner.g.dart';
 /// * [amountDue]
 /// * [netReceived]
 /// * [shortfall]
-/// * [reason] - The captain's reason (K16).
+/// * [reason] - The captain's reason (K16), its code in Content.
+/// * [label] - Its label as chosen.
 /// * [note]
 /// * [recordedAt]
 @BuiltValue()
@@ -47,10 +47,13 @@ abstract class AdminShortfallsDtoOutputShortfallsInner
   @BuiltValueField(wireName: r'shortfall')
   CaptainWentOfflineDtoOutputHandIn? get shortfall;
 
-  /// The captain's reason (K16).
+  /// The captain's reason (K16), its code in Content.
   @BuiltValueField(wireName: r'reason')
-  AdminShortfallsDtoOutputShortfallsInnerReasonEnum get reason;
-  // enum reasonEnum {  customer_short,  counting_error,  other,  };
+  String get reason;
+
+  /// Its label as chosen.
+  @BuiltValueField(wireName: r'label')
+  String get label;
 
   @BuiltValueField(wireName: r'note')
   String? get note;
@@ -133,9 +136,12 @@ class _$AdminShortfallsDtoOutputShortfallsInnerSerializer
     yield r'reason';
     yield serializers.serialize(
       object.reason,
-      specifiedType: const FullType(
-        AdminShortfallsDtoOutputShortfallsInnerReasonEnum,
-      ),
+      specifiedType: const FullType(String),
+    );
+    yield r'label';
+    yield serializers.serialize(
+      object.label,
+      specifiedType: const FullType(String),
     );
     yield r'note';
     yield object.note == null
@@ -243,12 +249,19 @@ class _$AdminShortfallsDtoOutputShortfallsInnerSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminShortfallsDtoOutputShortfallsInnerReasonEnum,
-                    ),
+                    specifiedType: const FullType(String),
                   )
-                  as AdminShortfallsDtoOutputShortfallsInnerReasonEnum;
+                  as String;
           result.reason = valueDes;
+          break;
+        case r'label':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.label = valueDes;
           break;
         case r'note':
           final valueDes =
@@ -296,30 +309,4 @@ class _$AdminShortfallsDtoOutputShortfallsInnerSerializer
     );
     return result.build();
   }
-}
-
-/// The captain's reason (K16).
-class AdminShortfallsDtoOutputShortfallsInnerReasonEnum extends EnumClass {
-  @BuiltValueEnumConst(wireName: r'customer_short')
-  static const AdminShortfallsDtoOutputShortfallsInnerReasonEnum customerShort =
-      _$adminShortfallsDtoOutputShortfallsInnerReasonEnum_customerShort;
-  @BuiltValueEnumConst(wireName: r'counting_error')
-  static const AdminShortfallsDtoOutputShortfallsInnerReasonEnum countingError =
-      _$adminShortfallsDtoOutputShortfallsInnerReasonEnum_countingError;
-  @BuiltValueEnumConst(wireName: r'other')
-  static const AdminShortfallsDtoOutputShortfallsInnerReasonEnum other =
-      _$adminShortfallsDtoOutputShortfallsInnerReasonEnum_other;
-
-  static Serializer<AdminShortfallsDtoOutputShortfallsInnerReasonEnum>
-  get serializer =>
-      _$adminShortfallsDtoOutputShortfallsInnerReasonEnumSerializer;
-
-  const AdminShortfallsDtoOutputShortfallsInnerReasonEnum._(String name)
-    : super(name);
-
-  static BuiltSet<AdminShortfallsDtoOutputShortfallsInnerReasonEnum>
-  get values => _$adminShortfallsDtoOutputShortfallsInnerReasonEnumValues;
-  static AdminShortfallsDtoOutputShortfallsInnerReasonEnum valueOf(
-    String name,
-  ) => _$adminShortfallsDtoOutputShortfallsInnerReasonEnumValueOf(name);
 }

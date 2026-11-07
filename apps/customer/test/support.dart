@@ -19,6 +19,33 @@ const accountId = '00000000-0000-4000-8000-000000000001';
 /// device needed.
 class TestApp {
   TestApp({bool signedIn = false, this.overrides = const []}) {
+    server.on('/v1/customer/content', [
+      const FakeAnswer(200, {
+        'reasons': {
+          'customer_cancel': <Object?>[],
+          'customer_problem': <Object?>[],
+          'order_note': [
+            {
+              'code': 'call_on_arrival',
+              'label': 'اتصل بي عند الوصول',
+              'note': 'none',
+            },
+          ],
+          'restaurant_rating_low': <Object?>[],
+          'restaurant_rating_mid': <Object?>[],
+          'restaurant_rating_high': <Object?>[],
+          'captain_rating_low': <Object?>[],
+          'captain_rating_mid': <Object?>[],
+          'captain_rating_high': <Object?>[],
+        },
+        'faq': [
+          {
+            'question': 'كيف أدفع ثمن طلبي؟',
+            'answer': 'نقداً للكابتن عند الباب.',
+          },
+        ],
+      }),
+    ]);
     server.on('/v1/customer/status', [
       const FakeAnswer(200, {'status': 'ok', 'serverTime': 1}),
     ]);
