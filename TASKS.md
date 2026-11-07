@@ -4,18 +4,14 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.2b, the `ops:` channel (`docs/roadmap.md`, Phase 2, the second pull request of 2.2): the board, the order detail and the alerts list live over `ops:city.{city_id}` instead of reading every 10 seconds; polling stays only as the fallback while the socket is down. The owner leaves an order unaccepted and hears «مطعم لم يقبل» within seconds of its moment, with the board updating without a reload.
+Slice 2.3, push on Android (`docs/roadmap.md`, Phase 2): FCM device tokens per app installation, push from the outbox relay for the rows the specs mark, notification templates (AP §9.13), AP §8.3's apology on an automatic cancellation, the customer's permission at the first order, «إعادة إرسال الإشعار». The owner closes the customer app and gets the acceptance push.
 
-- **Specs:** architecture §6.1–6.2 (`ops:city.{city_id}`: panel users with access to the city; orders, alerts, tickets, cash desk, emergency stop) and §10.3 (live screens subscribe to the city channels and reconcile with a full fetch after every reconnect); AP §7.3, §9.2.1; `notifications/CLAUDE.md` (Centrifugo, the subscription proxy, «Not yet»: `allowed_origins` for the web apps) and `apps/admin/CLAUDE.md` («Operations pages», «Alerts»).
-- **Owner decisions 2026-11-07:** slice 2.2 in two pull requests; 2.2a (alerts, sound, list, polling) is merged.
-- **Branch:** `feat/ops-channel`.
+- **Specs:** architecture §8.1–8.2; CU §14, RA §16, CA §14, AP §10, AP §9.13 (notification templates), AP §8.3 (the apology); `apps/server/src/modules/notifications/CLAUDE.md` («Not yet»: push, the relay is where it joins) and `ordering/CLAUDE.md` (the relay); `apps/customer/CLAUDE.md` and `packages/core_auth/CLAUDE.md` for the apps' side.
+- **Branch:** `feat/android-push`.
 - **Plan:**
-  - [ ] Read the specs above, how the apps' tokens and the subscription proxy work (`realtime-tokens.ts`, `realtime-access.ts`) and how the panel's cookie session can get a connection token (same origin, no secret in the bundle).
-  - [ ] Ask the owner if anything is open: which events the panel needs on `ops:` (every order event, alert raised, acknowledged, resolved), whether «access to the city» is every panel user with `operations.read` or the alert recipients too (FIN for shortfalls) while V1 has one city.
-  - [ ] Server: the `ops` namespace in `infra/centrifugo/config.yaml` with its proxy, `POST /v1/admin/realtime/token` for the cookie session, the access check, `allowed_origins` for the panel's origins, the relay publishing order events to `ops:city.{city_id}` and `AlertsService` publishing alert changes through the outbox (E4) (tests first; `order-realtime.test.ts` shows the pattern).
-  - [ ] Regenerate the API clients (`pnpm generate:api`).
-  - [ ] The panel: one `centrifuge` connection, the board, the detail and the alerts invalidated by `ops:` events, a full fetch after each reconnect without recovery, polling only while disconnected; the CSP's `connect-src` for the WebSocket.
-  - [ ] `pnpm verify` through the `checker` agent, the `reviewer` agent, the pull request.
+  - [ ] Read the specs above, which rows each party's push table marks, how the Firebase project `foxdrop-staging` is set up (the `deploy` skill, «App Check») and how the apps start Firebase without `google-services.json`.
+  - [ ] Ask the owner: the split into pull requests (server tokens and sending, templates in the panel, each app), the FCM service account for staging (a secret of the GitHub `staging` environment, never in the repository), and the open wording of the templates.
+  - [ ] Write the plan as one step per commit once the split is approved.
 
 ## Deferred: slice 1.14h, the whole cycle on real phones
 
@@ -25,6 +21,9 @@ Slice 2.2b, the `ops:` channel (`docs/roadmap.md`, Phase 2, the second pull requ
 - **Staging access:** SSH to the server timed out from the owner's computer on 2026-11-07 while HTTPS answered; check it (fail2ban) before the run.
 
 ## Notes from earlier slices
+
+- Slice 2.2b added the `ops:city.{city_id}` channel (`apps/server/src/modules/notifications/CLAUDE.md` «The ops channel», `apps/admin/CLAUDE.md` «Real time»; owner decisions 2026-11-08: subscribers are the users with `operations.read` or a role that receives alerts, OWN, OPS, FIN; every order event and every alert change): `POST /v1/admin/realtime/token` with the cookie, the `admin` subscription proxy, the order events on the city channel, `notifications.alert_outbox` and the worker's `AlertsRelay` (every second), the panel's one `centrifuge` connection (the board, the detail, the alarm and `/alerts` live; polling only while it is down), panel sockets disconnected at sign-out, force sign-out, disable and TOTP reset, and re-checked at a role change; `CENTRIFUGO_CLIENT_ALLOWED_ORIGINS` and the CSP's `connect-src`.
+- To check on staging after the deploy (slice 2.2b): the panel connects through nginx (`/connection/websocket` on the panel's host, the origin allowed, the CSP), and an unaccepted order sounds «مطعم لم يقبل» within seconds with the board updating. To confirm with the owner: a panel left open never reaches its 30-minute idle end, since the reads its events trigger count as activity (AP §5.2; true of the 10-second polling before).
 
 - Slice 2.2a added the alerts (`apps/server/src/modules/notifications/CLAUDE.md` «Alerts», `ordering/CLAUDE.md` «The order's alerts», `apps/admin/CLAUDE.md` «Alerts»; owner decisions 2026-11-07: two pull requests, the critical sound every 3 s, Web Audio tones, desktop notifications now): `notifications.alerts` with the 13 rules whose triggers exist, synced by the module that owns each condition (orders after every transition and at their next moment; a 30 s sweep for the stale GPS, the code senders and the cash limits), `GET /v1/admin/alerts` and «استلام», the panel's blocking sound banner, bell and `/alerts` page with the history.
 - To confirm with the owner (slice 2.2a): «تسليم بعيد عن العنوان» closes when someone takes it and is raised once per order (an arrival away and a delivery away are one alert); «نقص في التحصيل» stays open until resolving shortfalls is built (slice 2.20); the strings the spec gives no wording for («التنبيهات: {العدد}», «لا توجد تنبيهات مفتوحة», «سجل التنبيهات», «استلمه {الاسم} {الوقت}», «تنبيه حرج: …»); before any number is paired on staging, «لا يمكن إرسال رموز الدخول» stays open (it is true there).
