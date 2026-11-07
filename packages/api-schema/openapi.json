@@ -3608,6 +3608,78 @@
         ]
       }
     },
+    "/v1/admin/content/notifications": {
+      "get": {
+        "operationId": "adminContentNotificationTexts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminNotificationTextsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/content/notifications/{key}": {
+      "put": {
+        "operationId": "adminContentUpdateNotificationText",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "maxLength": 80,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateNotificationTextDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminNotificationTextDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/merchant/realtime/token": {
       "post": {
         "operationId": "merchantRealtimeToken",
@@ -16446,6 +16518,166 @@
           }
         },
         "description": "The support phone and WhatsApp numbers in E.164, when set (AP §9.13).",
+        "additionalProperties": false
+      },
+      "AdminNotificationTextsDto_Output": {
+        "type": "object",
+        "properties": {
+          "templates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "description": "The template, such as customer.accepted."
+                },
+                "audience": {
+                  "type": "string",
+                  "enum": [
+                    "customer",
+                    "merchant",
+                    "captain"
+                  ]
+                },
+                "row": {
+                  "type": "string",
+                  "description": "The spec row it comes from, such as «CU §14 #1»."
+                },
+                "variables": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "The placeholders it takes, without braces."
+                },
+                "level": {
+                  "type": "string",
+                  "enum": [
+                    "default",
+                    "ring",
+                    "chime",
+                    "offer",
+                    "cancellation",
+                    "silent"
+                  ],
+                  "description": "The app's sound level; not editable."
+                },
+                "priority": {
+                  "type": "string",
+                  "enum": [
+                    "high",
+                    "normal"
+                  ],
+                  "description": "Not editable."
+                },
+                "text": {
+                  "type": "string",
+                  "description": "The default text."
+                },
+                "current": {
+                  "type": "string",
+                  "description": "The text in use: the admin's edit, else the default."
+                }
+              },
+              "required": [
+                "key",
+                "audience",
+                "row",
+                "variables",
+                "level",
+                "priority",
+                "text",
+                "current"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "templates"
+        ],
+        "additionalProperties": false
+      },
+      "AdminUpdateNotificationTextDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300,
+            "description": "Only the placeholders the template takes, as {name}."
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "AdminNotificationTextDto_Output": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "The template, such as customer.accepted."
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "customer",
+              "merchant",
+              "captain"
+            ]
+          },
+          "row": {
+            "type": "string",
+            "description": "The spec row it comes from, such as «CU §14 #1»."
+          },
+          "variables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The placeholders it takes, without braces."
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "default",
+              "ring",
+              "chime",
+              "offer",
+              "cancellation",
+              "silent"
+            ],
+            "description": "The app's sound level; not editable."
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "high",
+              "normal"
+            ],
+            "description": "Not editable."
+          },
+          "text": {
+            "type": "string",
+            "description": "The default text."
+          },
+          "current": {
+            "type": "string",
+            "description": "The text in use: the admin's edit, else the default."
+          }
+        },
+        "required": [
+          "key",
+          "audience",
+          "row",
+          "variables",
+          "level",
+          "priority",
+          "text",
+          "current"
+        ],
         "additionalProperties": false
       },
       "RealtimeTokenDto_Output": {

@@ -36,6 +36,23 @@ Serializers _$serializers =
           ..add(AdminFaqDtoOutput.serializer)
           ..add(AdminFaqsDtoOutput.serializer)
           ..add(AdminFaqsDtoOutputCustomerInner.serializer)
+          ..add(AdminNotificationTextDtoOutput.serializer)
+          ..add(AdminNotificationTextDtoOutputAudienceEnum.serializer)
+          ..add(AdminNotificationTextDtoOutputLevelEnum.serializer)
+          ..add(AdminNotificationTextDtoOutputPriorityEnum.serializer)
+          ..add(AdminNotificationTextsDtoOutput.serializer)
+          ..add(AdminNotificationTextsDtoOutputTemplatesInner.serializer)
+          ..add(
+            AdminNotificationTextsDtoOutputTemplatesInnerAudienceEnum
+                .serializer,
+          )
+          ..add(
+            AdminNotificationTextsDtoOutputTemplatesInnerLevelEnum.serializer,
+          )
+          ..add(
+            AdminNotificationTextsDtoOutputTemplatesInnerPriorityEnum
+                .serializer,
+          )
           ..add(AdminOrderCardDtoOutput.serializer)
           ..add(AdminOrderCardDtoOutputOrder.serializer)
           ..add(AdminOrderCardDtoOutputOrderAlertsEnum.serializer)
@@ -109,6 +126,7 @@ Serializers _$serializers =
           ..add(AdminTextsDtoOutput.serializer)
           ..add(AdminTextsDtoOutputContact.serializer)
           ..add(AdminUpdateContactDto.serializer)
+          ..add(AdminUpdateNotificationTextDto.serializer)
           ..add(AdminWorkRulesDto.serializer)
           ..add(AdminWorkRulesDtoOutput.serializer)
           ..add(BackupCodesDtoOutput.serializer)
@@ -486,6 +504,12 @@ Serializers _$serializers =
               const FullType(AdminFaqsDtoOutputCustomerInner),
             ]),
             () => ListBuilder<AdminFaqsDtoOutputCustomerInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminNotificationTextsDtoOutputTemplatesInner),
+            ]),
+            () => ListBuilder<AdminNotificationTextsDtoOutputTemplatesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1169,6 +1193,14 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

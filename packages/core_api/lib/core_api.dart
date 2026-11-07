@@ -34,6 +34,9 @@ export 'package:core_api/src/model/admin_faq_dto_items_inner.dart';
 export 'package:core_api/src/model/admin_faq_dto_output.dart';
 export 'package:core_api/src/model/admin_faqs_dto_output.dart';
 export 'package:core_api/src/model/admin_faqs_dto_output_customer_inner.dart';
+export 'package:core_api/src/model/admin_notification_text_dto_output.dart';
+export 'package:core_api/src/model/admin_notification_texts_dto_output.dart';
+export 'package:core_api/src/model/admin_notification_texts_dto_output_templates_inner.dart';
 export 'package:core_api/src/model/admin_order_card_dto_output.dart';
 export 'package:core_api/src/model/admin_order_card_dto_output_order.dart';
 export 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
@@ -83,6 +86,7 @@ export 'package:core_api/src/model/admin_shortfalls_dto_output_shortfalls_inner.
 export 'package:core_api/src/model/admin_texts_dto_output.dart';
 export 'package:core_api/src/model/admin_texts_dto_output_contact.dart';
 export 'package:core_api/src/model/admin_update_contact_dto.dart';
+export 'package:core_api/src/model/admin_update_notification_text_dto.dart';
 export 'package:core_api/src/model/admin_work_rules_dto.dart';
 export 'package:core_api/src/model/admin_work_rules_dto_output.dart';
 export 'package:core_api/src/model/backup_codes_dto_output.dart';

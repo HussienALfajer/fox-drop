@@ -71,7 +71,10 @@ export type ContentRefusal =
   | 'customer_text_not_allowed'
   | 'duplicate_label'
   | 'invalid_order'
-  | 'invalid_value';
+  | 'invalid_value'
+  // «نصوص الإشعارات»: no such template, or a placeholder it does not take.
+  | 'unknown_template'
+  | 'unknown_variable';
 
 export class ContentRefusedError extends Error {
   override readonly name = 'ContentRefusedError';

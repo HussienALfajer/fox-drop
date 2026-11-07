@@ -21,6 +21,12 @@ import type { AdminSession } from '../identity/index.js';
 import { ContactSchema } from './contact.js';
 import { ContentRefusedError, ContentService, type ContentEdit } from './content.service.js';
 import {
+  NOTIFICATION_TEXT_MAX,
+  notificationAudiences,
+  notificationLevels,
+} from './notification-templates.js';
+import { NotificationTexts } from './notification-texts.service.js';
+import {
   ANSWER_MAX,
   CUSTOMER_TEXT_MAX,
   FAQ_MAX_ITEMS,
@@ -128,9 +134,42 @@ class AdminUpdateContactDto extends createZodDto(
 
 class AdminContactDto extends createZodDto(ContactSchema) {}
 
+const notificationText = z.object({
+  key: z.string().describe('The template, such as customer.accepted.'),
+  audience: z.enum(notificationAudiences),
+  row: z.string().describe('The spec row it comes from, such as «CU §14 #1».'),
+  variables: z.array(z.string()).describe('The placeholders it takes, without braces.'),
+  level: z.enum(notificationLevels).describe("The app's sound level; not editable."),
+  priority: z.enum(['high', 'normal']).describe('Not editable.'),
+  text: z.string().describe('The default text.'),
+  current: z.string().describe("The text in use: the admin's edit, else the default."),
+});
+
+class AdminNotificationTextsDto extends createZodDto(
+  z.object({ templates: z.array(notificationText) }),
+) {}
+
+class AdminNotificationTextDto extends createZodDto(notificationText) {}
+
+class NotificationParamsDto extends createZodDto(z.object({ key: z.string().max(80) })) {}
+
+class AdminUpdateNotificationTextDto extends createZodDto(
+  z.object({
+    text: z
+      .string()
+      .min(1)
+      .max(NOTIFICATION_TEXT_MAX)
+      .describe('Only the placeholders the template takes, as {name}.'),
+  }),
+) {}
+
 function contentError(error: unknown): unknown {
   if (!(error instanceof ContentRefusedError)) return error;
-  if (error.refusal === 'unknown_list' || error.refusal === 'unknown_reason') {
+  if (
+    error.refusal === 'unknown_list' ||
+    error.refusal === 'unknown_reason' ||
+    error.refusal === 'unknown_template'
+  ) {
     return new NotFoundException({ statusCode: 404, error: error.refusal, message: error.message });
   }
   return new BadRequestException({
@@ -157,7 +196,10 @@ function editBy(session: AdminSession, request: FastifyRequest): ContentEdit {
 
 @AdminController('content')
 export class AdminContentController {
-  constructor(private readonly content: ContentService) {}
+  constructor(
+    private readonly content: ContentService,
+    private readonly notifications: NotificationTexts,
+  ) {}
 
   // «قوائم الأسباب», «الملاحظات الجاهزة» and «نصوص الأسباب للزبون».
   @Get('reasons')
@@ -288,6 +330,29 @@ export class AdminContentController {
     @Req() request: FastifyRequest,
   ) {
     return refusalsAsHttp(() => this.content.updateContact(body, editBy(session, request)));
+  }
+
+  // «نصوص الإشعارات» (AP §9.13): every push's text, read by OWN and OPS.
+  @Get('notifications')
+  @RequirePermission('content.read')
+  @ZodResponse({ status: 200, type: AdminNotificationTextsDto })
+  async notificationTexts() {
+    return { templates: await this.notifications.all() };
+  }
+
+  // 404 unknown_template; 400 invalid_value, unknown_variable.
+  @Put('notifications/:key')
+  @RequirePermission('content.manage')
+  @ZodResponse({ status: 200, type: AdminNotificationTextDto })
+  updateNotificationText(
+    @Param() params: NotificationParamsDto,
+    @Body() body: AdminUpdateNotificationTextDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(() =>
+      this.notifications.update(params.key, body.text, editBy(session, request)),
+    );
   }
 }
 

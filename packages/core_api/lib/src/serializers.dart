@@ -33,6 +33,9 @@ import 'package:core_api/src/model/admin_faq_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_faq_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output_customer_inner.dart';
+import 'package:core_api/src/model/admin_notification_text_dto_output.dart';
+import 'package:core_api/src/model/admin_notification_texts_dto_output.dart';
+import 'package:core_api/src/model/admin_notification_texts_dto_output_templates_inner.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
@@ -82,6 +85,7 @@ import 'package:core_api/src/model/admin_shortfalls_dto_output_shortfalls_inner.
 import 'package:core_api/src/model/admin_texts_dto_output.dart';
 import 'package:core_api/src/model/admin_texts_dto_output_contact.dart';
 import 'package:core_api/src/model/admin_update_contact_dto.dart';
+import 'package:core_api/src/model/admin_update_notification_text_dto.dart';
 import 'package:core_api/src/model/admin_work_rules_dto.dart';
 import 'package:core_api/src/model/admin_work_rules_dto_output.dart';
 import 'package:core_api/src/model/backup_codes_dto_output.dart';
@@ -319,6 +323,9 @@ part 'serializers.g.dart';
   AdminFaqDtoOutput,
   AdminFaqsDtoOutput,
   AdminFaqsDtoOutputCustomerInner,
+  AdminNotificationTextDtoOutput,
+  AdminNotificationTextsDtoOutput,
+  AdminNotificationTextsDtoOutputTemplatesInner,
   AdminOrderCardDtoOutput,
   AdminOrderCardDtoOutputOrder,
   AdminOrderCardDtoOutputOrderBadges,
@@ -368,6 +375,7 @@ part 'serializers.g.dart';
   AdminTextsDtoOutput,
   AdminTextsDtoOutputContact,
   AdminUpdateContactDto,
+  AdminUpdateNotificationTextDto,
   AdminWorkRulesDto,
   AdminWorkRulesDtoOutput,
   BackupCodesDtoOutput,
@@ -629,6 +637,12 @@ Serializers serializers =
             ]),
             () =>
                 ListBuilder<AdminReasonListsDtoOutputListsInnerReasonsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminNotificationTextsDtoOutputTemplatesInner),
+            ]),
+            () => ListBuilder<AdminNotificationTextsDtoOutputTemplatesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

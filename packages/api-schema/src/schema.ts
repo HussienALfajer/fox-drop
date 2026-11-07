@@ -1508,6 +1508,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/content/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminContentNotificationTexts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/content/notifications/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminContentUpdateNotificationText"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/realtime/token": {
         parameters: {
             query?: never;
@@ -4702,6 +4734,60 @@ export interface components {
             phone?: string;
             whatsapp?: string;
         };
+        AdminNotificationTextsDto_Output: {
+            templates: {
+                /** @description The template, such as customer.accepted. */
+                key: string;
+                /** @enum {string} */
+                audience: "customer" | "merchant" | "captain";
+                /** @description The spec row it comes from, such as «CU §14 #1». */
+                row: string;
+                /** @description The placeholders it takes, without braces. */
+                variables: string[];
+                /**
+                 * @description The app's sound level; not editable.
+                 * @enum {string}
+                 */
+                level: "default" | "ring" | "chime" | "offer" | "cancellation" | "silent";
+                /**
+                 * @description Not editable.
+                 * @enum {string}
+                 */
+                priority: "high" | "normal";
+                /** @description The default text. */
+                text: string;
+                /** @description The text in use: the admin's edit, else the default. */
+                current: string;
+            }[];
+        };
+        AdminUpdateNotificationTextDto: {
+            /** @description Only the placeholders the template takes, as {name}. */
+            text: string;
+        };
+        AdminNotificationTextDto_Output: {
+            /** @description The template, such as customer.accepted. */
+            key: string;
+            /** @enum {string} */
+            audience: "customer" | "merchant" | "captain";
+            /** @description The spec row it comes from, such as «CU §14 #1». */
+            row: string;
+            /** @description The placeholders it takes, without braces. */
+            variables: string[];
+            /**
+             * @description The app's sound level; not editable.
+             * @enum {string}
+             */
+            level: "default" | "ring" | "chime" | "offer" | "cancellation" | "silent";
+            /**
+             * @description Not editable.
+             * @enum {string}
+             */
+            priority: "high" | "normal";
+            /** @description The default text. */
+            text: string;
+            /** @description The text in use: the admin's edit, else the default. */
+            current: string;
+        };
         RealtimeTokenDto_Output: {
             /** @description Centrifugo's connection token, valid 15 minutes; ask again when it expires. */
             token: string;
@@ -7246,6 +7332,52 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminContactDto_Output"];
+                };
+            };
+        };
+    };
+    adminContentNotificationTexts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminNotificationTextsDto_Output"];
+                };
+            };
+        };
+    };
+    adminContentUpdateNotificationText: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminUpdateNotificationTextDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminNotificationTextDto_Output"];
                 };
             };
         };

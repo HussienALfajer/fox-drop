@@ -320,6 +320,8 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/admin/content/texts': 'content.read',
   'PUT /v1/admin/content/work-rules': 'content.manage',
   'PUT /v1/admin/content/contact': 'content.manage',
+  'GET /v1/admin/content/notifications': 'content.read',
+  'PUT /v1/admin/content/notifications/{key}': 'content.manage',
   'POST /v1/admin/auth/setup/totp': 'public',
   'POST /v1/admin/auth/setup/complete': 'public',
   'POST /v1/admin/auth/sign-in': 'public',

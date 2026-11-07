@@ -9,6 +9,7 @@ import { startTestDatabase, type TestDatabase } from '../../database/test-databa
 import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
 import { ADMIN_SESSION_COOKIE, AdminSessionsService } from '../identity/index.js';
+import { NotificationTexts } from './notification-texts.service.js';
 
 // The content routes (AP §9.13) served by the API app as in production:
 // the answers parse by their schemas, and refusals map to their statuses.
@@ -166,6 +167,56 @@ describe("the panel's routes", () => {
     });
     expect(
       (await operations('PUT', '/v1/admin/content/work-rules', { workRules: 'x' })).statusCode,
+    ).toBe(403);
+  });
+
+  it('edits a notification text within its variables, and renders it (AP §9.13)', async () => {
+    const owner = await admin(['OWN']);
+    const list = (await owner('GET', '/v1/admin/content/notifications')).json().templates;
+    expect(list.find((template: { key: string }) => template.key === 'customer.accepted')).toEqual({
+      key: 'customer.accepted',
+      audience: 'customer',
+      row: 'CU §14 #1',
+      variables: ['الساعة'],
+      level: 'default',
+      priority: 'normal',
+      text: 'المطعم يحضّر طلبك. يصل حوالي {الساعة}',
+      current: 'المطعم يحضّر طلبك. يصل حوالي {الساعة}',
+    });
+    const texts = app.get(NotificationTexts);
+    expect((await texts.render('customer.accepted', { الساعة: '9:45 م' })).body).toBe(
+      'المطعم يحضّر طلبك. يصل حوالي 9:45 م',
+    );
+
+    const edited = await owner('PUT', '/v1/admin/content/notifications/customer.accepted', {
+      text: 'قبل المطعم طلبك، يصل {الساعة}',
+    });
+    expect(edited.statusCode).toBe(200);
+    expect(edited.json().current).toBe('قبل المطعم طلبك، يصل {الساعة}');
+    expect(await texts.render('customer.accepted', { الساعة: '9:45 م' })).toEqual({
+      key: 'customer.accepted',
+      body: 'قبل المطعم طلبك، يصل 9:45 م',
+      level: 'default',
+      priority: 'normal',
+    });
+
+    const unknown = await owner('PUT', '/v1/admin/content/notifications/customer.accepted', {
+      text: 'يصل {الساعة} مع {الاسم}',
+    });
+    expect(unknown.statusCode).toBe(400);
+    expect(unknown.json().error).toBe('unknown_variable');
+    const missing = await owner('PUT', '/v1/admin/content/notifications/customer.nothing', {
+      text: 'نص',
+    });
+    expect(missing.statusCode).toBe(404);
+    const operations = await admin(['OPS']);
+    expect((await operations('GET', '/v1/admin/content/notifications')).statusCode).toBe(200);
+    expect(
+      (
+        await operations('PUT', '/v1/admin/content/notifications/customer.accepted', {
+          text: 'نص',
+        })
+      ).statusCode,
     ).toBe(403);
   });
 });
