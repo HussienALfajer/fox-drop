@@ -11287,7 +11287,7 @@
                     "away_from_address"
                   ]
                 },
-                "description": "AP §9.1.3, open now: the order's alerts, the same conditions as the alerts list (GET /v1/admin/alerts)."
+                "description": "AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active."
               }
             },
             "required": [
@@ -11875,7 +11875,7 @@
                       "away_from_address"
                     ]
                   },
-                  "description": "AP §9.1.3, open now: the order's alerts, the same conditions as the alerts list (GET /v1/admin/alerts)."
+                  "description": "AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active."
                 }
               },
               "required": [
@@ -12204,7 +12204,7 @@
                     "away_from_address"
                   ]
                 },
-                "description": "AP §9.1.3, open now: the order's alerts, the same conditions as the alerts list (GET /v1/admin/alerts)."
+                "description": "AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active."
               },
               "promisedAt": {
                 "anyOf": [

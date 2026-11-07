@@ -1,5 +1,5 @@
 {
-  "id": "63c8318b-c9e3-460b-85b2-dfda3fe8d55b",
+  "id": "a3b12e6c-5ab6-49f0-ac14-cc46aebe0ce6",
   "prevId": "a5cbe2dc-e9b9-42f8-88bf-7b9fc57448c6",
   "version": "7",
   "dialect": "postgresql",
@@ -6284,8 +6284,24 @@
           "method": "btree",
           "with": {}
         },
-        "alerts_city_raised": {
-          "name": "alerts_city_raised",
+        "alerts_open_city": {
+          "name": "alerts_open_city",
+          "columns": [
+            {
+              "expression": "city_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"notifications\".\"alerts\".\"resolved_at\" IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "alerts_closed_city": {
+          "name": "alerts_closed_city",
           "columns": [
             {
               "expression": "city_id",
@@ -6294,13 +6310,14 @@
               "nulls": "last"
             },
             {
-              "expression": "raised_at",
+              "expression": "resolved_at",
               "isExpression": false,
-              "asc": true,
+              "asc": false,
               "nulls": "last"
             }
           ],
           "isUnique": false,
+          "where": "\"notifications\".\"alerts\".\"resolved_at\" IS NOT NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}

@@ -10,10 +10,13 @@ import {
   useAcknowledgeAlert,
 } from './alerts.js';
 import { type City, chosenCity, citiesQuery } from './cities.js';
-import { formatTime } from './format.js';
+import { formatDateTime } from './format.js';
+import { OPERATIONS_READ } from './orders-board.js';
+import { can } from './session.js';
 import { alertKeys } from './order-labels.js';
 
 const alertsRoute = getRouteApi('/signed-in/alerts');
+const signedIn = getRouteApi('/signed-in');
 
 // AP §9.1.3: the alerts list, by severity then age, with «استلام» and the
 // direct action built so far (open the order); and the history.
@@ -79,7 +82,7 @@ function History({ city }: { city: City }) {
             {alert.resolvedAt && (
               <span>
                 {' '}
-                {t('alerts.resolvedAt', { time: formatTime(alert.resolvedAt, city.timeZone) })}
+                {t('alerts.resolvedAt', { time: formatDateTime(alert.resolvedAt, city.timeZone) })}
               </span>
             )}
           </li>
@@ -91,8 +94,10 @@ function History({ city }: { city: City }) {
 
 function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
   const { t } = useTranslation();
-  const time = (at: string) => formatTime(at, city.timeZone);
-  const orderId = orderOf(alert);
+  const time = (at: string) => formatDateTime(at, city.timeZone);
+  const { session } = signedIn.useRouteContext();
+  // The order's page needs operations.read (a FIN user sees shortfalls).
+  const orderId = can(session, OPERATIONS_READ) ? orderOf(alert) : null;
   return (
     <>
       <strong>{t(`alerts.severity.${alert.severity}`)}</strong>{' '}

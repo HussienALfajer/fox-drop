@@ -26,4 +26,5 @@ CREATE TABLE "notifications"."alerts" (
 --> statement-breakpoint
 CREATE UNIQUE INDEX "alerts_open_one" ON "notifications"."alerts" USING btree ("code","subject_type","subject_id") WHERE "notifications"."alerts"."resolved_at" IS NULL;--> statement-breakpoint
 CREATE INDEX "alerts_subject" ON "notifications"."alerts" USING btree ("subject_type","subject_id");--> statement-breakpoint
-CREATE INDEX "alerts_city_raised" ON "notifications"."alerts" USING btree ("city_id","raised_at");
+CREATE INDEX "alerts_open_city" ON "notifications"."alerts" USING btree ("city_id") WHERE "notifications"."alerts"."resolved_at" IS NULL;--> statement-breakpoint
+CREATE INDEX "alerts_closed_city" ON "notifications"."alerts" USING btree ("city_id","resolved_at" DESC NULLS LAST) WHERE "notifications"."alerts"."resolved_at" IS NOT NULL;

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import {
   Inject,
   Injectable,
@@ -196,6 +197,8 @@ export class OrderAlerts {
           { orderId: order.id, placedAt: job.placedAt } satisfies OrderAlertsJob,
           {
             db: inTransaction(tx),
+            // One timer per order and moment, however many syncs send it.
+            id: timerId(order.id, next),
             startAfter: next,
           },
         );
@@ -203,14 +206,28 @@ export class OrderAlerts {
     });
   }
 
-  // The orders a captain is on, for the GPS sweep.
-  async withCaptain(): Promise<OrderAlertsJob[]> {
+  // The live orders, for the worker's start, or those a captain is on, for
+  // the GPS sweep.
+  async liveOrders(withCaptain: boolean): Promise<OrderAlertsJob[]> {
     const rows = await this.database.db
       .select({ orderId: orders.id, placedAt: orders.placedAt })
       .from(orders)
-      .where(and(inArray(orders.status, UNTIL_ENDED), isNotNull(orders.captainId)));
+      .where(
+        and(
+          inArray(orders.status, UNTIL_ENDED),
+          withCaptain ? isNotNull(orders.captainId) : undefined,
+        ),
+      );
     return rows.map((row) => ({ orderId: row.orderId, placedAt: row.placedAt.toISOString() }));
   }
+}
+
+// A UUID derived from the order and the moment (in the form of version 5),
+// so pg-boss keeps one job for both (its insert skips a known id).
+export function timerId(orderId: string, moment: Date): string {
+  const hex = createHash('sha1').update(`${orderId}:${moment.toISOString()}`).digest('hex');
+  const variant = ((parseInt(hex.slice(16, 18), 16) & 0x3f) | 0x80).toString(16);
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-5${hex.slice(13, 16)}-${variant}${hex.slice(18, 20)}-${hex.slice(20, 32)}`;
 }
 
 async function readInput(
@@ -297,8 +314,13 @@ export class OrderAlertsWorker implements OnModuleInit, OnApplicationShutdown {
     await this.jobs.work<OrderAlertsJob>(QUEUES.orderAlerts, async (batch) => {
       for (const job of batch) await this.run(job.data, true, true);
     });
+    // The orders live when the worker starts (a deploy, or a sync whose
+    // retries ran out) get their alerts and timers again.
+    this.sweeping = this.sweep(false, true).finally(() => {
+      this.sweeping = undefined;
+    });
     this.timer = setInterval(() => {
-      this.sweeping ??= this.sweep().finally(() => {
+      this.sweeping ??= this.sweep(true, false).finally(() => {
         this.sweeping = undefined;
       });
     }, GPS_SWEEP_MS);
@@ -309,9 +331,11 @@ export class OrderAlertsWorker implements OnModuleInit, OnApplicationShutdown {
     await this.sweeping;
   }
 
-  private async sweep(): Promise<void> {
+  private async sweep(withCaptain: boolean, timer: boolean): Promise<void> {
     try {
-      for (const job of await this.alerts.withCaptain()) await this.run(job, false, false);
+      for (const job of await this.alerts.liveOrders(withCaptain)) {
+        await this.run(job, false, timer);
+      }
     } catch (error) {
       this.logger.error({ err: error }, 'order alerts sweep failed');
       reportError(error);

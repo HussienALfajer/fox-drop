@@ -739,12 +739,12 @@ export class CaptainsService implements OnModuleInit {
 
   // AP §9.1.3 «كابتن بلغ حد العهدة»: each captain of the city not
   // terminated, with whether its custody usage reached 100% of its cash
-  // limit. A captain whose cash cannot be read now (a currency without a
-  // rate) is left out, so its alert stays as it was.
+  // limit, or null when its cash cannot be read now (a currency without a
+  // rate), so its alert stays as it was.
   async cashLimits(
     cityId: string,
     now: Date,
-  ): Promise<{ id: string; name: string; atLimit: boolean }[]> {
+  ): Promise<{ id: string; name: string; atLimit: boolean | null }[]> {
     const rows = await this.database.db
       .select()
       .from(captainRecords)
@@ -765,7 +765,7 @@ export class CaptainsService implements OnModuleInit {
           ];
         } catch (error) {
           this.logger.warn({ err: error, captainId: row.id }, 'cash limit not read');
-          return [];
+          return [{ id: row.id, name: row.name, atLimit: null }];
         }
       }),
     );

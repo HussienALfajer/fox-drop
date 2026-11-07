@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Database } from '../../database/database.js';
 import type { CaptainsService } from '../captains/index.js';
 import type { GeoService } from '../geo/index.js';
@@ -18,7 +18,7 @@ interface Synced {
 function sweep(options: {
   numbers: string[];
   alerts: { type: 'number_stopped' | 'cannot_send'; numberIds: string[] }[];
-  captains: { id: string; name: string; atLimit: boolean }[];
+  captains: { id: string; name: string; atLimit: boolean | null }[];
   openSubjects?: string[];
 }) {
   const synced: Synced[] = [];
@@ -46,6 +46,25 @@ function sweep(options: {
 }
 
 describe('the alerts sweep (AP §9.1.3)', () => {
+  const environment = process.env.FOX_DROP_ENVIRONMENT;
+  beforeEach(() => {
+    process.env.FOX_DROP_ENVIRONMENT = 'staging';
+  });
+  afterEach(() => {
+    process.env.FOX_DROP_ENVIRONMENT = environment;
+  });
+
+  it('leaves the code senders alone in development', async () => {
+    process.env.FOX_DROP_ENVIRONMENT = 'development';
+    const { sweep: run, synced } = sweep({
+      numbers: [],
+      alerts: [{ type: 'cannot_send', numberIds: [] }],
+      captains: [],
+    });
+    await run.senders(new Date());
+    expect(synced).toEqual([]);
+  });
+
   it('raises «لا يمكن إرسال رموز الدخول» and «رقم إرسال الرموز متوقف» per number', async () => {
     const { sweep: run, synced } = sweep({
       numbers: ['n1', 'n2'],
@@ -77,8 +96,10 @@ describe('the alerts sweep (AP §9.1.3)', () => {
       captains: [
         { id: 'c1', name: 'أحمد', atLimit: true },
         { id: 'c2', name: 'سامر', atLimit: false },
+        // Its cash cannot be read now: its alert stays as it was.
+        { id: 'c3', name: 'خالد', atLimit: null },
       ],
-      openSubjects: ['c1', 'c9'],
+      openSubjects: ['c1', 'c3', 'c9'],
     });
     await run.cashLimits(new Date());
     expect(synced).toEqual([

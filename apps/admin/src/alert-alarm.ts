@@ -16,6 +16,8 @@ export function useAlertAlarm(
   const heard = useRef(new Set<string>());
   const repeat = alerts ? needsRepeat(alerts) : false;
 
+  useEffect(() => sound.onChange(setEnabled), [sound]);
+
   async function enable() {
     setEnabled(await sound.enable());
     if ('Notification' in window && Notification.permission === 'default') {
@@ -28,8 +30,14 @@ export function useAlertAlarm(
   useEffect(() => {
     if (!alerts || !enabled) return;
     const plan = soundPlan(alerts, heard.current);
-    heard.current = new Set(alerts.map((alert) => alert.id));
-    // A repeating critical sound covers a warning's chime.
+    // A repeating critical sound would cover a warning's chime, so a warning
+    // stays unheard until it can play (AP §7.3: it plays once).
+    const deferred = plan.repeat && plan.chime;
+    heard.current = new Set(
+      alerts
+        .filter((alert) => !deferred || alert.severity !== 'warning' || heard.current.has(alert.id))
+        .map((alert) => alert.id),
+    );
     if (plan.chime && !plan.repeat) sound.warning();
     if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
       for (const alert of plan.notify) {

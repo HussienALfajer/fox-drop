@@ -3424,7 +3424,7 @@ export interface components {
                     captainArrivedAt: string | null;
                     captainWaitingAlertAt: string | null;
                 };
-                /** @description AP §9.1.3, open now: the order's alerts, the same conditions as the alerts list (GET /v1/admin/alerts). */
+                /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
                 alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address")[];
             };
         };
@@ -3558,7 +3558,7 @@ export interface components {
                     captainArrivedAt: string | null;
                     captainWaitingAlertAt: string | null;
                 };
-                /** @description AP §9.1.3, open now: the order's alerts, the same conditions as the alerts list (GET /v1/admin/alerts). */
+                /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
                 alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address")[];
             }[];
         };
@@ -3626,7 +3626,7 @@ export interface components {
                     captainArrivedAt: string | null;
                     captainWaitingAlertAt: string | null;
                 };
-                /** @description AP §9.1.3, open now: the order's alerts, the same conditions as the alerts list (GET /v1/admin/alerts). */
+                /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
                 alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address")[];
                 promisedAt: string | null;
                 acceptance: {

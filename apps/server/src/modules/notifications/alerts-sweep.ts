@@ -45,6 +45,9 @@ export class AlertsSweep {
   }
 
   async senders(now: Date): Promise<void> {
+    // Development sends codes to stdout with no number paired, so the pool's
+    // «لا يمكن إرسال رموز الدخول» would be a false alarm there.
+    if (process.env.FOX_DROP_ENVIRONMENT === 'development') return;
     const { numbers, alerts } = await this.pool.read(now);
     const db = this.database.db;
     const cannotSend = alerts.some((alert) => alert.type === 'cannot_send');
@@ -79,6 +82,7 @@ export class AlertsSweep {
     for (const city of await this.geo.activeCities()) {
       for (const captain of await this.captains.cashLimits(city.id, now)) {
         seen.add(captain.id);
+        if (captain.atLimit === null) continue;
         const subject: AlertSubjectRef = {
           type: 'captain',
           id: captain.id,

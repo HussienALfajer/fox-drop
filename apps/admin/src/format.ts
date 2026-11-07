@@ -36,6 +36,15 @@ export function formatTime(at: string, timeZone: string): string {
   );
 }
 
+// A moment that may be on another day, such as a closed alert.
+export function formatDateTime(at: string, timeZone: string): string {
+  return new Intl.DateTimeFormat('ar-u-nu-latn', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+    timeZone,
+  }).format(new Date(at));
+}
+
 export function formatDistance(metres: number): string {
   return new Intl.NumberFormat('ar-u-nu-latn', {
     style: 'unit',

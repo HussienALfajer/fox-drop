@@ -17,7 +17,8 @@ import { MerchantsService } from '../merchants/index.js';
 import { DATABASE } from '../../database/database.module.js';
 import { SettingsService } from '../settings/index.js';
 import { AlertsService } from '../notifications/index.js';
-import { OrderAlerts } from './order-alerts.js';
+import { ADMIN_SESSION_COOKIE, AdminSessionsService } from '../identity/index.js';
+import { OrderAlerts, timerId } from './order-alerts.js';
 import { OrderTimers } from './order-timers.js';
 
 // AP §7.3, §9.1.3: an order's alerts follow it. Every transition sends a
@@ -266,6 +267,148 @@ describe("the order's alerts (AP §7.3, §9.1.3)", () => {
     // Not a recipient: unknown to them.
     await expect(alerts.acknowledge(alert!.id, randomUUID(), FINANCE, late)).rejects.toThrow(
       'unknown_alert',
+    );
+  });
+});
+
+// An active admin account with these roles, signed in.
+async function adminCookies(roles: string[], name: string | null) {
+  const { rows } = await sql.query(
+    "INSERT INTO identity.admin_accounts (name, email, status, password_hash, totp_secret_encrypted) VALUES ($1, $2, 'active', 'x', 'x') RETURNING id",
+    [name, `${randomUUID()}@example.test`],
+  );
+  const accountId: string = rows[0].id;
+  for (const role of roles) {
+    await sql.query(
+      'INSERT INTO identity.admin_account_roles (account_id, role_code) VALUES ($1, $2)',
+      [accountId, role],
+    );
+  }
+  const { token } = await app
+    .get(AdminSessionsService)
+    .start(
+      app.get<{ db: never }>(DATABASE).db,
+      accountId,
+      { ipAddress: null, device: null },
+      new Date(),
+    );
+  return { accountId, cookies: { [ADMIN_SESSION_COOKIE]: token } };
+}
+
+describe('the alerts routes (AP §7.3, §9.1.3)', () => {
+  it('lists what the roles receive, takes an alert and names who took it', async () => {
+    const order = await placed();
+    const job = { orderId: order.id, placedAt: order.placedAt };
+    await orderAlertsService().sync(job, new Date(new Date(order.placedAt).getTime() + 4 * 60_000));
+    const cityId: string = (await alertsOf(order.id))[0].city_id;
+    const ops = await adminCookies(['OPS'], 'ليلى');
+    const fin = await adminCookies(['FIN'], null);
+
+    const anonymous = await app.inject({ method: 'GET', url: `/v1/admin/alerts?cityId=${cityId}` });
+    expect(anonymous.statusCode).toBe(401);
+    const malformed = await app.inject({
+      method: 'GET',
+      url: '/v1/admin/alerts?cityId=nope',
+      cookies: ops.cookies,
+    });
+    expect(malformed.statusCode).toBe(400);
+    const list = await app.inject({
+      method: 'GET',
+      url: `/v1/admin/alerts?cityId=${cityId}`,
+      cookies: ops.cookies,
+    });
+    expect(list.statusCode).toBe(200);
+    const listed = list
+      .json<{ alerts: { id: string; subjectId: string }[] }>()
+      .alerts.find((alert) => alert.subjectId === order.id)!;
+    expect(listed).toMatchObject({
+      code: 'restaurant_not_accepted',
+      severity: 'critical',
+      subjectType: 'order',
+      orderNumber: expect.any(String),
+      captainName: null,
+      acknowledged: null,
+      resolvedAt: null,
+    });
+    const finList = await app.inject({
+      method: 'GET',
+      url: `/v1/admin/alerts?cityId=${cityId}`,
+      cookies: fin.cookies,
+    });
+    const finAlerts = finList.json<{ alerts: { subjectId: string }[] }>().alerts;
+    expect(finAlerts.some((alert) => alert.subjectId === order.id)).toBe(false);
+    // Not a recipient: 404.
+    const refused = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/alerts/${listed.id}/acknowledge`,
+      cookies: fin.cookies,
+    });
+    expect(refused.statusCode).toBe(404);
+    const taken = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/alerts/${listed.id}/acknowledge`,
+      cookies: ops.cookies,
+    });
+    expect(taken.statusCode).toBe(200);
+    expect(taken.json().acknowledged).toMatchObject({ byId: ops.accountId, byName: 'ليلى' });
+
+    // The history holds it once it closed.
+    await app
+      .get(OrderTimers)
+      .merchantAutoCancel({ orderId: order.id, placedAt: order.placedAt, version: 1 }, new Date());
+    await orderAlertsService().sync(job, new Date());
+    const closed = await app.inject({
+      method: 'GET',
+      url: `/v1/admin/alerts?cityId=${cityId}&state=closed`,
+      cookies: ops.cookies,
+    });
+    const closedAlerts = closed.json<{
+      alerts: { subjectId: string; resolvedAt: string | null }[];
+    }>().alerts;
+    expect(closedAlerts.find((alert) => alert.subjectId === order.id)?.resolvedAt).toEqual(
+      expect.any(String),
+    );
+  });
+});
+
+describe('the timers and the GPS (order-alerts.ts)', () => {
+  it('keeps one timer per moment however many syncs send it', async () => {
+    const order = await placed();
+    const job = { orderId: order.id, placedAt: order.placedAt };
+    const sync = orderAlertsService();
+    const placedAt = new Date(order.placedAt);
+    await sync.sync(job, placedAt);
+    await sync.sync(job, placedAt);
+    const moment = new Date(placedAt.getTime() + 3 * 60_000);
+    const { rows } = await sql.query('SELECT count(*)::int AS n FROM pgboss.job WHERE id = $1', [
+      timerId(order.id, moment),
+    ]);
+    expect(rows[0].n).toBe(1);
+  });
+
+  it('raises «انقطع اتصال كابتن أثناء طلب» without points and resolves it when one arrives', async () => {
+    const order = await placed();
+    const job = { orderId: order.id, placedAt: order.placedAt };
+    const captainId = randomUUID();
+    const now = new Date();
+    const assignedAt = new Date(now.getTime() - 3 * 60_000);
+    const promisedAt = new Date(now.getTime() + 60 * 60_000);
+    // An order assigned 3 minutes ago (assignment is proved in dispatch.test.ts).
+    await sql.query(
+      "UPDATE ordering.orders SET status = 'accepted', accepted_at = $2, prep_min = 20, promised_at = $3, search_start_at = $2, prep_late_alert_at = $3, captain_id = $4, captain_track = 'assigned', assigned_at = $2 WHERE id = $1",
+      [order.id, assignedAt, promisedAt, captainId],
+    );
+    const sync = orderAlertsService();
+    await sync.sync(job, now, false);
+    const raised = await alertsOf(order.id);
+    expect(raised.map((alert) => alert.code)).toContain('captain_gps_lost');
+    await sql.query(
+      'INSERT INTO captains.locations (captain_id, city_id, recorded_at, received_at, location, accuracy_metres, simulated) VALUES ($1, $2, $3, $3, ST_SetSRID(ST_MakePoint(37.046, 36.587), 4326), 10, false)',
+      [captainId, raised[0].city_id, now],
+    );
+    await sync.sync(job, new Date(now.getTime() + 1_000), false);
+    expect(await alertsOf(order.id)).toContainEqual(
+      expect.objectContaining({ code: 'captain_gps_lost', resolved_at: expect.any(Date) }),
     );
   });
 });

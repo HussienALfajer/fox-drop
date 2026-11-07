@@ -21,7 +21,7 @@ const open = {
 // AP §7.3, §9.1.3: an operator enables the sound, sees «مطعم لم يقبل» and
 // takes it; everyone then sees who took it.
 test('enables the alert sound and acknowledges an alert', async ({ page }) => {
-  await fakeSession(page, ['operations.read']);
+  await fakeSession(page, ['operations.read'], ['OPS']);
   await page.route('**/v1/admin/cities', (route) =>
     route.fulfill({
       json: { cities: [{ id: cityId, code: 'AZ', name: 'أعزاز', timeZone: 'Asia/Damascus' }] },
@@ -50,7 +50,10 @@ test('enables the alert sound and acknowledges an alert', async ({ page }) => {
   });
   await page.goto('/');
 
+  // The banner covers the page until the sound is on.
+  await expect(page.getByRole('heading', { name: 'لوحة الإدارة' })).toBeHidden();
   await page.getByRole('button', { name: 'اضغط لتفعيل صوت التنبيهات' }).click();
+  await expect(page.getByRole('heading', { name: 'لوحة الإدارة' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'اضغط لتفعيل صوت التنبيهات' })).toBeHidden();
   await page.getByRole('link', { name: 'التنبيهات: 1' }).click();
   await expect(page.getByRole('heading', { name: 'التنبيهات' })).toBeVisible();
@@ -63,20 +66,7 @@ test('enables the alert sound and acknowledges an alert', async ({ page }) => {
 
 // A user whose roles receive no alert gets no banner (AP §7.3).
 test('shows no sound banner to a support user', async ({ page }) => {
-  await page.route('**/v1/admin/auth/session', (route) =>
-    route.fulfill({
-      json: {
-        accountId: '01900000-0000-7000-8000-000000000001',
-        roles: ['SUP'],
-        permissions: [],
-        signedInAt: '2026-11-07T08:00:00.000Z',
-        expiresAt: '2026-11-07T08:30:00.000Z',
-      },
-    }),
-  );
-  await page.route('**/v1/admin/status', (route) =>
-    route.fulfill({ json: { status: 'ok', serverTime: Date.now() } }),
-  );
+  await fakeSession(page, [], ['SUP']);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'لوحة الإدارة' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'اضغط لتفعيل صوت التنبيهات' })).toBeHidden();

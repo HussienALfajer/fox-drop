@@ -232,7 +232,7 @@ export class OperationsViews {
         ? new Date(view.acceptance.at.getTime() + view.acceptance.prepMin * 60_000)
         : null;
       const rule = rules.get(more.cityId)!;
-      const { open: alerts } = orderAlerts(
+      const { open } = orderAlerts(
         {
           status: view.status,
           captainId: more.captainId,
@@ -255,6 +255,11 @@ export class OperationsViews {
         },
         now,
       );
+      // The card shows «تسليم بعيد عن العنوان» while the order is active;
+      // the alerts list keeps it until someone takes it.
+      const alerts = UNTIL_ENDED.includes(view.status)
+        ? open
+        : open.filter((code) => code !== 'away_from_address');
       return {
         order: view,
         restaurantName: names.get(view.restaurantId)?.nameAr ?? '',

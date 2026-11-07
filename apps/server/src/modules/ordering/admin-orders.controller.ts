@@ -40,7 +40,7 @@ const money = z.object({ amount: minor, currency: z.string().length(3) });
 const alerts = z
   .array(z.enum(ORDER_ALERT_CODES))
   .describe(
-    "AP §9.1.3, open now: the order's alerts, the same conditions as the alerts list (GET /v1/admin/alerts).",
+    'AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active.',
   );
 
 const card = z.object({

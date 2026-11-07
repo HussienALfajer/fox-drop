@@ -72,11 +72,12 @@ const signedInRoute = createRoute({
 // AP §7.3: a recipient of alerts hears them on every page.
 function SignedInLayout() {
   const { session } = signedInRoute.useRouteContext();
-  return (
-    <>
-      {receivesAlerts(session) && <AlertsMonitor />}
+  return receivesAlerts(session) ? (
+    <AlertsMonitor>
       <Outlet />
-    </>
+    </AlertsMonitor>
+  ) : (
+    <Outlet />
   );
 }
 

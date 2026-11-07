@@ -47,7 +47,13 @@ export const alerts = notifications.table(
       .on(table.code, table.subjectType, table.subjectId)
       .where(sql`${table.resolvedAt} IS NULL`),
     index('alerts_subject').on(table.subjectType, table.subjectId),
-    index('alerts_city_raised').on(table.cityId, table.raisedAt),
+    // The open list and the history of a city.
+    index('alerts_open_city')
+      .on(table.cityId)
+      .where(sql`${table.resolvedAt} IS NULL`),
+    index('alerts_closed_city')
+      .on(table.cityId, table.resolvedAt.desc())
+      .where(sql`${table.resolvedAt} IS NOT NULL`),
     check(
       'alerts_severity',
       sql`${table.severity} IN (${sql.raw(alertSeverities.map((value) => `'${value}'`).join(', '))})`,

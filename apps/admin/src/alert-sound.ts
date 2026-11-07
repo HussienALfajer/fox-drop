@@ -5,6 +5,9 @@
 export interface AlertSound {
   enable(): Promise<boolean>;
   enabled(): boolean;
+  // Called when the browser suspends or resumes the audio (an interruption,
+  // a device change), so the banner comes back while it is silent.
+  onChange(listener: (enabled: boolean) => void): () => void;
   critical(): void;
   warning(): void;
 }
@@ -26,6 +29,7 @@ const WARNING: Tone[] = [
 
 export function createAlertSound(): AlertSound {
   let context: AudioContext | undefined;
+  const listeners = new Set<(enabled: boolean) => void>();
 
   function play(tones: Tone[]) {
     if (!context || context.state !== 'running') return;
@@ -47,7 +51,13 @@ export function createAlertSound(): AlertSound {
   return {
     async enable() {
       try {
-        context ??= new AudioContext();
+        if (!context) {
+          const created = new AudioContext();
+          created.addEventListener('statechange', () => {
+            for (const listener of listeners) listener(created.state === 'running');
+          });
+          context = created;
+        }
         await context.resume();
         return context.state === 'running';
       } catch {
@@ -55,6 +65,10 @@ export function createAlertSound(): AlertSound {
       }
     },
     enabled: () => context?.state === 'running',
+    onChange(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
     critical: () => play(CRITICAL),
     warning: () => play(WARNING),
   };
