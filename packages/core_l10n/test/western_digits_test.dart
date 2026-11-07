@@ -36,4 +36,18 @@ void main() {
     expect(date, isNot(matches(_easternDigits)));
     expect(date, contains('2026'));
   });
+
+  // The int placeholders of the sign-in strings.
+  test('the sign-in counts use Western digits', () {
+    final l10n = lookupAppLocalizations(const Locale('ar'));
+    for (final text in [
+      l10n.signInResendIn(45),
+      l10n.signInTryLater(12),
+      l10n.signInResendWait(30),
+      l10n.signInWrongCode(3),
+    ]) {
+      expect(text, isNot(matches(_easternDigits)));
+      expect(text, matches(RegExp(r'\d')));
+    }
+  });
 }

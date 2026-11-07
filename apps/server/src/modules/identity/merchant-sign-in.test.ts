@@ -11,6 +11,11 @@ import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
 import { FxService } from '../fx/index.js';
 import { type AccountStatus, MerchantsService } from '../merchants/index.js';
 import { CODE_SENDER, type DevelopmentCodeSender } from './code-sender.js';
+import { DATABASE } from '../../database/database.module.js';
+import type { Database } from '../../database/database.js';
+import { AuditService } from '../audit/index.js';
+import { changePlaceholderPhone } from './placeholder-phone.js';
+import { IDENTITY_SECRETS, type IdentitySecrets } from './secrets.js';
 import {
   MerchantAccountRefusedError,
   MerchantAccountsService,
@@ -324,5 +329,33 @@ describe('the accounts of a restaurant (RA §5.1)', () => {
       expect(stored).not.toContain(phone);
       expect(stored).not.toContain(phone.slice(1));
     }
+  });
+});
+
+// Slice 1.14: the placeholder accounts of development and staging take a real
+// number by a server command (placeholder-phone-command.ts).
+function changePhone(from: string, to: string, environment = 'staging') {
+  return changePlaceholderPhone(
+    {
+      db: app.get<Database>(DATABASE).db,
+      audit: app.get(AuditService),
+      secrets: app.get<IdentitySecrets>(IDENTITY_SECRETS),
+    },
+    { party: 'merchant', from, to },
+    environment,
+  );
+}
+
+describe('the placeholder phone command (slice 1.14)', () => {
+  it('moves the restaurant owner to the new number, which signs in', async () => {
+    const { phone, accountId } = await user(await restaurant('active'), 'owner');
+    const next = newPhone();
+    expect(await changePhone(phone, next)).toEqual({ accountId });
+    const signedIn = await signIn(next);
+    expect(signedIn.statusCode).toBe(200);
+    expect(signedIn.json().accountId).toBe(accountId);
+    expect((await requestCode(phone, randomUUID())).json()).toMatchObject({
+      error: 'not_registered',
+    });
   });
 });

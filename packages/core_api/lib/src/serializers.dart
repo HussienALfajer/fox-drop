@@ -126,6 +126,7 @@ import 'package:core_api/src/model/captain_went_offline_dto_output.dart';
 import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart';
 import 'package:core_api/src/model/change_roles_dto.dart';
 import 'package:core_api/src/model/complete_setup_dto.dart';
+import 'package:core_api/src/model/contact_dto_output.dart';
 import 'package:core_api/src/model/create_user_dto.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner.dart';
@@ -374,6 +375,7 @@ part 'serializers.g.dart';
   CaptainWentOfflineDtoOutputHandIn,
   ChangeRolesDto,
   CompleteSetupDto,
+  ContactDtoOutput,
   CreateUserDto,
   CustomerActiveOrdersDtoOutput,
   CustomerActiveOrdersDtoOutputOrdersInner,

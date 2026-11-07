@@ -12,6 +12,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsc -p tsconfig.build.json && node --env-file=../../.env dist/database/migrate-command.js",
     "admin:create-owner": "tsc -p tsconfig.build.json && node --env-file=../../.env dist/modules/identity/create-owner-command.js",
+    "placeholder:phone": "tsc -p tsconfig.build.json && node --env-file=../../.env dist/modules/identity/placeholder-phone-command.js",
     "otp:pair": "tsc -p tsconfig.build.json && node --env-file=../../.env dist/modules/identity/otp-sender-pair-command.js"
   },
   "dependencies": {

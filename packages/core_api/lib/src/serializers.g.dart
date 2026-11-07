@@ -171,6 +171,7 @@ Serializers _$serializers =
           ..add(ChangeRolesDto.serializer)
           ..add(ChangeRolesDtoRolesEnum.serializer)
           ..add(CompleteSetupDto.serializer)
+          ..add(ContactDtoOutput.serializer)
           ..add(CreateUserDto.serializer)
           ..add(CreateUserDtoRolesEnum.serializer)
           ..add(CustomerActiveOrdersDtoOutput.serializer)
