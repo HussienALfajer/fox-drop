@@ -2,6 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- The delivery point from the phone's location while the app is used (CU §4.4, §7.1). -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>نستخدم موقعك لنعرف أين نوصل طلبك.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

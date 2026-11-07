@@ -280,13 +280,13 @@ class _$SettingEntryDtoOutput extends SettingEntryDtoOutput {
   @override
   final String template;
   @override
-  final BuiltList<String> parameter;
+  final String? parameter;
   @override
   final SettingEntryDtoOutputGroupEnum group;
   @override
   final String type;
   @override
-  final BuiltList<String> unit;
+  final String? unit;
   @override
   final SettingEntryDtoOutputScopeEnum scope;
   @override
@@ -311,10 +311,10 @@ class _$SettingEntryDtoOutput extends SettingEntryDtoOutput {
   _$SettingEntryDtoOutput._({
     required this.key,
     required this.template,
-    required this.parameter,
+    this.parameter,
     required this.group,
     required this.type,
-    required this.unit,
+    this.unit,
     required this.scope,
     this.cityId,
     required this.editRoles,
@@ -407,11 +407,9 @@ class SettingEntryDtoOutputBuilder
   String? get template => _$this._template;
   set template(String? template) => _$this._template = template;
 
-  ListBuilder<String>? _parameter;
-  ListBuilder<String> get parameter =>
-      _$this._parameter ??= ListBuilder<String>();
-  set parameter(ListBuilder<String>? parameter) =>
-      _$this._parameter = parameter;
+  String? _parameter;
+  String? get parameter => _$this._parameter;
+  set parameter(String? parameter) => _$this._parameter = parameter;
 
   SettingEntryDtoOutputGroupEnum? _group;
   SettingEntryDtoOutputGroupEnum? get group => _$this._group;
@@ -421,9 +419,9 @@ class SettingEntryDtoOutputBuilder
   String? get type => _$this._type;
   set type(String? type) => _$this._type = type;
 
-  ListBuilder<String>? _unit;
-  ListBuilder<String> get unit => _$this._unit ??= ListBuilder<String>();
-  set unit(ListBuilder<String>? unit) => _$this._unit = unit;
+  String? _unit;
+  String? get unit => _$this._unit;
+  set unit(String? unit) => _$this._unit = unit;
 
   SettingEntryDtoOutputScopeEnum? _scope;
   SettingEntryDtoOutputScopeEnum? get scope => _$this._scope;
@@ -469,10 +467,10 @@ class SettingEntryDtoOutputBuilder
     if ($v != null) {
       _key = $v.key;
       _template = $v.template;
-      _parameter = $v.parameter.toBuilder();
+      _parameter = $v.parameter;
       _group = $v.group;
       _type = $v.type;
-      _unit = $v.unit.toBuilder();
+      _unit = $v.unit;
       _scope = $v.scope;
       _cityId = $v.cityId;
       _editRoles = $v.editRoles.toBuilder();
@@ -515,7 +513,7 @@ class SettingEntryDtoOutputBuilder
               r'SettingEntryDtoOutput',
               'template',
             ),
-            parameter: parameter.build(),
+            parameter: parameter,
             group: BuiltValueNullFieldError.checkNotNull(
               group,
               r'SettingEntryDtoOutput',
@@ -526,7 +524,7 @@ class SettingEntryDtoOutputBuilder
               r'SettingEntryDtoOutput',
               'type',
             ),
-            unit: unit.build(),
+            unit: unit,
             scope: BuiltValueNullFieldError.checkNotNull(
               scope,
               r'SettingEntryDtoOutput',
@@ -555,12 +553,6 @@ class SettingEntryDtoOutputBuilder
     } catch (_) {
       late String _$failedField;
       try {
-        _$failedField = 'parameter';
-        parameter.build();
-
-        _$failedField = 'unit';
-        unit.build();
-
         _$failedField = 'editRoles';
         editRoles.build();
       } catch (e) {

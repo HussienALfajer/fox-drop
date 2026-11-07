@@ -1870,11 +1870,11 @@ export interface components {
             key: string;
             /** @description The Appendix A key, such as currency.<code>.rounding_unit. */
             template: string;
-            parameter: string[];
+            parameter: string | null;
             /** @enum {string} */
             group: "timers_limits" | "dispatch" | "customers" | "captains" | "restaurants" | "support" | "finance" | "security" | "apps";
             type: string;
-            unit: string[];
+            unit: string | null;
             /** @enum {string} */
             scope: "global" | "city";
             cityId: string | null;
@@ -1909,11 +1909,11 @@ export interface components {
             /** Format: uuid */
             id: string;
             nameAr: string;
-            nameEn: string[];
+            nameEn: string | null;
             /** @enum {string} */
             accountStatus: "draft" | "test" | "active" | "suspended" | "terminated";
             /** @description «حساب مطعمك معلّق: {السبب}…» while suspended (RA §5.5). */
-            suspensionReason: string[];
+            suspensionReason: string | null;
             /**
              * @description The operating state now (RA §7.1).
              * @enum {string}
@@ -2219,7 +2219,7 @@ export interface components {
             id: string;
             isDefault: boolean;
             /** @description «الحي», the zone name; null is «خارج منطقة التوصيل حالياً» (Q6). */
-            neighbourhood: string[];
+            neighbourhood: string | null;
         };
         CustomerAddressFieldsDto: {
             /** @description The pin, inside an active zone (CU §7.1). */
@@ -2302,12 +2302,12 @@ export interface components {
             /** Format: uuid */
             id: string;
             nameAr: string;
-            nameEn: string[];
-            category: string[];
-            logoKey: string[];
-            coverKey: string[];
+            nameEn: string | null;
+            category: string | null;
+            logoKey: string | null;
+            coverKey: string | null;
             /** @description The average rating; null is «جديد» (Q16). Ratings arrive with their slice. */
-            rating: number[];
+            rating: number | null;
             /** @description The number of ratings on the page (CU §9.1). */
             ratingCount: number | null;
             /** @description CU §8.4: «{fromMin}–{toMin} د». */
@@ -2341,7 +2341,7 @@ export interface components {
                 /** @description A holiday close's message, or an operations pause's. */
                 message: string | null;
             };
-            description: string[];
+            description: string | null;
             minimumOrder: {
                 /** @description Integer minor units (AP §8.6). */
                 amount: string;

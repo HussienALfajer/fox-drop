@@ -13,15 +13,15 @@ class _$CustomerRestaurantPageDtoOutput
   @override
   final String nameAr;
   @override
-  final BuiltList<String> nameEn;
+  final String? nameEn;
   @override
-  final BuiltList<String> category;
+  final String? category;
   @override
-  final BuiltList<String> logoKey;
+  final String? logoKey;
   @override
-  final BuiltList<String> coverKey;
+  final String? coverKey;
   @override
-  final BuiltList<num> rating;
+  final num? rating;
   @override
   final int? ratingCount;
   @override
@@ -31,7 +31,7 @@ class _$CustomerRestaurantPageDtoOutput
   @override
   final CustomerRestaurantListDtoOutputRestaurantsInnerState state;
   @override
-  final BuiltList<String> description;
+  final String? description;
   @override
   final CaptainWentOfflineDtoOutputHandIn? minimumOrder;
   @override
@@ -50,16 +50,16 @@ class _$CustomerRestaurantPageDtoOutput
   _$CustomerRestaurantPageDtoOutput._({
     required this.id,
     required this.nameAr,
-    required this.nameEn,
-    required this.category,
-    required this.logoKey,
-    required this.coverKey,
-    required this.rating,
+    this.nameEn,
+    this.category,
+    this.logoKey,
+    this.coverKey,
+    this.rating,
     this.ratingCount,
     required this.estimate,
     this.deliveryFee,
     required this.state,
-    required this.description,
+    this.description,
     this.minimumOrder,
     this.freeDeliveryFrom,
     required this.schedule,
@@ -162,27 +162,25 @@ class CustomerRestaurantPageDtoOutputBuilder
   String? get nameAr => _$this._nameAr;
   set nameAr(String? nameAr) => _$this._nameAr = nameAr;
 
-  ListBuilder<String>? _nameEn;
-  ListBuilder<String> get nameEn => _$this._nameEn ??= ListBuilder<String>();
-  set nameEn(ListBuilder<String>? nameEn) => _$this._nameEn = nameEn;
+  String? _nameEn;
+  String? get nameEn => _$this._nameEn;
+  set nameEn(String? nameEn) => _$this._nameEn = nameEn;
 
-  ListBuilder<String>? _category;
-  ListBuilder<String> get category =>
-      _$this._category ??= ListBuilder<String>();
-  set category(ListBuilder<String>? category) => _$this._category = category;
+  String? _category;
+  String? get category => _$this._category;
+  set category(String? category) => _$this._category = category;
 
-  ListBuilder<String>? _logoKey;
-  ListBuilder<String> get logoKey => _$this._logoKey ??= ListBuilder<String>();
-  set logoKey(ListBuilder<String>? logoKey) => _$this._logoKey = logoKey;
+  String? _logoKey;
+  String? get logoKey => _$this._logoKey;
+  set logoKey(String? logoKey) => _$this._logoKey = logoKey;
 
-  ListBuilder<String>? _coverKey;
-  ListBuilder<String> get coverKey =>
-      _$this._coverKey ??= ListBuilder<String>();
-  set coverKey(ListBuilder<String>? coverKey) => _$this._coverKey = coverKey;
+  String? _coverKey;
+  String? get coverKey => _$this._coverKey;
+  set coverKey(String? coverKey) => _$this._coverKey = coverKey;
 
-  ListBuilder<num>? _rating;
-  ListBuilder<num> get rating => _$this._rating ??= ListBuilder<num>();
-  set rating(ListBuilder<num>? rating) => _$this._rating = rating;
+  num? _rating;
+  num? get rating => _$this._rating;
+  set rating(num? rating) => _$this._rating = rating;
 
   int? _ratingCount;
   int? get ratingCount => _$this._ratingCount;
@@ -212,11 +210,9 @@ class CustomerRestaurantPageDtoOutputBuilder
     CustomerRestaurantListDtoOutputRestaurantsInnerStateBuilder? state,
   ) => _$this._state = state;
 
-  ListBuilder<String>? _description;
-  ListBuilder<String> get description =>
-      _$this._description ??= ListBuilder<String>();
-  set description(ListBuilder<String>? description) =>
-      _$this._description = description;
+  String? _description;
+  String? get description => _$this._description;
+  set description(String? description) => _$this._description = description;
 
   CaptainWentOfflineDtoOutputHandInBuilder? _minimumOrder;
   CaptainWentOfflineDtoOutputHandInBuilder get minimumOrder =>
@@ -258,16 +254,16 @@ class CustomerRestaurantPageDtoOutputBuilder
     if ($v != null) {
       _id = $v.id;
       _nameAr = $v.nameAr;
-      _nameEn = $v.nameEn.toBuilder();
-      _category = $v.category.toBuilder();
-      _logoKey = $v.logoKey.toBuilder();
-      _coverKey = $v.coverKey.toBuilder();
-      _rating = $v.rating.toBuilder();
+      _nameEn = $v.nameEn;
+      _category = $v.category;
+      _logoKey = $v.logoKey;
+      _coverKey = $v.coverKey;
+      _rating = $v.rating;
       _ratingCount = $v.ratingCount;
       _estimate = $v.estimate.toBuilder();
       _deliveryFee = $v.deliveryFee?.toBuilder();
       _state = $v.state.toBuilder();
-      _description = $v.description.toBuilder();
+      _description = $v.description;
       _minimumOrder = $v.minimumOrder?.toBuilder();
       _freeDeliveryFrom = $v.freeDeliveryFrom?.toBuilder();
       _schedule = $v.schedule.toBuilder();
@@ -307,16 +303,16 @@ class CustomerRestaurantPageDtoOutputBuilder
               r'CustomerRestaurantPageDtoOutput',
               'nameAr',
             ),
-            nameEn: nameEn.build(),
-            category: category.build(),
-            logoKey: logoKey.build(),
-            coverKey: coverKey.build(),
-            rating: rating.build(),
+            nameEn: nameEn,
+            category: category,
+            logoKey: logoKey,
+            coverKey: coverKey,
+            rating: rating,
             ratingCount: ratingCount,
             estimate: estimate.build(),
             deliveryFee: _deliveryFee?.build(),
             state: state.build(),
-            description: description.build(),
+            description: description,
             minimumOrder: _minimumOrder?.build(),
             freeDeliveryFrom: _freeDeliveryFrom?.build(),
             schedule: schedule.build(),
@@ -330,25 +326,13 @@ class CustomerRestaurantPageDtoOutputBuilder
     } catch (_) {
       late String _$failedField;
       try {
-        _$failedField = 'nameEn';
-        nameEn.build();
-        _$failedField = 'category';
-        category.build();
-        _$failedField = 'logoKey';
-        logoKey.build();
-        _$failedField = 'coverKey';
-        coverKey.build();
-        _$failedField = 'rating';
-        rating.build();
-
         _$failedField = 'estimate';
         estimate.build();
         _$failedField = 'deliveryFee';
         _deliveryFee?.build();
         _$failedField = 'state';
         state.build();
-        _$failedField = 'description';
-        description.build();
+
         _$failedField = 'minimumOrder';
         _minimumOrder?.build();
         _$failedField = 'freeDeliveryFrom';

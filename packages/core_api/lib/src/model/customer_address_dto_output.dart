@@ -73,7 +73,7 @@ abstract class CustomerAddressDtoOutput
 
   /// «الحي», the zone name; null is «خارج منطقة التوصيل حالياً» (Q6).
   @BuiltValueField(wireName: r'neighbourhood')
-  BuiltList<String> get neighbourhood;
+  String? get neighbourhood;
 
   CustomerAddressDtoOutput._();
 
@@ -173,10 +173,12 @@ class _$CustomerAddressDtoOutputSerializer
       specifiedType: const FullType(bool),
     );
     yield r'neighbourhood';
-    yield serializers.serialize(
-      object.neighbourhood,
-      specifiedType: const FullType(BuiltList, [FullType(String)]),
-    );
+    yield object.neighbourhood == null
+        ? null
+        : serializers.serialize(
+            object.neighbourhood,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -316,12 +318,11 @@ class _$CustomerAddressDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(String),
-                    ]),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as BuiltList<String>;
-          result.neighbourhood.replace(valueDes);
+                  as String?;
+          if (valueDes == null) continue;
+          result.neighbourhood = valueDes;
           break;
         default:
           unhandled.add(key);

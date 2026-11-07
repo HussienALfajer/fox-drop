@@ -49,20 +49,20 @@ abstract class CustomerRestaurantPageDtoOutput
   String get nameAr;
 
   @BuiltValueField(wireName: r'nameEn')
-  BuiltList<String> get nameEn;
+  String? get nameEn;
 
   @BuiltValueField(wireName: r'category')
-  BuiltList<String> get category;
+  String? get category;
 
   @BuiltValueField(wireName: r'logoKey')
-  BuiltList<String> get logoKey;
+  String? get logoKey;
 
   @BuiltValueField(wireName: r'coverKey')
-  BuiltList<String> get coverKey;
+  String? get coverKey;
 
   /// The average rating; null is «جديد» (Q16). Ratings arrive with their slice.
   @BuiltValueField(wireName: r'rating')
-  BuiltList<num> get rating;
+  num? get rating;
 
   /// The number of ratings on the page (CU §9.1).
   @BuiltValueField(wireName: r'ratingCount')
@@ -78,7 +78,7 @@ abstract class CustomerRestaurantPageDtoOutput
   CustomerRestaurantListDtoOutputRestaurantsInnerState get state;
 
   @BuiltValueField(wireName: r'description')
-  BuiltList<String> get description;
+  String? get description;
 
   @BuiltValueField(wireName: r'minimumOrder')
   CaptainWentOfflineDtoOutputHandIn? get minimumOrder;
@@ -138,30 +138,40 @@ class _$CustomerRestaurantPageDtoOutputSerializer
       specifiedType: const FullType(String),
     );
     yield r'nameEn';
-    yield serializers.serialize(
-      object.nameEn,
-      specifiedType: const FullType(BuiltList, [FullType(String)]),
-    );
+    yield object.nameEn == null
+        ? null
+        : serializers.serialize(
+            object.nameEn,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'category';
-    yield serializers.serialize(
-      object.category,
-      specifiedType: const FullType(BuiltList, [FullType(String)]),
-    );
+    yield object.category == null
+        ? null
+        : serializers.serialize(
+            object.category,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'logoKey';
-    yield serializers.serialize(
-      object.logoKey,
-      specifiedType: const FullType(BuiltList, [FullType(String)]),
-    );
+    yield object.logoKey == null
+        ? null
+        : serializers.serialize(
+            object.logoKey,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'coverKey';
-    yield serializers.serialize(
-      object.coverKey,
-      specifiedType: const FullType(BuiltList, [FullType(String)]),
-    );
+    yield object.coverKey == null
+        ? null
+        : serializers.serialize(
+            object.coverKey,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'rating';
-    yield serializers.serialize(
-      object.rating,
-      specifiedType: const FullType(BuiltList, [FullType(num)]),
-    );
+    yield object.rating == null
+        ? null
+        : serializers.serialize(
+            object.rating,
+            specifiedType: const FullType.nullable(num),
+          );
     yield r'ratingCount';
     yield object.ratingCount == null
         ? null
@@ -193,10 +203,12 @@ class _$CustomerRestaurantPageDtoOutputSerializer
       ),
     );
     yield r'description';
-    yield serializers.serialize(
-      object.description,
-      specifiedType: const FullType(BuiltList, [FullType(String)]),
-    );
+    yield object.description == null
+        ? null
+        : serializers.serialize(
+            object.description,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'minimumOrder';
     yield object.minimumOrder == null
         ? null
@@ -283,54 +295,51 @@ class _$CustomerRestaurantPageDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(String),
-                    ]),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as BuiltList<String>;
-          result.nameEn.replace(valueDes);
+                  as String?;
+          if (valueDes == null) continue;
+          result.nameEn = valueDes;
           break;
         case r'category':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(String),
-                    ]),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as BuiltList<String>;
-          result.category.replace(valueDes);
+                  as String?;
+          if (valueDes == null) continue;
+          result.category = valueDes;
           break;
         case r'logoKey':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(String),
-                    ]),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as BuiltList<String>;
-          result.logoKey.replace(valueDes);
+                  as String?;
+          if (valueDes == null) continue;
+          result.logoKey = valueDes;
           break;
         case r'coverKey':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(String),
-                    ]),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as BuiltList<String>;
-          result.coverKey.replace(valueDes);
+                  as String?;
+          if (valueDes == null) continue;
+          result.coverKey = valueDes;
           break;
         case r'rating':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(BuiltList, [FullType(num)]),
+                    specifiedType: const FullType.nullable(num),
                   )
-                  as BuiltList<num>;
-          result.rating.replace(valueDes);
+                  as num?;
+          if (valueDes == null) continue;
+          result.rating = valueDes;
           break;
         case r'ratingCount':
           final valueDes =
@@ -380,12 +389,11 @@ class _$CustomerRestaurantPageDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(String),
-                    ]),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as BuiltList<String>;
-          result.description.replace(valueDes);
+                  as String?;
+          if (valueDes == null) continue;
+          result.description = valueDes;
           break;
         case r'minimumOrder':
           final valueDes =

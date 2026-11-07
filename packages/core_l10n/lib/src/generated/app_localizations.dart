@@ -357,6 +357,966 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'هذا الرقم غير مسجّل ككابتن في FOX DROP'**
   String get captainNotRegistered;
+
+  /// An amount with its currency's symbol or code, such as «410 ₺» or «10.50 $» (CU §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{amount} {symbol}'**
+  String money(String amount, String symbol);
+
+  /// A 12-hour time before noon (CU §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{clock} ص'**
+  String timeMorning(String clock);
+
+  /// A 12-hour time from noon (CU §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{clock} م'**
+  String timeEvening(String clock);
+
+  /// A duration in minutes, such as «12 د» (CU §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} د'**
+  String durationMinutes(int count);
+
+  /// A distance below 1 km, such as «850 م» (CU §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} م'**
+  String distanceMetres(int count);
+
+  /// A distance from 1 km, such as «2.4 كم» (CU §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} كم'**
+  String distanceKilometres(String count);
+
+  /// A weekday's name.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأحد'**
+  String get weekdaySunday;
+
+  /// A weekday's name.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاثنين'**
+  String get weekdayMonday;
+
+  /// A weekday's name.
+  ///
+  /// In ar, this message translates to:
+  /// **'الثلاثاء'**
+  String get weekdayTuesday;
+
+  /// A weekday's name.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأربعاء'**
+  String get weekdayWednesday;
+
+  /// A weekday's name.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخميس'**
+  String get weekdayThursday;
+
+  /// A weekday's name.
+  ///
+  /// In ar, this message translates to:
+  /// **'الجمعة'**
+  String get weekdayFriday;
+
+  /// A weekday's name.
+  ///
+  /// In ar, this message translates to:
+  /// **'السبت'**
+  String get weekdaySaturday;
+
+  /// The new account's details screen (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'أكمل بياناتك'**
+  String get customerProfileTitle;
+
+  /// The first name field (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم'**
+  String get customerProfileFirstName;
+
+  /// The last name field, optional (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكنية'**
+  String get customerProfileLastName;
+
+  /// Under a name that breaks CU §5.3's rule; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب من 2 إلى 30 حرفاً عربياً أو لاتينياً'**
+  String get customerProfileInvalidName;
+
+  /// The gender choice (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'الجنس'**
+  String get customerProfileGender;
+
+  /// A gender choice (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'ذكر'**
+  String get customerProfileMale;
+
+  /// A gender choice (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'أنثى'**
+  String get customerProfileFemale;
+
+  /// Shown when no gender is chosen; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر الجنس'**
+  String get customerProfileGenderRequired;
+
+  /// The optional birthday, from a date picker (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'تاريخ الميلاد'**
+  String get customerProfileBirthday;
+
+  /// The required terms checkbox (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'أوافق على الشروط وسياسة الخصوصية'**
+  String get customerProfileTerms;
+
+  /// Shown when the terms are not ticked; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'يجب الموافقة على الشروط للمتابعة'**
+  String get customerProfileTermsRequired;
+
+  /// Saves a form.
+  ///
+  /// In ar, this message translates to:
+  /// **'حفظ'**
+  String get customerSave;
+
+  /// A save the server refused or did not answer.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الحفظ، حاول مجدداً'**
+  String get customerSaveFailed;
+
+  /// The first open asks for the delivery point (CU §7.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'أين نوصل طلبك؟'**
+  String get customerWhereToDeliver;
+
+  /// Takes the phone's position as the delivery point (CU §7.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'استخدم موقعي الحالي'**
+  String get customerUseMyLocation;
+
+  /// Inside a zone, but no restaurant covers the point (CU §7.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد مطاعم توصل إلى موقعك حالياً'**
+  String get customerNoRestaurantsHere;
+
+  /// The point is outside every zone (CU §7.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'قريباً في منطقتك'**
+  String get customerComingSoon;
+
+  /// Votes for the point's area (CU §7.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'صوّت لمنطقتك'**
+  String get customerVote;
+
+  /// After a vote (CU §7.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'شكراً، سنخبرك عندما نصل إلى منطقتك'**
+  String get customerVoteThanks;
+
+  /// The phone's location service is off; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'خدمة الموقع متوقفة في هاتفك. شغّلها ثم حاول مجدداً.'**
+  String get customerLocationServiceOff;
+
+  /// The location permission was refused; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسمح للتطبيق بالوصول إلى موقعك لنعرف أين نوصل طلبك.'**
+  String get customerLocationDenied;
+
+  /// No position came in time; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحديد موقعك الآن. حاول مجدداً.'**
+  String get customerLocationFailed;
+
+  /// Repeats what failed.
+  ///
+  /// In ar, this message translates to:
+  /// **'حاول مجدداً'**
+  String get customerTryAgain;
+
+  /// A restaurant without ratings yet (Q16).
+  ///
+  /// In ar, this message translates to:
+  /// **'جديد'**
+  String get customerNew;
+
+  /// The rating with the number of ratings (CU §9.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'{rating} ({count})'**
+  String customerRating(String rating, int count);
+
+  /// The delivery estimate as a 10-minute range (CU §8.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'{from}–{to} د'**
+  String customerEstimate(int from, int to);
+
+  /// The delivery is free for the point (CU §8.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'توصيل مجاني'**
+  String get customerFreeDelivery;
+
+  /// The delivery fee to the point (CU §8.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'رسوم التوصيل {amount}'**
+  String customerDeliveryFeeValue(String amount);
+
+  /// The restaurant's minimum order (CU §9.1); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحد الأدنى للطلب {amount}'**
+  String customerMinimumOrder(String amount);
+
+  /// The free-delivery threshold (CU §9.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'توصيل مجاني للطلبات من {amount} فأكثر'**
+  String customerFreeDeliveryFrom(String amount);
+
+  /// Open in busy mode (CU §9.2, Q8).
+  ///
+  /// In ar, this message translates to:
+  /// **'قد يستغرق الطلب وقتاً أطول قليلاً'**
+  String get customerRestaurantBusyMode;
+
+  /// At its maximum active orders (CU §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'المطعم مشغول حالياً، جرّب بعد قليل'**
+  String get customerRestaurantBusy;
+
+  /// Paused with an end time (CU §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'المطعم متوقف مؤقتاً، يعود خلال {duration}'**
+  String customerRestaurantPausedFor(String duration);
+
+  /// Paused without an end time (CU §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'المطعم متوقف مؤقتاً، يعود قريباً'**
+  String get customerRestaurantPausedSoon;
+
+  /// Closed by the schedule (CU §9.2, §8.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'مغلق — يفتح {day} {time}'**
+  String customerRestaurantOpensAt(String day, String time);
+
+  /// A holiday close (CU §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'مغلق حتى {date}'**
+  String customerRestaurantClosedUntil(String date);
+
+  /// Closed with no opening time known.
+  ///
+  /// In ar, this message translates to:
+  /// **'مغلق'**
+  String get customerRestaurantClosed;
+
+  /// A busy restaurant's card badge (CU §8.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'مشغول'**
+  String get customerBadgeBusy;
+
+  /// A paused restaurant's card badge (CU §8.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'متوقف مؤقتاً'**
+  String get customerBadgePaused;
+
+  /// The point is outside the restaurant's coverage or every zone (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا المطعم لا يوصل إلى هذا العنوان'**
+  String get customerNotCovered;
+
+  /// The price-parity badge (CU §9.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'نفس أسعار المحل'**
+  String get customerSamePrices;
+
+  /// The price-parity explanation (CU §9.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'أسعار هذا المطعم في التطبيق هي نفس أسعاره في المحل. إن وجدت فرقاً فأخبرنا.'**
+  String get customerSamePricesExplained;
+
+  /// Closes a message, or accepts a new price (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'موافق'**
+  String get customerOk;
+
+  /// Opens the weekly schedule (CU §9.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'أوقات العمل'**
+  String get customerOpeningHours;
+
+  /// One opening period of the schedule.
+  ///
+  /// In ar, this message translates to:
+  /// **'{opens} – {closes}'**
+  String customerHoursRange(String opens, String closes);
+
+  /// Searches the menu (CU §9.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'ابحث في القائمة'**
+  String get customerMenuSearch;
+
+  /// An item whose required options change its price (CU §9.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'من {amount}'**
+  String customerFromPrice(String amount);
+
+  /// An item switched off until tomorrow (CU §9.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'يتوفر غداً'**
+  String get customerAvailableTomorrow;
+
+  /// An item of a category outside its window (CU §9.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'متوفر من {time}'**
+  String customerAvailableFrom(String time);
+
+  /// An unavailable item or option (CU §9.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'غير متوفر حالياً'**
+  String get customerUnavailable;
+
+  /// Opens the cart, with its number of lines.
+  ///
+  /// In ar, this message translates to:
+  /// **'السلة ({count})'**
+  String customerCartCount(int count);
+
+  /// A required option group (CU §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'إجباري'**
+  String get customerRequired;
+
+  /// A group of exactly n choices (CU §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر {count}'**
+  String customerChoose(int count);
+
+  /// A group of up to n choices (CU §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر حتى {count}'**
+  String customerChooseUpTo(int count);
+
+  /// A group of a to b choices (CU §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر من {min} إلى {max}'**
+  String customerChooseBetween(int min, int max);
+
+  /// A required group left incomplete (CU §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر {count} على الأقل'**
+  String customerChooseAtLeast(int count);
+
+  /// The item note's placeholder (CU §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'مثلاً: بدون بصل'**
+  String get customerItemNoteHint;
+
+  /// A note over its limit; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الملاحظة أطول من {count} حرفاً'**
+  String customerNoteTooLong(int count);
+
+  /// A note with a run of 7 or more digits (CU §10.3, Q25).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تكتب أرقام هواتف في الملاحظة. رقم التواصل يصل إلى الكابتن تلقائياً.'**
+  String get customerNoPhoneInNote;
+
+  /// Adds the line to the cart with its live price (CU §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف — {amount}'**
+  String customerAddFor(String amount);
+
+  /// Adding from another restaurant (CU §10.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'سلتك فيها أصناف من {current}. هل تفرغها وتبدأ سلة جديدة من {next}؟'**
+  String customerCartOtherRestaurant(String current, String next);
+
+  /// Empties the cart for the new restaurant (CU §10.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'سلة جديدة'**
+  String get customerNewCart;
+
+  /// Cancels a dialog.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء'**
+  String get customerCancel;
+
+  /// The cart screen (CU Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'السلة'**
+  String get customerCart;
+
+  /// The cart has no lines; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'سلتك فارغة'**
+  String get customerCartEmpty;
+
+  /// The cart emptied after 24 hours (CU §10.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهت صلاحية سلتك'**
+  String get customerCartExpired;
+
+  /// Reopens the item sheet for a cart line (CU §10.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل'**
+  String get customerEdit;
+
+  /// Removes a cart line (CU §10.1, Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف'**
+  String get customerRemove;
+
+  /// Leads from the cart to checkout (CU §10.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'متابعة'**
+  String get customerContinue;
+
+  /// Below the minimum order, with a progress bar (CU §10.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف {amount} لتصل إلى الحد الأدنى ({minimum})'**
+  String customerBelowMinimumProgress(String amount, String minimum);
+
+  /// Below the free-delivery threshold (CU §10.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف {amount} لتحصل على توصيل مجاني'**
+  String customerFreeDeliveryProgress(String amount);
+
+  /// At or above the free-delivery threshold (CU §10.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'توصيلك مجاني'**
+  String get customerFreeDeliveryReached;
+
+  /// The app is below the minimum version (CU §4.2); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'حدّث التطبيق لتتمكن من الطلب'**
+  String get customerUpdateRequired;
+
+  /// Maintenance is on (CU §4.7); the panel's message comes with the content slice.
+  ///
+  /// In ar, this message translates to:
+  /// **'FOX DROP في صيانة الآن، حاول بعد قليل'**
+  String get customerMaintenance;
+
+  /// Outside the platform hours (CU §4.7, Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'FOX DROP يستقبل الطلبات من الساعة {time}'**
+  String customerPlatformClosed(String time);
+
+  /// Outside the platform hours with no opening known.
+  ///
+  /// In ar, this message translates to:
+  /// **'FOX DROP لا يستقبل الطلبات الآن'**
+  String get customerPlatformClosedNow;
+
+  /// Below the minimum order (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف {amount} لتصل إلى الحد الأدنى'**
+  String customerBelowMinimum(String amount);
+
+  /// A new account at its active-order limit (CU §5.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'يمكنك طلب واحد في كل مرة حتى يكتمل طلبك الحالي'**
+  String get customerOneOrderAtATime;
+
+  /// A trusted account at its active-order limit (CU §5.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'وصلت إلى الحد الأقصى للطلبات الجارية'**
+  String get customerActiveOrderLimit;
+
+  /// The capacity check found no captain (CU §10.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'الضغط عالٍ الآن، جرّب بعد دقائق'**
+  String get customerNoCaptain;
+
+  /// A line's price changed since it was added (CU §10.1, Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيّر سعر {item} من {oldPrice} إلى {newPrice}'**
+  String customerPriceChanged(String item, String oldPrice, String newPrice);
+
+  /// An item or option no longer available (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'{item} لم يعد متوفراً'**
+  String customerItemGone(String item);
+
+  /// The restaurant's prices or the city's money settings cannot be priced; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يمكن الطلب من هذا المطعم الآن'**
+  String get customerCannotPrice;
+
+  /// Back to the restaurant to reach the minimum (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف أصنافاً'**
+  String get customerAddItems;
+
+  /// Changes the address (CU §7.5, Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير العنوان'**
+  String get customerChangeAddress;
+
+  /// Asks for the quote again after the capacity check (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة المحاولة'**
+  String get customerRetry;
+
+  /// The checkout's address section; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'عنوان التوصيل'**
+  String get customerDeliveryAddress;
+
+  /// An address label (CU §7.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'البيت'**
+  String get customerLabelHome;
+
+  /// An address label (CU §7.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'العمل'**
+  String get customerLabelWork;
+
+  /// An address label with a custom name (CU §7.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر'**
+  String get customerLabelOther;
+
+  /// The custom name of an «آخر» address; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم العنوان'**
+  String get customerCustomLabel;
+
+  /// A saved address outside every active zone (CU §7.3, Q6).
+  ///
+  /// In ar, this message translates to:
+  /// **'خارج منطقة التوصيل حالياً'**
+  String get customerOutsideZoneNow;
+
+  /// The phone's position as the address (CU §7.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'التوصيل إلى موقعي الحالي'**
+  String get customerDeliverToCurrentLocation;
+
+  /// The position is worse than 100 m (CU §7.4); the map to adjust the pin waits for Phase 2.
+  ///
+  /// In ar, this message translates to:
+  /// **'دقة موقعك {distance}. حدّث موقعك إن لم يكن العنوان دقيقاً.'**
+  String customerLowAccuracy(String distance);
+
+  /// Asks for the phone's position again.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديث الموقع'**
+  String get customerUpdateLocation;
+
+  /// The zone's name, read-only (CU §7.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'الحي'**
+  String get customerNeighbourhood;
+
+  /// Required, 3 to 100 characters (CU §7.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'الشارع والبناء'**
+  String get customerStreet;
+
+  /// Optional (CU §7.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطابق والشقة'**
+  String get customerFloor;
+
+  /// Required, 3 to 100 characters (CU §7.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'بالقرب من'**
+  String get customerLandmark;
+
+  /// The landmark's placeholder (CU §7.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'مثلاً: قرب جامع النور'**
+  String get customerLandmarkHint;
+
+  /// The contact number (CU §7.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم التواصل'**
+  String get customerContactPhone;
+
+  /// The contact number is the account's when empty (U5); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم حسابك إن تركته فارغاً'**
+  String get customerContactPhoneHint;
+
+  /// Required when the contact number is not the account's (CU §7.3, Q5).
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم المستلم'**
+  String get customerRecipientName;
+
+  /// Optional, up to 200 characters (CU §7.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'توجيهات للكابتن'**
+  String get customerDirections;
+
+  /// The directions' example (CU §7.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'مثلاً: الباب الأزرق بجانب الصيدلية'**
+  String get customerDirectionsHint;
+
+  /// Saves the unsaved address with the order (CU §7.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'احفظ هذا العنوان'**
+  String get customerSaveAddress;
+
+  /// A field outside its length; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب من {min} إلى {max} حرفاً'**
+  String customerLengthBetween(int min, int max);
+
+  /// A field over its length; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'{max} حرفاً على الأكثر'**
+  String customerLengthUpTo(int max);
+
+  /// A preset order note (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'اتصل بي عند الوصول'**
+  String get customerNoteCallOnArrival;
+
+  /// A preset order note (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تطرق الباب'**
+  String get customerNoteDontKnock;
+
+  /// A preset order note (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'أرسلوا أدوات طعام'**
+  String get customerNoteSendCutlery;
+
+  /// A preset order note (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا أحتاج أدوات طعام'**
+  String get customerNoteNoCutlery;
+
+  /// The free note of CU §10.3 item 2; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظة للمطعم والكابتن'**
+  String get customerOrderNote;
+
+  /// The pay-in currency (CU §10.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'سأدفع بـ'**
+  String get customerPayIn;
+
+  /// No pay-in currency, the default (CU §10.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم أحدد'**
+  String get customerPayInUnset;
+
+  /// The total in the chosen currency (CU §10.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'ستدفع حوالي {amount}'**
+  String customerPayAbout(String amount);
+
+  /// The only payment in V1 (CU §10.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'نقداً عند الاستلام'**
+  String get customerCashOnDelivery;
+
+  /// The checkout's estimate (CU §10.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'يصل خلال {from}–{to} د'**
+  String customerArrivesWithin(int from, int to);
+
+  /// A money line (CU §10.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'قيمة الأصناف'**
+  String get customerItemsValue;
+
+  /// A money line (CU §10.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'رسوم التوصيل'**
+  String get customerDeliveryFee;
+
+  /// A free delivery fee (CU §10.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'مجاني'**
+  String get customerFree;
+
+  /// A money line (CU §10.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'الخصم'**
+  String get customerDiscount;
+
+  /// A money line, only when not 0 (CU §10.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'تقريب'**
+  String get customerRounding;
+
+  /// The total (CU §10.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'المجموع'**
+  String get customerTotal;
+
+  /// The total in the other accepted currencies (CU §10.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'أو {amounts}'**
+  String customerOrEquivalents(String amounts);
+
+  /// Places the order before the quote is known.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد الطلب'**
+  String get customerConfirm;
+
+  /// Places the order (CU §10.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد الطلب — {total}'**
+  String customerConfirmFor(String total);
+
+  /// While the order command is sent (CU §10.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ إرسال طلبك…'**
+  String get customerSending;
+
+  /// The far-pin check (CU §7.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'هل أنت متأكد من العنوان؟'**
+  String get customerFarPinTitle;
+
+  /// The far-pin check's distance (CU §7.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'النقطة تبعد {distance} عن موقعك الحالي.'**
+  String customerFarPinBody(String distance);
+
+  /// Keeps the far pin (CU §7.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'نعم، أرسل إلى هذا العنوان'**
+  String get customerFarPinSend;
+
+  /// 409 quote_changed (CU §10.7, Q10); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيّر شيء في طلبك. راجع التفاصيل ثم أكّد مجدداً.'**
+  String get customerQuoteChanged;
+
+  /// 409 order_blocked (CU §10.7); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم نتمكن من إرسال طلبك. راجع المشكلة أعلاه.'**
+  String get customerOrderBlocked;
+
+  /// The address left every zone (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'العنوان خارج منطقة التوصيل'**
+  String get customerAddressOutside;
+
+  /// «احفظ هذا العنوان» failed; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر حفظ العنوان، ولم يُرسل الطلب.'**
+  String get customerSaveAddressFailed;
+
+  /// No answer to the order command; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر إرسال طلبك، حاول مجدداً.'**
+  String get customerSendFailed;
+
+  /// An order number (CU §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'#{number}'**
+  String customerOrderNumber(String number);
+
+  /// The order was placed (CU §10.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'أرسلنا طلبك إلى {restaurant}'**
+  String customerOrderSent(String restaurant);
+
+  /// Order status (CU Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار تأكيد المطعم'**
+  String get customerStatusPlaced;
+
+  /// Order status (CU Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'المطعم يحضّر طلبك'**
+  String get customerStatusAccepted;
+
+  /// Order status (CU Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبك جاهز'**
+  String get customerStatusReady;
+
+  /// Order status (CU Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'في الطريق إليك'**
+  String get customerStatusPickedUp;
+
+  /// Order status (CU Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن عند الباب'**
+  String get customerStatusArrived;
+
+  /// Order status (CU Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'تم التسليم'**
+  String get customerStatusDelivered;
+
+  /// A rejected, cancelled or failed order until slice 1.14e shows its reason (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'نعتذر، أُلغي طلبك'**
+  String get customerStatusCancelled;
+
+  /// The promised time (CU §8.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'يصل حوالي {time}'**
+  String customerArrivesAbout(String time);
+
+  /// A 400 answer to the order command; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحقق من بيانات العنوان والملاحظة ثم أكّد مجدداً.'**
+  String get customerOrderInvalid;
 }
 
 class _AppLocalizationsDelegate
