@@ -1,6 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- The app calls the FOX DROP API. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- The delivery point from the phone's location while the app is used
+         (CU §4.4, §7.1; geolocator). No background location. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <application
         android:label="تطبيق الزبون"
         android:name="${applicationName}"

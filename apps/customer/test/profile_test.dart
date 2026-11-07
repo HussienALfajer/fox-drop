@@ -98,7 +98,7 @@ void main() {
         'acceptTerms': true,
       });
       expect(find.text('أكمل بياناتك'), findsNothing);
-      expect(find.text('تم تسجيل الدخول'), findsOneWidget);
+      expect(find.text('أين نوصل طلبك؟'), findsOneWidget);
     },
   );
 
@@ -111,7 +111,7 @@ void main() {
     await _signIn(tester, app);
 
     expect(find.text('أكمل بياناتك'), findsNothing);
-    expect(find.text('تم تسجيل الدخول'), findsOneWidget);
+    expect(find.text('أين نوصل طلبك؟'), findsOneWidget);
   });
 
   testWidgets('an app stopped before the details shows them again', (

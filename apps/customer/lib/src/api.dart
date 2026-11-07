@@ -33,11 +33,3 @@ final coreApiProvider = Provider<CoreApi>((ref) {
   api.dio.interceptors.add(customerAuth.interceptor(ref, api.dio));
   return api;
 });
-
-final statusProvider = FutureProvider<StatusDtoOutput>((ref) async {
-  final response = await ref
-      .watch(coreApiProvider)
-      .getCustomerApi()
-      .customerStatusGet();
-  return response.data!;
-});
