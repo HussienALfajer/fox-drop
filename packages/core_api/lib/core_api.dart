@@ -134,6 +134,7 @@ export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address_location.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation.dart';
+export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_captain.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_delivery.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_estimate.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_lines_inner.dart';

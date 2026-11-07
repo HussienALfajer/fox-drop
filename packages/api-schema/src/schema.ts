@@ -2586,6 +2586,17 @@ export interface components {
                     nameAr: string;
                     nameEn: string | null;
                 };
+                /** @description The captain card from assignment (CU §11.3, Q14): «الكابتن {الاسم} في طريقه إلى المطعم»; never the phone number or the captain track (CU §11.2). The photo comes with the object storage. */
+                captain: {
+                    firstName: string;
+                    /**
+                     * @description «سيراً على الأقدام», «دراجة», «دراجة نارية» or «سيارة» (CU §11.3).
+                     * @enum {string}
+                     */
+                    vehicle: "walking" | "bicycle" | "motorbike" | "car";
+                    /** @description Before the pickup: «الكابتن {الاسم} وصل إلى المطعم», or «الكابتن يستلم طلبك الآن» once ready (CU §11.2). */
+                    atRestaurant: boolean;
+                } | null;
                 currency: string;
                 money: {
                     /** @description Integer minor units (AP §8.6). */
@@ -2700,6 +2711,17 @@ export interface components {
                     nameAr: string;
                     nameEn: string | null;
                 };
+                /** @description The captain card from assignment (CU §11.3, Q14): «الكابتن {الاسم} في طريقه إلى المطعم»; never the phone number or the captain track (CU §11.2). The photo comes with the object storage. */
+                captain: {
+                    firstName: string;
+                    /**
+                     * @description «سيراً على الأقدام», «دراجة», «دراجة نارية» or «سيارة» (CU §11.3).
+                     * @enum {string}
+                     */
+                    vehicle: "walking" | "bicycle" | "motorbike" | "car";
+                    /** @description Before the pickup: «الكابتن {الاسم} وصل إلى المطعم», or «الكابتن يستلم طلبك الآن» once ready (CU §11.2). */
+                    atRestaurant: boolean;
+                } | null;
                 currency: string;
                 money: {
                     /** @description Integer minor units (AP §8.6). */

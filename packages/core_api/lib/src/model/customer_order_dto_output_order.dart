@@ -9,6 +9,7 @@ import 'package:core_api/src/model/captain_availability_dto_output_custody_limit
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_restaurant.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_captain.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_money.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address.dart';
 import 'package:core_api/src/model/customer_order_dto_output_order_delivery.dart';
@@ -29,6 +30,7 @@ part 'customer_order_dto_output_order.g.dart';
 /// * [cancellation]
 /// * [delivery]
 /// * [restaurant]
+/// * [captain]
 /// * [currency]
 /// * [money]
 /// * [equivalents] - The total in the city's other currencies, by the order's own rates (CU §11.1).
@@ -72,6 +74,9 @@ abstract class CustomerOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'restaurant')
   CustomerActiveOrdersDtoOutputOrdersInnerRestaurant get restaurant;
+
+  @BuiltValueField(wireName: r'captain')
+  CustomerActiveOrdersDtoOutputOrdersInnerCaptain? get captain;
 
   @BuiltValueField(wireName: r'currency')
   String get currency;
@@ -186,6 +191,15 @@ class _$CustomerOrderDtoOutputOrderSerializer
         CustomerActiveOrdersDtoOutputOrdersInnerRestaurant,
       ),
     );
+    yield r'captain';
+    yield object.captain == null
+        ? null
+        : serializers.serialize(
+            object.captain,
+            specifiedType: const FullType.nullable(
+              CustomerActiveOrdersDtoOutputOrdersInnerCaptain,
+            ),
+          );
     yield r'currency';
     yield serializers.serialize(
       object.currency,
@@ -355,6 +369,18 @@ class _$CustomerOrderDtoOutputOrderSerializer
                   )
                   as CustomerActiveOrdersDtoOutputOrdersInnerRestaurant;
           result.restaurant.replace(valueDes);
+          break;
+        case r'captain':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerActiveOrdersDtoOutputOrdersInnerCaptain,
+                    ),
+                  )
+                  as CustomerActiveOrdersDtoOutputOrdersInnerCaptain?;
+          if (valueDes == null) continue;
+          result.captain.replace(valueDes);
           break;
         case r'currency':
           final valueDes =

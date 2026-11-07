@@ -133,6 +133,7 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address_location.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_captain.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_delivery.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_estimate.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_lines_inner.dart';
@@ -382,6 +383,7 @@ part 'serializers.g.dart';
   CustomerActiveOrdersDtoOutputOrdersInnerAddress,
   CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
   CustomerActiveOrdersDtoOutputOrdersInnerCancellation,
+  CustomerActiveOrdersDtoOutputOrdersInnerCaptain,
   CustomerActiveOrdersDtoOutputOrdersInnerDelivery,
   CustomerActiveOrdersDtoOutputOrdersInnerEstimate,
   CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,

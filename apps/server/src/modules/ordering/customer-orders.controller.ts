@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { CustomerController } from '../../http/route-groups.js';
+import { type Captain, CaptainsService } from '../captains/index.js';
 import { unsavedAddressFields, withRecipient } from '../customers/index.js';
 import type { AppSession } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
@@ -100,6 +101,22 @@ const customerOrder = z.object({
     .nullable()
     .describe('Once delivered; the order screen opens the rating sheet (CU §12.1).'),
   restaurant: z.object({ id: z.uuid(), nameAr: z.string(), nameEn: z.string().nullable() }),
+  captain: z
+    .object({
+      firstName: z.string(),
+      vehicle: z
+        .enum(['walking', 'bicycle', 'motorbike', 'car'])
+        .describe('«سيراً على الأقدام», «دراجة», «دراجة نارية» or «سيارة» (CU §11.3).'),
+      atRestaurant: z
+        .boolean()
+        .describe(
+          'Before the pickup: «الكابتن {الاسم} وصل إلى المطعم», or «الكابتن يستلم طلبك الآن» once ready (CU §11.2).',
+        ),
+    })
+    .nullable()
+    .describe(
+      'The captain card from assignment (CU §11.3, Q14): «الكابتن {الاسم} في طريقه إلى المطعم»; never the phone number or the captain track (CU §11.2). The photo comes with the object storage.',
+    ),
   currency: z.string().length(3),
   money: z.object({
     itemsValue: minor,
@@ -162,6 +179,7 @@ export class CustomerOrdersController {
   constructor(
     private readonly orders: OrdersService,
     private readonly merchants: MerchantsService,
+    private readonly captains: CaptainsService,
   ) {}
 
   @Get('orders/active')
@@ -169,10 +187,11 @@ export class CustomerOrdersController {
   @ZodResponse({ status: 200, type: CustomerActiveOrdersDto })
   async active(@CurrentAppSession() session: AppSession) {
     const orders = await this.orders.customerActiveOrders(session.accountId);
-    const names = await this.merchants.names([
-      ...new Set(orders.map((order) => order.restaurantId)),
+    const [names, captains] = await Promise.all([
+      this.merchants.names([...new Set(orders.map((order) => order.restaurantId))]),
+      this.captainsOf(orders),
     ]);
-    return { orders: orders.map((order) => orderBody(order, names)) };
+    return { orders: orders.map((order) => orderBody(order, names, captains)) };
   }
 
   // 404 unknown_order for another customer's order.
@@ -245,7 +264,18 @@ export class CustomerOrdersController {
   }
 
   private async withNames(order: OrderView) {
-    return orderBody(order, await this.merchants.names([order.restaurantId]));
+    const [names, captains] = await Promise.all([
+      this.merchants.names([order.restaurantId]),
+      this.captainsOf([order]),
+    ]);
+    return orderBody(order, names, captains);
+  }
+
+  private async captainsOf(orders: OrderView[]): Promise<Map<string, Captain>> {
+    const ids = [...new Set(orders.flatMap((order) => order.captainId ?? []))];
+    const now = new Date();
+    const found = await Promise.all(ids.map((id) => this.captains.captain(id, now)));
+    return new Map(found.flatMap((captain) => (captain ? [[captain.id, captain] as const] : [])));
   }
 }
 
@@ -254,7 +284,9 @@ export class CustomerOrdersController {
 function orderBody(
   order: OrderView,
   names: Map<string, { nameAr: string; nameEn: string | null }>,
+  captains: Map<string, Captain>,
 ) {
+  const captain = order.captainId === null ? undefined : captains.get(order.captainId);
   const restaurant = names.get(order.restaurantId);
   if (!restaurant) throw new Error(`order ${order.id} has an unknown restaurant`);
   return {
@@ -280,6 +312,14 @@ function orderBody(
       })),
     },
     restaurant: { id: order.restaurantId, ...restaurant },
+    captain: captain
+      ? {
+          firstName: captain.name.split(' ')[0]!,
+          vehicle: captain.vehicle,
+          atRestaurant:
+            order.captainTrack === 'at_merchant' || order.captainTrack === 'pickup_pending',
+        }
+      : null,
     currency: order.currency,
     money: {
       itemsValue: text(order.money.itemsValue),

@@ -3,6 +3,7 @@
 /// polling while it is down (RA §4.3, CU §4.3).
 library;
 
+export 'src/address.dart';
 export 'src/centrifuge_transport.dart';
 export 'src/live_feed.dart';
 export 'src/transport.dart';
