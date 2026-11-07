@@ -318,6 +318,8 @@ describe('GET /v1/captain/orders/active (CA §9.1–9.3)', () => {
       lines: [{ name: 'شاورما', quantity: 2, options: [], note: 'بدون بصل' }],
       pickupPayment: { amount: '24000', currency: 'TRY' },
       collect: { amount: '28000', currency: 'TRY' },
+      // The seeded defaults of the settings catalogue (C6, K4).
+      radii: { restaurantMetres: 150, customerMetres: 200 },
     });
   });
 });

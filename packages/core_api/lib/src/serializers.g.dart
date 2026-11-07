@@ -109,6 +109,7 @@ Serializers _$serializers =
             CaptainActiveOrderDtoOutputOrderPickupRequestStatusEnum.serializer,
           )
           ..add(CaptainActiveOrderDtoOutputOrderPreparation.serializer)
+          ..add(CaptainActiveOrderDtoOutputOrderRadii.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderRestaurant.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderRestaurantLocation.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderStatusEnum.serializer)

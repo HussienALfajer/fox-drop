@@ -134,6 +134,8 @@ export interface CaptainActiveOrder {
   pickupRequest: PickupRequestView | null;
   pickupDispute: PickupDisputeView | null;
   restaurant: { name: string; address: string | null; phone: string | null; location: Point };
+  // C6, K4: the radii the arrival and delivery buttons are enabled within.
+  radii: { restaurantMetres: number; customerMetres: number };
 }
 
 // The captain's side of an order (CA §9, §15) and operations' commands on the
@@ -823,10 +825,12 @@ export class CaptainOrders {
   ): Promise<CaptainActiveOrder> {
     const restaurant = await this.merchants.restaurant(order.restaurantId, now);
     if (!restaurant) throw new Error(`restaurant ${order.restaurantId} not found`);
-    const [requests, disputes, customer] = await Promise.all([
+    const [requests, disputes, customer, restaurantMetres, customerMetres] = await Promise.all([
       pickupRequestsOf(this.database.db, [order]),
       pickupDisputesOf(this.database.db, [order]),
       this.customerOf(order, captainId),
+      this.settings.get('captain.merchant_arrival_radius_m', { cityId: order.cityId }),
+      this.settings.get('captain.customer_radius_m', { cityId: order.cityId }),
     ]);
     return {
       order,
@@ -839,6 +843,7 @@ export class CaptainOrders {
         phone: restaurant.phone,
         location: restaurant.location,
       },
+      radii: { restaurantMetres, customerMetres },
     };
   }
 

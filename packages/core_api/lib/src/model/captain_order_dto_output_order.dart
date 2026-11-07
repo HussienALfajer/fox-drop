@@ -12,6 +12,7 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_
 import 'package:core_api/src/model/captain_active_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_radii.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -35,6 +36,7 @@ part 'captain_order_dto_output_order.g.dart';
 /// * [collect]
 /// * [pickup]
 /// * [customer]
+/// * [radii]
 @BuiltValue()
 abstract class CaptainOrderDtoOutputOrder
     implements
@@ -90,6 +92,9 @@ abstract class CaptainOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'customer')
   CaptainOrderDtoOutputOrderCustomer get customer;
+
+  @BuiltValueField(wireName: r'radii')
+  CaptainActiveOrderDtoOutputOrderRadii get radii;
 
   CaptainOrderDtoOutputOrder._();
 
@@ -207,6 +212,11 @@ class _$CaptainOrderDtoOutputOrderSerializer
     yield serializers.serialize(
       object.customer,
       specifiedType: const FullType(CaptainOrderDtoOutputOrderCustomer),
+    );
+    yield r'radii';
+    yield serializers.serialize(
+      object.radii,
+      specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderRadii),
     );
   }
 
@@ -385,6 +395,17 @@ class _$CaptainOrderDtoOutputOrderSerializer
                   )
                   as CaptainOrderDtoOutputOrderCustomer;
           result.customer.replace(valueDes);
+          break;
+        case r'radii':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainActiveOrderDtoOutputOrderRadii,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderRadii;
+          result.radii.replace(valueDes);
           break;
         default:
           unhandled.add(key);
