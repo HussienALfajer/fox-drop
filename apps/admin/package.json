@@ -15,6 +15,7 @@
     "@fox-drop/api-schema": "workspace:*",
     "@tanstack/react-query": "5.105.3",
     "@tanstack/react-router": "1.170.46",
+    "centrifuge": "5.8.0",
     "i18next": "26.7.1",
     "qrcode": "1.5.4",
     "react": "19.3.1",

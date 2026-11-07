@@ -218,6 +218,13 @@
       "when": 1794086944325,
       "tag": "0030_notifications_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1794088310083,
+      "tag": "0031_notifications_alert_outbox",
+      "breakpoints": true
     }
   ]
 }

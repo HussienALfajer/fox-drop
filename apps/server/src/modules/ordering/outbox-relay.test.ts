@@ -87,7 +87,7 @@ const versionsOn = async (channel: string) =>
   ((await centrifugo.history(channel)) as { version: number }[]).map((data) => data.version);
 
 describe('the outbox relay (architecture §5.5, E4)', () => {
-  it("publishes each row to its restaurant's and its order's channels, in id order, once", async () => {
+  it("publishes each row to its restaurant's, its city's and its order's channels, in id order, once", async () => {
     const order = { orderId: randomUUID(), restaurantId: randomUUID() };
     const placed = await insert({ ...order, type: 'order.placed', version: 1 });
     const cancelled = await insert({ ...order, type: 'order.cancelled', version: 2 });
@@ -97,6 +97,15 @@ describe('the outbox relay (architecture §5.5, E4)', () => {
     expect(await unpublished([placed, cancelled])).toBe(0);
     expect(await versionsOn(`merchant:${order.restaurantId}`)).toEqual([1, 2]);
     expect(await versionsOn(`order:${order.orderId}`)).toEqual([1, 2]);
+    // The panel's board and detail of the city (architecture §6.2), with the
+    // captain track the customer's channel leaves out.
+    const ops = (await centrifugo.history(`ops:city.${city}`)) as {
+      orderId: string;
+      version: number;
+    }[];
+    expect(
+      ops.filter((data) => data.orderId === order.orderId).map((data) => data.version),
+    ).toEqual([1, 2]);
     const [first] = (await centrifugo.history(`order:${order.orderId}`)) as object[];
     expect(first).toMatchObject({ schema: 1, orderId: order.orderId, status: 'placed' });
 

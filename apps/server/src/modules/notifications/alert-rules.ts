@@ -80,6 +80,11 @@ function rule(
   return { severity, recipients, subject, resolvesItself: true };
 }
 
+// Whether the roles receive any alert (AP §7.3): OWN, OPS and FIN so far.
+export function receivesAlerts(roles: readonly string[]): boolean {
+  return receivedCodes(roles).length > 0;
+}
+
 // The rules a session's roles receive.
 export function receivedCodes(roles: readonly string[]): AlertCode[] {
   return alertCodes.filter((code) =>

@@ -49,10 +49,8 @@ export class AlertsSweep {
     // «لا يمكن إرسال رموز الدخول» would be a false alarm there.
     if (process.env.FOX_DROP_ENVIRONMENT === 'development') return;
     const { numbers, alerts } = await this.pool.read(now);
-    const db = this.database.db;
     const cannotSend = alerts.some((alert) => alert.type === 'cannot_send');
-    await this.alerts.sync(
-      db,
+    await this.sync(
       { type: 'otp_pool', id: POOL_SUBJECT, cityId: null },
       ['codes_cannot_send'],
       cannotSend ? ['codes_cannot_send'] : [],
@@ -66,8 +64,7 @@ export class AlertsSweep {
       ...(await this.alerts.openSubjects('code_number_stopped')).map((subject) => subject.id),
     ]);
     for (const id of subjects) {
-      await this.alerts.sync(
-        db,
+      await this.sync(
         { type: 'otp_number', id, cityId: null },
         ['code_number_stopped'],
         stopped.has(id) ? ['code_number_stopped'] : [],
@@ -89,26 +86,26 @@ export class AlertsSweep {
           cityId: city.id,
           details: { captainName: captain.name },
         };
-        await this.alerts.sync(
-          this.database.db,
-          subject,
-          [code],
-          captain.atLimit ? [code] : [],
-          now,
-        );
+        await this.sync(subject, [code], captain.atLimit ? [code] : [], now);
       }
     }
     // A captain terminated since, or of a city no longer active.
     for (const subject of await this.alerts.openSubjects(code)) {
       if (seen.has(subject.id)) continue;
-      await this.alerts.sync(
-        this.database.db,
-        { type: 'captain', id: subject.id, cityId: subject.cityId },
-        [code],
-        [],
-        now,
-      );
+      await this.sync({ type: 'captain', id: subject.id, cityId: subject.cityId }, [code], [], now);
     }
+  }
+
+  // Each subject's alerts and their outbox rows in one transaction (E4).
+  private sync(
+    subject: AlertSubjectRef,
+    evaluated: readonly AlertCode[],
+    open: readonly AlertCode[],
+    now: Date,
+  ): Promise<void> {
+    return this.database.db.transaction((tx) =>
+      this.alerts.sync(tx, subject, evaluated, open, now),
+    );
   }
 
   private failed(what: string, error: unknown): void {

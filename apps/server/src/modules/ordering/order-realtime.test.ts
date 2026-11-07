@@ -9,6 +9,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ApiModule } from '../../api.module.js';
 import { startTestCentrifugo, type TestCentrifugo } from '../../centrifugo/test-centrifugo.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
+import { DATABASE } from '../../database/database.module.js';
+import type { Database } from '../../database/database.js';
 import { createApiApp } from '../../http/create-api-app.js';
 import { createBackgroundContext } from '../../roles/start-role.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
@@ -17,6 +19,8 @@ import { DispatchService } from '../dispatch/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService, type Point } from '../geo/index.js';
 import {
+  ADMIN_SESSION_COOKIE,
+  AdminSessionsService,
   CaptainAccountsService,
   CODE_SENDER,
   type DevelopmentCodeSender,
@@ -24,6 +28,7 @@ import {
 } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
+import { OrderAlerts } from './order-alerts.js';
 import { OrderTimers } from './order-timers.js';
 
 // Architecture §6.1–6.2, RA §4.3, CU §4.3: the apps connect to Centrifugo
@@ -212,7 +217,7 @@ async function place(headers: Record<string, string>): Promise<string> {
 
 // The proxy's answer to a subscription, as Centrifugo asks for it.
 async function proxied(
-  party: 'customer' | 'merchant' | 'captain',
+  party: 'customer' | 'merchant' | 'captain' | 'admin',
   token: string,
   channel: string,
   secret: string | null = proxySecret,
@@ -613,6 +618,239 @@ describe("the captain's channel (architecture §6.2, CA §15)", () => {
       expect(await first.disconnected).toBe(4501);
     } finally {
       first.client.disconnect();
+    }
+  });
+});
+
+// A panel user with these roles: the cookie of its session.
+let operators = 0;
+async function operator(roles: string[]): Promise<Record<string, string>> {
+  return (await operatorAccount(roles)).cookies;
+}
+
+async function operatorAccount(
+  roles: string[],
+): Promise<{ accountId: string; sessionId: string; cookies: Record<string, string> }> {
+  operators += 1;
+  const { rows } = await sql.query(
+    `INSERT INTO identity.admin_accounts (name, email, status, password_hash, totp_secret_encrypted)
+     VALUES ($1, $2, 'active', 'not used', 'not used') RETURNING id`,
+    [`Operator ${operators}`, `realtime${operators}@example.test`],
+  );
+  for (const role of roles) {
+    await sql.query(
+      'INSERT INTO identity.admin_account_roles (account_id, role_code) VALUES ($1, $2)',
+      [rows[0].id, role],
+    );
+  }
+  const { token, session } = await app
+    .get(AdminSessionsService)
+    .start(
+      app.get<Database>(DATABASE).db,
+      rows[0].id,
+      { ipAddress: '203.0.113.9', device: 'test' },
+      new Date(),
+    );
+  return {
+    accountId: rows[0].id,
+    sessionId: session.id,
+    cookies: { [ADMIN_SESSION_COOKIE]: token },
+  };
+}
+
+async function panelToken(cookies: Record<string, string>): Promise<string> {
+  const answer = await app.inject({ method: 'POST', url: '/v1/admin/realtime/token', cookies });
+  expect(answer.statusCode).toBe(200);
+  return answer.json().token as string;
+}
+
+const azazId = async (): Promise<string> =>
+  (await sql.query("SELECT id FROM geo.cities WHERE code = 'AZ'")).rows[0].id;
+
+describe("the panel's city channel (architecture §6.2, §10.3)", () => {
+  it('issues a token for the cookie session, and none without one', async () => {
+    const claims = decodeJwt(await panelToken(await operator(['OPS'])));
+    expect(claims.meta).toMatchObject({ party: 'admin' });
+    expect(claims.exp! - claims.iat!).toBe(15 * 60);
+    const anonymous = await app.inject({ method: 'POST', url: '/v1/admin/realtime/token' });
+    expect(anonymous.statusCode).toBe(401);
+  });
+
+  it('lets in the users who see the board or receive alerts, and nobody else (owner decision 2026-11-08)', async () => {
+    const channel = `ops:city.${await azazId()}`;
+    for (const roles of [['OPS'], ['OWN'], ['SUP'], ['FIN']]) {
+      const token = await panelToken(await operator(roles));
+      expect((await proxied('admin', token, channel)).json(), roles.join()).toEqual({ result: {} });
+    }
+    const data = await panelToken(await operator(['DATA']));
+    expect((await proxied('admin', data, channel)).json()).toMatchObject({ error: { code: 403 } });
+    const ops = await panelToken(await operator(['OPS']));
+    for (const malformed of [`ops:${await azazId()}`, 'ops:city.x', `ops:city.${randomUUID()}:x`]) {
+      expect((await proxied('admin', ops, malformed)).json()).toMatchObject({
+        error: { code: 403 },
+      });
+    }
+    // An app's session never reaches the panel's channel, nor the panel an app's.
+    const merchant = await realtimeToken('merchant', await signedIn('merchant'));
+    expect((await proxied('merchant', merchant, channel)).json()).toMatchObject({
+      error: { code: 403 },
+    });
+    expect((await proxied('admin', merchant, channel)).json()).toMatchObject({
+      error: { code: 403 },
+    });
+    expect((await proxied('admin', ops, `merchant:${restaurant}`)).json()).toMatchObject({
+      error: { code: 403 },
+    });
+  });
+
+  it('disconnects a panel session past its idle end or of a disabled account, without recording activity (AP §5.2)', async () => {
+    const channel = `ops:city.${await azazId()}`;
+    const idle = await operatorAccount(['OPS']);
+    const idleToken = await panelToken(idle.cookies);
+    const before = new Date(Date.now() - 2 * 3_600_000);
+    await sql.query('UPDATE identity.admin_sessions SET last_activity_at = $2 WHERE id = $1', [
+      idle.sessionId,
+      before,
+    ]);
+    expect((await proxied('admin', idleToken, channel)).json()).toEqual({
+      disconnect: { code: 4501, reason: 'session ended' },
+    });
+    const { rows } = await sql.query(
+      'SELECT last_activity_at, ended_at FROM identity.admin_sessions WHERE id = $1',
+      [idle.sessionId],
+    );
+    expect(rows[0]).toEqual({ last_activity_at: before, ended_at: null });
+
+    const disabled = await operatorAccount(['OPS']);
+    const disabledToken = await panelToken(disabled.cookies);
+    await sql.query("UPDATE identity.admin_accounts SET status = 'disabled' WHERE id = $1", [
+      disabled.accountId,
+    ]);
+    expect((await proxied('admin', disabledToken, channel)).json()).toEqual({
+      disconnect: { code: 4501, reason: 'session ended' },
+    });
+  });
+
+  it('ends the connection at a forced sign-out and checks it again at a role change (AP §5.3, §6.1)', async () => {
+    const channel = `ops:city.${await azazId()}`;
+    const owner = await operator(['OWN']);
+    const forced = await operatorAccount(['OPS']);
+    const forcedBoard = subscribed(await panelToken(forced.cookies), channel);
+    const demoted = await operatorAccount(['OPS']);
+    const client = new Centrifuge(centrifugo.websocketUrl, {
+      token: await panelToken(demoted.cookies),
+      websocket: WebSocket,
+    });
+    const subscription = client.newSubscription(channel);
+    const states: (string | number)[] = [];
+    subscription.on('subscribed', () => states.push('subscribed'));
+    subscription.on('unsubscribed', (context) => states.push(context.code));
+    subscription.subscribe();
+    client.connect();
+    try {
+      expect(await forcedBoard.outcome).toBe('subscribed');
+      await eventually(() => states.includes('subscribed'));
+
+      const signOut = await app.inject({
+        method: 'POST',
+        url: `/v1/admin/team/users/${forced.accountId}/sign-out`,
+        cookies: owner,
+      });
+      expect(signOut.statusCode).toBeLessThan(300);
+      expect(await forcedBoard.disconnected).toBe(4501);
+
+      // DATA neither sees the board nor receives alerts: the reconnect's
+      // subscription is refused.
+      const roles = await app.inject({
+        method: 'PUT',
+        url: `/v1/admin/team/users/${demoted.accountId}/roles`,
+        cookies: owner,
+        payload: { roles: ['DATA'] },
+      });
+      expect(roles.statusCode).toBeLessThan(300);
+      await eventually(() => states.includes(403));
+    } finally {
+      forcedBoard.client.disconnect();
+      client.disconnect();
+    }
+  });
+
+  it('ends the connection of a panel session that signs out', async () => {
+    const cookies = await operator(['OPS']);
+    const channel = `ops:city.${await azazId()}`;
+    const board = subscribed(await panelToken(cookies), channel);
+    try {
+      expect(await board.outcome).toBe('subscribed');
+      await app.inject({ method: 'POST', url: '/v1/admin/auth/sign-out', cookies });
+      expect(await board.disconnected).toBe(4501);
+    } finally {
+      board.client.disconnect();
+    }
+  });
+
+  it("carries the order's events and its alert «مطعم لم يقبل» to the board within seconds (AP §7.3)", async () => {
+    const board = subscribed(
+      await panelToken(await operator(['OPS'])),
+      `ops:city.${await azazId()}`,
+    );
+    try {
+      expect(await board.outcome).toBe('subscribed');
+      const orderId = await place(await signedIn('customer'));
+      const ofOrder = () =>
+        board.received.filter((data) => (data as { orderId?: string }).orderId === orderId);
+      await eventually(() => ofOrder().length > 0);
+      expect(ofOrder()[0]).toMatchObject({ type: 'order.placed', orderId, version: 1 });
+      expect(ofOrder()[0]).not.toHaveProperty('customerAccountId');
+
+      // The restaurant leaves it unaccepted past order.merchant_accept_alert_min.
+      const { rows } = await sql.query('SELECT placed_at FROM ordering.orders WHERE id = $1', [
+        orderId,
+      ]);
+      const placedAt: Date = rows[0].placed_at;
+      await worker
+        .get(OrderAlerts)
+        .sync(
+          { orderId, placedAt: placedAt.toISOString() },
+          new Date(placedAt.getTime() + 4 * 60_000),
+          false,
+        );
+      const alerts = await app.inject({
+        method: 'GET',
+        url: `/v1/admin/alerts?cityId=${await azazId()}`,
+        cookies: await operator(['OPS']),
+      });
+      const alert = (
+        alerts.json().alerts as { id: string; code: string; subjectId: string }[]
+      ).find((each) => each.subjectId === orderId);
+      expect(alert).toMatchObject({ code: 'restaurant_not_accepted' });
+      await eventually(() =>
+        board.received.some((data) => (data as { alertId?: string }).alertId === alert!.id),
+      );
+      expect(
+        board.received.find((data) => (data as { alertId?: string }).alertId === alert!.id),
+      ).toEqual({
+        type: 'alert.raised',
+        schema: 1,
+        alertId: alert!.id,
+        at: expect.any(String) as unknown,
+      });
+
+      // «استلام» reaches every board of the city, so its sound stops (AP §7.3).
+      const taken = await app.inject({
+        method: 'POST',
+        url: `/v1/admin/alerts/${alert!.id}/acknowledge`,
+        cookies: await operator(['OPS']),
+      });
+      expect(taken.statusCode).toBe(200);
+      await eventually(() =>
+        board.received.some(
+          (data) =>
+            (data as { alertId?: string; type: string }).alertId === alert!.id &&
+            (data as { type: string }).type === 'alert.acknowledged',
+        ),
+      );
+    } finally {
+      board.client.disconnect();
     }
   });
 });

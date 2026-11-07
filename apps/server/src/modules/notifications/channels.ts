@@ -9,3 +9,6 @@ export const captainChannel = (captainId: string): string => `captain:${captainI
 
 // The customer's devices while the order is active: its status.
 export const orderChannel = (orderId: string): string => `order:${orderId}`;
+
+// Panel users with access to the city: its orders and alerts (§6.2).
+export const opsChannel = (cityId: string): string => `ops:city.${cityId}`;

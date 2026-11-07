@@ -25,8 +25,8 @@ function linesText(lines: Lines): string {
   return lines.map(formatMoney).join(' + ');
 }
 
-// AP §9.3.1: the order detail beside the board, read again every 10
-// seconds. Its actions come with their slices; this one has «تعيين كابتن»
+// AP §9.3.1: the order detail beside the board, live over the board's
+// channel. Its actions come with their slices; this one has «تعيين كابتن»
 // (AP §9.3.2), whose picker opens below it.
 export function OrderDetailPage() {
   const { t } = useTranslation();
@@ -34,9 +34,9 @@ export function OrderDetailPage() {
   const { city: cityCode } = route.useSearch();
   const { session } = route.useRouteContext();
   const cities = useQuery(citiesQuery);
-  const order = useQuery(orderQuery(orderId));
   // The board's city; the order's own comes with a second city.
   const city = cities.data && chosenCity(cities.data, cityCode);
+  const order = useQuery(orderQuery(orderId, city?.id));
   const close = (
     <p>
       <Link to="/orders" search>

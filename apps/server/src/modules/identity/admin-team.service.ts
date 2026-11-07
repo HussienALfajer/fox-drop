@@ -219,6 +219,7 @@ export class AdminTeamService {
         tx,
       );
     });
+    await this.sessions.notifyAccessChanged(accountId);
   }
 
   // AP §5.3: takes effect at once and ends every session of the user.
@@ -229,6 +230,7 @@ export class AdminTeamService {
     now = new Date(),
   ): Promise<void> {
     if (accountId === actor.accountId) throw new TeamRefusedError('own_account');
+    let ended: string[] = [];
     await this.database.db.transaction(async (tx) => {
       await this.lockTeam(tx, actor);
       const account = await this.account(tx, accountId);
@@ -240,7 +242,8 @@ export class AdminTeamService {
         .where(eq(adminAccounts.id, accountId));
       // An old link never works again after an enable; OWN issues a new one.
       await this.expireLinks(tx, accountId, now);
-      const sessionsEnded = await this.sessions.endAll(tx, accountId, 'account_disabled', now);
+      ended = await this.sessions.endAll(tx, accountId, 'account_disabled', now);
+      const sessionsEnded = ended.length;
       await this.audit.recordWrite(
         {
           actor: this.actor(actor),
@@ -254,6 +257,7 @@ export class AdminTeamService {
         tx,
       );
     });
+    this.sessions.notifyEnded(ended);
   }
 
   // Back to where the user was before: active once set up, waiting for its
@@ -299,10 +303,12 @@ export class AdminTeamService {
     context: AuditRequestContext,
     now = new Date(),
   ): Promise<void> {
+    let ended: string[] = [];
     await this.database.db.transaction(async (tx) => {
       await this.lockTeam(tx, actor);
       await this.account(tx, accountId);
-      const sessionsEnded = await this.sessions.endAll(tx, accountId, 'forced_sign_out', now);
+      ended = await this.sessions.endAll(tx, accountId, 'forced_sign_out', now);
+      const sessionsEnded = ended.length;
       await this.audit.recordWrite(
         {
           actor: this.actor(actor),
@@ -316,6 +322,7 @@ export class AdminTeamService {
         tx,
       );
     });
+    this.sessions.notifyEnded(ended);
   }
 
   // AP §5.3, owner decision 2026-11-05: the TOTP and the unused backup codes
@@ -328,7 +335,8 @@ export class AdminTeamService {
     context: AuditRequestContext,
     now = new Date(),
   ): Promise<IssuedLink> {
-    return this.database.db.transaction(async (tx) => {
+    let ended: string[] = [];
+    const result = await this.database.db.transaction(async (tx) => {
       await this.lockTeam(tx, actor);
       const account = await this.account(tx, accountId);
       if (account.status !== 'active' && account.status !== 'totp_reset') {
@@ -355,7 +363,8 @@ export class AdminTeamService {
           ),
         );
       await this.expireLinks(tx, accountId, now);
-      const sessionsEnded = await this.sessions.endAll(tx, accountId, 'totp_reset', now);
+      ended = await this.sessions.endAll(tx, accountId, 'totp_reset', now);
+      const sessionsEnded = ended.length;
       const link = await this.issueLink(tx, accountId, 'totp_reset', now);
       await this.audit.recordWrite(
         {
@@ -376,6 +385,8 @@ export class AdminTeamService {
       );
       return link;
     });
+    this.sessions.notifyEnded(ended);
+    return result;
   }
 
   // A new setup link for a user who has not used theirs (AP §5.3: the link

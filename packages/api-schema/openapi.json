@@ -3686,6 +3686,32 @@
         ]
       }
     },
+    "/v1/admin/realtime/token": {
+      "post": {
+        "operationId": "adminRealtimeToken",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RealtimeTokenDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/alerts": {
       "get": {
         "operationId": "adminAlertsList",

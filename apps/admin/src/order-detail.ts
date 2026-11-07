@@ -1,11 +1,13 @@
 import type { components } from '@fox-drop/api-schema';
 import { queryOptions } from '@tanstack/react-query';
 import { api } from './api.js';
+import { pollUnlessLive } from './live.js';
 import { POLL_MS } from './orders-board.js';
 
 export type OrderDetail = components['schemas']['AdminOrderDto_Output']['order'];
 
-export function orderQuery(orderId: string) {
+// cityId: the board's city, whose channel carries the order's events.
+export function orderQuery(orderId: string, cityId: string | undefined) {
   return queryOptions({
     queryKey: ['order', orderId],
     // null for an order that does not exist (404 unknown_order).
@@ -17,7 +19,7 @@ export function orderQuery(orderId: string) {
       if (!data) throw new Error('The order read failed.');
       return data.order;
     },
-    refetchInterval: POLL_MS,
+    refetchInterval: pollUnlessLive(cityId, POLL_MS),
     refetchIntervalInBackground: true,
   });
 }

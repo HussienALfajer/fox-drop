@@ -14,6 +14,7 @@ import { reportError } from '../../observability/error-tracking.js';
 import {
   captainChannel,
   merchantChannel,
+  opsChannel,
   orderChannel,
   PublishFailedError,
   RealtimePublisher,
@@ -120,6 +121,8 @@ export class OutboxRelay {
             await this.publisher.broadcast(
               [
                 merchantChannel(payload.restaurantId),
+                // Architecture §6.2: the panel's board and detail of the city.
+                opsChannel(payload.cityId),
                 // CA §15: the offer's captain, or the order's once assigned.
                 ...(payload.captainId ? [captainChannel(payload.captainId)] : []),
               ],

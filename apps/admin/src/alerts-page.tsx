@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getRouteApi, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useOpsChannel } from './live.js';
 import {
   type AdminAlert,
   alertHistoryQuery,
@@ -34,6 +35,7 @@ export function AlertsPage() {
 function CityAlerts({ city }: { city: City }) {
   const { t } = useTranslation();
   const open = useQuery(alertsQuery(city.id));
+  useOpsChannel(city.id);
   const [showHistory, setShowHistory] = useState(false);
   const acknowledge = useAcknowledgeAlert(city.id);
   return (

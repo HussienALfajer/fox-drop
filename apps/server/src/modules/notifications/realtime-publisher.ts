@@ -28,6 +28,10 @@ interface CentrifugoReply {
 // (4500 to 4999), the same as the proxy's answer to an ended session.
 export const SESSION_ENDED = { code: 4501, reason: 'session ended' } as const;
 
+// A disconnect whose client reconnects at once (4000 to 4499), so every
+// subscription is checked again: a panel user's roles changed (AP §6.1).
+export const ACCESS_CHANGED = { code: 4001, reason: 'access changed' } as const;
+
 // Centrifugo's HTTP API (architecture §6.1): publishing to channels and
 // disconnecting a session's connections.
 @Injectable()
@@ -52,8 +56,11 @@ export class RealtimePublisher {
 
   // Ends the connections of an app session (the connection token's subject),
   // so a device signed out stops receiving at once (CU §5.4, RA §5.1).
-  async disconnectSession(sessionId: string): Promise<void> {
-    await this.call('disconnect', { user: sessionId, disconnect: SESSION_ENDED });
+  async disconnectSession(
+    sessionId: string,
+    disconnect: typeof SESSION_ENDED | typeof ACCESS_CHANGED = SESSION_ENDED,
+  ): Promise<void> {
+    await this.call('disconnect', { user: sessionId, disconnect });
   }
 
   private async call(method: string, body: object): Promise<CentrifugoReply> {

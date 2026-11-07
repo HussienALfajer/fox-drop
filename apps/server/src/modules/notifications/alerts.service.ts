@@ -11,9 +11,11 @@ import {
   bySeverityThenAge,
   receivedCodes,
 } from './alert-rules.js';
-import { alerts } from './schema.js';
+import { type AlertEventType, alertOutbox, alerts } from './schema.js';
 
-type Executor = Pick<NodePgDatabase, 'select' | 'insert' | 'update'>;
+// A transaction, never the pool: an alert's change and its outbox row
+// commit together (E4).
+type Executor = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 
 // What an alert is about, and what the panel shows beside its label.
 export interface AlertSubjectRef {
@@ -82,7 +84,7 @@ export class AlertsService {
         row.resolvedAt === null && !open.includes(row.code) && ALERT_RULES[row.code].resolvesItself,
     );
     if (stale.length > 0) {
-      await executor
+      const resolved = await executor
         .update(alerts)
         .set({ resolvedAt: now })
         .where(
@@ -93,7 +95,9 @@ export class AlertsService {
             ),
             isNull(alerts.resolvedAt),
           ),
-        );
+        )
+        .returning();
+      await recordEvents(executor, 'alert.resolved', resolved, now);
     }
     const missing = open.filter((code) =>
       ALERT_RULES[code].resolvesItself
@@ -101,7 +105,7 @@ export class AlertsService {
         : !rows.some((row) => row.code === code),
     );
     if (missing.length === 0) return;
-    await executor
+    const raised = await executor
       .insert(alerts)
       .values(
         missing.map((code) => ({
@@ -118,7 +122,9 @@ export class AlertsService {
       .onConflictDoNothing({
         target: [alerts.code, alerts.subjectType, alerts.subjectId],
         where: sql`${alerts.resolvedAt} IS NULL`,
-      });
+      })
+      .returning();
+    await recordEvents(executor, 'alert.raised', raised, now);
   }
 
   // The subjects with an open alert of a rule, so a sweep resolves the ones
@@ -180,9 +186,46 @@ export class AlertsService {
         })
         .where(eq(alerts.id, alertId))
         .returning();
+      await recordEvents(tx, 'alert.acknowledged', [updated!], now);
       return toAlert(updated!);
     });
   }
+}
+
+// The alert outbox payload, schema 1.
+export interface AlertEventPayload {
+  schema: 1;
+  alertId: string;
+  code: AlertCode;
+  severity: AlertSeverity;
+  at: string;
+}
+
+// E4: the panel hears each change on ops:city.{city_id} once it commits
+// (alerts-relay.ts). The body names the alert only; the panel reads the list
+// again, which answers what the session's roles receive.
+async function recordEvents(
+  executor: Executor,
+  type: AlertEventType,
+  rows: (typeof alerts.$inferSelect)[],
+  now: Date,
+): Promise<void> {
+  if (rows.length === 0) return;
+  await executor.insert(alertOutbox).values(
+    rows.map((row) => ({
+      createdAt: now,
+      cityId: row.cityId,
+      type,
+      alertId: row.id,
+      payload: {
+        schema: 1,
+        alertId: row.id,
+        code: row.code,
+        severity: row.severity,
+        at: now.toISOString(),
+      } satisfies AlertEventPayload,
+    })),
+  );
 }
 
 function toAlert(row: typeof alerts.$inferSelect): Alert {

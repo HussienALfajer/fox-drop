@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  bigint,
   check,
   index,
   jsonb,
@@ -66,6 +67,38 @@ export const alerts = notifications.table(
     check(
       'alerts_acknowledged',
       sql`(${table.acknowledgedAt} IS NULL) = (${table.acknowledgedBy} IS NULL)`,
+    ),
+  ],
+);
+
+// The alert changes the panel hears on ops:city.{city_id} (architecture §6.2,
+// E4): one row per alert raised, acknowledged or resolved, written in the
+// transaction of the change and published by the worker's relay
+// (alerts-relay.ts). The application role inserts rows and may change only
+// published_at.
+export const alertEventTypes = ['alert.raised', 'alert.acknowledged', 'alert.resolved'] as const;
+export type AlertEventType = (typeof alertEventTypes)[number];
+
+export const alertOutbox = notifications.table(
+  'alert_outbox',
+  {
+    id: bigint('id', { mode: 'bigint' }).primaryKey().generatedAlwaysAsIdentity(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    // The alert's city; null for the whole platform, published to every city.
+    cityId: uuid('city_id'),
+    type: text('type', { enum: alertEventTypes }).notNull(),
+    alertId: uuid('alert_id').notNull(),
+    // Its typed, versioned body (schema 1: the alert, its code, severity and time).
+    payload: jsonb('payload').notNull(),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('alert_outbox_unpublished')
+      .on(table.id)
+      .where(sql`${table.publishedAt} IS NULL`),
+    check(
+      'alert_outbox_type',
+      sql`${table.type} IN (${sql.raw(alertEventTypes.map((value) => `'${value}'`).join(', '))})`,
     ),
   ],
 );

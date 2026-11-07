@@ -59,7 +59,13 @@ services:
           "http": {"static_headers": {"X-Centrifugo-Proxy-Secret": "${CENTRIFUGO_PROXY_SECRET:?copy .env.example to .env}"}}},
          {"name": "captain", "endpoint": "http://host.docker.internal:3000/v1/captain/realtime/subscribe",
           "timeout": "3s", "include_connection_meta": true,
+          "http": {"static_headers": {"X-Centrifugo-Proxy-Secret": "${CENTRIFUGO_PROXY_SECRET:?copy .env.example to .env}"}}},
+         {"name": "admin", "endpoint": "http://host.docker.internal:3000/v1/admin/realtime/subscribe",
+          "timeout": "3s", "include_connection_meta": true,
           "http": {"static_headers": {"X-Centrifugo-Proxy-Secret": "${CENTRIFUGO_PROXY_SECRET:?copy .env.example to .env}"}}}]
+      # The panel's browsers (architecture §6.1): Vite's development server and
+      # its preview, which forward /connection/websocket here.
+      CENTRIFUGO_CLIENT_ALLOWED_ORIGINS: http://localhost:5173 http://localhost:4173
     volumes:
       - ./infra/centrifugo/config.yaml:/centrifugo/config.yaml:ro
     extra_hosts:

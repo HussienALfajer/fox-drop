@@ -554,6 +554,25 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
     ).rejects.toThrow(/permission denied/);
   });
 
+  it('let the application role mark an alert outbox row published and change nothing else', async () => {
+    const { rows } = await appQuery(
+      `INSERT INTO notifications.alert_outbox (created_at, city_id, type, alert_id, payload) VALUES (now(), NULL, 'alert.raised', '${randomUUID()}', '{}') RETURNING id`,
+    );
+    await appQuery(
+      `UPDATE notifications.alert_outbox SET published_at = now() WHERE id = ${rows[0].id}`,
+    );
+    await expect(
+      appQuery(
+        `UPDATE notifications.alert_outbox SET type = 'alert.resolved' WHERE id = ${rows[0].id}`,
+      ),
+    ).rejects.toThrow(/permission denied/);
+    await expect(
+      appQuery(
+        `INSERT INTO notifications.alert_outbox (created_at, type, alert_id, payload) VALUES (now(), 'alert.closed', '${randomUUID()}', '{}')`,
+      ),
+    ).rejects.toThrow(/alert_outbox_type/);
+  });
+
   it("install pg-boss as the migration role, with the application role's rows only", async () => {
     const { rows } = await appQuery(
       "SELECT name FROM pgboss.queue WHERE name LIKE 'ordering-%' ORDER BY name",
