@@ -405,5 +405,7 @@
   "customerStatusCancelled": "نعتذر، أُلغي طلبك",
   "@customerStatusCancelled": {"description": "A rejected, cancelled or failed order until slice 1.14e shows its reason (CU Appendix C)."},
   "customerArrivesAbout": "يصل حوالي {time}",
-  "@customerArrivesAbout": {"description": "The promised time (CU §8.4).", "placeholders": {"time": {"type": "String"}}}
+  "@customerArrivesAbout": {"description": "The promised time (CU §8.4).", "placeholders": {"time": {"type": "String"}}},
+  "customerOrderInvalid": "تحقق من بيانات العنوان والملاحظة ثم أكّد مجدداً.",
+  "@customerOrderInvalid": {"description": "A 400 answer to the order command; the spec gives no wording."}
 }

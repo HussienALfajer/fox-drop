@@ -9,13 +9,14 @@ enum ProblemAction { none, remove, acceptPrice, addItems, changeAddress, retry }
 
 /// A blocking problem as checkout shows it, at the top (CU §10.6).
 class ProblemView {
-  const ProblemView(this.text, this.action, {this.line, this.newPrice});
+  const ProblemView(this.text, this.action, {this.lineKey, this.newPrice});
 
   final String text;
   final ProblemAction action;
 
-  /// The cart line it is about.
-  final int? line;
+  /// The key of the cart line it is about ([CartLine.key]): the action acts
+  /// on that line, even when the cart changed since the quote.
+  final String? lineKey;
 
   /// The quote's unit price for «موافق» on a new price.
   final String? newPrice;
@@ -100,7 +101,7 @@ List<ProblemView> problemViews(
               l10n.formatMoney(newPrice ?? '0', quote.currency),
             ),
             newPrice == null ? ProblemAction.remove : ProblemAction.acceptPrice,
-            line: index,
+            lineKey: cartLine?.key,
             newPrice: newPrice,
           ),
         );
@@ -113,7 +114,7 @@ List<ProblemView> problemViews(
           ProblemView(
             l10n.customerItemGone(name),
             ProblemAction.remove,
-            line: index,
+            lineKey: cartLine?.key,
           ),
         );
       default:

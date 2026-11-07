@@ -1311,6 +1311,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'يصل حوالي {time}'**
   String customerArrivesAbout(String time);
+
+  /// A 400 answer to the order command; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحقق من بيانات العنوان والملاحظة ثم أكّد مجدداً.'**
+  String get customerOrderInvalid;
 }
 
 class _AppLocalizationsDelegate

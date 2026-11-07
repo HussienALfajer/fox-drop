@@ -65,7 +65,10 @@ void main() {
     expect(l10n.formatMinuteOfDay(9 * 60 + 5), '9:05 ص');
     expect(l10n.formatMinuteOfDay(12 * 60), '12:00 م');
     expect(l10n.formatMinuteOfDay(23 * 60 + 30), '11:30 م');
-    expect(l10n.formatDate(DateTime(2026, 3, 7)), '07/03/2026');
+    expect(l10n.formatDate(DateTime.utc(2026, 3, 6, 22)), '07/03/2026');
+    // Moments are on the city's clock (UTC+3), whatever the phone's zone.
+    expect(l10n.formatTime(DateTime.utc(2026, 11, 5, 15, 30)), '6:30 م');
+    expect(l10n.weekdayOf(DateTime.utc(2026, 11, 7, 22)), 'الأحد');
     expect(l10n.weekdayName(0), 'الأحد');
     expect(l10n.weekdayName(6), 'السبت');
     expect(l10n.durationMinutes(12), '12 د');

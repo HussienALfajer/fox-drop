@@ -171,7 +171,7 @@ Future<TestApp> browsingApp(
           nourId,
           'مطعم النور',
           state: 'closed',
-          opensAt: DateTime(2026, 11, 8, 9).toUtc().toIso8601String(),
+          opensAt: DateTime.utc(2026, 11, 8, 6).toIso8601String(),
         ),
       ],
     }),

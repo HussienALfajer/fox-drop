@@ -50,8 +50,12 @@ class CartLine {
   final String unitPrice;
   final String currency;
 
-  /// Lines with this key are one line.
-  String get key => '$itemId|${([...optionIds]..sort()).join(',')}|$note';
+  /// Lines with this key are one line: the same item, options and note.
+  String get key => jsonEncode([
+    itemId,
+    [...optionIds]..sort(),
+    note,
+  ]);
 
   String get lineTotal =>
       (BigInt.parse(unitPrice) * BigInt.from(quantity)).toString();
@@ -187,6 +191,7 @@ class CartController extends AsyncNotifier<CartState> {
 
   /// «−» and «+»; 0 removes the line.
   Future<void> setQuantity(int index, int quantity) => _change((lines) {
+    if (index >= lines.length) return;
     if (quantity <= 0) {
       lines.removeAt(index);
     } else {
@@ -196,22 +201,48 @@ class CartController extends AsyncNotifier<CartState> {
     }
   });
 
-  Future<void> remove(int index) => _change((lines) => lines.removeAt(index));
+  Future<void> remove(int index) => _change((lines) {
+    if (index < lines.length) lines.removeAt(index);
+  });
 
-  /// «تعديل»: the item sheet's new choice for the line.
-  Future<void> replace(int index, CartLine line) =>
-      _change((lines) => lines[index] = line);
+  /// «تعديل»: the item sheet's new choice for the line. A choice that
+  /// matches another line joins it (CU §9.4).
+  Future<void> replace(int index, CartLine line) => _change((lines) {
+    if (index >= lines.length) return;
+    final other = lines.indexWhere((l) => l.key == line.key);
+    if (other == -1 || other == index) {
+      lines[index] = line;
+      return;
+    }
+    final quantity = lines[other].quantity + line.quantity;
+    lines[other] = lines[other].copyWith(
+      quantity: quantity > maxQuantity ? maxQuantity : quantity,
+    );
+    lines.removeAt(index);
+  });
 
-  /// «موافق» on «تغيّر سعر…» (CU Appendix C): the customer saw the new price.
-  Future<void> acceptPrice(int index, String unitPrice) => _change(
-    (lines) => lines[index] = lines[index].copyWith(unitPrice: unitPrice),
-  );
+  /// «حذف» on a problem: the line with [key], if it is still in the cart.
+  Future<void> removeKey(String key) =>
+      _change((lines) => lines.removeWhere((l) => l.key == key));
+
+  /// «موافق» on «تغيّر سعر…» (CU Appendix C): the customer saw the new price
+  /// of the line with [key], if it is still in the cart.
+  Future<void> acceptPrice(String key, String unitPrice) => _change((lines) {
+    final index = lines.indexWhere((l) => l.key == key);
+    if (index != -1) {
+      lines[index] = lines[index].copyWith(unitPrice: unitPrice);
+    }
+  });
 
   /// After the order is placed (CU §10.7).
   Future<void> clear() async {
     await _store.delete(_cartKey);
     state = const AsyncData(CartState(null));
   }
+
+  /// The cart, emptied first when it is older than [cartLifetime] (CU
+  /// §10.1): checkout and the order command read it through this.
+  Future<Cart?> current() => _fresh();
 
   Future<Cart?> _fresh() async {
     final cart = (await future).cart;

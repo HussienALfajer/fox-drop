@@ -10,22 +10,30 @@ import 'quote.dart';
 /// A blocking problem with the action that fixes it (CU §10.6, Appendix C),
 /// shown by the cart and checkout.
 class ProblemTile extends ConsumerWidget {
-  const ProblemTile({super.key, required this.problem, this.onChangeAddress});
+  const ProblemTile({
+    super.key,
+    required this.problem,
+    this.onChangeAddress,
+    this.enabled = true,
+  });
 
   final ProblemView problem;
 
   /// «تغيير العنوان»; the cart has none.
   final VoidCallback? onChangeAddress;
 
+  /// Off while a new quote is asked for.
+  final bool enabled;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final cart = ref.read(cartProvider.notifier);
-    final line = problem.line;
+    final line = problem.lineKey;
     final (String? label, VoidCallback? action) = switch (problem.action) {
       ProblemAction.remove when line != null => (
         l10n.customerRemove,
-        () => cart.remove(line),
+        () => cart.removeKey(line),
       ),
       ProblemAction.acceptPrice when line != null => (
         l10n.customerOk,
@@ -52,7 +60,7 @@ class ProblemTile extends ConsumerWidget {
       title: Text(problem.text),
       trailing: label == null
           ? null
-          : TextButton(onPressed: action, child: Text(label)),
+          : TextButton(onPressed: enabled ? action : null, child: Text(label)),
     );
   }
 }

@@ -51,7 +51,7 @@ void main() {
     expect(
       restaurantStateText(
         l10n,
-        state('closed', opensAt: DateTime(2026, 11, 8, 9)),
+        state('closed', opensAt: DateTime.utc(2026, 11, 8, 6)),
         now,
       ),
       'مغلق — يفتح الأحد 9:00 ص',
@@ -59,7 +59,11 @@ void main() {
     expect(
       restaurantStateText(
         l10n,
-        state('holiday', until: DateTime(2026, 11, 10), message: 'عطلة العيد'),
+        state(
+          'holiday',
+          until: DateTime.utc(2026, 11, 9, 21),
+          message: 'عطلة العيد',
+        ),
         now,
       ),
       'مغلق حتى 10/11/2026\nعطلة العيد',

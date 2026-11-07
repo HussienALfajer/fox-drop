@@ -9,6 +9,7 @@ import '../cart/cart.dart';
 import '../device.dart';
 import '../location/delivery_point.dart';
 import '../location/position.dart';
+import '../profile/profile.dart';
 import '../router.dart';
 import 'checkout.dart';
 import 'place_order.dart';
@@ -34,7 +35,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _preselect());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // An earlier attempt's failure is not shown again, and an old cart
+      // empties (CU §10.1).
+      ref.read(placeOrderProvider.notifier).done();
+      ref.read(cartProvider.notifier).current();
+      _preselect();
+    });
   }
 
   /// CU §10.3 item 1: the saved address the point came from, or one within
@@ -51,7 +58,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   void _chooseSaved(SavedAddress address) {
-    ref.read(chosenAddressProvider.notifier).choose(address.id);
     final point = ref.read(deliveryPointProvider);
     if (point is PointChecked && point.addressId == address.id) return;
     ref
@@ -65,19 +71,42 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         );
   }
 
-  void _useCurrentLocation() {
-    ref.read(chosenAddressProvider.notifier).choose(null);
-    ref.read(deliveryPointProvider.notifier).useCurrentLocation();
-  }
+  void _useCurrentLocation() =>
+      ref.read(deliveryPointProvider.notifier).useCurrentLocation();
 
   Future<void> _confirm(Quote quote, Cart cart, PointChecked point) async {
     final session = ref.read(customerAuth.session).value;
     if (session is! SignedIn) {
       // CU §10.7 item 2: a guest signs in here and comes back.
-      context.push(signInFrom('/checkout'));
+      context.go(signInFrom('/checkout'));
       return;
     }
-    final addressId = ref.read(chosenAddressProvider);
+    // «أكمل بياناتك» comes before the first order (CU §5.3): the terms are
+    // accepted there, and the server does not check them yet.
+    final bool completed;
+    try {
+      completed = (await ref.read(profileProvider.future))?.completed ?? false;
+    } on Object {
+      ref.invalidate(profileProvider);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).statusError)),
+        );
+      }
+      return;
+    }
+    if (!completed) {
+      if (mounted) {
+        context.go(
+          Uri(
+            path: '/complete-profile',
+            queryParameters: {'from': '/checkout'},
+          ).toString(),
+        );
+      }
+      return;
+    }
+    final addressId = point.addressId;
     final form = ref.read(checkoutFormProvider);
     final problems = formProblems(form, unsaved: addressId == null);
     setState(() => _problems = problems);
@@ -129,12 +158,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    ref.listen(placeOrderProvider, (previous, next) {
-      if (next is PlacePlaced) {
-        ref.read(placeOrderProvider.notifier).done();
-        context.go('/orders/${next.orderId}');
-      }
-    });
     final cart = ref.watch(cartProvider).value?.cart;
     final point = ref.watch(deliveryPointProvider);
     final quote = ref.watch(quoteProvider);
@@ -156,6 +179,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   ProblemTile(
                     problem: problem,
                     onChangeAddress: _useCurrentLocation,
+                    enabled: !quote.isLoading,
                   ),
                 if (place is PlaceFailed)
                   ListTile(
@@ -182,6 +206,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           problems.isNotEmpty ||
                           sending ||
                           quote.isLoading ||
+                          quote.hasError ||
                           point is! PointChecked
                       ? null
                       : () => _confirm(q, cart, point),
@@ -202,7 +227,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   List<Widget> _address(AppLocalizations l10n, DeliveryPointState point) {
     final saved = ref.watch(savedAddressesProvider).value ?? const [];
-    final chosen = ref.watch(chosenAddressProvider);
+    // The address is the point's: a saved one, or the point itself unsaved.
+    final chosen = point is PointChecked ? point.addressId : null;
     final form = ref.watch(checkoutFormProvider);
     final edit = ref.read(checkoutFormProvider.notifier).update;
     String? error(FormProblem problem, String text) =>
@@ -315,7 +341,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           error(FormProblem.directions, l10n.customerLengthUpTo(200)),
           hint: l10n.customerDirectionsHint,
         ),
-        if (ref.watch(customerAuth.session).value is SignedIn) ...[
+        ...[
           CheckboxListTile(
             key: const Key('address-save'),
             value: form.save,
@@ -488,6 +514,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         PlaceFailure.blocked => l10n.customerOrderBlocked,
         PlaceFailure.address => l10n.customerAddressOutside,
         PlaceFailure.saveAddress => l10n.customerSaveAddressFailed,
+        PlaceFailure.invalid => l10n.customerOrderInvalid,
+        PlaceFailure.expired => l10n.customerCartExpired,
         PlaceFailure.unknown => l10n.customerSendFailed,
       };
 }

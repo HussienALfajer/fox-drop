@@ -74,6 +74,10 @@ class PointChecked extends DeliveryPointState {
 /// decision 2026-11-07: from the phone's location, the map waits for Phase
 /// 2). It lives while the app runs; each start asks again.
 class DeliveryPointController extends Notifier<DeliveryPointState> {
+  /// Each request's number: a result that finishes after a newer request
+  /// started is dropped, so the point is always the last one asked for.
+  int _request = 0;
+
   @override
   DeliveryPointState build() => const PointUnset();
 
@@ -81,27 +85,44 @@ class DeliveryPointController extends Notifier<DeliveryPointState> {
 
   /// «استخدم موقعي الحالي».
   Future<void> useCurrentLocation() async {
-    if (state is PointLocating) return;
+    final request = ++_request;
     state = const PointLocating();
     final result = await ref
         .read(positionSourceProvider)
         .current(timeLimit: locateTimeLimit);
+    if (request != _request) return;
     final fix = result.fix;
     if (fix == null) {
       state = PointUnavailable(result.failure);
       return;
     }
-    await _check(fix.point, accuracyMetres: fix.accuracyMetres);
+    await _check(request, fix.point, accuracyMetres: fix.accuracyMetres);
   }
 
   /// A saved address's pin (CU §10.3 item 1: changing the address at
   /// checkout changes the point used for browsing).
   Future<void> useAddress(String addressId, GeoPoint point) async {
+    final request = ++_request;
     state = const PointLocating();
-    await _check(point, addressId: addressId);
+    await _check(request, point, addressId: addressId);
+  }
+
+  /// «احفظ هذا العنوان» saved the point as [addressId]: the point is now
+  /// that address, so a retry never saves it twice.
+  void adoptAddress(String addressId) {
+    final checked = state;
+    if (checked is! PointChecked) return;
+    state = PointChecked(
+      point: checked.point,
+      accuracyMetres: checked.accuracyMetres,
+      coverage: checked.coverage,
+      zoneName: checked.zoneName,
+      addressId: addressId,
+    );
   }
 
   Future<void> _check(
+    int request,
     GeoPoint point, {
     double? accuracyMetres,
     String? addressId,
@@ -111,6 +132,7 @@ class DeliveryPointController extends Notifier<DeliveryPointState> {
         latitude: '${point.latitude}',
         longitude: '${point.longitude}',
       )).data!;
+      if (request != _request) return;
       state = PointChecked(
         point: point,
         accuracyMetres: accuracyMetres,
@@ -124,7 +146,7 @@ class DeliveryPointController extends Notifier<DeliveryPointState> {
         addressId: addressId,
       );
     } on Object {
-      state = const PointUnavailable(null);
+      if (request == _request) state = const PointUnavailable(null);
     }
   }
 

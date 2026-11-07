@@ -3,6 +3,7 @@ import 'package:core_storage/core_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api.dart';
+import '../auth.dart';
 import '../cart/cart.dart';
 import '../device.dart';
 import '../location/delivery_point.dart';
@@ -60,8 +61,11 @@ List<CustomerQuoteRequestDtoLinesInner> requestLines(Cart cart) => [
 
 /// The quote of the cart at the delivery point (CU §10.6): asked again
 /// whenever the cart, the point or «سأدفع بـ» changes, and on opening the
-/// cart or checkout. Null while the cart is empty or no point is checked.
+/// cart or checkout, and after sign-in, so a signed-in customer's quote
+/// checks their active orders (CU §5.1). Null while the cart is empty or no
+/// point is checked.
 final quoteProvider = FutureProvider.autoDispose<Quote?>((ref) async {
+  await ref.watch(customerAuth.session.future);
   final cart = (await ref.watch(cartProvider.future)).cart;
   final point = ref.watch(deliveryPointProvider);
   final payIn = await ref.watch(payInProvider.future);

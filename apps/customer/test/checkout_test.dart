@@ -1,5 +1,6 @@
 import 'package:core_auth/testing.dart';
 import 'package:customer/src/location/position.dart';
+import 'package:customer/src/profile/profile.dart';
 import 'package:customer/src/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -476,5 +477,166 @@ void main() {
       find.byKey(const Key('cart-continue')),
     );
     expect(next.onPressed, isNull);
+  });
+
+  testWidgets('«احفظ هذا العنوان» saves it once, then orders with it', (
+    tester,
+  ) async {
+    final app = await _checkout(
+      tester,
+      before: (app) {
+        app.server.on('/v1/customer/addresses', [
+          const FakeAnswer(200, {'addresses': <Object>[]}),
+        ]);
+        app.server.on('/v1/customer/orders', [
+          const FakeAnswer.none(),
+          FakeAnswer(201, _order()),
+        ]);
+      },
+    );
+    // POST /addresses answers with the saved address (same path as the list).
+    app.server.on('/v1/customer/addresses', [
+      FakeAnswer(201, {
+        'location': {'latitude': azaz.latitude, 'longitude': azaz.longitude},
+        'label': 'work',
+        'customLabel': null,
+        'street': 'شارع القلعة، بناء 4',
+        'floor': null,
+        'landmark': 'قرب جامع النور',
+        'contactPhone': null,
+        'recipientName': null,
+        'directions': null,
+        'id': _addressId,
+        'isDefault': false,
+        'neighbourhood': 'الحي الشمالي',
+      }),
+      const FakeAnswer(200, {'addresses': <Object>[]}),
+    ]);
+    await _fillAddress(tester);
+    await tester.ensureVisible(find.byKey(const Key('address-save')));
+    await tester.tap(find.byKey(const Key('address-save')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('العمل'));
+    await tester.pump();
+    await _confirm(tester);
+    expect(find.text('تعذّر إرسال طلبك، حاول مجدداً.'), findsOneWidget);
+    await _confirm(tester);
+
+    final saves = app.server
+        .to('/v1/customer/addresses')
+        .where((r) => r.method == 'POST')
+        .toList();
+    expect(saves, hasLength(1));
+    final saved = saves.single.data as Map;
+    expect(saved['label'], 'work');
+    expect(saved['isDefault'], false);
+    final sends = app.server.to('/v1/customer/orders');
+    expect(sends, hasLength(2));
+    for (var i = 0; i < 2; i++) {
+      final body = app.bodyOf('/v1/customer/orders', index: i);
+      expect(body['addressId'], _addressId);
+      expect(body['unsavedAddress'], isNull);
+    }
+    expect(find.text('أرسلنا طلبك إلى مطعم الشام'), findsOneWidget);
+  });
+
+  testWidgets('a blocked order keeps the cart and shows the new quote', (
+    tester,
+  ) async {
+    final app = await _checkout(
+      tester,
+      quotes: [
+        FakeAnswer(200, _quote()),
+        FakeAnswer(
+          200,
+          _quote(
+            version: 'v2',
+            problems: [
+              {'code': 'no_captain_nearby', 'line': null, 'opensAt': null},
+            ],
+          ),
+        ),
+      ],
+      before: (app) => app.server.on('/v1/customer/orders', [
+        const FakeAnswer(409, {'error': 'order_blocked'}),
+      ]),
+    );
+    await _fillAddress(tester);
+    await _confirm(tester);
+
+    expect(find.text('لم نتمكن من إرسال طلبك. راجع المشكلة أعلاه.'), findsOne);
+    expect(find.text('الضغط عالٍ الآن، جرّب بعد دقائق'), findsOneWidget);
+    expect(find.text('إعادة المحاولة'), findsOneWidget);
+    expect(app.device.values['cart'], isNotNull);
+  });
+
+  testWidgets('an address outside the zones is refused with its text', (
+    tester,
+  ) async {
+    await _checkout(
+      tester,
+      before: (app) => app.server.on('/v1/customer/orders', [
+        const FakeAnswer(409, {'error': 'outside_zones'}),
+      ]),
+    );
+    await _fillAddress(tester);
+    await _confirm(tester);
+
+    expect(find.text('العنوان خارج منطقة التوصيل'), findsOneWidget);
+  });
+
+  testWidgets('a guest signs in at checkout and gets the account\'s quote', (
+    tester,
+  ) async {
+    final app = await _checkout(tester, signedIn: false);
+    await _fillAddress(tester);
+    await _confirm(tester);
+    app.completedProfile();
+    app.server.on('/v1/customer/auth/code', [
+      FakeAnswer(200, {
+        'channel': 'whatsapp',
+        'resendAfterSec': 60,
+        'expiresAt': DateTime.now().toUtc().toIso8601String(),
+      }),
+    ]);
+    app.server.on('/v1/customer/auth/sign-in', [
+      FakeAnswer(200, {
+        'accountId': accountId,
+        'newAccount': false,
+        ...tokens('1', DateTime.now().add(const Duration(minutes: 15))),
+      }),
+    ]);
+    await tester.enterText(
+      find.byKey(const Key('sign-in-phone')),
+      '0944123456',
+    );
+    await tester.tap(find.text('إرسال الرمز'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('sign-in-code')), '123456');
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('confirm-order')), findsOneWidget);
+    final quotes = app.server.to('/v1/customer/quote');
+    expect(quotes.first.headers['Authorization'], isNull);
+    expect(quotes.last.headers['Authorization'], 'Bearer access-1');
+    // What the guest typed is still there.
+    expect(find.text('قرب جامع النور'), findsOneWidget);
+  });
+
+  testWidgets('no order before the profile can be read', (tester) async {
+    final app = await _checkout(
+      tester,
+      before: (app) =>
+          app.server.on('/v1/customer/orders', [FakeAnswer(201, _order())]),
+    );
+    app.server.on('/v1/customer/profile', [
+      const FakeAnswer(503, {'error': 'unavailable'}),
+    ]);
+    app.container.invalidate(profileProvider);
+    await _fillAddress(tester);
+    await _confirm(tester);
+
+    expect(app.server.to('/v1/customer/orders'), isEmpty);
+    expect(find.text('تعذّر الاتصال بالخادم'), findsOneWidget);
   });
 }

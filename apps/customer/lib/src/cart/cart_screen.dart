@@ -44,7 +44,10 @@ class CartScreen extends ConsumerWidget {
                   _LineTile(index: index, line: line, cart: cart),
                 if (quote != null) ...[
                   for (final problem in problemViews(l10n, quote, cart, now))
-                    ProblemTile(problem: problem),
+                    ProblemTile(
+                      problem: problem,
+                      enabled: !ref.watch(quoteProvider).isLoading,
+                    ),
                   Thresholds(quote: quote),
                 ],
                 Padding(

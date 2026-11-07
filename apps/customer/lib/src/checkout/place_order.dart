@@ -57,6 +57,12 @@ enum PlaceFailure {
   /// «احفظ هذا العنوان» failed: the order was not sent.
   saveAddress,
 
+  /// `400`: a field the server refuses; the next command takes a new key.
+  invalid,
+
+  /// The cart expired before it was sent (CU §10.1).
+  expired,
+
   /// No answer or another error: the same command may be sent again with
   /// the same key.
   unknown,
@@ -111,13 +117,17 @@ class PlaceOrderController extends Notifier<PlaceState> {
   Future<void> place(PlaceCommand command) async {
     if (state is PlaceSending) return;
     state = const PlaceSending();
+    if (await ref.read(cartProvider.notifier).current() == null) {
+      state = const PlaceFailed(PlaceFailure.expired);
+      return;
+    }
     var addressId = command.addressId;
     final form = command.form;
     if (addressId == null && form.save) {
       try {
         addressId = await _saveAddress(command);
         ref.invalidate(savedAddressesProvider);
-        ref.read(chosenAddressProvider.notifier).choose(addressId);
+        ref.read(deliveryPointProvider.notifier).adoptAddress(addressId);
       } on Object {
         state = const PlaceFailed(PlaceFailure.saveAddress);
         return;
@@ -147,6 +157,7 @@ class PlaceOrderController extends Notifier<PlaceState> {
         (409, 'order_blocked') => PlaceFailure.blocked,
         (409, 'outside_zones') ||
         (404, 'unknown_address') => PlaceFailure.address,
+        (400, _) => PlaceFailure.invalid,
         _ => PlaceFailure.unknown,
       };
       if (failure != PlaceFailure.unknown) {
@@ -161,8 +172,11 @@ class PlaceOrderController extends Notifier<PlaceState> {
     }
   }
 
-  /// The order screen was opened.
-  void done() => state = const PlaceIdle();
+  /// The order screen was opened, or checkout was opened again after a
+  /// failure.
+  void done() {
+    if (state is! PlaceSending) state = const PlaceIdle();
+  }
 
   Future<String> _saveAddress(PlaceCommand command) async {
     final form = command.form;

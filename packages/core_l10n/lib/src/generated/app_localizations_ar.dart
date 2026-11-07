@@ -725,4 +725,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String customerArrivesAbout(String time) {
     return 'يصل حوالي $time';
   }
+
+  @override
+  String get customerOrderInvalid =>
+      'تحقق من بيانات العنوان والملاحظة ثم أكّد مجدداً.';
 }

@@ -10,6 +10,14 @@ const _currencies = {
   'SYP': (symbol: 'ل.س', decimals: 2),
 };
 
+/// The city's clock. Azaz is the only city, and Syria keeps UTC+3 all year
+/// since 2022; the city's zone joins the session with a second city. Moments
+/// are shown on it, never on the phone's zone or clock, so they agree with
+/// the schedules' minutes (RA §10).
+const cityUtcOffset = Duration(hours: 3);
+
+DateTime _onCityClock(DateTime moment) => moment.toUtc().add(cityUtcOffset);
+
 /// The formatters of money, times, dates, durations and distances (AP §4.7,
 /// CU §4.6), always with Western digits.
 extension Formats on AppLocalizations {
@@ -35,10 +43,10 @@ extension Formats on AppLocalizations {
   String currencySymbol(String currency) =>
       _currencies[currency]?.symbol ?? currency;
 
-  /// A 12-hour time on the phone's clock, with «ص» or «م».
+  /// A 12-hour time on the city's clock, with «ص» or «م».
   String formatTime(DateTime time) {
-    final local = time.toLocal();
-    return formatMinuteOfDay(local.hour * 60 + local.minute);
+    final city = _onCityClock(time);
+    return formatMinuteOfDay(city.hour * 60 + city.minute);
   }
 
   /// A time given as minutes after midnight, such as a schedule's opening.
@@ -49,9 +57,9 @@ extension Formats on AppLocalizations {
     return hour < 12 ? timeMorning(clock) : timeEvening(clock);
   }
 
-  /// A date as `dd/mm/yyyy` on the phone's clock.
+  /// A date as `dd/mm/yyyy` on the city's clock.
   String formatDate(DateTime date) {
-    final local = date.toLocal();
+    final local = _onCityClock(date);
     String two(int n) => n.toString().padLeft(2, '0');
     return '${two(local.day)}/${two(local.month)}/${local.year}';
   }
@@ -67,8 +75,9 @@ extension Formats on AppLocalizations {
     _ => weekdaySaturday,
   };
 
-  /// The weekday's name of a moment on the phone's clock.
-  String weekdayOf(DateTime time) => weekdayName(time.toLocal().weekday % 7);
+  /// The weekday's name of a moment on the city's clock.
+  String weekdayOf(DateTime time) =>
+      weekdayName(_onCityClock(time).weekday % 7);
 
   /// A distance: metres below 1 km, kilometres with one decimal above.
   String formatDistance(int metres) => metres < 1000

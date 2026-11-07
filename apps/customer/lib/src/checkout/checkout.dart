@@ -185,16 +185,3 @@ final checkoutFormProvider =
     NotifierProvider<CheckoutFormController, CheckoutForm>(
       CheckoutFormController.new,
     );
-
-/// The saved address chosen at checkout, or null for the point as an
-/// unsaved address.
-final chosenAddressProvider = NotifierProvider<ChosenAddress, String?>(
-  ChosenAddress.new,
-);
-
-class ChosenAddress extends Notifier<String?> {
-  @override
-  String? build() => null;
-
-  void choose(String? addressId) => state = addressId;
-}
