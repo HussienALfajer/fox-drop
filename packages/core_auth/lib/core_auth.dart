@@ -2,6 +2,7 @@
 /// §11.2, §15.1; CU §5.2–5.4, RA §5.2–5.3, CA §4.9).
 library;
 
+export 'src/app_check.dart';
 export 'src/auth_party.dart';
 export 'src/auth_scope.dart';
 export 'src/client.dart';

@@ -3,12 +3,14 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'app_check.dart';
 import 'auth_party.dart';
 import 'session.dart';
 import 'sign_in.dart';
 
 /// One app's sign-in and session providers. An app makes one, as a top-level
-/// `final`, with its [AuthParty]; tests override [store] and [launch].
+/// `final`, with its [AuthParty]; tests override [store], [launch] and
+/// [appCheck].
 class AuthScope {
   AuthScope({
     required AuthParty Function(Ref ref) party,
@@ -47,6 +49,10 @@ class AuthScope {
   final Duration refreshRetryPause;
 
   late final party = Provider<AuthParty>(_party);
+
+  /// The App Check token source of the code requests: none by default; the
+  /// app's `main` overrides it with [startAppCheck]'s, and tests with a fake.
+  final appCheck = Provider<AppCheckToken>((ref) => noAppCheckToken);
 
   final store = Provider<SecureStore>((ref) => PlatformSecureStore());
 

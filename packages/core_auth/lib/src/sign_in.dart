@@ -86,9 +86,15 @@ class SignInController extends Notifier<SignInState> {
     );
     final session = ref.read(_scope.session.notifier);
     try {
+      final deviceId = await session.deviceId();
+      final appCheckToken = await ref.read(_scope.appCheck)();
       final sent = await ref
           .read(_scope.party)
-          .requestCode(phone: phone, deviceId: await session.deviceId());
+          .requestCode(
+            phone: phone,
+            deviceId: deviceId,
+            appCheckToken: appCheckToken,
+          );
       if (!ref.mounted) return;
       state = SignInState(
         step: SignInStep.code,

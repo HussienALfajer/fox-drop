@@ -194,21 +194,46 @@ jobs:
 
       - run: dart pub get --enforce-lockfile
 
-      # The API address comes from the environment's public settings.
+      # The API address and the Firebase project come from the environment's
+      # public settings; the app's Firebase ID is a variable and the Firebase
+      # API key a secret of the staging environment (owner decision
+      # 2026-11-07: no google-services.json in the repository). Until the
+      # owner sets them, the APK is built without App Check (the deploy skill).
       - name: Build the signed staging APK
         working-directory: apps/${{ matrix.app }}
         run: |
-          api_host=$(grep -E '^API_HOST=' ../../infra/environments/staging.env | cut -d= -f2)
+          setting() { grep -E "^$1=" ../../infra/environments/staging.env | cut -d= -f2; }
+          api_host=$(setting API_HOST)
+          firebase=()
+          if [ -n "$FIREBASE_APP_ID" ]; then
+            project_id=$(setting FIREBASE_PROJECT_ID)
+            project_number=$(setting FIREBASE_PROJECT_NUMBER)
+            if [ -z "$project_id" ] || [ -z "$project_number" ] || [ -z "$FIREBASE_API_KEY" ]; then
+              echo "::error::FIREBASE_APP_ID is set but the Firebase project or API key is missing"
+              exit 1
+            fi
+            firebase=(
+              --dart-define="FIREBASE_APP_ID=$FIREBASE_APP_ID"
+              --dart-define="FIREBASE_PROJECT_ID=$project_id"
+              --dart-define="FIREBASE_PROJECT_NUMBER=$project_number"
+              --dart-define="FIREBASE_API_KEY=$FIREBASE_API_KEY"
+            )
+          else
+            echo "::warning::No Firebase app ID for ${{ matrix.app }}: this APK sends no App Check token"
+          fi
           printf '%s' "$KEYSTORE" | base64 --decode > "$RUNNER_TEMP/release.jks"
           export FOXDROP_KEYSTORE_FILE="$RUNNER_TEMP/release.jks"
           flutter build apk --flavor staging --release \
             --build-number "$GITHUB_RUN_NUMBER" \
-            --dart-define="API_BASE_URL=https://$api_host"
+            --dart-define="API_BASE_URL=https://$api_host" \
+            "${firebase[@]}"
           rm "$RUNNER_TEMP/release.jks"
         env:
           KEYSTORE: ${{ secrets[format('STAGING_{0}_KEYSTORE', matrix.key)] }}
           FOXDROP_KEYSTORE_PASSWORD: ${{ secrets[format('STAGING_{0}_KEYSTORE_PASSWORD', matrix.key)] }}
           FOXDROP_KEY_ALIAS: foxdrop
+          FIREBASE_APP_ID: ${{ vars[format('STAGING_FIREBASE_{0}_APP_ID', matrix.key)] }}
+          FIREBASE_API_KEY: ${{ secrets.STAGING_FIREBASE_API_KEY }}
 
       - uses: actions/upload-artifact@v5
         with:
