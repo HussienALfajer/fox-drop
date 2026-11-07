@@ -12,7 +12,8 @@ part 'customer_active_orders_dto_output_orders_inner_cancellation.g.dart';
 ///
 /// Properties:
 /// * [at]
-/// * [reason] - merchant_auto_cancel: «لم يرد المطعم على طلبك، نعتذر» (CU §11.9).
+/// * [reason] - The code, such as merchant_auto_cancel (CU §11.9).
+/// * [text] - What the customer sees (CU Appendix C), from Content as it was at the cancellation.
 @BuiltValue()
 abstract class CustomerActiveOrdersDtoOutputOrdersInnerCancellation
     implements
@@ -23,9 +24,13 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerCancellation
   @BuiltValueField(wireName: r'at')
   DateTime get at;
 
-  /// merchant_auto_cancel: «لم يرد المطعم على طلبك، نعتذر» (CU §11.9).
+  /// The code, such as merchant_auto_cancel (CU §11.9).
   @BuiltValueField(wireName: r'reason')
   String get reason;
+
+  /// What the customer sees (CU Appendix C), from Content as it was at the cancellation.
+  @BuiltValueField(wireName: r'text')
+  String get text;
 
   CustomerActiveOrdersDtoOutputOrdersInnerCancellation._();
 
@@ -74,6 +79,11 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationSerializer
       object.reason,
       specifiedType: const FullType(String),
     );
+    yield r'text';
+    yield serializers.serialize(
+      object.text,
+      specifiedType: const FullType(String),
+    );
   }
 
   @override
@@ -118,6 +128,15 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationSerializer
                   )
                   as String;
           result.reason = valueDes;
+          break;
+        case r'text':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.text = valueDes;
           break;
         default:
           unhandled.add(key);

@@ -6,100 +6,12 @@ part of 'captain_active_order_dto_output_order_customer_arrival.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-_$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_customerRequestedOtherPlace =
-    const CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum._(
-      'customerRequestedOtherPlace',
-    );
-const CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-_$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_pinInaccurate =
-    const CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum._(
-      'pinInaccurate',
-    );
-const CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-_$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_other =
-    const CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum._(
-      'other',
-    );
-
-CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-_$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnumValueOf(
-  String name,
-) {
-  switch (name) {
-    case 'customerRequestedOtherPlace':
-      return _$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_customerRequestedOtherPlace;
-    case 'pinInaccurate':
-      return _$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_pinInaccurate;
-    case 'other':
-      return _$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_other;
-    default:
-      throw ArgumentError(name);
-  }
-}
-
-final BuiltSet<CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum>
-_$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnumValues =
-    BuiltSet<
-      CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-    >(const <CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum>[
-      _$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_customerRequestedOtherPlace,
-      _$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_pinInaccurate,
-      _$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_other,
-    ]);
-
-Serializer<CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum>
-_$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnumSerializer =
-    _$CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnumSerializer();
-
-class _$CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnumSerializer
-    implements
-        PrimitiveSerializer<
-          CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-        > {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'customerRequestedOtherPlace': 'customer_requested_other_place',
-    'pinInaccurate': 'pin_inaccurate',
-    'other': 'other',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'customer_requested_other_place': 'customerRequestedOtherPlace',
-    'pin_inaccurate': 'pinInaccurate',
-    'other': 'other',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum,
-  ];
-  @override
-  final String wireName =
-      'CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum';
-
-  @override
-  Object serialize(
-    Serializers serializers,
-    CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
-
-  @override
-  CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
-}
-
 class _$CaptainActiveOrderDtoOutputOrderCustomerArrival
     extends CaptainActiveOrderDtoOutputOrderCustomerArrival {
   @override
   final DateTime at;
   @override
-  final CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum?
-  awayReason;
+  final String? awayReason;
 
   factory _$CaptainActiveOrderDtoOutputOrderCustomerArrival([
     void Function(CaptainActiveOrderDtoOutputOrderCustomerArrivalBuilder)?
@@ -163,12 +75,9 @@ class CaptainActiveOrderDtoOutputOrderCustomerArrivalBuilder
   DateTime? get at => _$this._at;
   set at(DateTime? at) => _$this._at = at;
 
-  CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum? _awayReason;
-  CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum?
-  get awayReason => _$this._awayReason;
-  set awayReason(
-    CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum? awayReason,
-  ) => _$this._awayReason = awayReason;
+  String? _awayReason;
+  String? get awayReason => _$this._awayReason;
+  set awayReason(String? awayReason) => _$this._awayReason = awayReason;
 
   CaptainActiveOrderDtoOutputOrderCustomerArrivalBuilder() {
     CaptainActiveOrderDtoOutputOrderCustomerArrival._defaults(this);

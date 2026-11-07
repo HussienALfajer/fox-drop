@@ -13,9 +13,9 @@ Slice 2.1, Content and reason lists (`docs/roadmap.md`, Phase 2): the reason lis
 - **Plan:**
   - [x] Read the specs above and every place a reason is a fixed list today (`awayReasons` and `shortfallReasons` in `ordering/schema.ts` with their `CHECK`s, the cancellation's `cancel_reason`), and the roles that edit Content (AP §6).
   - [x] Ask the owner before building: whether an order keeps the reason's stable code (with the label shown from Content) or a copy of its label; what happens to a reason removed from a list (hidden from new choices, kept on past orders); whether removing a `CHECK` from the partitioned `orders` waits for a partition-by-partition migration (`ordering/CLAUDE.md`).
-  - [ ] Server: the `content` schema (lists, reasons with code, Arabic label, order, active, «أخرى» with a required text, the customer text where the list has one), the seed of the defaults, the panel's read and edit routes with audit, the apps' read routes; `ordering` validates a reason through `ContentService` instead of its `CHECK`s (`db-migration` skill).
-  - [ ] The preset order notes at checkout, the FAQs and the captain work rules page; the contact info stored in Content, with `SUPPORT_PHONE_NUMBER` and `SUPPORT_WHATSAPP_NUMBER` as the defaults.
-  - [ ] Regenerate the API clients (`pnpm generate:api`).
+  - [x] Server: the `content` schema (lists, reasons with code, Arabic label, order, active, «أخرى» with a required text, the customer text where the list has one), the seed of the defaults, the panel's read and edit routes with audit, the apps' read routes; `ordering` validates a reason through `ContentService` instead of its `CHECK`s (`db-migration` skill).
+  - [x] The preset order notes at checkout, the FAQs and the captain work rules page; the contact info stored in Content, with `SUPPORT_PHONE_NUMBER` and `SUPPORT_WHATSAPP_NUMBER` as the defaults.
+  - [x] Regenerate the API clients (`pnpm generate:api`).
   - [ ] Unstyled panel page «المحتوى» for the lists, texts, notes, FAQs and contact; the apps read their lists (the captain's away and shortfall reasons, the customer's notes and FAQs).
   - [ ] Tests first for the validation of a reason; then `pnpm verify` through the `checker` agent, the `reviewer` agent, the pull request.
 

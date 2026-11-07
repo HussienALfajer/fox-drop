@@ -26,7 +26,7 @@ import {
   WEAK_GPS_METRES,
 } from './captain-orders.js';
 import { minor } from './customer-quote.controller.js';
-import { awayReasons, captainTracks, orderStatuses, shortfallReasons } from './schema.js';
+import { captainTracks, orderStatuses } from './schema.js';
 
 const money = z.object({ amount: minor, currency: z.string().length(3) });
 // RA §8.10: one line per currency, the amounts in minor units.
@@ -180,7 +180,7 @@ const activeOrder = z
           .object({
             at: z.iso.datetime(),
             awayReason: z
-              .enum(awayReasons)
+              .string()
               .nullable()
               .describe('The reason given away from the pin; it covers the delivery too (K4).'),
           })
@@ -231,15 +231,24 @@ class CaptainPickupRequestDto extends createZodDto(
 
 class CaptainArriveDto extends createZodDto(z.object({ location: commandLocation })) {}
 
-// CA Appendix C: arrival or delivery away from the pin (K4, C9).
-export const awayGiven = z
-  .object({
-    reason: z.enum(awayReasons),
-    note: z.string().trim().min(1).max(200).nullable().describe('The text of «أخرى» only.'),
-  })
-  .refine((away) => (away.reason === 'other') === (away.note !== null), {
-    message: 'a note goes with «أخرى» and only with it',
-  });
+// A reason chosen from a Content list (AP §9.13): its code, and the text of
+// a reason that needs one («أخرى»). ContentService checks it: 400
+// unknown_reason, reason_note_required, reason_note_not_allowed.
+const reasonCode = z
+  .string()
+  .regex(/^[a-z0-9_]{1,40}$/)
+  .describe("The reason's code in its Content list.");
+const reasonNote = z
+  .string()
+  .trim()
+  .min(1)
+  .max(200)
+  .nullable()
+  .describe('The text of a reason that needs one («أخرى»), and only of it.');
+
+// CA Appendix C: arrival or delivery away from the pin (K4, C9), from the
+// captain_away list.
+export const awayGiven = z.object({ reason: reasonCode, note: reasonNote });
 
 class CaptainArriveAtCustomerDto extends createZodDto(
   z.object({
@@ -252,15 +261,9 @@ class CaptainArriveAtCustomerDto extends createZodDto(
   }),
 ) {}
 
-// CA Appendix C (K16): why the captain collected less than due.
-export const shortfallGiven = z
-  .object({
-    reason: z.enum(shortfallReasons),
-    note: z.string().trim().min(1).max(200).nullable().describe('The text of «أخرى» only.'),
-  })
-  .refine((given) => (given.reason === 'other') === (given.note !== null), {
-    message: 'a note goes with «أخرى» and only with it',
-  });
+// CA Appendix C (K16): why the captain collected less than due, from the
+// shortfall list.
+export const shortfallGiven = z.object({ reason: reasonCode, note: reasonNote });
 
 // AP §8.6, CA §9.7: the door payment, as the captain or operations record it.
 // A line's amount, capped at 15 digits so it never nears the bigint limit.
@@ -296,7 +299,7 @@ export function doorCollection(body: {
   received: { currency: string; amount: string }[];
   change: { currency: string; amount: string }[];
   amountDue: { currency: string; amount: string };
-  shortfall: { reason: (typeof shortfallReasons)[number]; note: string | null } | null;
+  shortfall: { reason: string; note: string | null } | null;
 }) {
   return {
     received: linesOfBody(body.received),
@@ -610,7 +613,13 @@ async function refusalsAsHttp<T>(
     if (refusal === 'unknown_order') {
       throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: refusal });
     }
-    if (refusal === 'invalid_location' || refusal === 'invalid_lines') {
+    if (
+      refusal === 'invalid_location' ||
+      refusal === 'invalid_lines' ||
+      refusal === 'unknown_reason' ||
+      refusal === 'reason_note_required' ||
+      refusal === 'reason_note_not_allowed'
+    ) {
       throw new BadRequestException({
         statusCode: HttpStatus.BAD_REQUEST,
         error: refusal,

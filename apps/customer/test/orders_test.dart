@@ -171,11 +171,13 @@ void main() {
           cancellation: {
             'at': '2026-11-07T12:07:00.000Z',
             'reason': 'merchant_auto_cancel',
+            'text': 'لم يرد المطعم على طلبك',
           },
         ),
       }),
     ]);
-    expect(_status(tester), 'لم يرد المطعم على طلبك، نعتذر');
+    // The text comes from Content (CU Appendix C), as the order kept it.
+    expect(_status(tester), 'أُلغي طلبك — لم يرد المطعم على طلبك');
     expect(find.byKey(const Key('step-confirm')), findsNothing);
     await app.done(tester);
   });

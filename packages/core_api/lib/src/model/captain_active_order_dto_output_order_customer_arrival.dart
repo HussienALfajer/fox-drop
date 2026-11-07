@@ -3,7 +3,6 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -26,8 +25,7 @@ abstract class CaptainActiveOrderDtoOutputOrderCustomerArrival
 
   /// The reason given away from the pin; it covers the delivery too (K4).
   @BuiltValueField(wireName: r'awayReason')
-  CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum? get awayReason;
-  // enum awayReasonEnum {  customer_requested_other_place,  pin_inaccurate,  other,  };
+  String? get awayReason;
 
   CaptainActiveOrderDtoOutputOrderCustomerArrival._();
 
@@ -73,9 +71,7 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerArrivalSerializer
         ? null
         : serializers.serialize(
             object.awayReason,
-            specifiedType: const FullType.nullable(
-              CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum,
-            ),
+            specifiedType: const FullType.nullable(String),
           );
   }
 
@@ -117,11 +113,9 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerArrivalSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType.nullable(
-                      CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum,
-                    ),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum?;
+                  as String?;
           if (valueDes == null) continue;
           result.awayReason = valueDes;
           break;
@@ -152,39 +146,4 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerArrivalSerializer
     );
     return result.build();
   }
-}
-
-/// The reason given away from the pin; it covers the delivery too (K4).
-class CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-    extends EnumClass {
-  @BuiltValueEnumConst(wireName: r'customer_requested_other_place')
-  static const CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-  customerRequestedOtherPlace =
-      _$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_customerRequestedOtherPlace;
-  @BuiltValueEnumConst(wireName: r'pin_inaccurate')
-  static const CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-  pinInaccurate =
-      _$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_pinInaccurate;
-  @BuiltValueEnumConst(wireName: r'other')
-  static const CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-  other = _$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_other;
-
-  static Serializer<
-    CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-  >
-  get serializer =>
-      _$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnumSerializer;
-
-  const CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum._(
-    String name,
-  ) : super(name);
-
-  static BuiltSet<CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum>
-  get values =>
-      _$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnumValues;
-  static CaptainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnum valueOf(
-    String name,
-  ) => _$captainActiveOrderDtoOutputOrderCustomerArrivalAwayReasonEnumValueOf(
-    name,
-  );
 }

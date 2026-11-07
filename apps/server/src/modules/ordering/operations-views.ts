@@ -13,7 +13,7 @@ import {
   type PickupRequestView,
   pickupRequestsOf,
 } from './pickup-views.js';
-import { collections, orderEvents, orders, type shortfallReasons } from './schema.js';
+import { collections, orderEvents, orders } from './schema.js';
 
 // AP §9.1.3, §8.3: operations' alerts, each from its moment (owner decision
 // 2026-11-06: the board's read shows them once their moment passed; the
@@ -92,7 +92,9 @@ export interface Shortfall {
   amountDue: bigint;
   netReceived: bigint;
   amount: bigint;
-  reason: (typeof shortfallReasons)[number];
+  reason: string;
+  // Null only on a row a version before Content wrote.
+  label: string | null;
   note: string | null;
   recordedAt: Date;
 }
@@ -145,6 +147,7 @@ export class OperationsViews {
         netReceived: collections.netReceived,
         amount: collections.shortfall,
         reason: collections.shortfallReason,
+        label: collections.shortfallReasonLabel,
         note: collections.shortfallNote,
         recordedAt: collections.recordedAt,
       })

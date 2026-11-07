@@ -6,85 +6,10 @@ part of 'admin_record_delivery_dto_shortfall.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const AdminRecordDeliveryDtoShortfallReasonEnum
-_$adminRecordDeliveryDtoShortfallReasonEnum_customerShort =
-    const AdminRecordDeliveryDtoShortfallReasonEnum._('customerShort');
-const AdminRecordDeliveryDtoShortfallReasonEnum
-_$adminRecordDeliveryDtoShortfallReasonEnum_countingError =
-    const AdminRecordDeliveryDtoShortfallReasonEnum._('countingError');
-const AdminRecordDeliveryDtoShortfallReasonEnum
-_$adminRecordDeliveryDtoShortfallReasonEnum_other =
-    const AdminRecordDeliveryDtoShortfallReasonEnum._('other');
-
-AdminRecordDeliveryDtoShortfallReasonEnum
-_$adminRecordDeliveryDtoShortfallReasonEnumValueOf(String name) {
-  switch (name) {
-    case 'customerShort':
-      return _$adminRecordDeliveryDtoShortfallReasonEnum_customerShort;
-    case 'countingError':
-      return _$adminRecordDeliveryDtoShortfallReasonEnum_countingError;
-    case 'other':
-      return _$adminRecordDeliveryDtoShortfallReasonEnum_other;
-    default:
-      throw ArgumentError(name);
-  }
-}
-
-final BuiltSet<AdminRecordDeliveryDtoShortfallReasonEnum>
-_$adminRecordDeliveryDtoShortfallReasonEnumValues =
-    BuiltSet<AdminRecordDeliveryDtoShortfallReasonEnum>(
-      const <AdminRecordDeliveryDtoShortfallReasonEnum>[
-        _$adminRecordDeliveryDtoShortfallReasonEnum_customerShort,
-        _$adminRecordDeliveryDtoShortfallReasonEnum_countingError,
-        _$adminRecordDeliveryDtoShortfallReasonEnum_other,
-      ],
-    );
-
-Serializer<AdminRecordDeliveryDtoShortfallReasonEnum>
-_$adminRecordDeliveryDtoShortfallReasonEnumSerializer =
-    _$AdminRecordDeliveryDtoShortfallReasonEnumSerializer();
-
-class _$AdminRecordDeliveryDtoShortfallReasonEnumSerializer
-    implements PrimitiveSerializer<AdminRecordDeliveryDtoShortfallReasonEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'customerShort': 'customer_short',
-    'countingError': 'counting_error',
-    'other': 'other',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'customer_short': 'customerShort',
-    'counting_error': 'countingError',
-    'other': 'other',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    AdminRecordDeliveryDtoShortfallReasonEnum,
-  ];
-  @override
-  final String wireName = 'AdminRecordDeliveryDtoShortfallReasonEnum';
-
-  @override
-  Object serialize(
-    Serializers serializers,
-    AdminRecordDeliveryDtoShortfallReasonEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
-
-  @override
-  AdminRecordDeliveryDtoShortfallReasonEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => AdminRecordDeliveryDtoShortfallReasonEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
-}
-
 class _$AdminRecordDeliveryDtoShortfall
     extends AdminRecordDeliveryDtoShortfall {
   @override
-  final AdminRecordDeliveryDtoShortfallReasonEnum reason;
+  final String reason;
   @override
   final String? note;
 
@@ -137,10 +62,9 @@ class AdminRecordDeliveryDtoShortfallBuilder
         > {
   _$AdminRecordDeliveryDtoShortfall? _$v;
 
-  AdminRecordDeliveryDtoShortfallReasonEnum? _reason;
-  AdminRecordDeliveryDtoShortfallReasonEnum? get reason => _$this._reason;
-  set reason(AdminRecordDeliveryDtoShortfallReasonEnum? reason) =>
-      _$this._reason = reason;
+  String? _reason;
+  String? get reason => _$this._reason;
+  set reason(String? reason) => _$this._reason = reason;
 
   String? _note;
   String? get note => _$this._note;

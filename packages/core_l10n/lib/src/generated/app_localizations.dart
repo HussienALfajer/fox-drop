@@ -1792,19 +1792,13 @@ abstract class AppLocalizations {
   /// **'بالعافية!'**
   String get customerEnjoy;
 
-  /// Cancelled for no restaurant response (CU §11.9).
-  ///
-  /// In ar, this message translates to:
-  /// **'لم يرد المطعم على طلبك، نعتذر'**
-  String get customerNoRestaurantResponse;
-
   /// Rejected by the restaurant (CU §11.9).
   ///
   /// In ar, this message translates to:
   /// **'نعتذر، لم يقبل المطعم طلبك'**
   String get customerRejected;
 
-  /// Cancelled by operations (CU §11.9); the reason joins it with the cancellations that write one.
+  /// A cancelled order (CU §11.9); the text of its reason (CU Appendix C) shows under it.
   ///
   /// In ar, this message translates to:
   /// **'أُلغي طلبك'**

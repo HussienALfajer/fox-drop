@@ -90,20 +90,17 @@ class Delivered extends OrderTitle {
   const Delivered();
 }
 
-/// CU §11.9: «لم يرد المطعم على طلبك، نعتذر».
-class NoRestaurantResponse extends OrderTitle {
-  const NoRestaurantResponse();
-}
-
 /// CU §11.9: «نعتذر، لم يقبل المطعم طلبك».
 class Rejected extends OrderTitle {
   const Rejected();
 }
 
-/// CU §11.9: «أُلغي طلبك»; the reasons of Appendix C come with the
-/// cancellations that write them.
+/// CU §11.9: «أُلغي طلبك», with the text Content gives its reason (CU
+/// Appendix C), such as «لم يرد المطعم على طلبك».
 class Cancelled extends OrderTitle {
-  const Cancelled();
+  const Cancelled(this.text);
+
+  final String? text;
 }
 
 /// CU §11.9: «تعذّر التسليم».
@@ -126,10 +123,7 @@ OrderTitle titleOf(CustomerOrder order) {
     'delivered' => const Delivered(),
     'rejected' => const Rejected(),
     'failed' => const Failed(),
-    _ =>
-      order.cancellation?.reason == 'merchant_auto_cancel'
-          ? const NoRestaurantResponse()
-          : const Cancelled(),
+    _ => Cancelled(order.cancellation?.text),
   };
 }
 

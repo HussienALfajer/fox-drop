@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
+import { ContentService } from '../content/index.js';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { QUEUES } from '../../jobs/job-queue.js';
@@ -46,11 +47,17 @@ export class OrderTimers {
   constructor(
     @Inject(DATABASE) private readonly database: Database,
     private readonly jobs: Jobs,
+    private readonly content: ContentService,
   ) {}
 
   // AP §8.3: cancels a placed order the restaurant did not accept in time;
-  // true when it did.
+  // true when it did. The order keeps the customer's text as it is now (CU
+  // Appendix C, owner decision 2026-11-07), read before the transaction.
   async merchantAutoCancel(job: AutoCancelJob, now: Date): Promise<boolean> {
+    const customerText = await this.content.customerText(
+      'system_cancellation',
+      MERCHANT_AUTO_CANCEL,
+    );
     return this.database.db.transaction(async (tx) => {
       const order = await lockOrder(tx, job.orderId, new Date(job.placedAt));
       if (!order || order.status !== 'placed' || order.version !== job.version) return false;
@@ -62,6 +69,7 @@ export class OrderTimers {
           version,
           cancelledAt: now,
           cancelReason: MERCHANT_AUTO_CANCEL,
+          cancelCustomerText: customerText,
           foodPrepared: false,
         })
         .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));

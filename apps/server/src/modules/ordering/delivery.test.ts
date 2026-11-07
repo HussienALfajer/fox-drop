@@ -514,20 +514,51 @@ describe('POST /v1/captain/orders/{orderId}/arrive-at-customer (CA §9.6, K4)', 
     const detail = (await picked.ops.get(`/v1/admin/orders/${picked.order.id}`)).json().order;
     expect(detail.customer.arrival.away).toEqual({
       reason: 'other',
+      label: 'أخرى',
       note: 'الزبون نزل إلى الشارع',
     });
   });
 
-  it('refuses a note without «أخرى», and «أخرى» without a note', async () => {
+  it('refuses a note without «أخرى», «أخرى» without a note, and a code outside the list', async () => {
     const picked = await pickedUpOrder();
     const noted = await picked.arriveAtCustomer(farFromCustomer, {
       away: { reason: 'pin_inaccurate', note: 'نص' },
     });
     expect(noted.statusCode).toBe(400);
+    expect(noted.json().error).toBe('reason_note_not_allowed');
     const bare = await picked.arriveAtCustomer(farFromCustomer, {
       away: { reason: 'other', note: null },
     });
     expect(bare.statusCode).toBe(400);
+    expect(bare.json().error).toBe('reason_note_required');
+    const unknown = await picked.arriveAtCustomer(farFromCustomer, {
+      away: { reason: 'counting_error', note: null },
+    });
+    expect(unknown.statusCode).toBe(400);
+    expect(unknown.json().error).toBe('unknown_reason');
+  });
+
+  it("keeps the reason's label as chosen when Content renames it", async () => {
+    const picked = await pickedUpOrder();
+    const answer = await picked.arriveAtCustomer(farFromCustomer, {
+      away: { reason: 'pin_inaccurate', note: null },
+    });
+    expect(answer.statusCode).toBe(200);
+    await sql.query(
+      "UPDATE content.reasons SET label = 'الدبوس بعيد' WHERE list = 'captain_away' AND code = 'pin_inaccurate'",
+    );
+    try {
+      const detail = (await picked.ops.get(`/v1/admin/orders/${picked.order.id}`)).json().order;
+      expect(detail.customer.arrival.away).toEqual({
+        reason: 'pin_inaccurate',
+        label: 'موقع الزبون على الخريطة غير دقيق',
+        note: null,
+      });
+    } finally {
+      await sql.query(
+        "UPDATE content.reasons SET label = 'موقع الزبون على الخريطة غير دقيق' WHERE list = 'captain_away' AND code = 'pin_inaccurate'",
+      );
+    }
   });
 
   it('refuses a simulated, stale or weak fix', async () => {
@@ -604,11 +635,13 @@ describe('POST /v1/captain/orders/{orderId}/arrive-at-customer (CA §9.6, K4)', 
     const update = (set: string) =>
       sql.query(`UPDATE ordering.orders SET ${set} WHERE id = $1`, [picked.order.id]);
     await expect(update("status = 'arrived'")).rejects.toThrow(/orders_customer_arrival/);
-    await expect(update("away_reason = 'other'")).rejects.toThrow(/orders_away_reason/);
-    await expect(update("away_reason = 'pin_inaccurate', away_note = 'x'")).rejects.toThrow(
+    // Content checks the reason itself (AP §9.13); the row keeps a label and
+    // a note only with a reason, and a note of 1 to 200 characters.
+    await expect(update("away_reason_label = 'أخرى'")).rejects.toThrow(/orders_away_reason/);
+    await expect(update("away_note = 'x'")).rejects.toThrow(/orders_away_reason/);
+    await expect(update("away_reason = 'other', away_note = ''")).rejects.toThrow(
       /orders_away_reason/,
     );
-    await expect(update("away_reason = 'elsewhere'")).rejects.toThrow(/orders_away_reason/);
   });
 
   it('refuses another captain with unknown_order', async () => {
@@ -849,6 +882,7 @@ describe('POST /v1/captain/orders/{orderId}/deliver (CA §9.7–9.8)', () => {
       shortfall: {
         amount: { amount: '3000', currency: 'TRY' },
         reason: 'customer_short',
+        label: 'الزبون لا يملك المبلغ كاملاً',
         note: null,
       },
       recordedBy: { type: 'captain', id: door.captain.captainId, reason: null },
@@ -862,6 +896,7 @@ describe('POST /v1/captain/orders/{orderId}/deliver (CA §9.7–9.8)', () => {
       netReceived: { amount: '25000', currency: 'TRY' },
       shortfall: { amount: '3000', currency: 'TRY' },
       reason: 'customer_short',
+      label: 'الزبون لا يملك المبلغ كاملاً',
     });
   });
 

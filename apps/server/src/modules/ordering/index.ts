@@ -7,6 +7,7 @@ import { FxModule } from '../fx/index.js';
 import { GeoModule } from '../geo/index.js';
 import { MerchantsModule } from '../merchants/index.js';
 import { NotificationsModule, NotificationsWorkerModule } from '../notifications/index.js';
+import { ContentModule } from '../content/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AuditModule } from '../audit/index.js';
 import { ActiveOrders } from './active-orders.js';
@@ -44,6 +45,7 @@ import { QuoteService } from './quote.service.js';
     LedgerModule,
     IdentityModule,
     SettingsModule,
+    ContentModule,
     FxModule,
     GeoModule,
     MerchantsModule,
@@ -79,7 +81,7 @@ export class OrderingModule {}
 // The worker keeps the orders' monthly partitions a month ahead, runs their
 // timers (AP §8.3) and relays the outbox (architecture §5.5).
 @Module({
-  imports: [DatabaseModule, JobsModule, LedgerModule, NotificationsWorkerModule],
+  imports: [DatabaseModule, JobsModule, LedgerModule, NotificationsWorkerModule, ContentModule],
   providers: [
     OrderPartitions,
     OrderTimers,

@@ -3,7 +3,6 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -13,6 +12,7 @@ part 'admin_order_dto_output_order_customer_arrival_away.g.dart';
 ///
 /// Properties:
 /// * [reason]
+/// * [label]
 /// * [note]
 @BuiltValue()
 abstract class AdminOrderDtoOutputOrderCustomerArrivalAway
@@ -22,8 +22,10 @@ abstract class AdminOrderDtoOutputOrderCustomerArrivalAway
           AdminOrderDtoOutputOrderCustomerArrivalAwayBuilder
         > {
   @BuiltValueField(wireName: r'reason')
-  AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum get reason;
-  // enum reasonEnum {  customer_requested_other_place,  pin_inaccurate,  other,  };
+  String get reason;
+
+  @BuiltValueField(wireName: r'label')
+  String get label;
 
   @BuiltValueField(wireName: r'note')
   String? get note;
@@ -63,9 +65,12 @@ class _$AdminOrderDtoOutputOrderCustomerArrivalAwaySerializer
     yield r'reason';
     yield serializers.serialize(
       object.reason,
-      specifiedType: const FullType(
-        AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum,
-      ),
+      specifiedType: const FullType(String),
+    );
+    yield r'label';
+    yield serializers.serialize(
+      object.label,
+      specifiedType: const FullType(String),
     );
     yield r'note';
     yield object.note == null
@@ -105,12 +110,19 @@ class _$AdminOrderDtoOutputOrderCustomerArrivalAwaySerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum,
-                    ),
+                    specifiedType: const FullType(String),
                   )
-                  as AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum;
+                  as String;
           result.reason = valueDes;
+          break;
+        case r'label':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.label = valueDes;
           break;
         case r'note':
           final valueDes =
@@ -149,31 +161,4 @@ class _$AdminOrderDtoOutputOrderCustomerArrivalAwaySerializer
     );
     return result.build();
   }
-}
-
-class AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum extends EnumClass {
-  @BuiltValueEnumConst(wireName: r'customer_requested_other_place')
-  static const AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-  customerRequestedOtherPlace =
-      _$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_customerRequestedOtherPlace;
-  @BuiltValueEnumConst(wireName: r'pin_inaccurate')
-  static const AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-  pinInaccurate =
-      _$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_pinInaccurate;
-  @BuiltValueEnumConst(wireName: r'other')
-  static const AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum other =
-      _$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_other;
-
-  static Serializer<AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum>
-  get serializer =>
-      _$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnumSerializer;
-
-  const AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum._(String name)
-    : super(name);
-
-  static BuiltSet<AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum>
-  get values => _$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnumValues;
-  static AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum valueOf(
-    String name,
-  ) => _$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnumValueOf(name);
 }

@@ -6,82 +6,6 @@ part of 'admin_shortfalls_dto_output_shortfalls_inner.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const AdminShortfallsDtoOutputShortfallsInnerReasonEnum
-_$adminShortfallsDtoOutputShortfallsInnerReasonEnum_customerShort =
-    const AdminShortfallsDtoOutputShortfallsInnerReasonEnum._('customerShort');
-const AdminShortfallsDtoOutputShortfallsInnerReasonEnum
-_$adminShortfallsDtoOutputShortfallsInnerReasonEnum_countingError =
-    const AdminShortfallsDtoOutputShortfallsInnerReasonEnum._('countingError');
-const AdminShortfallsDtoOutputShortfallsInnerReasonEnum
-_$adminShortfallsDtoOutputShortfallsInnerReasonEnum_other =
-    const AdminShortfallsDtoOutputShortfallsInnerReasonEnum._('other');
-
-AdminShortfallsDtoOutputShortfallsInnerReasonEnum
-_$adminShortfallsDtoOutputShortfallsInnerReasonEnumValueOf(String name) {
-  switch (name) {
-    case 'customerShort':
-      return _$adminShortfallsDtoOutputShortfallsInnerReasonEnum_customerShort;
-    case 'countingError':
-      return _$adminShortfallsDtoOutputShortfallsInnerReasonEnum_countingError;
-    case 'other':
-      return _$adminShortfallsDtoOutputShortfallsInnerReasonEnum_other;
-    default:
-      throw ArgumentError(name);
-  }
-}
-
-final BuiltSet<AdminShortfallsDtoOutputShortfallsInnerReasonEnum>
-_$adminShortfallsDtoOutputShortfallsInnerReasonEnumValues =
-    BuiltSet<AdminShortfallsDtoOutputShortfallsInnerReasonEnum>(
-      const <AdminShortfallsDtoOutputShortfallsInnerReasonEnum>[
-        _$adminShortfallsDtoOutputShortfallsInnerReasonEnum_customerShort,
-        _$adminShortfallsDtoOutputShortfallsInnerReasonEnum_countingError,
-        _$adminShortfallsDtoOutputShortfallsInnerReasonEnum_other,
-      ],
-    );
-
-Serializer<AdminShortfallsDtoOutputShortfallsInnerReasonEnum>
-_$adminShortfallsDtoOutputShortfallsInnerReasonEnumSerializer =
-    _$AdminShortfallsDtoOutputShortfallsInnerReasonEnumSerializer();
-
-class _$AdminShortfallsDtoOutputShortfallsInnerReasonEnumSerializer
-    implements
-        PrimitiveSerializer<AdminShortfallsDtoOutputShortfallsInnerReasonEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'customerShort': 'customer_short',
-    'countingError': 'counting_error',
-    'other': 'other',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'customer_short': 'customerShort',
-    'counting_error': 'countingError',
-    'other': 'other',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    AdminShortfallsDtoOutputShortfallsInnerReasonEnum,
-  ];
-  @override
-  final String wireName = 'AdminShortfallsDtoOutputShortfallsInnerReasonEnum';
-
-  @override
-  Object serialize(
-    Serializers serializers,
-    AdminShortfallsDtoOutputShortfallsInnerReasonEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
-
-  @override
-  AdminShortfallsDtoOutputShortfallsInnerReasonEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => AdminShortfallsDtoOutputShortfallsInnerReasonEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
-}
-
 class _$AdminShortfallsDtoOutputShortfallsInner
     extends AdminShortfallsDtoOutputShortfallsInner {
   @override
@@ -97,7 +21,9 @@ class _$AdminShortfallsDtoOutputShortfallsInner
   @override
   final CaptainWentOfflineDtoOutputHandIn? shortfall;
   @override
-  final AdminShortfallsDtoOutputShortfallsInnerReasonEnum reason;
+  final String reason;
+  @override
+  final String label;
   @override
   final String? note;
   @override
@@ -116,6 +42,7 @@ class _$AdminShortfallsDtoOutputShortfallsInner
     this.netReceived,
     this.shortfall,
     required this.reason,
+    required this.label,
     this.note,
     required this.recordedAt,
   }) : super._();
@@ -139,6 +66,7 @@ class _$AdminShortfallsDtoOutputShortfallsInner
         netReceived == other.netReceived &&
         shortfall == other.shortfall &&
         reason == other.reason &&
+        label == other.label &&
         note == other.note &&
         recordedAt == other.recordedAt;
   }
@@ -153,6 +81,7 @@ class _$AdminShortfallsDtoOutputShortfallsInner
     _$hash = $jc(_$hash, netReceived.hashCode);
     _$hash = $jc(_$hash, shortfall.hashCode);
     _$hash = $jc(_$hash, reason.hashCode);
+    _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, recordedAt.hashCode);
     _$hash = $jf(_$hash);
@@ -171,6 +100,7 @@ class _$AdminShortfallsDtoOutputShortfallsInner
           ..add('netReceived', netReceived)
           ..add('shortfall', shortfall)
           ..add('reason', reason)
+          ..add('label', label)
           ..add('note', note)
           ..add('recordedAt', recordedAt))
         .toString();
@@ -215,11 +145,13 @@ class AdminShortfallsDtoOutputShortfallsInnerBuilder
   set shortfall(CaptainWentOfflineDtoOutputHandInBuilder? shortfall) =>
       _$this._shortfall = shortfall;
 
-  AdminShortfallsDtoOutputShortfallsInnerReasonEnum? _reason;
-  AdminShortfallsDtoOutputShortfallsInnerReasonEnum? get reason =>
-      _$this._reason;
-  set reason(AdminShortfallsDtoOutputShortfallsInnerReasonEnum? reason) =>
-      _$this._reason = reason;
+  String? _reason;
+  String? get reason => _$this._reason;
+  set reason(String? reason) => _$this._reason = reason;
+
+  String? _label;
+  String? get label => _$this._label;
+  set label(String? label) => _$this._label = label;
 
   String? _note;
   String? get note => _$this._note;
@@ -243,6 +175,7 @@ class AdminShortfallsDtoOutputShortfallsInnerBuilder
       _netReceived = $v.netReceived?.toBuilder();
       _shortfall = $v.shortfall?.toBuilder();
       _reason = $v.reason;
+      _label = $v.label;
       _note = $v.note;
       _recordedAt = $v.recordedAt;
       _$v = null;
@@ -293,6 +226,11 @@ class AdminShortfallsDtoOutputShortfallsInnerBuilder
               reason,
               r'AdminShortfallsDtoOutputShortfallsInner',
               'reason',
+            ),
+            label: BuiltValueNullFieldError.checkNotNull(
+              label,
+              r'AdminShortfallsDtoOutputShortfallsInner',
+              'label',
             ),
             note: note,
             recordedAt: BuiltValueNullFieldError.checkNotNull(

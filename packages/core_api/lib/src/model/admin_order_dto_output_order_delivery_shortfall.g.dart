@@ -6,94 +6,14 @@ part of 'admin_order_dto_output_order_delivery_shortfall.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum
-_$adminOrderDtoOutputOrderDeliveryShortfallReasonEnum_customerShort =
-    const AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum._(
-      'customerShort',
-    );
-const AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum
-_$adminOrderDtoOutputOrderDeliveryShortfallReasonEnum_countingError =
-    const AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum._(
-      'countingError',
-    );
-const AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum
-_$adminOrderDtoOutputOrderDeliveryShortfallReasonEnum_other =
-    const AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum._('other');
-
-AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum
-_$adminOrderDtoOutputOrderDeliveryShortfallReasonEnumValueOf(String name) {
-  switch (name) {
-    case 'customerShort':
-      return _$adminOrderDtoOutputOrderDeliveryShortfallReasonEnum_customerShort;
-    case 'countingError':
-      return _$adminOrderDtoOutputOrderDeliveryShortfallReasonEnum_countingError;
-    case 'other':
-      return _$adminOrderDtoOutputOrderDeliveryShortfallReasonEnum_other;
-    default:
-      throw ArgumentError(name);
-  }
-}
-
-final BuiltSet<AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum>
-_$adminOrderDtoOutputOrderDeliveryShortfallReasonEnumValues =
-    BuiltSet<AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum>(
-      const <AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum>[
-        _$adminOrderDtoOutputOrderDeliveryShortfallReasonEnum_customerShort,
-        _$adminOrderDtoOutputOrderDeliveryShortfallReasonEnum_countingError,
-        _$adminOrderDtoOutputOrderDeliveryShortfallReasonEnum_other,
-      ],
-    );
-
-Serializer<AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum>
-_$adminOrderDtoOutputOrderDeliveryShortfallReasonEnumSerializer =
-    _$AdminOrderDtoOutputOrderDeliveryShortfallReasonEnumSerializer();
-
-class _$AdminOrderDtoOutputOrderDeliveryShortfallReasonEnumSerializer
-    implements
-        PrimitiveSerializer<
-          AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum
-        > {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'customerShort': 'customer_short',
-    'countingError': 'counting_error',
-    'other': 'other',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'customer_short': 'customerShort',
-    'counting_error': 'countingError',
-    'other': 'other',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum,
-  ];
-  @override
-  final String wireName = 'AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum';
-
-  @override
-  Object serialize(
-    Serializers serializers,
-    AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
-
-  @override
-  AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
-}
-
 class _$AdminOrderDtoOutputOrderDeliveryShortfall
     extends AdminOrderDtoOutputOrderDeliveryShortfall {
   @override
   final CaptainWentOfflineDtoOutputHandIn? amount;
   @override
-  final AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum reason;
+  final String reason;
+  @override
+  final String label;
   @override
   final String? note;
 
@@ -105,6 +25,7 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfall
   _$AdminOrderDtoOutputOrderDeliveryShortfall._({
     this.amount,
     required this.reason,
+    required this.label,
     this.note,
   }) : super._();
   @override
@@ -122,6 +43,7 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfall
     return other is AdminOrderDtoOutputOrderDeliveryShortfall &&
         amount == other.amount &&
         reason == other.reason &&
+        label == other.label &&
         note == other.note;
   }
 
@@ -130,6 +52,7 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfall
     var _$hash = 0;
     _$hash = $jc(_$hash, amount.hashCode);
     _$hash = $jc(_$hash, reason.hashCode);
+    _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -142,6 +65,7 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfall
           )
           ..add('amount', amount)
           ..add('reason', reason)
+          ..add('label', label)
           ..add('note', note))
         .toString();
   }
@@ -161,11 +85,13 @@ class AdminOrderDtoOutputOrderDeliveryShortfallBuilder
   set amount(CaptainWentOfflineDtoOutputHandInBuilder? amount) =>
       _$this._amount = amount;
 
-  AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum? _reason;
-  AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum? get reason =>
-      _$this._reason;
-  set reason(AdminOrderDtoOutputOrderDeliveryShortfallReasonEnum? reason) =>
-      _$this._reason = reason;
+  String? _reason;
+  String? get reason => _$this._reason;
+  set reason(String? reason) => _$this._reason = reason;
+
+  String? _label;
+  String? get label => _$this._label;
+  set label(String? label) => _$this._label = label;
 
   String? _note;
   String? get note => _$this._note;
@@ -180,6 +106,7 @@ class AdminOrderDtoOutputOrderDeliveryShortfallBuilder
     if ($v != null) {
       _amount = $v.amount?.toBuilder();
       _reason = $v.reason;
+      _label = $v.label;
       _note = $v.note;
       _$v = null;
     }
@@ -212,6 +139,11 @@ class AdminOrderDtoOutputOrderDeliveryShortfallBuilder
               reason,
               r'AdminOrderDtoOutputOrderDeliveryShortfall',
               'reason',
+            ),
+            label: BuiltValueNullFieldError.checkNotNull(
+              label,
+              r'AdminOrderDtoOutputOrderDeliveryShortfall',
+              'label',
             ),
             note: note,
           );

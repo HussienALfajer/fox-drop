@@ -3,7 +3,6 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -12,8 +11,8 @@ part 'admin_record_delivery_dto_shortfall.g.dart';
 /// Needed when the net received is short beyond rounding: «الزبون لا يملك المبلغ كاملاً», «خطأ في العد», «أخرى».
 ///
 /// Properties:
-/// * [reason]
-/// * [note] - The text of «أخرى» only.
+/// * [reason] - The reason's code in its Content list.
+/// * [note] - The text of a reason that needs one («أخرى»), and only of it.
 @BuiltValue()
 abstract class AdminRecordDeliveryDtoShortfall
     implements
@@ -21,11 +20,11 @@ abstract class AdminRecordDeliveryDtoShortfall
           AdminRecordDeliveryDtoShortfall,
           AdminRecordDeliveryDtoShortfallBuilder
         > {
+  /// The reason's code in its Content list.
   @BuiltValueField(wireName: r'reason')
-  AdminRecordDeliveryDtoShortfallReasonEnum get reason;
-  // enum reasonEnum {  customer_short,  counting_error,  other,  };
+  String get reason;
 
-  /// The text of «أخرى» only.
+  /// The text of a reason that needs one («أخرى»), and only of it.
   @BuiltValueField(wireName: r'note')
   String? get note;
 
@@ -62,7 +61,7 @@ class _$AdminRecordDeliveryDtoShortfallSerializer
     yield r'reason';
     yield serializers.serialize(
       object.reason,
-      specifiedType: const FullType(AdminRecordDeliveryDtoShortfallReasonEnum),
+      specifiedType: const FullType(String),
     );
     yield r'note';
     yield object.note == null
@@ -102,11 +101,9 @@ class _$AdminRecordDeliveryDtoShortfallSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminRecordDeliveryDtoShortfallReasonEnum,
-                    ),
+                    specifiedType: const FullType(String),
                   )
-                  as AdminRecordDeliveryDtoShortfallReasonEnum;
+                  as String;
           result.reason = valueDes;
           break;
         case r'note':
@@ -146,26 +143,4 @@ class _$AdminRecordDeliveryDtoShortfallSerializer
     );
     return result.build();
   }
-}
-
-class AdminRecordDeliveryDtoShortfallReasonEnum extends EnumClass {
-  @BuiltValueEnumConst(wireName: r'customer_short')
-  static const AdminRecordDeliveryDtoShortfallReasonEnum customerShort =
-      _$adminRecordDeliveryDtoShortfallReasonEnum_customerShort;
-  @BuiltValueEnumConst(wireName: r'counting_error')
-  static const AdminRecordDeliveryDtoShortfallReasonEnum countingError =
-      _$adminRecordDeliveryDtoShortfallReasonEnum_countingError;
-  @BuiltValueEnumConst(wireName: r'other')
-  static const AdminRecordDeliveryDtoShortfallReasonEnum other =
-      _$adminRecordDeliveryDtoShortfallReasonEnum_other;
-
-  static Serializer<AdminRecordDeliveryDtoShortfallReasonEnum> get serializer =>
-      _$adminRecordDeliveryDtoShortfallReasonEnumSerializer;
-
-  const AdminRecordDeliveryDtoShortfallReasonEnum._(String name) : super(name);
-
-  static BuiltSet<AdminRecordDeliveryDtoShortfallReasonEnum> get values =>
-      _$adminRecordDeliveryDtoShortfallReasonEnumValues;
-  static AdminRecordDeliveryDtoShortfallReasonEnum valueOf(String name) =>
-      _$adminRecordDeliveryDtoShortfallReasonEnumValueOf(name);
 }

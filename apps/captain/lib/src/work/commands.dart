@@ -248,9 +248,7 @@ class Commands extends Notifier<Set<String>> {
           ..away = away == null
               ? null
               : (CaptainArriveAtCustomerDtoAwayBuilder()
-                  ..reason = CaptainArriveAtCustomerDtoAwayReasonEnum.valueOf(
-                    _enumName(away.reason),
-                  )
+                  ..reason = away.reason
                   ..note = away.note),
       ),
     ),
@@ -279,18 +277,13 @@ class Commands extends Notifier<Set<String>> {
               ..shortfall = payment.shortfall == null
                   ? null
                   : (AdminRecordDeliveryDtoShortfallBuilder()
-                      ..reason =
-                          AdminRecordDeliveryDtoShortfallReasonEnum.valueOf(
-                            _enumName(payment.shortfall!.reason),
-                          )
+                      ..reason = payment.shortfall!.reason
                       ..note = payment.shortfall!.note)
               ..location.replace(location)
               ..away = away == null
                   ? null
                   : (CaptainDeliverDtoAwayBuilder()
-                      ..reason = CaptainDeliverDtoAwayReasonEnum.valueOf(
-                        _enumName(away.reason),
-                      )
+                      ..reason = away.reason
                       ..note = away.note),
           ),
         );
@@ -449,12 +442,5 @@ Notice refusal(Object? body) {
 /// The server takes the version as `1.2.3`; a build suffix is dropped.
 String _plainVersion(String version) =>
     RegExp(r'^\d+\.\d+\.\d+').stringMatch(version) ?? version;
-
-/// A wire name such as `pin_inaccurate` as the generated enum's name
-/// (`pinInaccurate`).
-String _enumName(String wire) => wire.replaceAllMapped(
-  RegExp('_([a-z])'),
-  (match) => match[1]!.toUpperCase(),
-);
 
 final commandsProvider = NotifierProvider<Commands, Set<String>>(Commands.new);

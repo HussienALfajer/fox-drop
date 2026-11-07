@@ -667,7 +667,12 @@ describe("the order's reads, for the screens and the polling fallback (CU §4.3,
     expect(cancelled).toMatchObject({
       status: 'cancelled',
       version: 2,
-      cancellation: { reason: 'customer', at: expect.any(String) },
+      // A cancellation without a customer text shows the generic apology.
+      cancellation: {
+        reason: 'customer',
+        text: 'نعتذر، لم نتمكن من إكمال طلبك',
+        at: expect.any(String),
+      },
     });
   });
 

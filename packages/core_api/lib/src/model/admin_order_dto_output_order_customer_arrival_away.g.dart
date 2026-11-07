@@ -6,93 +6,12 @@ part of 'admin_order_dto_output_order_customer_arrival_away.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-_$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_customerRequestedOtherPlace =
-    const AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum._(
-      'customerRequestedOtherPlace',
-    );
-const AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-_$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_pinInaccurate =
-    const AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum._(
-      'pinInaccurate',
-    );
-const AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-_$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_other =
-    const AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum._('other');
-
-AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-_$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnumValueOf(String name) {
-  switch (name) {
-    case 'customerRequestedOtherPlace':
-      return _$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_customerRequestedOtherPlace;
-    case 'pinInaccurate':
-      return _$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_pinInaccurate;
-    case 'other':
-      return _$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_other;
-    default:
-      throw ArgumentError(name);
-  }
-}
-
-final BuiltSet<AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum>
-_$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnumValues =
-    BuiltSet<AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum>(const <
-      AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-    >[
-      _$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_customerRequestedOtherPlace,
-      _$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_pinInaccurate,
-      _$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum_other,
-    ]);
-
-Serializer<AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum>
-_$adminOrderDtoOutputOrderCustomerArrivalAwayReasonEnumSerializer =
-    _$AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnumSerializer();
-
-class _$AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnumSerializer
-    implements
-        PrimitiveSerializer<
-          AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum
-        > {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'customerRequestedOtherPlace': 'customer_requested_other_place',
-    'pinInaccurate': 'pin_inaccurate',
-    'other': 'other',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'customer_requested_other_place': 'customerRequestedOtherPlace',
-    'pin_inaccurate': 'pinInaccurate',
-    'other': 'other',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum,
-  ];
-  @override
-  final String wireName =
-      'AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum';
-
-  @override
-  Object serialize(
-    Serializers serializers,
-    AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
-
-  @override
-  AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
-}
-
 class _$AdminOrderDtoOutputOrderCustomerArrivalAway
     extends AdminOrderDtoOutputOrderCustomerArrivalAway {
   @override
-  final AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum reason;
+  final String reason;
+  @override
+  final String label;
   @override
   final String? note;
 
@@ -103,6 +22,7 @@ class _$AdminOrderDtoOutputOrderCustomerArrivalAway
 
   _$AdminOrderDtoOutputOrderCustomerArrivalAway._({
     required this.reason,
+    required this.label,
     this.note,
   }) : super._();
   @override
@@ -119,6 +39,7 @@ class _$AdminOrderDtoOutputOrderCustomerArrivalAway
     if (identical(other, this)) return true;
     return other is AdminOrderDtoOutputOrderCustomerArrivalAway &&
         reason == other.reason &&
+        label == other.label &&
         note == other.note;
   }
 
@@ -126,6 +47,7 @@ class _$AdminOrderDtoOutputOrderCustomerArrivalAway
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, reason.hashCode);
+    _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -137,6 +59,7 @@ class _$AdminOrderDtoOutputOrderCustomerArrivalAway
             r'AdminOrderDtoOutputOrderCustomerArrivalAway',
           )
           ..add('reason', reason)
+          ..add('label', label)
           ..add('note', note))
         .toString();
   }
@@ -150,11 +73,13 @@ class AdminOrderDtoOutputOrderCustomerArrivalAwayBuilder
         > {
   _$AdminOrderDtoOutputOrderCustomerArrivalAway? _$v;
 
-  AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum? _reason;
-  AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum? get reason =>
-      _$this._reason;
-  set reason(AdminOrderDtoOutputOrderCustomerArrivalAwayReasonEnum? reason) =>
-      _$this._reason = reason;
+  String? _reason;
+  String? get reason => _$this._reason;
+  set reason(String? reason) => _$this._reason = reason;
+
+  String? _label;
+  String? get label => _$this._label;
+  set label(String? label) => _$this._label = label;
 
   String? _note;
   String? get note => _$this._note;
@@ -168,6 +93,7 @@ class AdminOrderDtoOutputOrderCustomerArrivalAwayBuilder
     final $v = _$v;
     if ($v != null) {
       _reason = $v.reason;
+      _label = $v.label;
       _note = $v.note;
       _$v = null;
     }
@@ -197,6 +123,11 @@ class AdminOrderDtoOutputOrderCustomerArrivalAwayBuilder
             reason,
             r'AdminOrderDtoOutputOrderCustomerArrivalAway',
             'reason',
+          ),
+          label: BuiltValueNullFieldError.checkNotNull(
+            label,
+            r'AdminOrderDtoOutputOrderCustomerArrivalAway',
+            'label',
           ),
           note: note,
         );

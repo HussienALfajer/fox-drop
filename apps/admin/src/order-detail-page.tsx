@@ -6,14 +6,12 @@ import { chosenCity, citiesQuery } from './cities.js';
 import { formatMoney, formatTime } from './format.js';
 import {
   actorKey,
-  awayKeys,
   cancelReasonKeys,
   eventKey,
   eventReason,
   orderQuery,
   outcomeKeys,
   requestStatusKeys,
-  shortfallKeys,
 } from './order-detail.js';
 import { statusKeys, trackKeys, vehicleKey } from './order-labels.js';
 import { Badges } from './orders-board-page.js';
@@ -131,7 +129,7 @@ export function OrderDetailPage() {
           {customer.arrival.away && (
             <strong>
               {' '}
-              {t('order.alert.awayFromAddress')} {t(awayKeys[customer.arrival.away.reason])}{' '}
+              {t('order.alert.awayFromAddress')} {customer.arrival.away.label}{' '}
               {customer.arrival.away.note}
             </strong>
           )}
@@ -219,7 +217,7 @@ export function OrderDetailPage() {
             <p>
               <strong>
                 {t('order.shortfall', { amount: formatMoney(delivery.shortfall.amount) })}{' '}
-                {t(shortfallKeys[delivery.shortfall.reason])} {delivery.shortfall.note}
+                {delivery.shortfall.label} {delivery.shortfall.note}
               </strong>
             </p>
           )}

@@ -214,10 +214,7 @@
       "byRestaurant": "أكّده المطعم",
       "automatic": "تأكيد تلقائي",
       "byOperations": "أكّدته العمليات",
-      "merchantAutoCancel": "المطعم لم يستجب",
-      "customerRequestedOtherPlace": "الزبون طلب مكاناً آخر",
-      "pinInaccurate": "موقع الزبون على الخريطة غير دقيق",
-      "other": "أخرى"
+      "merchantAutoCancel": "المطعم لم يستجب"
     },
     "outcome": {
       "normal": "عادي",
@@ -226,11 +223,6 @@
       "damaged": "تالف",
       "wrongRefused": "خطأ ورفضه الزبون",
       "failedOther": "تعذّر التسليم"
-    },
-    "shortfallReason": {
-      "customerShort": "الزبون لا يملك المبلغ كاملاً",
-      "countingError": "خطأ في العد",
-      "other": "أخرى"
     },
     "request": {
       "line": "طلب استلام الساعة {{time}}: {{status}}، {{lines}}",

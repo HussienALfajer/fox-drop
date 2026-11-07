@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
+import { GENERIC_CUSTOMER_TEXT } from '../content/index.js';
 import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { CustomerController } from '../../http/route-groups.js';
@@ -82,9 +83,12 @@ const customerOrder = z.object({
   cancellation: z
     .object({
       at: z.iso.datetime(),
-      reason: z
+      reason: z.string().describe('The code, such as merchant_auto_cancel (CU §11.9).'),
+      text: z
         .string()
-        .describe('merchant_auto_cancel: «لم يرد المطعم على طلبك، نعتذر» (CU §11.9).'),
+        .describe(
+          'What the customer sees (CU Appendix C), from Content as it was at the cancellation.',
+        ),
     })
     .nullable()
     .describe('While cancelled (CU §11.9).'),
@@ -299,6 +303,7 @@ function orderBody(
     cancellation: order.cancellation && {
       at: order.cancellation.at.toISOString(),
       reason: order.cancellation.reason,
+      text: order.cancellation.customerText ?? GENERIC_CUSTOMER_TEXT,
     },
     delivery: order.delivery && {
       at: order.delivery.at.toISOString(),

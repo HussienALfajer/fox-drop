@@ -166,9 +166,8 @@ class OrderScreen extends ConsumerWidget {
       ),
     ),
     Delivered() => (l10n.customerStatusDelivered, l10n.customerEnjoy),
-    NoRestaurantResponse() => (l10n.customerNoRestaurantResponse, null),
     Rejected() => (l10n.customerRejected, null),
-    Cancelled() => (l10n.customerCancelled, null),
+    Cancelled(:final text) => (l10n.customerCancelled, text),
     Failed() => (l10n.customerDeliveryFailed, null),
   };
 }

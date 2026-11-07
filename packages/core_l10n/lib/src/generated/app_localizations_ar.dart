@@ -1049,9 +1049,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerEnjoy => 'بالعافية!';
 
   @override
-  String get customerNoRestaurantResponse => 'لم يرد المطعم على طلبك، نعتذر';
-
-  @override
   String get customerRejected => 'نعتذر، لم يقبل المطعم طلبك';
 
   @override
