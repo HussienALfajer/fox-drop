@@ -7,15 +7,16 @@ The handover note between sessions: the current task, its branch, its plan, and 
 Slice 2.2, Alerts and the `ops:` channel (`docs/roadmap.md`, Phase 2): alerts with severity, recipients by role, acknowledgement, self-resolution and timers; the critical sound repeating until acknowledged and «تفعيل الصوت»; the triggers already built (the restaurant not accepting, no captain, ready without a captain, prep late, captain waiting, late delivery, stale GPS, shortfall, the cash limit, the sender alerts, delivery away from the address); the board and the order detail live over `ops:` instead of polling. Each later alert joins with its slice. The owner leaves an order unaccepted for 3 minutes and hears «مطعم لم يقبل».
 
 - **Specs:** AP §7.3, AP §9.1.3, AP §9.2, architecture §6 (real time) and §10.3 (the panel's sounds); the alert moments already stored on the order (`ordering/CLAUDE.md`: `merchant_accept_alert_at`, `prep_late_alert_at`, `no_captain_alert_at`, `captain_waiting_alert_at`), the shortfalls (`GET /v1/admin/orders/shortfalls`), the OTP sender alerts (`identity`), and `notifications/CLAUDE.md` for Centrifugo.
-- **Owner decisions 2026-11-07:** Phase 2 split into 46 slices, approved; functional, unstyled screens with logic apart from presentation (the styling waits for the design); Android first, iOS in slice 2.46.
-- **Branch:** `feat/ops-alerts`.
-- **Plan:**
-  - [ ] Read the specs above, the alert codes the board shows today (`alerts` in `admin-orders.controller.ts`, `order-labels.ts` in the panel) and how each trigger's moment is stored, and which module owns alerts (architecture §4.2).
-  - [ ] Ask the owner before building: the alert table of AP §9.1.3 that is still open (severities, recipients, repeat intervals and the sound per alert, if the spec leaves any), whether one pull request is enough, and the sound files (bundled, no third-party origin under the CSP).
-  - [ ] Server: the alerts' records (raised, acknowledged by whom, resolved by itself), their timers in the transaction of the state that sets them (E3, E4), the routes to list and acknowledge, and the `ops:{city}` channel with its access check (`db-migration` skill; tests first for raising, acknowledging and self-resolution).
-  - [ ] Regenerate the API clients (`pnpm generate:api`).
-  - [ ] The panel: the alerts list and acknowledgement, «تفعيل الصوت» and the critical sound repeating until acknowledged, and the board and the order detail over `ops:` with polling only as the fallback.
+- **Owner decisions 2026-11-07:** Phase 2 split into 46 slices, approved; functional, unstyled screens with logic apart from presentation (the styling waits for the design); Android first, iOS in slice 2.46. For 2.2: two pull requests (2.2a the alerts, the sound and their list with the panel polling; 2.2b the `ops:` channel for the board, the detail and the alerts); the critical sound repeats every 3 seconds; the tones are generated with Web Audio (no files); desktop notifications for critical alerts now.
+- **Branch:** `feat/ops-alerts` (2.2a), then `feat/ops-channel` (2.2b).
+- **Plan, 2.2a:**
+  - [x] Read the specs, the board's alert codes and how each trigger's moment is stored; alerts belong to `notifications` (architecture §4.2: sound levels), each condition synced by its owner.
+  - [x] Ask the owner before building (the split, the repeat interval, the sounds, desktop notifications).
+  - [x] Server: `notifications.alerts` and `AlertsService` (sync, list, acknowledge), the routes, the order alerts synced after each transition and at their next moment (`order-alerts.ts`), the GPS sweep, and the worker's sweep of the code senders and the cash limits; tests first for raising, acknowledging and self-resolution.
+  - [x] Regenerate the API clients (`pnpm generate:api`).
+  - [x] The panel: the sound banner, the bell, `/alerts` with «استلام» and the history, the critical sound repeating every 3 s, the warning chime, desktop notifications.
   - [ ] `pnpm verify` through the `checker` agent, the `reviewer` agent, the pull request.
+- **Plan, 2.2b:** the `ops:city.{city_id}` namespace with its access check (panel sessions with access to the city) and the connection token for the panel's cookie session; the relay publishing orders and alert changes to it; the board, the detail and the alerts over `ops:` with polling only as the fallback (`allowed_origins` for the panel).
 
 ## Deferred: slice 1.14h, the whole cycle on real phones
 
