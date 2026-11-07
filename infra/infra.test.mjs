@@ -112,6 +112,8 @@ test('every environment names the settings compose.yaml and nginx need', () => {
     'SUPPORT_PHONE_NUMBER',
     // App Check (architecture §8.3.3 item 1); may be empty.
     'FIREBASE_PROJECT_NUMBER',
+    // The staging APKs' Firebase project (the deploy skill); may be empty.
+    'FIREBASE_PROJECT_ID',
   ];
   for (const file of readdirSync(new URL('environments/', import.meta.url))) {
     const keys = read(`environments/${file}`)
