@@ -3753,6 +3753,13 @@ export interface components {
                         awayReason: ("customer_requested_other_place" | "pin_inaccurate" | "other") | null;
                     } | null;
                 };
+                /** @description The arrival radii, by the straight line from the latest fix. */
+                radii: {
+                    /** @description captain.merchant_arrival_radius_m: «وصلت إلى المطعم» within it (C6). */
+                    restaurantMetres: number;
+                    /** @description captain.customer_radius_m: «وصلت» and «تم التسليم» need no reason within it (K4, C9). */
+                    customerMetres: number;
+                };
             } | null;
         };
         CaptainArriveDto: {
@@ -3923,6 +3930,13 @@ export interface components {
                         /** @description The reason given away from the pin; it covers the delivery too (K4). */
                         awayReason: ("customer_requested_other_place" | "pin_inaccurate" | "other") | null;
                     } | null;
+                };
+                /** @description The arrival radii, by the straight line from the latest fix. */
+                radii: {
+                    /** @description captain.merchant_arrival_radius_m: «وصلت إلى المطعم» within it (C6). */
+                    restaurantMetres: number;
+                    /** @description captain.customer_radius_m: «وصلت» and «تم التسليم» need no reason within it (K4, C9). */
+                    customerMetres: number;
                 };
             };
         };

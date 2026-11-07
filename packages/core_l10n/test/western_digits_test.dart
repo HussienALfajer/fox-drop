@@ -80,6 +80,11 @@ void main() {
     expect(l10n.formatCountdown(const Duration(seconds: -3)), '0:00');
     expect(l10n.merchantAccept(20), 'قبول — 20 د');
     expect(l10n.merchantAutoConfirmIn(60), 'يُؤكَّد تلقائياً خلال 60 ث');
+    expect(l10n.captainOfferPreparing(8), 'قيد التحضير — جاهز بعد 8 د تقريباً');
+    expect(l10n.captainPreparing(12), 'قيد التحضير — جاهز بعد 12 د');
+    expect(l10n.captainStep(2, 'عند المطعم'), 'الخطوة 2 من 4: عند المطعم');
+    expect(l10n.captainOrderItems('10423', 3), 'الطلب #10423 · الأصناف: 3');
+    expect(l10n.captainLine(2, 'شاورما'), '2 × شاورما');
     expect(l10n.formatDistance(850), '850 م');
     expect(l10n.formatDistance(2400), '2.4 كم');
     for (final text in [

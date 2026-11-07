@@ -78,6 +78,7 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_request.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_request_amount.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_preparation.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_radii.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant_location.dart';
 import 'package:core_api/src/model/captain_arrive_at_customer_dto.dart';
@@ -330,6 +331,7 @@ part 'serializers.g.dart';
   CaptainActiveOrderDtoOutputOrderPickupRequest,
   CaptainActiveOrderDtoOutputOrderPickupRequestAmount,
   CaptainActiveOrderDtoOutputOrderPreparation,
+  CaptainActiveOrderDtoOutputOrderRadii,
   CaptainActiveOrderDtoOutputOrderRestaurant,
   CaptainActiveOrderDtoOutputOrderRestaurantLocation,
   CaptainArriveAtCustomerDto,

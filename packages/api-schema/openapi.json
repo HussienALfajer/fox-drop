@@ -13293,6 +13293,29 @@
                     ],
                     "additionalProperties": false,
                     "description": "Steps 3 and 4, to and at the customer (CA §9.5–9.6)."
+                  },
+                  "radii": {
+                    "type": "object",
+                    "properties": {
+                      "restaurantMetres": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "description": "captain.merchant_arrival_radius_m: «وصلت إلى المطعم» within it (C6)."
+                      },
+                      "customerMetres": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "description": "captain.customer_radius_m: «وصلت» and «تم التسليم» need no reason within it (K4, C9)."
+                      }
+                    },
+                    "required": [
+                      "restaurantMetres",
+                      "customerMetres"
+                    ],
+                    "additionalProperties": false,
+                    "description": "The arrival radii, by the straight line from the latest fix."
                   }
                 },
                 "required": [
@@ -13310,7 +13333,8 @@
                   "pickupPayment",
                   "collect",
                   "pickup",
-                  "customer"
+                  "customer",
+                  "radii"
                 ],
                 "additionalProperties": false,
                 "description": "The active order (CA §9)."
@@ -14005,6 +14029,29 @@
                 ],
                 "additionalProperties": false,
                 "description": "Steps 3 and 4, to and at the customer (CA §9.5–9.6)."
+              },
+              "radii": {
+                "type": "object",
+                "properties": {
+                  "restaurantMetres": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991,
+                    "description": "captain.merchant_arrival_radius_m: «وصلت إلى المطعم» within it (C6)."
+                  },
+                  "customerMetres": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991,
+                    "description": "captain.customer_radius_m: «وصلت» and «تم التسليم» need no reason within it (K4, C9)."
+                  }
+                },
+                "required": [
+                  "restaurantMetres",
+                  "customerMetres"
+                ],
+                "additionalProperties": false,
+                "description": "The arrival radii, by the straight line from the latest fix."
               }
             },
             "required": [
@@ -14022,7 +14069,8 @@
               "pickupPayment",
               "collect",
               "pickup",
-              "customer"
+              "customer",
+              "radii"
             ],
             "additionalProperties": false,
             "description": "The active order (CA §9)."

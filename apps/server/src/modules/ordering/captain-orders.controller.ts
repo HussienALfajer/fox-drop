@@ -188,6 +188,18 @@ const activeOrder = z
           .describe('Null until «وصلت» at the customer (CA §9.6).'),
       })
       .describe('Steps 3 and 4, to and at the customer (CA §9.5–9.6).'),
+    radii: z
+      .object({
+        restaurantMetres: z
+          .int()
+          .describe('captain.merchant_arrival_radius_m: «وصلت إلى المطعم» within it (C6).'),
+        customerMetres: z
+          .int()
+          .describe(
+            'captain.customer_radius_m: «وصلت» and «تم التسليم» need no reason within it (K4, C9).',
+          ),
+      })
+      .describe('The arrival radii, by the straight line from the latest fix.'),
   })
   .describe('The active order (CA §9).');
 
@@ -360,6 +372,7 @@ function activeOrderBody({
   customer,
   pickupRequest,
   pickupDispute,
+  radii,
 }: CaptainActiveOrder) {
   if (order.captainTrack === null) throw new Error(`order ${order.id} has no captain track`);
   if (order.acceptance === null) throw new Error(`order ${order.id} was never accepted`);
@@ -417,6 +430,7 @@ function activeOrderBody({
         awayReason: order.away?.reason ?? null,
       },
     },
+    radii,
   };
 }
 

@@ -1,5 +1,8 @@
 import 'package:core_api/core_api.dart';
 import 'package:core_auth/core_auth.dart';
+import 'package:core_realtime/core_realtime.dart';
+import 'package:core_time/core_time.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -30,14 +33,55 @@ final authApiProvider = Provider<CoreApi>((ref) => apiClient(apiBaseUrl()));
 /// sends the session's token and renews it.
 final coreApiProvider = Provider<CoreApi>((ref) {
   final api = apiClient(apiBaseUrl());
-  api.dio.interceptors.add(captainAuth.interceptor(ref, api.dio));
+  api.dio.interceptors
+    ..add(ServerTimeInterceptor(ref.watch(serverClockProvider)))
+    ..add(captainAuth.interceptor(ref, api.dio));
   return api;
 });
 
-final statusProvider = FutureProvider<StatusDtoOutput>((ref) async {
+/// The server's clock, which every countdown and every point's time uses
+/// (CA §4.6).
+final serverClockProvider = Provider<ServerClock>((ref) => ServerClock());
+
+/// The signed-in captain (its id names the channel), or null while signed
+/// out. Read again at every sign-in.
+final captainSessionProvider = FutureProvider<CaptainSessionDtoOutput?>((
+  ref,
+) async {
+  final session = await ref.watch(captainAuth.session.future);
+  if (session is! SignedIn) return null;
   final response = await ref
       .watch(coreApiProvider)
       .getCaptainApi()
-      .captainStatusGet();
-  return response.data!;
+      .captainAuthCurrent();
+  return response.data;
+});
+
+/// Centrifugo's address: `--dart-define=REALTIME_URL=...`, or derived from
+/// the API's (`packages/core_realtime/CLAUDE.md`).
+const _realtimeUrl = String.fromEnvironment('REALTIME_URL');
+
+/// The app's one real-time connection (architecture §6.1), with a token from
+/// `POST /v1/captain/realtime/token`.
+final realtimeTransportProvider = Provider<RealtimeTransport>((ref) {
+  return CentrifugeTransport(
+    url: _realtimeUrl.isNotEmpty ? _realtimeUrl : realtimeUrl(apiBaseUrl()),
+    token: () async {
+      final session = await ref.read(captainAuth.session.future);
+      if (session is! SignedIn) throw const RealtimeSignedOut();
+      try {
+        final answer = await ref
+            .read(coreApiProvider)
+            .getCaptainApi()
+            .captainRealtimeToken();
+        return answer.data!.token;
+      } on DioException catch (error) {
+        if (error.response?.statusCode == 401 ||
+            error.response?.statusCode == 403) {
+          throw const RealtimeSignedOut();
+        }
+        rethrow;
+      }
+    },
+  );
 });

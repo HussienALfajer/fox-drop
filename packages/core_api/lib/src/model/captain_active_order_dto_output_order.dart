@@ -12,6 +12,7 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup.
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_customer.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_radii.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -35,6 +36,7 @@ part 'captain_active_order_dto_output_order.g.dart';
 /// * [collect]
 /// * [pickup]
 /// * [customer]
+/// * [radii]
 @BuiltValue()
 abstract class CaptainActiveOrderDtoOutputOrder
     implements
@@ -93,6 +95,9 @@ abstract class CaptainActiveOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'customer')
   CaptainActiveOrderDtoOutputOrderCustomer get customer;
+
+  @BuiltValueField(wireName: r'radii')
+  CaptainActiveOrderDtoOutputOrderRadii get radii;
 
   CaptainActiveOrderDtoOutputOrder._();
 
@@ -212,6 +217,11 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
     yield serializers.serialize(
       object.customer,
       specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderCustomer),
+    );
+    yield r'radii';
+    yield serializers.serialize(
+      object.radii,
+      specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderRadii),
     );
   }
 
@@ -390,6 +400,17 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
                   )
                   as CaptainActiveOrderDtoOutputOrderCustomer;
           result.customer.replace(valueDes);
+          break;
+        case r'radii':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainActiveOrderDtoOutputOrderRadii,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderRadii;
+          result.radii.replace(valueDes);
           break;
         default:
           unhandled.add(key);

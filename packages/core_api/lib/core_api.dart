@@ -79,6 +79,7 @@ export 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_
 export 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_request.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_request_amount.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_preparation.dart';
+export 'package:core_api/src/model/captain_active_order_dto_output_order_radii.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant_location.dart';
 export 'package:core_api/src/model/captain_arrive_at_customer_dto.dart';
