@@ -8,15 +8,15 @@ Slice 2.3, push on Android (`docs/roadmap.md`, Phase 2): FCM device tokens per a
 
 - **Specs:** architecture §8.1–8.2; CU §14, RA §16, CA §14, AP §10, AP §9.13 (notification templates), AP §8.3 (the apology); `apps/server/src/modules/notifications/CLAUDE.md` («Not yet»: push, the relay is where it joins) and `ordering/CLAUDE.md` (the relay); `apps/customer/CLAUDE.md` and `packages/core_auth/CLAUDE.md` for the apps' side.
 - **Owner decisions 2026-11-08:** three pull requests: 2.3a the server and the panel (device tokens, sending from the outbox, the templates in «المحتوى», the apology, «إعادة إرسال الإشعار», the customer's stored notifications), 2.3b the customer app (the permission at the first order, receiving, the «الإشعارات» screen), 2.3c the restaurant and captain apps. The customer's notifications are stored and shown now (CU §13). Only the rows whose events exist are sent; the others join with their slices, and every template is seeded with its default text.
-- **Branch:** `feat/android-push` (2.3a), then `feat/customer-push` (2.3b) and `feat/merchant-captain-push` (2.3c).
-- **Plan (2.3a):**
-  - [x] Read the specs and ask the owner the split.
-  - [ ] Device tokens: `notifications.push_devices`, one row per app session, `PUT /v1/{customer,merchant,captain}/push-token`, ended with its session.
-  - [ ] Templates: the catalogue of every row of CU §14, RA §16 and CA §14 with its default text, `content.notification_templates`, rendering with variables, the panel's «نصوص الإشعارات».
-  - [ ] Sending: `notifications.push_messages` (the queue and the customer's notifications), the FCM HTTP v1 sender from a service account, the worker's push relay with retries and removal of invalid tokens, `GET /v1/customer/notifications`.
-  - [ ] From the outbox: `ordering.outbox.push_queued_at`, the push relay that turns each event into each party's message (AP §8.3's apology on the automatic cancellation included).
-  - [ ] «إعادة إرسال الإشعار» in the order detail (AP §9.3.2).
-  - [ ] The staging secret (`FCM_SERVICE_ACCOUNT`), the docs, the review.
+- **Branch:** `feat/customer-push` (2.3b), then `feat/merchant-captain-push` (2.3c). 2.3a (`feat/android-push`) is merged.
+- **Done in 2.3a:** the server and the panel. Each app registers its token with `PUT /v1/{customer,merchant,captain}/push-token` (`{ token, platform: 'android' }`) at every start and whenever Firebase renews it; the worker sends each push as an FCM notification on the Android channel named by its level (`default`, `ring`, `chime`, `offer`, `cancellation`, `silent`; architecture §8.2) with the title «FOX DROP», `android.priority` and the data a tap opens (`target`: `order` or `offer`, `orderId`, `messageId`); `GET /v1/customer/notifications` answers «الإشعارات» (CU §13). See `apps/server/src/modules/notifications/CLAUDE.md` and `ordering/CLAUDE.md` «Pushes».
+- **Plan (2.3b, the customer app):** to write as one step per commit at its start, after reading CU §10.7 item 4 (the permission at the first order, Q11), CU §13 «الإشعارات», CU §14 (what a tap opens), `apps/customer/CLAUDE.md` and `packages/core_auth/CLAUDE.md` (how Firebase starts from build values, without `google-services.json`):
+  - [ ] `firebase_messaging` in the customer app: the token registered after sign-in and on renewal, the Android channels created at start, a tap opening its target.
+  - [ ] The notification permission asked on the first order only (Q11), and Android 13's runtime permission.
+  - [ ] The «الإشعارات» screen (30 days, newest first, a tap opens its target); the design stop applies to its styling.
+  - [ ] The staging check: the owner closes the customer app and gets the acceptance push (needs `FCM_SERVICE_ACCOUNT` on staging, the `deploy` skill).
+- **Before 2.3b's check on staging:** the owner creates the `push-sender` service account and adds `FCM_SERVICE_ACCOUNT` to the server's `.env` (the `deploy` skill, «Secrets»).
+- **To confirm with the owner (2.3a):** every push's title is «FOX DROP»; a resend appears again in the customer's «الإشعارات»; the restaurant's owners with ringing off still get Ring events with sound until that device setting exists (RA §16).
 
 ## Deferred: slice 1.14h, the whole cycle on real phones
 
