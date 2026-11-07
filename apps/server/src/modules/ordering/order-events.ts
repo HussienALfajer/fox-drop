@@ -69,7 +69,7 @@ export type OrderEventType =
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that
-// publishes it once it commits (outbox-relay.ts). The outbox payload is
+// publishes it once it commits (outbox-relay.ts) and a sync of its alerts. The outbox payload is
 // version 1 of its type; clients ignore one older than the order version they
 // show (RA §4.3).
 export async function recordTransition(
@@ -140,4 +140,11 @@ export async function recordTransition(
     },
   });
   await jobs.send(QUEUES.outboxRelay, {}, { db: inTransaction(tx) });
+  // AP §7.3: the order's alerts follow it, raised or resolved once the
+  // transition commits (order-alerts.ts).
+  await jobs.send(
+    QUEUES.orderAlerts,
+    { orderId: order.id, placedAt: order.placedAt.toISOString() },
+    { db: inTransaction(tx) },
+  );
 }

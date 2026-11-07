@@ -15,6 +15,10 @@ import 'package:core_api/src/date_serializer.dart';
 import 'package:core_api/src/model/date.dart';
 
 import 'package:core_api/src/model/add_reason_dto.dart';
+import 'package:core_api/src/model/admin_alert_dto_output.dart';
+import 'package:core_api/src/model/admin_alerts_dto_output.dart';
+import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner.dart';
+import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_acknowledged.dart';
 import 'package:core_api/src/model/admin_assign_dto.dart';
 import 'package:core_api/src/model/admin_board_dto_output.dart';
 import 'package:core_api/src/model/admin_cities_dto_output.dart';
@@ -295,6 +299,10 @@ part 'serializers.g.dart';
 
 @SerializersFor([
   AddReasonDto,
+  AdminAlertDtoOutput,
+  AdminAlertsDtoOutput,
+  AdminAlertsDtoOutputAlertsInner,
+  AdminAlertsDtoOutputAlertsInnerAcknowledged,
   AdminAssignDto,
   AdminBoardDtoOutput,
   AdminCitiesDtoOutput,
@@ -764,6 +772,12 @@ Serializers serializers =
               FullType(SenderPoolDtoOutputNumbersInner),
             ]),
             () => ListBuilder<SenderPoolDtoOutputNumbersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminAlertsDtoOutputAlertsInner),
+            ]),
+            () => ListBuilder<AdminAlertsDtoOutputAlertsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

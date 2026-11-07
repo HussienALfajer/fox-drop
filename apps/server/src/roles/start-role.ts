@@ -9,6 +9,7 @@ import { CaptainsWorkerModule } from '../modules/captains/index.js';
 import { DispatchWorkerModule } from '../modules/dispatch/index.js';
 import { OtpSenderModule } from '../modules/identity/index.js';
 import { LedgerWorkerModule } from '../modules/ledger/index.js';
+import { AlertsWorkerModule } from '../modules/notifications/index.js';
 import { OrderingWorkerModule } from '../modules/ordering/index.js';
 import { PlaceholderSeed, seedsPlaceholders } from '../seed/placeholder-seed.js';
 import type { ProcessRole } from './process-role.js';
@@ -24,6 +25,7 @@ const BACKGROUND_MODULES: Record<BackgroundRole, Type[]> = {
     CaptainsWorkerModule,
     OrderingWorkerModule,
     DispatchWorkerModule,
+    AlertsWorkerModule,
   ],
   dispatcher: [],
   'otp-sender': [OtpSenderModule],

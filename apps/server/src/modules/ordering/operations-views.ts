@@ -4,7 +4,9 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { CaptainsService } from '../captains/index.js';
 import { MerchantsService } from '../merchants/index.js';
+import { SettingsService } from '../settings/index.js';
 import { UNTIL_ENDED } from './active-orders.js';
+import { orderAlerts, type OrderAlertCode } from './order-alerts.js';
 import type { CaptainTrack } from './order-events.js';
 import { orderKey, readOrders, type OrderView } from './order-views.js';
 import {
@@ -15,28 +17,9 @@ import {
 } from './pickup-views.js';
 import { collections, orderEvents, orders } from './schema.js';
 
-// AP §9.1.3, §8.3: operations' alerts, each from its moment (owner decision
-// 2026-11-06: the board's read shows them once their moment passed; the
-// critical alerts' timers, sounds and channel come with their slice).
-export type OperationsAlert =
-  // «مطعم لم يقبل»: placed, past order.merchant_accept_alert_min.
-  | 'restaurant_not_accepted'
-  // «تحضير متأخر»: accepted, order.prep_late_ops_alert_min past the prep time.
-  | 'prep_late'
-  // «طلب بلا كابتن»: dispatch.no_captain_alert_min after the search started.
-  | 'no_captain'
-  // No captain dispatch.no_captain_after_ready_min after ready.
-  | 'no_captain_after_ready'
-  // «كابتن ينتظر عند المطعم»: captain.waiting_threshold_min at the
-  // restaurant before pickup (RA §8.9).
-  | 'captain_waiting'
-  // «خلاف على مبلغ الاستلام» (critical): the restaurant answered the latest
-  // pickup request with «المبلغ غير صحيح»; it resolves itself once the
-  // pickup completes or the order ends (RA §8.10 item 6).
-  | 'pickup_disputed'
-  // «تسليم بعيد عن العنوان» (information): the captain arrived or delivered
-  // beyond captain.customer_radius_m of the pin, with a reason (CA §9.6, §9.8).
-  | 'away_from_address';
+// AP §9.1.3: the alerts the board shows on a card, the same conditions as
+// the alerts list (order-alerts.ts).
+export type OperationsAlert = OrderAlertCode;
 
 // An order as the operations board shows it (AP §9.2.1) and the detail's
 // header (AP §9.3.1).
@@ -105,6 +88,7 @@ export class OperationsViews {
     @Inject(DATABASE) private readonly database: Database,
     private readonly merchants: MerchantsService,
     private readonly captains: CaptainsService,
+    private readonly settings: SettingsService,
   ) {}
 
   // The board: every live order of the city, from placed to arrived, oldest
@@ -190,6 +174,9 @@ export class OperationsViews {
         searchStartedAt: orders.searchStartedAt,
         searchAlertAt: orders.searchAlertAt,
         noCaptainAlertAt: orders.noCaptainAlertAt,
+        promisedAt: orders.promisedAt,
+        assignedAt: orders.assignedAt,
+        cityId: orders.cityId,
       })
       .from(orders)
       .where(
@@ -215,6 +202,24 @@ export class OperationsViews {
     ]);
     const names = await this.merchants.names([...new Set(views.map((view) => view.restaurantId))]);
     const captainIds = [...new Set(extras.flatMap((row) => row.captainId ?? []))];
+    const cityIds = [...new Set(extras.map((row) => row.cityId))];
+    const [rules, fixes, shortfalls] = await Promise.all([
+      Promise.all(
+        cityIds.map(async (cityId) => {
+          const [lateMin, gpsStaleMin] = await Promise.all([
+            this.settings.get('order.delivery_late_alert_min', { cityId }),
+            this.settings.get('captain.gps_stale_alert_min', { cityId }),
+          ]);
+          return [cityId, { lateMin, gpsStaleMin }] as const;
+        }),
+      ).then((entries) => new Map(entries)),
+      this.captains.lastFixes(captainIds, new Date(now.getTime() - 60 * 60_000)),
+      this.database.db
+        .select({ orderId: collections.orderId })
+        .from(collections)
+        .where(and(inArray(collections.orderId, ids), gt(collections.shortfall, 0n)))
+        .then((rows) => new Set(rows.map((row) => row.orderId))),
+    ]);
     const captains = new Map(
       (await Promise.all(captainIds.map((id) => this.captains.captain(id, now)))).flatMap(
         (captain) => (captain ? [[captain.id, captain] as const] : []),
@@ -226,32 +231,30 @@ export class OperationsViews {
       const prepDue = view.acceptance
         ? new Date(view.acceptance.at.getTime() + view.acceptance.prepMin * 60_000)
         : null;
-      const passed = (moment: Date | null) => moment !== null && moment <= now;
-      const waiting = view.status === 'accepted' || view.status === 'ready';
-      const alerts: OperationsAlert[] = [];
-      if (view.status === 'placed' && passed(view.acceptAlertAt)) {
-        alerts.push('restaurant_not_accepted');
-      }
-      if (view.status === 'accepted' && passed(more.prepLateAlertAt)) alerts.push('prep_late');
-      if (waiting && more.captainId === null && passed(more.searchAlertAt)) {
-        alerts.push('no_captain');
-      }
-      if (view.status === 'ready' && more.captainId === null && passed(more.noCaptainAlertAt)) {
-        alerts.push('no_captain_after_ready');
-      }
-      const atRestaurant =
-        more.captainTrack === 'at_merchant' || more.captainTrack === 'pickup_pending';
-      if (waiting && atRestaurant && passed(view.captainArrival?.waitingAlertAt ?? null)) {
-        alerts.push('captain_waiting');
-      }
-      // RA §8.10 item 6.4: until the pickup completes or the order ends.
-      const amountDisputed = (requests.get(view.id) ?? []).some(
-        (request) => request.outcome === 'amount_incorrect',
+      const rule = rules.get(more.cityId)!;
+      const { open: alerts } = orderAlerts(
+        {
+          status: view.status,
+          captainId: more.captainId,
+          captainTrack: more.captainTrack,
+          acceptAlertAt: view.acceptAlertAt,
+          prepLateAlertAt: more.prepLateAlertAt,
+          searchAlertAt: more.searchAlertAt,
+          noCaptainAlertAt: more.noCaptainAlertAt,
+          captainWaitingAlertAt: view.captainArrival?.waitingAlertAt ?? null,
+          deliveryLateAt:
+            more.promisedAt && new Date(more.promisedAt.getTime() + rule.lateMin * 60_000),
+          assignedAt: more.assignedAt,
+          lastFixAt: more.captainId === null ? null : (fixes.get(more.captainId) ?? null),
+          gpsStaleMin: rule.gpsStaleMin,
+          amountDisputed: (requests.get(view.id) ?? []).some(
+            (request) => request.outcome === 'amount_incorrect',
+          ),
+          away: view.away !== null,
+          shortfall: shortfalls.has(view.id),
+        },
+        now,
       );
-      if (waiting && amountDisputed) alerts.push('pickup_disputed');
-      if (view.away !== null && UNTIL_ENDED.includes(view.status)) {
-        alerts.push('away_from_address');
-      }
       return {
         order: view,
         restaurantName: names.get(view.restaurantId)?.nameAr ?? '',

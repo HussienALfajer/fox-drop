@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
-import { and, desc, eq, gte, isNull, lte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, isNull, lte, max, ne, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -735,6 +735,59 @@ export class CaptainsService implements OnModuleInit {
       captainId: row.captain_id,
       position: { latitude: Number(row.latitude), longitude: Number(row.longitude) },
     }));
+  }
+
+  // AP §9.1.3 «كابتن بلغ حد العهدة»: each captain of the city not
+  // terminated, with whether its custody usage reached 100% of its cash
+  // limit. A captain whose cash cannot be read now (a currency without a
+  // rate) is left out, so its alert stays as it was.
+  async cashLimits(
+    cityId: string,
+    now: Date,
+  ): Promise<{ id: string; name: string; atLimit: boolean }[]> {
+    const rows = await this.database.db
+      .select()
+      .from(captainRecords)
+      .where(and(eq(captainRecords.cityId, cityId), ne(captainRecords.status, 'terminated')));
+    if (rows.length === 0) return [];
+    const rules = await this.cityRules(cityId, now);
+    const states = await Promise.all(
+      rows.map(async (row) => {
+        try {
+          const custody = await this.custody(
+            this.database.db,
+            row,
+            rules.lastCutoff,
+            rules.warnPct,
+          );
+          return [
+            { id: row.id, name: row.name, atLimit: custody.usage.amount >= custody.limit.amount },
+          ];
+        } catch (error) {
+          this.logger.warn({ err: error, captainId: row.id }, 'cash limit not read');
+          return [];
+        }
+      }),
+    );
+    return states.flat();
+  }
+
+  // AP §9.1.3 «انقطع اتصال كابتن أثناء طلب»: when each captain's newest
+  // point since a moment was recorded (simulated ones included: the app is
+  // still sending); a captain with none since is left out.
+  async lastFixes(captainIds: readonly string[], since: Date): Promise<Map<string, Date>> {
+    if (captainIds.length === 0) return new Map();
+    const rows = await this.database.db
+      .select({ captainId: locations.captainId, at: max(locations.recordedAt) })
+      .from(locations)
+      .where(
+        and(
+          inArray(locations.captainId, [...new Set(captainIds)]),
+          gte(locations.recordedAt, since),
+        ),
+      )
+      .groupBy(locations.captainId);
+    return new Map(rows.flatMap((row) => (row.at ? [[row.captainId, row.at] as const] : [])));
   }
 
   // The captain's state and cash now (CA §7.1, AP §8.5.3–8.5.4).
