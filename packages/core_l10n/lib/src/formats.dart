@@ -79,6 +79,12 @@ extension Formats on AppLocalizations {
   String weekdayOf(DateTime time) =>
       weekdayName(_onCityClock(time).weekday % 7);
 
+  /// A countdown as minutes and seconds, «6:59» (RA §8.3).
+  String formatCountdown(Duration left) {
+    final seconds = left.isNegative ? 0 : left.inSeconds;
+    return '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
+  }
+
   /// A distance: metres below 1 km, kilometres with one decimal above.
   String formatDistance(int metres) => metres < 1000
       ? distanceMetres(metres)

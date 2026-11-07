@@ -158,15 +158,4 @@ void main() {
     await settle();
     expect(fetches, 2);
   });
-
-  test('show() puts a command answer up and counts its version', () async {
-    feed.start();
-    transport.send('merchant:r1', const RealtimeUp(recovered: true));
-    await settle();
-    feed.show({'a': 5});
-    expect(feed.state.value, {'a': 5});
-    transport.send('merchant:r1', RealtimePublication(event('a', 5)));
-    await settle();
-    expect(fetches, 1);
-  });
 }

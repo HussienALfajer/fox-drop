@@ -102,13 +102,6 @@ class LiveFeed<T> {
     _schedulePoll();
   }
 
-  /// Shows [value], a command's answer, until the next fetch.
-  void show(T value) {
-    if (_closed) return;
-    _remember(versions(value));
-    _emit(LiveState(value: value, live: _state.live));
-  }
-
   // Versions only grow, so the highest seen stays, even for an order that
   // left the state: a late repeat of its last event is still ignored.
   void _remember(Map<String, int> seen) {

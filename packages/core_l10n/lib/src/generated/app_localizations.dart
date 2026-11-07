@@ -1317,6 +1317,414 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تحقق من بيانات العنوان والملاحظة ثم أكّد مجدداً.'**
   String get customerOrderInvalid;
+
+  /// A duration in seconds (RA §4.8).
+  ///
+  /// In ar, this message translates to:
+  /// **'{seconds} ث'**
+  String durationSeconds(int seconds);
+
+  /// A captain's vehicle (CU §11.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'سيراً على الأقدام'**
+  String get vehicleWalking;
+
+  /// A captain's vehicle (CU §11.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'دراجة'**
+  String get vehicleBicycle;
+
+  /// A captain's vehicle (CU §11.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'دراجة نارية'**
+  String get vehicleMotorbike;
+
+  /// A captain's vehicle (CU §11.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'سيارة'**
+  String get vehicleCar;
+
+  /// Board column (RA §8.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'جديدة'**
+  String get merchantColumnIncoming;
+
+  /// Board column (RA §8.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد التحضير'**
+  String get merchantColumnPreparing;
+
+  /// Board column (RA §8.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'جاهزة'**
+  String get merchantColumnReady;
+
+  /// Board column (RA §8.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'مع الكابتن'**
+  String get merchantColumnWithCaptain;
+
+  /// A column header with its count (RA §8.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'{column} ({count})'**
+  String merchantColumnCount(String column, int count);
+
+  /// A column header with its count and late orders (RA §8.2); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'{column} ({count}) — متأخرة: {late}'**
+  String merchantColumnLate(String column, int count, int late);
+
+  /// An empty column; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد طلبات الآن'**
+  String get merchantBoardEmpty;
+
+  /// Time since the order was placed (RA §8.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'منذ {minutes} د'**
+  String merchantSincePlaced(int minutes);
+
+  /// The card's item count (RA §8.2); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأصناف: {count}'**
+  String merchantItemCount(int count);
+
+  /// Captain line (RA §8.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار كابتن'**
+  String get merchantWaitingForCaptain;
+
+  /// Captain line (RA §8.1) until the ETA joins it: «— يصل خلال {د} د».
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن {name} في الطريق'**
+  String merchantCaptainOnTheWay(String name);
+
+  /// Captain line (RA §8.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'وصل الكابتن — ينتظر منذ {minutes} د'**
+  String merchantCaptainWaiting(int minutes);
+
+  /// Captain line (RA §8.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن يطلب تأكيد الاستلام'**
+  String get merchantCaptainAsksPickup;
+
+  /// Captain line (RA §8.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'مع الكابتن {name}'**
+  String merchantWithCaptain(String name);
+
+  /// The auto-cancel countdown (RA §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'يُلغى تلقائياً خلال {time}'**
+  String merchantAutoCancelIn(String time);
+
+  /// The prep countdown (RA §8.7); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'متبقٍ {time}'**
+  String merchantPrepLeft(String time);
+
+  /// A late order in preparation (RA §8.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'متأخر {minutes} د'**
+  String merchantPrepLate(int minutes);
+
+  /// Time since pickup in «مع الكابتن» (RA §8.11); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'استُلم منذ {minutes} د'**
+  String merchantPickedUpSince(int minutes);
+
+  /// The accept button (RA §8.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'قبول — {minutes} د'**
+  String merchantAccept(int minutes);
+
+  /// The ready button (RA §8.8).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب جاهز'**
+  String get merchantReady;
+
+  /// The ready help link (RA §8.8).
+  ///
+  /// In ar, this message translates to:
+  /// **'لماذا أضغط «الطلب جاهز»؟'**
+  String get merchantWhyReady;
+
+  /// The ready help (RA §8.8); the spec explains it without exact wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'يُبلَّغ الكابتن فوراً، ويرى الزبون «طلبك جاهز». الضغط في الوقت يُبقي نسبة تأخر مطعمك منخفضة.'**
+  String get merchantWhyReadyText;
+
+  /// The no-extension link (RA §8.7, R7).
+  ///
+  /// In ar, this message translates to:
+  /// **'تحتاج وقتاً أطول؟ اتصل بالعمليات'**
+  String get merchantNeedMoreTime;
+
+  /// Pickup prompt button (RA §8.10).
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد الاستلام'**
+  String get merchantConfirmPickup;
+
+  /// Pickup prompt button (RA §8.10).
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ غير صحيح'**
+  String get merchantAmountIncorrect;
+
+  /// Pickup prompt link (RA §8.10, S17).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب غير مكتمل'**
+  String get merchantOrderIncomplete;
+
+  /// A command waiting for its answer (RA §4.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ الإرسال…'**
+  String get merchantSending;
+
+  /// The new-order prompt (RA §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'طلب جديد #{number}'**
+  String merchantNewOrder(String number);
+
+  /// The items value in the new-order prompt (RA §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'{amount} — يدفعها لك الكابتن عند الاستلام'**
+  String merchantItemsValueOnPickup(String amount);
+
+  /// The money line for everyone (RA §8.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام: {amount}'**
+  String merchantItemsValue(String amount);
+
+  /// The new-order prompt after the accept alert (RA §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'تأخرتم في الرد — سيتصل بكم فريق العمليات'**
+  String get merchantLateReply;
+
+  /// The counter of stacked prompts (RA §4.4); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'{index} من {count}'**
+  String merchantPromptCount(int index, int count);
+
+  /// The pickup prompt (RA §8.10 item 3).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن {name} يؤكد أنه دفع لك {amount} واستلم الطلب #{number}'**
+  String merchantPickupPrompt(String name, String amount, String number);
+
+  /// The base-currency equivalent of the payment lines (RA §8.10); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'يعادل {amount}'**
+  String merchantBaseEquivalent(String amount);
+
+  /// The pickup countdown (RA §8.10).
+  ///
+  /// In ar, this message translates to:
+  /// **'يُؤكَّد تلقائياً خلال {seconds} ث'**
+  String merchantAutoConfirmIn(int seconds);
+
+  /// The offline bar (RA §4.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد اتصال بالإنترنت — لن تصلك الطلبات الجديدة حتى يعود الاتصال'**
+  String get merchantOffline;
+
+  /// No answer (RA §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'أُلغي الطلب #{number} لعدم الرد'**
+  String merchantAutoCancelled(String number);
+
+  /// Another cancellation until its prompt (RA §8.3, §8.14); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أُلغي الطلب #{number}'**
+  String merchantCancelled(String number);
+
+  /// Prep late chime (RA §8.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'تحضير متأخر #{number} — اضغط «الطلب جاهز» فور الانتهاء'**
+  String merchantPrepLateChime(String number);
+
+  /// Captain arrived (RA §8.9).
+  ///
+  /// In ar, this message translates to:
+  /// **'وصل الكابتن {name} لاستلام الطلب #{number}'**
+  String merchantCaptainArrived(String name, String number);
+
+  /// Captain waiting (RA §8.9).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن ينتظر الطلب #{number} منذ {minutes} دقائق'**
+  String merchantCaptainKeptWaiting(String number, int minutes);
+
+  /// The pickup prompt closed by another user (RA §8.10).
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّد {name} الاستلام'**
+  String merchantPickupConfirmedBy(String name);
+
+  /// The pickup prompt closed by another user (RA §8.10).
+  ///
+  /// In ar, this message translates to:
+  /// **'أبلغ {name} أن المبلغ غير صحيح'**
+  String merchantPickupDisputedBy(String name);
+
+  /// The pickup prompt closed by another user with «الطلب غير مكتمل»; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أبلغ {name} أن الطلب غير مكتمل'**
+  String merchantPickupIncompleteBy(String name);
+
+  /// The automatic confirmation (RA §8.10 item 5).
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد تلقائي — الطلب #{number}'**
+  String merchantPickupAutoConfirmed(String number);
+
+  /// Confirmed by operations (S9); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّدت العمليات الاستلام — الطلب #{number}'**
+  String merchantPickupByOperations(String number);
+
+  /// A pickup request closed another way, such as a cancellation; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أُغلق طلب الاستلام — الطلب #{number}'**
+  String merchantPickupClosed(String number);
+
+  /// 409 after accepting (RA §4.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'قُبل الطلب من جهاز {device}'**
+  String merchantAcceptedOnDevice(String device);
+
+  /// 409 after accepting, by an unnamed device or operations; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'قُبل الطلب من جهاز آخر'**
+  String get merchantAcceptedElsewhere;
+
+  /// 409 on a cancelled order (RA §4.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'أُلغي الطلب قبل وصول قبولك'**
+  String get merchantCancelledFirst;
+
+  /// 409 in another case; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيّرت حالة الطلب قبل وصول طلبك'**
+  String get merchantStateChanged;
+
+  /// 400 invalid_lines or 409 currency_not_accepted; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبالغ لا تطابق قيمة الأصناف أو بعملة لا يقبلها المطعم'**
+  String get merchantLinesRefused;
+
+  /// 409 pickup_already_disputed; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'سبق الإبلاغ عن مبلغ هذا الطلب'**
+  String get merchantAlreadyDisputed;
+
+  /// Any other refusal; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الإرسال، حاول مجدداً'**
+  String get merchantCommandFailed;
+
+  /// The customer's first name and neighbourhood (RA §8.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'{name} — {neighbourhood}'**
+  String merchantCustomer(String name, String neighbourhood);
+
+  /// The customer's note (RA §8.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظة الزبون: {note}'**
+  String merchantCustomerNote(String note);
+
+  /// Ready recorded at pickup (S8).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُضغط جاهز'**
+  String get merchantReadyNotPressed;
+
+  /// The pickup done (RA §8.10 item 4).
+  ///
+  /// In ar, this message translates to:
+  /// **'تم الاستلام'**
+  String get merchantPickedUp;
+
+  /// Delivered (RA §8.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'تم التسليم'**
+  String get merchantDelivered;
+
+  /// The dispute sheet (RA §8.10 item 6); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'ما المبلغ الذي استلمته فعلاً؟'**
+  String get merchantDisputeTitle;
+
+  /// An amount field of the dispute sheet; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ بـ {currency}'**
+  String merchantDisputeAmount(String currency);
+
+  /// Sends the dispute; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال'**
+  String get merchantSend;
+
+  /// Closes a sheet; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إغلاق'**
+  String get merchantClose;
 }
 
 class _AppLocalizationsDelegate

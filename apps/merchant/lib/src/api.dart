@@ -1,5 +1,8 @@
 import 'package:core_api/core_api.dart';
 import 'package:core_auth/core_auth.dart';
+import 'package:core_realtime/core_realtime.dart';
+import 'package:core_time/core_time.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -30,14 +33,41 @@ final authApiProvider = Provider<CoreApi>((ref) => apiClient(apiBaseUrl()));
 /// sends the session's token and renews it.
 final coreApiProvider = Provider<CoreApi>((ref) {
   final api = apiClient(apiBaseUrl());
-  api.dio.interceptors.add(merchantAuth.interceptor(ref, api.dio));
+  api.dio.interceptors
+    ..add(ServerTimeInterceptor(ref.watch(serverClockProvider)))
+    ..add(merchantAuth.interceptor(ref, api.dio));
   return api;
 });
 
-final statusProvider = FutureProvider<StatusDtoOutput>((ref) async {
-  final response = await ref
-      .watch(coreApiProvider)
-      .getMerchantApi()
-      .merchantStatusGet();
-  return response.data!;
+/// The server's clock, which every countdown uses (RA §4.7).
+final serverClockProvider = Provider<ServerClock>((ref) => ServerClock());
+
+/// Centrifugo's address: `--dart-define=REALTIME_URL=...`, or derived from
+/// the API's (`packages/core_realtime/CLAUDE.md`).
+const _realtimeUrl = String.fromEnvironment('REALTIME_URL');
+
+/// The app's one real-time connection (architecture §6.1), with a token from
+/// `POST /v1/merchant/realtime/token`; it opens with the board and closes
+/// with it.
+final realtimeTransportProvider = Provider<RealtimeTransport>((ref) {
+  return CentrifugeTransport(
+    url: _realtimeUrl.isNotEmpty ? _realtimeUrl : realtimeUrl(apiBaseUrl()),
+    token: () async {
+      final session = await ref.read(merchantAuth.session.future);
+      if (session is! SignedIn) throw const RealtimeSignedOut();
+      try {
+        final answer = await ref
+            .read(coreApiProvider)
+            .getMerchantApi()
+            .merchantRealtimeToken();
+        return answer.data!.token;
+      } on DioException catch (error) {
+        if (error.response?.statusCode == 401 ||
+            error.response?.statusCode == 403) {
+          throw const RealtimeSignedOut();
+        }
+        rethrow;
+      }
+    },
+  );
 });

@@ -729,4 +729,281 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get customerOrderInvalid =>
       'تحقق من بيانات العنوان والملاحظة ثم أكّد مجدداً.';
+
+  @override
+  String durationSeconds(int seconds) {
+    return '$seconds ث';
+  }
+
+  @override
+  String get vehicleWalking => 'سيراً على الأقدام';
+
+  @override
+  String get vehicleBicycle => 'دراجة';
+
+  @override
+  String get vehicleMotorbike => 'دراجة نارية';
+
+  @override
+  String get vehicleCar => 'سيارة';
+
+  @override
+  String get merchantColumnIncoming => 'جديدة';
+
+  @override
+  String get merchantColumnPreparing => 'قيد التحضير';
+
+  @override
+  String get merchantColumnReady => 'جاهزة';
+
+  @override
+  String get merchantColumnWithCaptain => 'مع الكابتن';
+
+  @override
+  String merchantColumnCount(String column, int count) {
+    return '$column ($count)';
+  }
+
+  @override
+  String merchantColumnLate(String column, int count, int late) {
+    return '$column ($count) — متأخرة: $late';
+  }
+
+  @override
+  String get merchantBoardEmpty => 'لا توجد طلبات الآن';
+
+  @override
+  String merchantSincePlaced(int minutes) {
+    return 'منذ $minutes د';
+  }
+
+  @override
+  String merchantItemCount(int count) {
+    return 'الأصناف: $count';
+  }
+
+  @override
+  String get merchantWaitingForCaptain => 'بانتظار كابتن';
+
+  @override
+  String merchantCaptainOnTheWay(String name) {
+    return 'الكابتن $name في الطريق';
+  }
+
+  @override
+  String merchantCaptainWaiting(int minutes) {
+    return 'وصل الكابتن — ينتظر منذ $minutes د';
+  }
+
+  @override
+  String get merchantCaptainAsksPickup => 'الكابتن يطلب تأكيد الاستلام';
+
+  @override
+  String merchantWithCaptain(String name) {
+    return 'مع الكابتن $name';
+  }
+
+  @override
+  String merchantAutoCancelIn(String time) {
+    return 'يُلغى تلقائياً خلال $time';
+  }
+
+  @override
+  String merchantPrepLeft(String time) {
+    return 'متبقٍ $time';
+  }
+
+  @override
+  String merchantPrepLate(int minutes) {
+    return 'متأخر $minutes د';
+  }
+
+  @override
+  String merchantPickedUpSince(int minutes) {
+    return 'استُلم منذ $minutes د';
+  }
+
+  @override
+  String merchantAccept(int minutes) {
+    return 'قبول — $minutes د';
+  }
+
+  @override
+  String get merchantReady => 'الطلب جاهز';
+
+  @override
+  String get merchantWhyReady => 'لماذا أضغط «الطلب جاهز»؟';
+
+  @override
+  String get merchantWhyReadyText =>
+      'يُبلَّغ الكابتن فوراً، ويرى الزبون «طلبك جاهز». الضغط في الوقت يُبقي نسبة تأخر مطعمك منخفضة.';
+
+  @override
+  String get merchantNeedMoreTime => 'تحتاج وقتاً أطول؟ اتصل بالعمليات';
+
+  @override
+  String get merchantConfirmPickup => 'تأكيد الاستلام';
+
+  @override
+  String get merchantAmountIncorrect => 'المبلغ غير صحيح';
+
+  @override
+  String get merchantOrderIncomplete => 'الطلب غير مكتمل';
+
+  @override
+  String get merchantSending => 'جارٍ الإرسال…';
+
+  @override
+  String merchantNewOrder(String number) {
+    return 'طلب جديد #$number';
+  }
+
+  @override
+  String merchantItemsValueOnPickup(String amount) {
+    return '$amount — يدفعها لك الكابتن عند الاستلام';
+  }
+
+  @override
+  String merchantItemsValue(String amount) {
+    return 'قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام: $amount';
+  }
+
+  @override
+  String get merchantLateReply => 'تأخرتم في الرد — سيتصل بكم فريق العمليات';
+
+  @override
+  String merchantPromptCount(int index, int count) {
+    return '$index من $count';
+  }
+
+  @override
+  String merchantPickupPrompt(String name, String amount, String number) {
+    return 'الكابتن $name يؤكد أنه دفع لك $amount واستلم الطلب #$number';
+  }
+
+  @override
+  String merchantBaseEquivalent(String amount) {
+    return 'يعادل $amount';
+  }
+
+  @override
+  String merchantAutoConfirmIn(int seconds) {
+    return 'يُؤكَّد تلقائياً خلال $seconds ث';
+  }
+
+  @override
+  String get merchantOffline =>
+      'لا يوجد اتصال بالإنترنت — لن تصلك الطلبات الجديدة حتى يعود الاتصال';
+
+  @override
+  String merchantAutoCancelled(String number) {
+    return 'أُلغي الطلب #$number لعدم الرد';
+  }
+
+  @override
+  String merchantCancelled(String number) {
+    return 'أُلغي الطلب #$number';
+  }
+
+  @override
+  String merchantPrepLateChime(String number) {
+    return 'تحضير متأخر #$number — اضغط «الطلب جاهز» فور الانتهاء';
+  }
+
+  @override
+  String merchantCaptainArrived(String name, String number) {
+    return 'وصل الكابتن $name لاستلام الطلب #$number';
+  }
+
+  @override
+  String merchantCaptainKeptWaiting(String number, int minutes) {
+    return 'الكابتن ينتظر الطلب #$number منذ $minutes دقائق';
+  }
+
+  @override
+  String merchantPickupConfirmedBy(String name) {
+    return 'أكّد $name الاستلام';
+  }
+
+  @override
+  String merchantPickupDisputedBy(String name) {
+    return 'أبلغ $name أن المبلغ غير صحيح';
+  }
+
+  @override
+  String merchantPickupIncompleteBy(String name) {
+    return 'أبلغ $name أن الطلب غير مكتمل';
+  }
+
+  @override
+  String merchantPickupAutoConfirmed(String number) {
+    return 'تأكيد تلقائي — الطلب #$number';
+  }
+
+  @override
+  String merchantPickupByOperations(String number) {
+    return 'أكّدت العمليات الاستلام — الطلب #$number';
+  }
+
+  @override
+  String merchantPickupClosed(String number) {
+    return 'أُغلق طلب الاستلام — الطلب #$number';
+  }
+
+  @override
+  String merchantAcceptedOnDevice(String device) {
+    return 'قُبل الطلب من جهاز $device';
+  }
+
+  @override
+  String get merchantAcceptedElsewhere => 'قُبل الطلب من جهاز آخر';
+
+  @override
+  String get merchantCancelledFirst => 'أُلغي الطلب قبل وصول قبولك';
+
+  @override
+  String get merchantStateChanged => 'تغيّرت حالة الطلب قبل وصول طلبك';
+
+  @override
+  String get merchantLinesRefused =>
+      'المبالغ لا تطابق قيمة الأصناف أو بعملة لا يقبلها المطعم';
+
+  @override
+  String get merchantAlreadyDisputed => 'سبق الإبلاغ عن مبلغ هذا الطلب';
+
+  @override
+  String get merchantCommandFailed => 'تعذّر الإرسال، حاول مجدداً';
+
+  @override
+  String merchantCustomer(String name, String neighbourhood) {
+    return '$name — $neighbourhood';
+  }
+
+  @override
+  String merchantCustomerNote(String note) {
+    return 'ملاحظة الزبون: $note';
+  }
+
+  @override
+  String get merchantReadyNotPressed => 'لم يُضغط جاهز';
+
+  @override
+  String get merchantPickedUp => 'تم الاستلام';
+
+  @override
+  String get merchantDelivered => 'تم التسليم';
+
+  @override
+  String get merchantDisputeTitle => 'ما المبلغ الذي استلمته فعلاً؟';
+
+  @override
+  String merchantDisputeAmount(String currency) {
+    return 'المبلغ بـ $currency';
+  }
+
+  @override
+  String get merchantSend => 'إرسال';
+
+  @override
+  String get merchantClose => 'إغلاق';
 }
