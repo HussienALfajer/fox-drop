@@ -99,9 +99,12 @@ abstract class AuthParty {
 
   final CoreApi api;
 
+  /// Asks for a code; [appCheckToken] travels as `X-Firebase-AppCheck`
+  /// (architecture §8.3.3 item 1), the only call that carries it.
   Future<CodeSent> requestCode({
     required String phone,
     required String deviceId,
+    String? appCheckToken,
   });
 
   /// Signs in and returns the account id and the tokens.
@@ -173,9 +176,11 @@ class CustomerAuth extends AuthParty {
   Future<CodeSent> requestCode({
     required String phone,
     required String deviceId,
+    String? appCheckToken,
   }) async {
     final sent = await AuthParty.guard(
       () => _routes.customerAuthRequestCode(
+        xFirebaseAppCheck: appCheckToken,
         customerCodeRequestDto: CustomerCodeRequestDto(
           (b) => b
             ..phone = phone
@@ -249,9 +254,11 @@ class MerchantAuth extends AuthParty {
   Future<CodeSent> requestCode({
     required String phone,
     required String deviceId,
+    String? appCheckToken,
   }) async {
     final sent = await AuthParty.guard(
       () => _routes.merchantAuthRequestCode(
+        xFirebaseAppCheck: appCheckToken,
         merchantCodeRequestDto: MerchantCodeRequestDto(
           (b) => b
             ..phone = phone
@@ -323,9 +330,11 @@ class CaptainAuth extends AuthParty {
   Future<CodeSent> requestCode({
     required String phone,
     required String deviceId,
+    String? appCheckToken,
   }) async {
     final sent = await AuthParty.guard(
       () => _routes.captainAuthRequestCode(
+        xFirebaseAppCheck: appCheckToken,
         captainCodeRequestDto: CaptainCodeRequestDto(
           (b) => b
             ..phone = phone

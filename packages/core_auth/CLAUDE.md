@@ -9,6 +9,7 @@ Phone sign-in and the app session of the three Flutter apps (architecture §11.2
 - `session.dart`: `SessionController` (the tokens and the device id in `core_storage`) and `AuthInterceptor`.
 - `sign_in.dart`: `SignInController`, the steps' logic; `sign_in_screen.dart`: the unstyled screen that shows them.
 - `phone.dart`: the number rules of CU §5.2 item 1.
+- `app_check.dart`: `startAppCheck`, Firebase and App Check from the build's values, and the token source `AppCheckToken`.
 
 ## Rules
 
@@ -19,4 +20,5 @@ Phone sign-in and the app session of the three Flutter apps (architecture §11.2
 - **Never stuck:** Dio does not await an interceptor's handlers, so every path of `AuthInterceptor` calls its handler, errors included; `SignInController` turns any failure into a refusal (`AuthRefusal.failed`), never a busy screen.
 - **Presentation apart from logic** (design stop): the screen only reads `SignInState` and calls `SignInController`; every string comes from `core_l10n`. Refusal codes map to strings in `sign_in_screen.dart`.
 - **«لديّ رمز من العمليات»** (RA §5.2, CA §4.9; owner decisions 2026-11-07): `offersOperationsCode` in the captain and restaurant apps; after `503 unavailable` it opens the code step with no code sent, with «اتصال بالعمليات» from `GET /v1/{party}/contact`. A `429 resend_wait` at the number opens the code step too: a code is still open, such as an emergency code, which a request never replaces.
-- Tests answer the client with `FakeServer` (`package:core_auth/testing.dart`, for tests only) and override `scope.store` with `MemorySecureStore`, so they need no server or device.
+- **App Check** (architecture §8.3.3 item 1; slice 1.14c, owner decisions 2026-11-07): each app's `main` awaits `startAppCheck()` and overrides `scope.appCheck` with its token source; `SignInController` asks it for a token before each code request, and `AuthParty.requestCode` is the only call that sends it, as `X-Firebase-AppCheck` (sign-in, refresh and the rest carry none). Firebase starts from `--dart-define` values (`FIREBASE_APP_ID`, `FIREBASE_PROJECT_ID`, `FIREBASE_PROJECT_NUMBER`, `FIREBASE_API_KEY`), never from `google-services.json`, so the Google Services Gradle plugin is not used. Android only: Play Integrity in release, the debug provider in debug (`kDebugMode`); the restaurant app on Windows, iOS, and a build without `FIREBASE_APP_ID` send no token, and neither does a token that fails or takes over `appCheckTokenTimeout` (10 s): the server decides with `otp.app_check_required` and refuses with `403 app_check_failed`, shown as the generic error. The CI side and the owner's Firebase steps are in the `deploy` skill, «App Check».
+- Tests answer the client with `FakeServer` (`package:core_auth/testing.dart`, for tests only) and override `scope.store` with `MemorySecureStore` (and `scope.appCheck` with a fake token source), so they need no server or device.

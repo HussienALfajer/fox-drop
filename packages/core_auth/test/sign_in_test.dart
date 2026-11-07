@@ -10,14 +10,17 @@ const _code = '/v1/captain/auth/code';
 const _signIn = '/v1/captain/auth/sign-in';
 
 class _Harness {
-  _Harness({bool operations = true}) {
+  _Harness({bool operations = true, AppCheckToken? appCheck}) {
     scope = AuthScope(
       party: (ref) => CaptainAuth(server.client()),
       offersOperationsCode: operations,
       clock: () => _now,
     );
     container = ProviderContainer(
-      overrides: [scope.store.overrideWithValue(store)],
+      overrides: [
+        scope.store.overrideWithValue(store),
+        if (appCheck != null) scope.appCheck.overrideWithValue(appCheck),
+      ],
       retry: (retryCount, error) => null,
     );
     // Keeps the auto-disposed controller alive between reads.
@@ -154,4 +157,59 @@ void main() {
       expect(h.state.refusal?.error, 'not_on_whatsapp');
     },
   );
+
+  test('the code request carries the App Check token', () async {
+    var asked = 0;
+    final h = _Harness(
+      appCheck: () async {
+        asked++;
+        return 'app-check-token';
+      },
+    );
+    addTearDown(h.container.dispose);
+    h.server.on(_code, [FakeAnswer(200, _sent())]);
+    await h.controller.requestCode('0944123456');
+    expect(asked, 1);
+    expect(
+      h.server.to(_code).single.headers['X-Firebase-AppCheck'],
+      'app-check-token',
+    );
+
+    // Only the code request carries it.
+    h.server.on(_signIn, [
+      FakeAnswer(200, {
+        'accountId': '00000000-0000-4000-8000-000000000001',
+        'captainId': '00000000-0000-4000-8000-000000000002',
+        ...tokens('1', _now.add(const Duration(minutes: 15))),
+      }),
+    ]);
+    await h.controller.submitCode('123456');
+    expect(
+      h.server.to(_signIn).single.headers.containsKey('X-Firebase-AppCheck'),
+      isFalse,
+    );
+    expect(asked, 1);
+  });
+
+  test('without a token the code request goes without the header', () async {
+    final h = _Harness();
+    addTearDown(h.container.dispose);
+    h.server.on(_code, [FakeAnswer(200, _sent())]);
+    await h.controller.requestCode('0944123456');
+    expect(
+      h.server.to(_code).single.headers.containsKey('X-Firebase-AppCheck'),
+      isFalse,
+    );
+  });
+
+  test('a refused App Check token shows the refusal at the number', () async {
+    final h = _Harness(appCheck: () async => 'replayed');
+    addTearDown(h.container.dispose);
+    h.server.on(_code, [
+      const FakeAnswer(403, {'error': 'app_check_failed'}),
+    ]);
+    await h.controller.requestCode('0944123456');
+    expect(h.state.step, SignInStep.phone);
+    expect(h.state.refusal?.error, 'app_check_failed');
+  });
 }

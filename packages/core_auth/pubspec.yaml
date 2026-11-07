@@ -12,6 +12,8 @@ dependencies:
   core_l10n: any
   core_storage: any
   dio: 5.11.1
+  firebase_app_check: 0.5.1
+  firebase_core: 5.1.0
   flutter:
     sdk: flutter
   flutter_riverpod: 3.4.3
