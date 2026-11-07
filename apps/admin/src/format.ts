@@ -1,17 +1,13 @@
 // Money from integer minor units, and times on the city's clock, with
 // Western digits (AP §4.7). The amount never passes through a float: the
 // decimal string is built from the digits and Intl formats it.
-const fractionDigits = new Map<string, number>();
+// The minor-unit digits of fx.currencies (migration 0008), as core_l10n
+// keeps them: Intl's own data gives SYP none, the server two. A currency not
+// listed has two until the panel reads the currencies.
+const fractionDigits: Record<string, number> = { USD: 2, TRY: 2, SYP: 2 };
 
 function digitsOf(currency: string): number {
-  let digits = fractionDigits.get(currency);
-  if (digits === undefined) {
-    digits =
-      new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions()
-        .maximumFractionDigits ?? 2;
-    fractionDigits.set(currency, digits);
-  }
-  return digits;
+  return fractionDigits[currency] ?? 2;
 }
 
 export function decimalOf(minor: string, currency: string): `${number}` {
@@ -25,9 +21,12 @@ export function decimalOf(minor: string, currency: string): `${number}` {
 }
 
 export function formatMoney(money: { amount: string; currency: string }): string {
+  const digits = digitsOf(money.currency);
   return new Intl.NumberFormat('ar-u-nu-latn', {
     style: 'currency',
     currency: money.currency,
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
   }).format(decimalOf(money.amount, money.currency));
 }
 

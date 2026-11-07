@@ -199,6 +199,46 @@
       "captain": "الكابتن",
       "admin": "الإدارة",
       "other": "غير معروف"
+    },
+    "panel": "تفاصيل الطلب",
+    "close": "إغلاق التفاصيل",
+    "atCustomer": "الكابتن عند الزبون منذ الساعة {{time}}",
+    "received": "المقبوض: {{lines}}",
+    "change": "الباقي المُعاد: {{lines}}",
+    "reason": {
+      "declined": "رفض الكابتن",
+      "expired": "انتهت مهلة العرض",
+      "withdrawn": "سُحب العرض",
+      "amountIncorrect": "المبلغ غير صحيح",
+      "incomplete": "الطلب غير مكتمل",
+      "byRestaurant": "أكّده المطعم",
+      "automatic": "تأكيد تلقائي",
+      "byOperations": "أكّدته العمليات",
+      "merchantAutoCancel": "المطعم لم يستجب",
+      "customerRequestedOtherPlace": "الزبون طلب مكاناً آخر",
+      "pinInaccurate": "موقع الزبون على الخريطة غير دقيق",
+      "other": "أخرى"
+    },
+    "outcome": {
+      "normal": "عادي",
+      "free": "مجاني",
+      "fake": "وهمي",
+      "damaged": "تالف",
+      "wrongRefused": "خطأ ورفضه الزبون",
+      "failedOther": "تعذّر التسليم"
+    },
+    "shortfallReason": {
+      "customerShort": "الزبون لا يملك المبلغ كاملاً",
+      "countingError": "خطأ في العد",
+      "other": "أخرى"
+    },
+    "request": {
+      "line": "طلب استلام الساعة {{time}}: {{status}}، {{lines}}",
+      "received": "يقول المطعم إنه استلم {{lines}}",
+      "open": "بانتظار المطعم",
+      "confirmed": "مؤكَّد",
+      "rejected": "مرفوض",
+      "voided": "ملغى"
     }
   },
   "assign": {
@@ -213,7 +253,7 @@
     "acceptanceRate": "نسبة القبول: {{rate}}%",
     "noAcceptanceRate": "نسبة القبول: لا عروض بعد",
     "submit": "تعيين {{name}}",
-    "offered": "أُرسل العرض إلى الكابتن. بانتظار رده حتى الساعة {{time}}.",
+    "offered": "أُرسل العرض إلى الكابتن. يبقى {{seconds}} ثانية لرده؛ تابع رده في تفاصيل الطلب.",
     "assigned": "تم تعيين الكابتن.",
     "reason": {
       "busy": "مشغول",

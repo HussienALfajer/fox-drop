@@ -5,10 +5,11 @@ import {
   type AssignRefusal,
   type IneligibleReason,
   pickerQuery,
+  secondsLeft,
   useAssignCaptain,
 } from './assign-captain.js';
-import { chosenCity, citiesQuery } from './cities.js';
-import { formatDistance, formatMoney, formatTime } from './format.js';
+import { useServerNow } from './clock.js';
+import { formatDistance, formatMoney } from './format.js';
 import { vehicleKeys } from './order-labels.js';
 
 const route = getRouteApi('/signed-in/orders/$orderId/assign');
@@ -30,16 +31,16 @@ const refusalKeys = {
   unknown_captain: 'assign.refused.unknownCaptain',
 } as const satisfies Record<AssignRefusal, string>;
 
-// AP §9.3.2's assignment picker: the online captains nearest the restaurant
-// first, the ineligible ones greyed out with their reasons, and «تعيين».
+// AP §9.3.2's assignment picker, inside the order's detail: the online
+// captains nearest the restaurant first, the ineligible ones greyed out with
+// their reasons, and «تعيين». After an offer the detail's own reads show
+// whether the captain accepted (the track and the timeline).
 export function AssignCaptainPage() {
   const { t } = useTranslation();
   const { orderId } = route.useParams();
-  const { city: cityCode } = route.useSearch();
-  const cities = useQuery(citiesQuery);
   const picker = useQuery(pickerQuery(orderId));
   const assign = useAssignCaptain(orderId);
-  const timeZone = (cities.data && chosenCity(cities.data, cityCode)?.timeZone) ?? 'Asia/Damascus';
+  const now = useServerNow();
   const back = (
     <p>
       <Link to="/orders/$orderId" params={{ orderId }} search>
@@ -50,21 +51,21 @@ export function AssignCaptainPage() {
 
   if (assign.data && assign.data.status !== 'refused') {
     return (
-      <main>
-        <h1>{t('assign.title')}</h1>
+      <section aria-labelledby="assign-title">
+        <h3 id="assign-title">{t('assign.title')}</h3>
         <p role="status">
           {assign.data.status === 'offered'
-            ? t('assign.offered', { time: formatTime(assign.data.expiresAt, timeZone) })
+            ? t('assign.offered', { seconds: secondsLeft(assign.data.expiresAt, now) })
             : t('assign.assigned')}
         </p>
         {back}
-      </main>
+      </section>
     );
   }
 
   return (
-    <main>
-      <h1>{t('assign.title')}</h1>
+    <section aria-labelledby="assign-title">
+      <h3 id="assign-title">{t('assign.title')}</h3>
       <button type="button" onClick={() => void picker.refetch()} disabled={picker.isFetching}>
         {t('assign.refresh')}
       </button>
@@ -86,7 +87,7 @@ export function AssignCaptainPage() {
         <ul>
           {picker.data?.map((captain) => (
             <li key={captain.captainId} aria-disabled={!captain.eligible}>
-              <h2>{captain.name}</h2>
+              <h4>{captain.name}</h4>
               <p>{t(vehicleKeys[captain.vehicle])}</p>
               <p>
                 {captain.etaMin === null
@@ -128,6 +129,6 @@ export function AssignCaptainPage() {
         </ul>
       )}
       {back}
-    </main>
+    </section>
   );
 }

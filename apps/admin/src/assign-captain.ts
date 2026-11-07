@@ -25,6 +25,11 @@ export function canAssign(
 
 // The picker: every online captain of the city, nearest first, eligible or
 // greyed out with its reasons. Read once when it opens and on «تحديث».
+// The seconds left of an open offer (CA §8.2), on the server's clock.
+export function secondsLeft(expiresAt: string, now: number): number {
+  return Math.max(0, Math.ceil((Date.parse(expiresAt) - now) / 1000));
+}
+
 export function pickerQuery(orderId: string) {
   return queryOptions({
     queryKey: ['captain-picker', orderId],
@@ -45,6 +50,16 @@ export type AssignResult =
   | { status: 'offered'; order: DispatchState; expiresAt: string }
   | { status: 'assigned'; order: DispatchState }
   | { status: 'refused'; refusal: AssignRefusal; reasons: IneligibleReason[] };
+
+const knownReasons: readonly string[] = [
+  'busy',
+  'cash_limit',
+  'closed_due',
+  'simulated_location',
+  'out_of_range',
+  'vehicle_not_allowed',
+  'offline',
+] satisfies IneligibleReason[];
 
 const refusals: readonly string[] = [
   'order_not_assignable',
@@ -86,7 +101,13 @@ export function useAssignCaptain(orderId: string) {
         refusals.includes(refusal)
       ) {
         keys.current.delete(captainId);
-        const reasons = Array.isArray(body?.reasons) ? (body.reasons as IneligibleReason[]) : [];
+        // A reason the panel does not know yet is left out of the explanation.
+        const reasons = Array.isArray(body?.reasons)
+          ? (body.reasons as unknown[]).filter(
+              (reason): reason is IneligibleReason =>
+                typeof reason === 'string' && knownReasons.includes(reason),
+            )
+          : [];
         return { status: 'refused', refusal: refusal as AssignRefusal, reasons };
       }
       throw new Error('The assignment failed.');

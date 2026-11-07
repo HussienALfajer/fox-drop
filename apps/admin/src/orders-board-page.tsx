@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getRouteApi, Link, useNavigate } from '@tanstack/react-router';
+import { getRouteApi, Link, Outlet, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { chosenCity, citiesQuery } from './cities.js';
@@ -10,6 +10,7 @@ import {
   type BoardFilter,
   boardQuery,
   columns,
+  effectiveFilter,
   elapsed,
   filterCards,
   filterChoices,
@@ -21,7 +22,8 @@ import {
 const route = getRouteApi('/signed-in/orders');
 
 // «غرفة العمليات» (AP §9.2): every live order of the city in five columns,
-// read again every 10 seconds until the ops: channel exists.
+// read again every 10 seconds until the ops: channel exists. A card opens
+// the order's detail beside the board, which stays visible (§9.2.1).
 export function OrdersBoardPage() {
   const { t } = useTranslation();
   const { city: cityCode } = route.useSearch();
@@ -29,7 +31,8 @@ export function OrdersBoardPage() {
   const cities = useQuery(citiesQuery);
   const city = cities.data && chosenCity(cities.data, cityCode);
   const board = useQuery({ ...boardQuery(city?.id ?? ''), enabled: city !== undefined });
-  const [filter, setFilter] = useState<BoardFilter>(NO_FILTER);
+  // The filters belong to the city they were chosen in.
+  const [chosen, setChosen] = useState<{ city: string; filter: BoardFilter } | null>(null);
   const now = useServerNow();
 
   if (cities.isError) return <p role="alert">{t('status.error')}</p>;
@@ -38,6 +41,8 @@ export function OrdersBoardPage() {
 
   const cards = board.data ?? [];
   const choices = filterChoices(cards);
+  const filter = effectiveFilter(chosen?.city === city.code ? chosen.filter : NO_FILTER, choices);
+  const setFilter = (next: BoardFilter) => setChosen({ city: city.code, filter: next });
   const shown = columns(filterCards(cards, filter, now), now);
 
   return (
@@ -148,6 +153,9 @@ export function OrdersBoardPage() {
           </section>
         ))
       )}
+      <aside aria-label={t('order.panel')}>
+        <Outlet />
+      </aside>
       <p>
         <Link to="/">{t('common.home')}</Link>
       </p>

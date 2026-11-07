@@ -1,5 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
-import { columns, elapsed, filterCards, NO_FILTER, type OrderCard, sla } from './orders-board.js';
+import {
+  columns,
+  effectiveFilter,
+  elapsed,
+  filterCards,
+  filterChoices,
+  NO_FILTER,
+  type OrderCard,
+  sla,
+} from './orders-board.js';
 
 vi.mock('./api.js', () => ({ api: {} }));
 
@@ -98,5 +107,15 @@ describe('elapsed', () => {
   it('shows minutes and seconds, never below zero', () => {
     expect(elapsed(at(0), now(12) + 5000)).toBe('12:05');
     expect(elapsed(at(5), now(0))).toBe('0:00');
+  });
+});
+
+describe('effectiveFilter', () => {
+  it('drops a choice whose last order left the board, so no live order hides behind «الكل»', () => {
+    const choices = filterChoices([card({})]);
+    const stale = { ...NO_FILTER, restaurantId: 'gone', captainId: 'gone', neighbourhood: 'gone' };
+    expect(effectiveFilter(stale, choices)).toEqual(NO_FILTER);
+    const kept = { ...NO_FILTER, restaurantId: 'r1', neighbourhood: 'الحي الأول', lateOnly: true };
+    expect(effectiveFilter(kept, choices)).toEqual(kept);
   });
 });

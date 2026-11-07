@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { canAssign } from './assign-captain.js';
+import { canAssign, secondsLeft } from './assign-captain.js';
 
 vi.mock('./api.js', () => ({ api: {} }));
 
@@ -17,5 +17,14 @@ describe('canAssign', () => {
     expect(canAssign({ status: 'ready', captain: null, captainTrack: 'offered' })).toBe(false);
     expect(canAssign({ status: 'ready', captain, captainTrack: 'assigned' })).toBe(false);
     expect(canAssign({ status: 'picked_up', captain, captainTrack: 'picked_up' })).toBe(false);
+  });
+});
+
+describe('secondsLeft', () => {
+  it('counts the offer down to zero', () => {
+    const expiresAt = '2026-11-07T09:00:45.000Z';
+    expect(secondsLeft(expiresAt, Date.parse('2026-11-07T09:00:00.000Z'))).toBe(45);
+    expect(secondsLeft(expiresAt, Date.parse('2026-11-07T09:00:44.500Z'))).toBe(1);
+    expect(secondsLeft(expiresAt, Date.parse('2026-11-07T09:01:00.000Z'))).toBe(0);
   });
 });

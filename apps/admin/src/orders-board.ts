@@ -20,6 +20,8 @@ export function boardQuery(cityId: string) {
       return data.orders;
     },
     refetchInterval: POLL_MS,
+    // The board stays open all shift, often behind another tab.
+    refetchIntervalInBackground: true,
   });
 }
 
@@ -103,6 +105,26 @@ export function filterChoices(cards: OrderCard[]) {
     restaurants: [...restaurants].map(([id, name]) => ({ id, name })).sort(byName),
     captains: [...captains].map(([id, name]) => ({ id, name })).sort(byName),
     neighbourhoods: [...neighbourhoods].sort((a, b) => a.localeCompare(b, 'ar')),
+  };
+}
+
+// A choice whose last order left the board falls back to «الكل», so the
+// filter never hides live orders behind a dropdown that shows «الكل».
+export function effectiveFilter(
+  filter: BoardFilter,
+  choices: ReturnType<typeof filterChoices>,
+): BoardFilter {
+  return {
+    ...filter,
+    restaurantId: choices.restaurants.some((each) => each.id === filter.restaurantId)
+      ? filter.restaurantId
+      : '',
+    captainId: choices.captains.some((each) => each.id === filter.captainId)
+      ? filter.captainId
+      : '',
+    neighbourhood: choices.neighbourhoods.includes(filter.neighbourhood)
+      ? filter.neighbourhood
+      : '',
   };
 }
 

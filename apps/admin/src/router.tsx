@@ -84,7 +84,7 @@ const emergencyCodeRoute = createRoute({
 const citySearch = (search: Record<string, unknown>): { city?: string } =>
   typeof search.city === 'string' ? { city: search.city } : {};
 
-// AP §9.2, §9.3: the operations room, an order's detail and its picker.
+// AP §9.2: the operations room.
 const ordersRoute = createRoute({
   getParentRoute: () => signedInRoute,
   path: '/orders',
@@ -95,20 +95,16 @@ const ordersRoute = createRoute({
   component: OrdersBoardPage,
 });
 
+// The detail opens beside the board (AP §9.2.1), and the picker inside it.
 const orderRoute = createRoute({
-  getParentRoute: () => signedInRoute,
-  path: '/orders/$orderId',
-  validateSearch: citySearch,
-  beforeLoad: ({ context }) => {
-    if (!can(context.session, OPERATIONS_READ)) throw redirect({ to: '/' });
-  },
+  getParentRoute: () => ordersRoute,
+  path: '$orderId',
   component: OrderDetailPage,
 });
 
 const assignRoute = createRoute({
-  getParentRoute: () => signedInRoute,
-  path: '/orders/$orderId/assign',
-  validateSearch: citySearch,
+  getParentRoute: () => orderRoute,
+  path: 'assign',
   beforeLoad: ({ context }) => {
     if (!can(context.session, OPERATIONS_MANAGE)) throw redirect({ to: '/' });
   },
@@ -118,7 +114,11 @@ const assignRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   setupRoute,
   signInRoute,
-  signedInRoute.addChildren([homeRoute, emergencyCodeRoute, ordersRoute, orderRoute, assignRoute]),
+  signedInRoute.addChildren([
+    homeRoute,
+    emergencyCodeRoute,
+    ordersRoute.addChildren([orderRoute.addChildren([assignRoute])]),
+  ]),
 ]);
 
 export function createAppRouter(queryClient: QueryClient) {

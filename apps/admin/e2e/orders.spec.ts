@@ -171,17 +171,53 @@ test('opens a late order from the board and offers it to a captain', async ({ pa
   expect(boardCity).toBe(cityId);
 
   await page.getByRole('link', { name: '#10001' }).click();
-  await expect(page.getByRole('heading', { name: '#10001' })).toBeVisible();
-  await expect(page.getByText('أُنشئ الطلب')).toBeVisible();
+  const panel = page.getByRole('complementary', { name: 'تفاصيل الطلب' });
+  await expect(panel.getByRole('heading', { name: '#10001' })).toBeVisible();
+  await expect(panel.getByText('أُنشئ الطلب')).toBeVisible();
+  await expect(ready).toBeVisible();
+  await expect(page).toHaveURL(`/orders/${orderId}?city=AZ`);
 
-  await page.getByRole('link', { name: 'تعيين كابتن' }).click();
-  await expect(page.getByText('مشغول')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'تعيين خالد' })).toHaveCount(0);
-  await page.getByRole('button', { name: 'تعيين سامر' }).click();
+  await panel.getByRole('link', { name: 'تعيين كابتن' }).click();
+  await expect(panel.getByText('مشغول')).toBeVisible();
+  await expect(panel.getByRole('button', { name: 'تعيين خالد' })).toHaveCount(0);
+  await panel.getByRole('button', { name: 'تعيين سامر' }).click();
 
   await expect(page.getByRole('status')).toContainText('أُرسل العرض إلى الكابتن');
   expect(sent?.body).toEqual({ captainId });
   expect(sent?.key).toMatch(/^[\w-]{16,128}$/);
+});
+
+// Architecture §5.3: a retry after a lost answer replays the same command.
+test('sends the same Idempotency-Key again after a lost answer', async ({ page }) => {
+  await fakeSession(page, ['operations.read', 'operations.manage']);
+  await fakeOperations(page);
+  const keys: (string | undefined)[] = [];
+  await page.route(`**/v1/admin/orders/${orderId}/assign`, (route) => {
+    keys.push(route.request().headers()['idempotency-key']);
+    if (keys.length === 1) return route.abort('failed');
+    return route.fulfill({
+      json: {
+        order: {
+          id: orderId,
+          number: '10001',
+          status: 'ready',
+          version: 5,
+          captainTrack: 'assigned',
+          captainId,
+          offer: null,
+        },
+      },
+    });
+  });
+  await page.goto(`/orders/${orderId}/assign`);
+
+  await page.getByRole('button', { name: 'تعيين سامر' }).click();
+  await expect(page.getByRole('alert')).toHaveText('تعذّر إكمال الطلب. حاول مرة أخرى.');
+  await page.getByRole('button', { name: 'تعيين سامر' }).click();
+
+  await expect(page.getByRole('status')).toHaveText('تم تعيين الكابتن.');
+  expect(keys).toHaveLength(2);
+  expect(keys[1]).toBe(keys[0]);
 });
 
 test('says why a captain can no longer take the order', async ({ page }) => {
@@ -203,7 +239,9 @@ test('shows the board without «تعيين كابتن» to a role that only read
   await fakeSession(page, ['operations.read']);
   await fakeOperations(page);
   await page.goto(`/orders/${orderId}`);
-  await expect(page.getByRole('heading', { name: '#10001' })).toBeVisible();
+  await expect(
+    page.getByRole('complementary').getByRole('heading', { name: '#10001' }),
+  ).toBeVisible();
   await expect(page.getByRole('link', { name: 'تعيين كابتن' })).toHaveCount(0);
 
   await page.goto(`/orders/${orderId}/assign`);

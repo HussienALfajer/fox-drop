@@ -18,6 +18,7 @@ export function orderQuery(orderId: string) {
       return data.order;
     },
     refetchInterval: POLL_MS,
+    refetchIntervalInBackground: true,
   });
 }
 
@@ -56,3 +57,83 @@ export const actorKeys = {
 export function actorKey(type: string) {
   return type in actorKeys ? actorKeys[type as keyof typeof actorKeys] : 'order.actor.other';
 }
+
+// The codes the server stores as an event's reason, by event type (the
+// offer's answer, the pickup's outcome, the cancellation, the far arrival);
+// an operator's own reason is free text and shows as written. Any other
+// code stays hidden rather than show an English word.
+const reasonKeysByType = {
+  'order.offer_closed': {
+    declined: 'order.reason.declined',
+    expired: 'order.reason.expired',
+    withdrawn: 'order.reason.withdrawn',
+  },
+  'order.pickup_rejected': {
+    amount_incorrect: 'order.reason.amountIncorrect',
+    incomplete: 'order.reason.incomplete',
+  },
+  'order.picked_up': {
+    restaurant: 'order.reason.byRestaurant',
+    automatic: 'order.reason.automatic',
+    operations: 'order.reason.byOperations',
+  },
+  'order.cancelled': { merchant_auto_cancel: 'order.reason.merchantAutoCancel' },
+  'order.arrived_at_customer': {
+    customer_requested_other_place: 'order.reason.customerRequestedOtherPlace',
+    pin_inaccurate: 'order.reason.pinInaccurate',
+    other: 'order.reason.other',
+  },
+} as const;
+
+type ReasonKey = {
+  [Type in keyof typeof reasonKeysByType]: (typeof reasonKeysByType)[Type][keyof (typeof reasonKeysByType)[Type]];
+}[keyof typeof reasonKeysByType];
+
+export type EventReason = { key: ReasonKey } | { text: string } | null;
+
+export function eventReason(event: {
+  type: string | null;
+  actor: { type: string };
+  reason: string | null;
+}): EventReason {
+  if (event.reason === null) return null;
+  const codes: Record<string, ReasonKey> | undefined =
+    event.type !== null && event.type in reasonKeysByType
+      ? reasonKeysByType[event.type as keyof typeof reasonKeysByType]
+      : undefined;
+  const key = codes?.[event.reason];
+  if (key) return { key };
+  return event.actor.type === 'admin' ? { text: event.reason } : null;
+}
+
+export const cancelReasonKeys: Record<string, ReasonKey> = reasonKeysByType['order.cancelled'];
+
+export const outcomeKeys = {
+  normal: 'order.outcome.normal',
+  free: 'order.outcome.free',
+  fake: 'order.outcome.fake',
+  damaged: 'order.outcome.damaged',
+  wrong_refused: 'order.outcome.wrongRefused',
+  failed_other: 'order.outcome.failedOther',
+} as const satisfies Record<NonNullable<OrderDetail['delivery']>['outcome'], string>;
+
+export const awayKeys = reasonKeysByType['order.arrived_at_customer'] satisfies Record<
+  NonNullable<NonNullable<OrderDetail['customer']['arrival']>['away']>['reason'],
+  string
+>;
+
+export const shortfallKeys = {
+  customer_short: 'order.shortfallReason.customerShort',
+  counting_error: 'order.shortfallReason.countingError',
+  other: 'order.shortfallReason.other',
+} as const satisfies Record<
+  NonNullable<NonNullable<OrderDetail['delivery']>['shortfall']>['reason'],
+  string
+>;
+
+export const requestStatusKeys = {
+  open: 'order.request.open',
+  confirmed: 'order.request.confirmed',
+  rejected: 'order.request.rejected',
+  voided: 'order.request.voided',
+} as const satisfies Record<OrderDetail['pickup']['requests'][number]['status'], string>;

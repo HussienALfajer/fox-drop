@@ -9,11 +9,13 @@ describe('decimalOf', () => {
     expect(decimalOf('5', 'USD')).toBe('0.05');
     expect(decimalOf('-75', 'TRY')).toBe('-0.75');
     expect(decimalOf('9007199254740993', 'USD')).toBe('90071992547409.93');
+    expect(decimalOf('29000', 'SYP')).toBe('290.00');
   });
 });
 
 describe('formatMoney', () => {
   it('formats with Western digits', () => {
     expect(formatMoney({ amount: '1250', currency: 'USD' })).toMatch(/12\.50/);
+    expect(formatMoney({ amount: '29050', currency: 'SYP' })).toMatch(/290\.50/);
   });
 });
