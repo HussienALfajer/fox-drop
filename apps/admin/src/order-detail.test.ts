@@ -12,7 +12,11 @@ describe('eventReason', () => {
       key: 'order.reason.expired',
     });
     expect(
-      eventReason({ type: 'order.pickup_rejected', actor: { type: 'restaurant' }, reason: 'incomplete' }),
+      eventReason({
+        type: 'order.pickup_rejected',
+        actor: { type: 'restaurant' },
+        reason: 'incomplete',
+      }),
     ).toEqual({ key: 'order.reason.incomplete' });
   });
 
@@ -20,7 +24,9 @@ describe('eventReason', () => {
     expect(
       eventReason({ type: 'order.captain_arrived', actor: { type: 'admin' }, reason: 'GPS down' }),
     ).toEqual({ text: 'GPS down' });
-    expect(eventReason({ type: 'order.offer_closed', actor: system, reason: 'new_code' })).toBeNull();
+    expect(
+      eventReason({ type: 'order.offer_closed', actor: system, reason: 'new_code' }),
+    ).toBeNull();
     expect(eventReason({ type: 'order.placed', actor: system, reason: null })).toBeNull();
   });
 });

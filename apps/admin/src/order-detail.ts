@@ -86,7 +86,9 @@ const reasonKeysByType = {
 } as const;
 
 type ReasonKey = {
-  [Type in keyof typeof reasonKeysByType]: (typeof reasonKeysByType)[Type][keyof (typeof reasonKeysByType)[Type]];
+  [
+    Type in keyof typeof reasonKeysByType
+  ]: (typeof reasonKeysByType)[Type][keyof (typeof reasonKeysByType)[Type]];
 }[keyof typeof reasonKeysByType];
 
 export type EventReason = { key: ReasonKey } | { text: string } | null;
