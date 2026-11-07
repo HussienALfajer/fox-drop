@@ -1,4 +1,5 @@
 import { createApiClient } from '@fox-drop/api-schema';
+import { recordServerTime } from './clock.js';
 
 // The API is served on the panel's own origin under /v1 (vite.config.ts).
 export const api = createApiClient({ baseUrl: window.location.origin });
@@ -16,6 +17,7 @@ export function whenSessionEnds(handler: () => void) {
 
 api.use({
   onResponse({ request, response }) {
+    recordServerTime(response.headers.get('Server-Time'));
     if (response.status === 401 && !new URL(request.url).pathname.startsWith(authRoutes)) {
       onSessionEnded();
     }

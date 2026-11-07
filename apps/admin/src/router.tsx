@@ -7,9 +7,14 @@ import {
   redirect,
 } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
+import { OPERATIONS_MANAGE } from './assign-captain.js';
+import { AssignCaptainPage } from './assign-captain-page.js';
 import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
 import { EmergencyCodePage } from './emergency-code-page.js';
 import { HomePage } from './home-page.js';
+import { OrderDetailPage } from './order-detail-page.js';
+import { OPERATIONS_READ } from './orders-board.js';
+import { OrdersBoardPage } from './orders-board-page.js';
 import { can, sessionQuery } from './session.js';
 import { SetupPage } from './setup-page.js';
 import { SignInPage } from './sign-in-page.js';
@@ -74,10 +79,46 @@ const emergencyCodeRoute = createRoute({
   component: EmergencyCodePage,
 });
 
+// The city chosen in the top bar's selector (AP §7.2), by its code; the
+// first city without one.
+const citySearch = (search: Record<string, unknown>): { city?: string } =>
+  typeof search.city === 'string' ? { city: search.city } : {};
+
+// AP §9.2, §9.3: the operations room, an order's detail and its picker.
+const ordersRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/orders',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, OPERATIONS_READ)) throw redirect({ to: '/' });
+  },
+  component: OrdersBoardPage,
+});
+
+const orderRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/orders/$orderId',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, OPERATIONS_READ)) throw redirect({ to: '/' });
+  },
+  component: OrderDetailPage,
+});
+
+const assignRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/orders/$orderId/assign',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, OPERATIONS_MANAGE)) throw redirect({ to: '/' });
+  },
+  component: AssignCaptainPage,
+});
+
 const routeTree = rootRoute.addChildren([
   setupRoute,
   signInRoute,
-  signedInRoute.addChildren([homeRoute, emergencyCodeRoute]),
+  signedInRoute.addChildren([homeRoute, emergencyCodeRoute, ordersRoute, orderRoute, assignRoute]),
 ]);
 
 export function createAppRouter(queryClient: QueryClient) {
