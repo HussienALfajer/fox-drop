@@ -133,6 +133,11 @@ services:
     environment:
       <<: [*server-environment, *centrifugo-publish]
       PROCESS_ROLE: worker
+      # Push (architecture §8.1): the Firebase service account's JSON key in
+      # base64, a secret of this process only. Empty until the owner sets it:
+      # the pushes then wait in the queue and expire (production refuses to
+      # start without it).
+      FCM_SERVICE_ACCOUNT: ${FCM_SERVICE_ACCOUNT:-}
 
   dispatcher:
     <<: *server
