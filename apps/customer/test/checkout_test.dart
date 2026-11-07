@@ -77,6 +77,7 @@ Map<String, Object?> _order() => {
     'cancellation': null,
     'delivery': null,
     'restaurant': {'id': shamId, 'nameAr': 'مطعم الشام', 'nameEn': null},
+    'captain': null,
     'currency': 'TRY',
     'money': {
       'itemsValue': '13000',
@@ -200,6 +201,7 @@ void main() {
     expect(find.text('تقريب'), findsNothing);
     expect(find.text('الحي الشمالي'), findsWidgets);
     expect(find.text('تأكيد الطلب — 140 ₺'), findsOneWidget);
+    await app.done(tester);
   });
 
   testWidgets('places the order with an unsaved address and opens it', (
@@ -233,6 +235,7 @@ void main() {
     expect(find.text('#10423'), findsOneWidget);
     expect(find.text('بانتظار تأكيد المطعم'), findsOneWidget);
     expect(app.device.values['cart'], isNull);
+    await app.done(tester);
   });
 
   testWidgets('checks the address and the note before sending', (tester) async {
@@ -257,6 +260,7 @@ void main() {
       findsOneWidget,
     );
     expect(app.server.to('/v1/customer/orders'), isEmpty);
+    await app.done(tester);
   });
 
   testWidgets('a guest signs in at «تأكيد الطلب» and comes back', (
@@ -268,6 +272,7 @@ void main() {
 
     expect(find.byKey(const Key('sign-in-phone')), findsOneWidget);
     expect(app.server.to('/v1/customer/orders'), isEmpty);
+    await app.done(tester);
   });
 
   testWidgets('a new price is accepted before ordering', (tester) async {
@@ -298,6 +303,7 @@ void main() {
     final again = app.bodyOf('/v1/customer/quote', index: 1);
     expect((again['lines'] as List).single['knownUnitPrice'], '7000');
     expect(find.text('تغيّر سعر شاورما دجاج من 65 ₺ إلى 70 ₺'), findsNothing);
+    await app.done(tester);
   });
 
   testWidgets('below the minimum order the order waits', (tester) async {
@@ -335,6 +341,7 @@ void main() {
     expect(app.bodyOf('/v1/customer/quote', index: 1)['payIn'], 'USD');
     expect(app.device.values['checkout.pay_in'], 'USD');
     expect(find.text('ستدفع حوالي 3.50 \$'), findsOneWidget);
+    await app.done(tester);
   });
 
   testWidgets('a changed quote is shown, then confirmed with a new key', (
@@ -369,6 +376,7 @@ void main() {
     expect(keys[2], isNot(keys[1]));
     expect(app.bodyOf('/v1/customer/orders', index: 2)['quoteVersion'], 'v2');
     expect(find.text('أرسلنا طلبك إلى مطعم الشام'), findsOneWidget);
+    await app.done(tester);
   });
 
   testWidgets('a pin far from the phone is confirmed first (CU §7.5)', (
@@ -399,6 +407,7 @@ void main() {
     await tester.tap(find.text('نعم، أرسل إلى هذا العنوان'));
     await tester.pumpAndSettle();
     expect(app.server.to('/v1/customer/orders'), hasLength(1));
+    await app.done(tester);
   });
 
   testWidgets('an inaccurate phone position skips the check', (tester) async {
@@ -418,6 +427,7 @@ void main() {
 
     expect(find.text('هل أنت متأكد من العنوان؟'), findsNothing);
     expect(app.server.to('/v1/customer/orders'), hasLength(1));
+    await app.done(tester);
   });
 
   testWidgets('a saved address near the point is preselected', (tester) async {
@@ -450,6 +460,7 @@ void main() {
     expect(body['unsavedAddress'], isNull);
     final quote = app.bodyOf('/v1/customer/quote', index: 1);
     expect(quote['location'], {'latitude': 36.5866, 'longitude': 37.0463});
+    await app.done(tester);
   });
 
   testWidgets('the cart shows the minimum and keeps «متابعة» off below it', (
@@ -477,6 +488,7 @@ void main() {
       find.byKey(const Key('cart-continue')),
     );
     expect(next.onPressed, isNull);
+    await app.done(tester);
   });
 
   testWidgets('«احفظ هذا العنوان» saves it once, then orders with it', (
@@ -538,6 +550,7 @@ void main() {
       expect(body['unsavedAddress'], isNull);
     }
     expect(find.text('أرسلنا طلبك إلى مطعم الشام'), findsOneWidget);
+    await app.done(tester);
   });
 
   testWidgets('a blocked order keeps the cart and shows the new quote', (
@@ -568,6 +581,7 @@ void main() {
     expect(find.text('الضغط عالٍ الآن، جرّب بعد دقائق'), findsOneWidget);
     expect(find.text('إعادة المحاولة'), findsOneWidget);
     expect(app.device.values['cart'], isNotNull);
+    await app.done(tester);
   });
 
   testWidgets('an address outside the zones is refused with its text', (
@@ -621,6 +635,7 @@ void main() {
     expect(quotes.last.headers['Authorization'], 'Bearer access-1');
     // What the guest typed is still there.
     expect(find.text('قرب جامع النور'), findsOneWidget);
+    await app.done(tester);
   });
 
   testWidgets('no order before the profile can be read', (tester) async {
@@ -638,5 +653,6 @@ void main() {
 
     expect(app.server.to('/v1/customer/orders'), isEmpty);
     expect(find.text('تعذّر الاتصال بالخادم'), findsOneWidget);
+    await app.done(tester);
   });
 }

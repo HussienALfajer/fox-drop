@@ -9,6 +9,8 @@ import 'browsing/restaurant_list.dart';
 import 'cart/cart.dart';
 import 'location/delivery_point.dart';
 import 'location/position.dart';
+import 'orders/order_live.dart';
+import 'orders/order_screen.dart';
 
 /// Home (CU §7.1, §7.2, §8.1): the delivery point first, then the
 /// restaurants that deliver to it. Unstyled until the design (the design
@@ -50,6 +52,8 @@ class HomeScreen extends ConsumerWidget {
             ),
         ],
       ),
+      // CU §6: the active-order bar while an order is active.
+      bottomNavigationBar: signedIn ? const _ActiveOrders() : null,
       body: switch (point) {
         PointUnset() => _Ask(onLocate: locate),
         PointLocating() => const Center(child: CircularProgressIndicator()),
@@ -78,6 +82,48 @@ class HomeScreen extends ConsumerWidget {
                 : ref.read(deliveryPointProvider.notifier).vote,
           ),
       },
+    );
+  }
+}
+
+/// CU §6: «طلبك من {المطعم}: {الحالة}», or the count with a list when
+/// several orders are active.
+class _ActiveOrders extends ConsumerWidget {
+  const _ActiveOrders();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final orders = ref.watch(activeOrdersProvider).value ?? const [];
+    if (orders.isEmpty) return const SizedBox.shrink();
+    if (orders.length == 1) {
+      final order = orders.single;
+      return ListTile(
+        key: const Key('active-order'),
+        title: Text(
+          l10n.customerActiveOrder(
+            order.restaurant.nameAr,
+            statusText(l10n, order.status.name),
+          ),
+        ),
+        onTap: () => context.push('/orders/${order.id}'),
+      );
+    }
+    return ExpansionTile(
+      key: const Key('active-order'),
+      title: Text(l10n.customerActiveOrders(orders.length)),
+      children: [
+        for (final order in orders)
+          ListTile(
+            title: Text(
+              l10n.customerActiveOrder(
+                order.restaurant.nameAr,
+                statusText(l10n, order.status.name),
+              ),
+            ),
+            onTap: () => context.push('/orders/${order.id}'),
+          ),
+      ],
     );
   }
 }

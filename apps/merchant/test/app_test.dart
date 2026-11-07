@@ -9,7 +9,11 @@ import 'package:merchant/src/api.dart';
 import 'package:merchant/src/app.dart';
 import 'package:merchant/src/auth.dart';
 import 'package:merchant/src/device.dart';
+import 'package:merchant/src/board/alerts.dart';
+import 'package:merchant/src/board/board_screen.dart';
 import 'package:merchant/src/router.dart';
+
+import 'board_fixtures.dart';
 
 const _accountId = '00000000-0000-4000-8000-000000000001';
 
@@ -35,6 +39,12 @@ Map<String, String> _signedIn() => {
 };
 
 class _App {
+  /// Ends the app inside the test, so the board's timers stop first.
+  Future<void> done(WidgetTester tester) async {
+    await tester.pumpWidget(const SizedBox());
+    container.dispose();
+  }
+
   final server = FakeServer();
   final launched = <Uri>[];
   late final ProviderContainer container;
@@ -43,9 +53,7 @@ class _App {
     WidgetTester tester, {
     Map<String, String> stored = const {},
   }) async {
-    server.on('/v1/merchant/status', [
-      const FakeAnswer(200, {'status': 'ok', 'serverTime': 1}),
-    ]);
+    server.on('/v1/merchant/orders', [FakeAnswer(200, boardJson([]))]);
     container = ProviderContainer(
       overrides: [
         authApiProvider.overrideWithValue(server.client()),
@@ -60,10 +68,12 @@ class _App {
           return true;
         }),
         appVersionProvider.overrideWith((ref) async => '0.1.0'),
+        realtimeTransportProvider.overrideWithValue(FakeTransport()),
+        ringerProvider.overrideWithValue(FakeRinger()),
+        keepScreenOnProvider.overrideWithValue((on) {}),
       ],
       retry: (retryCount, error) => null,
     );
-    addTearDown(container.dispose);
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -126,7 +136,8 @@ void main() {
       'appVersion': '0.1.0',
     });
     expect(saved.headers['Authorization'], 'Bearer access-1');
-    expect(find.text('تم تسجيل الدخول'), findsOneWidget);
+    expect(find.text('جديدة (0)'), findsOneWidget);
+    await app.done(tester);
   });
 
   testWidgets('a number of no restaurant offers to call or write the team', (
@@ -157,6 +168,7 @@ void main() {
     expect(find.text('لديّ رمز من العمليات'), findsNothing);
     await tester.tap(find.text('واتساب العمليات'));
     expect(app.launched.single.toString(), 'https://wa.me/963955000000');
+    await app.done(tester);
   });
 
   testWidgets('a draft restaurant is told its account is being set up', (
@@ -178,6 +190,7 @@ void main() {
       find.text('حساب مطعمك قيد الإعداد. سنتواصل معك عند جاهزيته.'),
       findsOneWidget,
     );
+    await app.done(tester);
   });
 
   testWidgets('answers an unknown route with the not-found screen', (
@@ -188,10 +201,11 @@ void main() {
       FakeAnswer(200, _session(deviceNamed: true)),
     ]);
     await app.pump(tester, stored: _signedIn());
-    expect(find.text('تم تسجيل الدخول'), findsOneWidget);
+    expect(find.text('جديدة (0)'), findsOneWidget);
     app.container.read(routerProvider).go('/unknown');
     await tester.pumpAndSettle();
 
     expect(find.text('الصفحة غير موجودة'), findsOneWidget);
+    await app.done(tester);
   });
 }

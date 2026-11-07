@@ -8146,6 +8146,42 @@
                   ],
                   "additionalProperties": false
                 },
+                "captain": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "firstName": {
+                          "type": "string"
+                        },
+                        "vehicle": {
+                          "type": "string",
+                          "enum": [
+                            "walking",
+                            "bicycle",
+                            "motorbike",
+                            "car"
+                          ],
+                          "description": "«سيراً على الأقدام», «دراجة», «دراجة نارية» or «سيارة» (CU §11.3)."
+                        },
+                        "atRestaurant": {
+                          "type": "boolean",
+                          "description": "Before the pickup: «الكابتن {الاسم} وصل إلى المطعم», or «الكابتن يستلم طلبك الآن» once ready (CU §11.2)."
+                        }
+                      },
+                      "required": [
+                        "firstName",
+                        "vehicle",
+                        "atRestaurant"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The captain card from assignment (CU §11.3, Q14): «الكابتن {الاسم} في طريقه إلى المطعم»; never the phone number or the captain track (CU §11.2). The photo comes with the object storage."
+                },
                 "currency": {
                   "type": "string",
                   "minLength": 3,
@@ -8425,6 +8461,7 @@
                 "cancellation",
                 "delivery",
                 "restaurant",
+                "captain",
                 "currency",
                 "money",
                 "equivalents",
@@ -8622,6 +8659,42 @@
                   "nameEn"
                 ],
                 "additionalProperties": false
+              },
+              "captain": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "firstName": {
+                        "type": "string"
+                      },
+                      "vehicle": {
+                        "type": "string",
+                        "enum": [
+                          "walking",
+                          "bicycle",
+                          "motorbike",
+                          "car"
+                        ],
+                        "description": "«سيراً على الأقدام», «دراجة», «دراجة نارية» or «سيارة» (CU §11.3)."
+                      },
+                      "atRestaurant": {
+                        "type": "boolean",
+                        "description": "Before the pickup: «الكابتن {الاسم} وصل إلى المطعم», or «الكابتن يستلم طلبك الآن» once ready (CU §11.2)."
+                      }
+                    },
+                    "required": [
+                      "firstName",
+                      "vehicle",
+                      "atRestaurant"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The captain card from assignment (CU §11.3, Q14): «الكابتن {الاسم} في طريقه إلى المطعم»; never the phone number or the captain track (CU §11.2). The photo comes with the object storage."
               },
               "currency": {
                 "type": "string",
@@ -8902,6 +8975,7 @@
               "cancellation",
               "delivery",
               "restaurant",
+              "captain",
               "currency",
               "money",
               "equivalents",

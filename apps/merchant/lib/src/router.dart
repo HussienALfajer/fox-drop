@@ -4,9 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'auth.dart';
+import 'board/board_screen.dart';
+import 'board/order_screen.dart';
 import 'device.dart';
 import 'device_name_screen.dart';
-import 'home_screen.dart';
 import 'not_found_screen.dart';
 import 'starting_screen.dart';
 
@@ -25,15 +26,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (!session.hasValue) return to('/starting');
       if (session.value is! SignedIn) return to('/sign-in');
       final user = ref.read(merchantSessionProvider);
-      // Until the session's details come, or when they fail, the home screen
-      // shows the server status.
+      // Until the session's details come, or when they fail, the board waits
+      // for them.
       if (user.value?.deviceNamed == false) return to('/device-name');
       return const {'/sign-in', '/starting', '/device-name'}.contains(at)
           ? '/'
           : null;
     },
     routes: [
-      GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+      GoRoute(path: '/', builder: (context, state) => const BoardScreen()),
+      GoRoute(
+        path: '/orders/:id',
+        builder: (context, state) =>
+            OrderScreen(orderId: state.pathParameters['id']!),
+      ),
       GoRoute(
         path: '/starting',
         builder: (context, state) => const StartingScreen(),

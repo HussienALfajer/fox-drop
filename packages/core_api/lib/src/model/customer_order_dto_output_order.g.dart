@@ -149,6 +149,8 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
   @override
   final CustomerActiveOrdersDtoOutputOrdersInnerRestaurant restaurant;
   @override
+  final CustomerActiveOrdersDtoOutputOrdersInnerCaptain? captain;
+  @override
   final String currency;
   @override
   final CustomerActiveOrdersDtoOutputOrdersInnerMoney money;
@@ -179,6 +181,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     this.cancellation,
     this.delivery,
     required this.restaurant,
+    this.captain,
     required this.currency,
     required this.money,
     required this.equivalents,
@@ -210,6 +213,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
         cancellation == other.cancellation &&
         delivery == other.delivery &&
         restaurant == other.restaurant &&
+        captain == other.captain &&
         currency == other.currency &&
         money == other.money &&
         equivalents == other.equivalents &&
@@ -232,6 +236,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     _$hash = $jc(_$hash, cancellation.hashCode);
     _$hash = $jc(_$hash, delivery.hashCode);
     _$hash = $jc(_$hash, restaurant.hashCode);
+    _$hash = $jc(_$hash, captain.hashCode);
     _$hash = $jc(_$hash, currency.hashCode);
     _$hash = $jc(_$hash, money.hashCode);
     _$hash = $jc(_$hash, equivalents.hashCode);
@@ -256,6 +261,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
           ..add('cancellation', cancellation)
           ..add('delivery', delivery)
           ..add('restaurant', restaurant)
+          ..add('captain', captain)
           ..add('currency', currency)
           ..add('money', money)
           ..add('equivalents', equivalents)
@@ -323,6 +329,14 @@ class CustomerOrderDtoOutputOrderBuilder
     CustomerActiveOrdersDtoOutputOrdersInnerRestaurantBuilder? restaurant,
   ) => _$this._restaurant = restaurant;
 
+  CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder? _captain;
+  CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder get captain =>
+      _$this._captain ??=
+          CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder();
+  set captain(
+    CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder? captain,
+  ) => _$this._captain = captain;
+
   String? _currency;
   String? get currency => _$this._currency;
   set currency(String? currency) => _$this._currency = currency;
@@ -389,6 +403,7 @@ class CustomerOrderDtoOutputOrderBuilder
       _cancellation = $v.cancellation?.toBuilder();
       _delivery = $v.delivery?.toBuilder();
       _restaurant = $v.restaurant.toBuilder();
+      _captain = $v.captain?.toBuilder();
       _currency = $v.currency;
       _money = $v.money.toBuilder();
       _equivalents = $v.equivalents.toBuilder();
@@ -450,6 +465,7 @@ class CustomerOrderDtoOutputOrderBuilder
             cancellation: _cancellation?.build(),
             delivery: _delivery?.build(),
             restaurant: restaurant.build(),
+            captain: _captain?.build(),
             currency: BuiltValueNullFieldError.checkNotNull(
               currency,
               r'CustomerOrderDtoOutputOrder',
@@ -472,6 +488,8 @@ class CustomerOrderDtoOutputOrderBuilder
         _delivery?.build();
         _$failedField = 'restaurant';
         restaurant.build();
+        _$failedField = 'captain';
+        _captain?.build();
 
         _$failedField = 'money';
         money.build();

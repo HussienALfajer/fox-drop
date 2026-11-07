@@ -48,8 +48,9 @@ beforeEach(async () => {
 interface Row {
   orderId: string;
   restaurantId: string;
-  type: 'order.placed' | 'order.cancelled';
+  type: 'order.placed' | 'order.cancelled' | 'order.offered' | 'order.assigned';
   version: number;
+  captainTrack?: string;
 }
 
 const payloadOf = (row: Row) => ({
@@ -59,8 +60,9 @@ const payloadOf = (row: Row) => ({
   cityId: city,
   restaurantId: row.restaurantId,
   customerAccountId: randomUUID(),
-  status: row.type === 'order.placed' ? 'placed' : 'cancelled',
+  status: row.type === 'order.cancelled' ? 'cancelled' : 'placed',
   version: row.version,
+  ...(row.captainTrack ? { captainTrack: row.captainTrack, captainId: null } : {}),
   reason: null,
   at: new Date().toISOString(),
 });
@@ -101,6 +103,25 @@ describe('the outbox relay (architecture §5.5, E4)', () => {
     // A published row is never sent again.
     expect(await relay.drain(new Date())).toBe(0);
     expect(await versionsOn(`order:${order.orderId}`)).toEqual([1, 2]);
+  });
+
+  it("keeps the captain track and the captain's own steps off the customer's channel (CU §11.2)", async () => {
+    const order = { orderId: randomUUID(), restaurantId: randomUUID() };
+    await insert({ ...order, type: 'order.placed', version: 1 });
+    await insert({ ...order, type: 'order.offered', version: 2, captainTrack: 'offered' });
+    await insert({ ...order, type: 'order.assigned', version: 3, captainTrack: 'assigned' });
+
+    expect(await relay.drain(new Date())).toBe(3);
+
+    expect(await versionsOn(`merchant:${order.restaurantId}`)).toEqual([1, 2, 3]);
+    const merchant = (await centrifugo.history(`merchant:${order.restaurantId}`)) as object[];
+    expect(merchant[2]).toMatchObject({ type: 'order.assigned', captainTrack: 'assigned' });
+    // The customer gets the assignment, which changes the captain card, but
+    // neither the offer nor the track.
+    expect(await versionsOn(`order:${order.orderId}`)).toEqual([1, 3]);
+    for (const data of (await centrifugo.history(`order:${order.orderId}`)) as object[]) {
+      expect(data).not.toHaveProperty('captainTrack');
+    }
   });
 
   it('publishes a row committed after a later one, as no «last published id» is kept', async () => {

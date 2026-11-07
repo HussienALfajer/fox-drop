@@ -1,0 +1,144 @@
+import 'dart:async';
+
+import 'package:core_api/core_api.dart';
+import 'package:core_realtime/core_realtime.dart';
+import 'package:merchant/src/board/alerts.dart';
+import 'package:merchant/src/board/board.dart';
+
+final placedAt = DateTime.utc(2026, 11, 7, 12);
+
+/// One order of `GET /v1/merchant/orders` as JSON.
+Map<String, Object?> orderJson({
+  String id = '00000000-0000-4000-8000-0000000000a1',
+  String number = '10001',
+  String status = 'placed',
+  int version = 1,
+  DateTime? placed,
+  Duration? acceptedAfter,
+  int prepMin = 20,
+  String? captainTrack,
+  String? captainName,
+  DateTime? arrivedAt,
+  Map<String, Object?>? request,
+  DateTime? pickedUpAt,
+  DateTime? disputeUntil,
+}) {
+  final at = placed ?? placedAt;
+  final accepted = acceptedAfter == null ? null : at.add(acceptedAfter);
+  return {
+    'id': id,
+    'number': number,
+    'status': status,
+    'version': version,
+    'placedAt': at.toIso8601String(),
+    'acceptAlertAt': at.add(const Duration(minutes: 3)).toIso8601String(),
+    'autoCancelAt': status == 'placed'
+        ? at.add(const Duration(minutes: 7)).toIso8601String()
+        : null,
+    'acceptance': accepted == null
+        ? null
+        : {
+            'at': accepted.toIso8601String(),
+            'prepMin': prepMin,
+            'prepDueAt': accepted
+                .add(Duration(minutes: prepMin))
+                .toIso8601String(),
+            'deviceName': 'كاشير 1',
+          },
+    'readyAt': null,
+    'customer': {'firstName': 'أحمد', 'neighbourhood': 'المركز'},
+    'note': 'بدون بصل',
+    'lines': [
+      {
+        'name': 'شاورما',
+        'quantity': 2,
+        'options': [
+          {'name': 'كبير'},
+        ],
+        'note': null,
+        'lineTotal': '24000',
+      },
+    ],
+    'currency': 'TRY',
+    'itemsValue': '24000',
+    'captainTrack': captainTrack,
+    'captain': captainName == null
+        ? null
+        : {'firstName': captainName, 'vehicle': 'motorbike'},
+    'captainArrival': arrivedAt == null
+        ? null
+        : {
+            'at': arrivedAt.toIso8601String(),
+            'waitingAlertAt': arrivedAt
+                .add(const Duration(minutes: 10))
+                .toIso8601String(),
+          },
+    'pickup': {
+      'request': request,
+      'pickedUpAt': pickedUpAt?.toIso8601String(),
+      'readyNotPressed': false,
+      'disputeUntil': disputeUntil?.toIso8601String(),
+      'disputedAt': null,
+    },
+  };
+}
+
+Map<String, Object?> requestJson({
+  String id = '00000000-0000-4000-8000-0000000000b1',
+  String status = 'open',
+  String? outcome,
+  String? closedBy,
+  DateTime? confirmBy,
+}) => {
+  'id': id,
+  'status': status,
+  'outcome': outcome,
+  'amount': {'amount': '24000', 'currency': 'TRY'},
+  'lines': [
+    {'amount': '24000', 'currency': 'TRY'},
+  ],
+  'baseEquivalent': '24000',
+  'confirmBy': (confirmBy ?? placedAt.add(const Duration(minutes: 30)))
+      .toIso8601String(),
+  'closedAt': status == 'open' ? null : placedAt.toIso8601String(),
+  'closedByUserName': closedBy,
+  'closedByDeviceName': null,
+};
+
+Map<String, Object?> boardJson(List<Map<String, Object?>> orders) => {
+  'orders': orders,
+  'prepTime': {
+    'options': [10, 15, 20, 30, 45],
+    'stepMin': 5,
+    'floorMin': 5,
+    'ceilingMin': 90,
+    'defaultMin': 20,
+  },
+};
+
+Board board(List<Map<String, Object?>> orders) => standardSerializers
+    .deserializeWith(MerchantOrdersDtoOutput.serializer, boardJson(orders))!;
+
+class FakeRinger implements Ringer {
+  bool ringing = false;
+  int chimes = 0;
+
+  @override
+  void ring() => ringing = true;
+
+  @override
+  void stop() => ringing = false;
+
+  @override
+  void chime() => chimes++;
+}
+
+class FakeTransport implements RealtimeTransport {
+  final channels = <String, StreamController<RealtimeSignal>>{};
+
+  @override
+  Stream<RealtimeSignal> channel(String name) =>
+      (channels[name] = StreamController<RealtimeSignal>()).stream;
+
+  void send(String name, RealtimeSignal signal) => channels[name]!.add(signal);
+}

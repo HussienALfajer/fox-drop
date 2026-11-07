@@ -239,7 +239,7 @@ async function acceptedOrder() {
     payload: { prepMin: 20 },
   });
   expect(accepted.statusCode).toBe(200);
-  return { id: order.id as string, cashier };
+  return { id: order.id as string, cashier, customer };
 }
 
 // An activated motorbike captain, signed in and online at the point.
@@ -319,6 +319,33 @@ describe('GET /v1/captain/orders/active (CA §9.1–9.3)', () => {
       pickupPayment: { amount: '24000', currency: 'TRY' },
       collect: { amount: '28000', currency: 'TRY' },
     });
+  });
+});
+
+describe("the captain on the customer's order screen (CU §11.2–11.3)", () => {
+  it('shows the first name and vehicle from assignment, and when the captain is at the restaurant', async () => {
+    const order = await acceptedOrder();
+    const read = async () =>
+      (
+        await app.inject({
+          method: 'GET',
+          url: `/v1/customer/orders/${order.id}`,
+          headers: order.customer,
+        })
+      ).json().order;
+    expect((await read()).captain).toBeNull();
+    const captain = await onlineCaptain();
+    expect((await (await admin(['OPS'])).assign(order.id, captain.captainId)).statusCode).toBe(200);
+    const assigned = await read();
+    expect(assigned.captain).toEqual({
+      firstName: 'كابتن',
+      vehicle: 'motorbike',
+      atRestaurant: false,
+    });
+    // The captain track itself is never shown to the customer (CU §11.2).
+    expect(assigned).not.toHaveProperty('captainTrack');
+    expect((await captain.arrive(order.id)).statusCode).toBe(200);
+    expect((await read()).captain).toMatchObject({ atRestaurant: true });
   });
 });
 

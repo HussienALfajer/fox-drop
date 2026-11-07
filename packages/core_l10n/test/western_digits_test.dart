@@ -72,6 +72,14 @@ void main() {
     expect(l10n.weekdayName(0), 'الأحد');
     expect(l10n.weekdayName(6), 'السبت');
     expect(l10n.durationMinutes(12), '12 د');
+    expect(l10n.durationSeconds(45), '45 ث');
+    expect(
+      l10n.formatCountdown(const Duration(minutes: 6, seconds: 59)),
+      '6:59',
+    );
+    expect(l10n.formatCountdown(const Duration(seconds: -3)), '0:00');
+    expect(l10n.merchantAccept(20), 'قبول — 20 د');
+    expect(l10n.merchantAutoConfirmIn(60), 'يُؤكَّد تلقائياً خلال 60 ث');
     expect(l10n.formatDistance(850), '850 م');
     expect(l10n.formatDistance(2400), '2.4 كم');
     for (final text in [

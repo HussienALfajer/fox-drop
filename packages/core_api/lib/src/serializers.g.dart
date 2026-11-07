@@ -184,6 +184,11 @@ Serializers _$serializers =
             CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation.serializer,
           )
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerCancellation.serializer)
+          ..add(CustomerActiveOrdersDtoOutputOrdersInnerCaptain.serializer)
+          ..add(
+            CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum
+                .serializer,
+          )
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerDelivery.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerEstimate.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerLinesInner.serializer)
