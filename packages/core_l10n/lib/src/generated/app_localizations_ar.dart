@@ -1069,4 +1069,394 @@ class AppLocalizationsAr extends AppLocalizations {
   String customerActiveOrders(int count) {
     return 'طلباتك النشطة: $count';
   }
+
+  @override
+  String get captainStateOffline => 'غير متصل';
+
+  @override
+  String get captainStateAvailable => 'متصل متاح';
+
+  @override
+  String get captainStateBusy => 'مشغول';
+
+  @override
+  String get captainStateNoOffers => 'لا تصلك عروض';
+
+  @override
+  String get captainStateSuspended => 'موقوف';
+
+  @override
+  String get captainOnlineSwitch => 'متصل';
+
+  @override
+  String captainOwes(String amount) {
+    return 'عليك تسليم $amount';
+  }
+
+  @override
+  String captainNoOffersCashLimit(String amount) {
+    return 'بلغت حد العهدة ($amount). سلّم النقد في المكتب لتصلك العروض.';
+  }
+
+  @override
+  String captainNoOffersClosedDue(String amount) {
+    return 'لديك نقد غير مسلّم: $amount. سلّمه في المكتب لتصلك العروض.';
+  }
+
+  @override
+  String get captainStopMockLocation =>
+      'أوقف تطبيقات تغيير الموقع لتتمكن من الاتصال.';
+
+  @override
+  String captainBlockClosedDue(String date, String amount) {
+    return 'لديك نقد غير مسلّم من يوم $date: $amount. سلّمه في المكتب لتتمكن من الاتصال.';
+  }
+
+  @override
+  String captainBlockSuspendedUntil(String date, String reason) {
+    return 'حسابك موقوف حتى $date: $reason';
+  }
+
+  @override
+  String captainBlockSuspended(String reason) {
+    return 'حسابك موقوف: $reason';
+  }
+
+  @override
+  String captainBlockVersion(String version) {
+    return 'حدّث التطبيق إلى الإصدار $version لتتمكن من الاتصال.';
+  }
+
+  @override
+  String get captainTrackingNotice =>
+      'أنت متصل — FOX DROP يتابع موقعك لتصلك العروض';
+
+  @override
+  String get captainLocationOff => 'شغّل الموقع في هاتفك لتتمكن من الاتصال.';
+
+  @override
+  String get captainLocationDenied =>
+      'اسمح لتطبيق الكابتن بالوصول إلى موقعك لتتمكن من الاتصال.';
+
+  @override
+  String get captainLocationFailed => 'تعذّر تحديد موقعك، حاول مرة أخرى.';
+
+  @override
+  String get captainNoConnection =>
+      'لا يوجد اتصال بالإنترنت — لن تصلك العروض حتى يعود الاتصال';
+
+  @override
+  String get captainOk => 'حسناً';
+
+  @override
+  String get captainSending => 'جارٍ الإرسال…';
+
+  @override
+  String get captainCommandFailed => 'تعذّر الإرسال، حاول مرة أخرى.';
+
+  @override
+  String get captainStateChanged => 'تغيّرت حالة الطلب قبل وصول طلبك.';
+
+  @override
+  String get captainNotOnline => 'أنت غير متصل.';
+
+  @override
+  String get captainStaleLocation => 'لم يتحدّد موقعك بعد، حاول بعد لحظات.';
+
+  @override
+  String get captainOfflineWithOrder => 'لا يمكنك قطع الاتصال أثناء طلب.';
+
+  @override
+  String get captainNewOffer => 'عرض جديد';
+
+  @override
+  String get captainOfferFromOperations => 'تعيين من العمليات';
+
+  @override
+  String captainOfferRestaurant(String restaurant, String distance) {
+    return '$restaurant · $distance';
+  }
+
+  @override
+  String captainOfferCustomer(String neighbourhood, String distance) {
+    return '$neighbourhood · $distance';
+  }
+
+  @override
+  String captainPayToRestaurant(String amount) {
+    return 'تدفع للمطعم: $amount';
+  }
+
+  @override
+  String captainCollectFromCustomer(String amount) {
+    return 'تقبض من الزبون: $amount';
+  }
+
+  @override
+  String captainOfferPreparing(int minutes) {
+    return 'قيد التحضير — جاهز بعد $minutes د تقريباً';
+  }
+
+  @override
+  String captainPreparing(int minutes) {
+    return 'قيد التحضير — جاهز بعد $minutes د';
+  }
+
+  @override
+  String get captainReady => 'جاهز';
+
+  @override
+  String get captainWaitingPayMayApply => 'قد يُضاف أجر انتظار';
+
+  @override
+  String get captainOfferNoPay => 'الأجر غير محدد';
+
+  @override
+  String get captainAccept => 'قبول';
+
+  @override
+  String get captainDecline => 'رفض';
+
+  @override
+  String get captainOfferExpired => 'انتهى العرض';
+
+  @override
+  String get captainOfferUnavailable => 'لم يعد العرض متاحاً';
+
+  @override
+  String captainOpsAssigned(String number) {
+    return 'عيّنتك العمليات على طلب #$number';
+  }
+
+  @override
+  String captainStep(int step, String name) {
+    return 'الخطوة $step من 4: $name';
+  }
+
+  @override
+  String get captainStepToRestaurant => 'إلى المطعم';
+
+  @override
+  String get captainStepAtRestaurant => 'عند المطعم';
+
+  @override
+  String get captainStepToCustomer => 'إلى الزبون';
+
+  @override
+  String get captainStepAtCustomer => 'عند الزبون';
+
+  @override
+  String captainOrderItems(String number, int count) {
+    return 'الطلب #$number · الأصناف: $count';
+  }
+
+  @override
+  String get captainStartNavigation => 'ابدأ الملاحة';
+
+  @override
+  String get captainCallRestaurant => 'اتصال بالمطعم';
+
+  @override
+  String get captainArrivedAtRestaurant => 'وصلت إلى المطعم';
+
+  @override
+  String get captainArrivedQuestion => 'هل وصلت إلى المطعم؟';
+
+  @override
+  String get captainGetCloser => 'اقترب من المطعم لتأكيد الوصول';
+
+  @override
+  String get captainWeakGps =>
+      'إشارة الموقع ضعيفة — اتصل بالعمليات لتسجيل وصولك';
+
+  @override
+  String captainDistanceAway(String distance) {
+    return 'على بعد $distance';
+  }
+
+  @override
+  String captainWaitingSince(String duration) {
+    return 'تنتظر منذ $duration';
+  }
+
+  @override
+  String get captainOrderReadyNow => 'الطلب جاهز';
+
+  @override
+  String captainOrderReadyChime(String number) {
+    return 'الطلب #$number جاهز';
+  }
+
+  @override
+  String get captainItemsResponsibility =>
+      'بعد تأكيد الأصناف يصبح أي نقص من مسؤوليتك';
+
+  @override
+  String captainLine(int quantity, String name) {
+    return '$quantity × $name';
+  }
+
+  @override
+  String captainPayRestaurant(String amount) {
+    return 'ادفع للمطعم: $amount';
+  }
+
+  @override
+  String get captainPaidAndPickedUp => 'دفعت للمطعم واستلمت الطلب';
+
+  @override
+  String get captainAwaitingRestaurant => 'بانتظار تأكيد المطعم';
+
+  @override
+  String get captainAmountMismatch => 'المبلغ لا يطابق المطلوب';
+
+  @override
+  String captainRestaurantReceived(String amount) {
+    return 'المطعم يفيد بأنه استلم $amount. أكمل المبلغ ثم أعد التأكيد.';
+  }
+
+  @override
+  String get captainRestaurantIncomplete =>
+      'المطعم يفيد بأن الطلب غير مكتمل. راجع الأصناف معه.';
+
+  @override
+  String get captainPickedUp => 'تم الاستلام — توجّه إلى الزبون';
+
+  @override
+  String get captainOpsConfirmedPickup => 'أكّدت العمليات الاستلام';
+
+  @override
+  String get captainPickupDisputed =>
+      'فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات';
+
+  @override
+  String captainFloor(String floor) {
+    return 'الطابق: $floor';
+  }
+
+  @override
+  String captainNote(String note) {
+    return 'ملاحظة: $note';
+  }
+
+  @override
+  String captainPayIn(String currency) {
+    return 'الزبون سيدفع بـ $currency';
+  }
+
+  @override
+  String captainPromisedBefore(String time) {
+    return 'التسليم المتوقع قبل $time';
+  }
+
+  @override
+  String get captainCallCustomer => 'اتصال بالزبون';
+
+  @override
+  String get captainWhatsAppCustomer => 'واتساب الزبون';
+
+  @override
+  String get captainArrivedAtCustomer => 'وصلت';
+
+  @override
+  String get captainAwayTitle => 'أنت بعيد عن موقع الزبون. اختر السبب:';
+
+  @override
+  String get captainAwayOtherPlace => 'الزبون طلب مكاناً آخر';
+
+  @override
+  String get captainAwayPinInaccurate => 'موقع الزبون على الخريطة غير دقيق';
+
+  @override
+  String get captainOther => 'أخرى';
+
+  @override
+  String get captainOtherHint => 'اكتب السبب';
+
+  @override
+  String get captainSend => 'إرسال';
+
+  @override
+  String get captainAmountDue => 'المبلغ المطلوب';
+
+  @override
+  String get captainAmountReceived => 'المبلغ المقبوض';
+
+  @override
+  String get captainChange => 'الباقي للزبون';
+
+  @override
+  String captainChangeDue(String amount) {
+    return 'الباقي: $amount';
+  }
+
+  @override
+  String captainShortBy(String amount) {
+    return 'المبلغ المقبوض أقل من المطلوب بـ $amount';
+  }
+
+  @override
+  String get captainShortCustomer => 'الزبون لا يملك المبلغ كاملاً';
+
+  @override
+  String get captainShortCounting => 'خطأ في العد';
+
+  @override
+  String get captainOverpaid => 'سجّل الباقي الذي أعدته للزبون';
+
+  @override
+  String captainAmountDueChanged(String amount) {
+    return 'تغيّر المبلغ المطلوب إلى $amount';
+  }
+
+  @override
+  String get captainTip =>
+      'إذا ترك لك الزبون الباقي إكرامية فهو لك، سجّله كأنك أعدته';
+
+  @override
+  String get captainInvalidAmount => 'أدخل مبلغاً صحيحاً';
+
+  @override
+  String get captainDelivered => 'تم التسليم';
+
+  @override
+  String captainEarned(String amount) {
+    return 'ربحت من هذا الطلب: $amount';
+  }
+
+  @override
+  String captainPayBase(String amount) {
+    return 'الأجر الأساسي: $amount';
+  }
+
+  @override
+  String captainPayDistance(String amount) {
+    return 'أجر المسافة: $amount';
+  }
+
+  @override
+  String captainPayTopUp(String amount) {
+    return 'إكمال للحد الأدنى: $amount';
+  }
+
+  @override
+  String captainPayWaiting(String amount) {
+    return 'أجر الانتظار: $amount';
+  }
+
+  @override
+  String captainCustodyChanged(String amount) {
+    return 'تغيّرت عهدتك: $amount';
+  }
+
+  @override
+  String captainHandInToday(String amount) {
+    return 'عليك تسليم اليوم: $amount';
+  }
+
+  @override
+  String get captainEndWork => 'إنهاء العمل';
+
+  @override
+  String get captainKeepWorking => 'متابعة العمل';
 }

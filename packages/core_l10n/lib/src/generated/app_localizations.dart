@@ -1827,6 +1827,624 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'طلباتك النشطة: {count}'**
   String customerActiveOrders(int count);
+
+  /// Availability (CA §7.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'غير متصل'**
+  String get captainStateOffline;
+
+  /// Availability (CA §7.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'متصل متاح'**
+  String get captainStateAvailable;
+
+  /// Availability with an active order (CA §7.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'مشغول'**
+  String get captainStateBusy;
+
+  /// Online without offers (CA §7.1); the reason follows.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تصلك عروض'**
+  String get captainStateNoOffers;
+
+  /// Suspended (CA §7.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'موقوف'**
+  String get captainStateSuspended;
+
+  /// The home switch (CA §7.2, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'متصل'**
+  String get captainOnlineSwitch;
+
+  /// The cash held (CA Appendix B, Home), and the hand-in reminder after going offline (CA §7.5) until the office fields give its hours.
+  ///
+  /// In ar, this message translates to:
+  /// **'عليك تسليم {amount}'**
+  String captainOwes(String amount);
+
+  /// At the cash limit (CA §7.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'بلغت حد العهدة ({amount}). سلّم النقد في المكتب لتصلك العروض.'**
+  String captainNoOffersCashLimit(String amount);
+
+  /// Cash from a closed day past the grace while online (CA §7.2). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لديك نقد غير مسلّم: {amount}. سلّمه في المكتب لتصلك العروض.'**
+  String captainNoOffersClosedDue(String amount);
+
+  /// A simulated location is active (CA §7.2, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'أوقف تطبيقات تغيير الموقع لتتمكن من الاتصال.'**
+  String get captainStopMockLocation;
+
+  /// Going online is blocked by cash from a previous business day (CA §7.2); the office hours and map come with the office fields.
+  ///
+  /// In ar, this message translates to:
+  /// **'لديك نقد غير مسلّم من يوم {date}: {amount}. سلّمه في المكتب لتتمكن من الاتصال.'**
+  String captainBlockClosedDue(String date, String amount);
+
+  /// Suspended with an end (CA §7.2); «اعتراض» comes with appeals.
+  ///
+  /// In ar, this message translates to:
+  /// **'حسابك موقوف حتى {date}: {reason}'**
+  String captainBlockSuspendedUntil(String date, String reason);
+
+  /// Suspended until further notice (CA §7.2). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'حسابك موقوف: {reason}'**
+  String captainBlockSuspended(String reason);
+
+  /// The app is below the minimum version (CA §7.2); the update screen comes with its slice. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'حدّث التطبيق إلى الإصدار {version} لتتمكن من الاتصال.'**
+  String captainBlockVersion(String version);
+
+  /// The foreground service notification while online (CA §4.3, owner decision 2026-11-07).
+  ///
+  /// In ar, this message translates to:
+  /// **'أنت متصل — FOX DROP يتابع موقعك لتصلك العروض'**
+  String get captainTrackingNotice;
+
+  /// The phone location is off. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'شغّل الموقع في هاتفك لتتمكن من الاتصال.'**
+  String get captainLocationOff;
+
+  /// The location permission was refused. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسمح لتطبيق الكابتن بالوصول إلى موقعك لتتمكن من الاتصال.'**
+  String get captainLocationDenied;
+
+  /// No position came. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحديد موقعك، حاول مرة أخرى.'**
+  String get captainLocationFailed;
+
+  /// The red bar while offline (CA §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد اتصال بالإنترنت — لن تصلك العروض حتى يعود الاتصال'**
+  String get captainNoConnection;
+
+  /// Closes a message.
+  ///
+  /// In ar, this message translates to:
+  /// **'حسناً'**
+  String get captainOk;
+
+  /// A command waiting for the server (CA §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ الإرسال…'**
+  String get captainSending;
+
+  /// A command the server refused for another reason. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الإرسال، حاول مرة أخرى.'**
+  String get captainCommandFailed;
+
+  /// A command found the order changed (CA §4.6). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيّرت حالة الطلب قبل وصول طلبك.'**
+  String get captainStateChanged;
+
+  /// A command while the server sees the captain offline. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أنت غير متصل.'**
+  String get captainNotOnline;
+
+  /// The fix was too old for the server. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يتحدّد موقعك بعد، حاول بعد لحظات.'**
+  String get captainStaleLocation;
+
+  /// Going offline with an active order (K13). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يمكنك قطع الاتصال أثناء طلب.'**
+  String get captainOfflineWithOrder;
+
+  /// The offer sheet title (CA §8.2, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض جديد'**
+  String get captainNewOffer;
+
+  /// A manual assignment as an offer (CA §8.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعيين من العمليات'**
+  String get captainOfferFromOperations;
+
+  /// The restaurant and its distance from the captain (CA §8.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'{restaurant} · {distance}'**
+  String captainOfferRestaurant(String restaurant, String distance);
+
+  /// The customer neighbourhood and the trip (CA §8.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'{neighbourhood} · {distance}'**
+  String captainOfferCustomer(String neighbourhood, String distance);
+
+  /// The pickup payment (CA §8.2, §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'تدفع للمطعم: {amount}'**
+  String captainPayToRestaurant(String amount);
+
+  /// The amount to collect (CA §8.2, §9.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'تقبض من الزبون: {amount}'**
+  String captainCollectFromCustomer(String amount);
+
+  /// The offer preparation state (CA §8.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد التحضير — جاهز بعد {minutes} د تقريباً'**
+  String captainOfferPreparing(int minutes);
+
+  /// Step 1 preparation state (CA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد التحضير — جاهز بعد {minutes} د'**
+  String captainPreparing(int minutes);
+
+  /// Ready (CA §8.2, §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'جاهز'**
+  String get captainReady;
+
+  /// Under the offer pay (CA §8.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'قد يُضاف أجر انتظار'**
+  String get captainWaitingPayMayApply;
+
+  /// An offer without a pay table. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأجر غير محدد'**
+  String get captainOfferNoPay;
+
+  /// Accept the offer (CA §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'قبول'**
+  String get captainAccept;
+
+  /// Reject the offer (CA §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'رفض'**
+  String get captainDecline;
+
+  /// The offer expired (CA §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهى العرض'**
+  String get captainOfferExpired;
+
+  /// The offer was taken or withdrawn (CA §8.3, §14).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يعد العرض متاحاً'**
+  String get captainOfferUnavailable;
+
+  /// Assigned by operations without an offer (CA §14 item 4).
+  ///
+  /// In ar, this message translates to:
+  /// **'عيّنتك العمليات على طلب #{number}'**
+  String captainOpsAssigned(String number);
+
+  /// The progress bar of the active order (CA §9.1). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخطوة {step} من 4: {name}'**
+  String captainStep(int step, String name);
+
+  /// Step 1 (CA §9.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'إلى المطعم'**
+  String get captainStepToRestaurant;
+
+  /// Step 2 (CA §9.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'عند المطعم'**
+  String get captainStepAtRestaurant;
+
+  /// Step 3 (CA §9.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'إلى الزبون'**
+  String get captainStepToCustomer;
+
+  /// Step 4 (CA §9.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'عند الزبون'**
+  String get captainStepAtCustomer;
+
+  /// The order number and item count (CA §9.2). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب #{number} · الأصناف: {count}'**
+  String captainOrderItems(String number, int count);
+
+  /// Opens Google Maps (CA §4.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'ابدأ الملاحة'**
+  String get captainStartNavigation;
+
+  /// Calls the restaurant (CA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'اتصال بالمطعم'**
+  String get captainCallRestaurant;
+
+  /// Step 1 main button (CA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'وصلت إلى المطعم'**
+  String get captainArrivedAtRestaurant;
+
+  /// The banner within the radius (CA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'هل وصلت إلى المطعم؟'**
+  String get captainArrivedQuestion;
+
+  /// Outside the radius (CA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'اقترب من المطعم لتأكيد الوصول'**
+  String get captainGetCloser;
+
+  /// GPS worse than 100 m (K3).
+  ///
+  /// In ar, this message translates to:
+  /// **'إشارة الموقع ضعيفة — اتصل بالعمليات لتسجيل وصولك'**
+  String get captainWeakGps;
+
+  /// The distance from the latest fix. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'على بعد {distance}'**
+  String captainDistanceAway(String distance);
+
+  /// The waiting timer from arrival (CA §9.3). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تنتظر منذ {duration}'**
+  String captainWaitingSince(String duration);
+
+  /// The restaurant pressed ready (CA §9.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب جاهز'**
+  String get captainOrderReadyNow;
+
+  /// The ready chime (CA §14 item 5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب #{number} جاهز'**
+  String captainOrderReadyChime(String number);
+
+  /// Above the item check (C7).
+  ///
+  /// In ar, this message translates to:
+  /// **'بعد تأكيد الأصناف يصبح أي نقص من مسؤوليتك'**
+  String get captainItemsResponsibility;
+
+  /// An item line of the check (C7). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'{quantity} × {name}'**
+  String captainLine(int quantity, String name);
+
+  /// The payment section (CA §9.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'ادفع للمطعم: {amount}'**
+  String captainPayRestaurant(String amount);
+
+  /// Step 2 main button (CA §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'دفعت للمطعم واستلمت الطلب'**
+  String get captainPaidAndPickedUp;
+
+  /// The open pickup request (CA §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار تأكيد المطعم'**
+  String get captainAwaitingRestaurant;
+
+  /// The payment lines refused (CA §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ لا يطابق المطلوب'**
+  String get captainAmountMismatch;
+
+  /// The restaurant answered «المبلغ غير صحيح» (CA §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'المطعم يفيد بأنه استلم {amount}. أكمل المبلغ ثم أعد التأكيد.'**
+  String captainRestaurantReceived(String amount);
+
+  /// The restaurant answered «الطلب غير مكتمل» (CA §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'المطعم يفيد بأن الطلب غير مكتمل. راجع الأصناف معه.'**
+  String get captainRestaurantIncomplete;
+
+  /// Pickup confirmed (CA §9.4, §14 item 7).
+  ///
+  /// In ar, this message translates to:
+  /// **'تم الاستلام — توجّه إلى الزبون'**
+  String get captainPickedUp;
+
+  /// Pickup confirmed by operations (CA §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّدت العمليات الاستلام'**
+  String get captainOpsConfirmedPickup;
+
+  /// Dispute after pickup (CA §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات'**
+  String get captainPickupDisputed;
+
+  /// The address floor (CA §9.5). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطابق: {floor}'**
+  String captainFloor(String floor);
+
+  /// The customer note (CA §9.5). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظة: {note}'**
+  String captainNote(String note);
+
+  /// The pay-in currency (CA §9.5, CU U10).
+  ///
+  /// In ar, this message translates to:
+  /// **'الزبون سيدفع بـ {currency}'**
+  String captainPayIn(String currency);
+
+  /// The promised time (CA §9.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'التسليم المتوقع قبل {time}'**
+  String captainPromisedBefore(String time);
+
+  /// Calls the customer (C10).
+  ///
+  /// In ar, this message translates to:
+  /// **'اتصال بالزبون'**
+  String get captainCallCustomer;
+
+  /// WhatsApp to the customer (C10).
+  ///
+  /// In ar, this message translates to:
+  /// **'واتساب الزبون'**
+  String get captainWhatsAppCustomer;
+
+  /// Step 3 main button (CA §9.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'وصلت'**
+  String get captainArrivedAtCustomer;
+
+  /// The reason sheet away from the pin (K4, C9). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أنت بعيد عن موقع الزبون. اختر السبب:'**
+  String get captainAwayTitle;
+
+  /// Away reason (CA Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'الزبون طلب مكاناً آخر'**
+  String get captainAwayOtherPlace;
+
+  /// Away reason (CA Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'موقع الزبون على الخريطة غير دقيق'**
+  String get captainAwayPinInaccurate;
+
+  /// Other, in a reason list (CA Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'أخرى'**
+  String get captainOther;
+
+  /// The text of «أخرى». The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب السبب'**
+  String get captainOtherHint;
+
+  /// Sends a reason. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال'**
+  String get captainSend;
+
+  /// Door payment (CA §9.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ المطلوب'**
+  String get captainAmountDue;
+
+  /// Door payment (CA §9.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ المقبوض'**
+  String get captainAmountReceived;
+
+  /// Door payment (CA §9.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'الباقي للزبون'**
+  String get captainChange;
+
+  /// The change the app computed (CA §9.7 item 3). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الباقي: {amount}'**
+  String captainChangeDue(String amount);
+
+  /// Collected short (CA §9.7, K16).
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ المقبوض أقل من المطلوب بـ {amount}'**
+  String captainShortBy(String amount);
+
+  /// Shortfall reason (CA Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'الزبون لا يملك المبلغ كاملاً'**
+  String get captainShortCustomer;
+
+  /// Shortfall reason (CA Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'خطأ في العد'**
+  String get captainShortCounting;
+
+  /// Net above due (CA §9.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'سجّل الباقي الذي أعدته للزبون'**
+  String get captainOverpaid;
+
+  /// The amount due changed (CA §9.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيّر المبلغ المطلوب إلى {amount}'**
+  String captainAmountDueChanged(String amount);
+
+  /// Tips (K14).
+  ///
+  /// In ar, this message translates to:
+  /// **'إذا ترك لك الزبون الباقي إكرامية فهو لك، سجّله كأنك أعدته'**
+  String get captainTip;
+
+  /// An amount that is not a number. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل مبلغاً صحيحاً'**
+  String get captainInvalidAmount;
+
+  /// Step 4 main button (CA §9.8).
+  ///
+  /// In ar, this message translates to:
+  /// **'تم التسليم'**
+  String get captainDelivered;
+
+  /// The summary (CA §9.8).
+  ///
+  /// In ar, this message translates to:
+  /// **'ربحت من هذا الطلب: {amount}'**
+  String captainEarned(String amount);
+
+  /// The summary pay part (CA §9.8). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأجر الأساسي: {amount}'**
+  String captainPayBase(String amount);
+
+  /// The summary pay part (CA §9.8). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أجر المسافة: {amount}'**
+  String captainPayDistance(String amount);
+
+  /// The summary pay part (CA §9.8, AP §8.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'إكمال للحد الأدنى: {amount}'**
+  String captainPayTopUp(String amount);
+
+  /// The summary pay part (CA §9.8). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أجر الانتظار: {amount}'**
+  String captainPayWaiting(String amount);
+
+  /// The summary (CA §9.8).
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيّرت عهدتك: {amount}'**
+  String captainCustodyChanged(String amount);
+
+  /// The summary (CA §9.8).
+  ///
+  /// In ar, this message translates to:
+  /// **'عليك تسليم اليوم: {amount}'**
+  String captainHandInToday(String amount);
+
+  /// Goes offline from the summary (CA §9.8).
+  ///
+  /// In ar, this message translates to:
+  /// **'إنهاء العمل'**
+  String get captainEndWork;
+
+  /// Closes the summary, still online (CA §9.8). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'متابعة العمل'**
+  String get captainKeepWorking;
 }
 
 class _AppLocalizationsDelegate
