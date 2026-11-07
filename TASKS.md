@@ -4,11 +4,19 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Phase 2 planning (`docs/roadmap.md`, «Phase 2 onwards»): split Phase 2 into vertical slices with the `slice-plan` skill and get the owner's approval of the split before building any of them.
+Slice 2.1, Content and reason lists (`docs/roadmap.md`, Phase 2): the reason lists of AP Appendix B with their defaults, the customer-facing reason texts of CU Appendix C, the preset order notes, the FAQs (customer, captain, restaurant), the captain work rules page and the contact info, edited in the panel and read by the apps.
 
-- **Owner decision 2026-11-07:** the run of slice 1.14h on real phones is deferred, and Phase 2 starts.
-- **Branch:** none until the split is approved (planning only).
-- **First:** read `docs/roadmap.md` and what Phase 1 left open (the «Not yet» sections of each folder's `CLAUDE.md` and the notes below), ask the owner the order of the features and whether the UI/UX and the design system are ready (the design stop in `CLAUDE.md`: most Phase 2 screens need it).
+- **Specs:** AP §9.13, AP Appendix B, CU Appendix C, CA Appendix C, RA Appendix C; the `content` module (`apps/server/src/modules/content/CLAUDE.md`, architecture §4.2). Out of scope: terms and privacy (slice 2.4), notification templates (2.3), canned replies (2.23), categories (2.27).
+- **Owner decisions 2026-11-07:** Phase 2 split into 46 slices, approved; functional, unstyled screens with logic apart from presentation (the styling waits for the design); Android first, iOS in slice 2.46.
+- **Branch:** `feat/content-reason-lists`.
+- **Plan:**
+  - [ ] Read the specs above and every place a reason is a fixed list today (`awayReasons` and `shortfallReasons` in `ordering/schema.ts` with their `CHECK`s, the cancellation's `cancel_reason`), and the roles that edit Content (AP §6).
+  - [ ] Ask the owner before building: whether an order keeps the reason's stable code (with the label shown from Content) or a copy of its label; what happens to a reason removed from a list (hidden from new choices, kept on past orders); whether removing a `CHECK` from the partitioned `orders` waits for a partition-by-partition migration (`ordering/CLAUDE.md`).
+  - [ ] Server: the `content` schema (lists, reasons with code, Arabic label, order, active, «أخرى» with a required text, the customer text where the list has one), the seed of the defaults, the panel's read and edit routes with audit, the apps' read routes; `ordering` validates a reason through `ContentService` instead of its `CHECK`s (`db-migration` skill).
+  - [ ] The preset order notes at checkout, the FAQs and the captain work rules page; the contact info stored in Content, with `SUPPORT_PHONE_NUMBER` and `SUPPORT_WHATSAPP_NUMBER` as the defaults.
+  - [ ] Regenerate the API clients (`pnpm generate:api`).
+  - [ ] Unstyled panel page «المحتوى» for the lists, texts, notes, FAQs and contact; the apps read their lists (the captain's away and shortfall reasons, the customer's notes and FAQs).
+  - [ ] Tests first for the validation of a reason; then `pnpm verify` through the `checker` agent, the `reviewer` agent, the pull request.
 
 ## Deferred: slice 1.14h, the whole cycle on real phones
 
