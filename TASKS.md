@@ -10,13 +10,15 @@ Slice 1.14c, App Check in the apps (`docs/roadmap.md`, Phase 1, slice 1.14; owne
 - **Specs:** architecture §8.3.3 item 1, §11.4 (one Firebase project per flavor), §15; the identity module's `CLAUDE.md` («App Check»: the `X-Firebase-AppCheck` header, `403 app_check_failed`, Windows exempt with `platform: windows`); the `deploy` skill (`FIREBASE_PROJECT_NUMBER`, turning the setting on).
 - **Owner decisions 2026-11-07:** the owner creates the Firebase project from written steps; `otp.app_check_required` stays off until it is ready; Android only; no `google-services.json` or other Firebase file in the public repository (root `CLAUDE.md`).
 - **Branch:** `feat/app-check`.
-- **Ask the owner first:** one Firebase project for staging now, or one per flavor at once (§11.4); how the Firebase configuration reaches the CI build without committing `google-services.json` (a CI secret, or the FlutterFire options generated at build time); whether debug builds use App Check's debug provider (a debug token passes the check, so never in production).
+- **Owner decisions 2026-11-07 (asked at the slice's start):** one Firebase project for staging now (`foxdrop-staging`; production's before launch, §11.4); the Firebase configuration reaches the build as `--dart-define` values from the staging environment of GitHub (app IDs as variables, the API key as a secret, the project ID and number in `infra/environments/staging.env`), no Google Services Gradle plugin; App Check's debug provider in debug builds only.
 - **Plan:**
-  - [ ] The owner's Firebase steps, written for the owner (project, Android apps for the staging IDs `com.foxdrop.<app>.staging`, Play Integrity, the SHA-256 of each staging key), and where the configuration lives.
-  - [ ] `firebase_app_check` in the apps: activate with Play Integrity in release and the debug provider in debug; `core_auth` sends the token as `X-Firebase-AppCheck` on the code requests (the generated methods take `xFirebaseAppCheck`); the restaurant app on Windows sends none; tests with a fake token source.
-  - [ ] CI: the staging APK build gets the Firebase configuration from secrets; the `deploy` skill's steps.
-  - [ ] Staging: `FIREBASE_PROJECT_NUMBER` in `infra/environments/staging.env`, then OWN turns `otp.app_check_required` on; a request without a token answers `403 app_check_failed`.
-  - [ ] Review; pull request; the owner signs in from the staging APKs with App Check on.
+  - [x] The owner's Firebase steps, written for the owner (the `deploy` skill, «App Check»): project, the three staging Android apps, the SHA-256 of each staging key, the Play Integrity API in Google Cloud, Play Integrity verdicts for apps outside Google Play, the GitHub variables and secret.
+  - [x] `firebase_app_check` in the apps (`packages/core_auth/CLAUDE.md`, «App Check»): `startAppCheck` in each `main`, Play Integrity in release and the debug provider in debug; `AuthParty.requestCode` sends `X-Firebase-AppCheck`; Windows, iOS and builds without the values send none; tests with a fake token source.
+  - [x] CI: the staging APK build passes the Firebase values, warns and builds without App Check while they are missing, fails when only some are set.
+  - [ ] Review; pull request.
+  - [ ] Blocked on the owner's Firebase steps: `FIREBASE_PROJECT_ID` and `FIREBASE_PROJECT_NUMBER` in `infra/environments/staging.env` (a small pull request), a staging APK from that run signs in, then OWN turns `otp.app_check_required` on and a request without a token answers `403 app_check_failed` (the `deploy` skill, «App Check»).
+
+- **Found in the review:** architecture §14.3 asks for App Check on every request of the captain app; the server checks it on the code requests only (the identity module's `CLAUDE.md`), so the apps send it there only. Extending it is the owner's call, with the captain slices. The Windows restaurant build now carries the Firebase plugins (`firebase_core` and `firebase_app_check` have Windows implementations) though Windows never starts them.
 
 ## Notes from earlier slices
 
