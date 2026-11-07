@@ -51,7 +51,8 @@ export interface DispatchOrder {
 // A change of the captain track that dispatch makes (AP §8.2): an offer
 // opened, an offer closed (declined or expired), a captain assigned.
 export type AssignmentChange =
-  | { type: 'order.offered'; captainId: string }
+  // pay: the order pay the offer shows (CA §8.2), for the captain's push.
+  | { type: 'order.offered'; captainId: string; pay: { amount: bigint; currency: string } | null }
   | { type: 'order.offer_closed'; captainId: string; reason: 'declined' | 'expired' | 'withdrawn' }
   | { type: 'order.assigned'; captainId: string };
 
@@ -158,6 +159,7 @@ export class OrderAssignments implements OnModuleInit {
       at: now,
       captainTrack,
       captainId: change.captainId,
+      ...(change.type === 'order.offered' ? { offerPay: change.pay } : {}),
     });
     return {
       ...order,

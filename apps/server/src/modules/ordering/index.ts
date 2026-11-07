@@ -31,6 +31,7 @@ import { OrderTimers, OrderTimersWorker } from './order-timers.js';
 import { OperationsViews } from './operations-views.js';
 import { OrdersService } from './orders.service.js';
 export type { OrderView } from './order-views.js';
+import { OutboxPushes, OutboxPushesWorker } from './outbox-pushes.js';
 import { OutboxRelay, OutboxRelayWorker } from './outbox-relay.js';
 import { QuoteService } from './quote.service.js';
 
@@ -91,6 +92,9 @@ export class OrderingModule {}
     ContentModule,
     CaptainsModule,
     SettingsModule,
+    FxModule,
+    GeoModule,
+    MerchantsModule,
   ],
   providers: [
     OrderAlerts,
@@ -102,6 +106,8 @@ export class OrderingModule {}
     PickupTimersWorker,
     OutboxRelay,
     OutboxRelayWorker,
+    OutboxPushes,
+    OutboxPushesWorker,
   ],
 })
 export class OrderingWorkerModule {}

@@ -854,3 +854,106 @@ describe("the panel's city channel (architecture §6.2, §10.3)", () => {
     }
   });
 });
+
+describe("the order's pushes (architecture §8.1, CU §14, RA §16, CA §14)", () => {
+  // The pushes queued for the order, by template: the worker turns each
+  // event into them within seconds, whether push is on or not.
+  async function pushesOf(orderId: string) {
+    const { rows } = await sql.query(
+      `SELECT template_key, body, party, priority, level FROM notifications.push_messages
+       WHERE data->>'orderId' = $1 ORDER BY created_at, template_key`,
+      [orderId],
+    );
+    return rows as {
+      template_key: string;
+      body: string;
+      party: string;
+      priority: string;
+      level: string;
+    }[];
+  }
+
+  async function eventuallyPushed(orderId: string, templateKey: string) {
+    const deadline = Date.now() + 10_000;
+    for (;;) {
+      const found = (await pushesOf(orderId)).find((row) => row.template_key === templateKey);
+      if (found) return found;
+      if (Date.now() > deadline) throw new Error(`no ${templateKey} for ${orderId}`);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+  }
+
+  it('rings the restaurant, tells the customer the time and offers the captain the pay', async () => {
+    const { captainId, phone } = await captainSignedIn();
+    await captainDevice(phone);
+    const captains = app.get(CaptainsService);
+    const now = new Date();
+    await captains.goOnline(captainId, { appVersion: '1.0.0', simulatedLocation: false }, now);
+    await captains.recordLocations(
+      captainId,
+      [{ ...centre, accuracyMetres: 8, recordedAt: now, simulated: false }],
+      new Date(now.getTime() + 1),
+    );
+    try {
+      const orderId = await place(await signedIn('customer'));
+      const number = (
+        await sql.query('SELECT number FROM ordering.orders WHERE id = $1', [orderId])
+      ).rows[0].number;
+      expect(await eventuallyPushed(orderId, 'merchant.new_order')).toEqual({
+        template_key: 'merchant.new_order',
+        body: `طلب جديد #${number}`,
+        party: 'merchant',
+        priority: 'high',
+        level: 'ring',
+      });
+
+      const accepted = await app.inject({
+        method: 'POST',
+        url: `/v1/merchant/orders/${orderId}/accept`,
+        headers: { ...(await signedIn('merchant')), 'idempotency-key': randomUUID() },
+        payload: { prepMin: 20 },
+      });
+      expect(accepted.statusCode).toBe(200);
+      expect((await eventuallyPushed(orderId, 'customer.accepted')).body).toMatch(
+        /^المطعم يحضّر طلبك\. يصل حوالي \d{1,2}:\d{2} [صم]$/,
+      );
+
+      await app.get(DispatchService).assign(
+        {
+          orderId,
+          captainId,
+          admin: { accountId: randomUUID(), roles: ['OPS'] },
+          context: { ipAddress: null, device: null },
+          idempotencyKey: randomUUID(),
+        },
+        new Date(),
+      );
+      expect(await eventuallyPushed(orderId, 'captain.new_offer')).toMatchObject({
+        body: 'عرض جديد: 25 ₺ — مطعم الاختبار',
+        party: 'captain',
+        level: 'offer',
+      });
+    } finally {
+      await captains.goOffline(captainId, new Date());
+    }
+  });
+
+  it("apologises to the customer for an automatic cancellation and counts the restaurant's (AP §8.3)", async () => {
+    const orderId = await place(await signedIn('customer'));
+    const { rows } = await sql.query('SELECT placed_at FROM ordering.orders WHERE id = $1', [
+      orderId,
+    ]);
+    await worker
+      .get(OrderTimers)
+      .merchantAutoCancel(
+        { orderId, placedAt: rows[0].placed_at.toISOString(), version: 1 },
+        new Date(),
+      );
+    const apology = await eventuallyPushed(orderId, 'customer.cancelled');
+    expect(apology.body.startsWith('أُلغي طلبك: ')).toBe(true);
+    expect(apology.body.length).toBeGreaterThan('أُلغي طلبك: '.length);
+    expect((await eventuallyPushed(orderId, 'merchant.auto_cancelled')).body).toMatch(
+      /^أُلغي الطلب #\d+ لعدم الرد \(\d+ من 3 اليوم\)$/,
+    );
+  });
+});

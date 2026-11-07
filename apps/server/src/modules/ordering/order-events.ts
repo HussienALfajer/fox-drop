@@ -98,6 +98,8 @@ export async function recordTransition(
     // the one assigned); the order's own when left out.
     captainTrack?: CaptainTrack | null;
     captainId?: string | null;
+    // An offer's order pay (CA §8.2), which its push shows (CA §14 #1).
+    offerPay?: { amount: bigint; currency: string } | null;
   },
 ): Promise<void> {
   const captainTrack =
@@ -137,6 +139,14 @@ export async function recordTransition(
       at: transition.at.toISOString(),
       captainTrack,
       captainId,
+      ...(transition.offerPay === undefined
+        ? {}
+        : {
+            offerPay: transition.offerPay && {
+              amount: transition.offerPay.amount.toString(),
+              currency: transition.offerPay.currency,
+            },
+          }),
     },
   });
   await jobs.send(QUEUES.outboxRelay, {}, { db: inTransaction(tx) });

@@ -544,11 +544,12 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
     await appQuery('SELECT ordering.create_month_partitions()');
   });
 
-  it('let the application role mark an outbox row published and change nothing else', async () => {
+  it('let the application role mark an outbox row published or its pushes queued, and change nothing else', async () => {
     const { rows } = await appQuery(
       `INSERT INTO ordering.outbox (created_at, city_id, type, order_id, order_version, payload) VALUES (now(), ${azaz}, 'order.placed', '${randomUUID()}', 1, '{}') RETURNING id`,
     );
     await appQuery(`UPDATE ordering.outbox SET published_at = now() WHERE id = ${rows[0].id}`);
+    await appQuery(`UPDATE ordering.outbox SET push_queued_at = now() WHERE id = ${rows[0].id}`);
     await expect(
       appQuery(`UPDATE ordering.outbox SET type = 'x' WHERE id = ${rows[0].id}`),
     ).rejects.toThrow(/permission denied/);

@@ -572,10 +572,17 @@ export const outbox = ordering.table(
     orderVersion: integer('order_version').notNull(),
     payload: jsonb('payload').notNull(),
     publishedAt: timestamp('published_at', { withTimezone: true }),
+    // When its pushes were queued (architecture §8.1): the push relay turns
+    // the event into each party's push, apart from the real-time relay, so a
+    // Centrifugo outage never holds back a push or the other way round.
+    pushQueuedAt: timestamp('push_queued_at', { withTimezone: true }),
   },
   (table) => [
     index('outbox_unpublished')
       .on(table.id)
       .where(sql`${table.publishedAt} IS NULL`),
+    index('outbox_push_unqueued')
+      .on(table.id)
+      .where(sql`${table.pushQueuedAt} IS NULL`),
   ],
 );
