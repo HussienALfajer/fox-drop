@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { and, desc, eq, gte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import type { PushRecipient } from './push-devices.js';
@@ -23,6 +23,12 @@ export interface QueuedPush {
   level: string;
   priority: 'high' | 'normal';
   data: Record<string, string>;
+  // When what it tells happened, which its time and expiry count from; the
+  // queuing time when left out.
+  at?: Date;
+  // Its own end, such as an offer's (CA §14 #1); at + PUSH_TTL_SECONDS when
+  // left out.
+  expiresAt?: Date;
 }
 
 export interface InboxEntry {
@@ -46,7 +52,7 @@ export class PushQueue {
       .insert(pushMessages)
       .values(
         pushes.map((push) => ({
-          createdAt: now,
+          createdAt: push.at ?? now,
           source: push.source,
           party: push.recipient.party,
           accountId: push.recipient.party === 'customer' ? push.recipient.accountId : null,
@@ -58,22 +64,25 @@ export class PushQueue {
           level: push.level,
           priority: push.priority,
           data: push.data,
-          expiresAt: new Date(now.getTime() + PUSH_TTL_SECONDS * 1000),
+          expiresAt:
+            push.expiresAt ?? new Date((push.at ?? now).getTime() + PUSH_TTL_SECONDS * 1000),
           nextAttemptAt: now,
         })),
       )
       .onConflictDoNothing({ target: pushMessages.source });
   }
 
-  // AP §9.3.2 «إعادة إرسال الإشعار»: queues again the latest push of the
-  // order to the recipient, which tells its current state. Null when the
-  // order sent the recipient none.
+  // AP §9.3.2 «إعادة إرسال الإشعار»: queues again the latest of the order's
+  // pushes to the recipient among the templates that tell its current state
+  // (the caller knows which). Null when the order sent none of them.
   async resend(
     executor: Executor,
     orderId: string,
     recipient: PushRecipient,
+    templateKeys: string[],
     now: Date,
   ): Promise<{ templateKey: string; body: string } | null> {
+    if (templateKeys.length === 0) return null;
     const whose =
       recipient.party === 'customer'
         ? eq(pushMessages.accountId, recipient.accountId)
@@ -87,10 +96,11 @@ export class PushQueue {
         and(
           eq(pushMessages.party, recipient.party),
           whose,
+          inArray(pushMessages.templateKey, templateKeys),
           sql`${pushMessages.data}->>'orderId' = ${orderId}`,
         ),
       )
-      .orderBy(desc(pushMessages.createdAt))
+      .orderBy(desc(pushMessages.createdAt), desc(pushMessages.id))
       .limit(1);
     if (!latest) return null;
     await this.enqueue(
@@ -128,7 +138,7 @@ export class PushQueue {
           gte(pushMessages.createdAt, new Date(now.getTime() - INBOX_DAYS * 86_400_000)),
         ),
       )
-      .orderBy(desc(pushMessages.createdAt))
+      .orderBy(desc(pushMessages.createdAt), desc(pushMessages.id))
       .limit(INBOX_MAX);
     return rows;
   }

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   NOTIFICATION_TEMPLATES,
@@ -17,6 +18,17 @@ describe('the notification templates', () => {
       expect(template.text.length).toBeLessThanOrEqual(NOTIFICATION_TEXT_MAX);
       expect(template.text).not.toMatch(/[٠-٩]/);
     }
+  });
+
+  it("has every template's event named in the panel (AP §4.7)", () => {
+    const panel = JSON.parse(
+      readFileSync(new URL('../../../../admin/src/locales/ar.json', import.meta.url), 'utf8'),
+    ) as { content: { notifications: { event: Record<string, Record<string, string>> } } };
+    const missing = NOTIFICATION_TEMPLATES.filter((template) => {
+      const [audience, event] = template.key.split('.') as [string, string];
+      return !panel.content.notifications.event[audience]?.[event];
+    }).map((template) => template.key);
+    expect(missing).toEqual([]);
   });
 
   it('fills the variables it has values for and leaves the others as written', () => {

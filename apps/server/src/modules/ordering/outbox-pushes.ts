@@ -5,7 +5,7 @@ import {
   type OnApplicationShutdown,
   type OnModuleInit,
 } from '@nestjs/common';
-import { and, asc, count, desc, eq, gte, inArray, isNull } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gte, inArray, isNull, lte, notInArray } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { reportError } from '../../observability/error-tracking.js';
@@ -38,8 +38,10 @@ interface OutboxPayload {
   cityId: string;
   version: number;
   reason: string | null;
+  at: string;
   captainId?: string | null;
   offerPay?: { amount: string; currency: string } | null;
+  offerExpiresAt?: string;
 }
 
 interface Line {
@@ -57,7 +59,11 @@ type Currencies = ReadonlyMap<string, { symbol: string; decimals: number }>;
 // holds the other back.
 @Injectable()
 export class OutboxPushes {
+  private readonly logger = new Logger('OutboxPushes');
   private currencies: Currencies | undefined;
+  // The rows whose failure was reported, so a row failing every second is
+  // reported once.
+  private readonly reported = new Set<bigint>();
 
   constructor(
     @Inject(DATABASE) private readonly database: Database,
@@ -73,25 +79,57 @@ export class OutboxPushes {
   // The count of events whose pushes it queued. What the pushes say is read
   // before the transaction (the other modules' reads take pool connections of
   // their own); the transaction then takes the rows no other run took.
+  // A row whose pushes cannot be read (a template or a value that fails) is
+  // logged and reported once and left unqueued for the next run, so it never
+  // holds back the events after it.
   async drain(now: Date): Promise<number> {
     let queued = 0;
+    const failed: bigint[] = [];
     for (;;) {
       const rows = await this.database.db
-        .select({ id: outbox.id, type: outbox.type, payload: outbox.payload })
+        .select({
+          id: outbox.id,
+          type: outbox.type,
+          payload: outbox.payload,
+          createdAt: outbox.createdAt,
+        })
         .from(outbox)
-        .where(isNull(outbox.pushQueuedAt))
+        .where(
+          and(
+            isNull(outbox.pushQueuedAt),
+            failed.length > 0 ? notInArray(outbox.id, failed) : undefined,
+          ),
+        )
         .orderBy(asc(outbox.id))
         .limit(BATCH);
       const pushes = new Map<bigint, QueuedPush[]>();
       for (const row of rows) {
-        const found = await this.pushesOf(row.type, row.payload as OutboxPayload, now);
-        pushes.set(
-          row.id,
-          found.map((push) => ({ ...push, source: `outbox:${row.id}:${push.source}` })),
-        );
+        try {
+          const found = await this.pushesOf(row.type, row.payload as OutboxPayload, now);
+          pushes.set(
+            row.id,
+            found.map((push) => ({
+              ...push,
+              source: `outbox:${row.id}:${push.source}`,
+              // CU §13: its time is the event's, and so is its expiry.
+              at: row.createdAt,
+            })),
+          );
+        } catch (error) {
+          failed.push(row.id);
+          if (!this.reported.has(row.id)) {
+            this.reported.add(row.id);
+            this.logger.error(
+              { err: error, outboxId: row.id.toString() },
+              "an order event's pushes could not be read",
+            );
+            reportError(error);
+          }
+        }
       }
+      const ready = rows.filter((row) => pushes.has(row.id));
       const taken = await this.database.db.transaction(async (tx) => {
-        const locked = rows.length
+        const locked = ready.length
           ? await tx
               .select({ id: outbox.id })
               .from(outbox)
@@ -99,7 +137,7 @@ export class OutboxPushes {
                 and(
                   inArray(
                     outbox.id,
-                    rows.map((row) => row.id),
+                    ready.map((row) => row.id),
                   ),
                   isNull(outbox.pushQueuedAt),
                 ),
@@ -144,6 +182,10 @@ export class OutboxPushes {
           level: rendered.level,
           priority: rendered.priority,
           data: push.data,
+          // CA §14 #1–2: an offer's push ends with the offer.
+          ...(type === 'order.offered' && payload.offerExpiresAt
+            ? { expiresAt: new Date(payload.offerExpiresAt) }
+            : {}),
         };
       }),
     );
@@ -170,13 +212,15 @@ export class OutboxPushes {
         ),
       );
     const currencies = await this.knownCurrencies();
-    const captainId = payload.captainId ?? order.captainId;
+    // The captain the event was about; an event older than the payload's
+    // captain falls back to the order's.
+    const captainId = 'captainId' in payload ? (payload.captainId ?? null) : order.captainId;
     const [names, captain, timeZone] = await Promise.all([
       this.merchants.names([order.restaurantId]),
       captainId ? this.captains.captain(captainId, now) : null,
       this.geo.cityTimeZone(order.cityId),
     ]);
-    const pickup = PICKUP_EVENTS.has(type) ? await this.pickup(order) : null;
+    const pickup = PICKUP_EVENTS.has(type) ? await this.pickup(order, new Date(payload.at)) : null;
     const money = (lines: Line[] | null) =>
       lines && lines.length > 0
         ? lines
@@ -205,12 +249,14 @@ export class OutboxPushes {
         : null,
       unanswered:
         type === 'order.cancelled' && order.cancelReason === 'merchant_auto_cancel' && timeZone
-          ? await this.unanswered(order, timeZone, now)
+          ? await this.unanswered(order, timeZone)
           : null,
     };
   }
 
-  private async pickup(order: typeof orders.$inferSelect) {
+  // The request the event is about: the latest opened by the event's time,
+  // never one the captain opened since.
+  private async pickup(order: typeof orders.$inferSelect, at: Date) {
     const [request] = await this.database.db
       .select({
         amount: pickupRequests.amount,
@@ -219,7 +265,11 @@ export class OutboxPushes {
       })
       .from(pickupRequests)
       .where(
-        and(eq(pickupRequests.orderId, order.id), eq(pickupRequests.orderPlacedAt, order.placedAt)),
+        and(
+          eq(pickupRequests.orderId, order.id),
+          eq(pickupRequests.orderPlacedAt, order.placedAt),
+          lte(pickupRequests.openedAt, at),
+        ),
       )
       .orderBy(desc(pickupRequests.openedAt))
       .limit(1);
@@ -229,19 +279,20 @@ export class OutboxPushes {
   }
 
   // RA §16 #2, RA §11: the restaurant's orders cancelled for no answer in the
-  // business day (from finance.business_day_cutoff on the city's clock), and
-  // the count that pauses it.
+  // business day of this cancellation (from finance.business_day_cutoff on
+  // the city's clock) up to it, and the count that pauses it.
   private async unanswered(
     order: typeof orders.$inferSelect,
     timeZone: string,
-    now: Date,
-  ): Promise<{ count: number; limit: number }> {
+  ): Promise<{ count: number; limit: number } | null> {
+    const cancelledAt = order.cancelledAt;
+    if (cancelledAt === null) return null;
     const [cutoff, limit] = await Promise.all([
       this.settings.get('finance.business_day_cutoff', { cityId: order.cityId }),
       this.settings.get('merchant.auto_pause_unanswered_count', { cityId: order.cityId }),
     ]);
     const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
-    const since = lastCutoff(now, hours * 60 + minutes, timeZone);
+    const since = lastCutoff(cancelledAt, hours * 60 + minutes, timeZone);
     const [row] = await this.database.db
       .select({ count: count() })
       .from(orders)
@@ -250,6 +301,7 @@ export class OutboxPushes {
           eq(orders.restaurantId, order.restaurantId),
           eq(orders.cancelReason, 'merchant_auto_cancel'),
           gte(orders.cancelledAt, since),
+          lte(orders.cancelledAt, cancelledAt),
           // An order cancelled for no answer was placed minutes before.
           gte(orders.placedAt, new Date(since.getTime() - 86_400_000)),
         ),

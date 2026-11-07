@@ -1,4 +1,6 @@
+import { Logger } from '@nestjs/common';
 import { importPKCS8, SignJWT } from 'jose';
+import { reportError } from '../../observability/error-tracking.js';
 import { z } from 'zod';
 
 // Architecture §8.1: Firebase Cloud Messaging's HTTP v1 API, authorised by a
@@ -72,7 +74,11 @@ const errorSchema = z.object({
 });
 
 export class FcmSender implements PushSender {
+  private readonly logger = new Logger('FcmSender');
   private accessToken: { value: string; renewAt: number } | undefined;
+  // Whether the failure to sign in was reported: once per outage (a revoked
+  // key, the API turned off), not at every push.
+  private signInFailing = false;
 
   constructor(
     private readonly account: ServiceAccount,
@@ -83,7 +89,13 @@ export class FcmSender implements PushSender {
     let token: string;
     try {
       token = await this.token();
-    } catch {
+      this.signInFailing = false;
+    } catch (error) {
+      if (!this.signInFailing) {
+        this.signInFailing = true;
+        this.logger.error({ err: error }, 'Google refused the push service account');
+        reportError(error);
+      }
       return 'retry';
     }
     let answer: Response;
@@ -111,7 +123,15 @@ export class FcmSender implements PushSender {
           ]
         : [],
     );
-    if (codes.has('UNREGISTERED') || codes.has('SENDER_ID_MISMATCH')) return 'invalid';
+    // INVALID_ARGUMENT: the message is fixed and tested, so it is the token
+    // that is malformed.
+    if (
+      codes.has('UNREGISTERED') ||
+      codes.has('SENDER_ID_MISMATCH') ||
+      codes.has('INVALID_ARGUMENT')
+    ) {
+      return 'invalid';
+    }
     if (answer.status === 401 || answer.status === 429 || answer.status >= 500) return 'retry';
     return 'failed';
   }

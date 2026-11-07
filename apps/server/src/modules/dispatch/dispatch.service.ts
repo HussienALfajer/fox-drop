@@ -224,7 +224,7 @@ export class DispatchService implements OnModuleInit {
         await this.assignments.change(
           tx,
           current,
-          { type: 'order.offered', captainId: command.captainId, pay: shown.pay },
+          { type: 'order.offered', captainId: command.captainId, pay: shown.pay, expiresAt },
           actor,
           now,
         );

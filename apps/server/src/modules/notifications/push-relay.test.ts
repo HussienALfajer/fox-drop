@@ -165,6 +165,19 @@ describe('the push relay (architecture §8.1)', () => {
     expect((await row(late.source)).gave_up_at).not.toBeNull();
   });
 
+  it('counts its time and expiry from what it tells, so a late backlog is never sent', async () => {
+    const accountId = randomUUID();
+    devicesOf.set(accountId, ['phone']);
+    const now = new Date();
+    const stale = push(accountId, { at: new Date(now.getTime() - 3_600_000) });
+    const offer = push(accountId, { expiresAt: new Date(now.getTime() + 30_000) });
+    await queue.enqueue(db, [stale, offer], now);
+
+    expect(await relay.drain(now)).toBe(2);
+    expect((await row(stale.source)).gave_up_at).not.toBeNull();
+    expect(sent.map((one) => one.ttlSeconds)).toEqual([30]);
+  });
+
   it("keeps a customer's pushes as «الإشعارات» for 30 days, newest first (CU §13)", async () => {
     const accountId = randomUUID();
     const now = new Date();

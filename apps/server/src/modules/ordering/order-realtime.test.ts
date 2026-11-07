@@ -125,6 +125,8 @@ beforeAll(async () => {
   );
   const settings = app.get(SettingsService);
   await settings.update('dispatch.capacity_check', { cityId: azaz }, false, bySystem);
+  // Every test signs in from the same address (architecture §8.3.3 item 2).
+  await settings.update('otp.ip_hourly_max', {}, 1000, bySystem);
   await settings.update(
     'currency.<code>.rounding_unit',
     { cityId: azaz, parameter: 'TRY' },
@@ -990,5 +992,42 @@ describe("the order's pushes (architecture §8.1, CU §14, RA §16, CA §14)", (
         templateKey: { before: null, after: 'merchant.new_order' },
       },
     ]);
+  });
+
+  it('answers the panel by its route: who may, a missing order, and a step already past', async () => {
+    const orderId = await place(await signedIn('customer'));
+    await eventuallyPushed(orderId, 'merchant.new_order');
+    const resend = (cookies: Record<string, string>, id = orderId, to = 'merchant') =>
+      app.inject({
+        method: 'POST',
+        url: `/v1/admin/orders/${id}/resend-notification`,
+        cookies,
+        payload: { to },
+      });
+    const support = await operator(['SUP']);
+    expect((await resend({})).statusCode).toBe(401);
+    expect((await resend(await operator(['FIN']))).statusCode).toBe(403);
+    const sent = await resend(support);
+    expect(sent.statusCode).toBe(200);
+    expect(sent.json().body).toMatch(/^طلب جديد #\d+$/);
+    expect((await resend(support, randomUUID())).json()).toMatchObject({
+      statusCode: 404,
+      error: 'unknown_order',
+    });
+
+    // Accepted, the restaurant has nothing of the order's state to hear again.
+    const accepted = await app.inject({
+      method: 'POST',
+      url: `/v1/merchant/orders/${orderId}/accept`,
+      headers: { ...(await signedIn('merchant')), 'idempotency-key': randomUUID() },
+      payload: { prepMin: 20 },
+    });
+    expect(accepted.statusCode).toBe(200);
+    expect((await resend(support)).json()).toMatchObject({
+      statusCode: 409,
+      error: 'nothing_to_resend',
+    });
+    await eventuallyPushed(orderId, 'customer.accepted');
+    expect((await resend(support, orderId, 'customer')).json().body).toMatch(/^المطعم يحضّر طلبك/);
   });
 });

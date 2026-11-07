@@ -102,7 +102,8 @@ describe('FCM (architecture §8.1)', () => {
     const sender = new FcmSender(account, fetcher);
     expect(await sender.send(message)).toBe('invalid');
     expect(await sender.send(message)).toBe('retry');
-    expect(await sender.send(message)).toBe('failed');
+    // A malformed token (FCM's INVALID_ARGUMENT) is forgotten too.
+    expect(await sender.send(message)).toBe('invalid');
   });
 
   it('retries when Google cannot be reached', async () => {

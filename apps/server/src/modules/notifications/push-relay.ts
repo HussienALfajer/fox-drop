@@ -5,7 +5,7 @@ import {
   type OnApplicationShutdown,
   type OnModuleInit,
 } from '@nestjs/common';
-import { and, asc, eq, isNull, lte } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, lte } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { reportError } from '../../observability/error-tracking.js';
@@ -18,6 +18,10 @@ const BATCH = 20;
 // How often the worker looks for pushes: many modules' transactions queue
 // them, so a poll of the pending index wakes it rather than a job in each.
 export const PUSH_RELAY_MS = 1000;
+// How long a claimed batch stays out of other runs' reach: longer than its
+// sends can take (5 s per device at most), so a run that died leaves its rows
+// to the next after it.
+const LEASE_MS = 120_000;
 // The wait before trying a push again: doubles from 2 s, at most a minute.
 export function retryDelayMs(attempts: number): number {
   return Math.min(2 ** attempts * 1000, 60_000);
@@ -49,12 +53,15 @@ export class PushRelay {
     private readonly devices: PushDevices,
   ) {}
 
-  // The count of pushes it finished (sent or given up).
+  // The count of pushes it finished (sent or given up). Each batch is
+  // claimed in a short transaction that moves its rows' next attempt past a
+  // lease, so no other run takes them; the devices are read and FCM is
+  // called outside any transaction, and each outcome is written in its own.
   async drain(now: Date): Promise<number> {
     let finished = 0;
     for (;;) {
-      const batch = await this.database.db.transaction(async (tx) => {
-        const rows = await tx
+      const rows = await this.database.db.transaction(async (tx) => {
+        const due = await tx
           .select()
           .from(pushMessages)
           .where(
@@ -67,59 +74,75 @@ export class PushRelay {
           .orderBy(asc(pushMessages.nextAttemptAt), asc(pushMessages.id))
           .limit(BATCH)
           .for('update', { skipLocked: true });
-        let done = 0;
-        for (const row of rows) {
-          if (row.expiresAt <= now) {
-            await tx.update(pushMessages).set({ gaveUpAt: now }).where(eq(pushMessages.id, row.id));
-            done += 1;
-            continue;
-          }
-          const targets = await this.devices.targets(recipientOf(row));
-          const results: PushResult[] = [];
-          const invalid: string[] = [];
-          for (const target of targets) {
-            const result = await this.sender.send({
-              token: target.token,
-              title: PUSH_TITLE,
-              body: row.body,
-              channel: row.level,
-              priority: row.priority,
-              data: { ...row.data, messageId: row.id },
-              ttlSeconds: Math.max(1, Math.floor((row.expiresAt.getTime() - now.getTime()) / 1000)),
-            });
-            results.push(result);
-            if (result === 'invalid') invalid.push(target.token);
-          }
-          await this.devices.invalidate(tx, invalid, now);
-          const sent = results.filter((result) => result === 'sent').length;
-          if (sent === 0 && results.includes('retry')) {
-            await tx
-              .update(pushMessages)
-              .set({
-                attempts: row.attempts + 1,
-                nextAttemptAt: new Date(now.getTime() + retryDelayMs(row.attempts + 1)),
-              })
-              .where(eq(pushMessages.id, row.id));
-            continue;
-          }
-          if (results.includes('failed')) {
-            this.logger.error(
-              { pushMessageId: row.id, templateKey: row.templateKey },
-              'FCM refused a push',
-            );
-          }
+        if (due.length > 0) {
           await tx
             .update(pushMessages)
-            .set({ sentAt: now, devices: sent })
-            .where(eq(pushMessages.id, row.id));
-          done += 1;
+            .set({ nextAttemptAt: new Date(now.getTime() + LEASE_MS) })
+            .where(
+              inArray(
+                pushMessages.id,
+                due.map((row) => row.id),
+              ),
+            );
         }
-        return { taken: rows.length, done };
+        return due;
       });
-      finished += batch.done;
-      if (batch.taken < BATCH) break;
+      for (const row of rows) {
+        if (await this.send(row, now)) finished += 1;
+      }
+      if (rows.length < BATCH) break;
     }
     return finished;
+  }
+
+  // Whether the push is finished: sent, or given up.
+  private async send(row: Row, now: Date): Promise<boolean> {
+    if (row.expiresAt <= now) {
+      await this.database.db
+        .update(pushMessages)
+        .set({ gaveUpAt: now })
+        .where(eq(pushMessages.id, row.id));
+      return true;
+    }
+    const targets = await this.devices.targets(recipientOf(row));
+    const results: PushResult[] = [];
+    const invalid: string[] = [];
+    for (const target of targets) {
+      const result = await this.sender.send({
+        token: target.token,
+        title: PUSH_TITLE,
+        body: row.body,
+        channel: row.level,
+        priority: row.priority,
+        data: { ...row.data, messageId: row.id },
+        ttlSeconds: Math.max(1, Math.floor((row.expiresAt.getTime() - now.getTime()) / 1000)),
+      });
+      results.push(result);
+      if (result === 'invalid') invalid.push(target.token);
+    }
+    const sent = results.filter((result) => result === 'sent').length;
+    const retry = sent === 0 && results.includes('retry');
+    if (!retry && results.includes('failed')) {
+      this.logger.error(
+        { pushMessageId: row.id, templateKey: row.templateKey },
+        'FCM refused a push',
+      );
+    }
+    await this.database.db.transaction(async (tx) => {
+      await this.devices.invalidate(tx, invalid, now);
+      await tx
+        .update(pushMessages)
+        .set(
+          retry
+            ? {
+                attempts: row.attempts + 1,
+                nextAttemptAt: new Date(now.getTime() + retryDelayMs(row.attempts + 1)),
+              }
+            : { sentAt: now, devices: sent },
+        )
+        .where(eq(pushMessages.id, row.id));
+    });
+    return !retry;
   }
 }
 

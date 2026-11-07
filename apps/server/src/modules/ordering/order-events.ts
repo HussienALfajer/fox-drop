@@ -100,6 +100,8 @@ export async function recordTransition(
     captainId?: string | null;
     // An offer's order pay (CA §8.2), which its push shows (CA §14 #1).
     offerPay?: { amount: bigint; currency: string } | null;
+    // The offer's end: its push is no use after it (CA §14 #1-2).
+    offerExpiresAt?: Date;
   },
 ): Promise<void> {
   const captainTrack =
@@ -147,6 +149,9 @@ export async function recordTransition(
               currency: transition.offerPay.currency,
             },
           }),
+      ...(transition.offerExpiresAt === undefined
+        ? {}
+        : { offerExpiresAt: transition.offerExpiresAt.toISOString() }),
     },
   });
   await jobs.send(QUEUES.outboxRelay, {}, { db: inTransaction(tx) });
