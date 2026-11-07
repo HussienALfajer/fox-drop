@@ -38,6 +38,8 @@ export interface OpenSession {
 // so a settings change applies to open sessions too.
 @Injectable()
 export class AdminSessionsService {
+  private readonly endedListeners: ((sessionIds: string[]) => void)[] = [];
+
   constructor(
     @Inject(DATABASE) private readonly database: Database,
     private readonly audit: AuditService,
@@ -126,10 +128,52 @@ export class AdminSessionsService {
     };
   }
 
+  // The session while it is open, checked as a cookie's is but without
+  // recording activity: the real-time subscription proxy checks a
+  // connection's session with it (architecture §6.1), and a socket kept open
+  // must not keep an idle session alive (AP §5.2).
+  async openSession(
+    sessionId: string,
+    accountId: string,
+    now = new Date(),
+  ): Promise<AdminSession | null> {
+    const [row] = await this.database.db
+      .select({
+        status: adminAccounts.status,
+        signedInAt: adminSessions.signedInAt,
+        lastActivityAt: adminSessions.lastActivityAt,
+      })
+      .from(adminSessions)
+      .innerJoin(adminAccounts, eq(adminAccounts.id, adminSessions.accountId))
+      .where(
+        and(
+          eq(adminSessions.id, sessionId),
+          eq(adminSessions.accountId, accountId),
+          isNull(adminSessions.endedAt),
+        ),
+      );
+    if (!row || row.status !== 'active') return null;
+    const expiresAt = await this.expiresAt(row.signedInAt, row.lastActivityAt);
+    if (now.getTime() >= expiresAt.getTime()) return null;
+    return {
+      id: sessionId,
+      accountId,
+      ...(await accountAccess(this.database.db, accountId)),
+      signedInAt: row.signedInAt,
+      expiresAt,
+    };
+  }
+
+  // Told the sessions a sign-out ended once it commits, so their real-time
+  // connections end at once (the notifications module).
+  onEnded(listener: (sessionIds: string[]) => void): void {
+    this.endedListeners.push(listener);
+  }
+
   async signOut(session: AdminSession, context: AuditRequestContext, now = new Date()) {
-    await this.database.db.transaction(async (tx) => {
+    const ended = await this.database.db.transaction(async (tx) => {
       const ended = await this.end(session.id, 'sign_out', now, tx);
-      if (!ended) return;
+      if (!ended) return false;
       await this.audit.recordWrite(
         {
           actor: { type: 'admin', id: session.accountId, role: actorRole(session.roles) },
@@ -142,7 +186,9 @@ export class AdminSessionsService {
         },
         tx,
       );
+      return true;
     });
+    if (ended) for (const listener of this.endedListeners) listener([session.id]);
   }
 
   // The sessions not yet ended nor past their idle or maximum end (AP §5.2:

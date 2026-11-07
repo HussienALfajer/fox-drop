@@ -9,13 +9,20 @@ import {
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
-import { AppSignedIn, CurrentAppSession, RealtimeProxy } from '../../http/access.js';
 import {
+  AppSignedIn,
+  CurrentAdminSession,
+  CurrentAppSession,
+  RealtimeProxy,
+  SignedIn,
+} from '../../http/access.js';
+import {
+  AdminController,
   CaptainController,
   CustomerController,
   MerchantController,
 } from '../../http/route-groups.js';
-import type { AppSession } from '../identity/index.js';
+import type { AdminSession, AppSession } from '../identity/index.js';
 import { RealtimeAccess, type SubscribeAnswer } from './realtime-access.js';
 import { CONNECTION_TOKEN_MINUTES, RealtimeTokens } from './realtime-tokens.js';
 
@@ -40,7 +47,10 @@ class RealtimeSubscribeDto extends createZodDto(
   }),
 ) {}
 
-async function tokenOf(tokens: RealtimeTokens, session: AppSession) {
+async function tokenOf(
+  tokens: RealtimeTokens,
+  session: Parameters<RealtimeTokens['connectionToken']>[0],
+) {
   const issued = await tokens.connectionToken(session, new Date());
   if (!issued) {
     throw new ServiceUnavailableException({
@@ -137,5 +147,38 @@ export class CaptainRealtimeController {
   @HttpCode(HttpStatus.OK)
   subscribe(@Body() body: RealtimeSubscribeDto): Promise<SubscribeAnswer> {
     return this.access.subscribe('captain', body);
+  }
+}
+
+// Architecture §10.3: the panel's live screens subscribe to
+// ops:city.{city_id}. The panel calls this route on its own origin with its
+// cookie, so no secret is in its bundle (E7); the subscription proxy decides
+// who may subscribe (readsOps in realtime-access.ts).
+@AdminController('realtime')
+export class AdminRealtimeController {
+  constructor(
+    private readonly tokens: RealtimeTokens,
+    private readonly access: RealtimeAccess,
+  ) {}
+
+  @Post('token')
+  @SignedIn()
+  @HttpCode(HttpStatus.OK)
+  @ZodResponse({ status: HttpStatus.OK, type: RealtimeTokenDto })
+  token(@CurrentAdminSession() session: AdminSession) {
+    return tokenOf(this.tokens, {
+      id: session.id,
+      party: 'admin',
+      accountId: session.accountId,
+    });
+  }
+
+  // Centrifugo's subscription proxy for the ops namespace.
+  @Post('subscribe')
+  @RealtimeProxy()
+  @ApiExcludeEndpoint()
+  @HttpCode(HttpStatus.OK)
+  subscribe(@Body() body: RealtimeSubscribeDto): Promise<SubscribeAnswer> {
+    return this.access.subscribe('admin', body);
   }
 }

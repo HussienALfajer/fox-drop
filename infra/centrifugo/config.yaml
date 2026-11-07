@@ -3,7 +3,7 @@
 # infra/compose.yaml mount this file. The secrets and the subscription proxies, whose
 # endpoints differ per environment, come from the environment:
 # CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY, CENTRIFUGO_HTTP_API_KEY and
-# CENTRIFUGO_PROXIES (the proxies "merchant", "customer" and "captain", each sending
+# CENTRIFUGO_PROXIES (the proxies "merchant", "customer", "captain" and "admin", each sending
 # X-Centrifugo-Proxy-Secret).
 channel:
   namespaces:
@@ -32,3 +32,12 @@ channel:
       force_recovery: true
       subscribe_proxy_enabled: true
       subscribe_proxy_name: captain
+    # ops:city.{city_id}, the panel users with access to the city: its orders
+    # and alerts (§6.2). The panel fetches the full state after every
+    # (re)subscription (§10.3), so it needs no recovery; the history serves
+    # the tests and a later reader.
+    - name: ops
+      history_size: 100
+      history_ttl: 600s
+      subscribe_proxy_enabled: true
+      subscribe_proxy_name: admin

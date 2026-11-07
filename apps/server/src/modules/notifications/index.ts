@@ -6,12 +6,14 @@ import { IdentityModule, OtpSenderPoolModule } from '../identity/index.js';
 import { MerchantsModule } from '../merchants/index.js';
 import { AdminAlertsController } from './alerts.controller.js';
 import { AlertsService } from './alerts.service.js';
+import { AlertsRelay, AlertsRelayWorker } from './alerts-relay.js';
 import { AlertsSweep, AlertsSweepWorker } from './alerts-sweep.js';
 import { RealtimeAccess } from './realtime-access.js';
 import { RealtimePublisher } from './realtime-publisher.js';
 import { RealtimeSessions } from './realtime-sessions.js';
 import { RealtimeTokens } from './realtime-tokens.js';
 import {
+  AdminRealtimeController,
   CaptainRealtimeController,
   CustomerRealtimeController,
   MerchantRealtimeController,
@@ -27,6 +29,7 @@ import {
     MerchantRealtimeController,
     CustomerRealtimeController,
     CaptainRealtimeController,
+    AdminRealtimeController,
     AdminAlertsController,
   ],
   providers: [RealtimeTokens, RealtimeAccess, RealtimePublisher, RealtimeSessions, AlertsService],
@@ -43,14 +46,22 @@ export class NotificationsModule {}
 })
 export class NotificationsWorkerModule {}
 
-// The worker's sweep of the alerts no transaction raises (alerts-sweep.ts).
+// The worker's sweep of the alerts no transaction raises (alerts-sweep.ts),
+// and the relay of every alert change to the panel (alerts-relay.ts).
 @Module({
   imports: [DatabaseModule, CaptainsModule, GeoModule, OtpSenderPoolModule],
-  providers: [AlertsService, AlertsSweep, AlertsSweepWorker],
+  providers: [
+    AlertsService,
+    AlertsSweep,
+    AlertsSweepWorker,
+    RealtimePublisher,
+    AlertsRelay,
+    AlertsRelayWorker,
+  ],
 })
 export class AlertsWorkerModule {}
 
-export { captainChannel, merchantChannel, orderChannel } from './channels.js';
+export { captainChannel, merchantChannel, opsChannel, orderChannel } from './channels.js';
 export { type ChannelCheck, RealtimeAccess } from './realtime-access.js';
 export { requireRealtime } from './realtime-config.js';
 export { PublishFailedError, RealtimePublisher } from './realtime-publisher.js';

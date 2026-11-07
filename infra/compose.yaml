@@ -180,7 +180,13 @@ services:
           "http": {"static_headers": {"X-Centrifugo-Proxy-Secret": "${CENTRIFUGO_PROXY_SECRET:?}"}}},
          {"name": "captain", "endpoint": "http://api:3000/v1/captain/realtime/subscribe",
           "timeout": "3s", "include_connection_meta": true,
+          "http": {"static_headers": {"X-Centrifugo-Proxy-Secret": "${CENTRIFUGO_PROXY_SECRET:?}"}}},
+         {"name": "admin", "endpoint": "http://api:3000/v1/admin/realtime/subscribe",
+          "timeout": "3s", "include_connection_meta": true,
           "http": {"static_headers": {"X-Centrifugo-Proxy-Secret": "${CENTRIFUGO_PROXY_SECRET:?}"}}}]
+      # The panel's origin is the only browser origin that connects (the
+      # portal and the apps' API host have no live screen yet).
+      CENTRIFUGO_CLIENT_ALLOWED_ORIGINS: https://${ADMIN_HOST:?}
     volumes:
       - ./centrifugo/config.yaml:/centrifugo/config.yaml:ro
     ports:

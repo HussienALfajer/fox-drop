@@ -9,17 +9,21 @@ import { requireRealtime, tokenSecret } from './realtime-config.js';
 // terminated while its devices are connected, stops receiving within this time.
 export const CONNECTION_TOKEN_MINUTES = 15;
 
+// Who connects: an app's session, or the panel's (architecture §10.3).
+export type ConnectionParty = AppSession['party'] | 'admin';
+
 // What Centrifugo passes back to the subscription proxy (include_connection_
 // meta), never shown to other clients.
 export interface ConnectionMeta {
-  party: AppSession['party'];
+  party: ConnectionParty;
   accountId: string;
 }
 
-// Architecture §6.1: the short-lived connection token of an app session,
-// signed with the secret Centrifugo checks (CENTRIFUGO_TOKEN_SECRET, which
-// never ships in an app, E7). Its subject is the session, so Centrifugo's
-// user is one device's session and the API can disconnect exactly it.
+// Architecture §6.1: the short-lived connection token of an app session or a
+// panel session, signed with the secret Centrifugo checks
+// (CENTRIFUGO_TOKEN_SECRET, which never ships in an app or a web bundle, E7).
+// Its subject is the session, so Centrifugo's user is one device's or one
+// browser's session and the API can disconnect exactly it.
 @Injectable()
 export class RealtimeTokens implements OnModuleInit {
   onModuleInit(): void {
@@ -28,7 +32,7 @@ export class RealtimeTokens implements OnModuleInit {
 
   // Null while real time is off.
   async connectionToken(
-    session: AppSession,
+    session: { id: string; party: ConnectionParty; accountId: string },
     now: Date,
   ): Promise<{ token: string; expiresAt: Date } | null> {
     const secret = tokenSecret();

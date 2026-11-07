@@ -56,6 +56,7 @@ export async function startTestCentrifugo(
         proxy('merchant', 'merchant'),
         proxy('customer', 'customer'),
         proxy('captain', 'captain'),
+        proxy('admin', 'admin'),
       ]),
     })
     .withExposedPorts(8000)

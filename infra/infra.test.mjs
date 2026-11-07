@@ -68,8 +68,11 @@ test("Centrifugo runs development's image and calls this environment's API", () 
       ['merchant', 'http://api:3000/v1/merchant/realtime/subscribe'],
       ['customer', 'http://api:3000/v1/customer/realtime/subscribe'],
       ['captain', 'http://api:3000/v1/captain/realtime/subscribe'],
+      ['admin', 'http://api:3000/v1/admin/realtime/subscribe'],
     ],
   );
+  // Browsers connect only from the panel's origin.
+  assert.equal(centrifugo.environment.CENTRIFUGO_CLIENT_ALLOWED_ORIGINS, 'https://${ADMIN_HOST:?}');
   // Only the API and the worker get its settings, and only the API the
   // token and proxy secrets.
   const realtime = (name) =>

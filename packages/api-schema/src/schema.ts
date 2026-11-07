@@ -1556,6 +1556,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/realtime/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRealtimeToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/alerts": {
         parameters: {
             query?: never;
@@ -7217,6 +7233,26 @@ export interface operations {
         };
     };
     captainRealtimeToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RealtimeTokenDto_Output"];
+                };
+            };
+        };
+    };
+    adminRealtimeToken: {
         parameters: {
             query?: never;
             header?: never;
