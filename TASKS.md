@@ -11,8 +11,8 @@ Slice 1.14d, the customer's order (`docs/roadmap.md`, Phase 1, slice 1.14; owner
 - **Branch:** `feat/customer-order`.
 - **Owner decisions 2026-11-07 (this slice):** one pull request; addresses are the phone's current location as an unsaved address with «احفظ هذا العنوان», plus picking a saved one (editing and deleting wait for «حسابي»); the cart is kept on the device for 24 hours (`shared_preferences`); the far-pin check is built, the notification permission waits for push.
 - **Plan** (the server routes exist; the work is the customer app):
-  - [ ] Device values and formatters: a key-value store in `core_storage`, the money, time, duration and distance formatters in `core_l10n`.
-  - [ ] «أكمل بياناتك» after sign-in while the profile is not completed, and the return to where the guest was (CU §5.1, §5.3).
+  - [x] Device values and formatters: a key-value store in `core_storage`, the money, time, duration and distance formatters in `core_l10n`.
+  - [x] «أكمل بياناتك» after sign-in while the profile is not completed, and the return to where the guest was (CU §5.1, §5.3).
   - [ ] The delivery point from the phone's location: the zone check, «قريباً في منطقتك» with the vote, «لا توجد مطاعم توصل إلى موقعك حالياً» (CU §7.1, §7.2).
   - [ ] The restaurant list and page: cards, states, the menu with availability, the hours (CU §8.2, §8.4, §9.1–9.3, §9.5 badge).
   - [ ] The item sheet and the cart: options, quantity, note, one restaurant, kept 24 hours (CU §9.4, §10.1).
