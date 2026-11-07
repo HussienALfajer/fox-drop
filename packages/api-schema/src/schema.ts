@@ -1604,6 +1604,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/push-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["customerPushTokenRegister"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/push-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantPushTokenRegister"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/push-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["captainPushTokenRegister"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/captains": {
         parameters: {
             query?: never;
@@ -4728,6 +4776,16 @@ export interface components {
             } | null;
             resolvedAt: string | null;
         };
+        PushTokenDto: {
+            /** @description Firebase Cloud Messaging's registration token. */
+            token: string;
+            /** @enum {string} */
+            platform: "android";
+        };
+        PushTokenRegisteredDto_Output: {
+            /** @constant */
+            status: "registered";
+        };
         AdminPickerDto_Output: {
             /** @description Every online captain of the city, nearest to the restaurant first (AP §9.3.2). */
             captains: {
@@ -7314,6 +7372,78 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminAlertDto_Output"];
+                };
+            };
+        };
+    };
+    customerPushTokenRegister: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushTokenDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushTokenRegisteredDto_Output"];
+                };
+            };
+        };
+    };
+    merchantPushTokenRegister: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushTokenDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushTokenRegisteredDto_Output"];
+                };
+            };
+        };
+    };
+    captainPushTokenRegister: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushTokenDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushTokenRegisteredDto_Output"];
                 };
             };
         };

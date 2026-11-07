@@ -225,6 +225,13 @@
       "when": 1794088310083,
       "tag": "0031_notifications_alert_outbox",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1794091780455,
+      "tag": "0032_notifications_push_devices",
+      "breakpoints": true
     }
   ]
 }

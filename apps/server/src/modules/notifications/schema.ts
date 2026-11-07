@@ -102,3 +102,60 @@ export const alertOutbox = notifications.table(
     ),
   ],
 );
+
+// Architecture §8.1: the push token of one signed-in app installation, one row
+// per app session (the session's id is its key), registered by the app at
+// every start and whenever Firebase renews the token. A push reaches the
+// tokens of the open sessions of its recipients: a customer's account, a
+// restaurant's devices (RA §16 «All», or its owners' devices), a captain's.
+// Ended when Firebase answers the token is no longer registered, or when
+// another session registers the same token (a sign-in again on the device).
+export const pushDeviceEndReasons = ['token_invalid', 'token_moved'] as const;
+export const pushPlatforms = ['android'] as const;
+
+export const pushDevices = notifications.table(
+  'push_devices',
+  {
+    sessionId: uuid('session_id').primaryKey(),
+    party: text('party', { enum: ['customer', 'merchant', 'captain'] }).notNull(),
+    accountId: uuid('account_id').notNull(),
+    // A restaurant user's restaurant and role when it registered (RA §5.1).
+    restaurantId: uuid('restaurant_id'),
+    merchantRole: text('merchant_role', { enum: ['owner', 'cashier'] }),
+    captainId: uuid('captain_id'),
+    platform: text('platform', { enum: pushPlatforms }).notNull(),
+    token: text('token').notNull(),
+    registeredAt: timestamp('registered_at', { withTimezone: true }).notNull(),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+    endReason: text('end_reason', { enum: pushDeviceEndReasons }),
+  },
+  (table) => [
+    uniqueIndex('push_devices_token_live')
+      .on(table.token)
+      .where(sql`${table.endedAt} IS NULL`),
+    index('push_devices_account')
+      .on(table.party, table.accountId)
+      .where(sql`${table.endedAt} IS NULL`),
+    index('push_devices_restaurant')
+      .on(table.restaurantId)
+      .where(sql`${table.endedAt} IS NULL`),
+    index('push_devices_captain')
+      .on(table.captainId)
+      .where(sql`${table.endedAt} IS NULL`),
+    check('push_devices_party', sql`${table.party} IN ('customer', 'merchant', 'captain')`),
+    check('push_devices_platform', sql`${table.platform} IN ('android')`),
+    check(
+      'push_devices_merchant',
+      sql`(${table.party} = 'merchant') = (${table.restaurantId} IS NOT NULL AND ${table.merchantRole} IS NOT NULL)`,
+    ),
+    check(
+      'push_devices_captain',
+      sql`(${table.party} = 'captain') = (${table.captainId} IS NOT NULL)`,
+    ),
+    check(
+      'push_devices_ended',
+      sql`(${table.endedAt} IS NULL) = (${table.endReason} IS NULL) AND (${table.endReason} IS NULL OR ${table.endReason} IN ('token_invalid', 'token_moved'))`,
+    ),
+    check('push_devices_token', sql`length(${table.token}) BETWEEN 1 AND 4096`),
+  ],
+);

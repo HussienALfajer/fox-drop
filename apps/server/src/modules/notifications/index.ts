@@ -2,12 +2,18 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
 import { CaptainsModule } from '../captains/index.js';
 import { GeoModule } from '../geo/index.js';
-import { IdentityModule, OtpSenderPoolModule } from '../identity/index.js';
+import { IdentityModule, OpenAppSessionsModule, OtpSenderPoolModule } from '../identity/index.js';
 import { MerchantsModule } from '../merchants/index.js';
 import { AdminAlertsController } from './alerts.controller.js';
 import { AlertsService } from './alerts.service.js';
 import { AlertsRelay, AlertsRelayWorker } from './alerts-relay.js';
 import { AlertsSweep, AlertsSweepWorker } from './alerts-sweep.js';
+import { PushDevices } from './push-devices.js';
+import {
+  CaptainPushTokenController,
+  CustomerPushTokenController,
+  MerchantPushTokenController,
+} from './push-token.controller.js';
 import { RealtimeAccess } from './realtime-access.js';
 import { RealtimePublisher } from './realtime-publisher.js';
 import { RealtimeSessions } from './realtime-sessions.js';
@@ -24,15 +30,25 @@ import {
 // and the panel's alerts (AP §7.3, §9.1.3). Push, in-app messages and sound
 // levels join with their slices.
 @Module({
-  imports: [DatabaseModule, IdentityModule, MerchantsModule],
+  imports: [DatabaseModule, IdentityModule, OpenAppSessionsModule, MerchantsModule],
   controllers: [
     MerchantRealtimeController,
     CustomerRealtimeController,
     CaptainRealtimeController,
     AdminRealtimeController,
     AdminAlertsController,
+    CustomerPushTokenController,
+    MerchantPushTokenController,
+    CaptainPushTokenController,
   ],
-  providers: [RealtimeTokens, RealtimeAccess, RealtimePublisher, RealtimeSessions, AlertsService],
+  providers: [
+    RealtimeTokens,
+    RealtimeAccess,
+    RealtimePublisher,
+    RealtimeSessions,
+    AlertsService,
+    PushDevices,
+  ],
   exports: [RealtimeAccess, RealtimePublisher, AlertsService],
 })
 export class NotificationsModule {}
