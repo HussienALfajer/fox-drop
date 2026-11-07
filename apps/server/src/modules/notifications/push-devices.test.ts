@@ -19,6 +19,7 @@ import {
 } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { PushDevices } from './push-devices.js';
+import { PushQueue } from './push-queue.js';
 
 // Architecture §8.1: each app installation registers its push token; a push
 // reaches the live tokens of its recipient's open sessions only.
@@ -177,6 +178,40 @@ describe('push tokens (architecture §8.1)', () => {
 
     await devices.invalidate(app.get<Database>(DATABASE).db, ['token-captain'], new Date());
     expect(await tokens({ party: 'captain', captainId })).toEqual([]);
+  });
+
+  it("answers the customer's stored notifications (CU §13)", async () => {
+    const device = await signIn('customer', phoneNumber());
+    const accountId = await accountOf(device);
+    await app.get(PushQueue).enqueue(
+      app.get<Database>(DATABASE).db,
+      [
+        {
+          source: `test:${randomUUID()}`,
+          recipient: { party: 'customer', accountId },
+          templateKey: 'customer.delivered',
+          body: 'تم التسليم. قيّم طلبك',
+          level: 'default',
+          priority: 'normal',
+          data: { target: 'order', orderId: 'order-1' },
+        },
+      ],
+      new Date(),
+    );
+    const answer = await app.inject({
+      method: 'GET',
+      url: '/v1/customer/notifications',
+      headers: device,
+    });
+    expect(answer.statusCode).toBe(200);
+    expect(answer.json().notifications).toEqual([
+      {
+        id: expect.any(String),
+        at: expect.any(String),
+        body: 'تم التسليم. قيّم طلبك',
+        data: { target: 'order', orderId: 'order-1' },
+      },
+    ]);
   });
 
   it('refuses a call without a session', async () => {

@@ -184,6 +184,8 @@ export 'package:core_api/src/model/customer_location_dto_output.dart';
 export 'package:core_api/src/model/customer_location_dto_output_zone.dart';
 export 'package:core_api/src/model/customer_new_address_dto.dart';
 export 'package:core_api/src/model/customer_new_address_dto_location.dart';
+export 'package:core_api/src/model/customer_notifications_dto_output.dart';
+export 'package:core_api/src/model/customer_notifications_dto_output_notifications_inner.dart';
 export 'package:core_api/src/model/customer_order_dto_output.dart';
 export 'package:core_api/src/model/customer_order_dto_output_order.dart';
 export 'package:core_api/src/model/customer_order_dto_output_order_delivery.dart';

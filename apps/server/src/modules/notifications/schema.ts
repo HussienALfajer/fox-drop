@@ -1,8 +1,10 @@
 import { sql } from 'drizzle-orm';
 import {
   bigint,
+  boolean,
   check,
   index,
+  integer,
   jsonb,
   pgSchema,
   text,
@@ -157,5 +159,56 @@ export const pushDevices = notifications.table(
       sql`(${table.endedAt} IS NULL) = (${table.endReason} IS NULL) AND (${table.endReason} IS NULL OR ${table.endReason} IN ('token_invalid', 'token_moved'))`,
     ),
     check('push_devices_token', sql`length(${table.token}) BETWEEN 1 AND 4096`),
+  ],
+);
+
+// Architecture §8.1: one push to send, queued in the transaction of what it
+// tells (E4) and sent by the worker's push relay with retries. Its source
+// names what queued it (such as `outbox:<id>:customer`), so queuing it again
+// adds nothing. A customer's rows are also «الإشعارات» (CU §13, §14: every
+// push is stored), read for 30 days; the other parties' are the send log.
+export const pushMessages = notifications.table(
+  'push_messages',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    source: text('source').notNull().unique(),
+    party: text('party', { enum: ['customer', 'merchant', 'captain'] }).notNull(),
+    accountId: uuid('account_id'),
+    restaurantId: uuid('restaurant_id'),
+    // RA §16 «Owners»: the restaurant's owner devices only.
+    ownersOnly: boolean('owners_only').notNull().default(false),
+    captainId: uuid('captain_id'),
+    templateKey: text('template_key').notNull(),
+    body: text('body').notNull(),
+    level: text('level').notNull(),
+    priority: text('priority', { enum: ['high', 'normal'] }).notNull(),
+    // What the app opens on a tap, as strings (FCM's data).
+    data: jsonb('data').$type<Record<string, string>>().notNull(),
+    // Not sent after this: a push about an order's step is no use later.
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }).notNull(),
+    sentAt: timestamp('sent_at', { withTimezone: true }),
+    // How many devices it reached.
+    devices: integer('devices'),
+    gaveUpAt: timestamp('gave_up_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('push_messages_pending')
+      .on(table.nextAttemptAt)
+      .where(sql`${table.sentAt} IS NULL AND ${table.gaveUpAt} IS NULL`),
+    index('push_messages_customer')
+      .on(table.accountId, table.createdAt.desc())
+      .where(sql`${table.party} = 'customer'`),
+    check('push_messages_party', sql`${table.party} IN ('customer', 'merchant', 'captain')`),
+    check(
+      'push_messages_recipient',
+      sql`(${table.party} = 'customer') = (${table.accountId} IS NOT NULL) AND (${table.party} = 'merchant') = (${table.restaurantId} IS NOT NULL) AND (${table.party} = 'captain') = (${table.captainId} IS NOT NULL) AND (NOT ${table.ownersOnly} OR ${table.party} = 'merchant')`,
+    ),
+    check('push_messages_priority', sql`${table.priority} IN ('high', 'normal')`),
+    check('push_messages_done', sql`${table.sentAt} IS NULL OR ${table.gaveUpAt} IS NULL`),
   ],
 );

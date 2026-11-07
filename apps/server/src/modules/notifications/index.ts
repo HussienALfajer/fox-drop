@@ -8,7 +8,11 @@ import { AdminAlertsController } from './alerts.controller.js';
 import { AlertsService } from './alerts.service.js';
 import { AlertsRelay, AlertsRelayWorker } from './alerts-relay.js';
 import { AlertsSweep, AlertsSweepWorker } from './alerts-sweep.js';
+import { CustomerNotificationsController } from './customer-notifications.controller.js';
+import { PUSH_SENDER, pushSenderFromEnvironment } from './fcm-sender.js';
 import { PushDevices } from './push-devices.js';
+import { PushQueue } from './push-queue.js';
+import { PushRelay, PushRelayWorker } from './push-relay.js';
 import {
   CaptainPushTokenController,
   CustomerPushTokenController,
@@ -40,6 +44,7 @@ import {
     CustomerPushTokenController,
     MerchantPushTokenController,
     CaptainPushTokenController,
+    CustomerNotificationsController,
   ],
   providers: [
     RealtimeTokens,
@@ -48,8 +53,9 @@ import {
     RealtimeSessions,
     AlertsService,
     PushDevices,
+    PushQueue,
   ],
-  exports: [RealtimeAccess, RealtimePublisher, AlertsService],
+  exports: [RealtimeAccess, RealtimePublisher, AlertsService, PushQueue],
 })
 export class NotificationsModule {}
 
@@ -57,10 +63,23 @@ export class NotificationsModule {}
 // identity.
 @Module({
   imports: [DatabaseModule],
-  providers: [RealtimePublisher, AlertsService],
-  exports: [RealtimePublisher, AlertsService],
+  providers: [RealtimePublisher, AlertsService, PushQueue],
+  exports: [RealtimePublisher, AlertsService, PushQueue],
 })
 export class NotificationsWorkerModule {}
+
+// The worker's push relay (architecture §8.1): sends the queued pushes
+// through FCM to the live devices of their recipients.
+@Module({
+  imports: [DatabaseModule, OpenAppSessionsModule],
+  providers: [
+    { provide: PUSH_SENDER, useFactory: () => pushSenderFromEnvironment() },
+    PushDevices,
+    PushRelay,
+    PushRelayWorker,
+  ],
+})
+export class PushWorkerModule {}
 
 // The worker's sweep of the alerts no transaction raises (alerts-sweep.ts),
 // and the relay of every alert change to the panel (alerts-relay.ts).
@@ -82,4 +101,6 @@ export { type ChannelCheck, RealtimeAccess } from './realtime-access.js';
 export { requireRealtime } from './realtime-config.js';
 export { PublishFailedError, RealtimePublisher } from './realtime-publisher.js';
 export { type AlertCode, alertCodes } from './alert-rules.js';
+export { type PushRecipient } from './push-devices.js';
+export { PushQueue, type QueuedPush } from './push-queue.js';
 export { AlertsService, type AlertSubjectRef } from './alerts.service.js';

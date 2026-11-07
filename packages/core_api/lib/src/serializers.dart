@@ -183,6 +183,8 @@ import 'package:core_api/src/model/customer_location_dto_output.dart';
 import 'package:core_api/src/model/customer_location_dto_output_zone.dart';
 import 'package:core_api/src/model/customer_new_address_dto.dart';
 import 'package:core_api/src/model/customer_new_address_dto_location.dart';
+import 'package:core_api/src/model/customer_notifications_dto_output.dart';
+import 'package:core_api/src/model/customer_notifications_dto_output_notifications_inner.dart';
 import 'package:core_api/src/model/customer_order_dto_output.dart';
 import 'package:core_api/src/model/customer_order_dto_output_order.dart';
 import 'package:core_api/src/model/customer_order_dto_output_order_delivery.dart';
@@ -473,6 +475,8 @@ part 'serializers.g.dart';
   CustomerLocationDtoOutputZone,
   CustomerNewAddressDto,
   CustomerNewAddressDtoLocation,
+  CustomerNotificationsDtoOutput,
+  CustomerNotificationsDtoOutputNotificationsInner,
   CustomerOrderDtoOutput,
   CustomerOrderDtoOutputOrder,
   CustomerOrderDtoOutputOrderDelivery,
@@ -751,6 +755,10 @@ Serializers serializers =
             () => ListBuilder<AdminFaqDtoItemsInner>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltMap, [FullType(String), FullType(String)]),
+            () => MapBuilder<String, String>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, [
               FullType(AdminOrderDtoOutputOrderLinesInner),
             ]),
@@ -870,6 +878,13 @@ Serializers serializers =
               FullType(AdminCitiesDtoOutputCitiesInner),
             ]),
             () => ListBuilder<AdminCitiesDtoOutputCitiesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CustomerNotificationsDtoOutputNotificationsInner),
+            ]),
+            () =>
+                ListBuilder<CustomerNotificationsDtoOutputNotificationsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

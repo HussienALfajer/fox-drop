@@ -261,6 +261,8 @@ Serializers _$serializers =
           ..add(CustomerNewAddressDto.serializer)
           ..add(CustomerNewAddressDtoLabelEnum.serializer)
           ..add(CustomerNewAddressDtoLocation.serializer)
+          ..add(CustomerNotificationsDtoOutput.serializer)
+          ..add(CustomerNotificationsDtoOutputNotificationsInner.serializer)
           ..add(CustomerOrderDtoOutput.serializer)
           ..add(CustomerOrderDtoOutputOrder.serializer)
           ..add(CustomerOrderDtoOutputOrderDelivery.serializer)
@@ -732,6 +734,13 @@ Serializers _$serializers =
               const FullType(CustomerAddressListDtoOutputAddressesInner),
             ]),
             () => ListBuilder<CustomerAddressListDtoOutputAddressesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerNotificationsDtoOutputNotificationsInner),
+            ]),
+            () =>
+                ListBuilder<CustomerNotificationsDtoOutputNotificationsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1348,6 +1357,13 @@ Serializers _$serializers =
               const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltMap, const [
+              const FullType(String),
+              const FullType(String),
+            ]),
+            () => MapBuilder<String, String>(),
           ))
         .build();
 

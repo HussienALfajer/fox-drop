@@ -1684,6 +1684,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerNotificationsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/captains": {
         parameters: {
             query?: never;
@@ -4872,6 +4888,18 @@ export interface components {
             /** @constant */
             status: "registered";
         };
+        CustomerNotificationsDto_Output: {
+            notifications: {
+                id: string;
+                /** Format: date-time */
+                at: string;
+                body: string;
+                /** @description What a tap opens: `target` (order, codes, account) and its ids. */
+                data: {
+                    [key: string]: string;
+                };
+            }[];
+        };
         AdminPickerDto_Output: {
             /** @description Every online captain of the city, nearest to the restaurant first (AP §9.3.2). */
             captains: {
@@ -7576,6 +7604,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PushTokenRegisteredDto_Output"];
+                };
+            };
+        };
+    };
+    customerNotificationsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerNotificationsDto_Output"];
                 };
             };
         };
