@@ -99,6 +99,20 @@ describe('OpenAPI document', () => {
     expect(names.filter((name, index) => names.indexOf(name) !== index)).toEqual([]);
   });
 
+  // restoreNullablePrimitives in openapi.ts: a top-level `z.string().nullable()`
+  // of a response DTO is a nullable string, never an array of strings.
+  it('keeps a nullable primitive nullable at the top of a DTO', () => {
+    const schemas = document.components?.schemas ?? {};
+    const page = schemas.CustomerRestaurantPageDto_Output as {
+      properties: Record<string, unknown>;
+    };
+    expect(page.properties.nameEn).toMatchObject({ type: ['string', 'null'] });
+    expect(page.properties.rating).toMatchObject({ type: ['number', 'null'] });
+    expect(JSON.stringify(document)).not.toContain('x-nestjs_zod');
+    const admin = schemas.AdminSessionDto_Output as { properties: Record<string, unknown> };
+    expect(admin.properties.roles).toMatchObject({ type: 'array' });
+  });
+
   it('is OpenAPI 3.1', () => {
     expect(document.openapi).toMatch(/^3\.1\./);
   });

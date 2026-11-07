@@ -38,7 +38,7 @@ abstract class SettingEntryDtoOutput
   String get template;
 
   @BuiltValueField(wireName: r'parameter')
-  BuiltList<String> get parameter;
+  String? get parameter;
 
   @BuiltValueField(wireName: r'group')
   SettingEntryDtoOutputGroupEnum get group;
@@ -48,7 +48,7 @@ abstract class SettingEntryDtoOutput
   String get type;
 
   @BuiltValueField(wireName: r'unit')
-  BuiltList<String> get unit;
+  String? get unit;
 
   @BuiltValueField(wireName: r'scope')
   SettingEntryDtoOutputScopeEnum get scope;
@@ -119,10 +119,12 @@ class _$SettingEntryDtoOutputSerializer
       specifiedType: const FullType(String),
     );
     yield r'parameter';
-    yield serializers.serialize(
-      object.parameter,
-      specifiedType: const FullType(BuiltList, [FullType(String)]),
-    );
+    yield object.parameter == null
+        ? null
+        : serializers.serialize(
+            object.parameter,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'group';
     yield serializers.serialize(
       object.group,
@@ -134,10 +136,12 @@ class _$SettingEntryDtoOutputSerializer
       specifiedType: const FullType(String),
     );
     yield r'unit';
-    yield serializers.serialize(
-      object.unit,
-      specifiedType: const FullType(BuiltList, [FullType(String)]),
-    );
+    yield object.unit == null
+        ? null
+        : serializers.serialize(
+            object.unit,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'scope';
     yield serializers.serialize(
       object.scope,
@@ -235,12 +239,11 @@ class _$SettingEntryDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(String),
-                    ]),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as BuiltList<String>;
-          result.parameter.replace(valueDes);
+                  as String?;
+          if (valueDes == null) continue;
+          result.parameter = valueDes;
           break;
         case r'group':
           final valueDes =
@@ -266,12 +269,11 @@ class _$SettingEntryDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(String),
-                    ]),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as BuiltList<String>;
-          result.unit.replace(valueDes);
+                  as String?;
+          if (valueDes == null) continue;
+          result.unit = valueDes;
           break;
         case r'scope':
           final valueDes =

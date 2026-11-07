@@ -104,7 +104,7 @@ class _$CustomerAddressDtoOutput extends CustomerAddressDtoOutput {
   @override
   final bool isDefault;
   @override
-  final BuiltList<String> neighbourhood;
+  final String? neighbourhood;
 
   factory _$CustomerAddressDtoOutput([
     void Function(CustomerAddressDtoOutputBuilder)? updates,
@@ -122,7 +122,7 @@ class _$CustomerAddressDtoOutput extends CustomerAddressDtoOutput {
     this.directions,
     required this.id,
     required this.isDefault,
-    required this.neighbourhood,
+    this.neighbourhood,
   }) : super._();
   @override
   CustomerAddressDtoOutput rebuild(
@@ -243,10 +243,9 @@ class CustomerAddressDtoOutputBuilder
   bool? get isDefault => _$this._isDefault;
   set isDefault(bool? isDefault) => _$this._isDefault = isDefault;
 
-  ListBuilder<String>? _neighbourhood;
-  ListBuilder<String> get neighbourhood =>
-      _$this._neighbourhood ??= ListBuilder<String>();
-  set neighbourhood(ListBuilder<String>? neighbourhood) =>
+  String? _neighbourhood;
+  String? get neighbourhood => _$this._neighbourhood;
+  set neighbourhood(String? neighbourhood) =>
       _$this._neighbourhood = neighbourhood;
 
   CustomerAddressDtoOutputBuilder() {
@@ -267,7 +266,7 @@ class CustomerAddressDtoOutputBuilder
       _directions = $v.directions;
       _id = $v.id;
       _isDefault = $v.isDefault;
-      _neighbourhood = $v.neighbourhood.toBuilder();
+      _neighbourhood = $v.neighbourhood;
       _$v = null;
     }
     return this;
@@ -323,16 +322,13 @@ class CustomerAddressDtoOutputBuilder
               r'CustomerAddressDtoOutput',
               'isDefault',
             ),
-            neighbourhood: neighbourhood.build(),
+            neighbourhood: neighbourhood,
           );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'location';
         location.build();
-
-        _$failedField = 'neighbourhood';
-        neighbourhood.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'CustomerAddressDtoOutput',

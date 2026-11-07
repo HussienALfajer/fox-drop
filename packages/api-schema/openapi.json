@@ -4972,10 +4972,10 @@
             "description": "The Appendix A key, such as currency.<code>.rounding_unit."
           },
           "parameter": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "group": {
             "type": "string",
@@ -4995,10 +4995,10 @@
             "type": "string"
           },
           "unit": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "scope": {
             "type": "string",
@@ -5172,10 +5172,10 @@
             "type": "string"
           },
           "nameEn": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "accountStatus": {
             "type": "string",
@@ -5189,10 +5189,10 @@
           },
           "suspensionReason": {
             "description": "«حساب مطعمك معلّق: {السبب}…» while suspended (RA §5.5).",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "state": {
             "type": "string",
@@ -6495,10 +6495,10 @@
           },
           "neighbourhood": {
             "description": "«الحي», the zone name; null is «خارج منطقة التوصيل حالياً» (Q6).",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -6874,35 +6874,35 @@
             "type": "string"
           },
           "nameEn": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "category": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "logoKey": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "coverKey": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "rating": {
             "description": "The average rating; null is «جديد» (Q16). Ratings arrive with their slice.",
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "ratingCount": {
             "anyOf": [
@@ -7043,10 +7043,10 @@
             "description": "Only open takes orders."
           },
           "description": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "minimumOrder": {
             "type": "object",

@@ -30,7 +30,7 @@ abstract class MerchantRestaurantDtoOutput
   String get nameAr;
 
   @BuiltValueField(wireName: r'nameEn')
-  BuiltList<String> get nameEn;
+  String? get nameEn;
 
   @BuiltValueField(wireName: r'accountStatus')
   MerchantRestaurantDtoOutputAccountStatusEnum get accountStatus;
@@ -38,7 +38,7 @@ abstract class MerchantRestaurantDtoOutput
 
   /// «حساب مطعمك معلّق: {السبب}…» while suspended (RA §5.5).
   @BuiltValueField(wireName: r'suspensionReason')
-  BuiltList<String> get suspensionReason;
+  String? get suspensionReason;
 
   /// The operating state now (RA §7.1).
   @BuiltValueField(wireName: r'state')
@@ -90,10 +90,12 @@ class _$MerchantRestaurantDtoOutputSerializer
       specifiedType: const FullType(String),
     );
     yield r'nameEn';
-    yield serializers.serialize(
-      object.nameEn,
-      specifiedType: const FullType(BuiltList, [FullType(String)]),
-    );
+    yield object.nameEn == null
+        ? null
+        : serializers.serialize(
+            object.nameEn,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'accountStatus';
     yield serializers.serialize(
       object.accountStatus,
@@ -102,10 +104,12 @@ class _$MerchantRestaurantDtoOutputSerializer
       ),
     );
     yield r'suspensionReason';
-    yield serializers.serialize(
-      object.suspensionReason,
-      specifiedType: const FullType(BuiltList, [FullType(String)]),
-    );
+    yield object.suspensionReason == null
+        ? null
+        : serializers.serialize(
+            object.suspensionReason,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'state';
     yield serializers.serialize(
       object.state,
@@ -167,12 +171,11 @@ class _$MerchantRestaurantDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(String),
-                    ]),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as BuiltList<String>;
-          result.nameEn.replace(valueDes);
+                  as String?;
+          if (valueDes == null) continue;
+          result.nameEn = valueDes;
           break;
         case r'accountStatus':
           final valueDes =
@@ -189,12 +192,11 @@ class _$MerchantRestaurantDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(String),
-                    ]),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as BuiltList<String>;
-          result.suspensionReason.replace(valueDes);
+                  as String?;
+          if (valueDes == null) continue;
+          result.suspensionReason = valueDes;
           break;
         case r'state':
           final valueDes =

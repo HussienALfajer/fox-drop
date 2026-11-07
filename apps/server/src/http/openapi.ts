@@ -22,23 +22,46 @@ export function createOpenApiDocument(app: INestApplication): OpenAPIObject {
     .setVersion('1')
     .setOpenAPIVersion('3.1.0')
     .build();
-  const document = cleanupOpenApiDoc(
-    SwaggerModule.createDocument(app, config, {
-      // AdminStatusController.get becomes adminStatusGet.
-      operationIdFactory: (controllerKey, methodKey) => {
-        const name = controllerKey.replace(/Controller$/, '');
-        return (
-          name.charAt(0).toLowerCase() +
-          name.slice(1) +
-          methodKey.charAt(0).toUpperCase() +
-          methodKey.slice(1)
-        );
-      },
-    }),
-    { version: '3.1' },
-  );
+  const raw = SwaggerModule.createDocument(app, config, {
+    // AdminStatusController.get becomes adminStatusGet.
+    operationIdFactory: (controllerKey, methodKey) => {
+      const name = controllerKey.replace(/Controller$/, '');
+      return (
+        name.charAt(0).toLowerCase() +
+        name.slice(1) +
+        methodKey.charAt(0).toUpperCase() +
+        methodKey.slice(1)
+      );
+    },
+  });
+  restoreNullablePrimitives(raw);
+  const document = cleanupOpenApiDoc(raw, { version: '3.1' });
   addServerTimeHeader(document);
   return document;
+}
+
+// nestjs-zod 5.5.0 marks a DTO's top-level property whose JSON schema type is
+// not a string. Zod writes a nullable primitive without constraints as
+// `type: ['string', 'null']`, and @nestjs/swagger reads a list as "array of
+// the first", so `z.string().nullable()` reached the document as an array of
+// strings and the Dart client could not read the answer. A real array never
+// carries the marker, so a marked `array` is put back as the nullable type.
+const EMPTY_TYPE_MARKER = 'x-nestjs_zod-empty-type';
+
+function restoreNullablePrimitives(document: OpenAPIObject): void {
+  for (const schema of Object.values(document.components?.schemas ?? {})) {
+    if ('$ref' in schema) continue;
+    for (const property of Object.values(schema.properties ?? {})) {
+      const marked = property as Record<string, unknown>;
+      if (marked[EMPTY_TYPE_MARKER] !== true || marked.type !== 'array') continue;
+      const items = marked.items as { type?: unknown } | undefined;
+      if (!items || typeof items.type !== 'string' || Object.keys(items).length !== 1) {
+        throw new Error('openapi: a marked array property has unexpected items');
+      }
+      marked.type = [items.type, 'null'];
+      delete marked.items;
+    }
+  }
 }
 
 // create-api-app.ts sets Server-Time on every response, which no decorator

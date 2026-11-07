@@ -677,10 +677,6 @@ Serializers serializers =
             () => ListBuilder<TeamUsersDtoOutputUsersInner>(),
           )
           ..addBuilderFactory(
-            const FullType(BuiltList, [FullType(num)]),
-            () => ListBuilder<num>(),
-          )
-          ..addBuilderFactory(
             const FullType(BuiltList, [
               FullType(CustomerAddressListDtoOutputAddressesInner),
             ]),

@@ -218,11 +218,11 @@ class _$MerchantRestaurantDtoOutput extends MerchantRestaurantDtoOutput {
   @override
   final String nameAr;
   @override
-  final BuiltList<String> nameEn;
+  final String? nameEn;
   @override
   final MerchantRestaurantDtoOutputAccountStatusEnum accountStatus;
   @override
-  final BuiltList<String> suspensionReason;
+  final String? suspensionReason;
   @override
   final MerchantRestaurantDtoOutputStateEnum state;
   @override
@@ -235,9 +235,9 @@ class _$MerchantRestaurantDtoOutput extends MerchantRestaurantDtoOutput {
   _$MerchantRestaurantDtoOutput._({
     required this.id,
     required this.nameAr,
-    required this.nameEn,
+    this.nameEn,
     required this.accountStatus,
-    required this.suspensionReason,
+    this.suspensionReason,
     required this.state,
     this.stateUntil,
   }) : super._();
@@ -307,9 +307,9 @@ class MerchantRestaurantDtoOutputBuilder
   String? get nameAr => _$this._nameAr;
   set nameAr(String? nameAr) => _$this._nameAr = nameAr;
 
-  ListBuilder<String>? _nameEn;
-  ListBuilder<String> get nameEn => _$this._nameEn ??= ListBuilder<String>();
-  set nameEn(ListBuilder<String>? nameEn) => _$this._nameEn = nameEn;
+  String? _nameEn;
+  String? get nameEn => _$this._nameEn;
+  set nameEn(String? nameEn) => _$this._nameEn = nameEn;
 
   MerchantRestaurantDtoOutputAccountStatusEnum? _accountStatus;
   MerchantRestaurantDtoOutputAccountStatusEnum? get accountStatus =>
@@ -318,10 +318,9 @@ class MerchantRestaurantDtoOutputBuilder
     MerchantRestaurantDtoOutputAccountStatusEnum? accountStatus,
   ) => _$this._accountStatus = accountStatus;
 
-  ListBuilder<String>? _suspensionReason;
-  ListBuilder<String> get suspensionReason =>
-      _$this._suspensionReason ??= ListBuilder<String>();
-  set suspensionReason(ListBuilder<String>? suspensionReason) =>
+  String? _suspensionReason;
+  String? get suspensionReason => _$this._suspensionReason;
+  set suspensionReason(String? suspensionReason) =>
       _$this._suspensionReason = suspensionReason;
 
   MerchantRestaurantDtoOutputStateEnum? _state;
@@ -342,9 +341,9 @@ class MerchantRestaurantDtoOutputBuilder
     if ($v != null) {
       _id = $v.id;
       _nameAr = $v.nameAr;
-      _nameEn = $v.nameEn.toBuilder();
+      _nameEn = $v.nameEn;
       _accountStatus = $v.accountStatus;
-      _suspensionReason = $v.suspensionReason.toBuilder();
+      _suspensionReason = $v.suspensionReason;
       _state = $v.state;
       _stateUntil = $v.stateUntil;
       _$v = null;
@@ -366,52 +365,33 @@ class MerchantRestaurantDtoOutputBuilder
   MerchantRestaurantDtoOutput build() => _build();
 
   _$MerchantRestaurantDtoOutput _build() {
-    _$MerchantRestaurantDtoOutput _$result;
-    try {
-      _$result =
-          _$v ??
-          _$MerchantRestaurantDtoOutput._(
-            id: BuiltValueNullFieldError.checkNotNull(
-              id,
-              r'MerchantRestaurantDtoOutput',
-              'id',
-            ),
-            nameAr: BuiltValueNullFieldError.checkNotNull(
-              nameAr,
-              r'MerchantRestaurantDtoOutput',
-              'nameAr',
-            ),
-            nameEn: nameEn.build(),
-            accountStatus: BuiltValueNullFieldError.checkNotNull(
-              accountStatus,
-              r'MerchantRestaurantDtoOutput',
-              'accountStatus',
-            ),
-            suspensionReason: suspensionReason.build(),
-            state: BuiltValueNullFieldError.checkNotNull(
-              state,
-              r'MerchantRestaurantDtoOutput',
-              'state',
-            ),
-            stateUntil: stateUntil,
-          );
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'nameEn';
-        nameEn.build();
-
-        _$failedField = 'suspensionReason';
-        suspensionReason.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-          r'MerchantRestaurantDtoOutput',
-          _$failedField,
-          e.toString(),
+    final _$result =
+        _$v ??
+        _$MerchantRestaurantDtoOutput._(
+          id: BuiltValueNullFieldError.checkNotNull(
+            id,
+            r'MerchantRestaurantDtoOutput',
+            'id',
+          ),
+          nameAr: BuiltValueNullFieldError.checkNotNull(
+            nameAr,
+            r'MerchantRestaurantDtoOutput',
+            'nameAr',
+          ),
+          nameEn: nameEn,
+          accountStatus: BuiltValueNullFieldError.checkNotNull(
+            accountStatus,
+            r'MerchantRestaurantDtoOutput',
+            'accountStatus',
+          ),
+          suspensionReason: suspensionReason,
+          state: BuiltValueNullFieldError.checkNotNull(
+            state,
+            r'MerchantRestaurantDtoOutput',
+            'state',
+          ),
+          stateUntil: stateUntil,
         );
-      }
-      rethrow;
-    }
     replace(_$result);
     return _$result;
   }
