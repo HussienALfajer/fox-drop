@@ -7,11 +7,16 @@ The handover note between sessions: the current task, its branch, its plan, and 
 Slice 2.3, push on Android (`docs/roadmap.md`, Phase 2): FCM device tokens per app installation, push from the outbox relay for the rows the specs mark, notification templates (AP §9.13), AP §8.3's apology on an automatic cancellation, the customer's permission at the first order, «إعادة إرسال الإشعار». The owner closes the customer app and gets the acceptance push.
 
 - **Specs:** architecture §8.1–8.2; CU §14, RA §16, CA §14, AP §10, AP §9.13 (notification templates), AP §8.3 (the apology); `apps/server/src/modules/notifications/CLAUDE.md` («Not yet»: push, the relay is where it joins) and `ordering/CLAUDE.md` (the relay); `apps/customer/CLAUDE.md` and `packages/core_auth/CLAUDE.md` for the apps' side.
-- **Branch:** `feat/android-push`.
-- **Plan:**
-  - [ ] Read the specs above, which rows each party's push table marks, how the Firebase project `foxdrop-staging` is set up (the `deploy` skill, «App Check») and how the apps start Firebase without `google-services.json`.
-  - [ ] Ask the owner: the split into pull requests (server tokens and sending, templates in the panel, each app), the FCM service account for staging (a secret of the GitHub `staging` environment, never in the repository), and the open wording of the templates.
-  - [ ] Write the plan as one step per commit once the split is approved.
+- **Owner decisions 2026-11-08:** three pull requests: 2.3a the server and the panel (device tokens, sending from the outbox, the templates in «المحتوى», the apology, «إعادة إرسال الإشعار», the customer's stored notifications), 2.3b the customer app (the permission at the first order, receiving, the «الإشعارات» screen), 2.3c the restaurant and captain apps. The customer's notifications are stored and shown now (CU §13). Only the rows whose events exist are sent; the others join with their slices, and every template is seeded with its default text.
+- **Branch:** `feat/android-push` (2.3a), then `feat/customer-push` (2.3b) and `feat/merchant-captain-push` (2.3c).
+- **Plan (2.3a):**
+  - [x] Read the specs and ask the owner the split.
+  - [ ] Device tokens: `notifications.push_devices`, one row per app session, `PUT /v1/{customer,merchant,captain}/push-token`, ended with its session.
+  - [ ] Templates: the catalogue of every row of CU §14, RA §16 and CA §14 with its default text, `content.notification_templates`, rendering with variables, the panel's «نصوص الإشعارات».
+  - [ ] Sending: `notifications.push_messages` (the queue and the customer's notifications), the FCM HTTP v1 sender from a service account, the worker's push relay with retries and removal of invalid tokens, `GET /v1/customer/notifications`.
+  - [ ] From the outbox: `ordering.outbox.push_queued_at`, the push relay that turns each event into each party's message (AP §8.3's apology on the automatic cancellation included).
+  - [ ] «إعادة إرسال الإشعار» in the order detail (AP §9.3.2).
+  - [ ] The staging secret (`FCM_SERVICE_ACCOUNT`), the docs, the review.
 
 ## Deferred: slice 1.14h, the whole cycle on real phones
 
