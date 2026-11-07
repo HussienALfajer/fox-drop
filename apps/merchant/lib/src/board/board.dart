@@ -189,12 +189,5 @@ final boardFeedProvider = Provider.autoDispose<LiveFeed<Board>?>((ref) {
 final boardProvider = StreamProvider.autoDispose<LiveState<Board>>((ref) {
   final feed = ref.watch(boardFeedProvider);
   if (feed == null) return const Stream.empty();
-  return Stream.value(feed.state).followedBy(feed.states);
+  return feed.watch();
 });
-
-extension<T> on Stream<T> {
-  Stream<T> followedBy(Stream<T> next) async* {
-    yield* this;
-    yield* next;
-  }
-}

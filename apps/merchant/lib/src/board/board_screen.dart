@@ -44,15 +44,24 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
     vsync: this,
   );
   late final void Function(bool) _keepScreenOn = ref.read(keepScreenOnProvider);
+  late final Ringer _ringer = ref.read(ringerProvider);
+  // Android may end the Flutter engine while the process lives on; the
+  // ring must not outlive it (RA §4.4).
+  late final AppLifecycleListener _lifecycle = AppLifecycleListener(
+    onDetach: _ringer.stop,
+  );
 
   @override
   void initState() {
     super.initState();
     _keepScreenOn(true);
+    _lifecycle;
   }
 
   @override
   void dispose() {
+    _lifecycle.dispose();
+    _ringer.stop();
     _keepScreenOn(false);
     _tabs.dispose();
     super.dispose();
@@ -74,7 +83,6 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
     final board = state?.value;
     final now =
         ref.watch(tickProvider).value ?? ref.read(serverClockProvider).now();
-    final rings = board == null ? const <Ringing>[] : ringing(board);
     // RA §8.2: a ringing new order switches to «جديدة».
     ref.listen(boardProvider, (previous, next) {
       final before = previous?.value?.value;
@@ -164,33 +172,53 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
                     ],
                   ),
           ),
-          body: Column(
-            children: [
-              if (state != null && !state.live)
-                MaterialBanner(
-                  key: const Key('offline'),
-                  content: Text(l10n.merchantOffline),
-                  actions: const [SizedBox.shrink()],
-                ),
-              Expanded(
-                child: Stack(
-                  children: [
-                    Positioned.fill(child: body),
-                    if (board != null && rings.isNotEmpty)
-                      Positioned.fill(
-                        child: RingingPrompt(
-                          items: rings,
-                          board: board,
-                          now: now,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          body: BoardAlertsLayer(child: body),
         );
       },
+    );
+  }
+}
+
+/// What every board screen shows over its content (RA §4.4, §4.7): the
+/// offline bar, and the stacked prompts of what rings, so opening the detail
+/// never hides a ringing order. Back does not leave the app while something
+/// rings: on Android that would end the screen with the ring still on.
+class BoardAlertsLayer extends ConsumerWidget {
+  const BoardAlertsLayer({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final state = ref.watch(boardProvider).value;
+    final board = state?.value;
+    final now =
+        ref.watch(tickProvider).value ?? ref.read(serverClockProvider).now();
+    final rings = board == null ? const <Ringing>[] : ringing(board);
+    return PopScope(
+      canPop: rings.isEmpty,
+      child: Column(
+        children: [
+          if (state != null && !state.live)
+            MaterialBanner(
+              key: const Key('offline'),
+              content: Text(l10n.merchantOffline),
+              actions: const [SizedBox.shrink()],
+            ),
+          Expanded(
+            child: Stack(
+              children: [
+                Positioned.fill(child: child),
+                if (board != null && rings.isNotEmpty)
+                  Positioned.fill(
+                    child: RingingPrompt(items: rings, board: board, now: now),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

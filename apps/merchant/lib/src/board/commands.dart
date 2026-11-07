@@ -96,11 +96,11 @@ class BoardCommands extends Notifier<Set<String>> {
   );
 
   Future<CommandNotice?> confirmPickup(String orderId, String requestId) {
-    answeredHere.add(requestId);
     return _send(
       orderId,
       CommandKind.confirmPickup,
       requestId,
+      answers: requestId,
       (key) => _api.merchantOrdersConfirmPickup(
         orderId: orderId,
         idempotencyKey: key,
@@ -115,11 +115,11 @@ class BoardCommands extends Notifier<Set<String>> {
     String? requestId,
     List<({String amount, String currency})> received,
   ) {
-    if (requestId != null) answeredHere.add(requestId);
     return _send(
       orderId,
       CommandKind.disputePickup,
       '$requestId ${received.map((l) => '${l.amount} ${l.currency}').join(',')}',
+      answers: requestId,
       (key) => _api.merchantOrdersDisputePickup(
         orderId: orderId,
         idempotencyKey: key,
@@ -139,11 +139,11 @@ class BoardCommands extends Notifier<Set<String>> {
 
   /// «الطلب غير مكتمل» (RA §8.10 item 7).
   Future<CommandNotice?> incomplete(String orderId, String requestId) {
-    answeredHere.add(requestId);
     return _send(
       orderId,
       CommandKind.incomplete,
       requestId,
+      answers: requestId,
       (key) => _api.merchantOrdersPickupIncomplete(
         orderId: orderId,
         idempotencyKey: key,
@@ -152,18 +152,23 @@ class BoardCommands extends Notifier<Set<String>> {
   }
 
   // One command at a time per order. Its key belongs to the command's body:
-  // a lost answer sends the same key again until the server answers (RA
-  // §4.7), and an answered command drops it.
+  // a call without an answer (none, a 5xx, a 408 or a 429) is sent again
+  // with the same key after a backoff until the server answers (RA §4.7),
+  // and an answered command drops it. [answers] is the pickup request the
+  // command closes, marked while it is sent and kept unless refused, so this
+  // device does not announce its own answer as another user's.
   Future<CommandNotice?> _send(
     String orderId,
     CommandKind kind,
     String body,
-    Future<Object?> Function(String key) call,
-  ) async {
+    Future<Object?> Function(String key) call, {
+    String? answers,
+  }) async {
     if (state.contains(orderId)) return null;
     state = {...state, orderId};
     final command = '$orderId ${kind.name} $body';
     final key = _keys[command] ??= uuidV4();
+    if (answers != null) answeredHere.add(answers);
     try {
       for (var attempt = 0; ; attempt++) {
         try {
@@ -171,7 +176,13 @@ class BoardCommands extends Notifier<Set<String>> {
           return null;
         } on DioException catch (error) {
           final answer = error.response;
-          if (answer != null && (answer.statusCode ?? 0) < 500) {
+          final status = answer?.statusCode ?? 0;
+          if (answer != null &&
+              status < 500 &&
+              status != 408 &&
+              status != 429) {
+            // Another device or the server answered first.
+            if (answers != null) answeredHere.remove(answers);
             return _refused(kind, answer);
           }
           if (!ref.mounted) return null;
@@ -179,11 +190,17 @@ class BoardCommands extends Notifier<Set<String>> {
           if (!ref.mounted) return null;
         }
       }
+    } on Object {
+      // An answer the client could not read: the board's next fetch shows
+      // what happened.
+      return const CommandFailed();
     } finally {
       _keys.remove(command);
       if (ref.mounted) {
         state = {...state}..remove(orderId);
-        unawaited(ref.read(boardFeedProvider)?.refresh());
+        if (ref.exists(boardFeedProvider)) {
+          unawaited(ref.read(boardFeedProvider)?.refresh());
+        }
       }
     }
   }

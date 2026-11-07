@@ -62,9 +62,13 @@ class OrderScreen extends ConsumerWidget {
                     for (final s in OrderStep.values)
                       Chip(
                         key: Key('step-${s.name}'),
+                        // Done, current, or still ahead (CU §11.1); a
+                        // delivered order has every step done.
                         avatar: Icon(
-                          s.index <= step.index
+                          s.index < step.index || step == OrderStep.delivered
                               ? Icons.check_circle
+                              : s == step
+                              ? Icons.radio_button_checked
                               : Icons.radio_button_unchecked,
                         ),
                         label: Text(stepText(l10n, s)),

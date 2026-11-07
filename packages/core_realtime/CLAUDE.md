@@ -14,7 +14,7 @@ Real time in the three Flutter apps (architecture §6, §11.2; RA §4.3, CU §4.
 - **Version ordering** (RA §4.3): publications carry `orderId` and `version`; the feed keeps the highest version seen per order, from fetches and events, and drops a publication not newer than it, even for an order that left the state. `events` gives the new publications (their `type` and `reason`) for the app's sounds and messages, never for the state.
 - **Tokens:** the app passes its token route (`POST /v1/{party}/realtime/token`) as `token`; Centrifugo asks again when one expires. The session ending throws `RealtimeSignedOut`, which stops the reconnects. Channels need no token of their own: the API's subscription proxy checks each one.
 - **The address** is the API's origin with `ws`/`wss` and `/connection/websocket` (nginx forwards it to Centrifugo on staging); a debug build on the default development address uses Centrifugo's local port 8000 (`compose.yaml`). Each app computes it in its `api.dart`.
-- Tests use a fake `RealtimeTransport`; the Centrifugo side is proved by the server's `order-realtime.test.ts`.
+- Apps read a feed through `watch()`, which gives the current state and every later one with no gap. `CentrifugeTransport` takes a `ClientFactory`: `centrifuge_transport_test.dart` proves its lifecycle on a fake client (one subscription shared by every listener of a channel, a second listener fetching in full, the last channel closing the client, a client stopped by a signed-out session connecting again). App tests use a fake `RealtimeTransport`; the server's side is `order-realtime.test.ts`.
 
 ## Not yet
 

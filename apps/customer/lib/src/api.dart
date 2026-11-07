@@ -62,7 +62,8 @@ final realtimeTransportProvider = Provider<RealtimeTransport>((ref) {
             .customerRealtimeToken();
         return answer.data!.token;
       } on DioException catch (error) {
-        if (error.response?.statusCode == 401) {
+        if (error.response?.statusCode == 401 ||
+            error.response?.statusCode == 403) {
           throw const RealtimeSignedOut();
         }
         rethrow;

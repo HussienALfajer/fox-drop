@@ -21,30 +21,41 @@ abstract interface class Ringer {
 
 /// The phone's sounds through `flutter_ringtone_player` (Android). Windows
 /// has no player yet, so the calls do nothing there.
+///
+/// The plugin loops only on Android 9 and later, and the system may stop a
+/// sound (a call, another app taking the audio), so while ringing the alarm
+/// is started again every [replayEvery]; the stand-in sounds go with the
+/// bundled ones and `core_alerts` (architecture §12.2).
 class PhoneRinger implements Ringer {
+  PhoneRinger({this.replayEvery = const Duration(seconds: 10)});
+
+  final Duration replayEvery;
   final _player = FlutterRingtonePlayer();
-  bool _ringing = false;
+  Timer? _replay;
 
   bool get _supported => defaultTargetPlatform == TargetPlatform.android;
 
+  void _play() => unawaited(_player.playAlarm(looping: true, asAlarm: true));
+
   @override
   void ring() {
-    if (!_supported || _ringing) return;
-    _ringing = true;
-    unawaited(_player.playAlarm(looping: true, asAlarm: true));
+    if (!_supported || _replay != null) return;
+    _play();
+    _replay = Timer.periodic(replayEvery, (_) => _play());
   }
 
   @override
   void stop() {
-    if (!_supported || !_ringing) return;
-    _ringing = false;
+    if (!_supported || _replay == null) return;
+    _replay?.cancel();
+    _replay = null;
     unawaited(_player.stop());
   }
 
   @override
   void chime() {
     // One player: a chime would end the ring, which is louder anyway.
-    if (!_supported || _ringing) return;
+    if (!_supported || _replay != null) return;
     unawaited(_player.playNotification());
   }
 }
@@ -240,9 +251,17 @@ final boardNoticesProvider = NotifierProvider<BoardNotices, List<BoardNotice>>(
   BoardNotices.new,
 );
 
-/// Runs [alertStep] on every board, event and second while the board is
+/// How long past a ringing item's deadline (the automatic cancellation, the
+/// automatic pickup confirmation) the board is fetched again, in case the
+/// event that ends it was lost (RA §4.4: the ring stops when its condition
+/// ends).
+const ringDeadlineGrace = Duration(seconds: 3);
+
+/// Runs [alertStep] on every board and every second while the board is
 /// open, and drives the ringer (RA §4.4: the ring stops on every device once
 /// any device handles it, since each device's board no longer shows it).
+/// Events wait for the board fetched after them, so a cancellation's chime
+/// plays once its prompt has closed.
 final boardAlertsProvider = Provider.autoDispose<void>((ref) {
   final feed = ref.watch(boardFeedProvider);
   if (feed == null) return;
@@ -250,16 +269,20 @@ final boardAlertsProvider = Provider.autoDispose<void>((ref) {
   final clock = ref.watch(serverClockProvider);
   final memory = AlertMemory();
   final pending = <Map<String, Object?>>[];
+  final refetchedFor = <String>{};
 
-  void step() {
+  void step({required bool fresh}) {
+    final state = feed.state;
+    final take = fresh && !state.failed;
+    final now = clock.now();
     final result = alertStep(
       memory,
-      state: feed.state,
-      events: [...pending],
-      now: clock.now(),
+      state: state,
+      events: take ? [...pending] : const [],
+      now: now,
       answeredHere: ref.read(boardCommandsProvider.notifier).answeredHere,
     );
-    pending.clear();
+    if (take) pending.clear();
     if (result.ring) {
       ringer.ring();
     } else {
@@ -267,13 +290,33 @@ final boardAlertsProvider = Provider.autoDispose<void>((ref) {
     }
     if (result.chime) ringer.chime();
     ref.read(boardNoticesProvider.notifier).post(result.notices);
+    final board = state.value;
+    if (board == null) return;
+    for (final item in ringing(board)) {
+      final deadline = switch (item) {
+        NewOrderRinging(:final order) => order.autoCancelAt,
+        PickupRinging(:final request) => request.confirmBy,
+      };
+      final key = switch (item) {
+        NewOrderRinging(:final order) => order.id,
+        PickupRinging(:final request) => request.id,
+      };
+      if (deadline != null &&
+          now.isAfter(deadline.add(ringDeadlineGrace)) &&
+          refetchedFor.add(key)) {
+        unawaited(feed.refresh());
+      }
+    }
   }
 
   final subscriptions = [
-    feed.states.listen((_) => step()),
+    feed.states.listen((_) => step(fresh: true)),
     feed.events.listen(pending.add),
   ];
-  final ticker = Timer.periodic(const Duration(seconds: 1), (_) => step());
+  final ticker = Timer.periodic(
+    const Duration(seconds: 1),
+    (_) => step(fresh: false),
+  );
   ref.onDispose(() {
     ticker.cancel();
     for (final s in subscriptions) {

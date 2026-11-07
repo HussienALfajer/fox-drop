@@ -56,6 +56,24 @@ function publication(type: string, payload: OutboxPayload) {
   return { type, schema, orderId, number, restaurantId, status, version, reason, at, captainTrack };
 }
 
+// CU §11.2: the customer never sees the captain track as such, so the
+// order's channel carries no track and none of the captain's own steps
+// before assignment or at the pickup; the app fetches the order on the
+// events it gets, and a version it skipped is still older than the next.
+const CUSTOMER_SKIPS = new Set([
+  'order.search_started',
+  'order.offered',
+  'order.offer_closed',
+  'order.pickup_requested',
+  'order.pickup_rejected',
+  'order.pickup_disputed',
+]);
+
+function customerPublication(type: string, payload: OutboxPayload) {
+  const { schema, orderId, number, restaurantId, status, version, reason, at } = payload;
+  return { type, schema, orderId, number, restaurantId, status, version, reason, at };
+}
+
 // Architecture §5.5, E4: publishes the committed outbox rows to Centrifugo,
 // at least once, then marks them. Each run takes the unpublished rows in id
 // order, locked and skipping those another run holds, so relays run side by
@@ -102,13 +120,19 @@ export class OutboxRelay {
             await this.publisher.broadcast(
               [
                 merchantChannel(payload.restaurantId),
-                orderChannel(payload.orderId),
                 // CA §15: the offer's captain, or the order's once assigned.
                 ...(payload.captainId ? [captainChannel(payload.captainId)] : []),
               ],
               publication(row.type, payload),
               `outbox:${row.id}`,
             );
+            if (!CUSTOMER_SKIPS.has(row.type)) {
+              await this.publisher.broadcast(
+                [orderChannel(payload.orderId)],
+                customerPublication(row.type, payload),
+                `outbox:${row.id}:order`,
+              );
+            }
             done.push(row.id);
           } catch (error) {
             if (!(error instanceof PublishFailedError)) throw error;

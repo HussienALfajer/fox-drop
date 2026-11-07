@@ -60,6 +60,21 @@ class LiveFeed<T> {
 
   LiveState<T> get state => _state;
 
+  /// The current state, then every new one, with no gap between them: the
+  /// stream listens to [states] before it gives the current state.
+  Stream<LiveState<T>> watch() {
+    late StreamController<LiveState<T>> controller;
+    StreamSubscription<LiveState<T>>? subscription;
+    controller = StreamController<LiveState<T>>(
+      onListen: () {
+        subscription = states.listen(controller.add, onDone: controller.close);
+        controller.add(_state);
+      },
+      onCancel: () => subscription?.cancel(),
+    );
+    return controller.stream;
+  }
+
   /// The publications newer than the version shown, as they arrive, before
   /// the fetch they cause: the app reads their `type` and `reason` for its
   /// sounds and messages.

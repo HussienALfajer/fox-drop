@@ -29,9 +29,7 @@ final orderFeedProvider = Provider.autoDispose
 
 final orderProvider = StreamProvider.autoDispose
     .family<LiveState<CustomerOrder>, String>((ref, id) async* {
-      final feed = ref.watch(orderFeedProvider(id));
-      yield feed.state;
-      yield* feed.states;
+      yield* ref.watch(orderFeedProvider(id)).watch();
     });
 
 /// The five steps of the progress bar (CU §11.1): «تأكيد المطعم» ·

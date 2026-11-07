@@ -158,4 +158,22 @@ void main() {
     await settle();
     expect(fetches, 2);
   });
+
+  test('watch() gives the current state, then each new one', () async {
+    feed.start();
+    await settle();
+    final seen = <Map<String, int>?>[];
+    final watching = feed.watch().listen((state) => seen.add(state.value));
+    await settle();
+    answers = [
+      {'a': 2},
+    ];
+    await feed.refresh();
+    await settle();
+    expect(seen, [
+      {'a': 1},
+      {'a': 2},
+    ]);
+    await watching.cancel();
+  });
 }

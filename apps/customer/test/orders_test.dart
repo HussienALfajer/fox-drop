@@ -117,6 +117,15 @@ void main() {
       'بانتظار تأكيد المطعم — أرسلنا طلبك إلى مطعم الشام',
     );
     expect(find.text('يصل خلال 30–40 د'), findsOneWidget);
+    // The restaurant has not confirmed yet: its step is current, not done.
+    Icon icon(String step) => tester.widget<Icon>(
+      find.descendant(
+        of: find.byKey(Key('step-$step')),
+        matching: find.byType(Icon),
+      ),
+    );
+    expect(icon('confirm').icon, Icons.radio_button_checked);
+    expect(icon('preparing').icon, Icons.radio_button_unchecked);
 
     const channel = 'order:$_orderId';
     app.transport.send(channel, const RealtimeUp(recovered: true));

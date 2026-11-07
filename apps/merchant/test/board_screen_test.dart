@@ -14,6 +14,7 @@ import 'package:merchant/src/board/alerts.dart';
 import 'package:merchant/src/board/board_screen.dart';
 import 'package:merchant/src/board/commands.dart';
 import 'package:merchant/src/device.dart';
+import 'package:merchant/src/router.dart';
 
 import 'board_fixtures.dart';
 
@@ -264,6 +265,69 @@ void main() {
         {'amount': '20000', 'currency': 'TRY'},
       ],
     });
+    await app.done(tester);
+  });
+
+  testWidgets('an automatic cancellation closes the prompt with its chime', (
+    tester,
+  ) async {
+    final app = _Board();
+    await app.pump(tester, [
+      FakeAnswer(200, boardJson([orderJson()])),
+      FakeAnswer(200, boardJson([])),
+    ]);
+    await app.up(tester);
+    expect(app.ringer.ringing, isTrue);
+    app.transport.send(
+      _channel,
+      const RealtimePublication({
+        'type': 'order.cancelled',
+        'orderId': _orderId,
+        'number': '10001',
+        'version': 2,
+        'reason': 'merchant_auto_cancel',
+      }),
+    );
+    await tester.pumpAndSettle();
+    expect(app.ringer.ringing, isFalse);
+    expect(app.ringer.chimes, greaterThan(0));
+    expect(find.text('أُلغي الطلب #10001 لعدم الرد'), findsOneWidget);
+    await app.done(tester);
+  });
+
+  testWidgets('a ringing order past its deadline fetches the board again', (
+    tester,
+  ) async {
+    final app = _Board();
+    // Placed 10 minutes ago: its automatic cancellation is past, and the
+    // event that ends it never came.
+    final stale = orderJson(
+      placed: placedAt.subtract(const Duration(minutes: 9)),
+    );
+    await app.pump(tester, [
+      FakeAnswer(200, boardJson([stale])),
+      FakeAnswer(200, boardJson([])),
+    ]);
+    await app.up(tester);
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
+    expect(app.server.to('/v1/merchant/orders'), hasLength(2));
+    expect(app.ringer.ringing, isFalse);
+    await app.done(tester);
+  });
+
+  testWidgets('the detail shows the ringing prompt and the offline bar', (
+    tester,
+  ) async {
+    final app = _Board();
+    await app.pump(tester, [
+      FakeAnswer(200, boardJson([orderJson()])),
+    ]);
+    app.container.read(routerProvider).push('/orders/$_orderId');
+    await tester.pumpAndSettle();
+    expect(find.text('#10001'), findsWidgets);
+    expect(find.byKey(const Key('ringing-prompt')), findsWidgets);
+    expect(find.byKey(const Key('offline')), findsWidgets);
     await app.done(tester);
   });
 }
