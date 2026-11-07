@@ -15,8 +15,9 @@ import { GeoService, type Point } from '../geo/index.js';
 import { CODE_SENDER, type DevelopmentCodeSender } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { DATABASE } from '../../database/database.module.js';
+import type { Database } from '../../database/database.js';
 import { SettingsService } from '../settings/index.js';
-import { AlertsService } from '../notifications/index.js';
+import { type AlertCode, AlertsService } from '../notifications/index.js';
 import { ADMIN_SESSION_COOKIE, AdminSessionsService } from '../identity/index.js';
 import { OrderAlerts, timerId } from './order-alerts.js';
 import { OrderTimers } from './order-timers.js';
@@ -418,19 +419,70 @@ describe('the alert records (notifications)', () => {
     const alerts = app.get(AlertsService);
     const subject = { type: 'order' as const, id: randomUUID(), cityId: null };
     const now = new Date();
-    const db = app.get<{ db: Parameters<AlertsService['sync']>[0] }>(DATABASE).db;
-    await alerts.sync(db, subject, ['away_from_address'], ['away_from_address'], now);
+    const { db } = app.get<Database>(DATABASE);
+    const sync = (open: AlertCode[]) =>
+      db.transaction((tx) => alerts.sync(tx, subject, ['away_from_address'], open, now));
+    await sync(['away_from_address']);
     const [alert] = (await alerts.list(randomUUID(), OPERATIONS, false)).filter(
       (one) => one.subjectId === subject.id,
     );
     expect(alert).toMatchObject({ severity: 'information', resolvedAt: null });
     // Its condition still holds, yet it is not resolved by a sync.
-    await alerts.sync(db, subject, ['away_from_address'], [], now);
+    await sync([]);
     const closed = await alerts.acknowledge(alert!.id, randomUUID(), ['OWN'], now);
     expect(closed.resolvedAt).toEqual(now);
     // Raised once per subject.
-    await alerts.sync(db, subject, ['away_from_address'], ['away_from_address'], now);
+    await sync(['away_from_address']);
     expect(await alertsOf(subject.id)).toHaveLength(1);
+    // E4: each change left its outbox row for the panel's channel.
+    const events = await sql.query(
+      'SELECT type, city_id, payload FROM notifications.alert_outbox WHERE alert_id = $1 ORDER BY id',
+      [alert!.id],
+    );
+    expect(events.rows.map((row: { type: string }) => row.type)).toEqual([
+      'alert.raised',
+      'alert.acknowledged',
+    ]);
+    expect(events.rows[0]).toMatchObject({
+      city_id: null,
+      payload: { schema: 1, alertId: alert!.id },
+    });
+  });
+
+  it('writes the outbox row of an alert resolving itself in the same transaction (E4)', async () => {
+    const alerts = app.get(AlertsService);
+    const { db } = app.get<Database>(DATABASE);
+    const subject = { type: 'order' as const, id: randomUUID(), cityId: randomUUID() };
+    const now = new Date();
+    const sync = (open: AlertCode[]) =>
+      db.transaction((tx) => alerts.sync(tx, subject, ['prep_late'], open, now));
+    await sync(['prep_late']);
+    await sync([]);
+    const events = await sql.query(
+      `SELECT o.type, o.city_id FROM notifications.alert_outbox o
+       JOIN notifications.alerts a ON a.id = o.alert_id WHERE a.subject_id = $1 ORDER BY o.id`,
+      [subject.id],
+    );
+    expect(events.rows).toEqual([
+      { type: 'alert.raised', city_id: subject.cityId },
+      { type: 'alert.resolved', city_id: subject.cityId },
+    ]);
+    // A change rolled back leaves no row.
+    await expect(
+      db.transaction(async (tx) => {
+        await alerts.sync(tx, subject, ['prep_late'], ['prep_late'], now);
+        throw new Error('rolled back');
+      }),
+    ).rejects.toThrow('rolled back');
+    expect(
+      (
+        await sql.query(
+          `SELECT 1 FROM notifications.alert_outbox o
+       JOIN notifications.alerts a ON a.id = o.alert_id WHERE a.subject_id = $1`,
+          [subject.id],
+        )
+      ).rows,
+    ).toHaveLength(2);
   });
 
   it('keeps alerts append-only for the application role', async () => {

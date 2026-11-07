@@ -13,7 +13,9 @@ import {
 } from './alert-rules.js';
 import { type AlertEventType, alertOutbox, alerts } from './schema.js';
 
-type Executor = Pick<NodePgDatabase, 'select' | 'insert' | 'update'>;
+// A transaction, never the pool: an alert's change and its outbox row
+// commit together (E4).
+type Executor = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 
 // What an alert is about, and what the panel shows beside its label.
 export interface AlertSubjectRef {

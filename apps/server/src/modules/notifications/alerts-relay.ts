@@ -26,11 +26,12 @@ const BATCH = 20;
 export const ALERTS_RELAY_MS = 1000;
 
 // What the panel receives on ops:city.{city_id} for an alert change: the
-// alert, its rule and severity. The panel reads the alerts again, which
-// answers what the session's roles receive (AP §7.3).
+// alert's id only, since the channel's users include some who do not receive
+// it (SUP sees the board). The panel reads the alerts again, which answers
+// what the session's roles receive (AP §7.3).
 function publication(type: string, payload: AlertEventPayload) {
-  const { schema, alertId, code, severity, at } = payload;
-  return { type, schema, alertId, code, severity, at };
+  const { schema, alertId, at } = payload;
+  return { type, schema, alertId, at };
 }
 
 // E4: publishes the committed alert outbox rows to the city's ops channel, at
@@ -41,6 +42,9 @@ function publication(type: string, payload: AlertEventPayload) {
 @Injectable()
 export class AlertsRelay {
   private readonly logger = new Logger('AlertsRelay');
+  // The rows whose refusal was logged, so a row refused every second is
+  // logged once.
+  private readonly reported = new Set<bigint>();
 
   constructor(
     @Inject(DATABASE) private readonly database: Database,
@@ -95,10 +99,13 @@ export class AlertsRelay {
             if (!(error instanceof PublishFailedError)) throw error;
             failure = error;
             if (!error.answered) break;
-            this.logger.error(
-              { err: error, alertOutboxId: row.id.toString() },
-              'alert outbox row refused',
-            );
+            if (!this.reported.has(row.id)) {
+              this.reported.add(row.id);
+              this.logger.error(
+                { err: error, alertOutboxId: row.id.toString() },
+                'alert outbox row refused',
+              );
+            }
             refused.push(row.id);
           }
         }

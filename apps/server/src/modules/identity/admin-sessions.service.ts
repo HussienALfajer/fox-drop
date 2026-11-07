@@ -39,6 +39,7 @@ export interface OpenSession {
 @Injectable()
 export class AdminSessionsService {
   private readonly endedListeners: ((sessionIds: string[]) => void)[] = [];
+  private readonly accessListeners: ((sessionIds: string[]) => void)[] = [];
 
   constructor(
     @Inject(DATABASE) private readonly database: Database,
@@ -164,10 +165,32 @@ export class AdminSessionsService {
     };
   }
 
-  // Told the sessions a sign-out ended once it commits, so their real-time
+  // Told the sessions that ended once their end commits (a sign-out, and
+  // what the caller of endAll passes to notifyEnded), so their real-time
   // connections end at once (the notifications module).
   onEnded(listener: (sessionIds: string[]) => void): void {
     this.endedListeners.push(listener);
+  }
+
+  notifyEnded(sessionIds: string[]): void {
+    if (sessionIds.length === 0) return;
+    for (const listener of this.endedListeners) listener(sessionIds);
+  }
+
+  // AP §6.1: a role change applies at once. Told the account's open sessions
+  // once it commits, so their real-time connections reconnect and every
+  // subscription is checked again with the new roles.
+  onAccessChanged(listener: (sessionIds: string[]) => void): void {
+    this.accessListeners.push(listener);
+  }
+
+  async notifyAccessChanged(accountId: string): Promise<void> {
+    const rows = await this.database.db
+      .select({ id: adminSessions.id })
+      .from(adminSessions)
+      .where(and(eq(adminSessions.accountId, accountId), isNull(adminSessions.endedAt)));
+    if (rows.length === 0) return;
+    for (const listener of this.accessListeners) listener(rows.map((row) => row.id));
   }
 
   async signOut(session: AdminSession, context: AuditRequestContext, now = new Date()) {
@@ -188,7 +211,7 @@ export class AdminSessionsService {
       );
       return true;
     });
-    if (ended) for (const listener of this.endedListeners) listener([session.id]);
+    if (ended) this.notifyEnded([session.id]);
   }
 
   // The sessions not yet ended nor past their idle or maximum end (AP §5.2:
@@ -217,19 +240,20 @@ export class AdminSessionsService {
   }
 
   // Ends every open session of an account, inside the caller's transaction
-  // (AP §5.2–5.3: force sign-out, disable, TOTP reset). Returns how many.
+  // (AP §5.2–5.3: force sign-out, disable, TOTP reset). Returns their ids,
+  // which the caller passes to notifyEnded once it commits.
   async endAll(
     executor: Pick<Database['db'], 'update'>,
     accountId: string,
     reason: SessionEndReason,
     now: Date,
-  ): Promise<number> {
+  ): Promise<string[]> {
     const ended = await executor
       .update(adminSessions)
       .set({ endedAt: now, endReason: reason })
       .where(and(eq(adminSessions.accountId, accountId), isNull(adminSessions.endedAt)))
       .returning({ id: adminSessions.id });
-    return ended.length;
+    return ended.map((row) => row.id);
   }
 
   // The names of admin accounts, for who took an alert (AP §7.3); an account

@@ -19,9 +19,13 @@ describe('the ops channel', () => {
     ]);
   });
 
-  it('refreshes the alerts on an alert change', () => {
+  it('refreshes the alerts and the cards that show them on an alert change', () => {
     for (const type of ['alert.raised', 'alert.acknowledged', 'alert.resolved']) {
-      expect(staleQueries({ type }, city)).toEqual([['alerts', city]]);
+      expect(staleQueries({ type }, city)).toEqual([
+        ['alerts', city],
+        ['orders-board', city],
+        ['order'],
+      ]);
     }
     expect(staleQueries({ type: 'ticket.opened' }, city)).toEqual([]);
   });

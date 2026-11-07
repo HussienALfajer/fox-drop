@@ -16,12 +16,15 @@ export interface OpsEvent {
   orderId?: string;
 }
 
-// The reads an event makes stale.
+// The reads an event makes stale. An alert change also refreshes the board
+// and the details, whose cards show the order's alerts (AP §9.2.1): a timed
+// alert («مطعم لم يقبل») opens without any order event.
 export function staleQueries(event: OpsEvent, cityId: string): QueryKey[] {
   if (event.type.startsWith('order.')) {
     return [['orders-board', cityId], ...(event.orderId ? [['order', event.orderId]] : [])];
   }
-  if (event.type.startsWith('alert.')) return [['alerts', cityId]];
+  if (event.type.startsWith('alert.'))
+    return [['alerts', cityId], ['orders-board', cityId], ['order']];
   return [];
 }
 

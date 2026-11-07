@@ -1,7 +1,7 @@
 import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { reportError } from '../../observability/error-tracking.js';
 import { AdminSessionsService, AppSessionsService } from '../identity/index.js';
-import { RealtimePublisher } from './realtime-publisher.js';
+import { ACCESS_CHANGED, RealtimePublisher, SESSION_ENDED } from './realtime-publisher.js';
 
 // CU §5.4, RA §5.1: a sign-out applies at once on every device, so the
 // connections of a session that ends are dropped as soon as its end commits
@@ -19,10 +19,13 @@ export class RealtimeSessions implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
-    const disconnect = (sessionIds: string[]) => {
+    const disconnect = (
+      sessionIds: string[],
+      reason: typeof SESSION_ENDED | typeof ACCESS_CHANGED = SESSION_ENDED,
+    ) => {
       if (!this.publisher.enabled) return;
       for (const sessionId of sessionIds) {
-        this.publisher.disconnectSession(sessionId).catch((error: unknown) => {
+        this.publisher.disconnectSession(sessionId, reason).catch((error: unknown) => {
           this.logger.error({ err: error, sessionId }, 'could not disconnect an ended session');
           reportError(error);
         });
@@ -30,5 +33,7 @@ export class RealtimeSessions implements OnModuleInit {
     };
     this.sessions.onEnded(disconnect);
     this.adminSessions.onEnded(disconnect);
+    // AP §6.1: the panel reconnects, and the proxy checks the new roles.
+    this.adminSessions.onAccessChanged((sessionIds) => disconnect(sessionIds, ACCESS_CHANGED));
   }
 }

@@ -41,7 +41,11 @@ function sweep(options: {
   } as unknown as OtpSenderPoolService;
   const captains = { cashLimits: async () => options.captains } as unknown as CaptainsService;
   const geo = { activeCities: async () => [{ id: 'city' }] } as unknown as GeoService;
-  const database = { db: {} } as Database;
+  // Each sync runs in its own transaction (E4).
+  const tx = {};
+  const database = {
+    db: { transaction: async (run: (each: object) => Promise<void>) => run(tx) },
+  } as unknown as Database;
   return { sweep: new AlertsSweep(database, alerts, pool, captains, geo), synced };
 }
 

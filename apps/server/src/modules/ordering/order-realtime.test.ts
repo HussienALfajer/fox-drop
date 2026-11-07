@@ -625,6 +625,12 @@ describe("the captain's channel (architecture §6.2, CA §15)", () => {
 // A panel user with these roles: the cookie of its session.
 let operators = 0;
 async function operator(roles: string[]): Promise<Record<string, string>> {
+  return (await operatorAccount(roles)).cookies;
+}
+
+async function operatorAccount(
+  roles: string[],
+): Promise<{ accountId: string; sessionId: string; cookies: Record<string, string> }> {
   operators += 1;
   const { rows } = await sql.query(
     `INSERT INTO identity.admin_accounts (name, email, status, password_hash, totp_secret_encrypted)
@@ -637,7 +643,7 @@ async function operator(roles: string[]): Promise<Record<string, string>> {
       [rows[0].id, role],
     );
   }
-  const { token } = await app
+  const { token, session } = await app
     .get(AdminSessionsService)
     .start(
       app.get<Database>(DATABASE).db,
@@ -645,7 +651,11 @@ async function operator(roles: string[]): Promise<Record<string, string>> {
       { ipAddress: '203.0.113.9', device: 'test' },
       new Date(),
     );
-  return { [ADMIN_SESSION_COOKIE]: token };
+  return {
+    accountId: rows[0].id,
+    sessionId: session.id,
+    cookies: { [ADMIN_SESSION_COOKIE]: token },
+  };
 }
 
 async function panelToken(cookies: Record<string, string>): Promise<string> {
@@ -691,6 +701,78 @@ describe("the panel's city channel (architecture §6.2, §10.3)", () => {
     expect((await proxied('admin', ops, `merchant:${restaurant}`)).json()).toMatchObject({
       error: { code: 403 },
     });
+  });
+
+  it('disconnects a panel session past its idle end or of a disabled account, without recording activity (AP §5.2)', async () => {
+    const channel = `ops:city.${await azazId()}`;
+    const idle = await operatorAccount(['OPS']);
+    const idleToken = await panelToken(idle.cookies);
+    const before = new Date(Date.now() - 2 * 3_600_000);
+    await sql.query('UPDATE identity.admin_sessions SET last_activity_at = $2 WHERE id = $1', [
+      idle.sessionId,
+      before,
+    ]);
+    expect((await proxied('admin', idleToken, channel)).json()).toEqual({
+      disconnect: { code: 4501, reason: 'session ended' },
+    });
+    const { rows } = await sql.query(
+      'SELECT last_activity_at, ended_at FROM identity.admin_sessions WHERE id = $1',
+      [idle.sessionId],
+    );
+    expect(rows[0]).toEqual({ last_activity_at: before, ended_at: null });
+
+    const disabled = await operatorAccount(['OPS']);
+    const disabledToken = await panelToken(disabled.cookies);
+    await sql.query("UPDATE identity.admin_accounts SET status = 'disabled' WHERE id = $1", [
+      disabled.accountId,
+    ]);
+    expect((await proxied('admin', disabledToken, channel)).json()).toEqual({
+      disconnect: { code: 4501, reason: 'session ended' },
+    });
+  });
+
+  it('ends the connection at a forced sign-out and checks it again at a role change (AP §5.3, §6.1)', async () => {
+    const channel = `ops:city.${await azazId()}`;
+    const owner = await operator(['OWN']);
+    const forced = await operatorAccount(['OPS']);
+    const forcedBoard = subscribed(await panelToken(forced.cookies), channel);
+    const demoted = await operatorAccount(['OPS']);
+    const client = new Centrifuge(centrifugo.websocketUrl, {
+      token: await panelToken(demoted.cookies),
+      websocket: WebSocket,
+    });
+    const subscription = client.newSubscription(channel);
+    const states: (string | number)[] = [];
+    subscription.on('subscribed', () => states.push('subscribed'));
+    subscription.on('unsubscribed', (context) => states.push(context.code));
+    subscription.subscribe();
+    client.connect();
+    try {
+      expect(await forcedBoard.outcome).toBe('subscribed');
+      await eventually(() => states.includes('subscribed'));
+
+      const signOut = await app.inject({
+        method: 'POST',
+        url: `/v1/admin/team/users/${forced.accountId}/sign-out`,
+        cookies: owner,
+      });
+      expect(signOut.statusCode).toBeLessThan(300);
+      expect(await forcedBoard.disconnected).toBe(4501);
+
+      // DATA neither sees the board nor receives alerts: the reconnect's
+      // subscription is refused.
+      const roles = await app.inject({
+        method: 'PUT',
+        url: `/v1/admin/team/users/${demoted.accountId}/roles`,
+        cookies: owner,
+        payload: { roles: ['DATA'] },
+      });
+      expect(roles.statusCode).toBeLessThan(300);
+      await eventually(() => states.includes(403));
+    } finally {
+      forcedBoard.client.disconnect();
+      client.disconnect();
+    }
   });
 
   it('ends the connection of a panel session that signs out', async () => {
@@ -750,8 +832,6 @@ describe("the panel's city channel (architecture §6.2, §10.3)", () => {
         type: 'alert.raised',
         schema: 1,
         alertId: alert!.id,
-        code: 'restaurant_not_accepted',
-        severity: 'critical',
         at: expect.any(String) as unknown,
       });
 
