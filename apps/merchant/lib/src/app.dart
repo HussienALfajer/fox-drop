@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:core_l10n/core_l10n.dart';
 import 'package:core_platform/core_platform.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +7,6 @@ import 'platform.dart';
 import 'push.dart';
 import 'router.dart';
 import 'terms.dart';
-import 'board/board.dart';
 
 /// The restaurant app «تطبيق المطعم»: Arabic only, right to left (AP §4.7).
 class MerchantApp extends ConsumerWidget {
@@ -25,14 +22,11 @@ class MerchantApp extends ConsumerWidget {
     // RA §4.10: a new version of the terms asks the owner on the next open.
     ref.watch(termsPromptProvider);
     final platform = ref.watch(platformCheckProvider);
-    // "On every reconnect" (RA §4.2): the channel coming back checks again.
-    ref.listen(boardProvider, (previous, next) {
-      if (previous?.value?.live == false && next.value?.live == true) {
-        unawaited(platform.check());
-      }
-    });
+    // RA §18: the platform broadcasts, and "on every reconnect" (RA §4.2).
+    ref.watch(platformBroadcastsProvider);
+    final router = ref.watch(routerProvider);
     return MaterialApp.router(
-      routerConfig: ref.watch(routerProvider),
+      routerConfig: router,
       // RA §4.2: the suggested update's banner over every screen.
       builder: (context, child) =>
           UpdateBannerFrame(check: platform, url: updateUrl(), child: child!),

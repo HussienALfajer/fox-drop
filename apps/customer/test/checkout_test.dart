@@ -1,5 +1,6 @@
 import 'package:core_auth/testing.dart';
 import 'package:customer/src/location/position.dart';
+import 'package:customer/src/checkout/quote.dart';
 import 'package:customer/src/profile/profile.dart';
 import 'package:customer/src/router.dart';
 import 'package:flutter/material.dart';
@@ -787,6 +788,116 @@ void main() {
     expect(find.text('اسمح بالإشعارات لتعرف متى يصل طلبك'), findsNothing);
     expect(app.server.to('/v1/customer/orders'), hasLength(1));
     expect(app.device.values['notifications_asked'], '1');
+    await app.done(tester);
+  });
+
+  // CU §4.7, Appendix C «Emergency stop»: checkout's first quote says it
+  // opened checkout; the stop's problem shows the browsing message and
+  // keeps «تأكيد الطلب» off.
+  testWidgets('during an emergency stop checkout counts and refuses', (
+    tester,
+  ) async {
+    final app = await _checkout(
+      tester,
+      quotes: [
+        FakeAnswer(
+          200,
+          _quote(
+            problems: [
+              {'code': 'emergency_stop', 'message': 'نتوقف قليلاً ونعود'},
+            ],
+          ),
+        ),
+      ],
+    );
+    expect(app.bodyOf('/v1/customer/quote')['openedCheckout'], isTrue);
+    expect(find.text('نتوقف قليلاً ونعود'), findsOneWidget);
+    final confirm = tester.widget<FilledButton>(
+      find.byKey(const Key('confirm-order')),
+    );
+    expect(confirm.onPressed, isNull);
+
+    // A later quote of the same checkout is not the opening one.
+    app.container.invalidate(quoteProvider);
+    await tester.pumpAndSettle();
+    final quotes = app.server.to('/v1/customer/quote');
+    expect(quotes.length, greaterThan(1));
+    expect(
+      app.bodyOf(
+        '/v1/customer/quote',
+        index: quotes.length - 1,
+      )['openedCheckout'],
+      isFalse,
+    );
+    await app.done(tester);
+  });
+
+  testWidgets('checkout opened from the cart asks its own quote', (
+    tester,
+  ) async {
+    final app = await browsingApp(
+      tester,
+      signedIn: true,
+      before: (app) {
+        app.server.on('/v1/customer/quote', [FakeAnswer(200, _quote())]);
+        app.server.on('/v1/customer/addresses', [
+          const FakeAnswer(200, {'addresses': <Object>[]}),
+        ]);
+      },
+    );
+    await openSham(tester);
+    await addShawarma(tester);
+    app.container.read(routerProvider).push('/cart');
+    await tester.pumpAndSettle();
+    final before = app.server.to('/v1/customer/quote').length;
+    expect(
+      app.bodyOf('/v1/customer/quote', index: before - 1)['openedCheckout'],
+      isFalse,
+    );
+    await tester.tap(find.byKey(const Key('cart-continue')));
+    await tester.pumpAndSettle();
+    final quotes = app.server.to('/v1/customer/quote');
+    expect(quotes, hasLength(before + 1));
+    expect(
+      app.bodyOf('/v1/customer/quote', index: before)['openedCheckout'],
+      isTrue,
+    );
+    await app.done(tester);
+  });
+
+  // A saved address near the point moves the point on opening (CU §10.3):
+  // the opening quote is the first one sent, never lost to that move.
+  testWidgets('the opening quote survives the preselected address', (
+    tester,
+  ) async {
+    final app = await _checkout(
+      tester,
+      addresses: [
+        {
+          'id': _addressId,
+          'label': 'home',
+          'customLabel': null,
+          // 44 m from the phone's point: preselected, so the point moves.
+          'location': {'latitude': 36.5866, 'longitude': 37.0463},
+          'neighbourhood': 'الحي الشمالي',
+          'street': 'شارع القلعة، بناء 4',
+          'floor': null,
+          'landmark': 'قرب جامع النور',
+          'contactPhone': null,
+          'recipientName': null,
+          'directions': null,
+          'isDefault': true,
+        },
+      ],
+    );
+    expect(find.byKey(const Key('address-street')), findsNothing);
+    final quotes = app.server.to('/v1/customer/quote');
+    final opened = [
+      for (var i = 0; i < quotes.length; i++)
+        app.bodyOf('/v1/customer/quote', index: i)['openedCheckout'],
+    ];
+    expect(opened.where((o) => o == true), hasLength(1));
+    expect(opened.first, isTrue);
     await app.done(tester);
   });
 }

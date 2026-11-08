@@ -134,11 +134,21 @@ class FakeRinger implements Ringer {
 }
 
 class FakeTransport implements RealtimeTransport {
-  final channels = <String, StreamController<RealtimeSignal>>{};
+  /// Every listener of each channel: the feed and the platform broadcasts
+  /// listen to the same one, as on `CentrifugeTransport`.
+  final channels = <String, List<StreamController<RealtimeSignal>>>{};
 
   @override
-  Stream<RealtimeSignal> channel(String name) =>
-      (channels[name] = StreamController<RealtimeSignal>()).stream;
+  Stream<RealtimeSignal> channel(String name) {
+    final controller = StreamController<RealtimeSignal>();
+    (channels[name] ??= []).add(controller);
+    controller.onCancel = () => channels[name]!.remove(controller);
+    return controller.stream;
+  }
 
-  void send(String name, RealtimeSignal signal) => channels[name]!.add(signal);
+  void send(String name, RealtimeSignal signal) {
+    for (final controller in [...?channels[name]]) {
+      controller.add(signal);
+    }
+  }
 }

@@ -25,6 +25,10 @@ The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, 
 
 - `termsCheckProvider` (`lib/src/terms.dart`) follows `apps/customer/CLAUDE.md` «Terms». A pending version shows «وافق على الشروط الجديدة لتتمكن من الاتصال» on home while offline, with a link to `/terms`; «متصل» refused with `terms_not_accepted` («The terms screen», CA §7.2) reads the terms again and opens `/terms`, beside the other blocks' message. A version published while the captain is online or on an order blocks nothing until the next time they go online. Not yet: the application form's step 4 (CA §5.2: the terms and the work rules with a required tick), with the joining slice.
 
+## Emergency stop (slice 2.4d; CA §6.3, §14 #31, §15)
+
+- `emergencyStopProvider` (`lib/src/platform.dart`) is an `EmergencyStopCheck` (`packages/core_platform/CLAUDE.md`) on `GET /v1/captain/emergency-stop` while signed in; `platformBroadcastsProvider` follows `captain:{captain_id}` for it and for `platform.app_changed`, and reads both again whenever the channel connects. `WorkLayer` shows `EmergencyStopBanner` right after the offline bar (CA §6.3 item 2). Each start or end seen while the app runs chimes once (`ringerProvider`). A current order goes on; the server sends no offers meanwhile.
+
 ## Not yet (slice 1.14g)
 
 - The suggestion of «وصلت» when entering the customer's radius (CA §9.6), the blocks «بانتظار تعديل الطلب من العمليات» and «بانتظار تأكيد المطعم للتعديل» (CA §9.3, with edits and item-unavailable reports on the server), the peak bonus lines and the K2 over-limit text (with their server fields).

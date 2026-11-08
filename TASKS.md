@@ -4,17 +4,19 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.4d, the emergency stop in the apps (`docs/roadmap.md`, Phase 2, the last of slice 2.4's four pull requests): the red banner in the restaurant and captain apps with the chime on and off, the customer's banner and disabled order button, and the delay banner on the order screen; all gone on resume. The owner starts the stop and every app shows it.
+Slice 2.5, object storage and images (`docs/roadmap.md`, Phase 2 foundations): the S3-compatible storage and imgproxy in development and staging, signed uploads, restaurant logos and covers and item photos in the customer app. The owner uploads an item photo and the customer sees it.
 
-- **Specs:** RA §8.17 and §16 #34 (the banner, «المنصة متوقفة مؤقتاً عن استقبال طلبات جديدة. أكملوا الطلبات الحالية.», every device chimes once when it ends), CA §6.3 (the banner's place, second after no connection) and §14 #31, CU §4.7 (the browsing banner, the disabled order button), CU §11.6 (the delay banner on the order screen), CU §10.6 and Appendix C («Emergency stop»: the browsing message), CU §14 #18 and #19 (the pushes 2.4c sends), RA §18 and CA §15 (the platform broadcasts).
-- **Branch:** `feat/emergency-stop-apps`.
-- **Already there (slice 2.4c):** `GET /v1/customer/emergency-stop?latitude=&longitude=` (public: `active`, `startedAt`, `browseMessage`, `delayNotice` with its reason filled), `GET /v1/merchant/emergency-stop` and `GET /v1/captain/emergency-stop` (`active`, `startedAt`); the publication `platform.emergency_stop` (`active`, `at`) on every restaurant's `merchant:` and captain's `captain:` channel of the city and on each active order's `order:` channel; `platform.app_changed` (`app`) on the merchant and captain channels when an `app.<app>.*` setting changes, so an open app reads `GET /v1/{app}/platform` again; the quote's `emergency_stop` problem with the browsing message in `message`, and the quote request's `openedCheckout` (true on the checkout's first quote: the customer counts once per stop as an attempt and later gets «الخدمة عادت»). The pushes CU #18 (`customer.emergency_delay`, data `target: order`) and #19 (`customer.service_back`, data `target: home`) are queued by the server.
-- **Plan:**
-  - [ ] `packages/core_platform`: read the stop on start, on connecting and on each `platform.emergency_stop`; read the platform again on `platform.app_changed` (2.4a's screens).
-  - [ ] Restaurant app: the red banner on every screen, the chime once when it ends (RA §16 #34).
-  - [ ] Captain app: the banner in its place among CA §6.3's (CA §14 #31).
-  - [ ] Customer app: the banner while browsing, the order button disabled with the message, the checkout's first quote with `openedCheckout: true`, the `emergency_stop` problem's text from `message`, the delay banner on the order screen (from the read, refreshed on the order channel's publication), the `home` push target.
-  - [ ] Review, then hand over to slice 2.5.
+- **Specs:** architecture §5.8 (two buckets, `public-media` through imgproxy and nginx's cache, `private-docs` with short-lived signed URLs; uploads straight from the app with a pre-signed URL, the server checking type and size before linking the file), T7 and T9 (the storage software is chosen in this slice, the same in development and on the server), §17 (the containers per environment, the nightly copy of both buckets), CU §4.5 (images per screen size), the image fields of the menu and restaurant specs the slice touches (RA §9, AP §9.6), and `docs/open-questions.md` for anything open about photos.
+- **Branch:** `feat/object-storage`.
+- **Ask the owner first:** which S3-compatible storage (T7: MinIO no longer publishes images; candidates such as Garage or SeaweedFS), and whether the slice is one pull request or two (storage and uploads, then the customer app's images), with the `slice-plan` skill if two.
+- **Plan:** write it as a checklist once the owner answers, one step per commit: the storage and imgproxy in `compose.yaml` and the staging deploy, the server's files module with the signed upload and the check before linking, who uploads which image (the panel and the restaurant app's menu, per the specs), the customer app showing logos, covers and item photos through imgproxy, then review and hand over to slice 2.6.
+
+### Left from 2.4d (`feat/emergency-stop-apps`)
+
+- **Before deploying to staging:** raise `app.customer.min_version` with the 2.4d build (see 2.4c below: an older customer app cannot read the quote's `emergency_stop` problem).
+- **To check on staging:** start the stop in the panel: the restaurant and captain apps show «المنصة متوقفة مؤقتاً عن استقبال طلبات جديدة. أكملوا الطلبات الحالية.» within seconds with a chime, and lose it with a chime on «استئناف»; the customer's home shows the browsing message (on opening or returning to the app), checkout shows it and keeps «تأكيد الطلب» off, an open order shows the delay notice live.
+- **To confirm with the owner:** the restaurant's banner is over every screen, above the board's offline bar (RA §6.3 puts no connection first; the design places them); the captain's shows on home only, after the offline bar; a start and an end both chime (RA §16 #34 and CA §14 #31 say «on or off»; RA §8.17 names only the end); the customer's browsing banner shows on home, the restaurant page and the cart, while the cart's «متابعة» stays on, so opening checkout counts the attempt and checkout's «تأكيد الطلب» is the button the stop disables; the fallback «لا يمكن استقبال الطلبات الآن» if the server ever sends the problem without its message.
+- **Not yet:** a browsing customer's live banner (no `customer:` channel: the app reads the stop when the point is checked and on returning to the foreground); the banners' red (the design).
 
 ### Left from 2.4c (`feat/emergency-stop`)
 
@@ -31,7 +33,7 @@ Slice 2.4d, the emergency stop in the apps (`docs/roadmap.md`, Phase 2, the last
 ### Left from 2.4a (`feat/app-versions-maintenance`)
 
 - **To confirm with the owner:** maintenance leaves an online captain without an order on home (they keep their offers and can go offline), like a required update does (CA §7.2); the strings the spec gives no wording for («يلزم تحديث التطبيق», «هذا الإصدار لم يعد يعمل. حدّث التطبيق لتتابع.», «يتوفر إصدار أحدث من التطبيق.», «تحديث», «لاحقاً», «التطبيق في صيانة», «نعمل على تحسين الخدمة ونعود قريباً.»); which address the update button opens on Android (Google Play or the website's APK, RA §4.2: one build serves both), set as the GitHub variables `STAGING_CUSTOMER_UPDATE_URL`, `STAGING_MERCHANT_UPDATE_URL`, `STAGING_CAPTAIN_UPDATE_URL`; whether customers may still order while `app.merchant.maintenance` is on (every restaurant device is blocked, so orders wait for the automatic cancellation; no spec covers it).
-- **Not yet:** the apps reading the platform again on `platform.app_changed` (the server broadcasts it since 2.4c; the apps in 2.4d); «استعادة الافتراضي» and the descriptions on «التطبيقات» (2.38).
+- **Not yet:** «استعادة الافتراضي» and the descriptions on «التطبيقات» (2.38).
 
 ## Deferred: slice 2.3's staging check
 

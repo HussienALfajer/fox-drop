@@ -99,6 +99,8 @@ void main() {
     );
     expect(pushTargetPath({'target': 'order'}), isNull);
     expect(pushTargetPath({'target': 'codes'}), isNull);
+    // CU §14 #19: «الخدمة عادت» opens home.
+    expect(pushTargetPath({'target': 'home'}), '/');
     expect(pushTargetPath({}), isNull);
   });
 }

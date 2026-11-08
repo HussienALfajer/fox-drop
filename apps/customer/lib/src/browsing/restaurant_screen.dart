@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../cart/cart.dart';
+import '../emergency_stop.dart';
 import '../cart/item_choice.dart';
 import '../cart/item_sheet.dart';
 import '../device.dart';
@@ -80,6 +81,8 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
     final search = _search.trim();
     return ListView(
       children: [
+        // CU §4.7: browsing goes on during an emergency stop, with its message.
+        const EmergencyStopNotice(),
         ListTile(
           title: Text(r.nameAr),
           subtitle: Text(

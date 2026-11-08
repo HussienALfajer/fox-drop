@@ -54,9 +54,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       // AP §9.13, RA §4.10: the restaurant terms, which owners accept.
       GoRoute(
         path: '/terms',
-        builder: (context, state) => TermsScreen(
-          check: terms,
-          onAccepted: () => context.canPop() ? context.pop() : context.go('/'),
+        builder: (context, state) => WithStopBanner(
+          child: TermsScreen(
+            check: terms,
+            onAccepted: () =>
+                context.canPop() ? context.pop() : context.go('/'),
+          ),
         ),
       ),
       GoRoute(
@@ -77,7 +80,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/device-name',
-        builder: (context, state) => const DeviceNameScreen(),
+        builder: (context, state) =>
+            const WithStopBanner(child: DeviceNameScreen()),
       ),
     ],
     errorBuilder: (context, state) => const NotFoundScreen(),

@@ -33,11 +33,23 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   Set<FormProblem> _problems = const {};
   bool _preselected = false;
+  late final CheckoutOpening _opening;
+
+  @override
+  void dispose() {
+    _opening.clear();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
+    // CU §4.7: the quote asked on opening checkout says so. When the cart's
+    // quote is still alive, none would be asked: ask it again.
+    _opening = ref.read(checkoutOpeningProvider)..mark();
+    final alive = ref.exists(quoteProvider);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (alive) ref.invalidate(quoteProvider);
       // An earlier attempt's failure is not shown again, and an old cart
       // empties (CU §10.1).
       ref.read(placeOrderProvider.notifier).done();

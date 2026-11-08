@@ -99,6 +99,14 @@ List<ProblemView> problemViews(
         );
       case ProblemCode.noCaptainNearby:
         views.add(ProblemView(l10n.customerNoCaptain, ProblemAction.retry));
+      case ProblemCode.emergencyStop:
+        // CU Appendix C «Emergency stop»: the stop's browsing message.
+        views.add(
+          ProblemView(
+            problem.message ?? l10n.customerCannotOrderNow,
+            ProblemAction.none,
+          ),
+        );
       case ProblemCode.termsPending:
         views.add(
           ProblemView(l10n.customerTermsPending, ProblemAction.showTerms),

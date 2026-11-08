@@ -1525,4 +1525,11 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get merchantTermsPendingBanner =>
       'وافق على الشروط الجديدة لتستخدم شاشات المطعم الأخرى. الطلبات تصل كالمعتاد.';
+
+  @override
+  String get emergencyStopBanner =>
+      'المنصة متوقفة مؤقتاً عن استقبال طلبات جديدة. أكملوا الطلبات الحالية.';
+
+  @override
+  String get customerCannotOrderNow => 'لا يمكن استقبال الطلبات الآن';
 }

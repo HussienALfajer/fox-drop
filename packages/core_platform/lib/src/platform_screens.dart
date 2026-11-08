@@ -2,6 +2,7 @@ import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'emergency_stop.dart';
 import 'platform_check.dart';
 import 'platform_status.dart';
 
@@ -153,5 +154,26 @@ class UpdateBannerFrame extends StatelessWidget {
             ],
           ),
     child: child,
+  );
+}
+
+/// The banner of the restaurant and captain apps while the emergency stop
+/// is on (RA §8.17, CA §6.3 item 2); nothing otherwise. A screen places it
+/// under its top bar, after the offline bar. Its red waits for the design.
+class EmergencyStopBanner extends StatelessWidget {
+  const EmergencyStopBanner({super.key, required this.check});
+
+  final EmergencyStopCheck check;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: check,
+    builder: (context, _) => !check.stop.active
+        ? const SizedBox.shrink()
+        : MaterialBanner(
+            key: const Key('emergency-stop'),
+            content: Text(AppLocalizations.of(context).emergencyStopBanner),
+            actions: const [SizedBox.shrink()],
+          ),
   );
 }

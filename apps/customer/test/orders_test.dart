@@ -248,4 +248,39 @@ void main() {
       await app.done(tester);
     },
   );
+
+  // CU §11.6, §4.7: the delay notice while the stop is on, read at the
+  // order's address and again on the stop's broadcast on its channel.
+  testWidgets('an emergency stop shows its delay notice until it ends', (
+    tester,
+  ) async {
+    final app = TestApp(signedIn: true);
+    app.emergencyStop(active: true, delayNotice: 'قد يتأخر طلبك بسبب عطل');
+    app.server.on('/v1/customer/orders/$_orderId', [
+      FakeAnswer(200, {'order': _order()}),
+    ]);
+    app.server.on('/v1/customer/orders/active', [
+      const FakeAnswer(200, {'orders': <Object>[]}),
+    ]);
+    await app.pump(tester);
+    app.container.read(routerProvider).go('/orders/$_orderId');
+    await tester.pumpAndSettle();
+    expect(find.text('قد يتأخر طلبك بسبب عطل'), findsOneWidget);
+    expect(
+      app.server.to('/v1/customer/emergency-stop').last.uri.queryParameters,
+      {'latitude': '36.5862', 'longitude': '37.0463'},
+    );
+
+    app.emergencyStop();
+    app.transport.send(
+      'order:$_orderId',
+      const RealtimePublication({
+        'type': 'platform.emergency_stop',
+        'active': false,
+      }),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('قد يتأخر طلبك بسبب عطل'), findsNothing);
+    await app.done(tester);
+  });
 }

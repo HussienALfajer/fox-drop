@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:core_l10n/core_l10n.dart';
+import 'package:core_platform/core_platform.dart';
 import 'package:core_realtime/core_realtime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'api.dart';
+import 'platform.dart';
 import 'terms.dart';
 import 'work/alerts.dart';
 import 'work/commands.dart';
@@ -276,6 +278,9 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
                   content: Text(l10n.captainNoConnection),
                   actions: const [SizedBox.shrink()],
                 ),
+              // CA §6.3 item 2, after no connection.
+              if (ref.watch(emergencyStopProvider) case final stop?)
+                EmergencyStopBanner(check: stop),
               Expanded(child: widget.child),
             ],
           ),

@@ -276,13 +276,23 @@ class FakeRinger implements Ringer {
 }
 
 class FakeTransport implements RealtimeTransport {
-  final channels = <String, StreamController<RealtimeSignal>>{};
+  /// Every listener of each channel: the feed and the platform broadcasts
+  /// listen to the same one, as on `CentrifugeTransport`.
+  final channels = <String, List<StreamController<RealtimeSignal>>>{};
 
   @override
-  Stream<RealtimeSignal> channel(String name) =>
-      (channels[name] = StreamController<RealtimeSignal>()).stream;
+  Stream<RealtimeSignal> channel(String name) {
+    final controller = StreamController<RealtimeSignal>();
+    (channels[name] ??= []).add(controller);
+    controller.onCancel = () => channels[name]!.remove(controller);
+    return controller.stream;
+  }
 
-  void send(String name, RealtimeSignal signal) => channels[name]!.add(signal);
+  void send(String name, RealtimeSignal signal) {
+    for (final controller in [...?channels[name]]) {
+      controller.add(signal);
+    }
+  }
 
   /// The channel says the order changed to [version].
   void event(String type, int version) => send(
@@ -355,8 +365,19 @@ class TestApp {
         FakeAnswer(200, {'updateNeed': updateNeed, 'maintenance': maintenance}),
       ]);
 
+  void emergencyStop({bool active = false}) =>
+      server.on('/v1/captain/emergency-stop', [
+        FakeAnswer(200, {
+          'active': active,
+          'startedAt': active ? '2026-11-09T09:00:00.000Z' : null,
+        }),
+      ]);
+
   Future<void> pump(WidgetTester tester, {Map<String, String>? stored}) async {
     if (!server.routes.containsKey('/v1/captain/platform')) platform();
+    if (!server.routes.containsKey('/v1/captain/emergency-stop')) {
+      emergencyStop();
+    }
     if (!server.routes.containsKey('/v1/captain/terms')) terms();
     server.on('/v1/captain/content', [FakeAnswer(200, contentJson())]);
     server.on('/v1/captain/push-token', [

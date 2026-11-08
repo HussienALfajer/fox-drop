@@ -55,6 +55,11 @@ class _Board {
         }),
       ]);
     }
+    if (!server.routes.containsKey('/v1/merchant/emergency-stop')) {
+      server.on('/v1/merchant/emergency-stop', [
+        const FakeAnswer(200, {'active': false, 'startedAt': null}),
+      ]);
+    }
     if (!server.routes.containsKey('/v1/merchant/platform')) {
       server.on('/v1/merchant/platform', [
         const FakeAnswer(200, {'updateNeed': 'none', 'maintenance': false}),
@@ -349,6 +354,80 @@ void main() {
     expect(find.text('#10001'), findsWidgets);
     expect(find.byKey(const Key('ringing-prompt')), findsWidgets);
     expect(find.byKey(const Key('offline')), findsWidgets);
+    await app.done(tester);
+  });
+
+  // RA §8.17, §16 #34, §18: the stop's banner on every screen, a chime when
+  // it starts or ends, read again on each broadcast.
+  testWidgets('the emergency stop shows its banner and chimes on and off', (
+    tester,
+  ) async {
+    final app = _Board();
+    app.server.on('/v1/merchant/emergency-stop', [
+      const FakeAnswer(200, {
+        'active': true,
+        'startedAt': '2026-11-09T09:00:00.000Z',
+      }),
+    ]);
+    await app.pump(tester, [FakeAnswer(200, boardJson([]))]);
+    const text =
+        'المنصة متوقفة مؤقتاً عن استقبال طلبات جديدة. أكملوا الطلبات الحالية.';
+    expect(find.text(text), findsOneWidget);
+    // The state the app opened in is no switch.
+    expect(app.ringer.chimes, 0);
+
+    app.server.on('/v1/merchant/emergency-stop', [
+      const FakeAnswer(200, {'active': false, 'startedAt': null}),
+    ]);
+    final reads = app.server.to('/v1/merchant/emergency-stop').length;
+    app.transport.send(
+      _channel,
+      const RealtimePublication({
+        'type': 'platform.emergency_stop',
+        'active': false,
+        'at': '2026-11-09T10:00:00.000Z',
+      }),
+    );
+    await tester.pumpAndSettle();
+    expect(app.server.to('/v1/merchant/emergency-stop'), hasLength(reads + 1));
+    expect(find.text(text), findsNothing);
+    expect(app.ringer.chimes, 1);
+
+    // Started again: the banner comes back with a chime.
+    app.server.on('/v1/merchant/emergency-stop', [
+      const FakeAnswer(200, {
+        'active': true,
+        'startedAt': '2026-11-09T11:00:00.000Z',
+      }),
+    ]);
+    app.transport.send(
+      _channel,
+      const RealtimePublication({'type': 'platform.emergency_stop'}),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text(text), findsOneWidget);
+    expect(app.ringer.chimes, 2);
+    await app.done(tester);
+  });
+
+  // RA §18, §4.2: «التطبيقات» changed, or the channel reconnected.
+  testWidgets('reads the platform again on app_changed and on reconnecting', (
+    tester,
+  ) async {
+    final app = _Board();
+    await app.pump(tester, [FakeAnswer(200, boardJson([]))]);
+    final reads = app.server.to('/v1/merchant/platform').length;
+    app.transport.send(
+      _channel,
+      const RealtimePublication({
+        'type': 'platform.app_changed',
+        'app': 'merchant',
+      }),
+    );
+    await tester.pumpAndSettle();
+    expect(app.server.to('/v1/merchant/platform'), hasLength(reads + 1));
+    await app.up(tester);
+    expect(app.server.to('/v1/merchant/platform'), hasLength(reads + 2));
     await app.done(tester);
   });
 }

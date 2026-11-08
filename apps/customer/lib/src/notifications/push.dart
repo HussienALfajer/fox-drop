@@ -46,6 +46,8 @@ final pushTokensProvider = Provider<PushTokens>((ref) {
 String? pushTargetPath(Map<String, String> data) => switch (data) {
   {'target': 'order', 'orderId': final id} when id.isNotEmpty =>
     '/orders/${Uri.encodeComponent(id)}',
+  // CU §14 #19: «الخدمة عادت».
+  {'target': 'home'} => '/',
   _ => null,
 };
 
