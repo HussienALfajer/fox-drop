@@ -74,6 +74,11 @@ class _App {
         }),
       ]);
     }
+    if (!server.routes.containsKey('/v1/merchant/emergency-stop')) {
+      server.on('/v1/merchant/emergency-stop', [
+        const FakeAnswer(200, {'active': false, 'startedAt': null}),
+      ]);
+    }
     if (!server.routes.containsKey('/v1/merchant/platform')) {
       server.on('/v1/merchant/platform', [
         const FakeAnswer(200, {'updateNeed': 'none', 'maintenance': false}),
