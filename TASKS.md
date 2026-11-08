@@ -4,11 +4,28 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.4, platform controls (`docs/roadmap.md`, Phase 2): forced update, maintenance, terms and privacy versions with re-acceptance, platform hours, the emergency stop with its banners, delay notice and automatic resume, and the settings the apps read. The owner starts the emergency stop and ordering stops in every app.
+Slice 2.4a, forced update and maintenance (`docs/roadmap.md`, Phase 2, slice 2.4 split with the owner 2026-11-08 into 2.4a–2.4d): the settings the apps read, the blocking update and maintenance screens and the dismissible update banner in the three apps, and the panel's «التطبيقات» screen. The owner raises an app's minimum version or turns its maintenance on in the panel and the app blocks, keeping an active order readable (customer) or finishable (captain).
 
-- **Specs:** AP §9.1.6, AP §9.13, CU §4.2, CU §4.7, RA §4.2, CA §4.2, CA §4.8; RA §16 #34–36 and CA §14 #31, #33 (the banners and blocking screens); AP Appendix A (the settings).
-- **Branch:** `feat/platform-controls` (or one per pull request once split).
-- **Plan:** larger than one pull request: split it with the owner first (the `slice-plan` skill), then write each part's steps here, one per commit.
+- **Specs:** CU §4.2, CU §4.7 (maintenance), RA §4.2, RA §4.10 (maintenance), CA §4.2, CA §4.8 (maintenance), AP §9.14 «التطبيقات», AP Appendix A `app.<app>.*`; RA §16 #36, CA §14 #33; the definitions of done CU §19 #27, RA §22 #30, CA §19 #28 (their update and maintenance parts).
+- **Branch:** `feat/app-versions-maintenance`.
+- **Already built:** platform hours (checkout's `platform_closed` with «FOX DROP يستقبل الطلبات من الساعة {الساعة}», slice 1.14d); checkout's `update_required` and `maintenance` problems; the captain's `version_below_minimum` block on going online (slice 1.6).
+- **Owner decisions 2026-11-08:** the split; the panel's «التطبيقات» screen comes now, the other settings screens stay in 2.38; the «الخدمة عادت» push (2.4c) goes to the customers who opened checkout during the stop; the terms (2.4b) start from a draft written from the specs.
+- **Decided here:** the apps check at launch, when they come back to the foreground and when a failed check succeeds again; the live broadcast to open devices (RA §18 «platform broadcasts») comes with 2.4c's fan-out to the restaurant and captain channels. The update button opens the build's `UPDATE_URL` (`--dart-define`, not a setting: Appendix A has none), hidden without one.
+- **Plan:**
+  - [x] Record the split (`docs/roadmap.md`, this file).
+  - [ ] Server: `GET /v1/{customer,merchant,captain}/platform?version=` (public): `update` (`required`, `suggested`, `none`), the update message and maintenance with its message; one `versionBelow` in the settings module for the quote, the captain's block and this route; the API contract and clients.
+  - [ ] Panel: «التطبيقات», the minimum and latest versions, the update message and maintenance with its message for each app (OWN), on the settings routes.
+  - [ ] `packages/core_platform`: the check (launch, resume, retry after a failure) and its state, tested.
+  - [ ] Customer app: the blocking update and maintenance screens with the active order still readable, and the update banner.
+  - [ ] Captain app: the same, with the current order finishable (the block applies to going online again).
+  - [ ] Restaurant app: the blocking screens on every device, and the update banner.
+  - [ ] Review, then hand over to 2.4b.
+
+### The rest of slice 2.4
+
+- **2.4b Terms and privacy versions:** one document per audience (customer, captain, restaurant), versioned and published in the panel's «المحتوى» (AP §9.13), starting from a draft written from the specs; acceptances per account; the customer browses but cannot order until accepting (CU §4.7), the captain cannot go online (K7, CA §4.8), a restaurant owner sees only Orders until accepting and cashiers are not affected (S13, RA §4.10); the customer's sign-up ticks the current version (CU §5.3).
+- **2.4c The emergency stop in the server and the panel** (AP §9.1.6, D7): the dialog (internal reason, the browsing message, the delay notice with `{السبب}`, the customer-facing reason, the optional automatic resume time), the resume timer written with the stop (E3), new orders refused (checkout's problem), each customer opening checkout counted once per stop, the delay push to customers with an active order (CU §14 #18), «استئناف» with the optional «الخدمة عادت» push (CU §14 #19) to the customers who opened checkout during the stop, never on the automatic resume; audited; the panel's red bar with the duration and the attempts; the platform broadcast on the restaurant and captain channels, which also carries maintenance and version changes.
+- **2.4d The emergency stop in the apps:** the red banner in the restaurant and captain apps with the chime on and off (RA §8.17, §16 #34, CA §6.3, §14 #31), the customer's banner and disabled order button, and the delay banner on the order screen (CU §4.7, §11.6); all gone on resume.
 
 ## Deferred: slice 2.3's staging check
 
