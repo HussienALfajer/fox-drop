@@ -4,20 +4,23 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.4b, terms and privacy versions (`docs/roadmap.md`, Phase 2, slice 2.4 split with the owner 2026-11-08 into 2.4a–2.4d): one terms and privacy document per audience (customer, captain, restaurant), versioned and published in the panel's «المحتوى», acceptances per account, and re-acceptance on the next open. The owner publishes a new customer version and the app asks for it before ordering.
+Slice 2.4c, the emergency stop in the server and the panel (`docs/roadmap.md`, Phase 2, slice 2.4 split with the owner 2026-11-08 into 2.4a–2.4d): OWN or OPS starts a city-wide stop with its dialog, new orders are refused, customers with an active order get the delay push, «استئناف» ends it (with the optional «الخدمة عادت» push), and the stop reaches the restaurant and captain channels. The owner starts the stop and checkout refuses.
 
-- **Specs:** AP §9.13 «الشروط والخصوصية», CU §4.7 (terms), CU §5.3 (the sign-up's tick), CU §13 («حسابي» terms), CU §15 «Accept terms», CA §4.8 (terms), CA §5 step 4, CA §7.2 (terms block), CA §15 «Accept terms», K7, RA §4.10 (terms), RA §5.2 item 3, S13, RA §16 #35, CA §14 #33; the definitions of done CU §19 #3 and #27, RA §22 #30, CA §19 #28 (their terms parts).
-- **Branch:** `feat/terms-versions`.
-- **Owner decision 2026-11-08:** the first version of each document is a draft written from the specs, for the owner (or a lawyer) to replace before launch.
-- **Already there:** `customers.profiles.terms_accepted_at` from «أوافق على الشروط وسياسة الخصوصية» at sign-up (CU §5.3); the quote's comment «the terms version … pass until their slices»; `onlineBlocks` notes the terms (K7) joins with its slice; the merchant app's device-name screen notes the terms come with their slice; `core_platform`'s blocking pattern (slice 2.4a) for the owner's accept screen.
+- **Specs:** AP §9.1.6 «الإيقاف الطارئ» and D7, AP §7 (the top bar turning red), AP §10 (what the panel pushes), AP Appendix A (`platform.emergency_default_message_browse`, `platform.emergency_default_message_active`), CU §4.7 (emergency stop), CU §10.6 (the checkout's check and the attempts counted once per customer per stop), CU §14 #18 and #19, CU Appendix C «Emergency stop»; RA §8.17 and CA §6.3 for what the broadcast must carry (their banners are 2.4d).
+- **Branch:** `feat/emergency-stop`.
+- **Already there:** the quote's problems (`apps/server/src/modules/ordering/quote.service.ts`, «Passing until their slices: … the emergency stop»), the panel's alerts and ops channel (`ops:city.{city_id}`), the push queue and the notification templates (`content/notification-templates.ts`: check whether CU §14 #18 and #19 have rows), the settings module and the panel's «التطبيقات» pattern (slice 2.4a), the apps' `PlatformCheck` (`packages/core_platform`).
 - **Plan:**
-  - [x] Server, content module: `content.terms_versions` (audience, version number, body, published by and at; append-only), the draft per audience in the migration, the panel's routes to read and publish (`content.manage`, audited), and the apps' read of the current version.
-  - [x] Server, acceptances: each party's module records which version an account accepted (customers, captains, restaurant owners) through «Accept terms» (CU §15, CA §15); the customer's sign-up records the current version; the quote's `terms_pending` problem, the captain's `terms_not_accepted` online block, the restaurant owner's pending flag in the session; the API contract and clients.
-  - [x] Panel: «الشروط والخصوصية» in «المحتوى», the current version per audience and publishing a new one.
-  - [x] Customer app: the accept screen on the next open while a version is pending, browsing still open, and checkout's `terms_pending`; the terms in «حسابي» (read only).
-  - [x] Captain app: the accept screen before going online, a current order untouched (K7).
-  - [x] Restaurant app: an owner with a pending version sees only Orders and the accept screen; a cashier is not affected (S13).
-  - [ ] Review, then hand over to 2.4c.
+  - [ ] Server: the stop per city (its dialog's fields, who started it, the optional automatic resume written with it as a timer, E3), start and resume routes for OWN and OPS, audited; the quote's `emergency_stop` problem with the browsing message.
+  - [ ] Server: the delay push to every customer with an active order when the stop starts (CU §14 #18, `{السبب}` from the customer-facing reason), the attempts (each customer opening checkout counted once per stop), and «استئناف» with the optional «الخدمة عادت» push to the customers who opened checkout during the stop (CU §14 #19), never on the automatic resume.
+  - [ ] Server: the platform broadcast on the restaurant and captain channels (the stop, and also maintenance and version changes, which 2.4a left to it), and the apps' read of the stop.
+  - [ ] Panel: the dialog, the red bar with the duration and the attempts, «استئناف».
+  - [ ] Review, then hand over to 2.4d.
+
+### Left from 2.4b (`feat/terms-versions`)
+
+- **Before deploying to staging:** every existing account becomes pending (migration 0036 records no acceptance, even for customers who ticked at sign-up), and the app builds before 2.4b cannot accept: an older customer app may fail to read a quote that carries `terms_pending`, an older captain app shows `terms_not_accepted` as a failed command. Deploy the server with the new APKs and raise `app.customer.min_version`, `app.captain.min_version` and `app.merchant.min_version` in «التطبيقات» to the new builds.
+- **To confirm with the owner:** the drafts of the three documents (migration 0036, for the owner or a lawyer to replace before launch, owner decision 2026-11-08); the strings the spec gives no wording for («نشرت FOX DROP نسخة جديدة من الشروط وسياسة الخصوصية. اقرأها ووافق عليها لتتابع.», «أوافق على الشروط وسياسة الخصوصية» as the button, «نُشرت نسخة أحدث بينما كنت تقرأ. اقرأها ثم وافق.», «وافق على الشروط الجديدة لتتمكن من الاتصال», «وافق على الشروط الجديدة لتستخدم شاشات المطعم الأخرى. الطلبات تصل كالمعتاد.», the panel's labels); whether customers who ticked «أوافق» at sign-up before 2.4b count as having accepted version 1 (today they accept again); the customer is asked once per version per app run and may go back to browse; the captain is shown the terms when «متصل» is refused, not on opening.
+- **Not yet:** the captain application form's step 4 (CA §5.2, with the joining slice), the owner web portal's accept screen (RA §4.10, with the portal's sign-in, 2.45), the server refusing owner-only restaurant routes while a version is pending (none exists yet besides naming the device), «حسابي» (the terms are linked from home until it exists).
 
 ### Left from 2.4a (`feat/app-versions-maintenance`)
 
@@ -26,7 +29,6 @@ Slice 2.4b, terms and privacy versions (`docs/roadmap.md`, Phase 2, slice 2.4 sp
 
 ### The rest of slice 2.4
 
-- **2.4b Terms and privacy versions:** one document per audience (customer, captain, restaurant), versioned and published in the panel's «المحتوى» (AP §9.13), starting from a draft written from the specs; acceptances per account; the customer browses but cannot order until accepting (CU §4.7), the captain cannot go online (K7, CA §4.8), a restaurant owner sees only Orders until accepting and cashiers are not affected (S13, RA §4.10); the customer's sign-up ticks the current version (CU §5.3).
 - **2.4c The emergency stop in the server and the panel** (AP §9.1.6, D7): the dialog (internal reason, the browsing message, the delay notice with `{السبب}`, the customer-facing reason, the optional automatic resume time), the resume timer written with the stop (E3), new orders refused (checkout's problem), each customer opening checkout counted once per stop, the delay push to customers with an active order (CU §14 #18), «استئناف» with the optional «الخدمة عادت» push (CU §14 #19) to the customers who opened checkout during the stop, never on the automatic resume; audited; the panel's red bar with the duration and the attempts; the platform broadcast on the restaurant and captain channels, which also carries maintenance and version changes.
 - **2.4d The emergency stop in the apps:** the red banner in the restaurant and captain apps with the chime on and off (RA §8.17, §16 #34, CA §6.3, §14 #31), the customer's banner and disabled order button, and the delay banner on the order screen (CU §4.7, §11.6); all gone on resume.
 
