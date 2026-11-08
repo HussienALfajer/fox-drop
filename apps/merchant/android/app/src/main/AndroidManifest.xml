@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- The app calls the FOX DROP API. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Android 13 asks before showing notifications; the app asks at the
+         first sign-in (owner decision 2026-11-08; permission_handler). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="تطبيق المطعم"
         android:name="${applicationName}"
@@ -27,6 +30,11 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- A push whose channel does not exist yet shows on «chime»
+             (packages/core_push/CLAUDE.md). -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="chime" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -8,6 +8,9 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <!-- Android 13 asks before showing notifications: the foreground
+         service's and the pushes'; the app asks at «متصل» (owner decision
+         2026-11-08; permission_handler). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- The offer ring keeps the screen on while online (wakelock_plus). -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
@@ -37,6 +40,11 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- A push whose channel does not exist yet shows on «chime»
+             (packages/core_push/CLAUDE.md). -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="chime" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -12,6 +12,7 @@ dependencies:
   core_api: any
   core_auth: any
   core_l10n: any
+  core_push: any
   core_realtime: any
   core_time: any
   dio: 5.11.1
