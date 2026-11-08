@@ -35,6 +35,13 @@ import { OutboxPushes, OutboxPushesWorker } from './outbox-pushes.js';
 import { OutboxRelay, OutboxRelayWorker } from './outbox-relay.js';
 import { QuoteService } from './quote.service.js';
 import { ResendNotification } from './resend-notification.js';
+import { EmergencyStops, EmergencyStopWorker } from './emergency-stop.js';
+import {
+  AdminEmergencyStopController,
+  CaptainEmergencyStopController,
+  CustomerEmergencyStopController,
+  MerchantEmergencyStopController,
+} from './emergency-stop.controller.js';
 
 // The ordering module (architecture §4.2): the quote (CU §10.6), the order
 // (CU §10.7), the restaurant's acceptance and «الطلب جاهز» (RA §8.5–8.8) and
@@ -63,6 +70,10 @@ import { ResendNotification } from './resend-notification.js';
     MerchantOrdersController,
     AdminOrdersController,
     CaptainOrdersController,
+    AdminEmergencyStopController,
+    CustomerEmergencyStopController,
+    MerchantEmergencyStopController,
+    CaptainEmergencyStopController,
   ],
   providers: [
     ActiveOrders,
@@ -77,6 +88,7 @@ import { ResendNotification } from './resend-notification.js';
     PickupCommands,
     DeliveryBooking,
     ResendNotification,
+    EmergencyStops,
   ],
   exports: [QuoteService, OrdersService],
 })
@@ -97,6 +109,7 @@ export class OrderingModule {}
     FxModule,
     GeoModule,
     MerchantsModule,
+    AuditModule,
   ],
   providers: [
     OrderAlerts,
@@ -110,6 +123,8 @@ export class OrderingModule {}
     OutboxRelayWorker,
     OutboxPushes,
     OutboxPushesWorker,
+    EmergencyStops,
+    EmergencyStopWorker,
   ],
 })
 export class OrderingWorkerModule {}

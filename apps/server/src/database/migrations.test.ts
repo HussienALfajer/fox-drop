@@ -574,11 +574,62 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
     ).rejects.toThrow(/alert_outbox_type/);
   });
 
+  it('let the application role mark a platform outbox row published, for its two apps only', async () => {
+    const { rows } = await appQuery(
+      `INSERT INTO notifications.platform_outbox (created_at, city_id, type, apps, ops, payload) VALUES (now(), NULL, 'platform.app_changed', ARRAY['merchant'], false, '{}') RETURNING id`,
+    );
+    await appQuery(
+      `UPDATE notifications.platform_outbox SET published_at = now() WHERE id = ${rows[0].id}`,
+    );
+    await expect(
+      appQuery(`UPDATE notifications.platform_outbox SET ops = true WHERE id = ${rows[0].id}`),
+    ).rejects.toThrow(/permission denied/);
+    await expect(
+      appQuery(
+        `INSERT INTO notifications.platform_outbox (created_at, type, apps, ops, payload) VALUES (now(), 'x', ARRAY['customer'], false, '{}')`,
+      ),
+    ).rejects.toThrow(/platform_outbox_apps/);
+  });
+
+  it('keep an emergency stop as it started, one open per city, and its attempts unchanged', async () => {
+    const admin = randomUUID();
+    const start = (city: string) =>
+      appQuery(
+        `INSERT INTO ordering.emergency_stops (city_id, started_at, started_by, internal_reason, browse_message, delay_notice, customer_reason) VALUES (${city}, now(), '${admin}', 'r', 'b', 'd', 'c') RETURNING id`,
+      );
+    const city = `'${randomUUID()}'`;
+    const { rows } = await start(city);
+    await expect(start(city)).rejects.toThrow(/emergency_stops_one_open/);
+    await expect(
+      appQuery(
+        `UPDATE ordering.emergency_stops SET browse_message = 'x' WHERE id = '${rows[0].id}'`,
+      ),
+    ).rejects.toThrow(/permission denied/);
+    await expect(
+      appQuery(
+        `UPDATE ordering.emergency_stops SET ended_at = now(), end_kind = 'automatic', ended_by = '${admin}' WHERE id = '${rows[0].id}'`,
+      ),
+    ).rejects.toThrow(/emergency_stops_end/);
+    await appQuery(
+      `INSERT INTO ordering.emergency_stop_attempts (stop_id, customer_account_id, at) VALUES ('${rows[0].id}', '${admin}', now())`,
+    );
+    await expect(
+      appQuery(
+        `UPDATE ordering.emergency_stop_attempts SET at = now() WHERE stop_id = '${rows[0].id}'`,
+      ),
+    ).rejects.toThrow(/permission denied/);
+    await appQuery(
+      `UPDATE ordering.emergency_stops SET ended_at = now(), end_kind = 'manual', ended_by = '${admin}' WHERE id = '${rows[0].id}'`,
+    );
+    await start(city);
+  });
+
   it("install pg-boss as the migration role, with the application role's rows only", async () => {
     const { rows } = await appQuery(
       "SELECT name FROM pgboss.queue WHERE name LIKE 'ordering-%' ORDER BY name",
     );
     expect(rows).toEqual([
+      { name: 'ordering-emergency-resume' },
       { name: 'ordering-merchant-auto-cancel' },
       { name: 'ordering-order-alerts' },
       { name: 'ordering-outbox-relay' },

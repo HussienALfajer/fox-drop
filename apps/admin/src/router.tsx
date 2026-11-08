@@ -12,6 +12,9 @@ import { AssignCaptainPage } from './assign-captain-page.js';
 import { SETTINGS_READ } from './app-settings.js';
 import { AppSettingsPage } from './app-settings-page.js';
 import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
+import { EMERGENCY_STOP_TOGGLE } from './emergency-stop.js';
+import { EmergencyStopBar } from './emergency-stop-bar.js';
+import { EmergencyStopPage } from './emergency-stop-page.js';
 import { EmergencyCodePage } from './emergency-code-page.js';
 import { receivesAlerts } from './alerts.js';
 import { AlertsMonitor } from './alerts-monitor.js';
@@ -71,16 +74,17 @@ const signedInRoute = createRoute({
   component: SignedInLayout,
 });
 
-// AP §7.3: a recipient of alerts hears them on every page.
+// AP §7: every page shows the platform status; AP §7.3: a recipient of
+// alerts hears them on every page.
 function SignedInLayout() {
   const { session } = signedInRoute.useRouteContext();
-  return receivesAlerts(session) ? (
-    <AlertsMonitor>
+  const page = (
+    <>
+      <EmergencyStopBar session={session} />
       <Outlet />
-    </AlertsMonitor>
-  ) : (
-    <Outlet />
+    </>
   );
+  return receivesAlerts(session) ? <AlertsMonitor>{page}</AlertsMonitor> : page;
 }
 
 const homeRoute = createRoute({
@@ -96,6 +100,16 @@ const emergencyCodeRoute = createRoute({
     if (!can(context.session, EMERGENCY_CODE_PERMISSION)) throw redirect({ to: '/' });
   },
   component: EmergencyCodePage,
+});
+
+// AP §9.1.6 «الإيقاف الطارئ»: OWN and OPS.
+const emergencyStopRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/emergency-stop',
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, EMERGENCY_STOP_TOGGLE)) throw redirect({ to: '/' });
+  },
+  component: EmergencyStopPage,
 });
 
 // The city chosen in the top bar's selector (AP §7.2), by its code; the
@@ -167,6 +181,7 @@ const routeTree = rootRoute.addChildren([
   signedInRoute.addChildren([
     homeRoute,
     emergencyCodeRoute,
+    emergencyStopRoute,
     contentRoute,
     appSettingsRoute,
     alertsRoute,

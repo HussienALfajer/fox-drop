@@ -99,6 +99,22 @@ export class SettingRefusedError extends Error {
   }
 }
 
+// A change that committed a new value in effect, told to the listeners in
+// its transaction (onChanged), such as the platform broadcast of an app's
+// maintenance (E4).
+export interface SettingChanged {
+  // The concrete key, such as app.merchant.maintenance, and its catalogue key.
+  key: string;
+  template: SettingKey;
+  cityId: string | null;
+}
+
+export type SettingChangedListener = (
+  tx: Pick<NodePgDatabase, 'insert'>,
+  changed: SettingChanged,
+  now: Date,
+) => Promise<void>;
+
 interface ResolvedSetting {
   // The concrete key, such as currency.TRY.rounding_unit, and its catalogue
   // entry's key, such as currency.<code>.rounding_unit.
@@ -142,6 +158,7 @@ return 1`;
 export class SettingsService {
   private readonly logger = new Logger(SettingsService.name);
   private cityCurrencySource: CityCurrencySource | null = null;
+  private readonly listeners: SettingChangedListener[] = [];
 
   constructor(
     @Inject(DATABASE) private readonly database: Database,
@@ -151,6 +168,12 @@ export class SettingsService {
 
   useCityCurrencies(source: CityCurrencySource): void {
     this.cityCurrencySource = source;
+  }
+
+  // A module that acts on a change in its transaction, without this module
+  // importing it.
+  onChanged(listener: SettingChangedListener): void {
+    this.listeners.push(listener);
   }
 
   // The value in effect: the stored one, or the default. Null for a value
@@ -514,6 +537,8 @@ export class SettingsService {
         },
         tx,
       );
+      const changed = { key: setting.key, template: setting.template, cityId: setting.cityId };
+      for (const listener of this.listeners) await listener(tx, changed, new Date());
       return { version: after.version, value: afterValue };
     });
 

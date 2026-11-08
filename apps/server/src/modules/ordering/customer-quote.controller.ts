@@ -56,6 +56,12 @@ class CustomerQuoteRequestDto extends createZodDto(
     lines: cartLines,
     payIn: payInCurrency,
     appVersion,
+    openedCheckout: z
+      .boolean()
+      .default(false)
+      .describe(
+        'True on the quote asked on opening checkout: a signed-in customer then counts once per emergency stop (AP §9.1.6).',
+      ),
   }),
 ) {}
 
@@ -138,6 +144,7 @@ class CustomerQuoteDto extends createZodDto(
             'active_order_limit',
             'no_captain_nearby',
             'terms_pending',
+            'emergency_stop',
             'item_not_found',
             'item_unavailable',
             'option_not_found',
@@ -151,6 +158,10 @@ class CustomerQuoteDto extends createZodDto(
             .datetime()
             .nullable()
             .describe('platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}».'),
+          message: z
+            .string()
+            .nullable()
+            .describe('emergency_stop: the browsing message (AP §9.1.6).'),
         }),
       )
       .describe('CU §10.6: every one blocks ordering; the texts are in Appendix C.'),

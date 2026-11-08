@@ -15,6 +15,7 @@ part 'customer_quote_dto_output_problems_inner.g.dart';
 /// * [code]
 /// * [line] - The cart line, for a line problem.
 /// * [opensAt] - platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}».
+/// * [message] - emergency_stop: the browsing message (AP §9.1.6).
 @BuiltValue()
 abstract class CustomerQuoteDtoOutputProblemsInner
     implements
@@ -24,7 +25,7 @@ abstract class CustomerQuoteDtoOutputProblemsInner
         > {
   @BuiltValueField(wireName: r'code')
   CustomerQuoteDtoOutputProblemsInnerCodeEnum get code;
-  // enum codeEnum {  update_required,  maintenance,  platform_closed,  outside_zones,  not_covered,  restaurant_closed,  below_minimum_order,  minimum_not_in_base_currency,  delivery_unpriced,  rates_unavailable,  captain_pay_unset,  one_order_at_a_time,  active_order_limit,  no_captain_nearby,  terms_pending,  item_not_found,  item_unavailable,  option_not_found,  option_unavailable,  options_invalid,  price_not_in_base_currency,  price_changed,  };
+  // enum codeEnum {  update_required,  maintenance,  platform_closed,  outside_zones,  not_covered,  restaurant_closed,  below_minimum_order,  minimum_not_in_base_currency,  delivery_unpriced,  rates_unavailable,  captain_pay_unset,  one_order_at_a_time,  active_order_limit,  no_captain_nearby,  terms_pending,  emergency_stop,  item_not_found,  item_unavailable,  option_not_found,  option_unavailable,  options_invalid,  price_not_in_base_currency,  price_changed,  };
 
   /// The cart line, for a line problem.
   @BuiltValueField(wireName: r'line')
@@ -33,6 +34,10 @@ abstract class CustomerQuoteDtoOutputProblemsInner
   /// platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}».
   @BuiltValueField(wireName: r'opensAt')
   DateTime? get opensAt;
+
+  /// emergency_stop: the browsing message (AP §9.1.6).
+  @BuiltValueField(wireName: r'message')
+  String? get message;
 
   CustomerQuoteDtoOutputProblemsInner._();
 
@@ -84,6 +89,13 @@ class _$CustomerQuoteDtoOutputProblemsInnerSerializer
         : serializers.serialize(
             object.opensAt,
             specifiedType: const FullType.nullable(DateTime),
+          );
+    yield r'message';
+    yield object.message == null
+        ? null
+        : serializers.serialize(
+            object.message,
+            specifiedType: const FullType.nullable(String),
           );
   }
 
@@ -142,6 +154,16 @@ class _$CustomerQuoteDtoOutputProblemsInnerSerializer
                   as DateTime?;
           if (valueDes == null) continue;
           result.opensAt = valueDes;
+          break;
+        case r'message':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.message = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -219,6 +241,9 @@ class CustomerQuoteDtoOutputProblemsInnerCodeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'terms_pending')
   static const CustomerQuoteDtoOutputProblemsInnerCodeEnum termsPending =
       _$customerQuoteDtoOutputProblemsInnerCodeEnum_termsPending;
+  @BuiltValueEnumConst(wireName: r'emergency_stop')
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum emergencyStop =
+      _$customerQuoteDtoOutputProblemsInnerCodeEnum_emergencyStop;
   @BuiltValueEnumConst(wireName: r'item_not_found')
   static const CustomerQuoteDtoOutputProblemsInnerCodeEnum itemNotFound =
       _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound;

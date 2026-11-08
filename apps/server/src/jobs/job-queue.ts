@@ -25,6 +25,8 @@ export const QUEUES = {
   // AP §7.3, §9.1.3: sync an order's alerts, after each transition and at
   // the next moment one may open.
   orderAlerts: 'ordering-order-alerts',
+  // AP §9.1.6: the optional automatic resume of an emergency stop.
+  emergencyResume: 'ordering-emergency-resume',
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];

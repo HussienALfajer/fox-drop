@@ -19,6 +19,7 @@ part 'customer_quote_request_dto.g.dart';
 /// * [lines]
 /// * [payIn] - «سأدفع بـ»: an accepted currency, or null for «لم أحدد» (CU §10.5); one no longer accepted gives payIn null.
 /// * [appVersion]
+/// * [openedCheckout] - True on the quote asked on opening checkout: a signed-in customer then counts once per emergency stop (AP §9.1.6).
 @BuiltValue()
 abstract class CustomerQuoteRequestDto
     implements Built<CustomerQuoteRequestDto, CustomerQuoteRequestDtoBuilder> {
@@ -38,6 +39,10 @@ abstract class CustomerQuoteRequestDto
   @BuiltValueField(wireName: r'appVersion')
   String get appVersion;
 
+  /// True on the quote asked on opening checkout: a signed-in customer then counts once per emergency stop (AP §9.1.6).
+  @BuiltValueField(wireName: r'openedCheckout')
+  bool? get openedCheckout;
+
   CustomerQuoteRequestDto._();
 
   factory CustomerQuoteRequestDto([
@@ -45,7 +50,8 @@ abstract class CustomerQuoteRequestDto
   ]) = _$CustomerQuoteRequestDto;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerQuoteRequestDtoBuilder b) => b;
+  static void _defaults(CustomerQuoteRequestDtoBuilder b) =>
+      b..openedCheckout = false;
 
   @BuiltValueSerializer(custom: true)
   static Serializer<CustomerQuoteRequestDto> get serializer =>
@@ -97,6 +103,13 @@ class _$CustomerQuoteRequestDtoSerializer
       object.appVersion,
       specifiedType: const FullType(String),
     );
+    if (object.openedCheckout != null) {
+      yield r'openedCheckout';
+      yield serializers.serialize(
+        object.openedCheckout,
+        specifiedType: const FullType(bool),
+      );
+    }
   }
 
   @override
@@ -173,6 +186,16 @@ class _$CustomerQuoteRequestDtoSerializer
                   )
                   as String;
           result.appVersion = valueDes;
+          break;
+        case r'openedCheckout':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(bool),
+                  )
+                  as bool?;
+          if (valueDes == null) continue;
+          result.openedCheckout = valueDes;
           break;
         default:
           unhandled.add(key);

@@ -17,6 +17,8 @@ class _$CustomerQuoteRequestDto extends CustomerQuoteRequestDto {
   final String? payIn;
   @override
   final String appVersion;
+  @override
+  final bool? openedCheckout;
 
   factory _$CustomerQuoteRequestDto([
     void Function(CustomerQuoteRequestDtoBuilder)? updates,
@@ -28,6 +30,7 @@ class _$CustomerQuoteRequestDto extends CustomerQuoteRequestDto {
     required this.lines,
     this.payIn,
     required this.appVersion,
+    this.openedCheckout,
   }) : super._();
   @override
   CustomerQuoteRequestDto rebuild(
@@ -46,7 +49,8 @@ class _$CustomerQuoteRequestDto extends CustomerQuoteRequestDto {
         location == other.location &&
         lines == other.lines &&
         payIn == other.payIn &&
-        appVersion == other.appVersion;
+        appVersion == other.appVersion &&
+        openedCheckout == other.openedCheckout;
   }
 
   @override
@@ -57,6 +61,7 @@ class _$CustomerQuoteRequestDto extends CustomerQuoteRequestDto {
     _$hash = $jc(_$hash, lines.hashCode);
     _$hash = $jc(_$hash, payIn.hashCode);
     _$hash = $jc(_$hash, appVersion.hashCode);
+    _$hash = $jc(_$hash, openedCheckout.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -68,7 +73,8 @@ class _$CustomerQuoteRequestDto extends CustomerQuoteRequestDto {
           ..add('location', location)
           ..add('lines', lines)
           ..add('payIn', payIn)
-          ..add('appVersion', appVersion))
+          ..add('appVersion', appVersion)
+          ..add('openedCheckout', openedCheckout))
         .toString();
   }
 }
@@ -102,6 +108,11 @@ class CustomerQuoteRequestDtoBuilder
   String? get appVersion => _$this._appVersion;
   set appVersion(String? appVersion) => _$this._appVersion = appVersion;
 
+  bool? _openedCheckout;
+  bool? get openedCheckout => _$this._openedCheckout;
+  set openedCheckout(bool? openedCheckout) =>
+      _$this._openedCheckout = openedCheckout;
+
   CustomerQuoteRequestDtoBuilder() {
     CustomerQuoteRequestDto._defaults(this);
   }
@@ -114,6 +125,7 @@ class CustomerQuoteRequestDtoBuilder
       _lines = $v.lines.toBuilder();
       _payIn = $v.payIn;
       _appVersion = $v.appVersion;
+      _openedCheckout = $v.openedCheckout;
       _$v = null;
     }
     return this;
@@ -151,6 +163,7 @@ class CustomerQuoteRequestDtoBuilder
               r'CustomerQuoteRequestDto',
               'appVersion',
             ),
+            openedCheckout: openedCheckout,
           );
     } catch (_) {
       late String _$failedField;
