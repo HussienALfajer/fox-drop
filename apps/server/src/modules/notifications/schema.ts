@@ -214,3 +214,36 @@ export const pushMessages = notifications.table(
     check('push_messages_done', sql`${table.sentAt} IS NULL OR ${table.gaveUpAt} IS NULL`),
   ],
 );
+
+// The apps a platform broadcast reaches, each on its own channels: every
+// restaurant's (merchant:{id}) and every captain's (captain:{id}) of its city.
+export const broadcastApps = ['merchant', 'captain'] as const;
+
+// RA §18, CA §15: the platform broadcasts (the emergency stop, maintenance,
+// a version change), written in the transaction of their change (E4) and
+// published by the worker's PlatformRelay to every restaurant's and captain's
+// channel of the city, and to the panel's ops channel when `ops`.
+export const platformOutbox = notifications.table(
+  'platform_outbox',
+  {
+    id: bigint('id', { mode: 'bigint' }).primaryKey().generatedAlwaysAsIdentity(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    // null for every active city (an app's maintenance or version).
+    cityId: uuid('city_id'),
+    // Such as platform.emergency_stop; the payload is its typed body.
+    type: text('type').notNull(),
+    apps: text('apps').array().notNull(),
+    ops: boolean('ops').notNull(),
+    payload: jsonb('payload').notNull(),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('platform_outbox_unpublished')
+      .on(table.id)
+      .where(sql`${table.publishedAt} IS NULL`),
+    check(
+      'platform_outbox_apps',
+      sql`${table.apps} <@ ARRAY[${sql.raw(broadcastApps.map((value) => `'${value}'`).join(', '))}]::text[]`,
+    ),
+  ],
+);

@@ -13,6 +13,7 @@ import {
 import { MerchantsService, type Restaurant, type StorefrontState } from '../merchants/index.js';
 import { SettingsService, versionBelow } from '../settings/index.js';
 import { ActiveOrders } from './active-orders.js';
+import { EmergencyStops } from './emergency-stop.js';
 import { platformOpening } from './platform-hours.js';
 import {
   type CartLine,
@@ -48,6 +49,8 @@ export type QuoteProblemCode =
   | 'no_captain_nearby'
   // CU §4.7, Appendix C: «وافق على الشروط الجديدة لتتمكن من الطلب».
   | 'terms_pending'
+  // AP §9.1.6, CU §4.7: the city's emergency stop, with its browsing message.
+  | 'emergency_stop'
   | LineProblem;
 
 export interface QuoteProblem {
@@ -56,6 +59,8 @@ export interface QuoteProblem {
   line: number | null;
   // platform_closed: when the platform opens next.
   opensAt: Date | null;
+  // emergency_stop: the browsing message the stop's dialog set.
+  message: string | null;
 }
 
 export interface QuoteRequest {
@@ -123,9 +128,8 @@ const TRIP_VEHICLE = 'motorbike';
 
 // CU §10.6: the versioned quote of a cart for a delivery point. Every check
 // with data is run (owner decision 2026-11-06), the signed-in customer's
-// active-order limit, the terms version and the capacity check included;
-// account states, the emergency stop and codes (Phase 2) pass until their
-// slices.
+// active-order limit, the terms version, the emergency stop and the capacity
+// check included; account states and codes (Phase 2) pass until their slices.
 @Injectable()
 export class QuoteService {
   constructor(
@@ -136,6 +140,7 @@ export class QuoteService {
     private readonly activeOrders: ActiveOrders,
     private readonly captains: CaptainsService,
     private readonly terms: TermsService,
+    private readonly emergencyStops: EmergencyStops,
   ) {}
 
   async quote(request: QuoteRequest, now: Date): Promise<Quote> {
@@ -156,20 +161,32 @@ export class QuoteService {
       code: QuoteProblemCode,
       line: number | null = null,
       opensAt: Date | null = null,
-    ) => problems.push({ code, line, opensAt });
+      message: string | null = null,
+    ) => problems.push({ code, line, opensAt, message });
 
-    const [maintenance, minVersion, hours, timeZone, zone, covers, state, menu, snapshot] =
-      await Promise.all([
-        this.settings.get('app.<app>.maintenance', { parameter: 'customer' }),
-        this.settings.get('app.<app>.min_version', { parameter: 'customer' }),
-        this.settings.get('platform.hours', { cityId }),
-        this.geo.cityTimeZone(cityId),
-        this.geo.zoneAt(cityId, point),
-        this.merchants.covers(restaurant.id, point),
-        this.merchants.storefrontState(restaurant.id, now),
-        this.merchants.menu(restaurant.id, now),
-        this.snapshot(cityId),
-      ]);
+    const [
+      maintenance,
+      minVersion,
+      hours,
+      timeZone,
+      zone,
+      covers,
+      state,
+      menu,
+      snapshot,
+      emergencyStop,
+    ] = await Promise.all([
+      this.settings.get('app.<app>.maintenance', { parameter: 'customer' }),
+      this.settings.get('app.<app>.min_version', { parameter: 'customer' }),
+      this.settings.get('platform.hours', { cityId }),
+      this.geo.cityTimeZone(cityId),
+      this.geo.zoneAt(cityId, point),
+      this.merchants.covers(restaurant.id, point),
+      this.merchants.storefrontState(restaurant.id, now),
+      this.merchants.menu(restaurant.id, now),
+      this.snapshot(cityId),
+      this.emergencyStops.active(cityId),
+    ]);
     if (timeZone === null) throw new Error(`restaurant ${restaurant.id} is in an unknown city`);
     // Suspended since it was read: customers no longer see it.
     if (!storefront(state)) {
@@ -182,6 +199,13 @@ export class QuoteService {
     if (maintenance.enabled) problem('maintenance');
     const platform = platformOpening(hours, now, timeZone);
     if (!platform.open) problem('platform_closed', null, platform.opensAt);
+    if (emergencyStop !== null) {
+      problem('emergency_stop', null, null, emergencyStop.browseMessage);
+      // CU §10.6: the signed-in customer opening checkout counts once per stop.
+      if (request.customerAccountId !== null) {
+        await this.emergencyStops.recordAttempt(emergencyStop.id, request.customerAccountId, now);
+      }
+    }
     if (zone === null) problem('outside_zones');
     else if (!covers) problem('not_covered');
     if (state.state.state !== 'open') problem('restaurant_closed');

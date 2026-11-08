@@ -1732,6 +1732,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/emergency-stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminEmergencyStopState"];
+        put?: never;
+        post: operations["adminEmergencyStopStart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/emergency-stop/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminEmergencyStopResume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/emergency-stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerEmergencyStopRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/emergency-stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantEmergencyStopRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/emergency-stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainEmergencyStopRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/realtime/token": {
         parameters: {
             query?: never;
@@ -3560,11 +3640,13 @@ export interface components {
             /** @description CU §10.6: every one blocks ordering; the texts are in Appendix C. */
             problems: {
                 /** @enum {string} */
-                code: "update_required" | "maintenance" | "platform_closed" | "outside_zones" | "not_covered" | "restaurant_closed" | "below_minimum_order" | "minimum_not_in_base_currency" | "delivery_unpriced" | "rates_unavailable" | "captain_pay_unset" | "one_order_at_a_time" | "active_order_limit" | "no_captain_nearby" | "terms_pending" | "item_not_found" | "item_unavailable" | "option_not_found" | "option_unavailable" | "options_invalid" | "price_not_in_base_currency" | "price_changed";
+                code: "update_required" | "maintenance" | "platform_closed" | "outside_zones" | "not_covered" | "restaurant_closed" | "below_minimum_order" | "minimum_not_in_base_currency" | "delivery_unpriced" | "rates_unavailable" | "captain_pay_unset" | "one_order_at_a_time" | "active_order_limit" | "no_captain_nearby" | "terms_pending" | "emergency_stop" | "item_not_found" | "item_unavailable" | "option_not_found" | "option_unavailable" | "options_invalid" | "price_not_in_base_currency" | "price_changed";
                 /** @description The cart line, for a line problem. */
                 line: number | null;
                 /** @description platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}». */
                 opensAt: string | null;
+                /** @description emergency_stop: the browsing message (AP §9.1.6). */
+                message: string | null;
             }[];
         };
         CustomerActiveOrdersDto_Output: {
@@ -5073,6 +5155,92 @@ export interface components {
                 /** @description The device reports a mock location. */
                 simulated: boolean;
             };
+        };
+        AdminEmergencyStopStateDto_Output: {
+            /** @description The open stop: the red bar (AP §7); null while running. */
+            stop: {
+                /** Format: uuid */
+                id: string;
+                /** Format: date-time */
+                startedAt: string;
+                /** Format: uuid */
+                startedBy: string;
+                internalReason: string;
+                browseMessage: string;
+                /** @description With its {السبب} placeholder. */
+                delayNotice: string;
+                customerReason: string;
+                /** @description The automatic resume, if set. */
+                resumeAt: string | null;
+                /** @description Customers who opened checkout during the stop, each once (AP §9.1.6 item 4). */
+                attempts: number;
+            } | null;
+            /** @description The dialog prefills (AP Appendix A). */
+            defaults: {
+                browseMessage: string;
+                delayNotice: string;
+            };
+        };
+        AdminStartEmergencyStopDto: {
+            /** Format: uuid */
+            cityId: string;
+            internalReason: string;
+            browseMessage: string;
+            delayNotice: string;
+            /** @description Fills {السبب}, such as «سوء الأحوال الجوية». */
+            customerReason: string;
+            /** @description An optional automatic resume time. */
+            resumeAt: string | null;
+        };
+        AdminEmergencyStopDto_Output: {
+            stop: {
+                /** Format: uuid */
+                id: string;
+                /** Format: date-time */
+                startedAt: string;
+                /** Format: uuid */
+                startedBy: string;
+                internalReason: string;
+                browseMessage: string;
+                /** @description With its {السبب} placeholder. */
+                delayNotice: string;
+                customerReason: string;
+                /** @description The automatic resume, if set. */
+                resumeAt: string | null;
+                /** @description Customers who opened checkout during the stop, each once (AP §9.1.6 item 4). */
+                attempts: number;
+            };
+        };
+        AdminResumeEmergencyStopDto: {
+            /** Format: uuid */
+            cityId: string;
+            /**
+             * Format: uuid
+             * @description The stop the panel shows, so a resume never ends a newer one.
+             */
+            stopId: string;
+            /** @description «الخدمة عادت» (CU §14 #19), to the customers who tried to order; null sends none. */
+            serviceBack: string | null;
+        };
+        AdminEmergencyStopResumedDto_Output: {
+            /** @constant */
+            resumed: true;
+        };
+        CustomerEmergencyStopDto_Output: {
+            active: boolean;
+            startedAt: string | null;
+            /** @description The banner while browsing (CU §4.7). */
+            browseMessage: string | null;
+            /** @description The banner on an active order (CU §11.6), its reason filled in. */
+            delayNotice: string | null;
+        };
+        MerchantEmergencyStopDto_Output: {
+            active: boolean;
+            startedAt: string | null;
+        };
+        CaptainEmergencyStopDto_Output: {
+            active: boolean;
+            startedAt: string | null;
         };
         RealtimeTokenDto_Output: {
             /** @description Centrifugo's connection token, valid 15 minutes; ask again when it expires. */
@@ -7949,6 +8117,139 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainOrderDto_Output"];
+                };
+            };
+        };
+    };
+    adminEmergencyStopState: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEmergencyStopStateDto_Output"];
+                };
+            };
+        };
+    };
+    adminEmergencyStopStart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminStartEmergencyStopDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEmergencyStopDto_Output"];
+                };
+            };
+        };
+    };
+    adminEmergencyStopResume: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminResumeEmergencyStopDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEmergencyStopResumedDto_Output"];
+                };
+            };
+        };
+    };
+    customerEmergencyStopRead: {
+        parameters: {
+            query: {
+                latitude: string;
+                longitude: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerEmergencyStopDto_Output"];
+                };
+            };
+        };
+    };
+    merchantEmergencyStopRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantEmergencyStopDto_Output"];
+                };
+            };
+        };
+    };
+    captainEmergencyStopRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainEmergencyStopDto_Output"];
                 };
             };
         };

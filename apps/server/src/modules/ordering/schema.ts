@@ -586,3 +586,69 @@ export const outbox = ordering.table(
       .where(sql`${table.pushQueuedAt} IS NULL`),
   ],
 );
+
+// AP §9.1.6, D7: a city's emergency stop «الإيقاف الطارئ», from its start
+// to its end, kept after it ends as the history. One open stop per city.
+export const emergencyStopEndKinds = ['manual', 'automatic'] as const;
+
+export const emergencyStops = ordering.table(
+  'emergency_stops',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
+    // The admin account that started it.
+    startedBy: uuid('started_by').notNull(),
+    internalReason: text('internal_reason').notNull(),
+    // The message browsing customers see.
+    browseMessage: text('browse_message').notNull(),
+    // The delay notice for customers with an active order, with its
+    // {السبب} placeholder.
+    delayNotice: text('delay_notice').notNull(),
+    // What fills {السبب}, such as «سوء الأحوال الجوية».
+    customerReason: text('customer_reason').notNull(),
+    // The optional automatic resume.
+    resumeAt: timestamp('resume_at', { withTimezone: true }),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+    // null for the automatic resume.
+    endedBy: uuid('ended_by'),
+    endKind: text('end_kind', { enum: emergencyStopEndKinds }),
+    // «الخدمة عادت» (CU §14 #19), when OPS sent it on resuming.
+    serviceBackMessage: text('service_back_message'),
+  },
+  (table) => [
+    uniqueIndex('emergency_stops_one_open')
+      .on(table.cityId)
+      .where(sql`${table.endedAt} IS NULL`),
+    index('emergency_stops_city').on(table.cityId, table.startedAt),
+    check(
+      'emergency_stops_end',
+      sql`(${table.endedAt} IS NULL AND ${table.endKind} IS NULL AND ${table.endedBy} IS NULL) OR (${table.endedAt} IS NOT NULL AND ${table.endKind} IS NOT NULL AND (${table.endKind} = 'manual') = (${table.endedBy} IS NOT NULL))`,
+    ),
+    check(
+      'emergency_stops_service_back',
+      sql`${table.serviceBackMessage} IS NULL OR ${table.endKind} = 'manual'`,
+    ),
+    check(
+      'emergency_stops_resume_after_start',
+      sql`${table.resumeAt} IS NULL OR ${table.resumeAt} > ${table.startedAt}`,
+    ),
+  ],
+);
+
+// AP §9.1.6 item 4, CU §10.6: each customer who opened checkout during the
+// stop, once per stop: the attempts the dashboard counts, and who gets
+// «الخدمة عادت» (CU §14 #19).
+export const emergencyStopAttempts = ordering.table(
+  'emergency_stop_attempts',
+  {
+    stopId: uuid('stop_id')
+      .notNull()
+      .references(() => emergencyStops.id),
+    customerAccountId: uuid('customer_account_id').notNull(),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.stopId, table.customerAccountId] })],
+);

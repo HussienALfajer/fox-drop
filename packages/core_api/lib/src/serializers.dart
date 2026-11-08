@@ -28,6 +28,12 @@ import 'package:core_api/src/model/admin_contact_dto_output.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order_offer.dart';
+import 'package:core_api/src/model/admin_emergency_stop_dto_output.dart';
+import 'package:core_api/src/model/admin_emergency_stop_dto_output_stop.dart';
+import 'package:core_api/src/model/admin_emergency_stop_resumed_dto_output.dart';
+import 'package:core_api/src/model/admin_emergency_stop_state_dto_output.dart';
+import 'package:core_api/src/model/admin_emergency_stop_state_dto_output_defaults.dart';
+import 'package:core_api/src/model/admin_emergency_stop_state_dto_output_stop.dart';
 import 'package:core_api/src/model/admin_faq_dto.dart';
 import 'package:core_api/src/model/admin_faq_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_faq_dto_output.dart';
@@ -82,9 +88,11 @@ import 'package:core_api/src/model/admin_record_delivery_dto_amount_due.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_received_inner.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_shortfall.dart';
 import 'package:core_api/src/model/admin_resend_notification_dto.dart';
+import 'package:core_api/src/model/admin_resume_emergency_stop_dto.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output_shortfalls_inner.dart';
+import 'package:core_api/src/model/admin_start_emergency_stop_dto.dart';
 import 'package:core_api/src/model/admin_terms_dto_output.dart';
 import 'package:core_api/src/model/admin_terms_dto_output_customer.dart';
 import 'package:core_api/src/model/admin_terms_version_dto_output.dart';
@@ -140,6 +148,7 @@ import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary.d
 import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_custody_change.dart';
 import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_hand_in_today.dart';
 import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_pay.dart';
+import 'package:core_api/src/model/captain_emergency_stop_dto_output.dart';
 import 'package:core_api/src/model/captain_go_online_dto.dart';
 import 'package:core_api/src/model/captain_locations_dto.dart';
 import 'package:core_api/src/model/captain_locations_dto_points_inner.dart';
@@ -185,6 +194,7 @@ import 'package:core_api/src/model/customer_code_request_dto.dart';
 import 'package:core_api/src/model/customer_code_sent_dto_output.dart';
 import 'package:core_api/src/model/customer_content_dto_output.dart';
 import 'package:core_api/src/model/customer_content_dto_output_reasons.dart';
+import 'package:core_api/src/model/customer_emergency_stop_dto_output.dart';
 import 'package:core_api/src/model/customer_location_dto_output.dart';
 import 'package:core_api/src/model/customer_location_dto_output_zone.dart';
 import 'package:core_api/src/model/customer_new_address_dto.dart';
@@ -248,6 +258,7 @@ import 'package:core_api/src/model/merchant_content_dto_output_reasons.dart';
 import 'package:core_api/src/model/merchant_content_dto_output_reasons_merchant_rejection_inner.dart';
 import 'package:core_api/src/model/merchant_device_dto.dart';
 import 'package:core_api/src/model/merchant_device_saved_dto_output.dart';
+import 'package:core_api/src/model/merchant_emergency_stop_dto_output.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner.dart';
@@ -330,6 +341,12 @@ part 'serializers.g.dart';
   AdminDispatchStateDtoOutput,
   AdminDispatchStateDtoOutputOrder,
   AdminDispatchStateDtoOutputOrderOffer,
+  AdminEmergencyStopDtoOutput,
+  AdminEmergencyStopDtoOutputStop,
+  AdminEmergencyStopResumedDtoOutput,
+  AdminEmergencyStopStateDtoOutput,
+  AdminEmergencyStopStateDtoOutputDefaults,
+  AdminEmergencyStopStateDtoOutputStop,
   AdminFaqDto,
   AdminFaqDtoItemsInner,
   AdminFaqDtoOutput,
@@ -384,9 +401,11 @@ part 'serializers.g.dart';
   AdminRecordDeliveryDtoReceivedInner,
   AdminRecordDeliveryDtoShortfall,
   AdminResendNotificationDto,
+  AdminResumeEmergencyStopDto,
   AdminSessionDtoOutput,
   AdminShortfallsDtoOutput,
   AdminShortfallsDtoOutputShortfallsInner,
+  AdminStartEmergencyStopDto,
   AdminTermsDtoOutput,
   AdminTermsDtoOutputCustomer,
   AdminTermsVersionDtoOutput,
@@ -442,6 +461,7 @@ part 'serializers.g.dart';
   CaptainDeliverySummaryDtoOutputSummaryCustodyChange,
   CaptainDeliverySummaryDtoOutputSummaryHandInToday,
   CaptainDeliverySummaryDtoOutputSummaryPay,
+  CaptainEmergencyStopDtoOutput,
   CaptainGoOnlineDto,
   CaptainLocationsDto,
   CaptainLocationsDtoPointsInner,
@@ -487,6 +507,7 @@ part 'serializers.g.dart';
   CustomerCodeSentDtoOutput,
   CustomerContentDtoOutput,
   CustomerContentDtoOutputReasons,
+  CustomerEmergencyStopDtoOutput,
   CustomerLocationDtoOutput,
   CustomerLocationDtoOutputZone,
   CustomerNewAddressDto,
@@ -550,6 +571,7 @@ part 'serializers.g.dart';
   MerchantContentDtoOutputReasonsMerchantRejectionInner,
   MerchantDeviceDto,
   MerchantDeviceSavedDtoOutput,
+  MerchantEmergencyStopDtoOutput,
   MerchantMenuDtoOutput,
   MerchantMenuDtoOutputCategoriesInner,
   MerchantMenuDtoOutputCategoriesInnerItemsInner,

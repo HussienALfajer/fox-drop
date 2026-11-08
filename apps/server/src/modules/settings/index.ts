@@ -40,6 +40,8 @@ export {
   SettingsService,
   type CityCurrencySource,
   type SettingChange,
+  type SettingChanged,
+  type SettingChangedListener,
   type SettingRefusal,
   type SettingTarget,
 } from './settings.service.js';
