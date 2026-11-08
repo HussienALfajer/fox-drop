@@ -1,13 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Menu, MenuItem, MenuOptionGroup } from '../merchants/index.js';
-import {
-  type CartLine,
-  priceLines,
-  quoteMoney,
-  quoteVersion,
-  thresholds,
-  versionBelow,
-} from './quote.js';
+import { type CartLine, priceLines, quoteMoney, quoteVersion, thresholds } from './quote.js';
 
 // CU §10.1–10.2, §10.6 and AP §8.4: the quote's lines and money, in base
 // minor units (TRY, 1 TRY = 100).
@@ -250,14 +243,5 @@ describe('quoteVersion (CU §10.6)', () => {
       quoteVersion({ ...parts, problems: [{ code: 'below_minimum_order', line: null }] }),
     ];
     expect(new Set(versions).size).toBe(versions.length);
-  });
-});
-
-describe('versionBelow (AP §9.14)', () => {
-  it('compares part by part, past single digits', () => {
-    expect(versionBelow('1.9.0', '1.10.0')).toBe(true);
-    expect(versionBelow('1.10.0', '1.9.0')).toBe(false);
-    expect(versionBelow('2.0.0', '2.0.0')).toBe(false);
-    expect(versionBelow('1.4.2', '1.5.0')).toBe(true);
   });
 });

@@ -1484,6 +1484,117 @@
         ]
       }
     },
+    "/v1/customer/platform": {
+      "get": {
+        "operationId": "customerPlatformGet",
+        "parameters": [
+          {
+            "name": "version",
+            "required": true,
+            "in": "query",
+            "description": "The app version, such as 1.4.0.",
+            "schema": {
+              "pattern": "^\\d+\\.\\d+\\.\\d+$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/v1/merchant/platform": {
+      "get": {
+        "operationId": "merchantPlatformGet",
+        "parameters": [
+          {
+            "name": "version",
+            "required": true,
+            "in": "query",
+            "description": "The app version, such as 1.4.0.",
+            "schema": {
+              "pattern": "^\\d+\\.\\d+\\.\\d+$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/captain/platform": {
+      "get": {
+        "operationId": "captainPlatformGet",
+        "parameters": [
+          {
+            "name": "version",
+            "required": true,
+            "in": "query",
+            "description": "The app version, such as 1.4.0.",
+            "schema": {
+              "pattern": "^\\d+\\.\\d+\\.\\d+$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
     "/v1/merchant/restaurant": {
       "get": {
         "operationId": "merchantMenuRestaurant",
@@ -5975,6 +6086,37 @@
         },
         "required": [
           "changes"
+        ],
+        "additionalProperties": false
+      },
+      "PlatformDto_Output": {
+        "type": "object",
+        "properties": {
+          "update": {
+            "type": "string",
+            "enum": [
+              "required",
+              "suggested",
+              "none"
+            ],
+            "description": "required: below app.<app>.min_version, the blocking update screen; suggested: below app.<app>.latest_version, a dismissible banner."
+          },
+          "updateMessage": {
+            "type": "string",
+            "description": "app.<app>.update_message, when set."
+          },
+          "maintenance": {
+            "type": "boolean",
+            "description": "app.<app>.maintenance: the blocking maintenance screen."
+          },
+          "maintenanceMessage": {
+            "type": "string",
+            "description": "The maintenance message, when set."
+          }
+        },
+        "required": [
+          "update",
+          "maintenance"
         ],
         "additionalProperties": false
       },

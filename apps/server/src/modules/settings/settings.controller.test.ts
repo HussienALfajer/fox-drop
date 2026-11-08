@@ -315,3 +315,48 @@ describe('restoring the default and reading the history (AP §9.14, §4.4)', () 
     expect(put.json()).toMatchObject({ group: 'support', value: 25 });
   });
 });
+
+describe("the apps' platform read (CU §4.2, §4.7, RA §4.2, §4.10, CA §4.2, §4.8)", () => {
+  const read = (party: string, version: string) =>
+    app.inject({ method: 'GET', url: `/v1/${party}/platform?version=${version}` });
+
+  it('answers no update and no maintenance by default, without a session', async () => {
+    const answer = await read('merchant', '1.0.0');
+    expect(answer.statusCode).toBe(200);
+    expect(answer.json()).toEqual({ update: 'none', maintenance: false });
+  });
+
+  it("answers the app's versions, update message and maintenance as OWN sets them", async () => {
+    const own = await admin(['OWN']);
+    const set = (key: string, value: unknown) =>
+      own.put(`/v1/admin/settings/${key}`, { value, reason: null });
+    expect((await set('app.captain.min_version', '1.4.0')).statusCode).toBe(200);
+    expect((await set('app.captain.latest_version', '1.10.0')).statusCode).toBe(200);
+    expect((await set('app.captain.update_message', 'حدّث التطبيق')).statusCode).toBe(200);
+    expect(
+      (await set('app.customer.maintenance', { enabled: true, message: 'صيانة قصيرة' })).statusCode,
+    ).toBe(200);
+
+    expect((await read('captain', '1.3.9')).json()).toEqual({
+      update: 'required',
+      updateMessage: 'حدّث التطبيق',
+      maintenance: false,
+    });
+    expect((await read('captain', '1.9.0')).json()).toMatchObject({ update: 'suggested' });
+    expect((await read('captain', '1.10.0')).json()).toMatchObject({ update: 'none' });
+    // Each app has its own settings.
+    expect((await read('customer', '1.0.0')).json()).toEqual({
+      update: 'none',
+      maintenance: true,
+      maintenanceMessage: 'صيانة قصيرة',
+    });
+    expect((await read('merchant', '1.0.0')).json()).toEqual({
+      update: 'none',
+      maintenance: false,
+    });
+  });
+
+  it('refuses a version not in the form 1.4.0', async () => {
+    expect((await read('customer', '1.4')).statusCode).toBe(400);
+  });
+});

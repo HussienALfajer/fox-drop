@@ -2,6 +2,11 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
 import { ValkeyModule } from '../../valkey/valkey.module.js';
 import { AuditModule } from '../audit/index.js';
+import {
+  CaptainPlatformController,
+  CustomerPlatformController,
+  MerchantPlatformController,
+} from './app-platform.controller.js';
 import { SettingsController } from './settings.controller.js';
 import { SettingsService } from './settings.service.js';
 
@@ -10,7 +15,12 @@ import { SettingsService } from './settings.service.js';
 // through SettingsService only.
 @Module({
   imports: [DatabaseModule, ValkeyModule, AuditModule],
-  controllers: [SettingsController],
+  controllers: [
+    SettingsController,
+    CustomerPlatformController,
+    MerchantPlatformController,
+    CaptainPlatformController,
+  ],
   providers: [SettingsService],
   exports: [SettingsService],
 })
@@ -33,3 +43,10 @@ export {
   type SettingRefusal,
   type SettingTarget,
 } from './settings.service.js';
+export {
+  platformApps,
+  type PlatformApp,
+  type UpdateNeed,
+  updateNeed,
+  versionBelow,
+} from './app-versions.js';

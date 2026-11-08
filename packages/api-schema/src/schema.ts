@@ -676,6 +676,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/platform": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerPlatformGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/platform": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantPlatformGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/platform": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainPlatformGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/restaurant": {
         parameters: {
             query?: never;
@@ -2272,6 +2320,19 @@ export interface components {
                 /** Format: date-time */
                 changedAt: string;
             }[];
+        };
+        PlatformDto_Output: {
+            /**
+             * @description required: below app.<app>.min_version, the blocking update screen; suggested: below app.<app>.latest_version, a dismissible banner.
+             * @enum {string}
+             */
+            update: "required" | "suggested" | "none";
+            /** @description app.<app>.update_message, when set. */
+            updateMessage?: string;
+            /** @description app.<app>.maintenance: the blocking maintenance screen. */
+            maintenance: boolean;
+            /** @description The maintenance message, when set. */
+            maintenanceMessage?: string;
         };
         MerchantRestaurantDto_Output: {
             /** Format: uuid */
@@ -6094,6 +6155,75 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SettingHistoryDto_Output"];
+                };
+            };
+        };
+    };
+    customerPlatformGet: {
+        parameters: {
+            query: {
+                /** @description The app version, such as 1.4.0. */
+                version: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformDto_Output"];
+                };
+            };
+        };
+    };
+    merchantPlatformGet: {
+        parameters: {
+            query: {
+                /** @description The app version, such as 1.4.0. */
+                version: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformDto_Output"];
+                };
+            };
+        };
+    };
+    captainPlatformGet: {
+        parameters: {
+            query: {
+                /** @description The app version, such as 1.4.0. */
+                version: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformDto_Output"];
                 };
             };
         };

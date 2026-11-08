@@ -276,6 +276,7 @@ export 'package:core_api/src/model/merchant_sign_in_dto.dart';
 export 'package:core_api/src/model/merchant_signed_in_dto_output.dart';
 export 'package:core_api/src/model/merchant_signed_out_dto_output.dart';
 export 'package:core_api/src/model/merchant_tokens_dto_output.dart';
+export 'package:core_api/src/model/platform_dto_output.dart';
 export 'package:core_api/src/model/push_token_dto.dart';
 export 'package:core_api/src/model/push_token_registered_dto_output.dart';
 export 'package:core_api/src/model/realtime_token_dto_output.dart';

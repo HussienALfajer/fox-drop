@@ -13,7 +13,7 @@ Slice 2.4a, forced update and maintenance (`docs/roadmap.md`, Phase 2, slice 2.4
 - **Decided here:** the apps check at launch, when they come back to the foreground and when a failed check succeeds again; the live broadcast to open devices (RA §18 «platform broadcasts») comes with 2.4c's fan-out to the restaurant and captain channels. The update button opens the build's `UPDATE_URL` (`--dart-define`, not a setting: Appendix A has none), hidden without one.
 - **Plan:**
   - [x] Record the split (`docs/roadmap.md`, this file).
-  - [ ] Server: `GET /v1/{customer,merchant,captain}/platform?version=` (public): `update` (`required`, `suggested`, `none`), the update message and maintenance with its message; one `versionBelow` in the settings module for the quote, the captain's block and this route; the API contract and clients.
+  - [x] Server: `GET /v1/{customer,merchant,captain}/platform?version=` (public): `update` (`required`, `suggested`, `none`), the update message and maintenance with its message; one `versionBelow` in the settings module for the quote, the captain's block and this route; the API contract and clients.
   - [ ] Panel: «التطبيقات», the minimum and latest versions, the update message and maintenance with its message for each app (OWN), on the settings routes.
   - [ ] `packages/core_platform`: the check (launch, resume, retry after a failure) and its state, tested.
   - [ ] Customer app: the blocking update and maintenance screens with the active order still readable, and the update banner.

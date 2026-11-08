@@ -1,3 +1,5 @@
+import { versionBelow } from '../settings/index.js';
+
 // AP §9.7.5: a captain's account status. Activation is the pipeline's last
 // step (AP §9.7.1), so a captain record starts active.
 export const captainStatuses = ['active', 'suspended', 'terminated'] as const;
@@ -54,19 +56,6 @@ function suspendedAt(input: AvailabilityInput, now: Date) {
   return suspension.until === null || now < suspension.until ? suspension : null;
 }
 
-// Versions as major.minor.patch, compared part by part; one that is not in
-// that form is below any minimum.
-function below(version: string, minimum: string): boolean {
-  if (!/^\d+\.\d+\.\d+$/.test(version)) return true;
-  const parts = version.split('.').map(Number);
-  const least = minimum.split('.').map(Number);
-  for (let index = 0; index < least.length; index += 1) {
-    const difference = (parts[index] ?? 0) - least[index]!;
-    if (difference !== 0) return difference < 0;
-  }
-  return false;
-}
-
 // Every block that refuses going online now, so the app shows each (CA §7.2).
 // Required documents (K6) and terms (K7) join with their slices.
 export function onlineBlocks(input: AvailabilityInput, now: Date): OnlineBlock[] {
@@ -84,7 +73,7 @@ export function onlineBlocks(input: AvailabilityInput, now: Date): OnlineBlock[]
   }
   if (
     input.minVersion !== null &&
-    (input.appVersion === null || below(input.appVersion, input.minVersion))
+    (input.appVersion === null || versionBelow(input.appVersion, input.minVersion))
   ) {
     blocks.push({ kind: 'version_below_minimum', minVersion: input.minVersion });
   }
