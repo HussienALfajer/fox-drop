@@ -518,6 +518,8 @@ function TermsForm({
   const publishedAt = new Intl.DateTimeFormat('ar-u-nu-latn', {
     dateStyle: 'medium',
     timeStyle: 'short',
+    // Shown on Syria's clock, as the panel's other times (AP §4.7).
+    timeZone: 'Asia/Damascus',
   }).format(new Date(current.publishedAt));
   return (
     <form onSubmit={submit}>

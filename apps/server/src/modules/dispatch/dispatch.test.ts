@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ApiModule } from '../../api.module.js';
 import { createDatabase, type Database } from '../../database/database.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
@@ -28,6 +28,11 @@ import { DispatchService } from './index.js';
 // offer an accepted order to an eligible captain, who accepts or declines it
 // within dispatch.offer_timeout_sec, or it expires; or, with
 // dispatch.manual_assign_requires_accept off, assign it directly.
+// Each test signs in the three parties, places and accepts an order and
+// waits on the offer timers: up to 3 s alone, so the default 5 s is too short
+// for a full parallel run.
+vi.setConfig({ testTimeout: 30_000 });
+
 let database: TestDatabase;
 let cache: TestValkey;
 let app: NestFastifyApplication;

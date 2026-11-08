@@ -53,7 +53,13 @@ final termsPromptProvider = Provider<void>((ref) {
   int? prompted;
   void prompt() {
     final version = check.terms?.version;
-    if (!check.pending || version == null || version == prompted) return;
+    // Nothing pending (accepted, or signed out): the next account or version
+    // is asked again.
+    if (!check.pending || version == null) {
+      prompted = null;
+      return;
+    }
+    if (version == prompted) return;
     // The screen on top: a pushed one is not in the configuration's uri.
     final top = router.routerDelegate.currentConfiguration;
     if (top.isEmpty || top.last.matchedLocation != '/') return;

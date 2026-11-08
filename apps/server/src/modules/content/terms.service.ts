@@ -39,10 +39,25 @@ export class TermsService {
     return versionOf(row);
   }
 
-  // Whether the account has not accepted the version in force.
+  // Whether the account has not accepted the version in force: one query,
+  // since every quote and every going online asks it.
   async pending(audience: TermsAudience, accountId: string): Promise<boolean> {
-    const { version } = await this.current(audience);
-    return !(await this.accepted(this.database.db, audience, accountId, version));
+    const [row] = await this.database.db
+      .select({ accepted: termsAcceptances.version })
+      .from(termsVersions)
+      .leftJoin(
+        termsAcceptances,
+        and(
+          eq(termsAcceptances.audience, termsVersions.audience),
+          eq(termsAcceptances.accountId, accountId),
+          eq(termsAcceptances.version, termsVersions.version),
+        ),
+      )
+      .where(eq(termsVersions.audience, audience))
+      .orderBy(desc(termsVersions.version))
+      .limit(1);
+    if (row === undefined) throw new Error(`no ${audience} terms version`);
+    return row.accepted === null;
   }
 
   // «Accept terms» (CU §15, CA §15): the version the app showed. Refused
@@ -126,25 +141,6 @@ export class TermsService {
       );
       return versionOf(row!);
     });
-  }
-
-  private async accepted(
-    executor: Executor,
-    audience: TermsAudience,
-    accountId: string,
-    version: number,
-  ): Promise<boolean> {
-    const rows = await executor
-      .select({ version: termsAcceptances.version })
-      .from(termsAcceptances)
-      .where(
-        and(
-          eq(termsAcceptances.audience, audience),
-          eq(termsAcceptances.accountId, accountId),
-          eq(termsAcceptances.version, version),
-        ),
-      );
-    return rows.length > 0;
   }
 }
 

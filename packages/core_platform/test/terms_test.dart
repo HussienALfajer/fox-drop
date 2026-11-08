@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core_platform/core_platform.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -60,5 +62,35 @@ void main() {
     expect(await check.accept(2), TermsAcceptance.outdated);
     expect(check.terms, newer);
     expect(check.pending, isTrue);
+  });
+
+  testWidgets('drops an answer that arrives after a sign-out', (tester) async {
+    final gate = Completer<Terms>();
+    final slow = TermsCheck(read: () => gate.future, accept: (_) async {});
+    addTearDown(slow.dispose);
+    final read = slow.check();
+    slow.clear();
+    gate.complete(pending);
+    await read;
+    expect(slow.terms, isNull);
+    expect(slow.pending, isFalse);
+  });
+
+  testWidgets('keeps an acceptance over a read sent before it', (tester) async {
+    var reads = 0;
+    final gate = Completer<Terms>();
+    final racing = TermsCheck(
+      read: () {
+        reads++;
+        return reads == 1 ? gate.future : Future.value(accepted);
+      },
+      accept: (_) async {},
+    );
+    addTearDown(racing.dispose);
+    final before = racing.check();
+    expect(await racing.accept(2), TermsAcceptance.accepted);
+    gate.complete(pending);
+    await before;
+    expect(racing.pending, isFalse);
   });
 }

@@ -82,11 +82,14 @@ async function signedIn({ acceptTerms = true } = {}) {
   });
   const headers = { authorization: `Bearer ${answer.json().accessToken}` };
   if (acceptTerms) {
+    const { version } = (
+      await app.inject({ method: 'GET', url: '/v1/captain/terms', headers })
+    ).json();
     await app.inject({
       method: 'POST',
       url: '/v1/captain/terms/accept',
       headers,
-      payload: { version: 1 },
+      payload: { version },
     });
   }
   return { captainId, headers };
@@ -142,8 +145,31 @@ describe('the availability routes (CA §7)', () => {
     const refused = await goOnline(headers);
     expect(refused.statusCode).toBe(409);
     expect(refused.json()).toMatchObject({ blocks: [{ kind: 'terms_not_accepted' }] });
-    await call(headers, 'POST', '/v1/captain/terms/accept', { version: 1 });
+    await call(headers, 'POST', '/v1/captain/terms/accept', {
+      version: (await call(headers, 'GET', '/v1/captain/terms')).json().version,
+    });
     expect((await goOnline(headers)).statusCode).toBe(200);
+  });
+
+  it('keeps an online captain online when a new version is published (CA §7.2)', async () => {
+    const { headers } = await signedIn();
+    expect((await goOnline(headers)).statusCode).toBe(200);
+    const { rows } = await sql.query(
+      `INSERT INTO content.terms_versions (audience, version, body)
+       SELECT 'captain', max(version) + 1, 'شروط أحدث' FROM content.terms_versions
+       WHERE audience = 'captain' RETURNING version`,
+    );
+    expect((await call(headers, 'GET', '/v1/captain/terms')).json()).toMatchObject({
+      version: rows[0].version,
+      pending: true,
+    });
+    const again = await goOnline(headers);
+    expect(again.statusCode).toBe(200);
+    expect(again.json().availability).toMatchObject({ state: 'online_available' });
+    await call(headers, 'POST', '/v1/captain/availability/offline');
+    expect((await goOnline(headers)).json()).toMatchObject({
+      blocks: [{ kind: 'terms_not_accepted' }],
+    });
   });
 
   it('refuses going online with 409 and every block', async () => {

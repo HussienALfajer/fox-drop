@@ -152,9 +152,11 @@ describe('terms and privacy (AP §9.13)', () => {
     expect((await read('merchant', await signIn('merchant', ownerPhone))).json().pending).toBe(
       true,
     );
-    expect((await read('merchant', await signIn('merchant', cashierPhone))).json().pending).toBe(
-      false,
-    );
+    const cashier = await signIn('merchant', cashierPhone);
+    expect((await read('merchant', cashier)).json().pending).toBe(false);
+    const refused = await accept('merchant', cashier, 1);
+    expect(refused.statusCode).toBe(403);
+    expect(refused.json()).toMatchObject({ error: 'owner_only' });
   });
 
   it('publishes a new version that every account accepts again, audited', async () => {

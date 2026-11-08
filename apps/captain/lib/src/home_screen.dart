@@ -115,8 +115,9 @@ class _AvailabilityView extends ConsumerWidget {
           Text(
             l10n.captainOwes(l10n.formatMoney(usage.amount, usage.currency)),
           ),
-        // K7: a new version waits for acceptance before going online.
-        if (ref.watch(termsPendingProvider))
+        // K7: a new version waits for acceptance before going online; an
+        // online captain keeps the offers (CA §7.2).
+        if (!work.online && ref.watch(termsPendingProvider))
           ListTile(
             key: const Key('terms-pending'),
             title: Text(l10n.captainTermsPendingBanner),

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   ConflictException,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -123,11 +124,15 @@ export class MerchantTermsController {
     return read(this.terms, 'merchant', session);
   }
 
+  // RA §4.10, S13: only owners accept; a cashier gets 403 owner_only.
   @Post('accept')
   @AppSignedIn()
   @HttpCode(200)
   @ZodResponse({ status: 200, type: TermsAcceptedDto })
   accept(@CurrentAppSession() session: AppSession, @Body() body: TermsAcceptDto) {
+    if (session.merchant?.role !== 'owner') {
+      throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: 'owner_only' });
+    }
     return accept(this.terms, 'merchant', session, body.version);
   }
 }

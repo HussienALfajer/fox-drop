@@ -60,7 +60,10 @@ class TermsCheck extends ChangeNotifier {
   Terms? _terms;
   AppLifecycleListener? _lifecycle;
   Timer? _retry;
-  bool _reading = false;
+  // Each read, sign-out and acceptance starts a new generation; an answer
+  // of an older one is dropped, so a read sent before them never overwrites
+  // what they changed (another account's answer, an acceptance).
+  int _generation = 0;
   bool _disposed = false;
 
   Terms? get terms => _terms;
@@ -75,11 +78,15 @@ class TermsCheck extends ChangeNotifier {
   }
 
   /// Forgets the account's answer, such as at sign-out: nothing is pending
-  /// until the next read.
-  void clear() => _set(null);
+  /// until the next read, and a read still on its way is dropped.
+  void clear() {
+    _generation++;
+    _retry?.cancel();
+    _set(null);
+  }
 
-  /// Reads the terms now, unless a read is already running.
-  Future<void> check() => _check(firstRetry);
+  /// Reads the terms now; completes once this read is answered or failed.
+  Future<void> check() => _check(++_generation, firstRetry);
 
   /// «أوافق» on [version], the one the screen showed (CU §15, CA §15). A
   /// newer one published meanwhile is read and answered [outdated], so the
@@ -92,6 +99,7 @@ class TermsCheck extends ChangeNotifier {
       await check();
       return TermsAcceptance.outdated;
     }
+    _generation++;
     _set(Terms(version: version, body: _terms?.body ?? '', pending: false));
     unawaited(check());
     return TermsAcceptance.accepted;
@@ -103,22 +111,20 @@ class TermsCheck extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _check(Duration wait) async {
-    if (_reading || _disposed) return;
+  Future<void> _check(int generation, Duration wait) async {
+    if (_disposed) return;
     _retry?.cancel();
     _retry = null;
-    _reading = true;
     try {
-      _set(await _read());
+      final terms = await _read();
+      if (generation == _generation) _set(terms);
     } on Object catch (error) {
-      if (_disposed) return;
+      if (_disposed || generation != _generation) return;
       debugPrint('Terms check failed: $error');
       final next = Duration(
         microseconds: min(wait.inMicroseconds * 2, lastRetry.inMicroseconds),
       );
-      _retry = Timer(wait, () => unawaited(_check(next)));
-    } finally {
-      _reading = false;
+      _retry = Timer(wait, () => unawaited(_check(generation, next)));
     }
   }
 
@@ -148,10 +154,12 @@ class _TermsScreenState extends State<TermsScreen> {
   bool _busy = false;
   String? _message;
 
+  // Read on every opening: a version published while the app stayed open is
+  // shown, with «أوافق» (CU Appendix C «Terms pending»).
   @override
   void initState() {
     super.initState();
-    if (widget.check.terms == null) unawaited(widget.check.check());
+    unawaited(widget.check.check());
   }
 
   Future<void> _accept(Terms terms, AppLocalizations l10n) async {

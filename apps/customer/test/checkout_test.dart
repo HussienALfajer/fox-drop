@@ -570,6 +570,44 @@ void main() {
     await app.done(tester);
   });
 
+  // CU §4.7, Appendix C «Terms pending»: a version published while the app
+  // stayed open is shown with «أوافق», then checkout quotes again.
+  testWidgets('a pending version of the terms opens from checkout', (
+    tester,
+  ) async {
+    final app = await _checkout(
+      tester,
+      quotes: [
+        FakeAnswer(
+          200,
+          _quote(
+            version: 'v2',
+            problems: [
+              {'code': 'terms_pending', 'line': null, 'opensAt': null},
+            ],
+          ),
+        ),
+        FakeAnswer(200, _quote()),
+      ],
+    );
+    expect(find.text('وافق على الشروط الجديدة لتتمكن من الطلب'), findsOne);
+    app.terms(version: 2, body: 'الشروط الجديدة', pending: true);
+    app.server.on('/v1/customer/terms/accept', [
+      const FakeAnswer(200, {'status': 'accepted'}),
+    ]);
+    await tester.tap(find.text('عرض الشروط'));
+    await tester.pumpAndSettle();
+    expect(find.text('الشروط الجديدة'), findsOneWidget);
+
+    app.terms(version: 2, body: 'الشروط الجديدة');
+    await tester.tap(find.byKey(const Key('terms-accept')));
+    await tester.pumpAndSettle();
+    expect(app.bodyOf('/v1/customer/terms/accept'), {'version': 2});
+    expect(find.text('وافق على الشروط الجديدة لتتمكن من الطلب'), findsNothing);
+    expect(find.byKey(const Key('confirm-order')), findsOneWidget);
+    await app.done(tester);
+  });
+
   testWidgets('a blocked order keeps the cart and shows the new quote', (
     tester,
   ) async {
