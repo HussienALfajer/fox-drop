@@ -9,6 +9,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../api.dart';
 import '../content.dart';
+import '../push.dart';
 import 'door_payment.dart';
 import 'location.dart';
 import 'work.dart';
@@ -157,7 +158,9 @@ class Commands extends Notifier<Set<String>> {
   LocationTracker get _tracker => ref.read(locationTrackerProvider);
 
   /// «متصل» (CA §7.2): the location first, since online means tracked.
+  /// The notification permission is asked before it, never blocking.
   Future<Notice?> goOnline() async {
+    await askNotifications(ref);
     final source = ref.read(locationSourceProvider);
     final problem = await source.ensureAccess();
     if (problem != null) return LocationNeeded(problem);

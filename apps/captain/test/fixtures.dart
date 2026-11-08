@@ -4,10 +4,12 @@ import 'dart:convert';
 import 'package:captain/src/api.dart';
 import 'package:captain/src/app.dart';
 import 'package:captain/src/auth.dart';
+import 'package:captain/src/push.dart';
 import 'package:captain/src/work/alerts.dart';
 import 'package:captain/src/work/commands.dart';
 import 'package:captain/src/work/location.dart';
 import 'package:core_auth/testing.dart';
+import 'package:core_push/testing.dart';
 import 'package:core_realtime/core_realtime.dart';
 import 'package:core_storage/core_storage.dart';
 import 'package:core_time/core_time.dart';
@@ -309,6 +311,9 @@ class TestApp {
   final ringer = FakeRinger();
   final location = FakeLocation(fixAt(restaurant));
   final launched = <Uri>[];
+  final push = FakePush();
+  // The phone allows notifications unless a test says otherwise.
+  final permission = FakeNotificationPermission(allowed: true);
   late final ProviderContainer container;
 
   /// The server's clock in the test, which [advance] moves.
@@ -333,6 +338,9 @@ class TestApp {
 
   Future<void> pump(WidgetTester tester, {Map<String, String>? stored}) async {
     server.on('/v1/captain/content', [FakeAnswer(200, contentJson())]);
+    server.on('/v1/captain/push-token', [
+      const FakeAnswer(200, {'status': 'registered'}),
+    ]);
     server.on('/v1/captain/auth/session', [
       const FakeAnswer(200, {
         'accountId': accountId,
@@ -360,6 +368,8 @@ class TestApp {
         ringerProvider.overrideWithValue(ringer),
         keepScreenOnProvider.overrideWithValue((on) {}),
         locationSourceProvider.overrideWithValue(location),
+        pushProvider.overrideWithValue(push),
+        notificationPermissionProvider.overrideWithValue(permission),
         serverClockProvider.overrideWithValue(
           ServerClock(deviceNow: () => clockNow),
         ),

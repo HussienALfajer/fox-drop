@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The push channels' names, which Android shows in the app's
+         notification settings (MainActivity; owner decision 2026-11-08). -->
+    <string name="push_channel_offer">العروض</string>
+    <string name="push_channel_chime">تنبيهات الطلبات</string>
+    <string name="push_channel_cancellation">الإلغاء والسحب</string>
+    <string name="push_channel_silent">تحديثات</string>
+</resources>

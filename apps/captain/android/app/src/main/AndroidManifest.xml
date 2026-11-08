@@ -8,6 +8,9 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <!-- Android 13 asks before showing notifications: the foreground
+         service's and the pushes'; the app asks at «متصل» (owner decision
+         2026-11-08; permission_handler). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- The offer ring keeps the screen on while online (wakelock_plus). -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
