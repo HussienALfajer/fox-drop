@@ -82,7 +82,7 @@ describe('FCM (architecture §8.1)', () => {
     expect(calls[1]!.authorization).toBe('Bearer access-1');
     expect(JSON.parse(calls[1]!.body)).toEqual({
       message: {
-        token: 'device-token',
+        fid: 'device-token',
         notification: { title: 'FOX DROP', body: message.body },
         data: { type: 'order', orderId: 'order-1' },
         android: { priority: 'HIGH', ttl: '600s', notification: { channel_id: 'default' } },
@@ -94,6 +94,20 @@ describe('FCM (architecture §8.1)', () => {
     const answers = [
       error(404, 'UNREGISTERED'),
       error(503, 'UNAVAILABLE'),
+      Response.json(
+        {
+          error: {
+            status: 'INVALID_ARGUMENT',
+            details: [
+              {
+                '@type': 'type.googleapis.com/google.rpc.BadRequest',
+                fieldViolations: [{ field: 'message.fid', description: 'Invalid FID' }],
+              },
+            ],
+          },
+        },
+        { status: 400 },
+      ),
       error(400, 'INVALID_ARGUMENT'),
     ];
     const { fetcher } = fakeFetch((call) =>
@@ -102,8 +116,10 @@ describe('FCM (architecture §8.1)', () => {
     const sender = new FcmSender(account, fetcher);
     expect(await sender.send(message)).toBe('invalid');
     expect(await sender.send(message)).toBe('retry');
-    // A malformed token (FCM's INVALID_ARGUMENT) is forgotten too.
+    // A malformed FID (FCM's INVALID_ARGUMENT on the target) is forgotten too.
     expect(await sender.send(message)).toBe('invalid');
+    // Any other INVALID_ARGUMENT refuses the message, not the device.
+    expect(await sender.send(message)).toBe('failed');
   });
 
   it('retries when Google cannot be reached', async () => {

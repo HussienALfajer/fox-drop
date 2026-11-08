@@ -1,0 +1,21 @@
+name: core_push
+description: Push notifications of the FOX DROP Flutter apps (architecture §8.1, §11.2).
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+
+resolution: workspace
+
+dependencies:
+  firebase_app_installations: 0.5.1
+  firebase_core: 5.1.0
+  firebase_messaging: 17.0.1
+  flutter:
+    sdk: flutter
+  permission_handler: 13.0.2
+
+dev_dependencies:
+  flutter_lints: 6.0.0
+  flutter_test:
+    sdk: flutter

@@ -12,12 +12,12 @@ part 'push_token_dto.g.dart';
 /// PushTokenDto
 ///
 /// Properties:
-/// * [token] - Firebase Cloud Messaging's registration token.
+/// * [token] - The app installation's Firebase Installation ID (FID), FCM's target for this device.
 /// * [platform]
 @BuiltValue()
 abstract class PushTokenDto
     implements Built<PushTokenDto, PushTokenDtoBuilder> {
-  /// Firebase Cloud Messaging's registration token.
+  /// The app installation's Firebase Installation ID (FID), FCM's target for this device.
   @BuiltValueField(wireName: r'token')
   String get token;
 
