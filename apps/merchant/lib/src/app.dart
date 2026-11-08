@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'platform.dart';
 import 'push.dart';
 import 'router.dart';
+import 'terms.dart';
 import 'board/board.dart';
 
 /// The restaurant app «تطبيق المطعم»: Arabic only, right to left (AP §4.7).
@@ -21,6 +22,8 @@ class MerchantApp extends ConsumerWidget {
     ref.watch(pushTokensProvider);
     ref.watch(notificationAskProvider);
     ref.watch(pushTapsProvider);
+    // RA §4.10: a new version of the terms asks the owner on the next open.
+    ref.watch(termsPromptProvider);
     final platform = ref.watch(platformCheckProvider);
     // "On every reconnect" (RA §4.2): the channel coming back checks again.
     ref.listen(boardProvider, (previous, next) {

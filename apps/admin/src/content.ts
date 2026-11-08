@@ -24,7 +24,8 @@ export type ContentRefusal =
   | 'duplicate_label'
   | 'invalid_order'
   | 'invalid_value'
-  | 'unknown_variable';
+  | 'unknown_variable'
+  | 'terms_unchanged';
 
 const refusals: readonly string[] = [
   'list_closed',
@@ -34,6 +35,7 @@ const refusals: readonly string[] = [
   'invalid_order',
   'invalid_value',
   'unknown_variable',
+  'terms_unchanged',
 ] satisfies ContentRefusal[];
 
 export type EditResult = { status: 'saved' } | { status: 'refused'; refusal: ContentRefusal };
@@ -51,6 +53,7 @@ const keys = {
   faqs: ['content', 'faqs'] as const,
   texts: ['content', 'texts'] as const,
   notifications: ['content', 'notifications'] as const,
+  terms: ['content', 'terms'] as const,
 };
 
 export function useReasonLists() {
@@ -234,6 +237,37 @@ export function useUpdateNotificationText() {
     const { data, error, response } = await api.PUT('/v1/admin/content/notifications/{key}', {
       params: { path: { key: input.key } },
       body: { text: input.text.trim() },
+    });
+    return data ? { status: 'saved' } : refused(error, response.status);
+  });
+}
+
+// «الشروط والخصوصية» (AP §9.13): the version in force of each audience's
+// document; publishing the next makes everyone of that audience accept it
+// again on their next app open.
+export type TermsAudience = FaqAudience;
+export const termsAudiences = [
+  'customer',
+  'captain',
+  'merchant',
+] as const satisfies readonly TermsAudience[];
+
+export function useTerms() {
+  return useQuery({
+    queryKey: keys.terms,
+    queryFn: async () => {
+      const { data } = await api.GET('/v1/admin/content/terms');
+      if (!data) throw new Error('terms unavailable');
+      return data;
+    },
+  });
+}
+
+export function usePublishTerms() {
+  return useEdit(keys.terms, async (input: { audience: TermsAudience; body: string }) => {
+    const { data, error, response } = await api.POST('/v1/admin/content/terms/{audience}', {
+      params: { path: { audience: input.audience } },
+      body: { body: input.body.trim() },
     });
     return data ? { status: 'saved' } : refused(error, response.status);
   });

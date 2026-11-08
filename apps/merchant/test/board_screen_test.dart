@@ -45,6 +45,16 @@ class _Board {
       }),
     ]);
     server.on('/v1/merchant/orders', boards);
+    if (!server.routes.containsKey('/v1/merchant/terms')) {
+      server.on('/v1/merchant/terms', [
+        const FakeAnswer(200, {
+          'version': 1,
+          'body': 'شروط الشراكة',
+          'publishedAt': '2026-11-08T09:00:00.000Z',
+          'pending': false,
+        }),
+      ]);
+    }
     if (!server.routes.containsKey('/v1/merchant/platform')) {
       server.on('/v1/merchant/platform', [
         const FakeAnswer(200, {'updateNeed': 'none', 'maintenance': false}),

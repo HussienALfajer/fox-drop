@@ -14,6 +14,13 @@ import {
 } from './contact.js';
 import { ContentService } from './content.service.js';
 import { NotificationTexts } from './notification-texts.service.js';
+import {
+  AdminTermsController,
+  CaptainTermsController,
+  CustomerTermsController,
+  MerchantTermsController,
+} from './terms.controller.js';
+import { TermsService } from './terms.service.js';
 
 // The content module (architecture §4.2): the texts and reason lists of AP
 // §9.13, edited in the panel and read by the apps. Other modules check a
@@ -28,9 +35,13 @@ import { NotificationTexts } from './notification-texts.service.js';
     CaptainContentController,
     CustomerContentController,
     AdminContentController,
+    MerchantTermsController,
+    CaptainTermsController,
+    CustomerTermsController,
+    AdminTermsController,
   ],
-  providers: [ContentService, NotificationTexts],
-  exports: [ContentService, NotificationTexts],
+  providers: [ContentService, NotificationTexts, TermsService],
+  exports: [ContentService, NotificationTexts, TermsService],
 })
 export class ContentModule {}
 
@@ -43,3 +54,5 @@ export {
 export { GENERIC_CUSTOMER_TEXT, type ReasonList } from './lists.js';
 export { NotificationTexts, type RenderedNotification } from './notification-texts.service.js';
 export { type NotificationLevel, type NotificationPriority } from './notification-templates.js';
+export { type TermsAudience, termsAudiences } from './lists.js';
+export { TermsService, type TermsVersion } from './terms.service.js';

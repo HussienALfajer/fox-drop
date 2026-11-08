@@ -338,6 +338,18 @@ class TestApp {
 
   /// The answer of `GET /v1/captain/platform` (CA §4.2, §4.8): no update
   /// and no maintenance unless a test says otherwise.
+  /// `GET /v1/captain/terms` (AP §9.13): version 1, accepted, unless a test
+  /// says otherwise.
+  void terms({int version = 1, bool pending = false}) =>
+      server.on('/v1/captain/terms', [
+        FakeAnswer(200, {
+          'version': version,
+          'body': 'شروط العمل',
+          'publishedAt': '2026-11-08T09:00:00.000Z',
+          'pending': pending,
+        }),
+      ]);
+
   void platform({String updateNeed = 'none', bool maintenance = false}) =>
       server.on('/v1/captain/platform', [
         FakeAnswer(200, {'updateNeed': updateNeed, 'maintenance': maintenance}),
@@ -345,6 +357,7 @@ class TestApp {
 
   Future<void> pump(WidgetTester tester, {Map<String, String>? stored}) async {
     if (!server.routes.containsKey('/v1/captain/platform')) platform();
+    if (!server.routes.containsKey('/v1/captain/terms')) terms();
     server.on('/v1/captain/content', [FakeAnswer(200, contentJson())]);
     server.on('/v1/captain/push-token', [
       const FakeAnswer(200, {'status': 'registered'}),

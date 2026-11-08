@@ -2511,6 +2511,60 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'نعمل على تحسين الخدمة ونعود قريباً.'**
   String get platformMaintenanceMessage;
+
+  /// The terms and privacy screen (AP §9.13, CU §13 «الشروط والخصوصية»).
+  ///
+  /// In ar, this message translates to:
+  /// **'الشروط والخصوصية'**
+  String get termsTitle;
+
+  /// Above a pending version of the terms (CU §4.7, CA §4.8, RA §4.10). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'نشرت FOX DROP نسخة جديدة من الشروط وسياسة الخصوصية. اقرأها ووافق عليها لتتابع.'**
+  String get termsNewVersion;
+
+  /// Accepts the version shown (CU §15, CA §15 «Accept terms»), as the sign-up's tick reads (CU §5.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'أوافق على الشروط وسياسة الخصوصية'**
+  String get termsAccept;
+
+  /// The server answered 409 terms_outdated: a newer version replaced the one shown. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'نُشرت نسخة أحدث بينما كنت تقرأ. اقرأها ثم وافق.'**
+  String get termsOutdated;
+
+  /// Reading or accepting the terms failed. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الاتصال بالخادم، حاول مرة أخرى'**
+  String get termsFailed;
+
+  /// The customer's banner and checkout problem while a version is pending (CU §6.2 item 5, Appendix C «Terms pending»).
+  ///
+  /// In ar, this message translates to:
+  /// **'وافق على الشروط الجديدة لتتمكن من الطلب'**
+  String get customerTermsPending;
+
+  /// Opens the terms (CU Appendix C «Terms pending» action).
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض الشروط'**
+  String get customerTermsShow;
+
+  /// The captain's home while a version is pending: going online waits for it (K7, CA §4.8). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'وافق على الشروط الجديدة لتتمكن من الاتصال'**
+  String get captainTermsPendingBanner;
+
+  /// An owner's board while a version is pending (RA §4.10, S13). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'وافق على الشروط الجديدة لتستخدم شاشات المطعم الأخرى. الطلبات تصل كالمعتاد.'**
+  String get merchantTermsPendingBanner;
 }
 
 class _AppLocalizationsDelegate

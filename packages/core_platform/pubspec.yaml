@@ -1,5 +1,5 @@
 name: core_platform
-description: The forced update and maintenance of the FOX DROP Flutter apps (CU §4.2, RA §4.2, CA §4.2).
+description: The forced update, maintenance and terms of the FOX DROP Flutter apps (CU §4.2, §4.7, RA §4.2, §4.10, CA §4.2, §4.8).
 publish_to: none
 
 environment:
@@ -10,6 +10,7 @@ resolution: workspace
 dependencies:
   core_api: any
   core_l10n: any
+  dio: 5.11.1
   flutter:
     sdk: flutter
   url_launcher: 6.3.3

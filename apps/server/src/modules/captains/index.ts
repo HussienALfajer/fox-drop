@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
 import { AuditModule } from '../audit/index.js';
+import { ContentModule } from '../content/index.js';
 import { FxModule } from '../fx/index.js';
 import { GeoModule } from '../geo/index.js';
 import { LedgerModule } from '../ledger/index.js';
@@ -23,6 +24,7 @@ import { LocationPartitions } from './location-partitions.js';
     GeoModule,
     LedgerModule,
     AuditModule,
+    ContentModule,
   ],
   controllers: [CaptainAvailabilityController],
   providers: [CaptainsService, LivePositions],

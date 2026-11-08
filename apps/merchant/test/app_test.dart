@@ -64,6 +64,16 @@ class _App {
     Map<String, String> stored = const {},
   }) async {
     server.on('/v1/merchant/orders', [FakeAnswer(200, boardJson([]))]);
+    if (!server.routes.containsKey('/v1/merchant/terms')) {
+      server.on('/v1/merchant/terms', [
+        const FakeAnswer(200, {
+          'version': 1,
+          'body': 'شروط الشراكة',
+          'publishedAt': '2026-11-08T09:00:00.000Z',
+          'pending': false,
+        }),
+      ]);
+    }
     if (!server.routes.containsKey('/v1/merchant/platform')) {
       server.on('/v1/merchant/platform', [
         const FakeAnswer(200, {'updateNeed': 'none', 'maintenance': false}),
@@ -105,7 +115,52 @@ class _App {
   }
 }
 
+Map<String, Object?> _terms({required int version, required bool pending}) => {
+  'version': version,
+  'body': 'شروط الشراكة $version',
+  'publishedAt': '2026-11-08T09:00:00.000Z',
+  'pending': pending,
+};
+
 void main() {
+  testWidgets(
+    'an owner with a pending version sees Orders and the terms (S13)',
+    (tester) async {
+      final app = _App();
+      app.server.on('/v1/merchant/auth/session', [
+        FakeAnswer(200, _session(deviceNamed: true)),
+      ]);
+      app.server.on('/v1/merchant/terms', [
+        FakeAnswer(200, _terms(version: 2, pending: true)),
+      ]);
+      app.server.on('/v1/merchant/terms/accept', [
+        const FakeAnswer(200, {'status': 'accepted'}),
+      ]);
+      await app.pump(tester, stored: _signedIn());
+
+      // Asked on the next open, over the board.
+      expect(find.text('شروط الشراكة 2'), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(find.byType(BoardScreen), findsOneWidget);
+      expect(find.byKey(const Key('terms-pending')), findsOneWidget);
+      // Any screen other than Orders leads to the terms.
+      app.container.read(routerProvider).go('/elsewhere');
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('terms-accept')), findsOneWidget);
+
+      app.server.on('/v1/merchant/terms', [
+        FakeAnswer(200, _terms(version: 2, pending: false)),
+      ]);
+      await tester.tap(find.byKey(const Key('terms-accept')));
+      await tester.pumpAndSettle();
+      expect(app.server.to('/v1/merchant/terms/accept'), hasLength(1));
+      expect(find.byType(BoardScreen), findsOneWidget);
+      expect(find.byKey(const Key('terms-pending')), findsNothing);
+      await app.done(tester);
+    },
+  );
+
   testWidgets('the first sign-in on a device names it (RA §5.2 item 5)', (
     tester,
   ) async {

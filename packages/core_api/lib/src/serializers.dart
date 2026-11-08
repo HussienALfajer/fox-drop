@@ -70,6 +70,7 @@ import 'package:core_api/src/model/admin_picker_dto_output_captains_inner.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_limit.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_usage.dart';
+import 'package:core_api/src/model/admin_publish_terms_dto.dart';
 import 'package:core_api/src/model/admin_reason_dto_output.dart';
 import 'package:core_api/src/model/admin_reason_lists_dto_output.dart';
 import 'package:core_api/src/model/admin_reason_lists_dto_output_lists_inner.dart';
@@ -84,6 +85,9 @@ import 'package:core_api/src/model/admin_resend_notification_dto.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output_shortfalls_inner.dart';
+import 'package:core_api/src/model/admin_terms_dto_output.dart';
+import 'package:core_api/src/model/admin_terms_dto_output_customer.dart';
+import 'package:core_api/src/model/admin_terms_version_dto_output.dart';
 import 'package:core_api/src/model/admin_texts_dto_output.dart';
 import 'package:core_api/src/model/admin_texts_dto_output_contact.dart';
 import 'package:core_api/src/model/admin_update_contact_dto.dart';
@@ -302,6 +306,9 @@ import 'package:core_api/src/model/status_dto_output.dart';
 import 'package:core_api/src/model/team_users_dto_output.dart';
 import 'package:core_api/src/model/team_users_dto_output_users_inner.dart';
 import 'package:core_api/src/model/team_users_dto_output_users_inner_open_sessions_inner.dart';
+import 'package:core_api/src/model/terms_accept_dto.dart';
+import 'package:core_api/src/model/terms_accepted_dto_output.dart';
+import 'package:core_api/src/model/terms_dto_output.dart';
 import 'package:core_api/src/model/totp_enrolment_dto_output.dart';
 import 'package:core_api/src/model/update_reason_dto.dart';
 import 'package:core_api/src/model/update_setting_dto.dart';
@@ -365,6 +372,7 @@ part 'serializers.g.dart';
   AdminPickerDtoOutputCaptainsInnerCustody,
   AdminPickerDtoOutputCaptainsInnerCustodyLimit,
   AdminPickerDtoOutputCaptainsInnerCustodyUsage,
+  AdminPublishTermsDto,
   AdminReasonDtoOutput,
   AdminReasonListsDtoOutput,
   AdminReasonListsDtoOutputListsInner,
@@ -379,6 +387,9 @@ part 'serializers.g.dart';
   AdminSessionDtoOutput,
   AdminShortfallsDtoOutput,
   AdminShortfallsDtoOutputShortfallsInner,
+  AdminTermsDtoOutput,
+  AdminTermsDtoOutputCustomer,
+  AdminTermsVersionDtoOutput,
   AdminTextsDtoOutput,
   AdminTextsDtoOutputContact,
   AdminUpdateContactDto,
@@ -597,6 +608,9 @@ part 'serializers.g.dart';
   TeamUsersDtoOutput,
   TeamUsersDtoOutputUsersInner,
   TeamUsersDtoOutputUsersInnerOpenSessionsInner,
+  TermsAcceptDto,
+  TermsAcceptedDtoOutput,
+  TermsDtoOutput,
   TotpEnrolmentDtoOutput,
   UpdateReasonDto,
   UpdateSettingDto,
@@ -638,15 +652,15 @@ Serializers serializers =
             () => ListBuilder<CaptainLocationsDtoPointsInner>(),
           )
           ..addBuilderFactory(
-            const FullType(BuiltList, [FullType(AdminOrderCardDtoOutputOrder)]),
-            () => ListBuilder<AdminOrderCardDtoOutputOrder>(),
-          )
-          ..addBuilderFactory(
             const FullType(BuiltList, [
               FullType(AdminReasonListsDtoOutputListsInnerReasonsInner),
             ]),
             () =>
                 ListBuilder<AdminReasonListsDtoOutputListsInnerReasonsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(AdminOrderCardDtoOutputOrder)]),
+            () => ListBuilder<AdminOrderCardDtoOutputOrder>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

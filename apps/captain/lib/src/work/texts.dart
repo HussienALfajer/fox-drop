@@ -62,6 +62,7 @@ extension CaptainTexts on AppLocalizations {
                 formatDate(at(block['until'])!),
                 text(block['reason']),
               ),
+      'terms_not_accepted' => captainTermsPendingBanner,
       'version_below_minimum' => captainBlockVersion(text(block['minVersion'])),
       'simulated_location' => captainStopMockLocation,
       'contract_ended' => captainContractEnded,

@@ -1495,4 +1495,34 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get platformMaintenanceMessage =>
       'نعمل على تحسين الخدمة ونعود قريباً.';
+
+  @override
+  String get termsTitle => 'الشروط والخصوصية';
+
+  @override
+  String get termsNewVersion =>
+      'نشرت FOX DROP نسخة جديدة من الشروط وسياسة الخصوصية. اقرأها ووافق عليها لتتابع.';
+
+  @override
+  String get termsAccept => 'أوافق على الشروط وسياسة الخصوصية';
+
+  @override
+  String get termsOutdated => 'نُشرت نسخة أحدث بينما كنت تقرأ. اقرأها ثم وافق.';
+
+  @override
+  String get termsFailed => 'تعذّر الاتصال بالخادم، حاول مرة أخرى';
+
+  @override
+  String get customerTermsPending => 'وافق على الشروط الجديدة لتتمكن من الطلب';
+
+  @override
+  String get customerTermsShow => 'عرض الشروط';
+
+  @override
+  String get captainTermsPendingBanner =>
+      'وافق على الشروط الجديدة لتتمكن من الاتصال';
+
+  @override
+  String get merchantTermsPendingBanner =>
+      'وافق على الشروط الجديدة لتستخدم شاشات المطعم الأخرى. الطلبات تصل كالمعتاد.';
 }

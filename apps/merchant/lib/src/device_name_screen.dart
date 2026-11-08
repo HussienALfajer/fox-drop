@@ -5,7 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'device.dart';
 
 /// RA §5.2 item 5: the first sign-in on a device names it. Unstyled until the
-/// design; the device check and the terms come with their slices.
+/// design; the device check comes with its slice, and an owner then accepts
+/// a pending version of the terms (item 3, `terms.dart`).
 class DeviceNameScreen extends ConsumerStatefulWidget {
   const DeviceNameScreen({super.key});
 

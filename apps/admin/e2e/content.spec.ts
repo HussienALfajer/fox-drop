@@ -33,7 +33,22 @@ const accepted = {
   current: 'المطعم يحضّر طلبك. يصل حوالي {الساعة}',
 };
 
+const terms = (version: number, body: string) => ({
+  version,
+  body,
+  publishedAt: '2026-11-08T09:00:00.000Z',
+});
+
 async function fakeContent(page: Page) {
+  await page.route('**/v1/admin/content/terms', (route) =>
+    route.fulfill({
+      json: {
+        customer: terms(1, 'شروط الزبائن'),
+        captain: terms(1, 'شروط الكباتن'),
+        merchant: terms(1, 'شروط المطاعم'),
+      },
+    }),
+  );
   await page.route('**/v1/admin/content/notifications', (route) =>
     route.fulfill({ json: { templates: [accepted] } }),
   );
@@ -103,4 +118,27 @@ test('edits a notification text', async ({ page }) => {
 
   await expect(page.getByRole('status').filter({ hasText: 'حُفظ' })).toBeVisible();
   expect(sent).toEqual({ text: 'قبل المطعم طلبك، يصل {الساعة}' });
+});
+
+// AP §9.13: publishing a new version of the customer terms, after a
+// confirmation, since every customer accepts it again.
+test('publishes a new version of the terms', async ({ page }) => {
+  await fakeSession(page, ['content.read', 'content.manage', 'content.faqs']);
+  await fakeContent(page);
+  let sent: unknown;
+  await page.route('**/v1/admin/content/terms/customer', (route) => {
+    sent = route.request().postDataJSON();
+    return route.fulfill({ status: 201, json: terms(2, 'الشروط الجديدة') });
+  });
+  await page.goto('/content');
+
+  await expect(page.getByRole('heading', { name: 'الشروط والخصوصية' })).toBeVisible();
+  await page.getByLabel('نص الشروط').first().fill('الشروط الجديدة');
+  await page.getByRole('button', { name: 'نشر نسخة جديدة' }).first().click();
+  await expect(page.getByRole('alert').filter({ hasText: 'تأكيد النشر؟' })).toBeVisible();
+  expect(sent).toBeUndefined();
+  await page.getByRole('button', { name: 'تأكيد النشر' }).click();
+
+  await expect(page.getByRole('status').filter({ hasText: 'حُفظ' })).toBeVisible();
+  expect(sent).toEqual({ body: 'الشروط الجديدة' });
 });

@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ApiModule } from '../../api.module.js';
 import { createDatabase, type Database } from '../../database/database.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
@@ -28,6 +28,11 @@ import { DispatchService } from './index.js';
 // offer an accepted order to an eligible captain, who accepts or declines it
 // within dispatch.offer_timeout_sec, or it expires; or, with
 // dispatch.manual_assign_requires_accept off, assign it directly.
+// Each test signs in the three parties, places and accepts an order and
+// waits on the offer timers: up to 3 s alone, so the default 5 s is too short
+// for a full parallel run.
+vi.setConfig({ testTimeout: 30_000 });
+
 let database: TestDatabase;
 let cache: TestValkey;
 let app: NestFastifyApplication;
@@ -150,6 +155,16 @@ async function appSignIn(party: 'customer' | 'merchant' | 'captain', phone: stri
     payload: { phone, deviceId, code },
   });
   expect(answer.statusCode).toBe(200);
+  // A customer orders (CU §4.7) and a captain goes online (K7) once the terms
+  // in force (the seeded version 1) are accepted.
+  if (party !== 'merchant') {
+    await app.inject({
+      method: 'POST',
+      url: `/v1/${party}/terms/accept`,
+      headers: { authorization: `Bearer ${answer.json().accessToken}` },
+      payload: { version: 1 },
+    });
+  }
   return { authorization: `Bearer ${answer.json().accessToken}` };
 }
 
@@ -259,7 +274,11 @@ async function onlineCaptain(point: Point = captainSpot) {
   await app.get(CaptainAccountsService).addAccount(captainId, phone, change);
   const headers = await appSignIn('captain', phone);
   const now = new Date();
-  await captains.goOnline(captainId, { appVersion: '1.0.0', simulatedLocation: false }, now);
+  await captains.goOnline(
+    captainId,
+    { appVersion: '1.0.0', simulatedLocation: false, termsPending: false },
+    now,
+  );
   await captains.recordLocations(
     captainId,
     [{ ...point, accuracyMetres: 8, recordedAt: now, simulated: false }],
@@ -719,7 +738,7 @@ describe('dispatch under races and repeats (AP §9.12.6, architecture §5.3)', (
     const now = new Date();
     await captains.goOnline(
       captain.captainId,
-      { appVersion: '1.0.0', simulatedLocation: false },
+      { appVersion: '1.0.0', simulatedLocation: false, termsPending: false },
       now,
     );
     await captains.recordLocations(

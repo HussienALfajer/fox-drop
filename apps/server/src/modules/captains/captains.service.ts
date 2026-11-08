@@ -799,10 +799,11 @@ export class CaptainsService implements OnModuleInit {
   }
 
   // CA §7.2: going online, refused with every block that applies. Already
-  // online answers the state as it is.
+  // online answers the state as it is. The caller reads whether the
+  // captain's account has the terms in force to accept (K7).
   async goOnline(
     captainId: string,
-    device: { appVersion: string | null; simulatedLocation: boolean },
+    device: { appVersion: string | null; simulatedLocation: boolean; termsPending: boolean },
     now: Date,
   ): Promise<CaptainState> {
     const cityId = (await this.row(this.database.db, captainId)).cityId;
@@ -816,6 +817,7 @@ export class CaptainsService implements OnModuleInit {
             ...input.availability,
             appVersion: device.appVersion,
             simulatedLocation: device.simulatedLocation,
+            termsPending: device.termsPending,
           },
           now,
         );
@@ -1001,6 +1003,7 @@ export class CaptainsService implements OnModuleInit {
         appVersion: open?.appVersion ?? null,
         minVersion: rules.minVersion,
         simulatedLocation: latest?.simulated ?? false,
+        termsPending: false,
         activeOrder: open ? (await this.activeOrders([row.id], executor)).size > 0 : false,
       },
       custody,

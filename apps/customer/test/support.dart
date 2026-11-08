@@ -53,6 +53,7 @@ class TestApp {
       }),
     ]);
     platform();
+    terms();
     server.on('/v1/customer/status', [
       const FakeAnswer(200, {'status': 'ok', 'serverTime': 1}),
     ]);
@@ -93,6 +94,21 @@ class TestApp {
       'updateMessage': ?updateMessage,
       'maintenance': maintenance,
       'maintenanceMessage': ?maintenanceMessage,
+    }),
+  ]);
+
+  /// The answer of `GET /v1/customer/terms` (AP §9.13): version 1, accepted,
+  /// unless a test says otherwise.
+  void terms({
+    int version = 1,
+    String body = 'شروط FOX DROP',
+    bool pending = false,
+  }) => server.on('/v1/customer/terms', [
+    FakeAnswer(200, {
+      'version': version,
+      'body': body,
+      'publishedAt': '2026-11-08T09:00:00.000Z',
+      'pending': pending,
     }),
   ]);
 

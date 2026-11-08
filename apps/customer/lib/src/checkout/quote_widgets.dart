@@ -54,6 +54,15 @@ class ProblemTile extends ConsumerWidget {
         l10n.customerRetry,
         () => ref.invalidate(quoteProvider),
       ),
+      // CU Appendix C «Terms pending»: the quote is asked again once the
+      // terms screen closes.
+      ProblemAction.showTerms => (
+        l10n.customerTermsShow,
+        () async {
+          await context.push('/terms');
+          ref.invalidate(quoteProvider);
+        },
+      ),
       _ => (null, null),
     };
     return ListTile(

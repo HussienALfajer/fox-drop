@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ApiModule } from '../../api.module.js';
 import { createDatabase, type Database } from '../../database/database.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
@@ -28,6 +28,12 @@ import { SettingsService } from '../settings/index.js';
 // المطعم»): the captain's request with its payment lines, the restaurant's
 // answers, the automatic confirmation and custody.pay_merchant with
 // picked_up in one transaction.
+
+// Each test signs in the parties, places, accepts and assigns an order
+// before its own steps: up to 3 s alone, so the default 5 s is too short for
+// a full parallel run.
+vi.setConfig({ testTimeout: 30_000 });
+
 let database: TestDatabase;
 let cache: TestValkey;
 let app: NestFastifyApplication;
@@ -154,6 +160,16 @@ async function appSignIn(party: 'customer' | 'merchant' | 'captain', phone: stri
     payload: { phone, deviceId, code },
   });
   expect(answer.statusCode).toBe(200);
+  // A customer orders (CU §4.7) and a captain goes online (K7) once the terms
+  // in force (the seeded version 1) are accepted.
+  if (party !== 'merchant') {
+    await app.inject({
+      method: 'POST',
+      url: `/v1/${party}/terms/accept`,
+      headers: { authorization: `Bearer ${answer.json().accessToken}` },
+      payload: { version: 1 },
+    });
+  }
   return { authorization: `Bearer ${answer.json().accessToken}` };
 }
 
@@ -265,7 +281,11 @@ async function onlineCaptain(point: Point = captainSpot) {
   await app.get(CaptainAccountsService).addAccount(captainId, phone, change);
   const headers = await appSignIn('captain', phone);
   const now = new Date();
-  await captains.goOnline(captainId, { appVersion: '1.0.0', simulatedLocation: false }, now);
+  await captains.goOnline(
+    captainId,
+    { appVersion: '1.0.0', simulatedLocation: false, termsPending: false },
+    now,
+  );
   await captains.recordLocations(
     captainId,
     [{ ...point, accuracyMetres: 8, recordedAt: now, simulated: false }],

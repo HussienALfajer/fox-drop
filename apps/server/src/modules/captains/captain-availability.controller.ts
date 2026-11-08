@@ -12,6 +12,7 @@ import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
 import { CaptainController } from '../../http/route-groups.js';
+import { TermsService } from '../content/index.js';
 import type { AppSession } from '../identity/index.js';
 import type { Availability, OnlineBlock } from './availability.js';
 import {
@@ -106,7 +107,10 @@ class CaptainLocationsSavedDto extends createZodDto(
 // location every 10 seconds while online.
 @CaptainController()
 export class CaptainAvailabilityController {
-  constructor(private readonly captains: CaptainsService) {}
+  constructor(
+    private readonly captains: CaptainsService,
+    private readonly terms: TermsService,
+  ) {}
 
   @Get('availability')
   @AppSignedIn()
@@ -116,14 +120,18 @@ export class CaptainAvailabilityController {
   }
 
   // CA §7.2: refused with 409 online_blocked and every block, so the app shows
-  // each with its next step.
+  // each with its next step (terms_not_accepted opens the terms, K7).
   @Post('availability/online')
   @AppSignedIn()
   @HttpCode(200)
   @ZodResponse({ status: 200, type: CaptainAvailabilityDto })
   async online(@CurrentAppSession() session: AppSession, @Body() body: CaptainGoOnlineDto) {
     try {
-      return stateBody(await this.captains.goOnline(captainOf(session), body, new Date()));
+      const captainId = captainOf(session);
+      const termsPending = await this.terms.pending('captain', session.accountId);
+      return stateBody(
+        await this.captains.goOnline(captainId, { ...body, termsPending }, new Date()),
+      );
     } catch (error) {
       if (error instanceof CaptainsRefusedError && error.refusal === 'online_blocked') {
         throw new ConflictException({

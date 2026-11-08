@@ -123,6 +123,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ? Text(l10n.customerProfileTermsRequired)
                 : null,
           ),
+          // CU §5.3: the tick links to the terms and privacy.
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton(
+              key: const Key('profile-open-terms'),
+              onPressed: () => context.push('/terms'),
+              child: Text(l10n.termsTitle),
+            ),
+          ),
           if (state is ProfileEditing && state.failed)
             Text(l10n.customerSaveFailed),
           FilledButton(

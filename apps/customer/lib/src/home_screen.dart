@@ -11,6 +11,7 @@ import 'location/delivery_point.dart';
 import 'location/position.dart';
 import 'orders/order_live.dart';
 import 'orders/order_screen.dart';
+import 'terms.dart';
 
 /// Home (CU §7.1, §7.2, §8.1): the delivery point first, then the
 /// restaurants that deliver to it. Unstyled until the design (the design
@@ -66,36 +67,63 @@ class HomeScreen extends ConsumerWidget {
       ),
       // CU §6: the active-order bar while an order is active.
       bottomNavigationBar: signedIn ? const ActiveOrdersBar() : null,
-      body: switch (point) {
-        PointUnset() => _Ask(onLocate: locate),
-        PointLocating() => const Center(child: CircularProgressIndicator()),
-        PointUnavailable(:final failure) => _Message(
-          text: switch (failure) {
-            PositionFailure.serviceOff => l10n.customerLocationServiceOff,
-            PositionFailure.denied => l10n.customerLocationDenied,
-            PositionFailure.failed => l10n.customerLocationFailed,
-            null => l10n.statusError,
-          },
-          action: l10n.customerTryAgain,
-          onAction: locate,
-        ),
-        PointChecked(coverage: PointCoverage.served) => const RestaurantList(),
-        PointChecked(coverage: PointCoverage.noRestaurants) => _Message(
-          text: l10n.customerNoRestaurantsHere,
-          action: l10n.customerUseMyLocation,
-          onAction: locate,
-        ),
-        PointChecked(coverage: PointCoverage.outsideZones, :final voted) =>
-          _Message(
-            text: voted ? l10n.customerVoteThanks : l10n.customerComingSoon,
-            action: voted ? l10n.customerUseMyLocation : l10n.customerVote,
-            onAction: voted
-                ? locate
-                : ref.read(deliveryPointProvider.notifier).vote,
+      body: Column(
+        children: [
+          // CU §6.2 item 5: terms waiting for acceptance.
+          if (ref.watch(termsPendingProvider))
+            ListTile(
+              key: const Key('terms-pending'),
+              title: Text(l10n.customerTermsPending),
+              trailing: TextButton(
+                onPressed: () => context.push('/terms'),
+                child: Text(l10n.customerTermsShow),
+              ),
+            ),
+          Expanded(child: _body(point, l10n, locate, ref)),
+          // CU §13 «الشروط والخصوصية», until «حسابي» exists.
+          TextButton(
+            key: const Key('open-terms'),
+            onPressed: () => context.push('/terms'),
+            child: Text(l10n.termsTitle),
           ),
-      },
+        ],
+      ),
     );
   }
+
+  Widget _body(
+    DeliveryPointState point,
+    AppLocalizations l10n,
+    VoidCallback locate,
+    WidgetRef ref,
+  ) => switch (point) {
+    PointUnset() => _Ask(onLocate: locate),
+    PointLocating() => const Center(child: CircularProgressIndicator()),
+    PointUnavailable(:final failure) => _Message(
+      text: switch (failure) {
+        PositionFailure.serviceOff => l10n.customerLocationServiceOff,
+        PositionFailure.denied => l10n.customerLocationDenied,
+        PositionFailure.failed => l10n.customerLocationFailed,
+        null => l10n.statusError,
+      },
+      action: l10n.customerTryAgain,
+      onAction: locate,
+    ),
+    PointChecked(coverage: PointCoverage.served) => const RestaurantList(),
+    PointChecked(coverage: PointCoverage.noRestaurants) => _Message(
+      text: l10n.customerNoRestaurantsHere,
+      action: l10n.customerUseMyLocation,
+      onAction: locate,
+    ),
+    PointChecked(coverage: PointCoverage.outsideZones, :final voted) =>
+      _Message(
+        text: voted ? l10n.customerVoteThanks : l10n.customerComingSoon,
+        action: voted ? l10n.customerUseMyLocation : l10n.customerVote,
+        onAction: voted
+            ? locate
+            : ref.read(deliveryPointProvider.notifier).vote,
+      ),
+  };
 }
 
 /// CU §6: «طلبك من {المطعم}: {الحالة}», or the count with a list when

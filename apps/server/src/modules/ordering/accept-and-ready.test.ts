@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ApiModule } from '../../api.module.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
 import { createApiApp } from '../../http/create-api-app.js';
@@ -25,6 +25,12 @@ import { OrderTimers } from './order-timers.js';
 // the search-start moment, then marks it ready. Owners and cashiers alike;
 // every command carries its Idempotency-Key, and a command the order's state
 // no longer allows answers the current order.
+
+// Each test signs in the parties, places, accepts and assigns an order
+// before its own steps: up to 3 s alone, so the default 5 s is too short for
+// a full parallel run.
+vi.setConfig({ testTimeout: 30_000 });
+
 let database: TestDatabase;
 let cache: TestValkey;
 let app: NestFastifyApplication;
@@ -157,6 +163,16 @@ async function signedIn(
     payload: { phone, deviceId, code },
   });
   expect(answer.statusCode).toBe(200);
+  // A customer orders (CU §4.7) and a captain goes online (K7) once the terms
+  // in force (the seeded version 1) are accepted.
+  if (party !== 'merchant') {
+    await app.inject({
+      method: 'POST',
+      url: `/v1/${party}/terms/accept`,
+      headers: { authorization: `Bearer ${answer.json().accessToken}` },
+      payload: { version: 1 },
+    });
+  }
   const headers = { authorization: `Bearer ${answer.json().accessToken}` };
   if (party === 'merchant') {
     const named = await app.inject({
@@ -257,7 +273,11 @@ async function onlineAt(point: Point): Promise<string> {
     change,
   );
   const now = new Date();
-  await captains.goOnline(id, { appVersion: '1.0.0', simulatedLocation: false }, now);
+  await captains.goOnline(
+    id,
+    { appVersion: '1.0.0', simulatedLocation: false, termsPending: false },
+    now,
+  );
   await captains.recordLocations(
     id,
     [{ ...point, accuracyMetres: 8, recordedAt: now, simulated: false }],

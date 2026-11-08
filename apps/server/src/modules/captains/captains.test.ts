@@ -62,7 +62,7 @@ const fxSystem: FxChange = {
   context: { ipAddress: null, device: null },
 };
 const day = 86_400_000;
-const device = { appVersion: '1.0.0', simulatedLocation: false };
+const device = { appVersion: '1.0.0', simulatedLocation: false, termsPending: false };
 
 let cities = 0;
 

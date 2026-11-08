@@ -21,12 +21,19 @@ const ready: AvailabilityInput = {
   appVersion: '1.2.0',
   minVersion: '1.2.0',
   simulatedLocation: false,
+  termsPending: false,
   activeOrder: false,
 };
 
 describe('onlineBlocks', () => {
   it('lets an active captain with no cash due go online', () => {
     expect(onlineBlocks(ready, now)).toEqual([]);
+  });
+
+  it('waits for the terms in force (K7)', () => {
+    expect(onlineBlocks({ ...ready, termsPending: true }, now)).toEqual([
+      { kind: 'terms_not_accepted' },
+    ]);
   });
 
   it('refuses a suspended captain until the suspension ends', () => {

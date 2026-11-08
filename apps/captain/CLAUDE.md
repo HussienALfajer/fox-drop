@@ -21,10 +21,14 @@ The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, 
 - **Channels:** `MainActivity` creates `offer` (the phone's alarm sound on the alarm stream, as the app's own offer ring), `chime` (the notification sound once), `cancellation` (the notification sound until the bundled cancellation sound) and `silent` (low importance, no sound); their names are in `res/values/strings.xml`. A push of an unknown channel shows on `chime`.
 - **Tests:** `TestApp` gives `FakePush` (`push`) and `FakeNotificationPermission` (`permission`, allowing unless a test says otherwise); `push_test.dart` proves the token, the permission at «متصل» and the taps.
 
+## Terms (slice 2.4b; AP §9.13, CA §4.8, §7.2, K7)
+
+- `termsCheckProvider` (`lib/src/terms.dart`) follows `apps/customer/CLAUDE.md` «Terms». A pending version shows «وافق على الشروط الجديدة لتتمكن من الاتصال» on home while offline, with a link to `/terms`; «متصل» refused with `terms_not_accepted` («The terms screen», CA §7.2) reads the terms again and opens `/terms`, beside the other blocks' message. A version published while the captain is online or on an order blocks nothing until the next time they go online. Not yet: the application form's step 4 (CA §5.2: the terms and the work rules with a required tick), with the joining slice.
+
 ## Not yet (slice 1.14g)
 
 - The suggestion of «وصلت» when entering the customer's radius (CA §9.6), the blocks «بانتظار تعديل الطلب من العمليات» and «بانتظار تأكيد المطعم للتعديل» (CA §9.3, with edits and item-unavailable reports on the server), the peak bonus lines and the K2 over-limit text (with their server fields).
 - The map and the route (Phase 2), the ETA to the restaurant, «بدأ احتساب أجر الانتظار», the record of each call or WhatsApp tap (CA §9.2–9.5, with their server fields); «مشكلة» and «طوارئ» (CA §9.11), the customer not answering (§9.9), operations' changes (§9.10), last-order mode «لا أريد طلبات جديدة» (§7.3), the earnings, custody and support screens.
-- The office hours and map in the hand-in reminder (CA §7.5, with the office fields), the terms screen (CA §4.8, slice 2.4b), the device check and the yellow banner (CA §4.5), the vibration, the full-screen offer over the lock screen and the bundled sounds (`core_alerts`, architecture §14.2), and the iOS behaviour (Android only for now, owner decision 2026-11-07).
+- The office hours and map in the hand-in reminder (CA §7.5, with the office fields), the device check and the yellow banner (CA §4.5), the vibration, the full-screen offer over the lock screen and the bundled sounds (`core_alerts`, architecture §14.2), and the iOS behaviour (Android only for now, owner decision 2026-11-07).
 - A batch the server refuses with a `400` (a point past its clock skew) is dropped whole; dropping only the bad points needs the refusal to name them.
 - A location permission revoked while online (the tracker then gets no points), and a points queue that survives a restart (`core_commands`).

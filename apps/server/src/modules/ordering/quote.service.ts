@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CaptainsService } from '../captains/index.js';
+import { TermsService } from '../content/index.js';
 import { equivalent, FxRefusedError, FxService, type RateSnapshot } from '../fx/index.js';
 import {
   type Distance,
@@ -45,6 +46,8 @@ export type QuoteProblemCode =
   | 'active_order_limit'
   // AP §9.12.6: «الضغط عالٍ الآن، جرّب بعد دقائق».
   | 'no_captain_nearby'
+  // CU §4.7, Appendix C: «وافق على الشروط الجديدة لتتمكن من الطلب».
+  | 'terms_pending'
   | LineProblem;
 
 export interface QuoteProblem {
@@ -120,8 +123,8 @@ const TRIP_VEHICLE = 'motorbike';
 
 // CU §10.6: the versioned quote of a cart for a delivery point. Every check
 // with data is run (owner decision 2026-11-06), the signed-in customer's
-// active-order limit and the capacity check included; account states, the
-// terms version, the emergency stop and codes (Phase 2) pass until their
+// active-order limit, the terms version and the capacity check included;
+// account states, the emergency stop and codes (Phase 2) pass until their
 // slices.
 @Injectable()
 export class QuoteService {
@@ -132,6 +135,7 @@ export class QuoteService {
     private readonly merchants: MerchantsService,
     private readonly activeOrders: ActiveOrders,
     private readonly captains: CaptainsService,
+    private readonly terms: TermsService,
   ) {}
 
   async quote(request: QuoteRequest, now: Date): Promise<Quote> {
@@ -187,6 +191,7 @@ export class QuoteService {
         await this.activeOrders.rules(cityId),
       );
       if (limit.reached) problem(limit.trusted ? 'active_order_limit' : 'one_order_at_a_time');
+      if (await this.terms.pending('customer', request.customerAccountId)) problem('terms_pending');
     }
 
     const baseCurrency = snapshot?.baseCurrency ?? (await this.fx.baseCurrency(cityId));
