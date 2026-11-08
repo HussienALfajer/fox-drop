@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:core_auth/testing.dart';
@@ -10,6 +11,7 @@ import 'package:merchant/src/api.dart';
 import 'package:merchant/src/app.dart';
 import 'package:merchant/src/auth.dart';
 import 'package:merchant/src/device.dart';
+import 'package:merchant/src/platform.dart';
 import 'package:merchant/src/push.dart';
 import 'package:merchant/src/board/alerts.dart';
 import 'package:merchant/src/board/board_screen.dart';
@@ -62,6 +64,11 @@ class _App {
     Map<String, String> stored = const {},
   }) async {
     server.on('/v1/merchant/orders', [FakeAnswer(200, boardJson([]))]);
+    if (!server.routes.containsKey('/v1/merchant/platform')) {
+      server.on('/v1/merchant/platform', [
+        const FakeAnswer(200, {'updateNeed': 'none', 'maintenance': false}),
+      ]);
+    }
     server.on('/v1/merchant/push-token', [
       const FakeAnswer(200, {'status': 'registered'}),
     ]);
@@ -320,5 +327,50 @@ void main() {
       expect(pushTargetPath({'target': 'order'}), isNull);
       expect(pushTargetPath({'target': 'statement'}), isNull);
     });
+  });
+
+  // RA §4.2, §4.10: every device, signed in or not, owner or cashier.
+  testWidgets('maintenance blocks the device until it is lifted', (
+    tester,
+  ) async {
+    final app = _App();
+    app.server.on('/v1/merchant/platform', [
+      const FakeAnswer(200, {
+        'updateNeed': 'none',
+        'maintenance': true,
+        'maintenanceMessage': 'نعود بعد ساعة',
+      }),
+    ]);
+    app.server.on('/v1/merchant/auth/session', [
+      FakeAnswer(200, _session(deviceNamed: true)),
+    ]);
+    await app.pump(tester, stored: _signedIn());
+    expect(find.text('التطبيق في صيانة'), findsOneWidget);
+    expect(find.text('نعود بعد ساعة'), findsOneWidget);
+    expect(find.byType(BoardScreen), findsNothing);
+
+    app.server.on('/v1/merchant/platform', [
+      const FakeAnswer(200, {'updateNeed': 'none', 'maintenance': false}),
+    ]);
+    unawaited(app.container.read(platformCheckProvider).check());
+    await tester.pumpAndSettle();
+    expect(find.text('التطبيق في صيانة'), findsNothing);
+    expect(find.byType(BoardScreen), findsOneWidget);
+    await app.done(tester);
+  });
+
+  testWidgets('a version below the minimum blocks with the update screen', (
+    tester,
+  ) async {
+    final app = _App();
+    app.server.on('/v1/merchant/platform', [
+      const FakeAnswer(200, {'updateNeed': 'required', 'maintenance': false}),
+    ]);
+    await app.pump(tester);
+    expect(find.text('يلزم تحديث التطبيق'), findsOneWidget);
+    expect(app.server.to('/v1/merchant/platform').single.uri.queryParameters, {
+      'version': '0.1.0',
+    });
+    await app.done(tester);
   });
 }

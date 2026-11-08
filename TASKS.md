@@ -18,7 +18,7 @@ Slice 2.4a, forced update and maintenance (`docs/roadmap.md`, Phase 2, slice 2.4
   - [x] `packages/core_platform`: the check (launch, resume, retry after a failure) and its state, tested.
   - [x] Customer app: the blocking update and maintenance screens with the active order still readable, and the update banner.
   - [x] Captain app: the same, with the current order finishable (the block applies to going online again).
-  - [ ] Restaurant app: the blocking screens on every device, and the update banner.
+  - [x] Restaurant app: the blocking screens on every device, and the update banner.
   - [ ] Review, then hand over to 2.4b.
 
 ### The rest of slice 2.4

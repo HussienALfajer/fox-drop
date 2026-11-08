@@ -45,6 +45,11 @@ class _Board {
       }),
     ]);
     server.on('/v1/merchant/orders', boards);
+    if (!server.routes.containsKey('/v1/merchant/platform')) {
+      server.on('/v1/merchant/platform', [
+        const FakeAnswer(200, {'updateNeed': 'none', 'maintenance': false}),
+      ]);
+    }
     container = ProviderContainer(
       overrides: [
         authApiProvider.overrideWithValue(server.client()),
