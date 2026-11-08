@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:core_auth/testing.dart';
+import 'package:core_push/testing.dart';
 import 'package:core_storage/core_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +10,7 @@ import 'package:merchant/src/api.dart';
 import 'package:merchant/src/app.dart';
 import 'package:merchant/src/auth.dart';
 import 'package:merchant/src/device.dart';
+import 'package:merchant/src/push.dart';
 import 'package:merchant/src/board/alerts.dart';
 import 'package:merchant/src/board/board_screen.dart';
 import 'package:merchant/src/router.dart';
@@ -47,6 +49,12 @@ class _App {
 
   final server = FakeServer();
   final launched = <Uri>[];
+  final push = FakePush();
+  final device = MemoryDeviceStore();
+  // The phone allows notifications unless a test says otherwise.
+  FakeNotificationPermission permission = FakeNotificationPermission(
+    allowed: true,
+  );
   late final ProviderContainer container;
 
   Future<void> pump(
@@ -54,6 +62,9 @@ class _App {
     Map<String, String> stored = const {},
   }) async {
     server.on('/v1/merchant/orders', [FakeAnswer(200, boardJson([]))]);
+    server.on('/v1/merchant/push-token', [
+      const FakeAnswer(200, {'status': 'registered'}),
+    ]);
     container = ProviderContainer(
       overrides: [
         authApiProvider.overrideWithValue(server.client()),
@@ -71,6 +82,9 @@ class _App {
         realtimeTransportProvider.overrideWithValue(FakeTransport()),
         ringerProvider.overrideWithValue(FakeRinger()),
         keepScreenOnProvider.overrideWithValue((on) {}),
+        pushProvider.overrideWithValue(push),
+        notificationPermissionProvider.overrideWithValue(permission),
+        deviceStoreProvider.overrideWithValue(device),
       ],
       retry: (retryCount, error) => null,
     );
@@ -207,5 +221,94 @@ void main() {
 
     expect(find.text('الصفحة غير موجودة'), findsOneWidget);
     await app.done(tester);
+  });
+
+  // Push (RA §16, architecture §8.1; owner decision 2026-11-08): the token
+  // while signed in, the permission once at the first sign-in, a tapped push
+  // opening its order.
+  group('push', () {
+    const orderId = '00000000-0000-4000-8000-0000000000a1';
+
+    _App signedIn() => _App()
+      ..server.on('/v1/merchant/auth/session', [
+        FakeAnswer(200, _session(deviceNamed: true)),
+      ]);
+
+    String location(_App app) => app.container
+        .read(routerProvider)
+        .routerDelegate
+        .currentConfiguration
+        .uri
+        .toString();
+
+    testWidgets('a signed-in start registers the token', (tester) async {
+      final app = signedIn();
+      await app.pump(tester, stored: _signedIn());
+      expect(app.server.to('/v1/merchant/push-token').single.data, {
+        'token': 'push-token-0',
+        'platform': 'android',
+      });
+      await app.done(tester);
+    });
+
+    testWidgets('signed out, nothing is registered or asked', (tester) async {
+      final app = _App()
+        ..permission = FakeNotificationPermission(allowed: false);
+      await app.pump(tester);
+      app.push.renew('push-token-1');
+      await tester.pumpAndSettle();
+      expect(app.server.to('/v1/merchant/push-token'), isEmpty);
+      expect(app.permission.requests, 0);
+      await app.done(tester);
+    });
+
+    testWidgets('the first sign-in asks once per installation', (tester) async {
+      final app = signedIn()
+        ..permission = FakeNotificationPermission(
+          allowed: false,
+          answer: false,
+        );
+      await app.pump(tester, stored: _signedIn());
+      expect(app.permission.requests, 1);
+      expect(await app.device.read('notifications_asked'), isNotNull);
+      await app.done(tester);
+
+      // The next start, still not allowed, does not ask again.
+      final again = signedIn()
+        ..permission = app.permission
+        ..device.write('notifications_asked', '1');
+      await again.pump(tester, stored: _signedIn());
+      expect(app.permission.requests, 1);
+      await again.done(tester);
+    });
+
+    testWidgets('a phone that allows notifications is not asked', (
+      tester,
+    ) async {
+      final app = signedIn();
+      await app.pump(tester, stored: _signedIn());
+      expect(app.permission.requests, 0);
+      await app.done(tester);
+    });
+
+    testWidgets('a push tapped in the background opens its order', (
+      tester,
+    ) async {
+      final app = signedIn();
+      await app.pump(tester, stored: _signedIn());
+      app.push.tap({'target': 'order', 'orderId': orderId, 'messageId': 'm'});
+      await tester.pumpAndSettle();
+      expect(location(app), '/orders/$orderId');
+      await app.done(tester);
+    });
+
+    test('only an order target has a route yet', () {
+      expect(
+        pushTargetPath({'target': 'order', 'orderId': 'a b'}),
+        '/orders/a%20b',
+      );
+      expect(pushTargetPath({'target': 'order'}), isNull);
+      expect(pushTargetPath({'target': 'statement'}), isNull);
+    });
   });
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:core_auth/testing.dart';
+import 'package:core_push/testing.dart';
 import 'package:core_realtime/core_realtime.dart';
 import 'package:core_storage/core_storage.dart';
 import 'package:core_time/core_time.dart';
@@ -14,6 +15,7 @@ import 'package:merchant/src/board/alerts.dart';
 import 'package:merchant/src/board/board_screen.dart';
 import 'package:merchant/src/board/commands.dart';
 import 'package:merchant/src/device.dart';
+import 'package:merchant/src/push.dart';
 import 'package:merchant/src/router.dart';
 
 import 'board_fixtures.dart';
@@ -68,6 +70,10 @@ class _Board {
         realtimeTransportProvider.overrideWithValue(transport),
         ringerProvider.overrideWithValue(ringer),
         keepScreenOnProvider.overrideWithValue((on) {}),
+        notificationPermissionProvider.overrideWithValue(
+          FakeNotificationPermission(allowed: true),
+        ),
+        deviceStoreProvider.overrideWithValue(MemoryDeviceStore()),
         // A minute after the fixtures' order was placed.
         serverClockProvider.overrideWithValue(
           ServerClock(
