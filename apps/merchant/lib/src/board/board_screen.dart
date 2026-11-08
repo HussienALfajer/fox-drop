@@ -8,6 +8,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../api.dart';
 import '../auth.dart';
+import '../terms.dart';
 import 'alerts.dart';
 import 'board.dart';
 import 'commands.dart';
@@ -172,7 +173,24 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
                     ],
                   ),
           ),
-          body: BoardAlertsLayer(child: body),
+          body: BoardAlertsLayer(
+            child: Column(
+              children: [
+                // RA §4.10, S13: an owner's pending version; orders keep
+                // arriving meanwhile.
+                if (ref.watch(termsPendingProvider))
+                  ListTile(
+                    key: const Key('terms-pending'),
+                    title: Text(l10n.merchantTermsPendingBanner),
+                    trailing: TextButton(
+                      onPressed: () => context.push('/terms'),
+                      child: Text(l10n.termsTitle),
+                    ),
+                  ),
+                Expanded(child: body),
+              ],
+            ),
+          ),
         );
       },
     );

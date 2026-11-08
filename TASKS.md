@@ -16,7 +16,7 @@ Slice 2.4b, terms and privacy versions (`docs/roadmap.md`, Phase 2, slice 2.4 sp
   - [x] Panel: «الشروط والخصوصية» in «المحتوى», the current version per audience and publishing a new one.
   - [x] Customer app: the accept screen on the next open while a version is pending, browsing still open, and checkout's `terms_pending`; the terms in «حسابي» (read only).
   - [x] Captain app: the accept screen before going online, a current order untouched (K7).
-  - [ ] Restaurant app: an owner with a pending version sees only Orders and the accept screen; a cashier is not affected (S13).
+  - [x] Restaurant app: an owner with a pending version sees only Orders and the accept screen; a cashier is not affected (S13).
   - [ ] Review, then hand over to 2.4c.
 
 ### Left from 2.4a (`feat/app-versions-maintenance`)
