@@ -1494,7 +1494,8 @@
             "in": "query",
             "description": "The app version, such as 1.4.0.",
             "schema": {
-              "pattern": "^\\d+\\.\\d+\\.\\d+$",
+              "minLength": 1,
+              "maxLength": 40,
               "type": "string"
             }
           }
@@ -1531,7 +1532,8 @@
             "in": "query",
             "description": "The app version, such as 1.4.0.",
             "schema": {
-              "pattern": "^\\d+\\.\\d+\\.\\d+$",
+              "minLength": 1,
+              "maxLength": 40,
               "type": "string"
             }
           }
@@ -1568,7 +1570,8 @@
             "in": "query",
             "description": "The app version, such as 1.4.0.",
             "schema": {
-              "pattern": "^\\d+\\.\\d+\\.\\d+$",
+              "minLength": 1,
+              "maxLength": 40,
               "type": "string"
             }
           }

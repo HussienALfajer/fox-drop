@@ -93,7 +93,15 @@ function AppForm({ app, values }: { app: PlatformApp; values: AppValues }) {
       </form>
       {save.isError && <p role="alert">{t('common.failed')}</p>}
       {save.data?.status === 'saved' && <p role="status">{t('appSettings.saved')}</p>}
-      {save.data?.status === 'refused' && <p role="alert">{t('appSettings.refused')}</p>}
+      {save.data?.status === 'refused' && (
+        <p role="alert">
+          {t(
+            save.data.key.endsWith('_version')
+              ? 'appSettings.refusedVersion'
+              : 'appSettings.refusedText',
+          )}
+        </p>
+      )}
     </section>
   );
 }

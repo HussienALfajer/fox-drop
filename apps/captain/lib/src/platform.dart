@@ -22,9 +22,8 @@ final platformCheckProvider = Provider<PlatformCheck>((ref) {
 /// Whether the captain's screens give way to the blocking screen. A current
 /// order is always finished first (CA §4.2, §4.8). A required update leaves
 /// an online captain their offers and applies the next time they go online
-/// (CA §7.2); maintenance blocks once no order is current. [work] is null
-/// while signed out or not read yet.
-bool captainBlocked(PlatformStatus status, Work? work) {
-  if (!status.blocks || work?.order != null) return false;
-  return status.maintenance || !(work?.online ?? false);
-}
+/// (CA §7.2); maintenance does the same, so an online captain keeps the
+/// offers and the switch to go offline instead of staying online behind the
+/// screen. [work] is null while signed out.
+bool captainBlocked(PlatformStatus status, Work? work) =>
+    status.blocks && work?.order == null && !(work?.online ?? false);

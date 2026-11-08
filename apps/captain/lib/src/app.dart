@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core_l10n/core_l10n.dart';
 import 'package:core_platform/core_platform.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'platform.dart';
 import 'push.dart';
 import 'router.dart';
+import 'work/work.dart';
 
 /// The captain app «تطبيق الكابتن»: Arabic only, right to left (AP §4.7).
 class CaptainApp extends ConsumerWidget {
@@ -18,6 +21,12 @@ class CaptainApp extends ConsumerWidget {
     ref.watch(pushTokensProvider);
     ref.watch(pushTapsProvider);
     final platform = ref.watch(platformCheckProvider);
+    // "On every reconnect" (CA §4.2): the channel coming back checks again.
+    ref.listen(workProvider, (previous, next) {
+      if (previous?.value?.live == false && next.value?.live == true) {
+        unawaited(platform.check());
+      }
+    });
     return MaterialApp.router(
       routerConfig: ref.watch(routerProvider),
       // CA §4.2: the suggested update's banner over every screen.

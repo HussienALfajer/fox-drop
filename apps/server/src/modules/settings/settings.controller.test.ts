@@ -356,7 +356,7 @@ describe("the apps' platform read (CU §4.2, §4.7, RA §4.2, §4.10, CA §4.2, 
     });
   });
 
-  it('refuses a version not in the form 1.4.0', async () => {
-    expect((await read('customer', '1.4')).statusCode).toBe(400);
+  it('asks a version not in the form 1.4.0 to update, once a minimum is set', async () => {
+    expect((await read('captain', '1.4')).json()).toMatchObject({ updateNeed: 'required' });
   });
 });

@@ -7,7 +7,7 @@ import {
   CustomerController,
   MerchantController,
 } from '../../http/route-groups.js';
-import { APP_VERSION, type PlatformApp, updateNeed } from './app-versions.js';
+import { type PlatformApp, updateNeed } from './app-versions.js';
 import { SettingsService } from './settings.service.js';
 
 // CU §4.2 and §4.7, RA §4.2 and §4.10, CA §4.2 and §4.8: the settings each app
@@ -17,10 +17,9 @@ import { SettingsService } from './settings.service.js';
 
 class PlatformQueryDto extends createZodDto(
   z.object({
-    version: z
-      .string()
-      .regex(APP_VERSION, 'expected a version such as 1.4.0')
-      .describe('The app version, such as 1.4.0.'),
+    // Not refused when malformed: such a version is below any minimum
+    // (versionBelow), so the app shows its update screen.
+    version: z.string().min(1).max(40).describe('The app version, such as 1.4.0.'),
   }),
 ) {}
 

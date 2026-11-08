@@ -32,10 +32,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       final current = session.value;
       final at = state.matchedLocation;
       if (!current.hasValue) return at == '/starting' ? null : '/starting';
-      if (captainBlocked(platform.status, work.value)) {
+      // Signed in, nothing is decided before the first read of the work:
+      // a current order is never left, even for a moment.
+      final known = current.value is! SignedIn || work.value != null;
+      if (known && captainBlocked(platform.status, work.value)) {
         return at == '/blocked' ? null : '/blocked';
       }
-      if (at == '/blocked') return '/';
+      if (known && at == '/blocked') return '/';
       final signedIn = current.value is SignedIn;
       if (!signedIn) return at == '/sign-in' ? null : '/sign-in';
       return at == '/sign-in' || at == '/starting' ? '/' : null;
