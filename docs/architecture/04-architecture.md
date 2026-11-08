@@ -27,6 +27,7 @@ Why not microservices in V1: they would put the money flows behind distributed t
 | `support`       | Tickets, compensation, approvals                                                  |
 | `marketing`     | Promo codes, banners, home sections, mass push                                    |
 | `notifications` | Push, in-app messages, real-time publishing, sound levels                         |
+| `files`         | Uploads to the object storage and their checks before a record links them (§5.8)  |
 | `audit`         | The append-only audit log                                                         |
 | `reporting`     | Daily report, statements, exports (reads from the replica)                        |
 

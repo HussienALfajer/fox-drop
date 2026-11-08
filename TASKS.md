@@ -8,8 +8,16 @@ Slice 2.5, object storage and images (`docs/roadmap.md`, Phase 2 foundations): t
 
 - **Specs:** architecture §5.8 (two buckets, `public-media` through imgproxy and nginx's cache, `private-docs` with short-lived signed URLs; uploads straight from the app with a pre-signed URL, the server checking type and size before linking the file), T7 and T9 (the storage software is chosen in this slice, the same in development and on the server), §17 (the containers per environment, the nightly copy of both buckets), CU §4.5 (images per screen size), the image fields of the menu and restaurant specs the slice touches (RA §9, AP §9.6), and `docs/open-questions.md` for anything open about photos.
 - **Branch:** `feat/object-storage`.
-- **Ask the owner first:** which S3-compatible storage (T7: MinIO no longer publishes images; candidates such as Garage or SeaweedFS), and whether the slice is one pull request or two (storage and uploads, then the customer app's images), with the `slice-plan` skill if two.
-- **Plan:** write it as a checklist once the owner answers, one step per commit: the storage and imgproxy in `compose.yaml` and the staging deploy, the server's files module with the signed upload and the check before linking, who uploads which image (the panel and the restaurant app's menu, per the specs), the customer app showing logos, covers and item photos through imgproxy, then review and hand over to slice 2.6.
+- **Owner decisions 2026-11-09:** Garage is the storage (T7), in development and on the server; one pull request; the panel gets a temporary «الصور» screen (pick a restaurant, upload its logo and cover and each item's photo) that the onboarding wizard and the menu editor absorb in 2.30 and 2.31. Restaurant uploads from the app (with admin review, RA §9.2) stay with 2.32.
+- **Design:** the `public-media` bucket only (`private-docs` joins with its first use, the captain documents of 2.34, with its encryption at rest). A new `files` module owns the uploads: the panel asks `POST /v1/admin/uploads` for a pre-signed `PUT` (type and size signed, so Garage refuses another body), uploads to `/public-media/<key>` on its own origin (nginx and Vite forward it to Garage, so no CORS and no new host), then links it with the restaurant's or item's route, which checks the stored object's size, type and first bytes before the record points to it. imgproxy serves only four presets (`w160`, `w320`, `w640`, `w1280`, WebP) under `/media/` on every host, cached by nginx; the apps build the URL from the key and the width they need.
+- **Plan** (one step per commit):
+  - [x] Garage and imgproxy in `compose.yaml`, the storage setup command (layout, keys, bucket) with its Testcontainers helper, architecture §4.2, §5.8, §17 and T7 updated.
+  - [ ] The `files` module: `files.uploads`, the signed upload, the check before linking, `POST /v1/admin/uploads`.
+  - [ ] The panel's routes: the restaurants, their images and items, and setting a logo, a cover or an item photo (audited), with the customer API's keys documented.
+  - [ ] The panel's «الصور» screen.
+  - [ ] The customer app: logos, covers and item photos through imgproxy, sized to the screen and cached (CU §4.5).
+  - [ ] Staging: Garage, imgproxy and the setup in `infra/compose.yaml` and the deploy, nginx's `/media/` cache and `/public-media/` upload path, the secrets, the nightly copy of the bucket, the `deploy` skill.
+  - [ ] Review, then hand over to slice 2.6.
 
 ### Left from 2.4d (`feat/emergency-stop-apps`)
 

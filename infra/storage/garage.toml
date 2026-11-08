@@ -1,0 +1,21 @@
+# Garage, the S3-compatible object storage (architecture §5.8, T7), the same
+# in development (compose.yaml) and on the server (infra/compose.yaml): one
+# node, one copy of each object. The RPC secret and the admin token come from
+# GARAGE_RPC_SECRET and GARAGE_ADMIN_TOKEN. The layout, the keys and the
+# bucket are set by the server's storage setup command (apps/server/src/
+# storage/storage-setup.ts), never by hand.
+metadata_dir = "/var/lib/garage/meta"
+data_dir = "/var/lib/garage/data"
+db_engine = "sqlite"
+replication_factor = 1
+
+rpc_bind_addr = "[::]:3901"
+
+# Path-style addresses only (no root_domain): uploads reach a bucket as
+# /<bucket>/<key> on the panel's own origin, which nginx and Vite forward here.
+[s3_api]
+api_bind_addr = "[::]:3900"
+s3_region = "garage"
+
+[admin]
+api_bind_addr = "[::]:3903"
