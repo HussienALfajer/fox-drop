@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:captain/src/auth.dart';
 import 'package:captain/src/work/location.dart';
 import 'package:core_auth/testing.dart';
+import 'package:core_realtime/core_realtime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -623,6 +624,47 @@ void main() {
     expect(find.text('خطأ في العد'), findsNothing);
     // The shortfall still needs a reason, from the list read again.
     expect(find.text('الزبون لا يملك المبلغ كاملاً'), findsOneWidget);
+    await app.done(tester);
+  });
+
+  // CA §6.3 item 2, §14 #31, §15: the banner after no connection, a chime
+  // when the stop starts or ends, read again on each broadcast.
+  testWidgets('the emergency stop shows its banner and chimes on and off', (
+    tester,
+  ) async {
+    const text =
+        'المنصة متوقفة مؤقتاً عن استقبال طلبات جديدة. أكملوا الطلبات الحالية.';
+    final app = TestApp();
+    app.work(availability: [availabilityJson()]);
+    app.emergencyStop(active: true);
+    await app.pump(tester);
+    await app.live(tester);
+    expect(find.text(text), findsOneWidget);
+    expect(app.ringer.chimes, 0);
+
+    app.emergencyStop();
+    app.transport.send(
+      captainChannel,
+      const RealtimePublication({
+        'type': 'platform.emergency_stop',
+        'active': false,
+      }),
+    );
+    await app.settle(tester);
+    expect(find.text(text), findsNothing);
+    expect(app.ringer.chimes, 1);
+
+    // «التطبيقات» changed: the platform is read again.
+    final reads = app.server.to('/v1/captain/platform').length;
+    app.transport.send(
+      captainChannel,
+      const RealtimePublication({
+        'type': 'platform.app_changed',
+        'app': 'captain',
+      }),
+    );
+    await app.settle(tester);
+    expect(app.server.to('/v1/captain/platform'), hasLength(reads + 1));
     await app.done(tester);
   });
 }

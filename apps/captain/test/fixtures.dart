@@ -365,8 +365,19 @@ class TestApp {
         FakeAnswer(200, {'updateNeed': updateNeed, 'maintenance': maintenance}),
       ]);
 
+  void emergencyStop({bool active = false}) =>
+      server.on('/v1/captain/emergency-stop', [
+        FakeAnswer(200, {
+          'active': active,
+          'startedAt': active ? '2026-11-09T09:00:00.000Z' : null,
+        }),
+      ]);
+
   Future<void> pump(WidgetTester tester, {Map<String, String>? stored}) async {
     if (!server.routes.containsKey('/v1/captain/platform')) platform();
+    if (!server.routes.containsKey('/v1/captain/emergency-stop')) {
+      emergencyStop();
+    }
     if (!server.routes.containsKey('/v1/captain/terms')) terms();
     server.on('/v1/captain/content', [FakeAnswer(200, contentJson())]);
     server.on('/v1/captain/push-token', [

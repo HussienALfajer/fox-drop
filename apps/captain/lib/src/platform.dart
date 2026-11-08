@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:core_platform/core_platform.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'api.dart';
+import 'work/alerts.dart';
 import 'work/commands.dart';
 import 'work/work.dart';
 
@@ -27,3 +30,42 @@ final platformCheckProvider = Provider<PlatformCheck>((ref) {
 /// screen. [work] is null while signed out.
 bool captainBlocked(PlatformStatus status, Work? work) =>
     status.blocks && work?.order == null && !(work?.online ?? false);
+
+/// The city's emergency stop (CA §6.3 item 2): read at sign-in, on each
+/// return to the foreground, and by [platformBroadcastsProvider]. Null while
+/// signed out. Offers stop with it; a current order goes on.
+final emergencyStopProvider = Provider.autoDispose<EmergencyStopCheck?>((ref) {
+  final session = ref.watch(captainSessionProvider).value;
+  if (session == null) return null;
+  final api = ref.watch(coreApiProvider).getCaptainApi();
+  final check = EmergencyStopCheck(() async {
+    final answer = (await api.captainEmergencyStopRead()).data!;
+    return EmergencyStop(active: answer.active, startedAt: answer.startedAt);
+  });
+  // CA §14 #31: a chime when it starts or ends.
+  final ringer = ref.watch(ringerProvider);
+  final switches = check.switched.listen((_) => ringer.chime());
+  ref.onDispose(() {
+    unawaited(switches.cancel());
+    check.dispose();
+  });
+  check.start();
+  return check;
+});
+
+/// The platform broadcasts on `captain:{captain_id}` (CA §15): the channel
+/// connecting reads the platform and the stop again ("on every reconnect",
+/// CA §4.2), `platform.emergency_stop` the stop and `platform.app_changed`
+/// the platform. Watched by `CaptainApp`.
+final platformBroadcastsProvider = Provider.autoDispose<void>((ref) {
+  final session = ref.watch(captainSessionProvider).value;
+  if (session == null) return;
+  final following = followPlatformBroadcasts(
+    ref
+        .watch(realtimeTransportProvider)
+        .channel('captain:${session.captainId}'),
+    stop: ref.watch(emergencyStopProvider),
+    platform: ref.watch(platformCheckProvider),
+  );
+  ref.onDispose(() => unawaited(following.cancel()));
+});
