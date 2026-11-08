@@ -423,7 +423,7 @@ Serializers _$serializers =
           ..add(MerchantSignedOutDtoOutputStatusEnum.serializer)
           ..add(MerchantTokensDtoOutput.serializer)
           ..add(PlatformDtoOutput.serializer)
-          ..add(PlatformDtoOutputUpdateEnum.serializer)
+          ..add(PlatformDtoOutputUpdateNeedEnum.serializer)
           ..add(PushTokenDto.serializer)
           ..add(PushTokenDtoPlatformEnum.serializer)
           ..add(PushTokenRegisteredDtoOutput.serializer)

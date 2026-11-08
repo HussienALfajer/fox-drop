@@ -323,7 +323,7 @@ describe("the apps' platform read (CU §4.2, §4.7, RA §4.2, §4.10, CA §4.2, 
   it('answers no update and no maintenance by default, without a session', async () => {
     const answer = await read('merchant', '1.0.0');
     expect(answer.statusCode).toBe(200);
-    expect(answer.json()).toEqual({ update: 'none', maintenance: false });
+    expect(answer.json()).toEqual({ updateNeed: 'none', maintenance: false });
   });
 
   it("answers the app's versions, update message and maintenance as OWN sets them", async () => {
@@ -338,20 +338,20 @@ describe("the apps' platform read (CU §4.2, §4.7, RA §4.2, §4.10, CA §4.2, 
     ).toBe(200);
 
     expect((await read('captain', '1.3.9')).json()).toEqual({
-      update: 'required',
+      updateNeed: 'required',
       updateMessage: 'حدّث التطبيق',
       maintenance: false,
     });
-    expect((await read('captain', '1.9.0')).json()).toMatchObject({ update: 'suggested' });
-    expect((await read('captain', '1.10.0')).json()).toMatchObject({ update: 'none' });
+    expect((await read('captain', '1.9.0')).json()).toMatchObject({ updateNeed: 'suggested' });
+    expect((await read('captain', '1.10.0')).json()).toMatchObject({ updateNeed: 'none' });
     // Each app has its own settings.
     expect((await read('customer', '1.0.0')).json()).toEqual({
-      update: 'none',
+      updateNeed: 'none',
       maintenance: true,
       maintenanceMessage: 'صيانة قصيرة',
     });
     expect((await read('merchant', '1.0.0')).json()).toEqual({
-      update: 'none',
+      updateNeed: 'none',
       maintenance: false,
     });
   });

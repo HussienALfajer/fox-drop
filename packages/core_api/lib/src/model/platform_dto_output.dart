@@ -12,7 +12,7 @@ part 'platform_dto_output.g.dart';
 /// PlatformDtoOutput
 ///
 /// Properties:
-/// * [update] - required: below app.<app>.min_version, the blocking update screen; suggested: below app.<app>.latest_version, a dismissible banner.
+/// * [updateNeed] - required: below app.<app>.min_version, the blocking update screen; suggested: below app.<app>.latest_version, a dismissible banner.
 /// * [updateMessage] - app.<app>.update_message, when set.
 /// * [maintenance] - app.<app>.maintenance: the blocking maintenance screen.
 /// * [maintenanceMessage] - The maintenance message, when set.
@@ -20,9 +20,9 @@ part 'platform_dto_output.g.dart';
 abstract class PlatformDtoOutput
     implements Built<PlatformDtoOutput, PlatformDtoOutputBuilder> {
   /// required: below app.<app>.min_version, the blocking update screen; suggested: below app.<app>.latest_version, a dismissible banner.
-  @BuiltValueField(wireName: r'update')
-  PlatformDtoOutputUpdateEnum get update;
-  // enum updateEnum {  required,  suggested,  none,  };
+  @BuiltValueField(wireName: r'updateNeed')
+  PlatformDtoOutputUpdateNeedEnum get updateNeed;
+  // enum updateNeedEnum {  required,  suggested,  none,  };
 
   /// app.<app>.update_message, when set.
   @BuiltValueField(wireName: r'updateMessage')
@@ -62,10 +62,10 @@ class _$PlatformDtoOutputSerializer
     PlatformDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'update';
+    yield r'updateNeed';
     yield serializers.serialize(
-      object.update,
-      specifiedType: const FullType(PlatformDtoOutputUpdateEnum),
+      object.updateNeed,
+      specifiedType: const FullType(PlatformDtoOutputUpdateNeedEnum),
     );
     if (object.updateMessage != null) {
       yield r'updateMessage';
@@ -113,14 +113,16 @@ class _$PlatformDtoOutputSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'update':
+        case r'updateNeed':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(PlatformDtoOutputUpdateEnum),
+                    specifiedType: const FullType(
+                      PlatformDtoOutputUpdateNeedEnum,
+                    ),
                   )
-                  as PlatformDtoOutputUpdateEnum;
-          result.update = valueDes;
+                  as PlatformDtoOutputUpdateNeedEnum;
+          result.updateNeed = valueDes;
           break;
         case r'updateMessage':
           final valueDes =
@@ -181,24 +183,24 @@ class _$PlatformDtoOutputSerializer
 }
 
 /// required: below app.<app>.min_version, the blocking update screen; suggested: below app.<app>.latest_version, a dismissible banner.
-class PlatformDtoOutputUpdateEnum extends EnumClass {
+class PlatformDtoOutputUpdateNeedEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'required')
-  static const PlatformDtoOutputUpdateEnum required_ =
-      _$platformDtoOutputUpdateEnum_required_;
+  static const PlatformDtoOutputUpdateNeedEnum required_ =
+      _$platformDtoOutputUpdateNeedEnum_required_;
   @BuiltValueEnumConst(wireName: r'suggested')
-  static const PlatformDtoOutputUpdateEnum suggested =
-      _$platformDtoOutputUpdateEnum_suggested;
+  static const PlatformDtoOutputUpdateNeedEnum suggested =
+      _$platformDtoOutputUpdateNeedEnum_suggested;
   @BuiltValueEnumConst(wireName: r'none')
-  static const PlatformDtoOutputUpdateEnum none =
-      _$platformDtoOutputUpdateEnum_none;
+  static const PlatformDtoOutputUpdateNeedEnum none =
+      _$platformDtoOutputUpdateNeedEnum_none;
 
-  static Serializer<PlatformDtoOutputUpdateEnum> get serializer =>
-      _$platformDtoOutputUpdateEnumSerializer;
+  static Serializer<PlatformDtoOutputUpdateNeedEnum> get serializer =>
+      _$platformDtoOutputUpdateNeedEnumSerializer;
 
-  const PlatformDtoOutputUpdateEnum._(String name) : super(name);
+  const PlatformDtoOutputUpdateNeedEnum._(String name) : super(name);
 
-  static BuiltSet<PlatformDtoOutputUpdateEnum> get values =>
-      _$platformDtoOutputUpdateEnumValues;
-  static PlatformDtoOutputUpdateEnum valueOf(String name) =>
-      _$platformDtoOutputUpdateEnumValueOf(name);
+  static BuiltSet<PlatformDtoOutputUpdateNeedEnum> get values =>
+      _$platformDtoOutputUpdateNeedEnumValues;
+  static PlatformDtoOutputUpdateNeedEnum valueOf(String name) =>
+      _$platformDtoOutputUpdateNeedEnumValueOf(name);
 }

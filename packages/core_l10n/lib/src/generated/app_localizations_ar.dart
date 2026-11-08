@@ -1472,4 +1472,30 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get customerNotificationsEmpty => 'لا توجد إشعارات';
+
+  @override
+  String get platformUpdateRequiredTitle => 'يلزم تحديث التطبيق';
+
+  @override
+  String get platformUpdateRequiredMessage =>
+      'هذا الإصدار لم يعد يعمل. حدّث التطبيق لتتابع.';
+
+  @override
+  String get platformUpdateSuggested => 'يتوفر إصدار أحدث من التطبيق.';
+
+  @override
+  String get platformUpdate => 'تحديث';
+
+  @override
+  String get platformLater => 'لاحقاً';
+
+  @override
+  String get platformMaintenanceTitle => 'التطبيق في صيانة';
+
+  @override
+  String get platformMaintenanceMessage =>
+      'نعمل على تحسين الخدمة ونعود قريباً.';
+
+  @override
+  String get customerFollowOrder => 'تابع طلبك';
 }

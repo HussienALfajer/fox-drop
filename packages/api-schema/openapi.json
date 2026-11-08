@@ -6092,7 +6092,7 @@
       "PlatformDto_Output": {
         "type": "object",
         "properties": {
-          "update": {
+          "updateNeed": {
             "type": "string",
             "enum": [
               "required",
@@ -6115,7 +6115,7 @@
           }
         },
         "required": [
-          "update",
+          "updateNeed",
           "maintenance"
         ],
         "additionalProperties": false

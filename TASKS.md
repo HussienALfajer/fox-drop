@@ -15,7 +15,7 @@ Slice 2.4a, forced update and maintenance (`docs/roadmap.md`, Phase 2, slice 2.4
   - [x] Record the split (`docs/roadmap.md`, this file).
   - [x] Server: `GET /v1/{customer,merchant,captain}/platform?version=` (public): `update` (`required`, `suggested`, `none`), the update message and maintenance with its message; one `versionBelow` in the settings module for the quote, the captain's block and this route; the API contract and clients.
   - [x] Panel: «التطبيقات», the minimum and latest versions, the update message and maintenance with its message for each app (OWN), on the settings routes.
-  - [ ] `packages/core_platform`: the check (launch, resume, retry after a failure) and its state, tested.
+  - [x] `packages/core_platform`: the check (launch, resume, retry after a failure) and its state, tested.
   - [ ] Customer app: the blocking update and maintenance screens with the active order still readable, and the update banner.
   - [ ] Captain app: the same, with the current order finishable (the block applies to going online again).
   - [ ] Restaurant app: the blocking screens on every device, and the update banner.

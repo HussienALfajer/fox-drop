@@ -6,40 +6,46 @@ part of 'platform_dto_output.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const PlatformDtoOutputUpdateEnum _$platformDtoOutputUpdateEnum_required_ =
-    const PlatformDtoOutputUpdateEnum._('required_');
-const PlatformDtoOutputUpdateEnum _$platformDtoOutputUpdateEnum_suggested =
-    const PlatformDtoOutputUpdateEnum._('suggested');
-const PlatformDtoOutputUpdateEnum _$platformDtoOutputUpdateEnum_none =
-    const PlatformDtoOutputUpdateEnum._('none');
+const PlatformDtoOutputUpdateNeedEnum
+_$platformDtoOutputUpdateNeedEnum_required_ =
+    const PlatformDtoOutputUpdateNeedEnum._('required_');
+const PlatformDtoOutputUpdateNeedEnum
+_$platformDtoOutputUpdateNeedEnum_suggested =
+    const PlatformDtoOutputUpdateNeedEnum._('suggested');
+const PlatformDtoOutputUpdateNeedEnum _$platformDtoOutputUpdateNeedEnum_none =
+    const PlatformDtoOutputUpdateNeedEnum._('none');
 
-PlatformDtoOutputUpdateEnum _$platformDtoOutputUpdateEnumValueOf(String name) {
+PlatformDtoOutputUpdateNeedEnum _$platformDtoOutputUpdateNeedEnumValueOf(
+  String name,
+) {
   switch (name) {
     case 'required_':
-      return _$platformDtoOutputUpdateEnum_required_;
+      return _$platformDtoOutputUpdateNeedEnum_required_;
     case 'suggested':
-      return _$platformDtoOutputUpdateEnum_suggested;
+      return _$platformDtoOutputUpdateNeedEnum_suggested;
     case 'none':
-      return _$platformDtoOutputUpdateEnum_none;
+      return _$platformDtoOutputUpdateNeedEnum_none;
     default:
       throw ArgumentError(name);
   }
 }
 
-final BuiltSet<PlatformDtoOutputUpdateEnum>
-_$platformDtoOutputUpdateEnumValues =
-    BuiltSet<PlatformDtoOutputUpdateEnum>(const <PlatformDtoOutputUpdateEnum>[
-      _$platformDtoOutputUpdateEnum_required_,
-      _$platformDtoOutputUpdateEnum_suggested,
-      _$platformDtoOutputUpdateEnum_none,
-    ]);
+final BuiltSet<PlatformDtoOutputUpdateNeedEnum>
+_$platformDtoOutputUpdateNeedEnumValues =
+    BuiltSet<PlatformDtoOutputUpdateNeedEnum>(
+      const <PlatformDtoOutputUpdateNeedEnum>[
+        _$platformDtoOutputUpdateNeedEnum_required_,
+        _$platformDtoOutputUpdateNeedEnum_suggested,
+        _$platformDtoOutputUpdateNeedEnum_none,
+      ],
+    );
 
-Serializer<PlatformDtoOutputUpdateEnum>
-_$platformDtoOutputUpdateEnumSerializer =
-    _$PlatformDtoOutputUpdateEnumSerializer();
+Serializer<PlatformDtoOutputUpdateNeedEnum>
+_$platformDtoOutputUpdateNeedEnumSerializer =
+    _$PlatformDtoOutputUpdateNeedEnumSerializer();
 
-class _$PlatformDtoOutputUpdateEnumSerializer
-    implements PrimitiveSerializer<PlatformDtoOutputUpdateEnum> {
+class _$PlatformDtoOutputUpdateNeedEnumSerializer
+    implements PrimitiveSerializer<PlatformDtoOutputUpdateNeedEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'required_': 'required',
     'suggested': 'suggested',
@@ -52,30 +58,30 @@ class _$PlatformDtoOutputUpdateEnumSerializer
   };
 
   @override
-  final Iterable<Type> types = const <Type>[PlatformDtoOutputUpdateEnum];
+  final Iterable<Type> types = const <Type>[PlatformDtoOutputUpdateNeedEnum];
   @override
-  final String wireName = 'PlatformDtoOutputUpdateEnum';
+  final String wireName = 'PlatformDtoOutputUpdateNeedEnum';
 
   @override
   Object serialize(
     Serializers serializers,
-    PlatformDtoOutputUpdateEnum object, {
+    PlatformDtoOutputUpdateNeedEnum object, {
     FullType specifiedType = FullType.unspecified,
   }) => _toWire[object.name] ?? object.name;
 
   @override
-  PlatformDtoOutputUpdateEnum deserialize(
+  PlatformDtoOutputUpdateNeedEnum deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
-  }) => PlatformDtoOutputUpdateEnum.valueOf(
+  }) => PlatformDtoOutputUpdateNeedEnum.valueOf(
     _fromWire[serialized] ?? (serialized is String ? serialized : ''),
   );
 }
 
 class _$PlatformDtoOutput extends PlatformDtoOutput {
   @override
-  final PlatformDtoOutputUpdateEnum update;
+  final PlatformDtoOutputUpdateNeedEnum updateNeed;
   @override
   final String? updateMessage;
   @override
@@ -88,7 +94,7 @@ class _$PlatformDtoOutput extends PlatformDtoOutput {
   ]) => (PlatformDtoOutputBuilder()..update(updates))._build();
 
   _$PlatformDtoOutput._({
-    required this.update,
+    required this.updateNeed,
     this.updateMessage,
     required this.maintenance,
     this.maintenanceMessage,
@@ -105,7 +111,7 @@ class _$PlatformDtoOutput extends PlatformDtoOutput {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is PlatformDtoOutput &&
-        update == other.update &&
+        updateNeed == other.updateNeed &&
         updateMessage == other.updateMessage &&
         maintenance == other.maintenance &&
         maintenanceMessage == other.maintenanceMessage;
@@ -114,7 +120,7 @@ class _$PlatformDtoOutput extends PlatformDtoOutput {
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, update.hashCode);
+    _$hash = $jc(_$hash, updateNeed.hashCode);
     _$hash = $jc(_$hash, updateMessage.hashCode);
     _$hash = $jc(_$hash, maintenance.hashCode);
     _$hash = $jc(_$hash, maintenanceMessage.hashCode);
@@ -125,7 +131,7 @@ class _$PlatformDtoOutput extends PlatformDtoOutput {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'PlatformDtoOutput')
-          ..add('update', update)
+          ..add('updateNeed', updateNeed)
           ..add('updateMessage', updateMessage)
           ..add('maintenance', maintenance)
           ..add('maintenanceMessage', maintenanceMessage))
@@ -137,9 +143,10 @@ class PlatformDtoOutputBuilder
     implements Builder<PlatformDtoOutput, PlatformDtoOutputBuilder> {
   _$PlatformDtoOutput? _$v;
 
-  PlatformDtoOutputUpdateEnum? _update;
-  PlatformDtoOutputUpdateEnum? get update => _$this._update;
-  set update(PlatformDtoOutputUpdateEnum? update) => _$this._update = update;
+  PlatformDtoOutputUpdateNeedEnum? _updateNeed;
+  PlatformDtoOutputUpdateNeedEnum? get updateNeed => _$this._updateNeed;
+  set updateNeed(PlatformDtoOutputUpdateNeedEnum? updateNeed) =>
+      _$this._updateNeed = updateNeed;
 
   String? _updateMessage;
   String? get updateMessage => _$this._updateMessage;
@@ -162,7 +169,7 @@ class PlatformDtoOutputBuilder
   PlatformDtoOutputBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _update = $v.update;
+      _updateNeed = $v.updateNeed;
       _updateMessage = $v.updateMessage;
       _maintenance = $v.maintenance;
       _maintenanceMessage = $v.maintenanceMessage;
@@ -188,10 +195,10 @@ class PlatformDtoOutputBuilder
     final _$result =
         _$v ??
         _$PlatformDtoOutput._(
-          update: BuiltValueNullFieldError.checkNotNull(
-            update,
+          updateNeed: BuiltValueNullFieldError.checkNotNull(
+            updateNeed,
             r'PlatformDtoOutput',
-            'update',
+            'updateNeed',
           ),
           updateMessage: updateMessage,
           maintenance: BuiltValueNullFieldError.checkNotNull(

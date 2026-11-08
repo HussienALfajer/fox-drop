@@ -28,7 +28,8 @@ class PlatformQueryDto extends createZodDto(
 // type as a list.
 class PlatformDto extends createZodDto(
   z.object({
-    update: z
+    // Not `update`: the Dart client's built_value models have an update().
+    updateNeed: z
       .enum(['required', 'suggested', 'none'])
       .describe(
         'required: below app.<app>.min_version, the blocking update screen; suggested: below app.<app>.latest_version, a dismissible banner.',
@@ -48,7 +49,7 @@ async function read(settings: SettingsService, app: PlatformApp, version: string
     settings.get('app.<app>.maintenance', target),
   ]);
   return {
-    update: updateNeed(version, { minVersion, latestVersion }),
+    updateNeed: updateNeed(version, { minVersion, latestVersion }),
     ...(updateMessage === null ? {} : { updateMessage }),
     maintenance: maintenance.enabled,
     ...(maintenance.message === null ? {} : { maintenanceMessage: maintenance.message }),

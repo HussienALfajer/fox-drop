@@ -2326,7 +2326,7 @@ export interface components {
              * @description required: below app.<app>.min_version, the blocking update screen; suggested: below app.<app>.latest_version, a dismissible banner.
              * @enum {string}
              */
-            update: "required" | "suggested" | "none";
+            updateNeed: "required" | "suggested" | "none";
             /** @description app.<app>.update_message, when set. */
             updateMessage?: string;
             /** @description app.<app>.maintenance: the blocking maintenance screen. */
