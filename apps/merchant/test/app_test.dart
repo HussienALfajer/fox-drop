@@ -302,6 +302,16 @@ void main() {
       await app.done(tester);
     });
 
+    testWidgets('the push that started the app opens its order', (
+      tester,
+    ) async {
+      final app = signedIn()
+        ..push.initial = {'target': 'order', 'orderId': orderId};
+      await app.pump(tester, stored: _signedIn());
+      expect(location(app), '/orders/$orderId');
+      await app.done(tester);
+    });
+
     test('only an order target has a route yet', () {
       expect(
         pushTargetPath({'target': 'order', 'orderId': 'a b'}),

@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'api.dart';
 import 'auth.dart';
+import 'device.dart';
 import 'router.dart';
 
 /// The installation's push (`packages/core_push`): `main` gives the one
@@ -62,10 +63,11 @@ final notificationAskProvider = Provider<void>((ref) {
   if (defaultTargetPlatform != TargetPlatform.android) return;
   var asking = false;
   Future<void> ask() async {
-    final device = ref.read(deviceStoreProvider);
-    if (asking || await device.read(_askedKey) != null) return;
+    if (asking) return;
     asking = true;
     try {
+      final device = ref.read(deviceStoreProvider);
+      if (await device.read(_askedKey) != null) return;
       final permission = ref.read(notificationPermissionProvider);
       if (!await permission.granted()) await permission.request();
       await device.write(_askedKey, '1');
@@ -95,15 +97,29 @@ String? pushTargetPath(Map<String, String> data) => switch (data) {
 };
 
 /// Opens the target of the push the user tapped: the one that started the
-/// app, and each one tapped while it ran in the background.
+/// app, and each one tapped while it ran in the background. The target
+/// waits until the session's details say the board can show (signed in, the
+/// device named), or the router's start would send it to the board.
 final pushTapsProvider = Provider<void>((ref) {
   final push = ref.watch(pushProvider);
   final router = ref.watch(routerProvider);
-  void open(Map<String, String>? data) {
-    final path = data == null ? null : pushTargetPath(data);
-    if (path != null) router.go(path);
+  String? pending;
+  void flush() {
+    final ready = ref.read(merchantSessionProvider).value?.deviceNamed == true;
+    final path = pending;
+    if (path == null || !ready) return;
+    pending = null;
+    router.go(path);
   }
 
+  void open(Map<String, String>? data) {
+    final path = data == null ? null : pushTargetPath(data);
+    if (path == null) return;
+    pending = path;
+    flush();
+  }
+
+  ref.listen(merchantSessionProvider, (previous, next) => flush());
   final taps = push.taps.listen(open);
   unawaited(
     push.initialTap().then(
