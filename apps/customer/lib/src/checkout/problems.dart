@@ -5,7 +5,15 @@ import '../cart/cart.dart';
 import 'quote.dart';
 
 /// What the customer can do about a problem (CU Appendix C).
-enum ProblemAction { none, remove, acceptPrice, addItems, changeAddress, retry }
+enum ProblemAction {
+  none,
+  remove,
+  acceptPrice,
+  addItems,
+  changeAddress,
+  retry,
+  showTerms,
+}
 
 /// A blocking problem as checkout shows it, at the top (CU §10.6).
 class ProblemView {
@@ -91,6 +99,10 @@ List<ProblemView> problemViews(
         );
       case ProblemCode.noCaptainNearby:
         views.add(ProblemView(l10n.customerNoCaptain, ProblemAction.retry));
+      case ProblemCode.termsPending:
+        views.add(
+          ProblemView(l10n.customerTermsPending, ProblemAction.showTerms),
+        );
       case ProblemCode.priceChanged:
         final newPrice = quoteLine?.unitPrice;
         views.add(

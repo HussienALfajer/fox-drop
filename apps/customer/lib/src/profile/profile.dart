@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api.dart';
 import '../auth.dart';
+import '../terms.dart';
 
 /// The signed-in customer's details (CU §5.3); null for a guest. The server
 /// answers `completed: false` until the first save, so an app that stopped
@@ -116,6 +117,9 @@ class ProfileSaveController extends Notifier<ProfileSaveState> {
                 ..acceptTerms = true,
             ),
           );
+      // The tick accepted the terms in force: read them before the router
+      // sees the completed profile, so it does not ask for them again.
+      await ref.read(termsCheckProvider).check();
       ref.invalidate(profileProvider);
       await ref.read(profileProvider.future);
       state = const ProfileSaved();

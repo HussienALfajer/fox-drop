@@ -7,6 +7,7 @@ import 'checkout/place_order.dart';
 import 'notifications/push.dart';
 import 'platform.dart';
 import 'router.dart';
+import 'terms.dart';
 
 /// The customer app «تطبيق الزبون»: Arabic only, right to left (AP §4.7).
 class CustomerApp extends ConsumerWidget {
@@ -19,6 +20,8 @@ class CustomerApp extends ConsumerWidget {
     // push opening its order.
     ref.watch(pushTokensProvider);
     ref.watch(pushTapsProvider);
+    // CU §4.7: a new version of the terms opens on the next open.
+    ref.watch(termsPromptProvider);
     // A placed order opens its screen wherever the customer is: leaving
     // checkout never cancels the command (CU §10.7 item 7).
     ref.listen(placeOrderProvider, (previous, next) {

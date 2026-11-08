@@ -1,4 +1,5 @@
 import 'package:core_auth/core_auth.dart';
+import 'package:core_platform/core_platform.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,6 +18,7 @@ import 'platform.dart';
 import 'profile/profile.dart';
 import 'profile/profile_screen.dart';
 import 'starting_screen.dart';
+import 'terms.dart';
 
 /// Where a screen that needs sign-in sends a guest: the sign-in screen, then
 /// back to [from] (CU §5.1).
@@ -30,7 +32,8 @@ String _safeFrom(String? from) =>
 /// Guests browse (CU §5.1); a signed-in customer leaves the sign-in screen
 /// for where they were, through «أكمل بياناتك» while the profile is not
 /// completed (CU §5.3). A required update or maintenance leads to
-/// `/blocked`, except an order's screen (CU §4.2, §4.7).
+/// `/blocked`, except an order's screen (CU §4.2, §4.7). A new version of
+/// the terms is pushed by `termsPromptProvider` (`terms.dart`).
 final routerProvider = Provider<GoRouter>((ref) {
   final changes = ValueNotifier(0);
   void changed(Object? previous, Object? next) => changes.value++;
@@ -60,7 +63,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final signedIn = session.value is SignedIn;
       final profile = ref.read(profileProvider).value;
       final completing = signedIn && profile != null && !profile.completed;
-      if (completing && at != '/complete-profile') {
+      if (completing && at != '/complete-profile' && at != '/terms') {
         final next = at == '/sign-in' || at == '/starting'
             ? from
             : state.uri.toString();
@@ -94,6 +97,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
       GoRoute(path: '/faq', builder: (context, state) => const FaqScreen()),
+      // CU §13 «الشروط والخصوصية», and the pending version (CU §4.7).
+      GoRoute(
+        path: '/terms',
+        builder: (context, state) => TermsScreen(
+          check: ref.read(termsCheckProvider),
+          onAccepted: () => context.canPop() ? context.pop() : context.go('/'),
+        ),
+      ),
       // CU §13 «الإشعارات»: the account's, so a guest signs in first.
       GoRoute(
         path: '/notifications',
