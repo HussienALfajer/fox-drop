@@ -151,6 +151,16 @@ async function appSignIn(party: 'customer' | 'merchant' | 'captain', phone: stri
     payload: { phone, deviceId, code },
   });
   expect(answer.statusCode).toBe(200);
+  // A customer orders (CU §4.7) and a captain goes online (K7) once the terms
+  // in force (the seeded version 1) are accepted.
+  if (party !== 'merchant') {
+    await app.inject({
+      method: 'POST',
+      url: `/v1/${party}/terms/accept`,
+      headers: { authorization: `Bearer ${answer.json().accessToken}` },
+      payload: { version: 1 },
+    });
+  }
   return { authorization: `Bearer ${answer.json().accessToken}` };
 }
 
@@ -259,7 +269,7 @@ async function onlineCaptain(point: Point = captainSpot) {
   await app.get(CaptainAccountsService).addAccount(captainId, phone, change);
   const headers = await appSignIn('captain', phone);
   const now = new Date();
-  await captains.goOnline(captainId, { appVersion: '1.0.0', simulatedLocation: false }, now);
+  await captains.goOnline(captainId, { appVersion: '1.0.0', simulatedLocation: false, termsPending: false }, now);
   await captains.recordLocations(
     captainId,
     [{ ...point, accuracyMetres: 8, recordedAt: now, simulated: false }],

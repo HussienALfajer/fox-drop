@@ -148,7 +148,7 @@ async function onlineAt(point: Point): Promise<string> {
     change,
   );
   const now = new Date();
-  await captains.goOnline(id, { appVersion: '1.0.0', simulatedLocation: false }, now);
+  await captains.goOnline(id, { appVersion: '1.0.0', simulatedLocation: false, termsPending: false }, now);
   await captains.recordLocations(
     id,
     [{ ...point, accuracyMetres: 8, recordedAt: now, simulated: false }],
@@ -203,6 +203,14 @@ describe('the capacity check (AP §9.12.6)', () => {
       method: 'POST',
       url: '/v1/customer/auth/sign-in',
       payload: { phone, deviceId, code },
+    });
+    // CU §4.7: a customer orders once the terms in force (the seeded version 1)
+    // are accepted.
+    await app.inject({
+      method: 'POST',
+      url: '/v1/customer/terms/accept',
+      headers: { authorization: `Bearer ${signIn.json().accessToken}` },
+      payload: { version: 1 },
     });
     const lines = [
       { itemId: item, optionIds: [], quantity: 1, note: null, knownUnitPrice: '12000' },

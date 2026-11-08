@@ -199,6 +199,10 @@ describe('the details (CU §5.3)', () => {
       acceptTerms: true,
     });
     expect(saved.json()).toEqual({ completed: true, profile: details });
+    // The tick accepts the customer terms in force (AP §9.13).
+    expect((await call(headers, 'GET', '/v1/customer/terms')).json()).toMatchObject({
+      pending: false,
+    });
     const edited = await call(headers, 'PUT', '/v1/customer/profile', {
       ...details,
       firstName: 'Ahmad-Ali',

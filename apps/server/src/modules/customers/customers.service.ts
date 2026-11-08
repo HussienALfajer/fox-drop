@@ -3,6 +3,7 @@ import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
+import { TermsService } from '../content/index.js';
 import { GeoService, type Point } from '../geo/index.js';
 import { PhoneCipher } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
@@ -101,6 +102,7 @@ export class CustomersService {
     private readonly geo: GeoService,
     private readonly merchants: MerchantsService,
     private readonly phones: PhoneCipher,
+    private readonly terms: TermsService,
   ) {}
 
   // CU §7.1: the zone check of a point, and whether any restaurant covers it.
@@ -143,7 +145,8 @@ export class CustomersService {
   }
 
   // «أكمل بياناتك» (CU §5.3), and later edits in «حسابي» (§13). The terms
-  // are accepted once, when the details are first completed.
+  // are ticked once, when the details are first completed; a later version
+  // is accepted on its own (CU §4.7).
   async saveProfile(
     accountId: string,
     profile: Profile,
@@ -161,10 +164,15 @@ export class CustomersService {
       if (!acceptTerms) {
         throw new CustomersRefusedError('terms_required', 'the terms are accepted first');
       }
-      await this.database.db
-        .insert(profiles)
-        .values({ accountId, ...profile, termsAcceptedAt: now, createdAt: now, updatedAt: now })
-        .onConflictDoUpdate({ target: profiles.accountId, set: { ...profile, updatedAt: now } });
+      // «أوافق على الشروط وسياسة الخصوصية» accepts the version in force
+      // (AP §9.13), with the profile.
+      await this.database.db.transaction(async (tx) => {
+        await tx
+          .insert(profiles)
+          .values({ accountId, ...profile, termsAcceptedAt: now, createdAt: now, updatedAt: now })
+          .onConflictDoUpdate({ target: profiles.accountId, set: { ...profile, updatedAt: now } });
+        await this.terms.acceptCurrent('customer', accountId, now, tx);
+      });
     }
     return profile;
   }

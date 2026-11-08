@@ -25,6 +25,9 @@ export interface AvailabilityInput {
   // app.captain.min_version; null for none.
   minVersion: string | null;
   simulatedLocation: boolean;
+  // K7: the captain has not accepted the terms in force. Known only when
+  // going online, the one moment it blocks (CA §7.2).
+  termsPending: boolean;
   // CA §7.1: the captain has an active order (AP §9.12.6: no stacking in V1).
   activeOrder: boolean;
 }
@@ -35,6 +38,7 @@ export type OnlineBlock =
   | { kind: 'contract_ended' }
   | { kind: 'closed_due'; amount: bigint; cutoff: Date }
   | { kind: 'cash_limit'; limit: bigint }
+  | { kind: 'terms_not_accepted' }
   | { kind: 'version_below_minimum'; minVersion: string }
   | { kind: 'simulated_location' };
 
@@ -57,7 +61,7 @@ function suspendedAt(input: AvailabilityInput, now: Date) {
 }
 
 // Every block that refuses going online now, so the app shows each (CA §7.2).
-// Required documents (K6) and terms (K7) join with their slices.
+// Required documents (K6) join with their slice.
 export function onlineBlocks(input: AvailabilityInput, now: Date): OnlineBlock[] {
   const blocks: OnlineBlock[] = [];
   if (input.status === 'terminated') return [{ kind: 'contract_ended' }];
@@ -71,6 +75,7 @@ export function onlineBlocks(input: AvailabilityInput, now: Date): OnlineBlock[]
   if (input.custodyUsage >= input.custodyLimit) {
     blocks.push({ kind: 'cash_limit', limit: input.custodyLimit });
   }
+  if (input.termsPending) blocks.push({ kind: 'terms_not_accepted' });
   if (
     input.minVersion !== null &&
     (input.appVersion === null || versionBelow(input.appVersion, input.minVersion))

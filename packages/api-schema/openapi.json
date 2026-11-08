@@ -1836,6 +1836,843 @@
         ]
       }
     },
+    "/v1/merchant/contact": {
+      "get": {
+        "operationId": "merchantContactGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/captain/contact": {
+      "get": {
+        "operationId": "captainContactGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/customer/contact": {
+      "get": {
+        "operationId": "customerContactGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/v1/merchant/content": {
+      "get": {
+        "operationId": "merchantContentGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantContentDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/captain/content": {
+      "get": {
+        "operationId": "captainContentGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainContentDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/customer/content": {
+      "get": {
+        "operationId": "customerContentGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerContentDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/v1/admin/content/reasons": {
+      "get": {
+        "operationId": "adminContentLists",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminReasonListsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/content/reasons/{list}": {
+      "post": {
+        "operationId": "adminContentAdd",
+        "parameters": [
+          {
+            "name": "list",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "maxLength": 40,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminReasonDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/content/reasons/{list}/{code}": {
+      "put": {
+        "operationId": "adminContentUpdate",
+        "parameters": [
+          {
+            "name": "list",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "maxLength": 40,
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "maxLength": 40,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminReasonDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/content/reasons/{list}/order": {
+      "post": {
+        "operationId": "adminContentReorder",
+        "parameters": [
+          {
+            "name": "list",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "maxLength": 40,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminReasonOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/content/faqs": {
+      "get": {
+        "operationId": "adminContentFaqs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminFaqsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/content/faqs/{audience}": {
+      "put": {
+        "operationId": "adminContentUpdateFaq",
+        "parameters": [
+          {
+            "name": "audience",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "customer",
+                "captain",
+                "merchant"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminFaqDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminFaqDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/content/texts": {
+      "get": {
+        "operationId": "adminContentTexts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTextsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/content/work-rules": {
+      "put": {
+        "operationId": "adminContentUpdateWorkRules",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminWorkRulesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminWorkRulesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/content/contact": {
+      "put": {
+        "operationId": "adminContentUpdateContact",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateContactDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminContactDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/content/notifications": {
+      "get": {
+        "operationId": "adminContentNotificationTexts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminNotificationTextsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/content/notifications/{key}": {
+      "put": {
+        "operationId": "adminContentUpdateNotificationText",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "maxLength": 80,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateNotificationTextDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminNotificationTextDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/merchant/terms": {
+      "get": {
+        "operationId": "merchantTermsGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TermsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/terms/accept": {
+      "post": {
+        "operationId": "merchantTermsAccept",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TermsAcceptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TermsAcceptedDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/captain/terms": {
+      "get": {
+        "operationId": "captainTermsGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TermsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/captain/terms/accept": {
+      "post": {
+        "operationId": "captainTermsAccept",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TermsAcceptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TermsAcceptedDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/customer/terms": {
+      "get": {
+        "operationId": "customerTermsGet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TermsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/v1/customer/terms/accept": {
+      "post": {
+        "operationId": "customerTermsAccept",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TermsAcceptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TermsAcceptedDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/v1/admin/content/terms": {
+      "get": {
+        "operationId": "adminTermsAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTermsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/content/terms/{audience}": {
+      "post": {
+        "operationId": "adminTermsPublish",
+        "parameters": [
+          {
+            "name": "audience",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "customer",
+                "captain",
+                "merchant"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminPublishTermsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTermsVersionDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/customer/location": {
       "get": {
         "operationId": "customerProfileLocation",
@@ -3263,581 +4100,6 @@
         },
         "tags": [
           "captain"
-        ]
-      }
-    },
-    "/v1/merchant/contact": {
-      "get": {
-        "operationId": "merchantContactGet",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ContactDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "merchant"
-        ]
-      }
-    },
-    "/v1/captain/contact": {
-      "get": {
-        "operationId": "captainContactGet",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ContactDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "captain"
-        ]
-      }
-    },
-    "/v1/customer/contact": {
-      "get": {
-        "operationId": "customerContactGet",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ContactDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "customer"
-        ]
-      }
-    },
-    "/v1/merchant/content": {
-      "get": {
-        "operationId": "merchantContentGet",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MerchantContentDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "merchant"
-        ]
-      }
-    },
-    "/v1/captain/content": {
-      "get": {
-        "operationId": "captainContentGet",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CaptainContentDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "captain"
-        ]
-      }
-    },
-    "/v1/customer/content": {
-      "get": {
-        "operationId": "customerContentGet",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomerContentDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "customer"
-        ]
-      }
-    },
-    "/v1/admin/content/reasons": {
-      "get": {
-        "operationId": "adminContentLists",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminReasonListsDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin"
-        ]
-      }
-    },
-    "/v1/admin/content/reasons/{list}": {
-      "post": {
-        "operationId": "adminContentAdd",
-        "parameters": [
-          {
-            "name": "list",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "maxLength": 40,
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddReasonDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminReasonDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin"
-        ]
-      }
-    },
-    "/v1/admin/content/reasons/{list}/{code}": {
-      "put": {
-        "operationId": "adminContentUpdate",
-        "parameters": [
-          {
-            "name": "list",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "maxLength": 40,
-              "type": "string"
-            }
-          },
-          {
-            "name": "code",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "maxLength": 40,
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateReasonDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminReasonDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin"
-        ]
-      }
-    },
-    "/v1/admin/content/reasons/{list}/order": {
-      "post": {
-        "operationId": "adminContentReorder",
-        "parameters": [
-          {
-            "name": "list",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "maxLength": 40,
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReorderDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminReasonOrderDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin"
-        ]
-      }
-    },
-    "/v1/admin/content/faqs": {
-      "get": {
-        "operationId": "adminContentFaqs",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminFaqsDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin"
-        ]
-      }
-    },
-    "/v1/admin/content/faqs/{audience}": {
-      "put": {
-        "operationId": "adminContentUpdateFaq",
-        "parameters": [
-          {
-            "name": "audience",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "customer",
-                "captain",
-                "merchant"
-              ]
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AdminFaqDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminFaqDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin"
-        ]
-      }
-    },
-    "/v1/admin/content/texts": {
-      "get": {
-        "operationId": "adminContentTexts",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminTextsDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin"
-        ]
-      }
-    },
-    "/v1/admin/content/work-rules": {
-      "put": {
-        "operationId": "adminContentUpdateWorkRules",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AdminWorkRulesDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminWorkRulesDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin"
-        ]
-      }
-    },
-    "/v1/admin/content/contact": {
-      "put": {
-        "operationId": "adminContentUpdateContact",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AdminUpdateContactDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminContactDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin"
-        ]
-      }
-    },
-    "/v1/admin/content/notifications": {
-      "get": {
-        "operationId": "adminContentNotificationTexts",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminNotificationTextsDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin"
-        ]
-      }
-    },
-    "/v1/admin/content/notifications/{key}": {
-      "put": {
-        "operationId": "adminContentUpdateNotificationText",
-        "parameters": [
-          {
-            "name": "key",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "maxLength": 80,
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AdminUpdateNotificationTextDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminNotificationTextDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin"
         ]
       }
     },
@@ -6866,6 +7128,1618 @@
         ],
         "additionalProperties": false
       },
+      "ContactDto_Output": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string"
+          },
+          "whatsapp": {
+            "type": "string"
+          }
+        },
+        "description": "The support phone and WhatsApp numbers in E.164, when set (AP §9.13).",
+        "additionalProperties": false
+      },
+      "MerchantContentDto_Output": {
+        "type": "object",
+        "properties": {
+          "reasons": {
+            "type": "object",
+            "properties": {
+              "merchant_rejection": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "merchant_problem": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "item_unavailable_note": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "merchant_ticket_type": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "merchant_rejection",
+              "merchant_problem",
+              "item_unavailable_note",
+              "merchant_ticket_type"
+            ],
+            "additionalProperties": false
+          },
+          "faq": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string"
+                },
+                "answer": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "question",
+                "answer"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "reasons",
+          "faq"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainContentDto_Output": {
+        "type": "object",
+        "properties": {
+          "reasons": {
+            "type": "object",
+            "properties": {
+              "captain_cannot_complete": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "captain_away": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "shortfall": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "food_after_failed": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "captain_ticket_type": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "captain_problem": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "captain_cannot_complete",
+              "captain_away",
+              "shortfall",
+              "food_after_failed",
+              "captain_ticket_type",
+              "captain_problem"
+            ],
+            "additionalProperties": false
+          },
+          "faq": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string"
+                },
+                "answer": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "question",
+                "answer"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "workRules": {
+            "type": "string",
+            "description": "CA §11.4, plain text with one rule per line."
+          }
+        },
+        "required": [
+          "reasons",
+          "faq",
+          "workRules"
+        ],
+        "additionalProperties": false
+      },
+      "CustomerContentDto_Output": {
+        "type": "object",
+        "properties": {
+          "reasons": {
+            "type": "object",
+            "properties": {
+              "customer_cancel": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "customer_problem": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "order_note": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "restaurant_rating_low": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "restaurant_rating_mid": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "restaurant_rating_high": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "captain_rating_low": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "captain_rating_mid": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "captain_rating_high": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable: sent back with a choice, kept by the order."
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "optional",
+                        "required"
+                      ],
+                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "label",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "customer_cancel",
+              "customer_problem",
+              "order_note",
+              "restaurant_rating_low",
+              "restaurant_rating_mid",
+              "restaurant_rating_high",
+              "captain_rating_low",
+              "captain_rating_mid",
+              "captain_rating_high"
+            ],
+            "additionalProperties": false,
+            "description": "order_note: «الملاحظات الجاهزة» at checkout; the rating lists by stars (1–2, 3, 4–5)."
+          },
+          "faq": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string"
+                },
+                "answer": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "question",
+                "answer"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "reasons",
+          "faq"
+        ],
+        "additionalProperties": false
+      },
+      "AdminReasonListsDto_Output": {
+        "type": "object",
+        "properties": {
+          "lists": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "list": {
+                  "type": "string",
+                  "enum": [
+                    "merchant_rejection",
+                    "merchant_problem",
+                    "item_unavailable_note",
+                    "merchant_ticket_type",
+                    "captain_cannot_complete",
+                    "captain_away",
+                    "shortfall",
+                    "food_after_failed",
+                    "captain_ticket_type",
+                    "captain_problem",
+                    "customer_cancel",
+                    "customer_problem",
+                    "order_note",
+                    "restaurant_rating_low",
+                    "restaurant_rating_mid",
+                    "restaurant_rating_high",
+                    "captain_rating_low",
+                    "captain_rating_mid",
+                    "captain_rating_high",
+                    "ops_cancel",
+                    "reassignment",
+                    "captain_suspension",
+                    "customer_block",
+                    "emergency_stop",
+                    "failed_outcome",
+                    "system_cancellation"
+                  ]
+                },
+                "apps": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "merchant",
+                      "captain",
+                      "customer"
+                    ]
+                  }
+                },
+                "customerText": {
+                  "type": "boolean",
+                  "description": "Its reasons may carry «نص للزبون»."
+                },
+                "closed": {
+                  "type": "boolean",
+                  "description": "No reason can be added."
+                },
+                "reasons": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "label": {
+                        "type": "string"
+                      },
+                      "customerText": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "note": {
+                        "type": "string",
+                        "enum": [
+                          "none",
+                          "optional",
+                          "required"
+                        ],
+                        "description": "Whether the choice takes a note: none, optional, required."
+                      },
+                      "fixed": {
+                        "type": "boolean",
+                        "description": "The code acts on it: it cannot be removed."
+                      },
+                      "active": {
+                        "type": "boolean",
+                        "description": "False once removed: hidden from new choices, kept on orders."
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "label",
+                      "customerText",
+                      "note",
+                      "fixed",
+                      "active"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "list",
+                "apps",
+                "customerText",
+                "closed",
+                "reasons"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "lists"
+        ],
+        "additionalProperties": false
+      },
+      "AddReasonDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "customerText": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Only in the lists with customer texts; null shows the generic apology."
+          },
+          "note": {
+            "type": "string",
+            "enum": [
+              "none",
+              "optional",
+              "required"
+            ],
+            "description": "none, optional or required («أخرى» with its text); none in a closed list."
+          }
+        },
+        "required": [
+          "label",
+          "customerText",
+          "note"
+        ]
+      },
+      "AdminReasonDto_Output": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "customerText": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "enum": [
+              "none",
+              "optional",
+              "required"
+            ],
+            "description": "Whether the choice takes a note: none, optional, required."
+          },
+          "fixed": {
+            "type": "boolean",
+            "description": "The code acts on it: it cannot be removed."
+          },
+          "active": {
+            "type": "boolean",
+            "description": "False once removed: hidden from new choices, kept on orders."
+          }
+        },
+        "required": [
+          "code",
+          "label",
+          "customerText",
+          "note",
+          "fixed",
+          "active"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateReasonDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "customerText": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Only in the lists with customer texts; null shows the generic apology."
+          },
+          "note": {
+            "type": "string",
+            "enum": [
+              "none",
+              "optional",
+              "required"
+            ],
+            "description": "none, optional or required («أخرى» with its text); none in a closed list."
+          },
+          "active": {
+            "type": "boolean",
+            "description": "False removes it from the list."
+          }
+        },
+        "required": [
+          "label",
+          "customerText",
+          "note",
+          "active"
+        ]
+      },
+      "ReorderDto": {
+        "type": "object",
+        "properties": {
+          "codes": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 40
+            },
+            "description": "Every code of the list."
+          }
+        },
+        "required": [
+          "codes"
+        ]
+      },
+      "AdminReasonOrderDto_Output": {
+        "type": "object",
+        "properties": {
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "customerText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "note": {
+                  "type": "string",
+                  "enum": [
+                    "none",
+                    "optional",
+                    "required"
+                  ],
+                  "description": "Whether the choice takes a note: none, optional, required."
+                },
+                "fixed": {
+                  "type": "boolean",
+                  "description": "The code acts on it: it cannot be removed."
+                },
+                "active": {
+                  "type": "boolean",
+                  "description": "False once removed: hidden from new choices, kept on orders."
+                }
+              },
+              "required": [
+                "code",
+                "label",
+                "customerText",
+                "note",
+                "fixed",
+                "active"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "reasons"
+        ],
+        "additionalProperties": false
+      },
+      "AdminFaqsDto_Output": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "answer": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                }
+              },
+              "required": [
+                "question",
+                "answer"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "captain": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "answer": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                }
+              },
+              "required": [
+                "question",
+                "answer"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "merchant": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "answer": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                }
+              },
+              "required": [
+                "question",
+                "answer"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "customer",
+          "captain",
+          "merchant"
+        ],
+        "additionalProperties": false
+      },
+      "AdminFaqDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "answer": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                }
+              },
+              "required": [
+                "question",
+                "answer"
+              ]
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "AdminFaqDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "answer": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                }
+              },
+              "required": [
+                "question",
+                "answer"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "AdminTextsDto_Output": {
+        "type": "object",
+        "properties": {
+          "workRules": {
+            "type": "string",
+            "description": "CA §11.4, plain text with one rule per line."
+          },
+          "contact": {
+            "type": "object",
+            "properties": {
+              "phone": {
+                "type": "string"
+              },
+              "whatsapp": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "description": "The support phone and WhatsApp numbers in E.164, when set (AP §9.13)."
+          }
+        },
+        "required": [
+          "workRules",
+          "contact"
+        ],
+        "additionalProperties": false
+      },
+      "AdminWorkRulesDto": {
+        "type": "object",
+        "properties": {
+          "workRules": {
+            "type": "string",
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "workRules"
+        ]
+      },
+      "AdminWorkRulesDto_Output": {
+        "type": "object",
+        "properties": {
+          "workRules": {
+            "type": "string",
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "workRules"
+        ],
+        "additionalProperties": false
+      },
+      "AdminUpdateContactDto": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "description": "E.164, or null to hide «اتصال بالدعم».",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "whatsapp": {
+            "description": "E.164, or null to hide «واتساب الدعم».",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "phone",
+          "whatsapp"
+        ]
+      },
+      "AdminContactDto_Output": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string"
+          },
+          "whatsapp": {
+            "type": "string"
+          }
+        },
+        "description": "The support phone and WhatsApp numbers in E.164, when set (AP §9.13).",
+        "additionalProperties": false
+      },
+      "AdminNotificationTextsDto_Output": {
+        "type": "object",
+        "properties": {
+          "templates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "description": "The template, such as customer.accepted."
+                },
+                "audience": {
+                  "type": "string",
+                  "enum": [
+                    "customer",
+                    "merchant",
+                    "captain"
+                  ]
+                },
+                "row": {
+                  "type": "string",
+                  "description": "The spec row it comes from, such as «CU §14 #1»."
+                },
+                "variables": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "The placeholders it takes, without braces."
+                },
+                "level": {
+                  "type": "string",
+                  "enum": [
+                    "default",
+                    "ring",
+                    "chime",
+                    "offer",
+                    "cancellation",
+                    "silent"
+                  ],
+                  "description": "The app's sound level; not editable."
+                },
+                "priority": {
+                  "type": "string",
+                  "enum": [
+                    "high",
+                    "normal"
+                  ],
+                  "description": "Not editable."
+                },
+                "text": {
+                  "type": "string",
+                  "description": "The default text."
+                },
+                "current": {
+                  "type": "string",
+                  "description": "The text in use: the admin's edit, else the default."
+                }
+              },
+              "required": [
+                "key",
+                "audience",
+                "row",
+                "variables",
+                "level",
+                "priority",
+                "text",
+                "current"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "templates"
+        ],
+        "additionalProperties": false
+      },
+      "AdminUpdateNotificationTextDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300,
+            "description": "Only the placeholders the template takes, as {name}."
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "AdminNotificationTextDto_Output": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "The template, such as customer.accepted."
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "customer",
+              "merchant",
+              "captain"
+            ]
+          },
+          "row": {
+            "type": "string",
+            "description": "The spec row it comes from, such as «CU §14 #1»."
+          },
+          "variables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The placeholders it takes, without braces."
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "default",
+              "ring",
+              "chime",
+              "offer",
+              "cancellation",
+              "silent"
+            ],
+            "description": "The app's sound level; not editable."
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "high",
+              "normal"
+            ],
+            "description": "Not editable."
+          },
+          "text": {
+            "type": "string",
+            "description": "The default text."
+          },
+          "current": {
+            "type": "string",
+            "description": "The text in use: the admin's edit, else the default."
+          }
+        },
+        "required": [
+          "key",
+          "audience",
+          "row",
+          "variables",
+          "level",
+          "priority",
+          "text",
+          "current"
+        ],
+        "additionalProperties": false
+      },
+      "TermsDto_Output": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "description": "Sent back with «أوافق» (CU §15, CA §15)."
+          },
+          "body": {
+            "type": "string",
+            "description": "Plain text; a line per paragraph."
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "pending": {
+            "type": "boolean",
+            "description": "The signed-in account has not accepted this version; false for a guest and for a cashier (RA S13)."
+          }
+        },
+        "required": [
+          "version",
+          "body",
+          "publishedAt",
+          "pending"
+        ],
+        "additionalProperties": false
+      },
+      "TermsAcceptDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "TermsAcceptedDto_Output": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "accepted"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "AdminTermsDto_Output": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991,
+                "description": "Sent back with «أوافق» (CU §15, CA §15)."
+              },
+              "body": {
+                "type": "string",
+                "description": "Plain text; a line per paragraph."
+              },
+              "publishedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              }
+            },
+            "required": [
+              "version",
+              "body",
+              "publishedAt"
+            ],
+            "additionalProperties": false
+          },
+          "captain": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991,
+                "description": "Sent back with «أوافق» (CU §15, CA §15)."
+              },
+              "body": {
+                "type": "string",
+                "description": "Plain text; a line per paragraph."
+              },
+              "publishedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              }
+            },
+            "required": [
+              "version",
+              "body",
+              "publishedAt"
+            ],
+            "additionalProperties": false
+          },
+          "merchant": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991,
+                "description": "Sent back with «أوافق» (CU §15, CA §15)."
+              },
+              "body": {
+                "type": "string",
+                "description": "Plain text; a line per paragraph."
+              },
+              "publishedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              }
+            },
+            "required": [
+              "version",
+              "body",
+              "publishedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "customer",
+          "captain",
+          "merchant"
+        ],
+        "additionalProperties": false
+      },
+      "AdminPublishTermsDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "AdminTermsVersionDto_Output": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "description": "Sent back with «أوافق» (CU §15, CA §15)."
+          },
+          "body": {
+            "type": "string",
+            "description": "Plain text; a line per paragraph."
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "version",
+          "body",
+          "publishedAt"
+        ],
+        "additionalProperties": false
+      },
       "CustomerLocationDto_Output": {
         "type": "object",
         "properties": {
@@ -8907,6 +10781,7 @@
                     "one_order_at_a_time",
                     "active_order_limit",
                     "no_captain_nearby",
+                    "terms_pending",
                     "item_not_found",
                     "item_unavailable",
                     "option_not_found",
@@ -15500,1433 +17375,6 @@
           "lines",
           "location"
         ]
-      },
-      "ContactDto_Output": {
-        "type": "object",
-        "properties": {
-          "phone": {
-            "type": "string"
-          },
-          "whatsapp": {
-            "type": "string"
-          }
-        },
-        "description": "The support phone and WhatsApp numbers in E.164, when set (AP §9.13).",
-        "additionalProperties": false
-      },
-      "MerchantContentDto_Output": {
-        "type": "object",
-        "properties": {
-          "reasons": {
-            "type": "object",
-            "properties": {
-              "merchant_rejection": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "merchant_problem": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "item_unavailable_note": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "merchant_ticket_type": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            },
-            "required": [
-              "merchant_rejection",
-              "merchant_problem",
-              "item_unavailable_note",
-              "merchant_ticket_type"
-            ],
-            "additionalProperties": false
-          },
-          "faq": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "question": {
-                  "type": "string"
-                },
-                "answer": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "question",
-                "answer"
-              ],
-              "additionalProperties": false
-            }
-          }
-        },
-        "required": [
-          "reasons",
-          "faq"
-        ],
-        "additionalProperties": false
-      },
-      "CaptainContentDto_Output": {
-        "type": "object",
-        "properties": {
-          "reasons": {
-            "type": "object",
-            "properties": {
-              "captain_cannot_complete": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "captain_away": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "shortfall": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "food_after_failed": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "captain_ticket_type": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "captain_problem": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            },
-            "required": [
-              "captain_cannot_complete",
-              "captain_away",
-              "shortfall",
-              "food_after_failed",
-              "captain_ticket_type",
-              "captain_problem"
-            ],
-            "additionalProperties": false
-          },
-          "faq": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "question": {
-                  "type": "string"
-                },
-                "answer": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "question",
-                "answer"
-              ],
-              "additionalProperties": false
-            }
-          },
-          "workRules": {
-            "type": "string",
-            "description": "CA §11.4, plain text with one rule per line."
-          }
-        },
-        "required": [
-          "reasons",
-          "faq",
-          "workRules"
-        ],
-        "additionalProperties": false
-      },
-      "CustomerContentDto_Output": {
-        "type": "object",
-        "properties": {
-          "reasons": {
-            "type": "object",
-            "properties": {
-              "customer_cancel": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "customer_problem": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "order_note": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "restaurant_rating_low": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "restaurant_rating_mid": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "restaurant_rating_high": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "captain_rating_low": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "captain_rating_mid": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "captain_rating_high": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Stable: sent back with a choice, kept by the order."
-                    },
-                    "label": {
-                      "type": "string"
-                    },
-                    "note": {
-                      "type": "string",
-                      "enum": [
-                        "none",
-                        "optional",
-                        "required"
-                      ],
-                      "description": "Whether the choice takes a note: none, optional or required («أخرى»)."
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "label",
-                    "note"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            },
-            "required": [
-              "customer_cancel",
-              "customer_problem",
-              "order_note",
-              "restaurant_rating_low",
-              "restaurant_rating_mid",
-              "restaurant_rating_high",
-              "captain_rating_low",
-              "captain_rating_mid",
-              "captain_rating_high"
-            ],
-            "additionalProperties": false,
-            "description": "order_note: «الملاحظات الجاهزة» at checkout; the rating lists by stars (1–2, 3, 4–5)."
-          },
-          "faq": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "question": {
-                  "type": "string"
-                },
-                "answer": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "question",
-                "answer"
-              ],
-              "additionalProperties": false
-            }
-          }
-        },
-        "required": [
-          "reasons",
-          "faq"
-        ],
-        "additionalProperties": false
-      },
-      "AdminReasonListsDto_Output": {
-        "type": "object",
-        "properties": {
-          "lists": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "list": {
-                  "type": "string",
-                  "enum": [
-                    "merchant_rejection",
-                    "merchant_problem",
-                    "item_unavailable_note",
-                    "merchant_ticket_type",
-                    "captain_cannot_complete",
-                    "captain_away",
-                    "shortfall",
-                    "food_after_failed",
-                    "captain_ticket_type",
-                    "captain_problem",
-                    "customer_cancel",
-                    "customer_problem",
-                    "order_note",
-                    "restaurant_rating_low",
-                    "restaurant_rating_mid",
-                    "restaurant_rating_high",
-                    "captain_rating_low",
-                    "captain_rating_mid",
-                    "captain_rating_high",
-                    "ops_cancel",
-                    "reassignment",
-                    "captain_suspension",
-                    "customer_block",
-                    "emergency_stop",
-                    "failed_outcome",
-                    "system_cancellation"
-                  ]
-                },
-                "apps": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "enum": [
-                      "merchant",
-                      "captain",
-                      "customer"
-                    ]
-                  }
-                },
-                "customerText": {
-                  "type": "boolean",
-                  "description": "Its reasons may carry «نص للزبون»."
-                },
-                "closed": {
-                  "type": "boolean",
-                  "description": "No reason can be added."
-                },
-                "reasons": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "code": {
-                        "type": "string"
-                      },
-                      "label": {
-                        "type": "string"
-                      },
-                      "customerText": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      },
-                      "note": {
-                        "type": "string",
-                        "enum": [
-                          "none",
-                          "optional",
-                          "required"
-                        ],
-                        "description": "Whether the choice takes a note: none, optional, required."
-                      },
-                      "fixed": {
-                        "type": "boolean",
-                        "description": "The code acts on it: it cannot be removed."
-                      },
-                      "active": {
-                        "type": "boolean",
-                        "description": "False once removed: hidden from new choices, kept on orders."
-                      }
-                    },
-                    "required": [
-                      "code",
-                      "label",
-                      "customerText",
-                      "note",
-                      "fixed",
-                      "active"
-                    ],
-                    "additionalProperties": false
-                  }
-                }
-              },
-              "required": [
-                "list",
-                "apps",
-                "customerText",
-                "closed",
-                "reasons"
-              ],
-              "additionalProperties": false
-            }
-          }
-        },
-        "required": [
-          "lists"
-        ],
-        "additionalProperties": false
-      },
-      "AddReasonDto": {
-        "type": "object",
-        "properties": {
-          "label": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 100
-          },
-          "customerText": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 300
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Only in the lists with customer texts; null shows the generic apology."
-          },
-          "note": {
-            "type": "string",
-            "enum": [
-              "none",
-              "optional",
-              "required"
-            ],
-            "description": "none, optional or required («أخرى» with its text); none in a closed list."
-          }
-        },
-        "required": [
-          "label",
-          "customerText",
-          "note"
-        ]
-      },
-      "AdminReasonDto_Output": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "label": {
-            "type": "string"
-          },
-          "customerText": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "note": {
-            "type": "string",
-            "enum": [
-              "none",
-              "optional",
-              "required"
-            ],
-            "description": "Whether the choice takes a note: none, optional, required."
-          },
-          "fixed": {
-            "type": "boolean",
-            "description": "The code acts on it: it cannot be removed."
-          },
-          "active": {
-            "type": "boolean",
-            "description": "False once removed: hidden from new choices, kept on orders."
-          }
-        },
-        "required": [
-          "code",
-          "label",
-          "customerText",
-          "note",
-          "fixed",
-          "active"
-        ],
-        "additionalProperties": false
-      },
-      "UpdateReasonDto": {
-        "type": "object",
-        "properties": {
-          "label": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 100
-          },
-          "customerText": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 300
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Only in the lists with customer texts; null shows the generic apology."
-          },
-          "note": {
-            "type": "string",
-            "enum": [
-              "none",
-              "optional",
-              "required"
-            ],
-            "description": "none, optional or required («أخرى» with its text); none in a closed list."
-          },
-          "active": {
-            "type": "boolean",
-            "description": "False removes it from the list."
-          }
-        },
-        "required": [
-          "label",
-          "customerText",
-          "note",
-          "active"
-        ]
-      },
-      "ReorderDto": {
-        "type": "object",
-        "properties": {
-          "codes": {
-            "maxItems": 100,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "maxLength": 40
-            },
-            "description": "Every code of the list."
-          }
-        },
-        "required": [
-          "codes"
-        ]
-      },
-      "AdminReasonOrderDto_Output": {
-        "type": "object",
-        "properties": {
-          "reasons": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "code": {
-                  "type": "string"
-                },
-                "label": {
-                  "type": "string"
-                },
-                "customerText": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                },
-                "note": {
-                  "type": "string",
-                  "enum": [
-                    "none",
-                    "optional",
-                    "required"
-                  ],
-                  "description": "Whether the choice takes a note: none, optional, required."
-                },
-                "fixed": {
-                  "type": "boolean",
-                  "description": "The code acts on it: it cannot be removed."
-                },
-                "active": {
-                  "type": "boolean",
-                  "description": "False once removed: hidden from new choices, kept on orders."
-                }
-              },
-              "required": [
-                "code",
-                "label",
-                "customerText",
-                "note",
-                "fixed",
-                "active"
-              ],
-              "additionalProperties": false
-            }
-          }
-        },
-        "required": [
-          "reasons"
-        ],
-        "additionalProperties": false
-      },
-      "AdminFaqsDto_Output": {
-        "type": "object",
-        "properties": {
-          "customer": {
-            "type": "array",
-            "maxItems": 50,
-            "items": {
-              "type": "object",
-              "properties": {
-                "question": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 200
-                },
-                "answer": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 2000
-                }
-              },
-              "required": [
-                "question",
-                "answer"
-              ],
-              "additionalProperties": false
-            }
-          },
-          "captain": {
-            "type": "array",
-            "maxItems": 50,
-            "items": {
-              "type": "object",
-              "properties": {
-                "question": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 200
-                },
-                "answer": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 2000
-                }
-              },
-              "required": [
-                "question",
-                "answer"
-              ],
-              "additionalProperties": false
-            }
-          },
-          "merchant": {
-            "type": "array",
-            "maxItems": 50,
-            "items": {
-              "type": "object",
-              "properties": {
-                "question": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 200
-                },
-                "answer": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 2000
-                }
-              },
-              "required": [
-                "question",
-                "answer"
-              ],
-              "additionalProperties": false
-            }
-          }
-        },
-        "required": [
-          "customer",
-          "captain",
-          "merchant"
-        ],
-        "additionalProperties": false
-      },
-      "AdminFaqDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "maxItems": 50,
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "question": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 200
-                },
-                "answer": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 2000
-                }
-              },
-              "required": [
-                "question",
-                "answer"
-              ]
-            }
-          }
-        },
-        "required": [
-          "items"
-        ]
-      },
-      "AdminFaqDto_Output": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "maxItems": 50,
-            "items": {
-              "type": "object",
-              "properties": {
-                "question": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 200
-                },
-                "answer": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 2000
-                }
-              },
-              "required": [
-                "question",
-                "answer"
-              ],
-              "additionalProperties": false
-            }
-          }
-        },
-        "required": [
-          "items"
-        ],
-        "additionalProperties": false
-      },
-      "AdminTextsDto_Output": {
-        "type": "object",
-        "properties": {
-          "workRules": {
-            "type": "string",
-            "description": "CA §11.4, plain text with one rule per line."
-          },
-          "contact": {
-            "type": "object",
-            "properties": {
-              "phone": {
-                "type": "string"
-              },
-              "whatsapp": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false,
-            "description": "The support phone and WhatsApp numbers in E.164, when set (AP §9.13)."
-          }
-        },
-        "required": [
-          "workRules",
-          "contact"
-        ],
-        "additionalProperties": false
-      },
-      "AdminWorkRulesDto": {
-        "type": "object",
-        "properties": {
-          "workRules": {
-            "type": "string",
-            "maxLength": 10000
-          }
-        },
-        "required": [
-          "workRules"
-        ]
-      },
-      "AdminWorkRulesDto_Output": {
-        "type": "object",
-        "properties": {
-          "workRules": {
-            "type": "string",
-            "maxLength": 10000
-          }
-        },
-        "required": [
-          "workRules"
-        ],
-        "additionalProperties": false
-      },
-      "AdminUpdateContactDto": {
-        "type": "object",
-        "properties": {
-          "phone": {
-            "description": "E.164, or null to hide «اتصال بالدعم».",
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "whatsapp": {
-            "description": "E.164, or null to hide «واتساب الدعم».",
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "phone",
-          "whatsapp"
-        ]
-      },
-      "AdminContactDto_Output": {
-        "type": "object",
-        "properties": {
-          "phone": {
-            "type": "string"
-          },
-          "whatsapp": {
-            "type": "string"
-          }
-        },
-        "description": "The support phone and WhatsApp numbers in E.164, when set (AP §9.13).",
-        "additionalProperties": false
-      },
-      "AdminNotificationTextsDto_Output": {
-        "type": "object",
-        "properties": {
-          "templates": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "key": {
-                  "type": "string",
-                  "description": "The template, such as customer.accepted."
-                },
-                "audience": {
-                  "type": "string",
-                  "enum": [
-                    "customer",
-                    "merchant",
-                    "captain"
-                  ]
-                },
-                "row": {
-                  "type": "string",
-                  "description": "The spec row it comes from, such as «CU §14 #1»."
-                },
-                "variables": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
-                  "description": "The placeholders it takes, without braces."
-                },
-                "level": {
-                  "type": "string",
-                  "enum": [
-                    "default",
-                    "ring",
-                    "chime",
-                    "offer",
-                    "cancellation",
-                    "silent"
-                  ],
-                  "description": "The app's sound level; not editable."
-                },
-                "priority": {
-                  "type": "string",
-                  "enum": [
-                    "high",
-                    "normal"
-                  ],
-                  "description": "Not editable."
-                },
-                "text": {
-                  "type": "string",
-                  "description": "The default text."
-                },
-                "current": {
-                  "type": "string",
-                  "description": "The text in use: the admin's edit, else the default."
-                }
-              },
-              "required": [
-                "key",
-                "audience",
-                "row",
-                "variables",
-                "level",
-                "priority",
-                "text",
-                "current"
-              ],
-              "additionalProperties": false
-            }
-          }
-        },
-        "required": [
-          "templates"
-        ],
-        "additionalProperties": false
-      },
-      "AdminUpdateNotificationTextDto": {
-        "type": "object",
-        "properties": {
-          "text": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 300,
-            "description": "Only the placeholders the template takes, as {name}."
-          }
-        },
-        "required": [
-          "text"
-        ]
-      },
-      "AdminNotificationTextDto_Output": {
-        "type": "object",
-        "properties": {
-          "key": {
-            "type": "string",
-            "description": "The template, such as customer.accepted."
-          },
-          "audience": {
-            "type": "string",
-            "enum": [
-              "customer",
-              "merchant",
-              "captain"
-            ]
-          },
-          "row": {
-            "type": "string",
-            "description": "The spec row it comes from, such as «CU §14 #1»."
-          },
-          "variables": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "The placeholders it takes, without braces."
-          },
-          "level": {
-            "type": "string",
-            "enum": [
-              "default",
-              "ring",
-              "chime",
-              "offer",
-              "cancellation",
-              "silent"
-            ],
-            "description": "The app's sound level; not editable."
-          },
-          "priority": {
-            "type": "string",
-            "enum": [
-              "high",
-              "normal"
-            ],
-            "description": "Not editable."
-          },
-          "text": {
-            "type": "string",
-            "description": "The default text."
-          },
-          "current": {
-            "type": "string",
-            "description": "The text in use: the admin's edit, else the default."
-          }
-        },
-        "required": [
-          "key",
-          "audience",
-          "row",
-          "variables",
-          "level",
-          "priority",
-          "text",
-          "current"
-        ],
-        "additionalProperties": false
       },
       "RealtimeTokenDto_Output": {
         "type": "object",

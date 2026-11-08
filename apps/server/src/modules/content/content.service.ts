@@ -74,7 +74,11 @@ export type ContentRefusal =
   | 'invalid_value'
   // «نصوص الإشعارات»: no such template, or a placeholder it does not take.
   | 'unknown_template'
-  | 'unknown_variable';
+  | 'unknown_variable'
+  // «الشروط والخصوصية»: a newer version was published, or the text is the
+  // one in force.
+  | 'terms_outdated'
+  | 'terms_unchanged';
 
 export class ContentRefusedError extends Error {
   override readonly name = 'ContentRefusedError';

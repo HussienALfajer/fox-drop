@@ -148,7 +148,7 @@ afterAll(async () => {
 });
 
 // A new customer, signed in: the headers of its calls.
-async function signedIn(): Promise<Record<string, string>> {
+async function signedIn({ acceptTerms = true } = {}): Promise<Record<string, string>> {
   const phone = `+9639${randomInt(100_000_000).toString().padStart(8, '0')}`;
   const deviceId = randomUUID();
   await app.inject({ method: 'POST', url: '/v1/customer/auth/code', payload: { phone, deviceId } });
@@ -158,7 +158,18 @@ async function signedIn(): Promise<Record<string, string>> {
     url: '/v1/customer/auth/sign-in',
     payload: { phone, deviceId, code },
   });
-  return { authorization: `Bearer ${answer.json().accessToken}` };
+  const headers = { authorization: `Bearer ${answer.json().accessToken}` };
+  // CU §4.7: a customer orders once the terms in force (the seeded version 1)
+  // are accepted.
+  if (acceptTerms) {
+    await app.inject({
+      method: 'POST',
+      url: '/v1/customer/terms/accept',
+      headers,
+      payload: { version: 1 },
+    });
+  }
+  return headers;
 }
 
 const unsaved = {
@@ -390,6 +401,26 @@ describe('the active-order limits (D23, RA §7.4)', () => {
     expect((await quoteOf()).problems).toEqual([]);
     await end(first.json().order.id);
     expect((await place(headers)).statusCode).toBe(201);
+  });
+
+  it('waits for the customer terms in force (CU §4.7)', async () => {
+    const headers = await signedIn({ acceptTerms: false });
+    const blocked = await place(headers);
+    expect(blocked.statusCode).toBe(409);
+    expect(blocked.json().quote.problems).toContainEqual(
+      expect.objectContaining({ code: 'terms_pending' }),
+    );
+    // A guest browses and sees the quote without it.
+    expect((await quoteOf()).problems).toEqual([]);
+    await app.inject({
+      method: 'POST',
+      url: '/v1/customer/terms/accept',
+      headers,
+      payload: { version: 1 },
+    });
+    const placed = await place(headers);
+    expect(placed.statusCode).toBe(201);
+    await end(placed.json().order.id);
   });
 
   it('never places two orders at once for a new account', async () => {

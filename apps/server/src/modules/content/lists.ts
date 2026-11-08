@@ -81,3 +81,8 @@ export const FAQ_MAX_ITEMS = 50;
 export const QUESTION_MAX = 200;
 export const ANSWER_MAX = 2000;
 export const WORK_RULES_MAX = 10_000;
+
+// AP §9.13 «الشروط والخصوصية»: one document per audience.
+export const termsAudiences = ['customer', 'captain', 'merchant'] as const;
+export type TermsAudience = (typeof termsAudiences)[number];
+export const TERMS_MAX = 20_000;

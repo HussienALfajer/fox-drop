@@ -132,6 +132,14 @@ async function placed(): Promise<{ id: string; placedAt: string }> {
     url: '/v1/customer/auth/sign-in',
     payload: { phone, deviceId, code },
   });
+  // CU §4.7: a customer orders once the terms in force (the seeded version 1)
+  // are accepted.
+  await app.inject({
+    method: 'POST',
+    url: '/v1/customer/terms/accept',
+    headers: { authorization: `Bearer ${signIn.json().accessToken}` },
+    payload: { version: 1 },
+  });
   const lines = [{ itemId: item, optionIds: [], quantity: 1, note: null, knownUnitPrice: '12000' }];
   const quote = await app.inject({
     method: 'POST',

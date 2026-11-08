@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
+import { ContentModule } from '../content/index.js';
 import { GeoModule } from '../geo/index.js';
 import { IdentityModule } from '../identity/index.js';
 import { MerchantsModule } from '../merchants/index.js';
@@ -13,7 +14,14 @@ import { CustomersService } from './customers.service.js';
 // saved addresses, and their browsing of the restaurants that deliver to
 // them. Other modules read them through CustomersService only.
 @Module({
-  imports: [DatabaseModule, SettingsModule, GeoModule, MerchantsModule, IdentityModule],
+  imports: [
+    DatabaseModule,
+    SettingsModule,
+    GeoModule,
+    MerchantsModule,
+    IdentityModule,
+    ContentModule,
+  ],
   controllers: [CustomerProfileController, CustomerBrowsingController],
   providers: [CustomersService, BrowsingService],
   exports: [CustomersService],

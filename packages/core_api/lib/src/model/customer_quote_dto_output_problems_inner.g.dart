@@ -51,6 +51,9 @@ const CustomerQuoteDtoOutputProblemsInnerCodeEnum
 _$customerQuoteDtoOutputProblemsInnerCodeEnum_noCaptainNearby =
     const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('noCaptainNearby');
 const CustomerQuoteDtoOutputProblemsInnerCodeEnum
+_$customerQuoteDtoOutputProblemsInnerCodeEnum_termsPending =
+    const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('termsPending');
+const CustomerQuoteDtoOutputProblemsInnerCodeEnum
 _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound =
     const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('itemNotFound');
 const CustomerQuoteDtoOutputProblemsInnerCodeEnum
@@ -105,6 +108,8 @@ _$customerQuoteDtoOutputProblemsInnerCodeEnumValueOf(String name) {
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_activeOrderLimit;
     case 'noCaptainNearby':
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_noCaptainNearby;
+    case 'termsPending':
+      return _$customerQuoteDtoOutputProblemsInnerCodeEnum_termsPending;
     case 'itemNotFound':
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound;
     case 'itemUnavailable':
@@ -142,6 +147,7 @@ _$customerQuoteDtoOutputProblemsInnerCodeEnumValues =
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_oneOrderAtATime,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_activeOrderLimit,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_noCaptainNearby,
+        _$customerQuoteDtoOutputProblemsInnerCodeEnum_termsPending,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemUnavailable,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_optionNotFound,
@@ -174,6 +180,7 @@ class _$CustomerQuoteDtoOutputProblemsInnerCodeEnumSerializer
     'oneOrderAtATime': 'one_order_at_a_time',
     'activeOrderLimit': 'active_order_limit',
     'noCaptainNearby': 'no_captain_nearby',
+    'termsPending': 'terms_pending',
     'itemNotFound': 'item_not_found',
     'itemUnavailable': 'item_unavailable',
     'optionNotFound': 'option_not_found',
@@ -197,6 +204,7 @@ class _$CustomerQuoteDtoOutputProblemsInnerCodeEnumSerializer
     'one_order_at_a_time': 'oneOrderAtATime',
     'active_order_limit': 'activeOrderLimit',
     'no_captain_nearby': 'noCaptainNearby',
+    'terms_pending': 'termsPending',
     'item_not_found': 'itemNotFound',
     'item_unavailable': 'itemUnavailable',
     'option_not_found': 'optionNotFound',

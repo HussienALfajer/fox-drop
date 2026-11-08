@@ -58,8 +58,9 @@ beforeEach(async () => {
   await valkey.flushall();
 });
 
-// An activated captain, signed in on a new device; the headers of its calls.
-async function signedIn() {
+// An activated captain, signed in on a new device, who accepted the terms in
+// force (K7) unless told not to; the headers of its calls.
+async function signedIn({ acceptTerms = true } = {}) {
   const captainId = await captains.createCaptain(
     azaz,
     {
@@ -79,7 +80,16 @@ async function signedIn() {
     url: '/v1/captain/auth/sign-in',
     payload: { phone, deviceId, code },
   });
-  return { captainId, headers: { authorization: `Bearer ${answer.json().accessToken}` } };
+  const headers = { authorization: `Bearer ${answer.json().accessToken}` };
+  if (acceptTerms) {
+    await app.inject({
+      method: 'POST',
+      url: '/v1/captain/terms/accept',
+      headers,
+      payload: { version: 1 },
+    });
+  }
+  return { captainId, headers };
 }
 
 type Headers = Record<string, string>;
@@ -127,6 +137,15 @@ describe('the availability routes (CA §7)', () => {
     });
   });
 
+  it('waits for the terms in force before going online (K7)', async () => {
+    const { headers } = await signedIn({ acceptTerms: false });
+    const refused = await goOnline(headers);
+    expect(refused.statusCode).toBe(409);
+    expect(refused.json()).toMatchObject({ blocks: [{ kind: 'terms_not_accepted' }] });
+    await call(headers, 'POST', '/v1/captain/terms/accept', { version: 1 });
+    expect((await goOnline(headers)).statusCode).toBe(200);
+  });
+
   it('refuses going online with 409 and every block', async () => {
     const { captainId, headers } = await signedIn();
     await captains.setStatus(captainId, 'suspended', { ...change, reason: 'تأخر' }, new Date());
@@ -168,7 +187,7 @@ describe('the availability routes (CA §7)', () => {
       [
         'POST',
         '/v1/captain/availability/online',
-        { appVersion: '1.0.0', simulatedLocation: false },
+        { appVersion: '1.0.0', simulatedLocation: false, termsPending: false },
       ],
       ['POST', '/v1/captain/availability/offline'],
       ['POST', '/v1/captain/location', { points: [point(new Date())] }],

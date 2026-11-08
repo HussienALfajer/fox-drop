@@ -157,6 +157,16 @@ async function signedIn(
     payload: { phone, deviceId, code },
   });
   expect(answer.statusCode).toBe(200);
+  // A customer orders (CU §4.7) and a captain goes online (K7) once the terms
+  // in force (the seeded version 1) are accepted.
+  if (party !== 'merchant') {
+    await app.inject({
+      method: 'POST',
+      url: `/v1/${party}/terms/accept`,
+      headers: { authorization: `Bearer ${answer.json().accessToken}` },
+      payload: { version: 1 },
+    });
+  }
   const headers = { authorization: `Bearer ${answer.json().accessToken}` };
   if (party === 'merchant') {
     const named = await app.inject({
@@ -257,7 +267,7 @@ async function onlineAt(point: Point): Promise<string> {
     change,
   );
   const now = new Date();
-  await captains.goOnline(id, { appVersion: '1.0.0', simulatedLocation: false }, now);
+  await captains.goOnline(id, { appVersion: '1.0.0', simulatedLocation: false, termsPending: false }, now);
   await captains.recordLocations(
     id,
     [{ ...point, accuracyMetres: 8, recordedAt: now, simulated: false }],

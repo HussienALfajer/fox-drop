@@ -1,11 +1,12 @@
 import { sql } from 'drizzle-orm';
-import { noteModes } from './lists.js';
+import { noteModes, termsAudiences } from './lists.js';
 import {
   boolean,
   check,
   integer,
   jsonb,
   pgSchema,
+  primaryKey,
   text,
   timestamp,
   unique,
@@ -62,3 +63,49 @@ export const texts = content.table('texts', {
   value: jsonb('value').notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+// AP §9.13 «الشروط والخصوصية»: one document per audience, versioned. A
+// version is never changed: publishing writes the next one, which every
+// account of the audience accepts again (append-only: no UPDATE for the
+// application role). The first version of each is a draft written from the
+// specs (owner decision 2026-11-08); it has no publisher.
+export const termsVersions = content.table(
+  'terms_versions',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    audience: text('audience', { enum: termsAudiences }).notNull(),
+    version: integer('version').notNull(),
+    body: text('body').notNull(),
+    // The admin account; null for the seeded draft.
+    publishedBy: uuid('published_by'),
+    publishedAt: timestamp('published_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique('terms_versions_audience_version').on(table.audience, table.version),
+    check('terms_versions_audience', sql`${table.audience} IN ('customer', 'captain', 'merchant')`),
+    check('terms_versions_version', sql`${table.version} >= 1`),
+    check('terms_versions_body', sql`char_length(${table.body}) BETWEEN 1 AND 20000`),
+  ],
+);
+
+// Which version an account accepted, and when (CU §15, CA §15, RA §4.10
+// «Accept terms»). The account is the identity module's app account of the
+// audience, kept as a plain id. Append-only.
+export const termsAcceptances = content.table(
+  'terms_acceptances',
+  {
+    audience: text('audience', { enum: termsAudiences }).notNull(),
+    accountId: uuid('account_id').notNull(),
+    version: integer('version').notNull(),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.audience, table.accountId, table.version] }),
+    check(
+      'terms_acceptances_audience',
+      sql`${table.audience} IN ('customer', 'captain', 'merchant')`,
+    ),
+  ],
+);

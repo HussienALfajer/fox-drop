@@ -178,6 +178,16 @@ async function signedIn(
     payload: { phone, deviceId, code },
   });
   expect(answer.statusCode).toBe(200);
+  // A customer orders (CU §4.7) and a captain goes online (K7) once the terms
+  // in force (the seeded version 1) are accepted.
+  if (party !== 'merchant') {
+    await app.inject({
+      method: 'POST',
+      url: `/v1/${party}/terms/accept`,
+      headers: { authorization: `Bearer ${answer.json().accessToken}` },
+      payload: { version: 1 },
+    });
+  }
   return { authorization: `Bearer ${answer.json().accessToken}` };
 }
 
@@ -570,7 +580,7 @@ describe("the captain's channel (architecture §6.2, CA §15)", () => {
       expect(await channel.outcome).toBe('subscribed');
       const captains = app.get(CaptainsService);
       const now = new Date();
-      await captains.goOnline(captainId, { appVersion: '1.0.0', simulatedLocation: false }, now);
+      await captains.goOnline(captainId, { appVersion: '1.0.0', simulatedLocation: false, termsPending: false }, now);
       await captains.recordLocations(
         captainId,
         [{ ...centre, accuracyMetres: 8, recordedAt: now, simulated: false }],
@@ -895,7 +905,7 @@ describe("the order's pushes (architecture §8.1, CU §14, RA §16, CA §14)", (
     await captainDevice(phone);
     const captains = app.get(CaptainsService);
     const now = new Date();
-    await captains.goOnline(captainId, { appVersion: '1.0.0', simulatedLocation: false }, now);
+    await captains.goOnline(captainId, { appVersion: '1.0.0', simulatedLocation: false, termsPending: false }, now);
     await captains.recordLocations(
       captainId,
       [{ ...centre, accuracyMetres: 8, recordedAt: now, simulated: false }],

@@ -137,6 +137,7 @@ class CustomerQuoteDto extends createZodDto(
             'one_order_at_a_time',
             'active_order_limit',
             'no_captain_nearby',
+            'terms_pending',
             'item_not_found',
             'item_unavailable',
             'option_not_found',

@@ -852,6 +852,406 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/contact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantContactGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/contact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainContactGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/contact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerContactGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantContentGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainContentGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerContentGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/content/reasons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminContentLists"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/content/reasons/{list}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminContentAdd"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/content/reasons/{list}/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminContentUpdate"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/content/reasons/{list}/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminContentReorder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/content/faqs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminContentFaqs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/content/faqs/{audience}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminContentUpdateFaq"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/content/texts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminContentTexts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/content/work-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminContentUpdateWorkRules"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/content/contact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminContentUpdateContact"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/content/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminContentNotificationTexts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/content/notifications/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminContentUpdateNotificationText"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/terms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantTermsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/terms/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantTermsAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/terms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainTermsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/terms/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainTermsAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/terms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerTermsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/terms/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerTermsAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/content/terms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminTermsAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/content/terms/{audience}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminTermsPublish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/customer/location": {
         parameters: {
             query?: never;
@@ -1326,278 +1726,6 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["captainOrdersRequestPickup"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/merchant/contact": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["merchantContactGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/captain/contact": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["captainContactGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/customer/contact": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["customerContactGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/merchant/content": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["merchantContentGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/captain/content": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["captainContentGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/customer/content": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["customerContentGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/content/reasons": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminContentLists"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/content/reasons/{list}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminContentAdd"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/content/reasons/{list}/{code}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["adminContentUpdate"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/content/reasons/{list}/order": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminContentReorder"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/content/faqs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminContentFaqs"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/content/faqs/{audience}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["adminContentUpdateFaq"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/content/texts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminContentTexts"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/content/work-rules": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["adminContentUpdateWorkRules"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/content/contact": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["adminContentUpdateContact"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/content/notifications": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminContentNotificationTexts"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/content/notifications/{key}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["adminContentUpdateNotificationText"];
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2507,6 +2635,469 @@ export interface components {
             /** @description The new points kept. */
             accepted: number;
         };
+        /** @description The support phone and WhatsApp numbers in E.164, when set (AP §9.13). */
+        ContactDto_Output: {
+            phone?: string;
+            whatsapp?: string;
+        };
+        MerchantContentDto_Output: {
+            reasons: {
+                merchant_rejection: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+                merchant_problem: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+                item_unavailable_note: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+                merchant_ticket_type: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+            };
+            faq: {
+                question: string;
+                answer: string;
+            }[];
+        };
+        CaptainContentDto_Output: {
+            reasons: {
+                captain_cannot_complete: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+                captain_away: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+                shortfall: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+                food_after_failed: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+                captain_ticket_type: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+                captain_problem: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+            };
+            faq: {
+                question: string;
+                answer: string;
+            }[];
+            /** @description CA §11.4, plain text with one rule per line. */
+            workRules: string;
+        };
+        CustomerContentDto_Output: {
+            /** @description order_note: «الملاحظات الجاهزة» at checkout; the rating lists by stars (1–2, 3, 4–5). */
+            reasons: {
+                customer_cancel: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+                customer_problem: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+                order_note: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+                restaurant_rating_low: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+                restaurant_rating_mid: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+                restaurant_rating_high: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+                captain_rating_low: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+                captain_rating_mid: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+                captain_rating_high: {
+                    /** @description Stable: sent back with a choice, kept by the order. */
+                    code: string;
+                    label: string;
+                    /**
+                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                }[];
+            };
+            faq: {
+                question: string;
+                answer: string;
+            }[];
+        };
+        AdminReasonListsDto_Output: {
+            lists: {
+                /** @enum {string} */
+                list: "merchant_rejection" | "merchant_problem" | "item_unavailable_note" | "merchant_ticket_type" | "captain_cannot_complete" | "captain_away" | "shortfall" | "food_after_failed" | "captain_ticket_type" | "captain_problem" | "customer_cancel" | "customer_problem" | "order_note" | "restaurant_rating_low" | "restaurant_rating_mid" | "restaurant_rating_high" | "captain_rating_low" | "captain_rating_mid" | "captain_rating_high" | "ops_cancel" | "reassignment" | "captain_suspension" | "customer_block" | "emergency_stop" | "failed_outcome" | "system_cancellation";
+                apps: ("merchant" | "captain" | "customer")[];
+                /** @description Its reasons may carry «نص للزبون». */
+                customerText: boolean;
+                /** @description No reason can be added. */
+                closed: boolean;
+                reasons: {
+                    code: string;
+                    label: string;
+                    customerText: string | null;
+                    /**
+                     * @description Whether the choice takes a note: none, optional, required.
+                     * @enum {string}
+                     */
+                    note: "none" | "optional" | "required";
+                    /** @description The code acts on it: it cannot be removed. */
+                    fixed: boolean;
+                    /** @description False once removed: hidden from new choices, kept on orders. */
+                    active: boolean;
+                }[];
+            }[];
+        };
+        AddReasonDto: {
+            label: string;
+            /** @description Only in the lists with customer texts; null shows the generic apology. */
+            customerText: string | null;
+            /**
+             * @description none, optional or required («أخرى» with its text); none in a closed list.
+             * @enum {string}
+             */
+            note: "none" | "optional" | "required";
+        };
+        AdminReasonDto_Output: {
+            code: string;
+            label: string;
+            customerText: string | null;
+            /**
+             * @description Whether the choice takes a note: none, optional, required.
+             * @enum {string}
+             */
+            note: "none" | "optional" | "required";
+            /** @description The code acts on it: it cannot be removed. */
+            fixed: boolean;
+            /** @description False once removed: hidden from new choices, kept on orders. */
+            active: boolean;
+        };
+        UpdateReasonDto: {
+            label: string;
+            /** @description Only in the lists with customer texts; null shows the generic apology. */
+            customerText: string | null;
+            /**
+             * @description none, optional or required («أخرى» with its text); none in a closed list.
+             * @enum {string}
+             */
+            note: "none" | "optional" | "required";
+            /** @description False removes it from the list. */
+            active: boolean;
+        };
+        ReorderDto: {
+            /** @description Every code of the list. */
+            codes: string[];
+        };
+        AdminReasonOrderDto_Output: {
+            reasons: {
+                code: string;
+                label: string;
+                customerText: string | null;
+                /**
+                 * @description Whether the choice takes a note: none, optional, required.
+                 * @enum {string}
+                 */
+                note: "none" | "optional" | "required";
+                /** @description The code acts on it: it cannot be removed. */
+                fixed: boolean;
+                /** @description False once removed: hidden from new choices, kept on orders. */
+                active: boolean;
+            }[];
+        };
+        AdminFaqsDto_Output: {
+            customer: {
+                question: string;
+                answer: string;
+            }[];
+            captain: {
+                question: string;
+                answer: string;
+            }[];
+            merchant: {
+                question: string;
+                answer: string;
+            }[];
+        };
+        AdminFaqDto: {
+            items: {
+                question: string;
+                answer: string;
+            }[];
+        };
+        AdminFaqDto_Output: {
+            items: {
+                question: string;
+                answer: string;
+            }[];
+        };
+        AdminTextsDto_Output: {
+            /** @description CA §11.4, plain text with one rule per line. */
+            workRules: string;
+            /** @description The support phone and WhatsApp numbers in E.164, when set (AP §9.13). */
+            contact: {
+                phone?: string;
+                whatsapp?: string;
+            };
+        };
+        AdminWorkRulesDto: {
+            workRules: string;
+        };
+        AdminWorkRulesDto_Output: {
+            workRules: string;
+        };
+        AdminUpdateContactDto: {
+            /** @description E.164, or null to hide «اتصال بالدعم». */
+            phone: string | null;
+            /** @description E.164, or null to hide «واتساب الدعم». */
+            whatsapp: string | null;
+        };
+        /** @description The support phone and WhatsApp numbers in E.164, when set (AP §9.13). */
+        AdminContactDto_Output: {
+            phone?: string;
+            whatsapp?: string;
+        };
+        AdminNotificationTextsDto_Output: {
+            templates: {
+                /** @description The template, such as customer.accepted. */
+                key: string;
+                /** @enum {string} */
+                audience: "customer" | "merchant" | "captain";
+                /** @description The spec row it comes from, such as «CU §14 #1». */
+                row: string;
+                /** @description The placeholders it takes, without braces. */
+                variables: string[];
+                /**
+                 * @description The app's sound level; not editable.
+                 * @enum {string}
+                 */
+                level: "default" | "ring" | "chime" | "offer" | "cancellation" | "silent";
+                /**
+                 * @description Not editable.
+                 * @enum {string}
+                 */
+                priority: "high" | "normal";
+                /** @description The default text. */
+                text: string;
+                /** @description The text in use: the admin's edit, else the default. */
+                current: string;
+            }[];
+        };
+        AdminUpdateNotificationTextDto: {
+            /** @description Only the placeholders the template takes, as {name}. */
+            text: string;
+        };
+        AdminNotificationTextDto_Output: {
+            /** @description The template, such as customer.accepted. */
+            key: string;
+            /** @enum {string} */
+            audience: "customer" | "merchant" | "captain";
+            /** @description The spec row it comes from, such as «CU §14 #1». */
+            row: string;
+            /** @description The placeholders it takes, without braces. */
+            variables: string[];
+            /**
+             * @description The app's sound level; not editable.
+             * @enum {string}
+             */
+            level: "default" | "ring" | "chime" | "offer" | "cancellation" | "silent";
+            /**
+             * @description Not editable.
+             * @enum {string}
+             */
+            priority: "high" | "normal";
+            /** @description The default text. */
+            text: string;
+            /** @description The text in use: the admin's edit, else the default. */
+            current: string;
+        };
+        TermsDto_Output: {
+            /** @description Sent back with «أوافق» (CU §15, CA §15). */
+            version: number;
+            /** @description Plain text; a line per paragraph. */
+            body: string;
+            /** Format: date-time */
+            publishedAt: string;
+            /** @description The signed-in account has not accepted this version; false for a guest and for a cashier (RA S13). */
+            pending: boolean;
+        };
+        TermsAcceptDto: {
+            version: number;
+        };
+        TermsAcceptedDto_Output: {
+            /** @constant */
+            status: "accepted";
+        };
+        AdminTermsDto_Output: {
+            customer: {
+                /** @description Sent back with «أوافق» (CU §15, CA §15). */
+                version: number;
+                /** @description Plain text; a line per paragraph. */
+                body: string;
+                /** Format: date-time */
+                publishedAt: string;
+            };
+            captain: {
+                /** @description Sent back with «أوافق» (CU §15, CA §15). */
+                version: number;
+                /** @description Plain text; a line per paragraph. */
+                body: string;
+                /** Format: date-time */
+                publishedAt: string;
+            };
+            merchant: {
+                /** @description Sent back with «أوافق» (CU §15, CA §15). */
+                version: number;
+                /** @description Plain text; a line per paragraph. */
+                body: string;
+                /** Format: date-time */
+                publishedAt: string;
+            };
+        };
+        AdminPublishTermsDto: {
+            body: string;
+        };
+        AdminTermsVersionDto_Output: {
+            /** @description Sent back with «أوافق» (CU §15, CA §15). */
+            version: number;
+            /** @description Plain text; a line per paragraph. */
+            body: string;
+            /** Format: date-time */
+            publishedAt: string;
+        };
         CustomerLocationDto_Output: {
             /**
              * @description CU §7.1: the home screen; «لا توجد مطاعم توصل إلى موقعك حالياً»; «قريباً في منطقتك» with the vote.
@@ -2969,7 +3560,7 @@ export interface components {
             /** @description CU §10.6: every one blocks ordering; the texts are in Appendix C. */
             problems: {
                 /** @enum {string} */
-                code: "update_required" | "maintenance" | "platform_closed" | "outside_zones" | "not_covered" | "restaurant_closed" | "below_minimum_order" | "minimum_not_in_base_currency" | "delivery_unpriced" | "rates_unavailable" | "captain_pay_unset" | "one_order_at_a_time" | "active_order_limit" | "no_captain_nearby" | "item_not_found" | "item_unavailable" | "option_not_found" | "option_unavailable" | "options_invalid" | "price_not_in_base_currency" | "price_changed";
+                code: "update_required" | "maintenance" | "platform_closed" | "outside_zones" | "not_covered" | "restaurant_closed" | "below_minimum_order" | "minimum_not_in_base_currency" | "delivery_unpriced" | "rates_unavailable" | "captain_pay_unset" | "one_order_at_a_time" | "active_order_limit" | "no_captain_nearby" | "terms_pending" | "item_not_found" | "item_unavailable" | "option_not_found" | "option_unavailable" | "options_invalid" | "price_not_in_base_currency" | "price_changed";
                 /** @description The cart line, for a line problem. */
                 line: number | null;
                 /** @description platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}». */
@@ -4483,415 +5074,6 @@ export interface components {
                 simulated: boolean;
             };
         };
-        /** @description The support phone and WhatsApp numbers in E.164, when set (AP §9.13). */
-        ContactDto_Output: {
-            phone?: string;
-            whatsapp?: string;
-        };
-        MerchantContentDto_Output: {
-            reasons: {
-                merchant_rejection: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-                merchant_problem: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-                item_unavailable_note: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-                merchant_ticket_type: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-            };
-            faq: {
-                question: string;
-                answer: string;
-            }[];
-        };
-        CaptainContentDto_Output: {
-            reasons: {
-                captain_cannot_complete: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-                captain_away: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-                shortfall: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-                food_after_failed: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-                captain_ticket_type: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-                captain_problem: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-            };
-            faq: {
-                question: string;
-                answer: string;
-            }[];
-            /** @description CA §11.4, plain text with one rule per line. */
-            workRules: string;
-        };
-        CustomerContentDto_Output: {
-            /** @description order_note: «الملاحظات الجاهزة» at checkout; the rating lists by stars (1–2, 3, 4–5). */
-            reasons: {
-                customer_cancel: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-                customer_problem: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-                order_note: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-                restaurant_rating_low: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-                restaurant_rating_mid: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-                restaurant_rating_high: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-                captain_rating_low: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-                captain_rating_mid: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-                captain_rating_high: {
-                    /** @description Stable: sent back with a choice, kept by the order. */
-                    code: string;
-                    label: string;
-                    /**
-                     * @description Whether the choice takes a note: none, optional or required («أخرى»).
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                }[];
-            };
-            faq: {
-                question: string;
-                answer: string;
-            }[];
-        };
-        AdminReasonListsDto_Output: {
-            lists: {
-                /** @enum {string} */
-                list: "merchant_rejection" | "merchant_problem" | "item_unavailable_note" | "merchant_ticket_type" | "captain_cannot_complete" | "captain_away" | "shortfall" | "food_after_failed" | "captain_ticket_type" | "captain_problem" | "customer_cancel" | "customer_problem" | "order_note" | "restaurant_rating_low" | "restaurant_rating_mid" | "restaurant_rating_high" | "captain_rating_low" | "captain_rating_mid" | "captain_rating_high" | "ops_cancel" | "reassignment" | "captain_suspension" | "customer_block" | "emergency_stop" | "failed_outcome" | "system_cancellation";
-                apps: ("merchant" | "captain" | "customer")[];
-                /** @description Its reasons may carry «نص للزبون». */
-                customerText: boolean;
-                /** @description No reason can be added. */
-                closed: boolean;
-                reasons: {
-                    code: string;
-                    label: string;
-                    customerText: string | null;
-                    /**
-                     * @description Whether the choice takes a note: none, optional, required.
-                     * @enum {string}
-                     */
-                    note: "none" | "optional" | "required";
-                    /** @description The code acts on it: it cannot be removed. */
-                    fixed: boolean;
-                    /** @description False once removed: hidden from new choices, kept on orders. */
-                    active: boolean;
-                }[];
-            }[];
-        };
-        AddReasonDto: {
-            label: string;
-            /** @description Only in the lists with customer texts; null shows the generic apology. */
-            customerText: string | null;
-            /**
-             * @description none, optional or required («أخرى» with its text); none in a closed list.
-             * @enum {string}
-             */
-            note: "none" | "optional" | "required";
-        };
-        AdminReasonDto_Output: {
-            code: string;
-            label: string;
-            customerText: string | null;
-            /**
-             * @description Whether the choice takes a note: none, optional, required.
-             * @enum {string}
-             */
-            note: "none" | "optional" | "required";
-            /** @description The code acts on it: it cannot be removed. */
-            fixed: boolean;
-            /** @description False once removed: hidden from new choices, kept on orders. */
-            active: boolean;
-        };
-        UpdateReasonDto: {
-            label: string;
-            /** @description Only in the lists with customer texts; null shows the generic apology. */
-            customerText: string | null;
-            /**
-             * @description none, optional or required («أخرى» with its text); none in a closed list.
-             * @enum {string}
-             */
-            note: "none" | "optional" | "required";
-            /** @description False removes it from the list. */
-            active: boolean;
-        };
-        ReorderDto: {
-            /** @description Every code of the list. */
-            codes: string[];
-        };
-        AdminReasonOrderDto_Output: {
-            reasons: {
-                code: string;
-                label: string;
-                customerText: string | null;
-                /**
-                 * @description Whether the choice takes a note: none, optional, required.
-                 * @enum {string}
-                 */
-                note: "none" | "optional" | "required";
-                /** @description The code acts on it: it cannot be removed. */
-                fixed: boolean;
-                /** @description False once removed: hidden from new choices, kept on orders. */
-                active: boolean;
-            }[];
-        };
-        AdminFaqsDto_Output: {
-            customer: {
-                question: string;
-                answer: string;
-            }[];
-            captain: {
-                question: string;
-                answer: string;
-            }[];
-            merchant: {
-                question: string;
-                answer: string;
-            }[];
-        };
-        AdminFaqDto: {
-            items: {
-                question: string;
-                answer: string;
-            }[];
-        };
-        AdminFaqDto_Output: {
-            items: {
-                question: string;
-                answer: string;
-            }[];
-        };
-        AdminTextsDto_Output: {
-            /** @description CA §11.4, plain text with one rule per line. */
-            workRules: string;
-            /** @description The support phone and WhatsApp numbers in E.164, when set (AP §9.13). */
-            contact: {
-                phone?: string;
-                whatsapp?: string;
-            };
-        };
-        AdminWorkRulesDto: {
-            workRules: string;
-        };
-        AdminWorkRulesDto_Output: {
-            workRules: string;
-        };
-        AdminUpdateContactDto: {
-            /** @description E.164, or null to hide «اتصال بالدعم». */
-            phone: string | null;
-            /** @description E.164, or null to hide «واتساب الدعم». */
-            whatsapp: string | null;
-        };
-        /** @description The support phone and WhatsApp numbers in E.164, when set (AP §9.13). */
-        AdminContactDto_Output: {
-            phone?: string;
-            whatsapp?: string;
-        };
-        AdminNotificationTextsDto_Output: {
-            templates: {
-                /** @description The template, such as customer.accepted. */
-                key: string;
-                /** @enum {string} */
-                audience: "customer" | "merchant" | "captain";
-                /** @description The spec row it comes from, such as «CU §14 #1». */
-                row: string;
-                /** @description The placeholders it takes, without braces. */
-                variables: string[];
-                /**
-                 * @description The app's sound level; not editable.
-                 * @enum {string}
-                 */
-                level: "default" | "ring" | "chime" | "offer" | "cancellation" | "silent";
-                /**
-                 * @description Not editable.
-                 * @enum {string}
-                 */
-                priority: "high" | "normal";
-                /** @description The default text. */
-                text: string;
-                /** @description The text in use: the admin's edit, else the default. */
-                current: string;
-            }[];
-        };
-        AdminUpdateNotificationTextDto: {
-            /** @description Only the placeholders the template takes, as {name}. */
-            text: string;
-        };
-        AdminNotificationTextDto_Output: {
-            /** @description The template, such as customer.accepted. */
-            key: string;
-            /** @enum {string} */
-            audience: "customer" | "merchant" | "captain";
-            /** @description The spec row it comes from, such as «CU §14 #1». */
-            row: string;
-            /** @description The placeholders it takes, without braces. */
-            variables: string[];
-            /**
-             * @description The app's sound level; not editable.
-             * @enum {string}
-             */
-            level: "default" | "ring" | "chime" | "offer" | "cancellation" | "silent";
-            /**
-             * @description Not editable.
-             * @enum {string}
-             */
-            priority: "high" | "normal";
-            /** @description The default text. */
-            text: string;
-            /** @description The text in use: the admin's edit, else the default. */
-            current: string;
-        };
         RealtimeTokenDto_Output: {
             /** @description Centrifugo's connection token, valid 15 minutes; ask again when it expires. */
             token: string;
@@ -6400,6 +6582,563 @@ export interface operations {
             };
         };
     };
+    merchantContactGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactDto_Output"];
+                };
+            };
+        };
+    };
+    captainContactGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactDto_Output"];
+                };
+            };
+        };
+    };
+    customerContactGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactDto_Output"];
+                };
+            };
+        };
+    };
+    merchantContentGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantContentDto_Output"];
+                };
+            };
+        };
+    };
+    captainContentGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainContentDto_Output"];
+                };
+            };
+        };
+    };
+    customerContentGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerContentDto_Output"];
+                };
+            };
+        };
+    };
+    adminContentLists: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminReasonListsDto_Output"];
+                };
+            };
+        };
+    };
+    adminContentAdd: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddReasonDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminReasonDto_Output"];
+                };
+            };
+        };
+    };
+    adminContentUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list: string;
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateReasonDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminReasonDto_Output"];
+                };
+            };
+        };
+    };
+    adminContentReorder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReorderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminReasonOrderDto_Output"];
+                };
+            };
+        };
+    };
+    adminContentFaqs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminFaqsDto_Output"];
+                };
+            };
+        };
+    };
+    adminContentUpdateFaq: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                audience: "customer" | "captain" | "merchant";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminFaqDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminFaqDto_Output"];
+                };
+            };
+        };
+    };
+    adminContentTexts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTextsDto_Output"];
+                };
+            };
+        };
+    };
+    adminContentUpdateWorkRules: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminWorkRulesDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminWorkRulesDto_Output"];
+                };
+            };
+        };
+    };
+    adminContentUpdateContact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminUpdateContactDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminContactDto_Output"];
+                };
+            };
+        };
+    };
+    adminContentNotificationTexts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminNotificationTextsDto_Output"];
+                };
+            };
+        };
+    };
+    adminContentUpdateNotificationText: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminUpdateNotificationTextDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminNotificationTextDto_Output"];
+                };
+            };
+        };
+    };
+    merchantTermsGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TermsDto_Output"];
+                };
+            };
+        };
+    };
+    merchantTermsAccept: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TermsAcceptDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TermsAcceptedDto_Output"];
+                };
+            };
+        };
+    };
+    captainTermsGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TermsDto_Output"];
+                };
+            };
+        };
+    };
+    captainTermsAccept: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TermsAcceptDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TermsAcceptedDto_Output"];
+                };
+            };
+        };
+    };
+    customerTermsGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TermsDto_Output"];
+                };
+            };
+        };
+    };
+    customerTermsAccept: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TermsAcceptDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TermsAcceptedDto_Output"];
+                };
+            };
+        };
+    };
+    adminTermsAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTermsDto_Output"];
+                };
+            };
+        };
+    };
+    adminTermsPublish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                audience: "customer" | "captain" | "merchant";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminPublishTermsDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTermsVersionDto_Output"];
+                };
+            };
+        };
+    };
     customerProfileLocation: {
         parameters: {
             query: {
@@ -7210,385 +7949,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainOrderDto_Output"];
-                };
-            };
-        };
-    };
-    merchantContactGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ContactDto_Output"];
-                };
-            };
-        };
-    };
-    captainContactGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ContactDto_Output"];
-                };
-            };
-        };
-    };
-    customerContactGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ContactDto_Output"];
-                };
-            };
-        };
-    };
-    merchantContentGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MerchantContentDto_Output"];
-                };
-            };
-        };
-    };
-    captainContentGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CaptainContentDto_Output"];
-                };
-            };
-        };
-    };
-    customerContentGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CustomerContentDto_Output"];
-                };
-            };
-        };
-    };
-    adminContentLists: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminReasonListsDto_Output"];
-                };
-            };
-        };
-    };
-    adminContentAdd: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                list: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AddReasonDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminReasonDto_Output"];
-                };
-            };
-        };
-    };
-    adminContentUpdate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                list: string;
-                code: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateReasonDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminReasonDto_Output"];
-                };
-            };
-        };
-    };
-    adminContentReorder: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                list: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReorderDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminReasonOrderDto_Output"];
-                };
-            };
-        };
-    };
-    adminContentFaqs: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminFaqsDto_Output"];
-                };
-            };
-        };
-    };
-    adminContentUpdateFaq: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                audience: "customer" | "captain" | "merchant";
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminFaqDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminFaqDto_Output"];
-                };
-            };
-        };
-    };
-    adminContentTexts: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminTextsDto_Output"];
-                };
-            };
-        };
-    };
-    adminContentUpdateWorkRules: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminWorkRulesDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminWorkRulesDto_Output"];
-                };
-            };
-        };
-    };
-    adminContentUpdateContact: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminUpdateContactDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminContactDto_Output"];
-                };
-            };
-        };
-    };
-    adminContentNotificationTexts: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminNotificationTextsDto_Output"];
-                };
-            };
-        };
-    };
-    adminContentUpdateNotificationText: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                key: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminUpdateNotificationTextDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminNotificationTextDto_Output"];
                 };
             };
         };
