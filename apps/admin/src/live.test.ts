@@ -27,11 +27,19 @@ describe('the ops channel', () => {
         ['order'],
       ]);
     }
+    expect(staleQueries({ type: 'platform.emergency_stop' }, city)).toEqual([
+      ['emergency-stop', city],
+    ]);
     expect(staleQueries({ type: 'ticket.opened' }, city)).toEqual([]);
   });
 
   it('reads everything of the city again after a subscription', () => {
-    expect(cityQueries(city)).toEqual([['orders-board', city], ['order'], ['alerts', city]]);
+    expect(cityQueries(city)).toEqual([
+      ['orders-board', city],
+      ['order'],
+      ['alerts', city],
+      ['emergency-stop', city],
+    ]);
   });
 
   it('polls only while the city is not live (owner decision 2026-11-07)', () => {
