@@ -52,13 +52,20 @@ class EmergencyStopCheck extends KeptRead<EmergencyStop> {
   EmergencyStop get stop => value;
 
   /// The stop starting (true) or ending (false), seen after an earlier
-  /// answer: the restaurant and captain apps chime once (RA §16 #34, CA §14
+  /// answer (a new stop's start, even with no end seen between, is true): the restaurant and captain apps chime once (RA §16 #34, CA §14
   /// #31). The first answer is the state the app opened in, never a switch.
   Stream<bool> get switched => _switched.stream;
 
   @override
   void changing(EmergencyStop before, EmergencyStop after) {
-    if (answered && before.active != after.active) _switched.add(after.active);
+    if (!answered) return;
+    // A stop that ended and another that started between two reads is a
+    // switch too: its start differs.
+    final restarted =
+        before.active && after.active && before.startedAt != after.startedAt;
+    if (before.active != after.active || restarted) {
+      _switched.add(after.active);
+    }
   }
 
   @override

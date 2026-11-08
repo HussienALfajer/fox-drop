@@ -25,7 +25,7 @@ The restaurant app «تطبيق المطعم» (Android, Windows; architecture �
 
 ## Emergency stop (slice 2.4d; RA §8.17, §16 #34, §18)
 
-- `emergencyStopProvider` (`lib/src/platform.dart`) is an `EmergencyStopCheck` (`packages/core_platform/CLAUDE.md`) on `GET /v1/merchant/emergency-stop` while signed in; `platformBroadcastsProvider` follows `merchant:{restaurant_id}` for it and for `platform.app_changed`, and reads both again whenever the channel connects. `MerchantApp`'s `builder` wraps every screen in `EmergencyStopFrame`, above the update banner; the offline bar stays under the board's top bar, so the stop shows above it (RA §6.3 puts no connection first: the design places them). Each start or end seen while the app runs chimes once on every device (`ringerProvider`). Active orders and the restaurant's own state are untouched.
+- `emergencyStopProvider` (`lib/src/platform.dart`) is an `EmergencyStopCheck` (`packages/core_platform/CLAUDE.md`) on `GET /v1/merchant/emergency-stop` while signed in; `platformBroadcastsProvider` follows `merchant:{restaurant_id}` for it and for `platform.app_changed`, and reads both again whenever the channel connects. `BoardAlertsLayer` shows `EmergencyStopBanner` right after the offline bar on the board and the detail (RA §6.3 item 2), and the other signed-in screens (the terms, naming the device) get it above them from their route (`WithStopBanner`), so it is on every screen (RA §8.17); signed out there is no stop to show. Each start or end seen while the app runs chimes once on every device (`ringerProvider`). Active orders and the restaurant's own state are untouched.
 
 ## Not yet (slice 1.14e)
 

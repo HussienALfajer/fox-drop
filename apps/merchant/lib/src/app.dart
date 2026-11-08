@@ -24,21 +24,12 @@ class MerchantApp extends ConsumerWidget {
     final platform = ref.watch(platformCheckProvider);
     // RA §18: the platform broadcasts, and "on every reconnect" (RA §4.2).
     ref.watch(platformBroadcastsProvider);
-    final stop = ref.watch(emergencyStopProvider);
+    final router = ref.watch(routerProvider);
     return MaterialApp.router(
-      routerConfig: ref.watch(routerProvider),
+      routerConfig: router,
       // RA §4.2: the suggested update's banner over every screen.
-      // RA §8.17: the emergency stop's banner on every screen.
-      builder: (context, child) {
-        final framed = UpdateBannerFrame(
-          check: platform,
-          url: updateUrl(),
-          child: child!,
-        );
-        return stop == null
-            ? framed
-            : EmergencyStopFrame(check: stop, child: framed);
-      },
+      builder: (context, child) =>
+          UpdateBannerFrame(check: platform, url: updateUrl(), child: child!),
       onGenerateTitle: (context) =>
           AppLocalizations.of(context).merchantAppName,
       locale: const Locale('ar'),

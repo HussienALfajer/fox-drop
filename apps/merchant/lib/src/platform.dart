@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:core_platform/core_platform.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'api.dart';
@@ -28,8 +29,9 @@ final platformCheckProvider = Provider<PlatformCheck>((ref) {
 /// at sign-in, on each return to the foreground, and by
 /// [platformBroadcastsProvider]. Null while signed out.
 final emergencyStopProvider = Provider.autoDispose<EmergencyStopCheck?>((ref) {
-  final session = ref.watch(merchantSessionProvider).value;
-  if (session == null) return null;
+  // The id only: a session read again (naming the device) keeps the check.
+  final restaurantId = ref.watch(merchantSessionProvider.select((s) => s.value?.restaurantId));
+  if (restaurantId == null) return null;
   final api = ref.watch(coreApiProvider).getMerchantApi();
   final check = EmergencyStopCheck(() async {
     final answer = (await api.merchantEmergencyStopRead()).data!;
@@ -51,14 +53,38 @@ final emergencyStopProvider = Provider.autoDispose<EmergencyStopCheck?>((ref) {
 /// reconnect", RA §4.2), `platform.emergency_stop` the stop and
 /// `platform.app_changed` the platform. Watched by `MerchantApp`.
 final platformBroadcastsProvider = Provider.autoDispose<void>((ref) {
-  final session = ref.watch(merchantSessionProvider).value;
-  if (session == null) return;
+  final restaurantId = ref.watch(merchantSessionProvider.select((s) => s.value?.restaurantId));
+  if (restaurantId == null) return;
   final following = followPlatformBroadcasts(
     ref
         .watch(realtimeTransportProvider)
-        .channel('merchant:${session.restaurantId}'),
+        .channel('merchant:$restaurantId'),
     stop: ref.watch(emergencyStopProvider),
     platform: ref.watch(platformCheckProvider),
   );
   ref.onDispose(() => unawaited(following.cancel()));
 });
+
+/// RA §8.17 "every screen": the stop's banner above a signed-in screen that
+/// has no offline bar (the terms, naming the device). The board and the
+/// detail place it after their offline bar (`BoardAlertsLayer`, RA §6.3);
+/// signed out there is no stop to show.
+class WithStopBanner extends ConsumerWidget {
+  const WithStopBanner({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final stop = ref.watch(emergencyStopProvider);
+    return Column(
+      children: [
+        if (stop != null)
+          Material(
+            child: SafeArea(bottom: false, child: EmergencyStopBanner(check: stop)),
+          ),
+        Expanded(child: child),
+      ],
+    );
+  }
+}

@@ -82,6 +82,34 @@ void main() {
     expect(slow.stop, on);
   });
 
+  testWidgets('a new stop seen without its end is a switch on', (
+    tester,
+  ) async {
+    final later = EmergencyStop(
+      active: true,
+      startedAt: DateTime.utc(2026, 11, 9, 2),
+    );
+    answers = [on, later];
+    check.start();
+    await tester.pump();
+    await check.check();
+    await tester.pump();
+    expect(switched, [true]);
+  });
+
+  testWidgets('an answer after dispose changes nothing', (tester) async {
+    final first = Completer<EmergencyStop>();
+    final late = EmergencyStopCheck(() => first.future);
+    var notified = false;
+    late.addListener(() => notified = true);
+    final running = late.check();
+    late.dispose();
+    first.complete(on);
+    await running;
+    expect(notified, isFalse);
+    expect(late.stop, EmergencyStop.none);
+  });
+
   group('followPlatformBroadcasts', () {
     late StreamController<RealtimeSignal> channel;
     late int platformReads;

@@ -158,8 +158,8 @@ class UpdateBannerFrame extends StatelessWidget {
 }
 
 /// The banner of the restaurant and captain apps while the emergency stop
-/// is on (RA §8.17, CA §6.3 item 2); nothing otherwise. Its red waits for
-/// the design.
+/// is on (RA §8.17, CA §6.3 item 2); nothing otherwise. A screen places it
+/// under its top bar, after the offline bar. Its red waits for the design.
 class EmergencyStopBanner extends StatelessWidget {
   const EmergencyStopBanner({super.key, required this.check});
 
@@ -175,44 +175,5 @@ class EmergencyStopBanner extends StatelessWidget {
             content: Text(AppLocalizations.of(context).emergencyStopBanner),
             actions: const [SizedBox.shrink()],
           ),
-  );
-}
-
-/// Puts [EmergencyStopBanner] over every screen: it wraps
-/// `MaterialApp.router`'s `builder` child, as [UpdateBannerFrame] does
-/// (RA §8.17: "every screen").
-class EmergencyStopFrame extends StatelessWidget {
-  const EmergencyStopFrame({
-    super.key,
-    required this.check,
-    required this.child,
-  });
-
-  final EmergencyStopCheck check;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: check,
-    builder: (context, child) => !check.stop.active
-        ? child!
-        : Column(
-            children: [
-              Material(
-                child: SafeArea(
-                  bottom: false,
-                  child: EmergencyStopBanner(check: check),
-                ),
-              ),
-              Expanded(
-                child: MediaQuery.removePadding(
-                  context: context,
-                  removeTop: true,
-                  child: child!,
-                ),
-              ),
-            ],
-          ),
-    child: child,
   );
 }

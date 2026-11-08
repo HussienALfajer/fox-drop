@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:core_l10n/core_l10n.dart';
+import 'package:core_platform/core_platform.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +9,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../api.dart';
 import '../auth.dart';
+import '../platform.dart';
 import '../terms.dart';
 import 'alerts.dart';
 import 'board.dart';
@@ -197,8 +199,8 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
   }
 }
 
-/// What every board screen shows over its content (RA §4.4, §4.7): the
-/// offline bar, and the stacked prompts of what rings, so opening the detail
+/// What every board screen shows over its content (RA §4.4, §4.7, §8.17): the
+/// offline bar, the emergency stop's banner, and the stacked prompts of what rings, so opening the detail
 /// never hides a ringing order. Back does not leave the app while something
 /// rings: on Android that would end the screen with the ring still on.
 class BoardAlertsLayer extends ConsumerWidget {
@@ -224,6 +226,9 @@ class BoardAlertsLayer extends ConsumerWidget {
               content: Text(l10n.merchantOffline),
               actions: const [SizedBox.shrink()],
             ),
+          // RA §6.3 item 2, after no connection.
+          if (ref.watch(emergencyStopProvider) case final stop?)
+            EmergencyStopBanner(check: stop),
           Expanded(
             child: Stack(
               children: [
