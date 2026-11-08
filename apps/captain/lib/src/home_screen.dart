@@ -147,8 +147,10 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Read now: the provider cannot be read in dispose.
+    // Read now: the providers cannot be read in dispose, which a screen
+    // left before its first offer (such as for /blocked) reaches unread.
     _keepScreenOn;
+    _ringer;
     _tick = Timer.periodic(const Duration(seconds: 1), (_) => _onTick());
   }
 

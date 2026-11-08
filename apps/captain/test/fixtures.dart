@@ -336,7 +336,15 @@ class TestApp {
     ]);
   }
 
+  /// The answer of `GET /v1/captain/platform` (CA §4.2, §4.8): no update
+  /// and no maintenance unless a test says otherwise.
+  void platform({String updateNeed = 'none', bool maintenance = false}) =>
+      server.on('/v1/captain/platform', [
+        FakeAnswer(200, {'updateNeed': updateNeed, 'maintenance': maintenance}),
+      ]);
+
   Future<void> pump(WidgetTester tester, {Map<String, String>? stored}) async {
+    if (!server.routes.containsKey('/v1/captain/platform')) platform();
     server.on('/v1/captain/content', [FakeAnswer(200, contentJson())]);
     server.on('/v1/captain/push-token', [
       const FakeAnswer(200, {'status': 'registered'}),
