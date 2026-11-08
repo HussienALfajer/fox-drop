@@ -31,10 +31,17 @@ class PlatformDto extends createZodDto(
     updateNeed: z
       .enum(['required', 'suggested', 'none'])
       .describe(
-        'required: below app.<app>.min_version, the blocking update screen; suggested: below app.<app>.latest_version, a dismissible banner.',
+        'required: below the min_version setting of the app, the blocking update screen; suggested: below its latest_version, a dismissible banner.',
       ),
-    updateMessage: z.string().optional().describe('app.<app>.update_message, when set.'),
-    maintenance: z.boolean().describe('app.<app>.maintenance: the blocking maintenance screen.'),
+    // No angle brackets in descriptions: the Dart client's doc comments read
+    // them as HTML (unintended_html_in_doc).
+    updateMessage: z
+      .string()
+      .optional()
+      .describe('The update_message setting of the app, when set.'),
+    maintenance: z
+      .boolean()
+      .describe('The maintenance setting of the app: the blocking maintenance screen.'),
     maintenanceMessage: z.string().optional().describe('The maintenance message, when set.'),
   }),
 ) {}

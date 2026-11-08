@@ -12,23 +12,23 @@ part 'platform_dto_output.g.dart';
 /// PlatformDtoOutput
 ///
 /// Properties:
-/// * [updateNeed] - required: below app.<app>.min_version, the blocking update screen; suggested: below app.<app>.latest_version, a dismissible banner.
-/// * [updateMessage] - app.<app>.update_message, when set.
-/// * [maintenance] - app.<app>.maintenance: the blocking maintenance screen.
+/// * [updateNeed] - required: below the min_version setting of the app, the blocking update screen; suggested: below its latest_version, a dismissible banner.
+/// * [updateMessage] - The update_message setting of the app, when set.
+/// * [maintenance] - The maintenance setting of the app: the blocking maintenance screen.
 /// * [maintenanceMessage] - The maintenance message, when set.
 @BuiltValue()
 abstract class PlatformDtoOutput
     implements Built<PlatformDtoOutput, PlatformDtoOutputBuilder> {
-  /// required: below app.<app>.min_version, the blocking update screen; suggested: below app.<app>.latest_version, a dismissible banner.
+  /// required: below the min_version setting of the app, the blocking update screen; suggested: below its latest_version, a dismissible banner.
   @BuiltValueField(wireName: r'updateNeed')
   PlatformDtoOutputUpdateNeedEnum get updateNeed;
   // enum updateNeedEnum {  required,  suggested,  none,  };
 
-  /// app.<app>.update_message, when set.
+  /// The update_message setting of the app, when set.
   @BuiltValueField(wireName: r'updateMessage')
   String? get updateMessage;
 
-  /// app.<app>.maintenance: the blocking maintenance screen.
+  /// The maintenance setting of the app: the blocking maintenance screen.
   @BuiltValueField(wireName: r'maintenance')
   bool get maintenance;
 
@@ -182,7 +182,7 @@ class _$PlatformDtoOutputSerializer
   }
 }
 
-/// required: below app.<app>.min_version, the blocking update screen; suggested: below app.<app>.latest_version, a dismissible banner.
+/// required: below the min_version setting of the app, the blocking update screen; suggested: below its latest_version, a dismissible banner.
 class PlatformDtoOutputUpdateNeedEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'required')
   static const PlatformDtoOutputUpdateNeedEnum required_ =

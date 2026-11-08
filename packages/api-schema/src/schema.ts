@@ -2323,13 +2323,13 @@ export interface components {
         };
         PlatformDto_Output: {
             /**
-             * @description required: below app.<app>.min_version, the blocking update screen; suggested: below app.<app>.latest_version, a dismissible banner.
+             * @description required: below the min_version setting of the app, the blocking update screen; suggested: below its latest_version, a dismissible banner.
              * @enum {string}
              */
             updateNeed: "required" | "suggested" | "none";
-            /** @description app.<app>.update_message, when set. */
+            /** @description The update_message setting of the app, when set. */
             updateMessage?: string;
-            /** @description app.<app>.maintenance: the blocking maintenance screen. */
+            /** @description The maintenance setting of the app: the blocking maintenance screen. */
             maintenance: boolean;
             /** @description The maintenance message, when set. */
             maintenanceMessage?: string;
