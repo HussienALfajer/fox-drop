@@ -9,6 +9,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { OPERATIONS_MANAGE } from './assign-captain.js';
 import { AssignCaptainPage } from './assign-captain-page.js';
+import { SETTINGS_READ } from './app-settings.js';
+import { AppSettingsPage } from './app-settings-page.js';
 import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
 import { EmergencyCodePage } from './emergency-code-page.js';
 import { receivesAlerts } from './alerts.js';
@@ -149,6 +151,16 @@ const contentRoute = createRoute({
   component: ContentPage,
 });
 
+// AP §9.14 «التطبيقات»: OWN (the server checks each key's edit roles).
+const appSettingsRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/settings/apps',
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, SETTINGS_READ)) throw redirect({ to: '/' });
+  },
+  component: AppSettingsPage,
+});
+
 const routeTree = rootRoute.addChildren([
   setupRoute,
   signInRoute,
@@ -156,6 +168,7 @@ const routeTree = rootRoute.addChildren([
     homeRoute,
     emergencyCodeRoute,
     contentRoute,
+    appSettingsRoute,
     alertsRoute,
     ordersRoute.addChildren([orderRoute.addChildren([assignRoute])]),
   ]),

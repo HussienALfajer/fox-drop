@@ -177,15 +177,3 @@ export function quoteVersion(parts: {
   );
   return createHash('sha256').update(canonical).digest('hex').slice(0, 32);
 }
-
-// AP §9.14: whether an app version such as 1.10.0 is below the minimum, part
-// by part.
-export function versionBelow(version: string, minimum: string): boolean {
-  const parts = version.split('.').map(Number);
-  const least = minimum.split('.').map(Number);
-  for (let index = 0; index < least.length; index += 1) {
-    const difference = (parts[index] ?? 0) - least[index]!;
-    if (difference !== 0) return difference < 0;
-  }
-  return false;
-}

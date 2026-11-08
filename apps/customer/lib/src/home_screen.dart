@@ -65,7 +65,7 @@ class HomeScreen extends ConsumerWidget {
         ],
       ),
       // CU §6: the active-order bar while an order is active.
-      bottomNavigationBar: signedIn ? const _ActiveOrders() : null,
+      bottomNavigationBar: signedIn ? const ActiveOrdersBar() : null,
       body: switch (point) {
         PointUnset() => _Ask(onLocate: locate),
         PointLocating() => const Center(child: CircularProgressIndicator()),
@@ -99,9 +99,10 @@ class HomeScreen extends ConsumerWidget {
 }
 
 /// CU §6: «طلبك من {المطعم}: {الحالة}», or the count with a list when
-/// several orders are active.
-class _ActiveOrders extends ConsumerWidget {
-  const _ActiveOrders();
+/// several orders are active. Also on the update and maintenance screen,
+/// where an active order stays readable (CU §4.2, §4.7).
+class ActiveOrdersBar extends ConsumerWidget {
+  const ActiveOrdersBar({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

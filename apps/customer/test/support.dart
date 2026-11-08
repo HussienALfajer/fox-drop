@@ -52,6 +52,7 @@ class TestApp {
         ],
       }),
     ]);
+    platform();
     server.on('/v1/customer/status', [
       const FakeAnswer(200, {'status': 'ok', 'serverTime': 1}),
     ]);
@@ -78,6 +79,22 @@ class TestApp {
   final List<Override> overrides;
   final transport = FakeTransport();
   late final ProviderContainer container;
+
+  /// The answer of `GET /v1/customer/platform` (CU §4.2, §4.7): no update
+  /// and no maintenance unless a test says otherwise.
+  void platform({
+    String updateNeed = 'none',
+    String? updateMessage,
+    bool maintenance = false,
+    String? maintenanceMessage,
+  }) => server.on('/v1/customer/platform', [
+    FakeAnswer(200, {
+      'updateNeed': updateNeed,
+      'updateMessage': ?updateMessage,
+      'maintenance': maintenance,
+      'maintenanceMessage': ?maintenanceMessage,
+    }),
+  ]);
 
   /// The profile answer of a customer who completed «أكمل بياناتك».
   void completedProfile() => server.on('/v1/customer/profile', [

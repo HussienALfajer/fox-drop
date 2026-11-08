@@ -1484,6 +1484,120 @@
         ]
       }
     },
+    "/v1/customer/platform": {
+      "get": {
+        "operationId": "customerPlatformGet",
+        "parameters": [
+          {
+            "name": "version",
+            "required": true,
+            "in": "query",
+            "description": "The app version, such as 1.4.0.",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 40,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/v1/merchant/platform": {
+      "get": {
+        "operationId": "merchantPlatformGet",
+        "parameters": [
+          {
+            "name": "version",
+            "required": true,
+            "in": "query",
+            "description": "The app version, such as 1.4.0.",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 40,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/captain/platform": {
+      "get": {
+        "operationId": "captainPlatformGet",
+        "parameters": [
+          {
+            "name": "version",
+            "required": true,
+            "in": "query",
+            "description": "The app version, such as 1.4.0.",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 40,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
     "/v1/merchant/restaurant": {
       "get": {
         "operationId": "merchantMenuRestaurant",
@@ -5975,6 +6089,37 @@
         },
         "required": [
           "changes"
+        ],
+        "additionalProperties": false
+      },
+      "PlatformDto_Output": {
+        "type": "object",
+        "properties": {
+          "updateNeed": {
+            "type": "string",
+            "enum": [
+              "required",
+              "suggested",
+              "none"
+            ],
+            "description": "required: below the min_version setting of the app, the blocking update screen; suggested: below its latest_version, a dismissible banner."
+          },
+          "updateMessage": {
+            "type": "string",
+            "description": "The update_message setting of the app, when set."
+          },
+          "maintenance": {
+            "type": "boolean",
+            "description": "The maintenance setting of the app: the blocking maintenance screen."
+          },
+          "maintenanceMessage": {
+            "type": "string",
+            "description": "The maintenance message, when set."
+          }
+        },
+        "required": [
+          "updateNeed",
+          "maintenance"
         ],
         "additionalProperties": false
       },

@@ -791,5 +791,19 @@
   "customerNotificationsTitle": "الإشعارات",
   "@customerNotificationsTitle": {"description": "The account's notifications (CU §13, Appendix B)."},
   "customerNotificationsEmpty": "لا توجد إشعارات",
-  "@customerNotificationsEmpty": {"description": "«الإشعارات» with no push in the last 30 days (CU §13). The spec gives no wording."}
+  "@customerNotificationsEmpty": {"description": "«الإشعارات» with no push in the last 30 days (CU §13). The spec gives no wording."},
+  "platformUpdateRequiredTitle": "يلزم تحديث التطبيق",
+  "@platformUpdateRequiredTitle": {"description": "The blocking update screen below app.<app>.min_version (CU §4.2, RA §4.2, CA §4.2). The spec gives no wording."},
+  "platformUpdateRequiredMessage": "هذا الإصدار لم يعد يعمل. حدّث التطبيق لتتابع.",
+  "@platformUpdateRequiredMessage": {"description": "The update screen's text while app.<app>.update_message is unset. The spec gives no wording."},
+  "platformUpdateSuggested": "يتوفر إصدار أحدث من التطبيق.",
+  "@platformUpdateSuggested": {"description": "The dismissible banner below app.<app>.latest_version, while app.<app>.update_message is unset. The spec gives no wording."},
+  "platformUpdate": "تحديث",
+  "@platformUpdate": {"description": "Opens the store or the download page for the update. The spec gives no wording."},
+  "platformLater": "لاحقاً",
+  "@platformLater": {"description": "Dismisses the update banner for this run of the app. The spec gives no wording."},
+  "platformMaintenanceTitle": "التطبيق في صيانة",
+  "@platformMaintenanceTitle": {"description": "The blocking maintenance screen while app.<app>.maintenance is on (CU §4.7, RA §4.10, CA §4.8). The spec gives no wording."},
+  "platformMaintenanceMessage": "نعمل على تحسين الخدمة ونعود قريباً.",
+  "@platformMaintenanceMessage": {"description": "The maintenance screen's text while its message is unset. The spec gives no wording."}
 }

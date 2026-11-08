@@ -422,6 +422,8 @@ Serializers _$serializers =
           ..add(MerchantSignedOutDtoOutput.serializer)
           ..add(MerchantSignedOutDtoOutputStatusEnum.serializer)
           ..add(MerchantTokensDtoOutput.serializer)
+          ..add(PlatformDtoOutput.serializer)
+          ..add(PlatformDtoOutputUpdateNeedEnum.serializer)
           ..add(PushTokenDto.serializer)
           ..add(PushTokenDtoPlatformEnum.serializer)
           ..add(PushTokenRegisteredDtoOutput.serializer)

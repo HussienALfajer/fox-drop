@@ -264,6 +264,7 @@ jobs:
           flutter build apk --flavor staging --release \
             --build-number "$GITHUB_RUN_NUMBER" \
             --dart-define="API_BASE_URL=https://$api_host" \
+            --dart-define="UPDATE_URL=$UPDATE_URL" \
             "${firebase[@]}"
           rm "$RUNNER_TEMP/release.jks"
         env:
@@ -272,6 +273,8 @@ jobs:
           FOXDROP_KEY_ALIAS: foxdrop
           FIREBASE_APP_ID: ${{ vars[format('STAGING_FIREBASE_{0}_APP_ID', matrix.key)] }}
           FIREBASE_API_KEY: ${{ secrets.STAGING_FIREBASE_API_KEY }}
+          # Where the update screen's button leads (RA §4.2); empty hides it.
+          UPDATE_URL: ${{ vars[format('STAGING_{0}_UPDATE_URL', matrix.key)] }}
 
       - uses: actions/upload-artifact@v5
         with:

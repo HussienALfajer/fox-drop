@@ -4,11 +4,31 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.4, platform controls (`docs/roadmap.md`, Phase 2): forced update, maintenance, terms and privacy versions with re-acceptance, platform hours, the emergency stop with its banners, delay notice and automatic resume, and the settings the apps read. The owner starts the emergency stop and ordering stops in every app.
+Slice 2.4b, terms and privacy versions (`docs/roadmap.md`, Phase 2, slice 2.4 split with the owner 2026-11-08 into 2.4a–2.4d): one terms and privacy document per audience (customer, captain, restaurant), versioned and published in the panel's «المحتوى», acceptances per account, and re-acceptance on the next open. The owner publishes a new customer version and the app asks for it before ordering.
 
-- **Specs:** AP §9.1.6, AP §9.13, CU §4.2, CU §4.7, RA §4.2, CA §4.2, CA §4.8; RA §16 #34–36 and CA §14 #31, #33 (the banners and blocking screens); AP Appendix A (the settings).
-- **Branch:** `feat/platform-controls` (or one per pull request once split).
-- **Plan:** larger than one pull request: split it with the owner first (the `slice-plan` skill), then write each part's steps here, one per commit.
+- **Specs:** AP §9.13 «الشروط والخصوصية», CU §4.7 (terms), CU §5.3 (the sign-up's tick), CU §13 («حسابي» terms), CU §15 «Accept terms», CA §4.8 (terms), CA §5 step 4, CA §7.2 (terms block), CA §15 «Accept terms», K7, RA §4.10 (terms), RA §5.2 item 3, S13, RA §16 #35, CA §14 #33; the definitions of done CU §19 #3 and #27, RA §22 #30, CA §19 #28 (their terms parts).
+- **Branch:** `feat/terms-versions`.
+- **Owner decision 2026-11-08:** the first version of each document is a draft written from the specs, for the owner (or a lawyer) to replace before launch.
+- **Already there:** `customers.profiles.terms_accepted_at` from «أوافق على الشروط وسياسة الخصوصية» at sign-up (CU §5.3); the quote's comment «the terms version … pass until their slices»; `onlineBlocks` notes the terms (K7) joins with its slice; the merchant app's device-name screen notes the terms come with their slice; `core_platform`'s blocking pattern (slice 2.4a) for the owner's accept screen.
+- **Plan:**
+  - [ ] Server, content module: `content.terms_versions` (audience, version number, body, published by and at; append-only), the draft per audience in the migration, the panel's routes to read and publish (`content.manage`, audited), and the apps' read of the current version.
+  - [ ] Server, acceptances: each party's module records which version an account accepted (customers, captains, restaurant owners) through «Accept terms» (CU §15, CA §15); the customer's sign-up records the current version; the quote's `terms_pending` problem, the captain's `terms_not_accepted` online block, the restaurant owner's pending flag in the session; the API contract and clients.
+  - [ ] Panel: «الشروط والخصوصية» in «المحتوى», the current version per audience and publishing a new one.
+  - [ ] Customer app: the accept screen on the next open while a version is pending, browsing still open, and checkout's `terms_pending`; the terms in «حسابي» (read only).
+  - [ ] Captain app: the accept screen before going online, a current order untouched (K7).
+  - [ ] Restaurant app: an owner with a pending version sees only Orders and the accept screen; a cashier is not affected (S13).
+  - [ ] Review, then hand over to 2.4c.
+
+### Left from 2.4a (`feat/app-versions-maintenance`)
+
+- **To confirm with the owner:** maintenance leaves an online captain without an order on home (they keep their offers and can go offline), like a required update does (CA §7.2); the strings the spec gives no wording for («يلزم تحديث التطبيق», «هذا الإصدار لم يعد يعمل. حدّث التطبيق لتتابع.», «يتوفر إصدار أحدث من التطبيق.», «تحديث», «لاحقاً», «التطبيق في صيانة», «نعمل على تحسين الخدمة ونعود قريباً.»); which address the update button opens on Android (Google Play or the website's APK, RA §4.2: one build serves both), set as the GitHub variables `STAGING_CUSTOMER_UPDATE_URL`, `STAGING_MERCHANT_UPDATE_URL`, `STAGING_CAPTAIN_UPDATE_URL`; whether customers may still order while `app.merchant.maintenance` is on (every restaurant device is blocked, so orders wait for the automatic cancellation; no spec covers it).
+- **Not yet:** the live broadcast of a maintenance or version change to open devices (2.4c); «استعادة الافتراضي» and the descriptions on «التطبيقات» (2.38).
+
+### The rest of slice 2.4
+
+- **2.4b Terms and privacy versions:** one document per audience (customer, captain, restaurant), versioned and published in the panel's «المحتوى» (AP §9.13), starting from a draft written from the specs; acceptances per account; the customer browses but cannot order until accepting (CU §4.7), the captain cannot go online (K7, CA §4.8), a restaurant owner sees only Orders until accepting and cashiers are not affected (S13, RA §4.10); the customer's sign-up ticks the current version (CU §5.3).
+- **2.4c The emergency stop in the server and the panel** (AP §9.1.6, D7): the dialog (internal reason, the browsing message, the delay notice with `{السبب}`, the customer-facing reason, the optional automatic resume time), the resume timer written with the stop (E3), new orders refused (checkout's problem), each customer opening checkout counted once per stop, the delay push to customers with an active order (CU §14 #18), «استئناف» with the optional «الخدمة عادت» push (CU §14 #19) to the customers who opened checkout during the stop, never on the automatic resume; audited; the panel's red bar with the duration and the attempts; the platform broadcast on the restaurant and captain channels, which also carries maintenance and version changes.
+- **2.4d The emergency stop in the apps:** the red banner in the restaurant and captain apps with the chime on and off (RA §8.17, §16 #34, CA §6.3, §14 #31), the customer's banner and disabled order button, and the delay banner on the order screen (CU §4.7, §11.6); all gone on resume.
 
 ## Deferred: slice 2.3's staging check
 

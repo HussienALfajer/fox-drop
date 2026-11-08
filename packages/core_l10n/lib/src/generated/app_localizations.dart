@@ -2469,6 +2469,48 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'لا توجد إشعارات'**
   String get customerNotificationsEmpty;
+
+  /// The blocking update screen below app.<app>.min_version (CU §4.2, RA §4.2, CA §4.2). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'يلزم تحديث التطبيق'**
+  String get platformUpdateRequiredTitle;
+
+  /// The update screen's text while app.<app>.update_message is unset. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الإصدار لم يعد يعمل. حدّث التطبيق لتتابع.'**
+  String get platformUpdateRequiredMessage;
+
+  /// The dismissible banner below app.<app>.latest_version, while app.<app>.update_message is unset. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'يتوفر إصدار أحدث من التطبيق.'**
+  String get platformUpdateSuggested;
+
+  /// Opens the store or the download page for the update. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديث'**
+  String get platformUpdate;
+
+  /// Dismisses the update banner for this run of the app. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لاحقاً'**
+  String get platformLater;
+
+  /// The blocking maintenance screen while app.<app>.maintenance is on (CU §4.7, RA §4.10, CA §4.8). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'التطبيق في صيانة'**
+  String get platformMaintenanceTitle;
+
+  /// The maintenance screen's text while its message is unset. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'نعمل على تحسين الخدمة ونعود قريباً.'**
+  String get platformMaintenanceMessage;
 }
 
 class _AppLocalizationsDelegate

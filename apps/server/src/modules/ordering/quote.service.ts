@@ -10,7 +10,7 @@ import {
   tripMinutes,
 } from '../geo/index.js';
 import { MerchantsService, type Restaurant, type StorefrontState } from '../merchants/index.js';
-import { SettingsService } from '../settings/index.js';
+import { SettingsService, versionBelow } from '../settings/index.js';
 import { ActiveOrders } from './active-orders.js';
 import { platformOpening } from './platform-hours.js';
 import {
@@ -22,7 +22,6 @@ import {
   quoteMoney,
   quoteVersion,
   thresholds,
-  versionBelow,
 } from './quote.js';
 
 // CU §10.6: the problems that block ordering, each with the action the app

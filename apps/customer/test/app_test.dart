@@ -16,7 +16,10 @@ void main() {
     final ask = find.text('أين نوصل طلبك؟');
     expect(ask, findsOneWidget);
     expect(Directionality.of(tester.element(ask)), TextDirection.rtl);
-    expect(app.server.requests, isEmpty);
+    // A guest's start reads only the version and maintenance (CU §4.2).
+    expect(app.server.requests.map((request) => request.uri.path), [
+      '/v1/customer/platform',
+    ]);
   });
 
   testWidgets('opens the customer FAQ from Content (CU §13)', (tester) async {

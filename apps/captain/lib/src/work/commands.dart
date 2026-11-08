@@ -176,7 +176,7 @@ class Commands extends Notifier<Set<String>> {
       (_) => _api.captainAvailabilityOnline(
         captainGoOnlineDto: CaptainGoOnlineDto(
           (b) => b
-            ..appVersion = _plainVersion(version)
+            ..appVersion = plainVersion(version)
             ..simulatedLocation = fix.simulated,
         ),
       ),
@@ -459,7 +459,8 @@ Notice refusal(Object? body) {
 }
 
 /// The server takes the version as `1.2.3`; a build suffix is dropped.
-String _plainVersion(String version) =>
+/// The version without its build number, as the server takes it.
+String plainVersion(String version) =>
     RegExp(r'^\d+\.\d+\.\d+').stringMatch(version) ?? version;
 
 final commandsProvider = NotifierProvider<Commands, Set<String>>(Commands.new);
