@@ -111,5 +111,6 @@ export {
   CaptainAccountsService,
 } from './captain-accounts.service.js';
 export { OtpSenderPoolModule } from './otp-sender-pool.module.js';
+export { OpenAppSessions, OpenAppSessionsModule } from './open-app-sessions.js';
 export { OtpSenderPoolService } from './otp-sender-pool.service.js';
 export type { PoolAlert } from './otp-sender-pool.js';

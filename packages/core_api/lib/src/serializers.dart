@@ -33,6 +33,10 @@ import 'package:core_api/src/model/admin_faq_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_faq_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output_customer_inner.dart';
+import 'package:core_api/src/model/admin_notification_resent_dto_output.dart';
+import 'package:core_api/src/model/admin_notification_text_dto_output.dart';
+import 'package:core_api/src/model/admin_notification_texts_dto_output.dart';
+import 'package:core_api/src/model/admin_notification_texts_dto_output_templates_inner.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
@@ -76,12 +80,14 @@ import 'package:core_api/src/model/admin_record_delivery_dto.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_amount_due.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_received_inner.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_shortfall.dart';
+import 'package:core_api/src/model/admin_resend_notification_dto.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output_shortfalls_inner.dart';
 import 'package:core_api/src/model/admin_texts_dto_output.dart';
 import 'package:core_api/src/model/admin_texts_dto_output_contact.dart';
 import 'package:core_api/src/model/admin_update_contact_dto.dart';
+import 'package:core_api/src/model/admin_update_notification_text_dto.dart';
 import 'package:core_api/src/model/admin_work_rules_dto.dart';
 import 'package:core_api/src/model/admin_work_rules_dto_output.dart';
 import 'package:core_api/src/model/backup_codes_dto_output.dart';
@@ -179,6 +185,8 @@ import 'package:core_api/src/model/customer_location_dto_output.dart';
 import 'package:core_api/src/model/customer_location_dto_output_zone.dart';
 import 'package:core_api/src/model/customer_new_address_dto.dart';
 import 'package:core_api/src/model/customer_new_address_dto_location.dart';
+import 'package:core_api/src/model/customer_notifications_dto_output.dart';
+import 'package:core_api/src/model/customer_notifications_dto_output_notifications_inner.dart';
 import 'package:core_api/src/model/customer_order_dto_output.dart';
 import 'package:core_api/src/model/customer_order_dto_output_order.dart';
 import 'package:core_api/src/model/customer_order_dto_output_order_delivery.dart';
@@ -267,6 +275,8 @@ import 'package:core_api/src/model/merchant_sign_in_dto.dart';
 import 'package:core_api/src/model/merchant_signed_in_dto_output.dart';
 import 'package:core_api/src/model/merchant_signed_out_dto_output.dart';
 import 'package:core_api/src/model/merchant_tokens_dto_output.dart';
+import 'package:core_api/src/model/push_token_dto.dart';
+import 'package:core_api/src/model/push_token_registered_dto_output.dart';
 import 'package:core_api/src/model/realtime_token_dto_output.dart';
 import 'package:core_api/src/model/reorder_dto.dart';
 import 'package:core_api/src/model/reset_setting_dto.dart';
@@ -317,6 +327,10 @@ part 'serializers.g.dart';
   AdminFaqDtoOutput,
   AdminFaqsDtoOutput,
   AdminFaqsDtoOutputCustomerInner,
+  AdminNotificationResentDtoOutput,
+  AdminNotificationTextDtoOutput,
+  AdminNotificationTextsDtoOutput,
+  AdminNotificationTextsDtoOutputTemplatesInner,
   AdminOrderCardDtoOutput,
   AdminOrderCardDtoOutputOrder,
   AdminOrderCardDtoOutputOrderBadges,
@@ -360,12 +374,14 @@ part 'serializers.g.dart';
   AdminRecordDeliveryDtoAmountDue,
   AdminRecordDeliveryDtoReceivedInner,
   AdminRecordDeliveryDtoShortfall,
+  AdminResendNotificationDto,
   AdminSessionDtoOutput,
   AdminShortfallsDtoOutput,
   AdminShortfallsDtoOutputShortfallsInner,
   AdminTextsDtoOutput,
   AdminTextsDtoOutputContact,
   AdminUpdateContactDto,
+  AdminUpdateNotificationTextDto,
   AdminWorkRulesDto,
   AdminWorkRulesDtoOutput,
   BackupCodesDtoOutput,
@@ -463,6 +479,8 @@ part 'serializers.g.dart';
   CustomerLocationDtoOutputZone,
   CustomerNewAddressDto,
   CustomerNewAddressDtoLocation,
+  CustomerNotificationsDtoOutput,
+  CustomerNotificationsDtoOutputNotificationsInner,
   CustomerOrderDtoOutput,
   CustomerOrderDtoOutputOrder,
   CustomerOrderDtoOutputOrderDelivery,
@@ -551,6 +569,8 @@ part 'serializers.g.dart';
   MerchantSignedInDtoOutput,
   MerchantSignedOutDtoOutput,
   MerchantTokensDtoOutput,
+  PushTokenDto,
+  PushTokenRegisteredDtoOutput,
   RealtimeTokenDtoOutput,
   ReorderDto,
   ResetSettingDto,
@@ -625,6 +645,12 @@ Serializers serializers =
             ]),
             () =>
                 ListBuilder<AdminReasonListsDtoOutputListsInnerReasonsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminNotificationTextsDtoOutputTemplatesInner),
+            ]),
+            () => ListBuilder<AdminNotificationTextsDtoOutputTemplatesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -731,6 +757,10 @@ Serializers serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(AdminFaqDtoItemsInner)]),
             () => ListBuilder<AdminFaqDtoItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltMap, [FullType(String), FullType(String)]),
+            () => MapBuilder<String, String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -852,6 +882,13 @@ Serializers serializers =
               FullType(AdminCitiesDtoOutputCitiesInner),
             ]),
             () => ListBuilder<AdminCitiesDtoOutputCitiesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CustomerNotificationsDtoOutputNotificationsInner),
+            ]),
+            () =>
+                ListBuilder<CustomerNotificationsDtoOutputNotificationsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

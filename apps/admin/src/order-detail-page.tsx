@@ -15,6 +15,12 @@ import {
 } from './order-detail.js';
 import { statusKeys, trackKeys, vehicleKey } from './order-labels.js';
 import { Badges } from './orders-board-page.js';
+import {
+  canResend,
+  type ResendTarget,
+  resendTargets,
+  useResendNotification,
+} from './resend-notification.js';
 import { can } from './session.js';
 
 const route = getRouteApi('/signed-in/orders/$orderId');
@@ -89,6 +95,9 @@ export function OrderDetailPage() {
         </p>
       )}
       <Badges card={detail} />
+      {canResend(session) && (
+        <ResendNotification orderId={orderId} targets={resendTargets(detail)} />
+      )}
 
       <h3>{t('order.captain')}</h3>
       {detail.captain ? (
@@ -239,6 +248,49 @@ export function OrderDetailPage() {
           );
         })}
       </ol>
+    </section>
+  );
+}
+
+const targetKeys = {
+  customer: 'order.resend.customer',
+  merchant: 'order.resend.merchant',
+  captain: 'order.resend.captain',
+} as const satisfies Record<ResendTarget, string>;
+
+// AP §9.3.2 «إعادة إرسال الإشعار»: the order's latest push to that party,
+// sent again.
+function ResendNotification({ orderId, targets }: { orderId: string; targets: ResendTarget[] }) {
+  const { t } = useTranslation();
+  const resend = useResendNotification(orderId);
+  if (targets.length === 0) return null;
+  const result = resend.data;
+  return (
+    <section>
+      <h3>{t('order.resend.title')}</h3>
+      {targets.map((to) => (
+        <button
+          key={to}
+          type="button"
+          disabled={resend.isPending}
+          onClick={() => resend.mutate(to)}
+        >
+          {t(targetKeys[to])}
+        </button>
+      ))}
+      {resend.isError && <p role="alert">{t('common.failed')}</p>}
+      {result?.status === 'sent' && (
+        <p role="status">{t('order.resend.sent', { text: result.body })}</p>
+      )}
+      {result?.status === 'refused' && (
+        <p role="alert">
+          {t(
+            result.refusal === 'nothing_to_resend'
+              ? 'order.resend.nothingToResend'
+              : 'order.resend.notActive',
+          )}
+        </p>
+      )}
     </section>
   );
 }

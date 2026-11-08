@@ -7,11 +7,16 @@ The handover note between sessions: the current task, its branch, its plan, and 
 Slice 2.3, push on Android (`docs/roadmap.md`, Phase 2): FCM device tokens per app installation, push from the outbox relay for the rows the specs mark, notification templates (AP §9.13), AP §8.3's apology on an automatic cancellation, the customer's permission at the first order, «إعادة إرسال الإشعار». The owner closes the customer app and gets the acceptance push.
 
 - **Specs:** architecture §8.1–8.2; CU §14, RA §16, CA §14, AP §10, AP §9.13 (notification templates), AP §8.3 (the apology); `apps/server/src/modules/notifications/CLAUDE.md` («Not yet»: push, the relay is where it joins) and `ordering/CLAUDE.md` (the relay); `apps/customer/CLAUDE.md` and `packages/core_auth/CLAUDE.md` for the apps' side.
-- **Branch:** `feat/android-push`.
-- **Plan:**
-  - [ ] Read the specs above, which rows each party's push table marks, how the Firebase project `foxdrop-staging` is set up (the `deploy` skill, «App Check») and how the apps start Firebase without `google-services.json`.
-  - [ ] Ask the owner: the split into pull requests (server tokens and sending, templates in the panel, each app), the FCM service account for staging (a secret of the GitHub `staging` environment, never in the repository), and the open wording of the templates.
-  - [ ] Write the plan as one step per commit once the split is approved.
+- **Owner decisions 2026-11-08:** three pull requests: 2.3a the server and the panel (device tokens, sending from the outbox, the templates in «المحتوى», the apology, «إعادة إرسال الإشعار», the customer's stored notifications), 2.3b the customer app (the permission at the first order, receiving, the «الإشعارات» screen), 2.3c the restaurant and captain apps. The customer's notifications are stored and shown now (CU §13). Only the rows whose events exist are sent; the others join with their slices, and every template is seeded with its default text.
+- **Branch:** `feat/customer-push` (2.3b), then `feat/merchant-captain-push` (2.3c). 2.3a (`feat/android-push`) is merged.
+- **Done in 2.3a:** the server and the panel. Each app registers its token with `PUT /v1/{customer,merchant,captain}/push-token` (`{ token, platform: 'android' }`) at every start and whenever Firebase renews it; the worker sends each push as an FCM notification on the Android channel named by its level (`default`, `ring`, `chime`, `offer`, `cancellation`, `silent`; architecture §8.2) with the title «FOX DROP», `android.priority` and the data a tap opens (`target`: `order` or `offer`, `orderId`, `messageId`); `GET /v1/customer/notifications` answers «الإشعارات» (CU §13). See `apps/server/src/modules/notifications/CLAUDE.md` and `ordering/CLAUDE.md` «Pushes».
+- **Plan (2.3b, the customer app):** to write as one step per commit at its start, after reading CU §10.7 item 4 (the permission at the first order, Q11), CU §13 «الإشعارات», CU §14 (what a tap opens), `apps/customer/CLAUDE.md` and `packages/core_auth/CLAUDE.md` (how Firebase starts from build values, without `google-services.json`):
+  - [ ] `firebase_messaging` in the customer app: the token registered after sign-in and on renewal, the Android channels created at start, a tap opening its target.
+  - [ ] The notification permission asked on the first order only (Q11), and Android 13's runtime permission.
+  - [ ] The «الإشعارات» screen (30 days, newest first, a tap opens its target); the design stop applies to its styling.
+  - [ ] The staging check: the owner closes the customer app and gets the acceptance push (needs `FCM_SERVICE_ACCOUNT` on staging, the `deploy` skill).
+- **Before 2.3b's check on staging:** the owner creates the `push-sender` service account and adds `FCM_SERVICE_ACCOUNT` to the server's `.env` (the `deploy` skill, «Secrets»).
+- **To confirm with the owner (2.3a):** every push's title is «FOX DROP»; a resend appears again in the customer's «الإشعارات»; the restaurant's owners with ringing off still get Ring events with sound until that device setting exists (RA §16).
 
 ## Deferred: slice 1.14h, the whole cycle on real phones
 

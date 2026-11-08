@@ -21,6 +21,9 @@ import 'package:core_api/src/model/admin_dispatch_state_dto_output.dart';
 import 'package:core_api/src/model/admin_faq_dto.dart';
 import 'package:core_api/src/model/admin_faq_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output.dart';
+import 'package:core_api/src/model/admin_notification_resent_dto_output.dart';
+import 'package:core_api/src/model/admin_notification_text_dto_output.dart';
+import 'package:core_api/src/model/admin_notification_texts_dto_output.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output.dart';
 import 'package:core_api/src/model/admin_order_dto_output.dart';
 import 'package:core_api/src/model/admin_picker_dto_output.dart';
@@ -29,10 +32,12 @@ import 'package:core_api/src/model/admin_reason_lists_dto_output.dart';
 import 'package:core_api/src/model/admin_reason_order_dto_output.dart';
 import 'package:core_api/src/model/admin_record_arrival_dto.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto.dart';
+import 'package:core_api/src/model/admin_resend_notification_dto.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output.dart';
 import 'package:core_api/src/model/admin_texts_dto_output.dart';
 import 'package:core_api/src/model/admin_update_contact_dto.dart';
+import 'package:core_api/src/model/admin_update_notification_text_dto.dart';
 import 'package:core_api/src/model/admin_work_rules_dto.dart';
 import 'package:core_api/src/model/admin_work_rules_dto_output.dart';
 import 'package:core_api/src/model/backup_codes_dto_output.dart';
@@ -954,6 +959,79 @@ class AdminApi {
     );
   }
 
+  /// adminContentNotificationTexts
+  ///
+  ///
+  /// Parameters:
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminNotificationTextsDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminNotificationTextsDtoOutput>>
+  adminContentNotificationTexts({
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/content/notifications';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminNotificationTextsDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    AdminNotificationTextsDtoOutput,
+                  ),
+                )
+                as AdminNotificationTextsDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminNotificationTextsDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// adminContentReorder
   ///
   ///
@@ -1414,6 +1492,109 @@ class AdminApi {
     }
 
     return Response<AdminFaqDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminContentUpdateNotificationText
+  ///
+  ///
+  /// Parameters:
+  /// * [key]
+  /// * [adminUpdateNotificationTextDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminNotificationTextDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminNotificationTextDtoOutput>>
+  adminContentUpdateNotificationText({
+    required String key,
+    required AdminUpdateNotificationTextDto adminUpdateNotificationTextDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/content/notifications/{key}'.replaceAll(
+      '{'
+      r'key'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        key,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminUpdateNotificationTextDto);
+      _bodyData = _serializers.serialize(
+        adminUpdateNotificationTextDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminNotificationTextDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminNotificationTextDtoOutput),
+                )
+                as AdminNotificationTextDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminNotificationTextDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -2173,6 +2354,111 @@ class AdminApi {
     }
 
     return Response<AdminOrderCardDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminOrdersResendNotification
+  ///
+  ///
+  /// Parameters:
+  /// * [orderId]
+  /// * [adminResendNotificationDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminNotificationResentDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminNotificationResentDtoOutput>>
+  adminOrdersResendNotification({
+    required String orderId,
+    required AdminResendNotificationDto adminResendNotificationDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/orders/{orderId}/resend-notification'.replaceAll(
+      '{'
+      r'orderId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        orderId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminResendNotificationDto);
+      _bodyData = _serializers.serialize(
+        adminResendNotificationDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminNotificationResentDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    AdminNotificationResentDtoOutput,
+                  ),
+                )
+                as AdminNotificationResentDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminNotificationResentDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

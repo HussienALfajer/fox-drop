@@ -31,8 +31,10 @@ import { OrderTimers, OrderTimersWorker } from './order-timers.js';
 import { OperationsViews } from './operations-views.js';
 import { OrdersService } from './orders.service.js';
 export type { OrderView } from './order-views.js';
+import { OutboxPushes, OutboxPushesWorker } from './outbox-pushes.js';
 import { OutboxRelay, OutboxRelayWorker } from './outbox-relay.js';
 import { QuoteService } from './quote.service.js';
+import { ResendNotification } from './resend-notification.js';
 
 // The ordering module (architecture §4.2): the quote (CU §10.6), the order
 // (CU §10.7), the restaurant's acceptance and «الطلب جاهز» (RA §8.5–8.8) and
@@ -74,6 +76,7 @@ import { QuoteService } from './quote.service.js';
     PickupBooking,
     PickupCommands,
     DeliveryBooking,
+    ResendNotification,
   ],
   exports: [QuoteService, OrdersService],
 })
@@ -91,6 +94,9 @@ export class OrderingModule {}
     ContentModule,
     CaptainsModule,
     SettingsModule,
+    FxModule,
+    GeoModule,
+    MerchantsModule,
   ],
   providers: [
     OrderAlerts,
@@ -102,6 +108,8 @@ export class OrderingModule {}
     PickupTimersWorker,
     OutboxRelay,
     OutboxRelayWorker,
+    OutboxPushes,
+    OutboxPushesWorker,
   ],
 })
 export class OrderingWorkerModule {}

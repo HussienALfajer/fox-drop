@@ -23,6 +23,10 @@ import {
   useUpdateFaq,
   useUpdateReason,
   useUpdateWorkRules,
+  byAudience,
+  type NotificationText,
+  useNotificationTexts,
+  useUpdateNotificationText,
 } from './content.js';
 import { can } from './session.js';
 
@@ -35,6 +39,7 @@ const refusalKeys = {
   duplicate_label: 'content.refused.duplicateLabel',
   invalid_order: 'content.refused.invalidOrder',
   invalid_value: 'content.refused.invalidValue',
+  unknown_variable: 'content.notifications.unknownVariable',
 } as const satisfies Record<ContentRefusal, string>;
 
 const audienceKeys = {
@@ -69,6 +74,7 @@ export function ContentPage() {
       {read && <ReasonLists manage={manage} />}
       {(read || faqs) && <Faqs edit={faqs} />}
       {read && <Texts manage={manage} />}
+      {read && <NotificationTexts manage={manage} />}
     </main>
   );
 }
@@ -374,5 +380,84 @@ function Texts({ manage }: { manage: boolean }) {
         <Outcome result={contact.data} failed={contact.isError} />
       </form>
     </section>
+  );
+}
+
+// «نصوص الإشعارات» (AP §9.13): the text of every push, per app. Only the text
+// is edited, within its variables; the sound and priority are fixed.
+function NotificationTexts({ manage }: { manage: boolean }) {
+  const { t } = useTranslation();
+  const templates = useNotificationTexts();
+  if (templates.isPending) return <p role="status">{t('status.loading')}</p>;
+  if (templates.isError) return <p role="alert">{t('common.failed')}</p>;
+  return (
+    <section>
+      <h2>{t('content.notifications.title')}</h2>
+      <p>{t('content.notifications.explain')}</p>
+      {byAudience(templates.data).map(({ audience, templates: entries }) => (
+        <section key={audience}>
+          <h3>{t(`content.notifications.audience.${audience}`)}</h3>
+          {entries.map((template) => (
+            <NotificationTextRow key={template.key} template={template} manage={manage} />
+          ))}
+        </section>
+      ))}
+    </section>
+  );
+}
+
+function NotificationTextRow({
+  template,
+  manage,
+}: {
+  template: NotificationText;
+  manage: boolean;
+}) {
+  const { t } = useTranslation();
+  const update = useUpdateNotificationText();
+  const [text, setText] = useState(template.current);
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    update.mutate({ key: template.key, text });
+  }
+  // The event's name, keyed by the template («content.notifications.event.<key>»);
+  // a template the panel does not know yet shows its key.
+  const event = t(`content.notifications.event.${template.key}` as never, {
+    defaultValue: template.key,
+  });
+  return (
+    <form onSubmit={submit}>
+      <fieldset disabled={!manage || update.isPending}>
+        <label>
+          {event}
+          <textarea
+            name="text"
+            value={text}
+            onChange={(change) => setText(change.target.value)}
+            required
+            maxLength={300}
+            rows={2}
+          />
+        </label>
+        <p>
+          {template.variables.length > 0
+            ? t('content.notifications.variables', {
+                variables: template.variables.map((name) => `{${name}}`).join(' '),
+              })
+            : t('content.notifications.noVariables')}
+        </p>
+        <p>{t('content.notifications.row', { row: template.row })}</p>
+        {template.current !== template.text && (
+          <p>{t('content.notifications.default', { text: template.text })}</p>
+        )}
+        {manage && <button type="submit">{t('content.save')}</button>}
+        {manage && text !== template.text && (
+          <button type="button" onClick={() => setText(template.text)}>
+            {t('content.notifications.restoreDefault')}
+          </button>
+        )}
+      </fieldset>
+      <Outcome result={update.data} failed={update.isError} />
+    </form>
   );
 }

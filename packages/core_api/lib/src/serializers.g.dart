@@ -36,6 +36,24 @@ Serializers _$serializers =
           ..add(AdminFaqDtoOutput.serializer)
           ..add(AdminFaqsDtoOutput.serializer)
           ..add(AdminFaqsDtoOutputCustomerInner.serializer)
+          ..add(AdminNotificationResentDtoOutput.serializer)
+          ..add(AdminNotificationTextDtoOutput.serializer)
+          ..add(AdminNotificationTextDtoOutputAudienceEnum.serializer)
+          ..add(AdminNotificationTextDtoOutputLevelEnum.serializer)
+          ..add(AdminNotificationTextDtoOutputPriorityEnum.serializer)
+          ..add(AdminNotificationTextsDtoOutput.serializer)
+          ..add(AdminNotificationTextsDtoOutputTemplatesInner.serializer)
+          ..add(
+            AdminNotificationTextsDtoOutputTemplatesInnerAudienceEnum
+                .serializer,
+          )
+          ..add(
+            AdminNotificationTextsDtoOutputTemplatesInnerLevelEnum.serializer,
+          )
+          ..add(
+            AdminNotificationTextsDtoOutputTemplatesInnerPriorityEnum
+                .serializer,
+          )
           ..add(AdminOrderCardDtoOutput.serializer)
           ..add(AdminOrderCardDtoOutputOrder.serializer)
           ..add(AdminOrderCardDtoOutputOrderAlertsEnum.serializer)
@@ -103,12 +121,15 @@ Serializers _$serializers =
           ..add(AdminRecordDeliveryDtoAmountDue.serializer)
           ..add(AdminRecordDeliveryDtoReceivedInner.serializer)
           ..add(AdminRecordDeliveryDtoShortfall.serializer)
+          ..add(AdminResendNotificationDto.serializer)
+          ..add(AdminResendNotificationDtoToEnum.serializer)
           ..add(AdminSessionDtoOutput.serializer)
           ..add(AdminShortfallsDtoOutput.serializer)
           ..add(AdminShortfallsDtoOutputShortfallsInner.serializer)
           ..add(AdminTextsDtoOutput.serializer)
           ..add(AdminTextsDtoOutputContact.serializer)
           ..add(AdminUpdateContactDto.serializer)
+          ..add(AdminUpdateNotificationTextDto.serializer)
           ..add(AdminWorkRulesDto.serializer)
           ..add(AdminWorkRulesDtoOutput.serializer)
           ..add(BackupCodesDtoOutput.serializer)
@@ -243,6 +264,8 @@ Serializers _$serializers =
           ..add(CustomerNewAddressDto.serializer)
           ..add(CustomerNewAddressDtoLabelEnum.serializer)
           ..add(CustomerNewAddressDtoLocation.serializer)
+          ..add(CustomerNotificationsDtoOutput.serializer)
+          ..add(CustomerNotificationsDtoOutputNotificationsInner.serializer)
           ..add(CustomerOrderDtoOutput.serializer)
           ..add(CustomerOrderDtoOutputOrder.serializer)
           ..add(CustomerOrderDtoOutputOrderDelivery.serializer)
@@ -399,6 +422,10 @@ Serializers _$serializers =
           ..add(MerchantSignedOutDtoOutput.serializer)
           ..add(MerchantSignedOutDtoOutputStatusEnum.serializer)
           ..add(MerchantTokensDtoOutput.serializer)
+          ..add(PushTokenDto.serializer)
+          ..add(PushTokenDtoPlatformEnum.serializer)
+          ..add(PushTokenRegisteredDtoOutput.serializer)
+          ..add(PushTokenRegisteredDtoOutputStatusEnum.serializer)
           ..add(RealtimeTokenDtoOutput.serializer)
           ..add(ReorderDto.serializer)
           ..add(ResetSettingDto.serializer)
@@ -482,6 +509,12 @@ Serializers _$serializers =
               const FullType(AdminFaqsDtoOutputCustomerInner),
             ]),
             () => ListBuilder<AdminFaqsDtoOutputCustomerInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminNotificationTextsDtoOutputTemplatesInner),
+            ]),
+            () => ListBuilder<AdminNotificationTextsDtoOutputTemplatesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -704,6 +737,13 @@ Serializers _$serializers =
               const FullType(CustomerAddressListDtoOutputAddressesInner),
             ]),
             () => ListBuilder<CustomerAddressListDtoOutputAddressesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerNotificationsDtoOutputNotificationsInner),
+            ]),
+            () =>
+                ListBuilder<CustomerNotificationsDtoOutputNotificationsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1203,6 +1243,14 @@ Serializers _$serializers =
             () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(TeamUsersDtoOutputUsersInnerOpenSessionsInner),
             ]),
@@ -1312,6 +1360,13 @@ Serializers _$serializers =
               const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltMap, const [
+              const FullType(String),
+              const FullType(String),
+            ]),
+            () => MapBuilder<String, String>(),
           ))
         .build();
 

@@ -12,6 +12,9 @@ export type ReasonEntry = ReasonListEntry['reasons'][number];
 export type ReasonListName = ReasonListEntry['list'];
 export type FaqAudience = 'customer' | 'captain' | 'merchant';
 export type FaqItem = { question: string; answer: string };
+export type NotificationText =
+  components['schemas']['AdminNotificationTextsDto_Output']['templates'][number];
+export type NotificationAudience = NotificationText['audience'];
 
 // The refusals the page explains; anything else is a thrown error.
 export type ContentRefusal =
@@ -20,7 +23,8 @@ export type ContentRefusal =
   | 'customer_text_not_allowed'
   | 'duplicate_label'
   | 'invalid_order'
-  | 'invalid_value';
+  | 'invalid_value'
+  | 'unknown_variable';
 
 const refusals: readonly string[] = [
   'list_closed',
@@ -29,6 +33,7 @@ const refusals: readonly string[] = [
   'duplicate_label',
   'invalid_order',
   'invalid_value',
+  'unknown_variable',
 ] satisfies ContentRefusal[];
 
 export type EditResult = { status: 'saved' } | { status: 'refused'; refusal: ContentRefusal };
@@ -45,6 +50,7 @@ const keys = {
   reasons: ['content', 'reasons'] as const,
   faqs: ['content', 'faqs'] as const,
   texts: ['content', 'texts'] as const,
+  notifications: ['content', 'notifications'] as const,
 };
 
 export function useReasonLists() {
@@ -197,6 +203,37 @@ export function useUpdateContact() {
   return useEdit(keys.texts, async (input: { phone: string; whatsapp: string }) => {
     const { data, error, response } = await api.PUT('/v1/admin/content/contact', {
       body: contactBody(input.phone, input.whatsapp),
+    });
+    return data ? { status: 'saved' } : refused(error, response.status);
+  });
+}
+
+// «نصوص الإشعارات» (AP §9.13): every push's text, grouped by app in the
+// server's order.
+export function useNotificationTexts() {
+  return useQuery({
+    queryKey: keys.notifications,
+    queryFn: async () => {
+      const { data } = await api.GET('/v1/admin/content/notifications');
+      if (!data) throw new Error('notification texts unavailable');
+      return data.templates;
+    },
+  });
+}
+
+export function byAudience(templates: NotificationText[]) {
+  const groups = new Map<NotificationAudience, NotificationText[]>();
+  for (const template of templates) {
+    groups.set(template.audience, [...(groups.get(template.audience) ?? []), template]);
+  }
+  return [...groups.entries()].map(([audience, entries]) => ({ audience, templates: entries }));
+}
+
+export function useUpdateNotificationText() {
+  return useEdit(keys.notifications, async (input: { key: string; text: string }) => {
+    const { data, error, response } = await api.PUT('/v1/admin/content/notifications/{key}', {
+      params: { path: { key: input.key } },
+      body: { text: input.text.trim() },
     });
     return data ? { status: 'saved' } : refused(error, response.status);
   });

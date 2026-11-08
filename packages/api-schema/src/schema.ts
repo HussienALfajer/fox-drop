@@ -1092,6 +1092,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders/{orderId}/resend-notification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersResendNotification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/confirm-pickup": {
         parameters: {
             query?: never;
@@ -1508,6 +1524,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/content/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminContentNotificationTexts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/content/notifications/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminContentUpdateNotificationText"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/realtime/token": {
         parameters: {
             query?: never;
@@ -1598,6 +1646,70 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminAlertsAcknowledge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/push-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["customerPushTokenRegister"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/push-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantPushTokenRegister"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/push-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["captainPushTokenRegister"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerNotificationsList"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3366,6 +3478,17 @@ export interface components {
                 currency: string;
             }[];
         };
+        AdminResendNotificationDto: {
+            /**
+             * @description The customer, the restaurant's devices or the assigned captain.
+             * @enum {string}
+             */
+            to: "customer" | "merchant" | "captain";
+        };
+        AdminNotificationResentDto_Output: {
+            /** @description The text pushed again. */
+            body: string;
+        };
         AdminConfirmPickupDto: {
             /** @description The agreed lines, prefilled from the captain's last request. */
             lines: {
@@ -4654,6 +4777,60 @@ export interface components {
             phone?: string;
             whatsapp?: string;
         };
+        AdminNotificationTextsDto_Output: {
+            templates: {
+                /** @description The template, such as customer.accepted. */
+                key: string;
+                /** @enum {string} */
+                audience: "customer" | "merchant" | "captain";
+                /** @description The spec row it comes from, such as «CU §14 #1». */
+                row: string;
+                /** @description The placeholders it takes, without braces. */
+                variables: string[];
+                /**
+                 * @description The app's sound level; not editable.
+                 * @enum {string}
+                 */
+                level: "default" | "ring" | "chime" | "offer" | "cancellation" | "silent";
+                /**
+                 * @description Not editable.
+                 * @enum {string}
+                 */
+                priority: "high" | "normal";
+                /** @description The default text. */
+                text: string;
+                /** @description The text in use: the admin's edit, else the default. */
+                current: string;
+            }[];
+        };
+        AdminUpdateNotificationTextDto: {
+            /** @description Only the placeholders the template takes, as {name}. */
+            text: string;
+        };
+        AdminNotificationTextDto_Output: {
+            /** @description The template, such as customer.accepted. */
+            key: string;
+            /** @enum {string} */
+            audience: "customer" | "merchant" | "captain";
+            /** @description The spec row it comes from, such as «CU §14 #1». */
+            row: string;
+            /** @description The placeholders it takes, without braces. */
+            variables: string[];
+            /**
+             * @description The app's sound level; not editable.
+             * @enum {string}
+             */
+            level: "default" | "ring" | "chime" | "offer" | "cancellation" | "silent";
+            /**
+             * @description Not editable.
+             * @enum {string}
+             */
+            priority: "high" | "normal";
+            /** @description The default text. */
+            text: string;
+            /** @description The text in use: the admin's edit, else the default. */
+            current: string;
+        };
         RealtimeTokenDto_Output: {
             /** @description Centrifugo's connection token, valid 15 minutes; ask again when it expires. */
             token: string;
@@ -4727,6 +4904,28 @@ export interface components {
                 byName: string | null;
             } | null;
             resolvedAt: string | null;
+        };
+        PushTokenDto: {
+            /** @description Firebase Cloud Messaging's registration token. */
+            token: string;
+            /** @enum {string} */
+            platform: "android";
+        };
+        PushTokenRegisteredDto_Output: {
+            /** @constant */
+            status: "registered";
+        };
+        CustomerNotificationsDto_Output: {
+            notifications: {
+                id: string;
+                /** Format: date-time */
+                at: string;
+                body: string;
+                /** @description What a tap opens: `target` (order, codes, account) and its ids. */
+                data: {
+                    [key: string]: string;
+                };
+            }[];
         };
         AdminPickerDto_Output: {
             /** @description Every online captain of the city, nearest to the restaurant first (AP §9.3.2). */
@@ -6570,6 +6769,32 @@ export interface operations {
             };
         };
     };
+    adminOrdersResendNotification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminResendNotificationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminNotificationResentDto_Output"];
+                };
+            };
+        };
+    };
     adminOrdersConfirmPickup: {
         parameters: {
             query?: never;
@@ -7192,6 +7417,52 @@ export interface operations {
             };
         };
     };
+    adminContentNotificationTexts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminNotificationTextsDto_Output"];
+                };
+            };
+        };
+    };
+    adminContentUpdateNotificationText: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminUpdateNotificationTextDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminNotificationTextDto_Output"];
+                };
+            };
+        };
+    };
     merchantRealtimeToken: {
         parameters: {
             query?: never;
@@ -7314,6 +7585,98 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminAlertDto_Output"];
+                };
+            };
+        };
+    };
+    customerPushTokenRegister: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushTokenDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushTokenRegisteredDto_Output"];
+                };
+            };
+        };
+    };
+    merchantPushTokenRegister: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushTokenDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushTokenRegisteredDto_Output"];
+                };
+            };
+        };
+    };
+    captainPushTokenRegister: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushTokenDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushTokenRegisteredDto_Output"];
+                };
+            };
+        };
+    };
+    customerNotificationsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerNotificationsDto_Output"];
                 };
             };
         };

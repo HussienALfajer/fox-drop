@@ -13,6 +13,7 @@ import {
   MerchantContactController,
 } from './contact.js';
 import { ContentService } from './content.service.js';
+import { NotificationTexts } from './notification-texts.service.js';
 
 // The content module (architecture §4.2): the texts and reason lists of AP
 // §9.13, edited in the panel and read by the apps. Other modules check a
@@ -28,8 +29,8 @@ import { ContentService } from './content.service.js';
     CustomerContentController,
     AdminContentController,
   ],
-  providers: [ContentService],
-  exports: [ContentService],
+  providers: [ContentService, NotificationTexts],
+  exports: [ContentService, NotificationTexts],
 })
 export class ContentModule {}
 
@@ -40,3 +41,5 @@ export {
   type ContentRefusal,
 } from './content.service.js';
 export { GENERIC_CUSTOMER_TEXT, type ReasonList } from './lists.js';
+export { NotificationTexts, type RenderedNotification } from './notification-texts.service.js';
+export { type NotificationLevel, type NotificationPriority } from './notification-templates.js';

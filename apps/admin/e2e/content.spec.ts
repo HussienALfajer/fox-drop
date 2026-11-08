@@ -22,7 +22,21 @@ const reasons = {
   ],
 };
 
+const accepted = {
+  key: 'customer.accepted',
+  audience: 'customer',
+  row: 'CU §14 #1',
+  variables: ['الساعة'],
+  level: 'default',
+  priority: 'normal',
+  text: 'المطعم يحضّر طلبك. يصل حوالي {الساعة}',
+  current: 'المطعم يحضّر طلبك. يصل حوالي {الساعة}',
+};
+
 async function fakeContent(page: Page) {
+  await page.route('**/v1/admin/content/notifications', (route) =>
+    route.fulfill({ json: { templates: [accepted] } }),
+  );
   await page.route('**/v1/admin/content/reasons', (route) => route.fulfill({ json: reasons }));
   await page.route('**/v1/admin/content/faqs', (route) =>
     route.fulfill({ json: { customer: [], captain: [], merchant: [] } }),
@@ -66,4 +80,27 @@ test('shows the content read-only without content.manage', async ({ page }) => {
   await expect(page.getByLabel('النص', { exact: true })).toHaveCount(1);
   await expect(page.getByLabel('النص', { exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'إضافة سبب' })).toHaveCount(0);
+});
+
+// AP §9.13 «نصوص الإشعارات»: the owner rewrites a push's text.
+test('edits a notification text', async ({ page }) => {
+  await fakeSession(page, ['content.read', 'content.manage', 'content.faqs']);
+  await fakeContent(page);
+  let sent: unknown;
+  await page.route('**/v1/admin/content/notifications/customer.accepted', (route) => {
+    sent = route.request().postDataJSON();
+    return route.fulfill({ json: { ...accepted, current: 'قبل المطعم طلبك، يصل {الساعة}' } });
+  });
+  await page.goto('/content');
+
+  await expect(page.getByRole('heading', { name: 'نصوص الإشعارات' })).toBeVisible();
+  await page.getByLabel('قبول المطعم للطلب').fill('قبل المطعم طلبك، يصل {الساعة}');
+  await page
+    .getByRole('group')
+    .filter({ has: page.getByLabel('قبول المطعم للطلب') })
+    .getByRole('button', { name: 'حفظ' })
+    .click();
+
+  await expect(page.getByRole('status').filter({ hasText: 'حُفظ' })).toBeVisible();
+  expect(sent).toEqual({ text: 'قبل المطعم طلبك، يصل {الساعة}' });
 });

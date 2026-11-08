@@ -5,7 +5,7 @@ import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { Centrifuge, type Subscription } from 'centrifuge';
 import { decodeJwt } from 'jose';
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ApiModule } from '../../api.module.js';
 import { startTestCentrifugo, type TestCentrifugo } from '../../centrifugo/test-centrifugo.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
@@ -30,12 +30,17 @@ import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 import { OrderAlerts } from './order-alerts.js';
 import { OrderTimers } from './order-timers.js';
+import { ResendNotification } from './resend-notification.js';
 
 // Architecture §6.1–6.2, RA §4.3, CU §4.3: the apps connect to Centrifugo
 // with a short-lived token from the API, the API checks every subscription,
 // and the outbox relay of the worker publishes the order's events to the
 // restaurant's and the order's channels. The API listens on a real port, so
 // Centrifugo's subscription proxy calls it.
+// Each test waits on Centrifugo and the worker's loops (eventually, up to
+// 10 s a step), so the default 5 s is too short for a full parallel run.
+vi.setConfig({ testTimeout: 30_000 });
+
 let database: TestDatabase;
 let cache: TestValkey;
 let centrifugo: TestCentrifugo;
@@ -124,6 +129,8 @@ beforeAll(async () => {
   );
   const settings = app.get(SettingsService);
   await settings.update('dispatch.capacity_check', { cityId: azaz }, false, bySystem);
+  // Every test signs in from the same address (architecture §8.3.3 item 2).
+  await settings.update('otp.ip_hourly_max', {}, 1000, bySystem);
   await settings.update(
     'currency.<code>.rounding_unit',
     { cityId: azaz, parameter: 'TRY' },
@@ -852,5 +859,179 @@ describe("the panel's city channel (architecture §6.2, §10.3)", () => {
     } finally {
       board.client.disconnect();
     }
+  });
+});
+
+describe("the order's pushes (architecture §8.1, CU §14, RA §16, CA §14)", () => {
+  // The pushes queued for the order, by template: the worker turns each
+  // event into them within seconds, whether push is on or not.
+  async function pushesOf(orderId: string) {
+    const { rows } = await sql.query(
+      `SELECT template_key, body, party, priority, level FROM notifications.push_messages
+       WHERE data->>'orderId' = $1 ORDER BY created_at, template_key`,
+      [orderId],
+    );
+    return rows as {
+      template_key: string;
+      body: string;
+      party: string;
+      priority: string;
+      level: string;
+    }[];
+  }
+
+  async function eventuallyPushed(orderId: string, templateKey: string) {
+    const deadline = Date.now() + 10_000;
+    for (;;) {
+      const found = (await pushesOf(orderId)).find((row) => row.template_key === templateKey);
+      if (found) return found;
+      if (Date.now() > deadline) throw new Error(`no ${templateKey} for ${orderId}`);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+  }
+
+  it('rings the restaurant, tells the customer the time and offers the captain the pay', async () => {
+    const { captainId, phone } = await captainSignedIn();
+    await captainDevice(phone);
+    const captains = app.get(CaptainsService);
+    const now = new Date();
+    await captains.goOnline(captainId, { appVersion: '1.0.0', simulatedLocation: false }, now);
+    await captains.recordLocations(
+      captainId,
+      [{ ...centre, accuracyMetres: 8, recordedAt: now, simulated: false }],
+      new Date(now.getTime() + 1),
+    );
+    try {
+      const orderId = await place(await signedIn('customer'));
+      const number = (
+        await sql.query('SELECT number FROM ordering.orders WHERE id = $1', [orderId])
+      ).rows[0].number;
+      expect(await eventuallyPushed(orderId, 'merchant.new_order')).toEqual({
+        template_key: 'merchant.new_order',
+        body: `طلب جديد #${number}`,
+        party: 'merchant',
+        priority: 'high',
+        level: 'ring',
+      });
+
+      const accepted = await app.inject({
+        method: 'POST',
+        url: `/v1/merchant/orders/${orderId}/accept`,
+        headers: { ...(await signedIn('merchant')), 'idempotency-key': randomUUID() },
+        payload: { prepMin: 20 },
+      });
+      expect(accepted.statusCode).toBe(200);
+      expect((await eventuallyPushed(orderId, 'customer.accepted')).body).toMatch(
+        /^المطعم يحضّر طلبك\. يصل حوالي \d{1,2}:\d{2} [صم]$/,
+      );
+
+      await app.get(DispatchService).assign(
+        {
+          orderId,
+          captainId,
+          admin: { accountId: randomUUID(), roles: ['OPS'] },
+          context: { ipAddress: null, device: null },
+          idempotencyKey: randomUUID(),
+        },
+        new Date(),
+      );
+      expect(await eventuallyPushed(orderId, 'captain.new_offer')).toMatchObject({
+        body: 'عرض جديد: 25 ₺ — مطعم الاختبار',
+        party: 'captain',
+        level: 'offer',
+      });
+    } finally {
+      await captains.goOffline(captainId, new Date());
+    }
+  });
+
+  it("apologises to the customer for an automatic cancellation and counts the restaurant's (AP §8.3)", async () => {
+    const orderId = await place(await signedIn('customer'));
+    const { rows } = await sql.query('SELECT placed_at FROM ordering.orders WHERE id = $1', [
+      orderId,
+    ]);
+    await worker
+      .get(OrderTimers)
+      .merchantAutoCancel(
+        { orderId, placedAt: rows[0].placed_at.toISOString(), version: 1 },
+        new Date(),
+      );
+    const apology = await eventuallyPushed(orderId, 'customer.cancelled');
+    expect(apology.body.startsWith('أُلغي طلبك: ')).toBe(true);
+    expect(apology.body.length).toBeGreaterThan('أُلغي طلبك: '.length);
+    expect((await eventuallyPushed(orderId, 'merchant.auto_cancelled')).body).toMatch(
+      /^أُلغي الطلب #\d+ لعدم الرد \(\d+ من 3 اليوم\)$/,
+    );
+  });
+
+  it('pushes the current state again on «إعادة إرسال الإشعار» (AP §9.3.2)', async () => {
+    const orderId = await place(await signedIn('customer'));
+    await eventuallyPushed(orderId, 'merchant.new_order');
+    const resends = app.get(ResendNotification);
+    const command = (to: 'customer' | 'merchant' | 'captain') => ({
+      orderId,
+      to,
+      admin: { accountId: randomUUID(), roles: ['SUP'] },
+      context: { ipAddress: null, device: null },
+    });
+    expect(await resends.resend(command('merchant'), new Date())).toEqual({
+      body: expect.stringMatching(/^طلب جديد #\d+$/) as unknown,
+    });
+    expect(
+      (await pushesOf(orderId)).filter((row) => row.template_key === 'merchant.new_order'),
+    ).toHaveLength(2);
+    await expect(resends.resend(command('customer'), new Date())).rejects.toMatchObject({
+      refusal: 'nothing_to_resend',
+    });
+    await expect(resends.resend(command('captain'), new Date())).rejects.toMatchObject({
+      refusal: 'order_state_changed',
+    });
+    const { rows } = await sql.query(
+      "SELECT changes FROM audit.events WHERE action = 'order.resend_notification' AND target_id = $1",
+      [orderId],
+    );
+    expect(rows.map((row) => row.changes)).toEqual([
+      {
+        to: { before: null, after: 'merchant' },
+        templateKey: { before: null, after: 'merchant.new_order' },
+      },
+    ]);
+  });
+
+  it('answers the panel by its route: who may, a missing order, and a step already past', async () => {
+    const orderId = await place(await signedIn('customer'));
+    await eventuallyPushed(orderId, 'merchant.new_order');
+    const resend = (cookies: Record<string, string>, id = orderId, to = 'merchant') =>
+      app.inject({
+        method: 'POST',
+        url: `/v1/admin/orders/${id}/resend-notification`,
+        cookies,
+        payload: { to },
+      });
+    const support = await operator(['SUP']);
+    expect((await resend({})).statusCode).toBe(401);
+    expect((await resend(await operator(['FIN']))).statusCode).toBe(403);
+    const sent = await resend(support);
+    expect(sent.statusCode).toBe(200);
+    expect(sent.json().body).toMatch(/^طلب جديد #\d+$/);
+    expect((await resend(support, randomUUID())).json()).toMatchObject({
+      statusCode: 404,
+      error: 'unknown_order',
+    });
+
+    // Accepted, the restaurant has nothing of the order's state to hear again.
+    const accepted = await app.inject({
+      method: 'POST',
+      url: `/v1/merchant/orders/${orderId}/accept`,
+      headers: { ...(await signedIn('merchant')), 'idempotency-key': randomUUID() },
+      payload: { prepMin: 20 },
+    });
+    expect(accepted.statusCode).toBe(200);
+    expect((await resend(support)).json()).toMatchObject({
+      statusCode: 409,
+      error: 'nothing_to_resend',
+    });
+    await eventuallyPushed(orderId, 'customer.accepted');
+    expect((await resend(support, orderId, 'customer')).json().body).toMatch(/^المطعم يحضّر طلبك/);
   });
 });
