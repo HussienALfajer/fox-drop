@@ -4906,7 +4906,7 @@ export interface components {
             resolvedAt: string | null;
         };
         PushTokenDto: {
-            /** @description Firebase Cloud Messaging's registration token. */
+            /** @description The app installation's Firebase Installation ID (FID), FCM's target for this device. */
             token: string;
             /** @enum {string} */
             platform: "android";

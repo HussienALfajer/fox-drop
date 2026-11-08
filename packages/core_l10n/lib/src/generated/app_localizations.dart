@@ -2427,6 +2427,48 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تغيّرت قائمة الأسباب، اختر السبب من جديد'**
   String get captainReasonChanged;
+
+  /// The notification permission at the first order (CU §4.4, Q11).
+  ///
+  /// In ar, this message translates to:
+  /// **'اسمح بالإشعارات لتعرف متى يصل طلبك'**
+  String get customerNotificationsAsk;
+
+  /// Allows notifications at the first order, then the phone asks (CU §4.4). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'سماح'**
+  String get customerNotificationsAllow;
+
+  /// Declines notifications at the first order; the order still goes (CU §4.4). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'ليس الآن'**
+  String get customerNotificationsNotNow;
+
+  /// The order screen's banner after notifications were refused (CU §4.4). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإشعارات متوقفة. فعّلها لتعرف متى يصل طلبك'**
+  String get customerNotificationsOff;
+
+  /// Opens the phone's settings from the notifications banner (CU §4.4). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإعدادات'**
+  String get customerNotificationsOpenSettings;
+
+  /// The account's notifications (CU §13, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'الإشعارات'**
+  String get customerNotificationsTitle;
+
+  /// «الإشعارات» with no push in the last 30 days (CU §13). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد إشعارات'**
+  String get customerNotificationsEmpty;
 }
 
 class _AppLocalizationsDelegate

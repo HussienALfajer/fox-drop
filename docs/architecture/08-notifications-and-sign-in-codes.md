@@ -11,7 +11,7 @@
 
 ## 8.2 In-app sounds
 
-Ring, chime and silent levels are played by the apps themselves (RA §4.4, CA §4.4), not by the push payload. Push only wakes the app or shows a notification when the app cannot run.
+Ring, chime and silent levels are played by the apps themselves (RA §4.4, CA §4.4), not by the push payload. Push only wakes the app or shows a notification when the app cannot run; that notification sounds as its Android channel does, one channel per level, which each app creates (`packages/core_push/CLAUDE.md`).
 
 ## 8.3 Sign-in codes over WhatsApp (T4, T5)
 

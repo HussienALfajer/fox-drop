@@ -13,7 +13,13 @@ import { pushPlatforms } from './schema.js';
 
 class PushTokenDto extends createZodDto(
   z.object({
-    token: z.string().min(1).max(4096).describe("Firebase Cloud Messaging's registration token."),
+    token: z
+      .string()
+      .min(1)
+      .max(4096)
+      .describe(
+        "The app installation's Firebase Installation ID (FID), FCM's target for this device.",
+      ),
     platform: z.enum(pushPlatforms),
   }),
 ) {}

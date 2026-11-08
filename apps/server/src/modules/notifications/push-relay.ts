@@ -128,6 +128,13 @@ export class PushRelay {
         'FCM refused a push',
       );
     }
+    if (invalid.length > 0) {
+      // Visible in the logs, so FCM ending many devices at once is noticed.
+      this.logger.warn(
+        { pushMessageId: row.id, ended: invalid.length },
+        'FCM no longer knows some devices',
+      );
+    }
     await this.database.db.transaction(async (tx) => {
       await this.devices.invalidate(tx, invalid, now);
       await tx

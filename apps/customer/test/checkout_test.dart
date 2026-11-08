@@ -672,4 +672,83 @@ void main() {
     expect(find.text('تعذّر الاتصال بالخادم'), findsOneWidget);
     await app.done(tester);
   });
+
+  // CU §4.4, §10.7 item 4 (Q11): the first order asks for notifications.
+  Future<TestApp> notAllowed(WidgetTester tester) => _checkout(
+    tester,
+    before: (app) {
+      app.permission.allowed = false;
+      app.server.on('/v1/customer/orders', [FakeAnswer(201, _order())]);
+    },
+  );
+
+  testWidgets('the first order asks for notifications, then places it', (
+    tester,
+  ) async {
+    final app = await notAllowed(tester);
+    await _fillAddress(tester);
+    await _confirm(tester);
+
+    expect(find.text('اسمح بالإشعارات لتعرف متى يصل طلبك'), findsOneWidget);
+    expect(app.server.to('/v1/customer/orders'), isEmpty);
+    await tester.tap(find.text('سماح'));
+    await tester.pumpAndSettle();
+
+    expect(app.permission.requests, 1);
+    expect(app.server.to('/v1/customer/orders'), hasLength(1));
+    expect(find.text('#10423'), findsOneWidget);
+    expect(find.byKey(const Key('notifications-off')), findsNothing);
+    await app.done(tester);
+  });
+
+  testWidgets('refused, the order goes and its screen links to the settings', (
+    tester,
+  ) async {
+    final app = await notAllowed(tester);
+    await _fillAddress(tester);
+    await _confirm(tester);
+    await tester.tap(find.text('ليس الآن'));
+    await tester.pumpAndSettle();
+
+    expect(app.permission.requests, 0);
+    expect(app.server.to('/v1/customer/orders'), hasLength(1));
+    expect(find.byKey(const Key('notifications-off')), findsOneWidget);
+    await tester.tap(find.text('الإعدادات'));
+    expect(app.permission.settingsOpened, 1);
+
+    // Allowed in the settings, the banner goes when the app comes back.
+    app.permission.allowed = true;
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('notifications-off')), findsNothing);
+    await app.done(tester);
+  });
+
+  testWidgets('a later order never asks again', (tester) async {
+    final app = await notAllowed(tester);
+    app.device.values['notifications_asked'] = '1';
+    await _fillAddress(tester);
+    await _confirm(tester);
+
+    expect(find.text('اسمح بالإشعارات لتعرف متى يصل طلبك'), findsNothing);
+    expect(app.permission.requests, 0);
+    expect(app.server.to('/v1/customer/orders'), hasLength(1));
+    await app.done(tester);
+  });
+
+  testWidgets('a phone that allows notifications is not asked', (tester) async {
+    final app = await _checkout(
+      tester,
+      before: (app) =>
+          app.server.on('/v1/customer/orders', [FakeAnswer(201, _order())]),
+    );
+    await _fillAddress(tester);
+    await _confirm(tester);
+
+    expect(find.text('اسمح بالإشعارات لتعرف متى يصل طلبك'), findsNothing);
+    expect(app.server.to('/v1/customer/orders'), hasLength(1));
+    expect(app.device.values['notifications_asked'], '1');
+    await app.done(tester);
+  });
 }

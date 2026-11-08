@@ -69,7 +69,15 @@ export const PUSH_SENDER = Symbol('PUSH_SENDER');
 const errorSchema = z.object({
   error: z.object({
     status: z.string().optional(),
-    details: z.array(z.looseObject({ errorCode: z.string().optional() })).optional(),
+    details: z
+      .array(
+        z.looseObject({
+          errorCode: z.string().optional(),
+          // google.rpc.BadRequest: which field of the message was refused.
+          fieldViolations: z.array(z.looseObject({ field: z.string().optional() })).optional(),
+        }),
+      )
+      .optional(),
   }),
 });
 
@@ -115,23 +123,21 @@ export class FcmSender implements PushSender {
     if (answer.ok) return 'sent';
     if (answer.status === 401) this.accessToken = undefined;
     const parsed = errorSchema.safeParse(await answer.json().catch(() => null));
+    const details = parsed.success ? (parsed.data.error.details ?? []) : [];
     const codes = new Set(
-      parsed.success
-        ? [
-            parsed.data.error.status,
-            ...(parsed.data.error.details ?? []).map((detail) => detail.errorCode),
-          ]
-        : [],
+      parsed.success ? [parsed.data.error.status, ...details.map((d) => d.errorCode)] : [],
     );
-    // INVALID_ARGUMENT: the message is fixed and tested, so it is the token
-    // that is malformed.
-    if (
-      codes.has('UNREGISTERED') ||
-      codes.has('SENDER_ID_MISMATCH') ||
-      codes.has('INVALID_ARGUMENT')
-    ) {
-      return 'invalid';
-    }
+    if (codes.has('UNREGISTERED') || codes.has('SENDER_ID_MISMATCH')) return 'invalid';
+    // INVALID_ARGUMENT ends the token only when FCM names the target as the
+    // refused field (a malformed FID). Any other refusal is of the message
+    // itself, which every device would get: it fails and is logged, so one
+    // bad message never ends every device's row.
+    const targetRefused = details.some((d) =>
+      (d.fieldViolations ?? []).some(
+        (v) => v.field === 'message.fid' || v.field === 'message.token',
+      ),
+    );
+    if (codes.has('INVALID_ARGUMENT') && targetRefused) return 'invalid';
     if (answer.status === 401 || answer.status === 429 || answer.status >= 500) return 'retry';
     return 'failed';
   }
@@ -166,10 +172,12 @@ export class FcmSender implements PushSender {
 }
 
 // FCM's message: a notification Android shows on the app's channel while the
-// app cannot (architecture §8.2), and the data the app reads on a tap.
+// app cannot (architecture §8.2), and the data the app reads on a tap. The
+// apps register their Firebase Installation ID (`firebase_messaging` 17), so
+// the target is `fid`; FCM deprecates registration tokens in its favour.
 export function fcmMessage(message: PushMessage) {
   return {
-    token: message.token,
+    fid: message.token,
     notification: { title: message.title, body: message.body },
     data: message.data,
     android: {

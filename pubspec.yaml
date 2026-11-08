@@ -11,6 +11,7 @@ workspace:
   - packages/core_api
   - packages/core_auth
   - packages/core_l10n
+  - packages/core_push
   - packages/core_realtime
   - packages/core_storage
   - packages/core_time

@@ -10,6 +10,7 @@ import '../cart/cart.dart';
 import '../device.dart';
 import '../location/delivery_point.dart';
 import '../location/position.dart';
+import '../notifications/permission.dart';
 import '../profile/profile.dart';
 import '../router.dart';
 import 'checkout.dart';
@@ -141,6 +142,34 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         },
       );
       if (send != true) return;
+    }
+    // CU §10.7 item 4 (Q11): the first order asks for notifications; the
+    // order goes whatever the answer.
+    final ask = ref.read(notificationAskProvider);
+    if (await ask.due()) {
+      if (!mounted) return;
+      final allow = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          final l10n = AppLocalizations.of(context);
+          return AlertDialog(
+            content: Text(l10n.customerNotificationsAsk),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(l10n.customerNotificationsNotNow),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(l10n.customerNotificationsAllow),
+              ),
+            ],
+          );
+        },
+      );
+      await ask.answer(allow: allow ?? false);
+      if (!mounted) return;
     }
     await ref
         .read(placeOrderProvider.notifier)

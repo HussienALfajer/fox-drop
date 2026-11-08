@@ -17081,7 +17081,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 4096,
-            "description": "Firebase Cloud Messaging's registration token."
+            "description": "The app installation's Firebase Installation ID (FID), FCM's target for this device."
           },
           "platform": {
             "type": "string",
