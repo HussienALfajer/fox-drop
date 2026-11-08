@@ -60,7 +60,9 @@ final emergencyStopProvider = Provider.autoDispose<EmergencyStopCheck?>((ref) {
 final orderEmergencyStopProvider = Provider.autoDispose
     .family<EmergencyStopCheck?, String>((ref, id) {
       final location = ref.watch(
-        orderProvider(id).select((state) => state.value?.value?.address.location),
+        orderProvider(
+          id,
+        ).select((state) => state.value?.value?.address.location),
       );
       if (location == null) return null;
       final check = _check(ref, location.latitude, location.longitude);
@@ -87,10 +89,7 @@ class EmergencyStopNotice extends ConsumerWidget {
         final message = check.stop.browseMessage;
         return !check.stop.active || message == null
             ? const SizedBox.shrink()
-            : ListTile(
-                key: const Key('emergency-stop'),
-                title: Text(message),
-              );
+            : ListTile(key: const Key('emergency-stop'), title: Text(message));
       },
     );
   }
@@ -113,10 +112,7 @@ class EmergencyDelayNotice extends ConsumerWidget {
         final notice = check.stop.delayNotice;
         return !check.stop.active || notice == null
             ? const SizedBox.shrink()
-            : ListTile(
-                key: const Key('emergency-delay'),
-                title: Text(notice),
-              );
+            : ListTile(key: const Key('emergency-delay'), title: Text(notice));
       },
     );
   }

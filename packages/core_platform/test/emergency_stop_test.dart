@@ -63,9 +63,7 @@ void main() {
     expect(switched, [false]);
   });
 
-  testWidgets('a check during a read reads once more after it', (
-    tester,
-  ) async {
+  testWidgets('a check during a read reads once more after it', (tester) async {
     final first = Completer<EmergencyStop>();
     var calls = 0;
     final slow = EmergencyStopCheck(() {
@@ -82,9 +80,7 @@ void main() {
     expect(slow.stop, on);
   });
 
-  testWidgets('a new stop seen without its end is a switch on', (
-    tester,
-  ) async {
+  testWidgets('a new stop seen without its end is a switch on', (tester) async {
     final later = EmergencyStop(
       active: true,
       startedAt: DateTime.utc(2026, 11, 9, 2),

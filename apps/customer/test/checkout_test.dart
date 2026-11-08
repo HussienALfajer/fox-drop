@@ -823,7 +823,10 @@ void main() {
     final quotes = app.server.to('/v1/customer/quote');
     expect(quotes.length, greaterThan(1));
     expect(
-      app.bodyOf('/v1/customer/quote', index: quotes.length - 1)['openedCheckout'],
+      app.bodyOf(
+        '/v1/customer/quote',
+        index: quotes.length - 1,
+      )['openedCheckout'],
       isFalse,
     );
     await app.done(tester);

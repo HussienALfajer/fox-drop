@@ -30,7 +30,9 @@ final platformCheckProvider = Provider<PlatformCheck>((ref) {
 /// [platformBroadcastsProvider]. Null while signed out.
 final emergencyStopProvider = Provider.autoDispose<EmergencyStopCheck?>((ref) {
   // The id only: a session read again (naming the device) keeps the check.
-  final restaurantId = ref.watch(merchantSessionProvider.select((s) => s.value?.restaurantId));
+  final restaurantId = ref.watch(
+    merchantSessionProvider.select((s) => s.value?.restaurantId),
+  );
   if (restaurantId == null) return null;
   final api = ref.watch(coreApiProvider).getMerchantApi();
   final check = EmergencyStopCheck(() async {
@@ -53,12 +55,12 @@ final emergencyStopProvider = Provider.autoDispose<EmergencyStopCheck?>((ref) {
 /// reconnect", RA §4.2), `platform.emergency_stop` the stop and
 /// `platform.app_changed` the platform. Watched by `MerchantApp`.
 final platformBroadcastsProvider = Provider.autoDispose<void>((ref) {
-  final restaurantId = ref.watch(merchantSessionProvider.select((s) => s.value?.restaurantId));
+  final restaurantId = ref.watch(
+    merchantSessionProvider.select((s) => s.value?.restaurantId),
+  );
   if (restaurantId == null) return;
   final following = followPlatformBroadcasts(
-    ref
-        .watch(realtimeTransportProvider)
-        .channel('merchant:$restaurantId'),
+    ref.watch(realtimeTransportProvider).channel('merchant:$restaurantId'),
     stop: ref.watch(emergencyStopProvider),
     platform: ref.watch(platformCheckProvider),
   );
@@ -81,7 +83,10 @@ class WithStopBanner extends ConsumerWidget {
       children: [
         if (stop != null)
           Material(
-            child: SafeArea(bottom: false, child: EmergencyStopBanner(check: stop)),
+            child: SafeArea(
+              bottom: false,
+              child: EmergencyStopBanner(check: stop),
+            ),
           ),
         Expanded(child: child),
       ],

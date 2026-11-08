@@ -36,7 +36,9 @@ bool captainBlocked(PlatformStatus status, Work? work) =>
 /// signed out. Offers stop with it; a current order goes on.
 final emergencyStopProvider = Provider.autoDispose<EmergencyStopCheck?>((ref) {
   // The id only: a session read again (naming the device) keeps the check.
-  final captainId = ref.watch(captainSessionProvider.select((s) => s.value?.captainId));
+  final captainId = ref.watch(
+    captainSessionProvider.select((s) => s.value?.captainId),
+  );
   if (captainId == null) return null;
   final api = ref.watch(coreApiProvider).getCaptainApi();
   final check = EmergencyStopCheck(() async {
@@ -59,12 +61,12 @@ final emergencyStopProvider = Provider.autoDispose<EmergencyStopCheck?>((ref) {
 /// CA §4.2), `platform.emergency_stop` the stop and `platform.app_changed`
 /// the platform. Watched by `CaptainApp`.
 final platformBroadcastsProvider = Provider.autoDispose<void>((ref) {
-  final captainId = ref.watch(captainSessionProvider.select((s) => s.value?.captainId));
+  final captainId = ref.watch(
+    captainSessionProvider.select((s) => s.value?.captainId),
+  );
   if (captainId == null) return;
   final following = followPlatformBroadcasts(
-    ref
-        .watch(realtimeTransportProvider)
-        .channel('captain:$captainId'),
+    ref.watch(realtimeTransportProvider).channel('captain:$captainId'),
     stop: ref.watch(emergencyStopProvider),
     platform: ref.watch(platformCheckProvider),
   );

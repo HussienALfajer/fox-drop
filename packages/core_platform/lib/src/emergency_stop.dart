@@ -33,7 +33,8 @@ class EmergencyStop {
       other.delayNotice == delayNotice;
 
   @override
-  int get hashCode => Object.hash(active, startedAt, browseMessage, delayNotice);
+  int get hashCode =>
+      Object.hash(active, startedAt, browseMessage, delayNotice);
 }
 
 /// The emergency stop kept current (`KeptRead`): read at [start], on each
