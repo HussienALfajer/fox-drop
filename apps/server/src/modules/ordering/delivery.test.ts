@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ApiModule } from '../../api.module.js';
 import { createDatabase, type Database } from '../../database/database.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
@@ -27,6 +27,12 @@ import { SettingsService, type Vehicle, vehicles } from '../settings/index.js';
 // The way to the customer, the arrival at the door, the door payment and the
 // delivery with its money (CA §9.5–9.8, K4, K16; AP §8.4–8.6, §9.1.3,
 // §9.3.2), and the whole cycle against AP §8.4's worked example.
+
+// Each test signs in the parties, places, accepts and assigns an order
+// before its own steps: up to 3 s alone, so the default 5 s is too short for
+// a full parallel run.
+vi.setConfig({ testTimeout: 30_000 });
+
 let database: TestDatabase;
 let cache: TestValkey;
 let app: NestFastifyApplication;

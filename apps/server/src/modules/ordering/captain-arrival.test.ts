@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ApiModule } from '../../api.module.js';
 import { createDatabase, type Database } from '../../database/database.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
@@ -24,6 +24,12 @@ import { SettingsService } from '../settings/index.js';
 
 // The captain's active order and their arrival at the restaurant (CA §9.1–9.3,
 // §15, C6; RA §8.9; AP §9.3.2 «تسجيل وصول الكابتن», §9.1.3).
+
+// Each test signs in the parties, places, accepts and assigns an order
+// before its own steps: up to 3 s alone, so the default 5 s is too short for
+// a full parallel run.
+vi.setConfig({ testTimeout: 30_000 });
+
 let database: TestDatabase;
 let cache: TestValkey;
 let app: NestFastifyApplication;
