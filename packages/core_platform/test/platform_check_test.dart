@@ -1,3 +1,4 @@
+import 'package:core_api/core_api.dart';
 import 'package:core_platform/core_platform.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -94,5 +95,32 @@ void main() {
     );
     expect(required.blocks, isTrue);
     expect(suggested.blocks, isFalse);
+  });
+
+  test("maps the server's answer, its messages left out when unset", () {
+    final answer = PlatformDtoOutput(
+      (b) => b
+        ..updateNeed = PlatformDtoOutputUpdateNeedEnum.required_
+        ..maintenance = false,
+    );
+    expect(
+      platformStatusOf(answer),
+      const PlatformStatus(update: UpdateNeed.required, maintenance: false),
+    );
+    expect(
+      platformStatusOf(
+        answer.rebuild(
+          (b) => b
+            ..updateNeed = PlatformDtoOutputUpdateNeedEnum.suggested
+            ..maintenance = true
+            ..maintenanceMessage = 'صيانة',
+        ),
+      ),
+      const PlatformStatus(
+        update: UpdateNeed.suggested,
+        maintenance: true,
+        maintenanceMessage: 'صيانة',
+      ),
+    );
   });
 }

@@ -221,4 +221,31 @@ void main() {
     expect(_status(tester), startsWith('المطعم يحضّر طلبك'));
     await app.done(tester);
   });
+
+  testWidgets(
+    'maintenance blocks every screen but the active order (CU §4.7)',
+    (tester) async {
+      final app = TestApp(signedIn: true);
+      app.platform(maintenance: true, maintenanceMessage: 'صيانة حتى العاشرة');
+      app.server.on('/v1/customer/orders/active', [
+        FakeAnswer(200, {
+          'orders': [_order(status: 'accepted', version: 2)],
+        }),
+      ]);
+      app.server.on('/v1/customer/orders/$_orderId', [
+        FakeAnswer(200, {'order': _order(status: 'accepted', version: 2)}),
+      ]);
+      await app.pump(tester);
+      expect(find.text('التطبيق في صيانة'), findsOneWidget);
+      expect(find.text('صيانة حتى العاشرة'), findsOneWidget);
+      app.container.read(routerProvider).go('/cart');
+      await tester.pumpAndSettle();
+      expect(find.text('التطبيق في صيانة'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('active-order')));
+      await tester.pumpAndSettle();
+      expect(_status(tester), startsWith('المطعم يحضّر طلبك'));
+      await app.done(tester);
+    },
+  );
 }

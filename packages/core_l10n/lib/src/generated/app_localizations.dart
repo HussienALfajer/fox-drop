@@ -2511,12 +2511,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'نعمل على تحسين الخدمة ونعود قريباً.'**
   String get platformMaintenanceMessage;
-
-  /// On the update or maintenance screen: opens the active order, which stays readable (CU §4.2, §4.7). The spec gives no wording.
-  ///
-  /// In ar, this message translates to:
-  /// **'تابع طلبك'**
-  String get customerFollowOrder;
 }
 
 class _AppLocalizationsDelegate

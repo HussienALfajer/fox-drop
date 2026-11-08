@@ -1495,7 +1495,4 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get platformMaintenanceMessage =>
       'نعمل على تحسين الخدمة ونعود قريباً.';
-
-  @override
-  String get customerFollowOrder => 'تابع طلبك';
 }

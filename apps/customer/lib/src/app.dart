@@ -1,9 +1,11 @@
 import 'package:core_l10n/core_l10n.dart';
+import 'package:core_platform/core_platform.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'checkout/place_order.dart';
 import 'notifications/push.dart';
+import 'platform.dart';
 import 'router.dart';
 
 /// The customer app «تطبيق الزبون»: Arabic only, right to left (AP §4.7).
@@ -25,8 +27,12 @@ class CustomerApp extends ConsumerWidget {
         router.go('/orders/${next.orderId}');
       }
     });
+    final platform = ref.watch(platformCheckProvider);
     return MaterialApp.router(
       routerConfig: router,
+      // CU §4.2: the suggested update's banner over every screen.
+      builder: (context, child) =>
+          UpdateBannerFrame(check: platform, url: updateUrl(), child: child!),
       onGenerateTitle: (context) =>
           AppLocalizations.of(context).customerAppName,
       locale: const Locale('ar'),

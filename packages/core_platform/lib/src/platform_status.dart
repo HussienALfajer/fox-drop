@@ -44,7 +44,11 @@ class PlatformStatus {
 
 /// The server's answer as the status the apps keep.
 PlatformStatus platformStatusOf(PlatformDtoOutput answer) => PlatformStatus(
-  update: UpdateNeed.values.byName(answer.updateNeed.name),
+  update: switch (answer.updateNeed) {
+    PlatformDtoOutputUpdateNeedEnum.required_ => UpdateNeed.required,
+    PlatformDtoOutputUpdateNeedEnum.suggested => UpdateNeed.suggested,
+    _ => UpdateNeed.none,
+  },
   updateMessage: answer.updateMessage,
   maintenance: answer.maintenance,
   maintenanceMessage: answer.maintenanceMessage,

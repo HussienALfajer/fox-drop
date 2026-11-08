@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'auth.dart';
+import 'blocked_screen.dart';
 import 'browsing/restaurant_screen.dart';
 import 'cart/cart_screen.dart';
 import 'checkout/checkout_screen.dart';
@@ -12,6 +13,7 @@ import 'home_screen.dart';
 import 'not_found_screen.dart';
 import 'notifications/notifications_screen.dart';
 import 'orders/order_screen.dart';
+import 'platform.dart';
 import 'profile/profile.dart';
 import 'profile/profile_screen.dart';
 import 'starting_screen.dart';
@@ -27,14 +29,16 @@ String _safeFrom(String? from) =>
 
 /// Guests browse (CU §5.1); a signed-in customer leaves the sign-in screen
 /// for where they were, through «أكمل بياناتك» while the profile is not
-/// completed (CU §5.3).
+/// completed (CU §5.3). A required update or maintenance leads to
+/// `/blocked`, except an order's screen (CU §4.2, §4.7).
 final routerProvider = Provider<GoRouter>((ref) {
   final changes = ValueNotifier(0);
   void changed(Object? previous, Object? next) => changes.value++;
   ref.listen(customerAuth.session, changed);
   ref.listen(profileProvider, changed);
+  final platform = ref.watch(platformCheckProvider);
   final router = GoRouter(
-    refreshListenable: changes,
+    refreshListenable: Listenable.merge([changes, platform]),
     redirect: (context, state) {
       final session = ref.read(customerAuth.session);
       final at = state.matchedLocation;
@@ -47,6 +51,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                 queryParameters: {'from': state.uri.toString()},
               ).toString();
       }
+      if (platform.status.blocks) {
+        return at == '/blocked' || at.startsWith('/orders/')
+            ? null
+            : '/blocked';
+      }
+      if (at == '/blocked') return '/';
       final signedIn = session.value is SignedIn;
       final profile = ref.read(profileProvider).value;
       final completing = signedIn && profile != null && !profile.completed;
@@ -77,6 +87,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/restaurants/:id',
         builder: (context, state) =>
             RestaurantScreen(restaurantId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/blocked',
+        builder: (context, state) => const BlockedScreen(),
       ),
       GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
       GoRoute(path: '/faq', builder: (context, state) => const FaqScreen()),
