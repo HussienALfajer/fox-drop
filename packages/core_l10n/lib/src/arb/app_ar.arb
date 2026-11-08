@@ -825,5 +825,7 @@
   "merchantTermsPendingBanner": "وافق على الشروط الجديدة لتستخدم شاشات المطعم الأخرى. الطلبات تصل كالمعتاد.",
   "@merchantTermsPendingBanner": {"description": "An owner's board while a version is pending (RA §4.10, S13). The spec gives no wording."},
   "emergencyStopBanner": "المنصة متوقفة مؤقتاً عن استقبال طلبات جديدة. أكملوا الطلبات الحالية.",
-  "@emergencyStopBanner": {"description": "The red banner of the restaurant and captain apps while the platform's emergency stop is on (RA §8.17, CA §6.3 item 2)."}
+  "@emergencyStopBanner": {"description": "The red banner of the restaurant and captain apps while the platform's emergency stop is on (RA §8.17, CA §6.3 item 2)."},
+  "customerCannotOrderNow": "لا يمكن استقبال الطلبات الآن",
+  "@customerCannotOrderNow": {"description": "Checkout's emergency_stop problem when the server sends no browsing message (it always does; CU Appendix C «Emergency stop»). The spec gives no wording."}
 }

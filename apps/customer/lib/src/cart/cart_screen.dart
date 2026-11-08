@@ -8,6 +8,7 @@ import '../checkout/problems.dart';
 import '../checkout/quote.dart';
 import '../checkout/quote_widgets.dart';
 import '../device.dart';
+import '../emergency_stop.dart';
 import 'cart.dart';
 import 'item_sheet.dart';
 
@@ -40,6 +41,7 @@ class CartScreen extends ConsumerWidget {
             )
           : ListView(
               children: [
+                const EmergencyStopNotice(),
                 for (final (index, line) in cart.lines.indexed)
                   _LineTile(index: index, line: line, cart: cart),
                 if (quote != null) ...[

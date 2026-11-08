@@ -54,6 +54,7 @@ class TestApp {
     ]);
     platform();
     terms();
+    emergencyStop();
     server.on('/v1/customer/status', [
       const FakeAnswer(200, {'status': 'ok', 'serverTime': 1}),
     ]);
@@ -94,6 +95,21 @@ class TestApp {
       'updateMessage': ?updateMessage,
       'maintenance': maintenance,
       'maintenanceMessage': ?maintenanceMessage,
+    }),
+  ]);
+
+  /// The answer of `GET /v1/customer/emergency-stop` (AP §9.1.6): no stop
+  /// unless a test says otherwise.
+  void emergencyStop({
+    bool active = false,
+    String browseMessage = 'نتوقف قليلاً ونعود قريباً',
+    String delayNotice = 'قد يتأخر طلبك بسبب ظرف طارئ',
+  }) => server.on('/v1/customer/emergency-stop', [
+    FakeAnswer(200, {
+      'active': active,
+      'startedAt': active ? '2026-11-09T09:00:00.000Z' : null,
+      'browseMessage': active ? browseMessage : null,
+      'delayNotice': active ? delayNotice : null,
     }),
   ]);
 

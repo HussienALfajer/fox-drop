@@ -1529,4 +1529,7 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get emergencyStopBanner =>
       'المنصة متوقفة مؤقتاً عن استقبال طلبات جديدة. أكملوا الطلبات الحالية.';
+
+  @override
+  String get customerCannotOrderNow => 'لا يمكن استقبال الطلبات الآن';
 }

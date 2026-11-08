@@ -3,6 +3,7 @@ import 'package:customer/src/browsing/browsing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'fakes.dart';
 import 'fixtures.dart';
 
 void main() {
@@ -125,5 +126,23 @@ void main() {
     await tester.pumpAndSettle();
     final add = tester.widget<FilledButton>(find.byKey(const Key('item-add')));
     expect(add.onPressed, isNull);
+  });
+
+  // CU §4.7, §6.2 item 2: browsing goes on with the stop's message.
+  testWidgets('an emergency stop shows its browsing message', (tester) async {
+    final app = await browsingApp(
+      tester,
+      before: (app) =>
+          app.emergencyStop(active: true, browseMessage: 'نتوقف قليلاً ونعود'),
+    );
+    expect(find.text('نتوقف قليلاً ونعود'), findsOneWidget);
+    expect(find.text('مطعم الشام'), findsOneWidget);
+    expect(
+      app.server.to('/v1/customer/emergency-stop').last.uri.queryParameters,
+      {'latitude': '${azaz.latitude}', 'longitude': '${azaz.longitude}'},
+    );
+    await openSham(tester);
+    expect(find.text('نتوقف قليلاً ونعود'), findsOneWidget);
+    await app.done(tester);
   });
 }

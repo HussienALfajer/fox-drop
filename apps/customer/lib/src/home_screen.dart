@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'auth.dart';
 import 'browsing/restaurant_list.dart';
 import 'cart/cart.dart';
+import 'emergency_stop.dart';
 import 'location/delivery_point.dart';
 import 'location/position.dart';
 import 'orders/order_live.dart';
@@ -69,6 +70,8 @@ class HomeScreen extends ConsumerWidget {
       bottomNavigationBar: signedIn ? const ActiveOrdersBar() : null,
       body: Column(
         children: [
+          // CU §6.2 item 2: the emergency stop's browsing message.
+          const EmergencyStopNotice(),
           // CU §6.2 item 5: terms waiting for acceptance.
           if (ref.watch(termsPendingProvider))
             ListTile(
