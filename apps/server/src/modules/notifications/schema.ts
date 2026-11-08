@@ -234,6 +234,12 @@ export const platformOutbox = notifications.table(
     type: text('type').notNull(),
     apps: text('apps').array().notNull(),
     ops: boolean('ops').notNull(),
+    // The active orders whose order:{id} channel also hears it: the
+    // customer's tracking screen (AP §9.1.6 item 2, CU §4.7).
+    orderIds: uuid('order_ids')
+      .array()
+      .notNull()
+      .default(sql`'{}'::uuid[]`),
     payload: jsonb('payload').notNull(),
     publishedAt: timestamp('published_at', { withTimezone: true }),
   },

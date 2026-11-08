@@ -47,8 +47,8 @@ const message = z.string().trim().min(1).max(500);
 const stop = z.object({
   id: z.uuid(),
   startedAt: z.iso.datetime(),
-  startedBy: z.uuid(),
-  internalReason: z.string(),
+  startedBy: z.uuid().nullable().describe('For OWN and OPS only (emergency_stop.toggle).'),
+  internalReason: z.string().nullable().describe('For OWN and OPS only (emergency_stop.toggle).'),
   browseMessage: z.string(),
   delayNotice: z.string().describe('With its {السبب} placeholder.'),
   customerReason: z.string(),
@@ -65,7 +65,8 @@ class AdminEmergencyStopStateDto extends createZodDto(
     stop: stop.nullable().describe('The open stop: the red bar (AP §7); null while running.'),
     defaults: z
       .object({ browseMessage: z.string(), delayNotice: z.string() })
-      .describe('The dialog prefills (AP Appendix A).'),
+      .nullable()
+      .describe('The dialog prefills (AP Appendix A), for OWN and OPS only.'),
   }),
 ) {}
 
@@ -135,7 +136,7 @@ function refusalAsHttp(error: unknown): never {
   if (error.refusal === 'resume_at_past') {
     throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, ...body });
   }
-  if (error.refusal === 'unknown_stop') {
+  if (error.refusal === 'unknown_stop' || error.refusal === 'unknown_city') {
     throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, ...body });
   }
   throw new ConflictException({ statusCode: HttpStatus.CONFLICT, ...body });
@@ -151,15 +152,26 @@ export class AdminEmergencyStopController {
   @Get()
   @SignedIn()
   @ZodResponse({ status: 200, type: AdminEmergencyStopStateDto })
-  async state(@Query() query: AdminEmergencyStopQueryDto) {
+  async state(
+    @Query() query: AdminEmergencyStopQueryDto,
+    @CurrentAdminSession() session: AdminSession,
+  ) {
+    // The bar needs the time and the attempts; the dialog's texts and who
+    // started it are for those who start and end it (the settings are
+    // OWN's, owner decision 2026-11-05; AP §9.1.6 gives OPS the dialog).
+    const toggles = session.permissions.includes('emergency_stop.toggle');
     const [current, defaults] = await Promise.all([
       this.stops.current(query.cityId),
-      this.stops.defaults(query.cityId),
+      toggles ? this.stops.defaults(query.cityId) : null,
     ]);
-    return { stop: current === null ? null : stopBody(current), defaults };
+    const body = current === null ? null : stopBody(current);
+    return {
+      stop: body === null || toggles ? body : { ...body, startedBy: null, internalReason: null },
+      defaults,
+    };
   }
 
-  // 409 already_stopped; 400 resume_at_past.
+  // 409 already_stopped; 400 resume_at_past; 404 unknown_city.
   @Post()
   @RequirePermission('emergency_stop.toggle')
   @HttpCode(201)

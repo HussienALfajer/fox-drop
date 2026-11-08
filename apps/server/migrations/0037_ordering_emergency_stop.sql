@@ -5,6 +5,7 @@ CREATE TABLE "notifications"."platform_outbox" (
 	"type" text NOT NULL,
 	"apps" text[] NOT NULL,
 	"ops" boolean NOT NULL,
+	"order_ids" uuid[] DEFAULT '{}'::uuid[] NOT NULL,
 	"payload" jsonb NOT NULL,
 	"published_at" timestamp with time zone,
 	CONSTRAINT "platform_outbox_apps" CHECK ("notifications"."platform_outbox"."apps" <@ ARRAY['merchant', 'captain']::text[])

@@ -18,6 +18,7 @@ import { SettingsService } from '../settings/index.js';
 import { ActiveOrders, UNTIL_ENDED } from './active-orders.js';
 import { recordTransition } from './order-events.js';
 import type { AutoCancelJob } from './order-timers.js';
+import { EmergencyStops } from './emergency-stop.js';
 import { type Quote, type QuoteRequest, QuoteRefusedError, QuoteService } from './quote.service.js';
 import { orderKey, readOrders, type OrderView } from './order-views.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
@@ -81,6 +82,7 @@ export class OrdersService implements OnModuleInit {
     private readonly fx: FxService,
     private readonly settings: SettingsService,
     private readonly jobs: Jobs,
+    private readonly emergencyStops: EmergencyStops,
   ) {}
 
   // RA §7.4: the restaurant is busy at its maximum active orders.
@@ -163,6 +165,10 @@ export class OrdersService implements OnModuleInit {
           (await this.activeOrders.restaurant(restaurant.id, tx)) >= restaurant.maxActiveOrders
         ) {
           throw new Requote('the restaurant reached its maximum active orders');
+        }
+        // AP §9.1.6: a stop started since the quote refuses the order.
+        if (await this.emergencyStops.stopsOrders(tx, cityId)) {
+          throw new Requote('the emergency stop started');
         }
 
         // AP §8.6: the rates the order keeps are the ones it was priced with.

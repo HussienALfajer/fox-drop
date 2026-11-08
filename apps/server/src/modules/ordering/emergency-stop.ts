@@ -7,6 +7,7 @@ import { Jobs } from '../../jobs/jobs.module.js';
 import { reportError } from '../../observability/error-tracking.js';
 import { AuditService, type AuditRequestContext } from '../audit/index.js';
 import { PlatformBroadcasts, PushQueue, type QueuedPush } from '../notifications/index.js';
+import { GeoService } from '../geo/index.js';
 import { SettingsService } from '../settings/index.js';
 import { emergencyStopAttempts, emergencyStops, orders } from './schema.js';
 
@@ -54,6 +55,8 @@ export interface Admin {
 }
 
 export type EmergencyStopRefusal =
+  // No such city.
+  | 'unknown_city'
   // A stop is already on in the city.
   | 'already_stopped'
   // The automatic resume is not after now.
@@ -93,6 +96,7 @@ export class EmergencyStops {
     private readonly broadcasts: PlatformBroadcasts,
     private readonly audit: AuditService,
     private readonly settings: SettingsService,
+    private readonly geo: GeoService,
   ) {}
 
   // The city's open stop, or null: what the quote checks.
@@ -102,6 +106,21 @@ export class EmergencyStops {
       .from(emergencyStops)
       .where(and(eq(emergencyStops.cityId, cityId), isNull(emergencyStops.endedAt)));
     return stop ? toStop(stop) : null;
+  }
+
+  // AP §9.1.6 item 1, inside the order's transaction: whether the city's
+  // stop is on, under the shared side of the lock a start takes, so an order
+  // either commits before the stop starts (and its customer gets the delay
+  // notice) or sees it.
+  async stopsOrders(tx: Tx, cityId: string): Promise<boolean> {
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock_shared(hashtextextended(${lockKey(cityId)}, 0))`,
+    );
+    const [open] = await tx
+      .select({ id: emergencyStops.id })
+      .from(emergencyStops)
+      .where(and(eq(emergencyStops.cityId, cityId), isNull(emergencyStops.endedAt)));
+    return open !== undefined;
   }
 
   // AP §9.1.6 item 4: the open stop with its attempts so far.
@@ -139,6 +158,9 @@ export class EmergencyStops {
     if (command.resumeAt !== null && command.resumeAt.getTime() <= now.getTime()) {
       throw new EmergencyStopRefusedError('resume_at_past');
     }
+    if ((await this.geo.cityTimeZone(command.cityId)) === null) {
+      throw new EmergencyStopRefusedError('unknown_city');
+    }
     await this.jobs.ready();
     return this.database.db.transaction(async (tx) => {
       await lockCity(tx, command.cityId);
@@ -168,11 +190,13 @@ export class EmergencyStops {
           db: inTransaction(tx),
         });
       }
-      await this.pushes.enqueue(tx, await delayPushes(tx, stop), now);
+      const active = await activeOrders(tx, stop.cityId);
+      await this.pushes.enqueue(tx, delayPushes(stop, active), now);
       await this.broadcasts.enqueue(tx, {
         type: 'platform.emergency_stop',
         cityId: stop.cityId,
         active: true,
+        orderIds: active.map(({ orderId }) => orderId),
         at: now,
       });
       await this.audit.recordWrite(
@@ -286,21 +310,25 @@ export class EmergencyStops {
     });
   }
 
+  // The end reaches the apps and every active order's screen, whose delay
+  // banner goes (CU §4.7).
   private async ended(tx: Tx, cityId: string, now: Date): Promise<void> {
+    const active = await activeOrders(tx, cityId);
     await this.broadcasts.enqueue(tx, {
       type: 'platform.emergency_stop',
       cityId,
       active: false,
+      orderIds: active.map(({ orderId }) => orderId),
       at: now,
     });
   }
 }
 
 // Starting, resuming and the automatic resume of one city take turns.
+const lockKey = (cityId: string) => `emergency-stop:${cityId}`;
+
 async function lockCity(tx: Tx, cityId: string): Promise<void> {
-  await tx.execute(
-    sql`SELECT pg_advisory_xact_lock(hashtextextended(${`emergency-stop:${cityId}`}, 0))`,
-  );
+  await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtextextended(${lockKey(cityId)}, 0))`);
 }
 
 function adminActor(admin: Admin) {
@@ -321,14 +349,24 @@ function toStop(row: typeof emergencyStops.$inferSelect): EmergencyStop {
   };
 }
 
-// CU §14 #18: one delay notice per customer with an active order in the
-// city, opening their latest active order.
-async function delayPushes(tx: Tx, stop: EmergencyStop): Promise<QueuedPush[]> {
-  const active = await tx
+// The city's active orders, newest first.
+async function activeOrders(
+  tx: Tx,
+  cityId: string,
+): Promise<{ accountId: string; orderId: string }[]> {
+  return tx
     .select({ accountId: orders.customerAccountId, orderId: orders.id })
     .from(orders)
-    .where(and(eq(orders.cityId, stop.cityId), inArray(orders.status, [...ACTIVE])))
+    .where(and(eq(orders.cityId, cityId), inArray(orders.status, [...ACTIVE])))
     .orderBy(desc(orders.placedAt));
+}
+
+// CU §14 #18: one delay notice per customer with an active order in the
+// city, opening their latest active order.
+function delayPushes(
+  stop: EmergencyStop,
+  active: { accountId: string; orderId: string }[],
+): QueuedPush[] {
   const body = delayNoticeText(stop);
   const seen = new Set<string>();
   return active.flatMap(({ accountId, orderId }) => {

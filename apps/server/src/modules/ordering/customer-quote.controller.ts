@@ -56,6 +56,12 @@ class CustomerQuoteRequestDto extends createZodDto(
     lines: cartLines,
     payIn: payInCurrency,
     appVersion,
+    openedCheckout: z
+      .boolean()
+      .default(false)
+      .describe(
+        'True on the quote asked on opening checkout: a signed-in customer then counts once per emergency stop (AP §9.1.6).',
+      ),
   }),
 ) {}
 

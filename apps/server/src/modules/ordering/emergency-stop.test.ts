@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ApiModule } from '../../api.module.js';
 import { DATABASE } from '../../database/database.module.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
@@ -25,6 +25,11 @@ import { EmergencyStops } from './emergency-stop.js';
 // AP §9.1.6 «الإيقاف الطارئ» (D7; CU §4.7, §10.6, §14 #18 and #19): the
 // stop, the quote's refusal and attempts, the pushes, the broadcast rows and
 // the automatic resume, served by the API app on a fresh database.
+
+// A test signs in two customers and a cashier, places an order and quotes
+// several times: a few seconds alone, so the default 5 s is too short for a
+// full parallel run.
+vi.setConfig({ testTimeout: 30_000 });
 let database: TestDatabase;
 let cache: TestValkey;
 let app: NestFastifyApplication;
@@ -187,12 +192,12 @@ const cart = (itemId = shawarma, quantity = 2) => [
   { itemId, optionIds: [], quantity, note: null, knownUnitPrice: '12000' },
 ];
 
-async function quoteOf(restaurantId = restaurant, lines = cart(), headers = {}) {
+async function quoteOf(restaurantId = restaurant, lines = cart(), headers = {}, extra = {}) {
   const answer = await app.inject({
     method: 'POST',
     url: '/v1/customer/quote',
     headers,
-    payload: { restaurantId, location: centre, lines, payIn: 'USD', appVersion: '1.0.0' },
+    payload: { restaurantId, location: centre, lines, payIn: 'USD', appVersion: '1.0.0', ...extra },
   });
   return answer.json();
 }
@@ -331,13 +336,19 @@ describe('the emergency stop (AP §9.1.6)', () => {
       (await app.inject({ method: 'POST', url: '/v1/admin/emergency-stop', payload: dialog() }))
         .statusCode,
     ).toBe(401);
-    expect(await state(sup.cookies)).toEqual({
+    // The dialog's prefills are for those who start it (AP §9.1.6).
+    expect(await state(sup.cookies)).toEqual({ stop: null, defaults: null });
+    const ops = await admin(['OPS']);
+    expect(await state(ops.cookies)).toEqual({
       stop: null,
       defaults: {
         browseMessage: 'نعتذر، توقفنا مؤقتاً عن استقبال الطلبات. نعود قريباً.',
         delayNotice: 'قد يتأخر طلبك قليلاً بسبب {السبب}. نعتذر عن الانتظار.',
       },
     });
+    const unknown = await start(ops.cookies, { ...dialog(), cityId: randomUUID() });
+    expect(unknown.statusCode).toBe(404);
+    expect(unknown.json().error).toBe('unknown_city');
   });
 
   it('refuses new orders, counts each customer once, pushes the delay notice and resumes with «الخدمة عادت»', async () => {
@@ -368,7 +379,8 @@ describe('the emergency stop (AP §9.1.6)', () => {
     ]);
 
     // CU §10.6: the quote refuses with the browsing message; each signed-in
-    // customer counts once, a guest not at all.
+    // customer once, on opening checkout (not the cart's quote), a guest
+    // not at all.
     const quote = await quoteOf(restaurant, cart(), trying);
     expect(quote.problems).toContainEqual({
       code: 'emergency_stop',
@@ -376,9 +388,18 @@ describe('the emergency stop (AP §9.1.6)', () => {
       opensAt: null,
       message: 'توقفنا مؤقتاً بسبب العاصفة',
     });
-    await quoteOf(restaurant, cart(), trying);
-    await quoteOf(restaurant, cart());
+    expect((await state(ops.cookies)).stop).toMatchObject({ attempts: 0 });
+    const checkout = { openedCheckout: true };
+    await quoteOf(restaurant, cart(), trying, checkout);
+    await quoteOf(restaurant, cart(), trying, checkout);
+    await quoteOf(restaurant, cart(), {}, checkout);
     expect((await state(ops.cookies)).stop).toMatchObject({ id: stop.id, attempts: 1 });
+    // The bar for every panel user: the time and the attempts only.
+    const sup = await admin(['SUP']);
+    expect(await state(sup.cookies)).toMatchObject({
+      stop: { id: stop.id, attempts: 1, startedBy: null, internalReason: null },
+      defaults: null,
+    });
     const tryingAccount = (
       await sql.query(
         'SELECT customer_account_id FROM ordering.emergency_stop_attempts WHERE stop_id = $1',
@@ -406,12 +427,13 @@ describe('the emergency stop (AP §9.1.6)', () => {
 
     // RA §18, CA §15, AP §7: the broadcast to the two apps and the panel.
     const broadcasts = await sql.query(
-      "SELECT apps, ops, payload FROM notifications.platform_outbox WHERE type = 'platform.emergency_stop' AND city_id = $1 ORDER BY id",
+      "SELECT apps, ops, order_ids, payload FROM notifications.platform_outbox WHERE type = 'platform.emergency_stop' AND city_id = $1 ORDER BY id",
       [azaz],
     );
     expect(broadcasts.rows.at(-1)).toMatchObject({
       apps: ['merchant', 'captain'],
       ops: true,
+      order_ids: [first.id],
       payload: { schema: 1, active: true },
     });
 

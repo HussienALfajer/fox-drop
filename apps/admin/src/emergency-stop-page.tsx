@@ -31,13 +31,22 @@ export function EmergencyStopPage() {
       ) : state.data.stop ? (
         <ResumeForm city={city} stop={state.data.stop} />
       ) : (
-        <StartForm city={city} defaults={state.data.defaults} />
+        <StartForm
+          city={city}
+          defaults={state.data.defaults ?? { browseMessage: '', delayNotice: '' }}
+        />
       )}
     </main>
   );
 }
 
-function StartForm({ city, defaults }: { city: City; defaults: EmergencyStopState['defaults'] }) {
+function StartForm({
+  city,
+  defaults,
+}: {
+  city: City;
+  defaults: NonNullable<EmergencyStopState['defaults']>;
+}) {
   const { t } = useTranslation();
   const start = useStartEmergencyStop(city.id, city.timeZone);
   const [delayNotice, setDelayNotice] = useState(defaults.delayNotice);

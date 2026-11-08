@@ -13,9 +13,9 @@ class _$AdminEmergencyStopStateDtoOutputStop
   @override
   final DateTime startedAt;
   @override
-  final String startedBy;
+  final String? startedBy;
   @override
-  final String internalReason;
+  final String? internalReason;
   @override
   final String browseMessage;
   @override
@@ -35,8 +35,8 @@ class _$AdminEmergencyStopStateDtoOutputStop
   _$AdminEmergencyStopStateDtoOutputStop._({
     required this.id,
     required this.startedAt,
-    required this.startedBy,
-    required this.internalReason,
+    this.startedBy,
+    this.internalReason,
     required this.browseMessage,
     required this.delayNotice,
     required this.customerReason,
@@ -196,16 +196,8 @@ class AdminEmergencyStopStateDtoOutputStopBuilder
             r'AdminEmergencyStopStateDtoOutputStop',
             'startedAt',
           ),
-          startedBy: BuiltValueNullFieldError.checkNotNull(
-            startedBy,
-            r'AdminEmergencyStopStateDtoOutputStop',
-            'startedBy',
-          ),
-          internalReason: BuiltValueNullFieldError.checkNotNull(
-            internalReason,
-            r'AdminEmergencyStopStateDtoOutputStop',
-            'internalReason',
-          ),
+          startedBy: startedBy,
+          internalReason: internalReason,
           browseMessage: BuiltValueNullFieldError.checkNotNull(
             browseMessage,
             r'AdminEmergencyStopStateDtoOutputStop',

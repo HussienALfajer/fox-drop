@@ -12,7 +12,7 @@ import { reportError } from '../../observability/error-tracking.js';
 import { CaptainsService } from '../captains/index.js';
 import { GeoService } from '../geo/index.js';
 import { MerchantsService } from '../merchants/index.js';
-import { captainChannel, merchantChannel, opsChannel } from './channels.js';
+import { captainChannel, merchantChannel, opsChannel, orderChannel } from './channels.js';
 import { requireRealtime } from './realtime-config.js';
 import { PublishFailedError, RealtimePublisher } from './realtime-publisher.js';
 import { platformOutbox } from './schema.js';
@@ -125,6 +125,8 @@ export class PlatformRelay {
         }
       }
     }
+    // AP §9.1.6 item 2, CU §4.7: the customer's tracking screen.
+    channels.push(...row.orderIds.map(orderChannel));
     return channels;
   }
 }

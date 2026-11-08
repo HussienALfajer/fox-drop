@@ -8,7 +8,7 @@ import 'package:built_value/serializer.dart';
 
 part 'admin_emergency_stop_state_dto_output_defaults.g.dart';
 
-/// The dialog prefills (AP Appendix A).
+/// The dialog prefills (AP Appendix A), for OWN and OPS only.
 ///
 /// Properties:
 /// * [browseMessage]

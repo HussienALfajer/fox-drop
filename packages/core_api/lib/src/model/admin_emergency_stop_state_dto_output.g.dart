@@ -11,14 +11,13 @@ class _$AdminEmergencyStopStateDtoOutput
   @override
   final AdminEmergencyStopStateDtoOutputStop? stop;
   @override
-  final AdminEmergencyStopStateDtoOutputDefaults defaults;
+  final AdminEmergencyStopStateDtoOutputDefaults? defaults;
 
   factory _$AdminEmergencyStopStateDtoOutput([
     void Function(AdminEmergencyStopStateDtoOutputBuilder)? updates,
   ]) => (AdminEmergencyStopStateDtoOutputBuilder()..update(updates))._build();
 
-  _$AdminEmergencyStopStateDtoOutput._({this.stop, required this.defaults})
-    : super._();
+  _$AdminEmergencyStopStateDtoOutput._({this.stop, this.defaults}) : super._();
   @override
   AdminEmergencyStopStateDtoOutput rebuild(
     void Function(AdminEmergencyStopStateDtoOutputBuilder) updates,
@@ -82,7 +81,7 @@ class AdminEmergencyStopStateDtoOutputBuilder
     final $v = _$v;
     if ($v != null) {
       _stop = $v.stop?.toBuilder();
-      _defaults = $v.defaults.toBuilder();
+      _defaults = $v.defaults?.toBuilder();
       _$v = null;
     }
     return this;
@@ -108,7 +107,7 @@ class AdminEmergencyStopStateDtoOutputBuilder
           _$v ??
           _$AdminEmergencyStopStateDtoOutput._(
             stop: _stop?.build(),
-            defaults: defaults.build(),
+            defaults: _defaults?.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -116,7 +115,7 @@ class AdminEmergencyStopStateDtoOutputBuilder
         _$failedField = 'stop';
         _stop?.build();
         _$failedField = 'defaults';
-        defaults.build();
+        _defaults?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminEmergencyStopStateDtoOutput',

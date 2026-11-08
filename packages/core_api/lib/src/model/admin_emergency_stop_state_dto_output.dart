@@ -26,7 +26,7 @@ abstract class AdminEmergencyStopStateDtoOutput
   AdminEmergencyStopStateDtoOutputStop? get stop;
 
   @BuiltValueField(wireName: r'defaults')
-  AdminEmergencyStopStateDtoOutputDefaults get defaults;
+  AdminEmergencyStopStateDtoOutputDefaults? get defaults;
 
   AdminEmergencyStopStateDtoOutput._();
 
@@ -68,10 +68,14 @@ class _$AdminEmergencyStopStateDtoOutputSerializer
             ),
           );
     yield r'defaults';
-    yield serializers.serialize(
-      object.defaults,
-      specifiedType: const FullType(AdminEmergencyStopStateDtoOutputDefaults),
-    );
+    yield object.defaults == null
+        ? null
+        : serializers.serialize(
+            object.defaults,
+            specifiedType: const FullType.nullable(
+              AdminEmergencyStopStateDtoOutputDefaults,
+            ),
+          );
   }
 
   @override
@@ -115,11 +119,12 @@ class _$AdminEmergencyStopStateDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
+                    specifiedType: const FullType.nullable(
                       AdminEmergencyStopStateDtoOutputDefaults,
                     ),
                   )
-                  as AdminEmergencyStopStateDtoOutputDefaults;
+                  as AdminEmergencyStopStateDtoOutputDefaults?;
+          if (valueDes == null) continue;
           result.defaults.replace(valueDes);
           break;
         default:

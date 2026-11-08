@@ -10,7 +10,14 @@ export type BroadcastApp = (typeof broadcastApps)[number];
 // never the only copy.
 export type PlatformBroadcast =
   // AP §9.1.6: a city's emergency stop started or ended.
-  | { type: 'platform.emergency_stop'; cityId: string; active: boolean; at: Date }
+  // orderIds: the active orders whose customer's screen hears it too.
+  | {
+      type: 'platform.emergency_stop';
+      cityId: string;
+      active: boolean;
+      orderIds: string[];
+      at: Date;
+    }
   // 2.4a: an app's maintenance, its messages or its versions changed.
   | { type: 'platform.app_changed'; app: BroadcastApp; at: Date };
 
@@ -29,6 +36,7 @@ export class PlatformBroadcasts {
         apps: ['merchant', 'captain'],
         // The panel's red bar (AP §7).
         ops: true,
+        orderIds: broadcast.orderIds,
         payload: { schema: 1, active: broadcast.active, at: broadcast.at.toISOString() },
       });
       return;

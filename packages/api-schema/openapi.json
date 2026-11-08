@@ -10576,6 +10576,11 @@
           "appVersion": {
             "type": "string",
             "pattern": "^\\d+\\.\\d+\\.\\d+$"
+          },
+          "openedCheckout": {
+            "default": false,
+            "description": "True on the quote asked on opening checkout: a signed-in customer then counts once per emergency stop (AP §9.1.6).",
+            "type": "boolean"
           }
         },
         "required": [
@@ -17608,12 +17613,24 @@
                     "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                   },
                   "startedBy": {
-                    "type": "string",
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "For OWN and OPS only (emergency_stop.toggle)."
                   },
                   "internalReason": {
-                    "type": "string"
+                    "description": "For OWN and OPS only (emergency_stop.toggle).",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
                   },
                   "browseMessage": {
                     "type": "string"
@@ -17665,21 +17682,28 @@
             "description": "The open stop: the red bar (AP §7); null while running."
           },
           "defaults": {
-            "type": "object",
-            "properties": {
-              "browseMessage": {
-                "type": "string"
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "browseMessage": {
+                    "type": "string"
+                  },
+                  "delayNotice": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "browseMessage",
+                  "delayNotice"
+                ],
+                "additionalProperties": false
               },
-              "delayNotice": {
-                "type": "string"
+              {
+                "type": "null"
               }
-            },
-            "required": [
-              "browseMessage",
-              "delayNotice"
             ],
-            "additionalProperties": false,
-            "description": "The dialog prefills (AP Appendix A)."
+            "description": "The dialog prefills (AP Appendix A), for OWN and OPS only."
           }
         },
         "required": [
@@ -17757,12 +17781,24 @@
                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               },
               "startedBy": {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "For OWN and OPS only (emergency_stop.toggle)."
               },
               "internalReason": {
-                "type": "string"
+                "description": "For OWN and OPS only (emergency_stop.toggle).",
+                "type": [
+                  "string",
+                  "null"
+                ]
               },
               "browseMessage": {
                 "type": "string"

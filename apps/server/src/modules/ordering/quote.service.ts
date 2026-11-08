@@ -73,6 +73,9 @@ export interface QuoteRequest {
   // The signed-in customer, whose active-order limit the quote checks; null
   // for a guest (CU §5.1).
   customerAccountId: string | null;
+  // CU §10.6: the quote asked on opening checkout, which counts the
+  // customer once per emergency stop (AP §9.1.6 item 4).
+  openedCheckout?: boolean;
 }
 
 export interface Quote {
@@ -202,7 +205,7 @@ export class QuoteService {
     if (emergencyStop !== null) {
       problem('emergency_stop', null, null, emergencyStop.browseMessage);
       // CU §10.6: the signed-in customer opening checkout counts once per stop.
-      if (request.customerAccountId !== null) {
+      if (request.customerAccountId !== null && request.openedCheckout === true) {
         await this.emergencyStops.recordAttempt(emergencyStop.id, request.customerAccountId, now);
       }
     }

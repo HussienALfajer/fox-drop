@@ -27,6 +27,7 @@ let broadcasts: PlatformBroadcasts;
 const azaz = randomUUID();
 const other = randomUUID();
 const restaurants = { [azaz]: [randomUUID(), randomUUID()], [other]: [randomUUID()] };
+const order = randomUUID();
 const captains = { [azaz]: [randomUUID()], [other]: [randomUUID()] };
 
 beforeAll(async () => {
@@ -78,6 +79,7 @@ describe('the platform relay', () => {
       type: 'platform.emergency_stop',
       cityId: azaz,
       active: true,
+      orderIds: [order],
       at,
     });
     await broadcasts.enqueue(db, { type: 'platform.app_changed', app: 'captain', at });
@@ -92,6 +94,8 @@ describe('the platform relay', () => {
       'platform.app_changed captain',
     ]);
     expect(await on(`ops:city.${azaz}`)).toEqual(['platform.emergency_stop true']);
+    // The customer's tracking screen of an active order.
+    expect(await on(`order:${order}`)).toEqual(['platform.emergency_stop true']);
     // The other city hears only the captain app's change.
     expect(await on(`merchant:${restaurants[other]![0]}`)).toEqual([]);
     expect(await on(`captain:${captains[other]![0]}`)).toEqual(['platform.app_changed captain']);
@@ -108,6 +112,7 @@ describe('the platform relay', () => {
       type: 'platform.emergency_stop',
       cityId: azaz,
       active: false,
+      orderIds: [],
       at: new Date(),
     });
     process.env.CENTRIFUGO_API_URL = 'http://127.0.0.1:9/api';

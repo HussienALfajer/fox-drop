@@ -1,5 +1,5 @@
 {
-  "id": "f4c3ab93-2709-4748-b7b0-156cac06c26e",
+  "id": "c10264d6-e4cb-4868-9aa2-5a9cde538073",
   "prevId": "f5814b2e-5dc9-43bc-bde6-df077f984486",
   "version": "7",
   "dialect": "postgresql",
@@ -6609,6 +6609,13 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": true
+        },
+        "order_ids": {
+          "name": "order_ids",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::uuid[]"
         },
         "payload": {
           "name": "payload",

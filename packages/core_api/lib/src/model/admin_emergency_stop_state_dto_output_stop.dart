@@ -13,8 +13,8 @@ part 'admin_emergency_stop_state_dto_output_stop.g.dart';
 /// Properties:
 /// * [id]
 /// * [startedAt]
-/// * [startedBy]
-/// * [internalReason]
+/// * [startedBy] - For OWN and OPS only (emergency_stop.toggle).
+/// * [internalReason] - For OWN and OPS only (emergency_stop.toggle).
 /// * [browseMessage]
 /// * [delayNotice] - With its {السبب} placeholder.
 /// * [customerReason]
@@ -33,11 +33,13 @@ abstract class AdminEmergencyStopStateDtoOutputStop
   @BuiltValueField(wireName: r'startedAt')
   DateTime get startedAt;
 
+  /// For OWN and OPS only (emergency_stop.toggle).
   @BuiltValueField(wireName: r'startedBy')
-  String get startedBy;
+  String? get startedBy;
 
+  /// For OWN and OPS only (emergency_stop.toggle).
   @BuiltValueField(wireName: r'internalReason')
-  String get internalReason;
+  String? get internalReason;
 
   @BuiltValueField(wireName: r'browseMessage')
   String get browseMessage;
@@ -98,15 +100,19 @@ class _$AdminEmergencyStopStateDtoOutputStopSerializer
       specifiedType: const FullType(DateTime),
     );
     yield r'startedBy';
-    yield serializers.serialize(
-      object.startedBy,
-      specifiedType: const FullType(String),
-    );
+    yield object.startedBy == null
+        ? null
+        : serializers.serialize(
+            object.startedBy,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'internalReason';
-    yield serializers.serialize(
-      object.internalReason,
-      specifiedType: const FullType(String),
-    );
+    yield object.internalReason == null
+        ? null
+        : serializers.serialize(
+            object.internalReason,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'browseMessage';
     yield serializers.serialize(
       object.browseMessage,
@@ -183,18 +189,20 @@ class _$AdminEmergencyStopStateDtoOutputStopSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(String),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as String;
+                  as String?;
+          if (valueDes == null) continue;
           result.startedBy = valueDes;
           break;
         case r'internalReason':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(String),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as String;
+                  as String?;
+          if (valueDes == null) continue;
           result.internalReason = valueDes;
           break;
         case r'browseMessage':

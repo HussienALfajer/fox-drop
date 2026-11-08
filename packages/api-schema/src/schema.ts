@@ -3551,6 +3551,11 @@ export interface components {
             /** @description «سأدفع بـ»: an accepted currency, or null for «لم أحدد» (CU §10.5); one no longer accepted gives payIn null. */
             payIn: string | null;
             appVersion: string;
+            /**
+             * @description True on the quote asked on opening checkout: a signed-in customer then counts once per emergency stop (AP §9.1.6).
+             * @default false
+             */
+            openedCheckout: boolean;
         };
         CustomerQuoteDto_Output: {
             /** @description Changes only with a money line, an equivalent, the rates or a blocking problem; the order command carries it. */
@@ -5163,9 +5168,10 @@ export interface components {
                 id: string;
                 /** Format: date-time */
                 startedAt: string;
-                /** Format: uuid */
-                startedBy: string;
-                internalReason: string;
+                /** @description For OWN and OPS only (emergency_stop.toggle). */
+                startedBy: string | null;
+                /** @description For OWN and OPS only (emergency_stop.toggle). */
+                internalReason: string | null;
                 browseMessage: string;
                 /** @description With its {السبب} placeholder. */
                 delayNotice: string;
@@ -5175,11 +5181,11 @@ export interface components {
                 /** @description Customers who opened checkout during the stop, each once (AP §9.1.6 item 4). */
                 attempts: number;
             } | null;
-            /** @description The dialog prefills (AP Appendix A). */
+            /** @description The dialog prefills (AP Appendix A), for OWN and OPS only. */
             defaults: {
                 browseMessage: string;
                 delayNotice: string;
-            };
+            } | null;
         };
         AdminStartEmergencyStopDto: {
             /** Format: uuid */
@@ -5198,9 +5204,10 @@ export interface components {
                 id: string;
                 /** Format: date-time */
                 startedAt: string;
-                /** Format: uuid */
-                startedBy: string;
-                internalReason: string;
+                /** @description For OWN and OPS only (emergency_stop.toggle). */
+                startedBy: string | null;
+                /** @description For OWN and OPS only (emergency_stop.toggle). */
+                internalReason: string | null;
                 browseMessage: string;
                 /** @description With its {السبب} placeholder. */
                 delayNotice: string;
