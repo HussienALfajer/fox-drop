@@ -17,7 +17,7 @@ part 'customer_restaurant_page_dto_output_menu_inner_items_inner.g.dart';
 /// * [id]
 /// * [name]
 /// * [description]
-/// * [photoKey] - Null until the object storage arrives (T7).
+/// * [photoKey] - Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
 /// * [price]
 /// * [fromPrice]
 /// * [available]
@@ -39,7 +39,7 @@ abstract class CustomerRestaurantPageDtoOutputMenuInnerItemsInner
   @BuiltValueField(wireName: r'description')
   String? get description;
 
-  /// Null until the object storage arrives (T7).
+  /// Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
   @BuiltValueField(wireName: r'photoKey')
   String? get photoKey;
 

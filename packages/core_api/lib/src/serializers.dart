@@ -39,6 +39,8 @@ import 'package:core_api/src/model/admin_faq_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_faq_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output_customer_inner.dart';
+import 'package:core_api/src/model/admin_image_set_dto_output.dart';
+import 'package:core_api/src/model/admin_new_upload_dto.dart';
 import 'package:core_api/src/model/admin_notification_resent_dto_output.dart';
 import 'package:core_api/src/model/admin_notification_text_dto_output.dart';
 import 'package:core_api/src/model/admin_notification_texts_dto_output.dart';
@@ -88,8 +90,14 @@ import 'package:core_api/src/model/admin_record_delivery_dto_amount_due.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_received_inner.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_shortfall.dart';
 import 'package:core_api/src/model/admin_resend_notification_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_images_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_images_dto_output_categories_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_images_dto_output_categories_inner_items_inner.dart';
+import 'package:core_api/src/model/admin_restaurants_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurants_dto_output_restaurants_inner.dart';
 import 'package:core_api/src/model/admin_resume_emergency_stop_dto.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
+import 'package:core_api/src/model/admin_set_image_dto.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output_shortfalls_inner.dart';
 import 'package:core_api/src/model/admin_start_emergency_stop_dto.dart';
@@ -100,6 +108,7 @@ import 'package:core_api/src/model/admin_texts_dto_output.dart';
 import 'package:core_api/src/model/admin_texts_dto_output_contact.dart';
 import 'package:core_api/src/model/admin_update_contact_dto.dart';
 import 'package:core_api/src/model/admin_update_notification_text_dto.dart';
+import 'package:core_api/src/model/admin_upload_dto_output.dart';
 import 'package:core_api/src/model/admin_work_rules_dto.dart';
 import 'package:core_api/src/model/admin_work_rules_dto_output.dart';
 import 'package:core_api/src/model/backup_codes_dto_output.dart';
@@ -352,6 +361,8 @@ part 'serializers.g.dart';
   AdminFaqDtoOutput,
   AdminFaqsDtoOutput,
   AdminFaqsDtoOutputCustomerInner,
+  AdminImageSetDtoOutput,
+  AdminNewUploadDto,
   AdminNotificationResentDtoOutput,
   AdminNotificationTextDtoOutput,
   AdminNotificationTextsDtoOutput,
@@ -401,8 +412,14 @@ part 'serializers.g.dart';
   AdminRecordDeliveryDtoReceivedInner,
   AdminRecordDeliveryDtoShortfall,
   AdminResendNotificationDto,
+  AdminRestaurantImagesDtoOutput,
+  AdminRestaurantImagesDtoOutputCategoriesInner,
+  AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner,
+  AdminRestaurantsDtoOutput,
+  AdminRestaurantsDtoOutputRestaurantsInner,
   AdminResumeEmergencyStopDto,
   AdminSessionDtoOutput,
+  AdminSetImageDto,
   AdminShortfallsDtoOutput,
   AdminShortfallsDtoOutputShortfallsInner,
   AdminStartEmergencyStopDto,
@@ -413,6 +430,7 @@ part 'serializers.g.dart';
   AdminTextsDtoOutputContact,
   AdminUpdateContactDto,
   AdminUpdateNotificationTextDto,
+  AdminUploadDtoOutput,
   AdminWorkRulesDto,
   AdminWorkRulesDtoOutput,
   BackupCodesDtoOutput,
@@ -727,6 +745,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminRestaurantImagesDtoOutputCategoriesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantImagesDtoOutputCategoriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CustomerRestaurantPageDtoOutputMenuInner),
             ]),
             () => ListBuilder<CustomerRestaurantPageDtoOutputMenuInner>(),
@@ -767,6 +791,12 @@ Serializers serializers =
               FullType(AdminRecordDeliveryDtoReceivedInner),
             ]),
             () => ListBuilder<AdminRecordDeliveryDtoReceivedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRestaurantsDtoOutputRestaurantsInner),
+            ]),
+            () => ListBuilder<AdminRestaurantsDtoOutputRestaurantsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -971,6 +1001,15 @@ Serializers serializers =
               FullType(CustomerQuoteDtoOutputLinesInnerOptionsInner),
             ]),
             () => ListBuilder<CustomerQuoteDtoOutputLinesInnerOptionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(String)]),

@@ -25,9 +25,7 @@ function client(key: StorageKey) {
 }
 
 const put = (key: StorageKey, name: string) =>
-  client(key).send(
-    new PutObjectCommand({ Bucket: PUBLIC_MEDIA_BUCKET, Key: name, Body: 'image' }),
-  );
+  client(key).send(new PutObjectCommand({ Bucket: PUBLIC_MEDIA_BUCKET, Key: name, Body: 'image' }));
 
 describe('setUpStorage', () => {
   it('lets the server write and the reader only read', async () => {

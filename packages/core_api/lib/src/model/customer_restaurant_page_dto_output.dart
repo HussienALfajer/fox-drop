@@ -22,8 +22,8 @@ part 'customer_restaurant_page_dto_output.g.dart';
 /// * [nameAr]
 /// * [nameEn]
 /// * [category]
-/// * [logoKey]
-/// * [coverKey]
+/// * [logoKey] - Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
+/// * [coverKey] - Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
 /// * [rating] - The average rating; null is «جديد» (Q16). Ratings arrive with their slice.
 /// * [ratingCount] - The number of ratings on the page (CU §9.1).
 /// * [estimate]
@@ -54,9 +54,11 @@ abstract class CustomerRestaurantPageDtoOutput
   @BuiltValueField(wireName: r'category')
   String? get category;
 
+  /// Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
   @BuiltValueField(wireName: r'logoKey')
   String? get logoKey;
 
+  /// Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
   @BuiltValueField(wireName: r'coverKey')
   String? get coverKey;
 

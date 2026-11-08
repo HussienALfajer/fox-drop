@@ -40,13 +40,22 @@ const state = z
   })
   .describe('Only open takes orders.');
 
+// The app shows it at a width it picks: <media>/_/w{160,320,640,1280}/plain/<key>
+// (architecture §5.8, CU §4.5).
+const imageKey = z
+  .string()
+  .nullable()
+  .describe(
+    'Its key in public-media, shown through imgproxy (architecture §5.8); null without one.',
+  );
+
 const card = z.object({
   id: z.uuid(),
   nameAr: z.string(),
   nameEn: z.string().nullable(),
   category: z.string().nullable(),
-  logoKey: z.string().nullable(),
-  coverKey: z.string().nullable(),
+  logoKey: imageKey,
+  coverKey: imageKey,
   rating: z
     .number()
     .nullable()
@@ -117,7 +126,7 @@ class CustomerRestaurantPageDto extends createZodDto(
             id: z.uuid(),
             name: z.string(),
             description: z.string().nullable(),
-            photoKey: z.string().nullable().describe('Null until the object storage arrives (T7).'),
+            photoKey: imageKey,
             price: money,
             fromPrice: money
               .nullable()

@@ -12,8 +12,8 @@ Slice 2.5, object storage and images (`docs/roadmap.md`, Phase 2 foundations): t
 - **Design:** the `public-media` bucket only (`private-docs` joins with its first use, the captain documents of 2.34, with its encryption at rest). A new `files` module owns the uploads: the panel asks `POST /v1/admin/uploads` for a pre-signed `PUT` (type and size signed, so Garage refuses another body), uploads to `/public-media/<key>` on its own origin (nginx and Vite forward it to Garage, so no CORS and no new host), then links it with the restaurant's or item's route, which checks the stored object's size, type and first bytes before the record points to it. imgproxy serves only four presets (`w160`, `w320`, `w640`, `w1280`, WebP) under `/media/` on every host, cached by nginx; the apps build the URL from the key and the width they need.
 - **Plan** (one step per commit):
   - [x] Garage and imgproxy in `compose.yaml`, the storage setup command (layout, keys, bucket) with its Testcontainers helper, architecture §4.2, §5.8, §17 and T7 updated.
-  - [ ] The `files` module: `files.uploads`, the signed upload, the check before linking, `POST /v1/admin/uploads`.
-  - [ ] The panel's routes: the restaurants, their images and items, and setting a logo, a cover or an item photo (audited), with the customer API's keys documented.
+  - [x] The `files` module: `files.uploads`, the signed upload, the check before linking, `POST /v1/admin/uploads`.
+  - [x] The panel's routes: the restaurants, their images and items, and setting a logo, a cover or an item photo (audited), with the customer API's keys documented.
   - [ ] The panel's «الصور» screen.
   - [ ] The customer app: logos, covers and item photos through imgproxy, sized to the screen and cached (CU §4.5).
   - [ ] Staging: Garage, imgproxy and the setup in `infra/compose.yaml` and the deploy, nginx's `/media/` cache and `/public-media/` upload path, the secrets, the nightly copy of the bucket, the `deploy` skill.
