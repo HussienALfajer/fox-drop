@@ -4,17 +4,23 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.4c, the emergency stop in the server and the panel (`docs/roadmap.md`, Phase 2, slice 2.4 split with the owner 2026-11-08 into 2.4a–2.4d): OWN or OPS starts a city-wide stop with its dialog, new orders are refused, customers with an active order get the delay push, «استئناف» ends it (with the optional «الخدمة عادت» push), and the stop reaches the restaurant and captain channels. The owner starts the stop and checkout refuses.
+Slice 2.4d, the emergency stop in the apps (`docs/roadmap.md`, Phase 2, the last of slice 2.4's four pull requests): the red banner in the restaurant and captain apps with the chime on and off, the customer's banner and disabled order button, and the delay banner on the order screen; all gone on resume. The owner starts the stop and every app shows it.
 
-- **Specs:** AP §9.1.6 «الإيقاف الطارئ» and D7, AP §7 (the top bar turning red), AP §10 (what the panel pushes), AP Appendix A (`platform.emergency_default_message_browse`, `platform.emergency_default_message_active`), CU §4.7 (emergency stop), CU §10.6 (the checkout's check and the attempts counted once per customer per stop), CU §14 #18 and #19, CU Appendix C «Emergency stop»; RA §8.17 and CA §6.3 for what the broadcast must carry (their banners are 2.4d).
-- **Branch:** `feat/emergency-stop`.
-- **Already there:** the quote's problems (`apps/server/src/modules/ordering/quote.service.ts`, «Passing until their slices: … the emergency stop»), the panel's alerts and ops channel (`ops:city.{city_id}`), the push queue and the notification templates (`content/notification-templates.ts`: check whether CU §14 #18 and #19 have rows), the settings module and the panel's «التطبيقات» pattern (slice 2.4a), the apps' `PlatformCheck` (`packages/core_platform`).
+- **Specs:** RA §8.17 and §16 #34 (the banner, «المنصة متوقفة مؤقتاً عن استقبال طلبات جديدة. أكملوا الطلبات الحالية.», every device chimes once when it ends), CA §6.3 (the banner's place, second after no connection) and §14 #31, CU §4.7 (the browsing banner, the disabled order button), CU §11.6 (the delay banner on the order screen), CU §10.6 and Appendix C («Emergency stop»: the browsing message), CU §14 #18 and #19 (the pushes 2.4c sends), RA §18 and CA §15 (the platform broadcasts).
+- **Branch:** `feat/emergency-stop-apps`.
+- **Already there (slice 2.4c):** `GET /v1/customer/emergency-stop?latitude=&longitude=` (public: `active`, `startedAt`, `browseMessage`, `delayNotice` with its reason filled), `GET /v1/merchant/emergency-stop` and `GET /v1/captain/emergency-stop` (`active`, `startedAt`); the publication `platform.emergency_stop` (`active`, `at`) on every restaurant's `merchant:` and captain's `captain:` channel of the city and on each active order's `order:` channel; `platform.app_changed` (`app`) on the merchant and captain channels when an `app.<app>.*` setting changes, so an open app reads `GET /v1/{app}/platform` again; the quote's `emergency_stop` problem with the browsing message in `message`, and the quote request's `openedCheckout` (true on the checkout's first quote: the customer counts once per stop as an attempt and later gets «الخدمة عادت»). The pushes CU #18 (`customer.emergency_delay`, data `target: order`) and #19 (`customer.service_back`, data `target: home`) are queued by the server.
 - **Plan:**
-  - [ ] Server: the stop per city (its dialog's fields, who started it, the optional automatic resume written with it as a timer, E3), start and resume routes for OWN and OPS, audited; the quote's `emergency_stop` problem with the browsing message.
-  - [ ] Server: the delay push to every customer with an active order when the stop starts (CU §14 #18, `{السبب}` from the customer-facing reason), the attempts (each customer opening checkout counted once per stop), and «استئناف» with the optional «الخدمة عادت» push to the customers who opened checkout during the stop (CU §14 #19), never on the automatic resume.
-  - [ ] Server: the platform broadcast on the restaurant and captain channels (the stop, and also maintenance and version changes, which 2.4a left to it), and the apps' read of the stop.
-  - [ ] Panel: the dialog, the red bar with the duration and the attempts, «استئناف».
-  - [ ] Review, then hand over to 2.4d.
+  - [ ] `packages/core_platform`: read the stop on start, on connecting and on each `platform.emergency_stop`; read the platform again on `platform.app_changed` (2.4a's screens).
+  - [ ] Restaurant app: the red banner on every screen, the chime once when it ends (RA §16 #34).
+  - [ ] Captain app: the banner in its place among CA §6.3's (CA §14 #31).
+  - [ ] Customer app: the banner while browsing, the order button disabled with the message, the checkout's first quote with `openedCheckout: true`, the `emergency_stop` problem's text from `message`, the delay banner on the order screen (from the read, refreshed on the order channel's publication), the `home` push target.
+  - [ ] Review, then hand over to slice 2.5.
+
+### Left from 2.4c (`feat/emergency-stop`)
+
+- **Before deploying to staging:** an older customer app cannot read a quote that carries the new `emergency_stop` problem (its generated enum has no fallback, as with 2.4b's `terms_pending`): raise `app.customer.min_version` when the 2.4d build ships.
+- **To confirm with the owner:** guests who open checkout during a stop are not counted as attempts (they have no account, and sign in only at «تأكيد الطلب»; counting by app installation is the alternative); a customer with several active orders gets one delay push, opening the latest; «الخدمة عادت» goes only to the customers who opened checkout during the stop, and OPS write its text (CU §14 #19 gives none); the panel's strings the spec gives no wording for («إيقاف طارئ — منذ {المدة} د — محاولات الطلب: {العدد}», the dialog's labels, «إيقاف الطلبات الجديدة», «إرسال إشعار «الخدمة عادت» للزبائن الذين حاولوا الطلب»); every panel user sees the bar, but only OWN and OPS see the internal reason and who started it.
+- **Not yet:** the bar's red, flashing look (the design); the dashboard's tile and the operations room's «إيقاف طارئ» badge on orders active during a stop (AP §9.2), the order detail's «emergency notices sent» (AP §9.3.1), the lost-demand report of attempts (AP §9.17), with their slices; the marketing push OPS may send after an automatic resume (AP §9.11.4, with marketing); a browsing customer's live banner (no `customer:` channel yet: the app reads the stop on opening).
 
 ### Left from 2.4b (`feat/terms-versions`)
 
@@ -25,12 +31,7 @@ Slice 2.4c, the emergency stop in the server and the panel (`docs/roadmap.md`, P
 ### Left from 2.4a (`feat/app-versions-maintenance`)
 
 - **To confirm with the owner:** maintenance leaves an online captain without an order on home (they keep their offers and can go offline), like a required update does (CA §7.2); the strings the spec gives no wording for («يلزم تحديث التطبيق», «هذا الإصدار لم يعد يعمل. حدّث التطبيق لتتابع.», «يتوفر إصدار أحدث من التطبيق.», «تحديث», «لاحقاً», «التطبيق في صيانة», «نعمل على تحسين الخدمة ونعود قريباً.»); which address the update button opens on Android (Google Play or the website's APK, RA §4.2: one build serves both), set as the GitHub variables `STAGING_CUSTOMER_UPDATE_URL`, `STAGING_MERCHANT_UPDATE_URL`, `STAGING_CAPTAIN_UPDATE_URL`; whether customers may still order while `app.merchant.maintenance` is on (every restaurant device is blocked, so orders wait for the automatic cancellation; no spec covers it).
-- **Not yet:** the live broadcast of a maintenance or version change to open devices (2.4c); «استعادة الافتراضي» and the descriptions on «التطبيقات» (2.38).
-
-### The rest of slice 2.4
-
-- **2.4c The emergency stop in the server and the panel** (AP §9.1.6, D7): the dialog (internal reason, the browsing message, the delay notice with `{السبب}`, the customer-facing reason, the optional automatic resume time), the resume timer written with the stop (E3), new orders refused (checkout's problem), each customer opening checkout counted once per stop, the delay push to customers with an active order (CU §14 #18), «استئناف» with the optional «الخدمة عادت» push (CU §14 #19) to the customers who opened checkout during the stop, never on the automatic resume; audited; the panel's red bar with the duration and the attempts; the platform broadcast on the restaurant and captain channels, which also carries maintenance and version changes.
-- **2.4d The emergency stop in the apps:** the red banner in the restaurant and captain apps with the chime on and off (RA §8.17, §16 #34, CA §6.3, §14 #31), the customer's banner and disabled order button, and the delay banner on the order screen (CU §4.7, §11.6); all gone on resume.
+- **Not yet:** the apps reading the platform again on `platform.app_changed` (the server broadcasts it since 2.4c; the apps in 2.4d); «استعادة الافتراضي» and the descriptions on «التطبيقات» (2.38).
 
 ## Deferred: slice 2.3's staging check
 
