@@ -777,5 +777,19 @@
   "captainWorkRules": "قواعد العمل",
   "@captainWorkRules": {"description": "The work rules page (CA §11.4). The spec gives no wording."},
   "captainReasonChanged": "تغيّرت قائمة الأسباب، اختر السبب من جديد",
-  "@captainReasonChanged": {"description": "The reason sent is no longer in its Content list (AP §9.13). The spec gives no wording."}
+  "@captainReasonChanged": {"description": "The reason sent is no longer in its Content list (AP §9.13). The spec gives no wording."},
+  "customerNotificationsAsk": "اسمح بالإشعارات لتعرف متى يصل طلبك",
+  "@customerNotificationsAsk": {"description": "The notification permission at the first order (CU §4.4, Q11)."},
+  "customerNotificationsAllow": "سماح",
+  "@customerNotificationsAllow": {"description": "Allows notifications at the first order, then the phone asks (CU §4.4). The spec gives no wording."},
+  "customerNotificationsNotNow": "ليس الآن",
+  "@customerNotificationsNotNow": {"description": "Declines notifications at the first order; the order still goes (CU §4.4). The spec gives no wording."},
+  "customerNotificationsOff": "الإشعارات متوقفة. فعّلها لتعرف متى يصل طلبك",
+  "@customerNotificationsOff": {"description": "The order screen's banner after notifications were refused (CU §4.4). The spec gives no wording."},
+  "customerNotificationsOpenSettings": "الإعدادات",
+  "@customerNotificationsOpenSettings": {"description": "Opens the phone's settings from the notifications banner (CU §4.4). The spec gives no wording."},
+  "customerNotificationsTitle": "الإشعارات",
+  "@customerNotificationsTitle": {"description": "The account's notifications (CU §13, Appendix B)."},
+  "customerNotificationsEmpty": "لا توجد إشعارات",
+  "@customerNotificationsEmpty": {"description": "«الإشعارات» with no push in the last 30 days (CU §13). The spec gives no wording."}
 }

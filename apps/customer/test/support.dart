@@ -1,11 +1,13 @@
 import 'dart:convert';
 
 import 'package:core_auth/testing.dart';
+import 'package:core_push/testing.dart';
 import 'package:core_storage/core_storage.dart';
 import 'package:customer/src/api.dart';
 import 'package:customer/src/app.dart';
 import 'package:customer/src/auth.dart';
 import 'package:customer/src/device.dart';
+import 'package:customer/src/notifications/permission.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,7 +20,11 @@ const accountId = '00000000-0000-4000-8000-000000000001';
 /// The customer app on a [FakeServer], with memory stores: no server or
 /// device needed.
 class TestApp {
-  TestApp({bool signedIn = false, this.overrides = const []}) {
+  TestApp({
+    bool signedIn = false,
+    this.overrides = const [],
+    FakeNotificationPermission? permission,
+  }) : permission = permission ?? FakeNotificationPermission(allowed: true) {
     server.on('/v1/customer/content', [
       const FakeAnswer(200, {
         'reasons': {
@@ -66,6 +72,9 @@ class TestApp {
   final server = FakeServer();
   final secure = MemorySecureStore();
   final device = MemoryDeviceStore();
+  // The phone allows notifications unless a test says otherwise, so no
+  // order asks (CU §4.4).
+  final FakeNotificationPermission permission;
   final List<Override> overrides;
   final transport = FakeTransport();
   late final ProviderContainer container;
@@ -99,6 +108,7 @@ class TestApp {
         customerAuth.store.overrideWithValue(secure),
         deviceStoreProvider.overrideWithValue(device),
         realtimeTransportProvider.overrideWithValue(transport),
+        notificationPermissionProvider.overrideWithValue(permission),
         ...overrides,
       ],
       retry: (retryCount, error) => null,

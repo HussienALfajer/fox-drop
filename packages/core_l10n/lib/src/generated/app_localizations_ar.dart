@@ -1450,4 +1450,26 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get captainReasonChanged => 'تغيّرت قائمة الأسباب، اختر السبب من جديد';
+
+  @override
+  String get customerNotificationsAsk => 'اسمح بالإشعارات لتعرف متى يصل طلبك';
+
+  @override
+  String get customerNotificationsAllow => 'سماح';
+
+  @override
+  String get customerNotificationsNotNow => 'ليس الآن';
+
+  @override
+  String get customerNotificationsOff =>
+      'الإشعارات متوقفة. فعّلها لتعرف متى يصل طلبك';
+
+  @override
+  String get customerNotificationsOpenSettings => 'الإعدادات';
+
+  @override
+  String get customerNotificationsTitle => 'الإشعارات';
+
+  @override
+  String get customerNotificationsEmpty => 'لا توجد إشعارات';
 }

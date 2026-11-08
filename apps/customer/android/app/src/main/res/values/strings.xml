@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The push channels' names, which Android shows in the app's
+         notification settings (MainActivity; the spec gives no wording). -->
+    <string name="push_channel_default">طلباتي</string>
+    <string name="push_channel_ring">الكابتن عند الباب</string>
+</resources>

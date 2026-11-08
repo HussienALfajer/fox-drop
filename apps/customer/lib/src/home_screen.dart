@@ -44,6 +44,13 @@ class HomeScreen extends ConsumerWidget {
               onPressed: () => context.push('/cart'),
               child: Text(l10n.customerCartCount(cart.lines.length)),
             ),
+          // CU §13 «الإشعارات», until «حسابي» exists.
+          if (signedIn)
+            TextButton(
+              key: const Key('open-notifications'),
+              onPressed: () => context.push('/notifications'),
+              child: Text(l10n.customerNotificationsTitle),
+            ),
           if (signedIn)
             TextButton(
               onPressed: () =>

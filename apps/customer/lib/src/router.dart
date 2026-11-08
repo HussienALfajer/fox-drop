@@ -10,6 +10,7 @@ import 'checkout/checkout_screen.dart';
 import 'content.dart';
 import 'home_screen.dart';
 import 'not_found_screen.dart';
+import 'notifications/notifications_screen.dart';
 import 'orders/order_screen.dart';
 import 'profile/profile.dart';
 import 'profile/profile_screen.dart';
@@ -79,6 +80,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
       GoRoute(path: '/faq', builder: (context, state) => const FaqScreen()),
+      // CU §13 «الإشعارات»: the account's, so a guest signs in first.
+      GoRoute(
+        path: '/notifications',
+        redirect: (context, state) =>
+            ref.read(customerAuth.session).value is SignedIn
+            ? null
+            : signInFrom('/notifications'),
+        builder: (context, state) => const NotificationsScreen(),
+      ),
       GoRoute(
         path: '/checkout',
         builder: (context, state) => const CheckoutScreen(),

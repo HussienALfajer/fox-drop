@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'checkout/place_order.dart';
+import 'notifications/push.dart';
 import 'router.dart';
 
 /// The customer app «تطبيق الزبون»: Arabic only, right to left (AP §4.7).
@@ -12,6 +13,10 @@ class CustomerApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    // Push (CU §14): the token registered while signed in, and a tapped
+    // push opening its order.
+    ref.watch(pushTokensProvider);
+    ref.watch(pushTapsProvider);
     // A placed order opens its screen wherever the customer is: leaving
     // checkout never cancels the command (CU §10.7 item 7).
     ref.listen(placeOrderProvider, (previous, next) {
