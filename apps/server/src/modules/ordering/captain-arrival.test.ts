@@ -269,7 +269,11 @@ async function onlineCaptain(point: Point = captainSpot) {
   await app.get(CaptainAccountsService).addAccount(captainId, phone, change);
   const headers = await appSignIn('captain', phone);
   const now = new Date();
-  await captains.goOnline(captainId, { appVersion: '1.0.0', simulatedLocation: false, termsPending: false }, now);
+  await captains.goOnline(
+    captainId,
+    { appVersion: '1.0.0', simulatedLocation: false, termsPending: false },
+    now,
+  );
   await captains.recordLocations(
     captainId,
     [{ ...point, accuracyMetres: 8, recordedAt: now, simulated: false }],

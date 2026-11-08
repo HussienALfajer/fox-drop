@@ -27,6 +27,10 @@ import {
   type NotificationText,
   useNotificationTexts,
   useUpdateNotificationText,
+  type TermsAudience,
+  termsAudiences,
+  usePublishTerms,
+  useTerms,
 } from './content.js';
 import { can } from './session.js';
 
@@ -40,6 +44,7 @@ const refusalKeys = {
   invalid_order: 'content.refused.invalidOrder',
   invalid_value: 'content.refused.invalidValue',
   unknown_variable: 'content.notifications.unknownVariable',
+  terms_unchanged: 'content.terms.unchanged',
 } as const satisfies Record<ContentRefusal, string>;
 
 const audienceKeys = {
@@ -57,7 +62,8 @@ function Outcome({ result, failed }: { result: EditResult | undefined; failed: b
 }
 
 // AP §9.13 «المحتوى»: the reason lists, the customer texts, the preset notes,
-// the FAQs, the captain work rules and the contact info. OWN edits, OPS
+// the FAQs, the captain work rules, the contact info, the notification texts
+// and the terms and privacy. OWN edits, OPS
 // reads, SUP edits the FAQs (AP §6.2). Unstyled until the design.
 export function ContentPage() {
   const { t } = useTranslation();
@@ -75,6 +81,7 @@ export function ContentPage() {
       {(read || faqs) && <Faqs edit={faqs} />}
       {read && <Texts manage={manage} />}
       {read && <NotificationTexts manage={manage} />}
+      {read && <Terms manage={manage} />}
     </main>
   );
 }
@@ -458,6 +465,92 @@ function NotificationTextRow({
         )}
       </fieldset>
       <Outcome result={update.data} failed={update.isError} />
+    </form>
+  );
+}
+
+// «الشروط والخصوصية» (AP §9.13): one document per app's users, versioned. A
+// new version is published, never edited in place, after a confirmation,
+// since everyone of that audience accepts it again on their next open.
+function Terms({ manage }: { manage: boolean }) {
+  const { t } = useTranslation();
+  const terms = useTerms();
+  if (terms.isPending) return <p role="status">{t('status.loading')}</p>;
+  if (terms.isError) return <p role="alert">{t('common.failed')}</p>;
+  return (
+    <section>
+      <h2>{t('content.terms.title')}</h2>
+      <p>{t('content.terms.explain')}</p>
+      {termsAudiences.map((audience) => (
+        <TermsForm
+          key={[audience, terms.data[audience].version].join(':')}
+          audience={audience}
+          current={terms.data[audience]}
+          manage={manage}
+        />
+      ))}
+    </section>
+  );
+}
+
+function TermsForm({
+  audience,
+  current,
+  manage,
+}: {
+  audience: TermsAudience;
+  current: { version: number; body: string; publishedAt: string };
+  manage: boolean;
+}) {
+  const { t } = useTranslation();
+  const publish = usePublishTerms();
+  const [body, setBody] = useState(current.body);
+  const [confirming, setConfirming] = useState(false);
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
+    setConfirming(false);
+    publish.mutate({ audience, body });
+  }
+  const publishedAt = new Intl.DateTimeFormat('ar-u-nu-latn', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(current.publishedAt));
+  return (
+    <form onSubmit={submit}>
+      <h3>{t(`content.terms.audience.${audience}`)}</h3>
+      <p>{t('content.terms.version', { version: current.version, publishedAt })}</p>
+      <fieldset disabled={!manage || publish.isPending}>
+        <label>
+          {t('content.terms.body')}
+          <textarea
+            name="body"
+            value={body}
+            onChange={(change) => {
+              setBody(change.target.value);
+              setConfirming(false);
+            }}
+            required
+            maxLength={20000}
+            rows={16}
+          />
+        </label>
+        {confirming && <p role="alert">{t('content.terms.confirm')}</p>}
+        {manage && (
+          <button type="submit" disabled={body.trim() === current.body}>
+            {confirming ? t('content.terms.confirmPublish') : t('content.terms.publish')}
+          </button>
+        )}
+        {confirming && (
+          <button type="button" onClick={() => setConfirming(false)}>
+            {t('content.terms.cancel')}
+          </button>
+        )}
+      </fieldset>
+      <Outcome result={publish.data} failed={publish.isError} />
     </form>
   );
 }

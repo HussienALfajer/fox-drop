@@ -580,7 +580,11 @@ describe("the captain's channel (architecture §6.2, CA §15)", () => {
       expect(await channel.outcome).toBe('subscribed');
       const captains = app.get(CaptainsService);
       const now = new Date();
-      await captains.goOnline(captainId, { appVersion: '1.0.0', simulatedLocation: false, termsPending: false }, now);
+      await captains.goOnline(
+        captainId,
+        { appVersion: '1.0.0', simulatedLocation: false, termsPending: false },
+        now,
+      );
       await captains.recordLocations(
         captainId,
         [{ ...centre, accuracyMetres: 8, recordedAt: now, simulated: false }],
@@ -905,7 +909,11 @@ describe("the order's pushes (architecture §8.1, CU §14, RA §16, CA §14)", (
     await captainDevice(phone);
     const captains = app.get(CaptainsService);
     const now = new Date();
-    await captains.goOnline(captainId, { appVersion: '1.0.0', simulatedLocation: false, termsPending: false }, now);
+    await captains.goOnline(
+      captainId,
+      { appVersion: '1.0.0', simulatedLocation: false, termsPending: false },
+      now,
+    );
     await captains.recordLocations(
       captainId,
       [{ ...centre, accuracyMetres: 8, recordedAt: now, simulated: false }],

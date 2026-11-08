@@ -267,7 +267,11 @@ async function onlineAt(point: Point): Promise<string> {
     change,
   );
   const now = new Date();
-  await captains.goOnline(id, { appVersion: '1.0.0', simulatedLocation: false, termsPending: false }, now);
+  await captains.goOnline(
+    id,
+    { appVersion: '1.0.0', simulatedLocation: false, termsPending: false },
+    now,
+  );
   await captains.recordLocations(
     id,
     [{ ...point, accuracyMetres: 8, recordedAt: now, simulated: false }],
