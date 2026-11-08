@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'api.dart';
+import 'terms.dart';
 import 'work/alerts.dart';
 import 'work/commands.dart';
 import 'work/door_payment.dart';
@@ -76,7 +77,15 @@ class _AvailabilityView extends ConsumerWidget {
       final notice = on
           ? await commands.goOnline()
           : await commands.goOffline();
-      if (notice != null && context.mounted) {
+      if (!context.mounted) return;
+      // CA §7.2, K7: «Terms not accepted» opens the terms screen.
+      if (notice is OnlineBlocked &&
+          notice.blocks.any((block) => block['kind'] == 'terms_not_accepted')) {
+        final terms = ref.read(termsCheckProvider);
+        unawaited(terms.check());
+        unawaited(context.push('/terms'));
+      }
+      if (notice != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.noticeText(notice, currency: usage.currency)),
@@ -105,6 +114,16 @@ class _AvailabilityView extends ConsumerWidget {
         if (BigInt.parse(usage.amount) > BigInt.zero)
           Text(
             l10n.captainOwes(l10n.formatMoney(usage.amount, usage.currency)),
+          ),
+        // K7: a new version waits for acceptance before going online.
+        if (ref.watch(termsPendingProvider))
+          ListTile(
+            key: const Key('terms-pending'),
+            title: Text(l10n.captainTermsPendingBanner),
+            trailing: TextButton(
+              onPressed: () => context.push('/terms'),
+              child: Text(l10n.termsTitle),
+            ),
           ),
         SwitchListTile(
           key: const Key('online-switch'),

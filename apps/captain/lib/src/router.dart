@@ -11,6 +11,7 @@ import 'home_screen.dart';
 import 'not_found_screen.dart';
 import 'platform.dart';
 import 'starting_screen.dart';
+import 'terms.dart';
 import 'work/work.dart';
 
 /// Signed out, every route leads to sign-in; signed in, sign-in leads home.
@@ -50,6 +51,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const WorkRulesScreen(),
       ),
       GoRoute(path: '/faq', builder: (context, state) => const FaqScreen()),
+      // AP §9.13, K7: the captain terms, accepted before going online.
+      GoRoute(
+        path: '/terms',
+        builder: (context, state) => TermsScreen(
+          check: ref.read(termsCheckProvider),
+          onAccepted: () => context.canPop() ? context.pop() : context.go('/'),
+        ),
+      ),
       GoRoute(
         path: '/blocked',
         builder: (context, state) => ListenableBuilder(

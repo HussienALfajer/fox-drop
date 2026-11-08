@@ -15,7 +15,7 @@ Slice 2.4b, terms and privacy versions (`docs/roadmap.md`, Phase 2, slice 2.4 sp
   - [x] Server, acceptances: each party's module records which version an account accepted (customers, captains, restaurant owners) through «Accept terms» (CU §15, CA §15); the customer's sign-up records the current version; the quote's `terms_pending` problem, the captain's `terms_not_accepted` online block, the restaurant owner's pending flag in the session; the API contract and clients.
   - [x] Panel: «الشروط والخصوصية» in «المحتوى», the current version per audience and publishing a new one.
   - [x] Customer app: the accept screen on the next open while a version is pending, browsing still open, and checkout's `terms_pending`; the terms in «حسابي» (read only).
-  - [ ] Captain app: the accept screen before going online, a current order untouched (K7).
+  - [x] Captain app: the accept screen before going online, a current order untouched (K7).
   - [ ] Restaurant app: an owner with a pending version sees only Orders and the accept screen; a cashier is not affected (S13).
   - [ ] Review, then hand over to 2.4c.
 

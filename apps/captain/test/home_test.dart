@@ -76,6 +76,39 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets('a pending version of the terms opens before going online (K7)', (
+    tester,
+  ) async {
+    final app = TestApp();
+    app.terms(version: 2, pending: true);
+    app.work(availability: [availabilityJson()]);
+    await app.pump(tester);
+    await app.live(tester);
+    expect(find.byKey(const Key('terms-pending')), findsOneWidget);
+    app.server.on('/v1/captain/availability/online', [
+      const FakeAnswer(409, {
+        'error': 'online_blocked',
+        'blocks': [
+          {'kind': 'terms_not_accepted'},
+        ],
+      }),
+    ]);
+    app.server.on('/v1/captain/terms/accept', [
+      const FakeAnswer(200, {'status': 'accepted'}),
+    ]);
+    await tester.tap(find.byKey(const Key('online-switch')));
+    await app.settle(tester);
+    expect(find.byKey(const Key('terms-body')), findsOneWidget);
+
+    app.terms(version: 2);
+    await tester.tap(find.byKey(const Key('terms-accept')));
+    await app.settle(tester);
+    expect(app.server.to('/v1/captain/terms/accept'), hasLength(1));
+    expect(find.byKey(const Key('terms-pending')), findsNothing);
+    expect(find.byKey(const Key('online-switch')), findsOneWidget);
+    await app.done(tester);
+  });
+
   testWidgets('a refused location permission keeps the captain offline', (
     tester,
   ) async {

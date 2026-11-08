@@ -21,6 +21,10 @@ The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, 
 - **Channels:** `MainActivity` creates `offer` (the phone's alarm sound on the alarm stream, as the app's own offer ring), `chime` (the notification sound once), `cancellation` (the notification sound until the bundled cancellation sound) and `silent` (low importance, no sound); their names are in `res/values/strings.xml`. A push of an unknown channel shows on `chime`.
 - **Tests:** `TestApp` gives `FakePush` (`push`) and `FakeNotificationPermission` (`permission`, allowing unless a test says otherwise); `push_test.dart` proves the token, the permission at «متصل» and the taps.
 
+## Terms (slice 2.4b; AP §9.13, CA §4.8, §7.2, K7)
+
+- `termsCheckProvider` (`lib/src/terms.dart`) follows `apps/customer/CLAUDE.md` «Terms». A pending version shows «وافق على الشروط الجديدة لتتمكن من الاتصال» on home while offline, with a link to `/terms`; «متصل» refused with `terms_not_accepted` («The terms screen», CA §7.2) reads the terms again and opens `/terms`, beside the other blocks' message. A version published while the captain is online or on an order blocks nothing until the next time they go online. Not yet: the application form's step 4 (CA §5.2: the terms and the work rules with a required tick), with the joining slice.
+
 ## Not yet (slice 1.14g)
 
 - The suggestion of «وصلت» when entering the customer's radius (CA §9.6), the blocks «بانتظار تعديل الطلب من العمليات» and «بانتظار تأكيد المطعم للتعديل» (CA §9.3, with edits and item-unavailable reports on the server), the peak bonus lines and the K2 over-limit text (with their server fields).
