@@ -10,6 +10,7 @@ resolution: workspace
 dependencies:
   core_api: any
   core_l10n: any
+  core_realtime: any
   dio: 5.11.1
   flutter:
     sdk: flutter

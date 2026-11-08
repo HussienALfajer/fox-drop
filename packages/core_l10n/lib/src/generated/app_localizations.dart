@@ -2565,6 +2565,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'وافق على الشروط الجديدة لتستخدم شاشات المطعم الأخرى. الطلبات تصل كالمعتاد.'**
   String get merchantTermsPendingBanner;
+
+  /// The red banner of the restaurant and captain apps while the platform's emergency stop is on (RA §8.17, CA §6.3 item 2).
+  ///
+  /// In ar, this message translates to:
+  /// **'المنصة متوقفة مؤقتاً عن استقبال طلبات جديدة. أكملوا الطلبات الحالية.'**
+  String get emergencyStopBanner;
 }
 
 class _AppLocalizationsDelegate
