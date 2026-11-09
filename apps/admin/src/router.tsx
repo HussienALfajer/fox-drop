@@ -27,6 +27,8 @@ import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { ContentPage } from './content-page.js';
 import { canSeeImages } from './restaurant-images.js';
 import { RestaurantImagesPage } from './restaurant-images-page.js';
+import { canSeeRestaurantStatus } from './restaurant-status.js';
+import { RestaurantStatusPage } from './restaurant-status-page.js';
 import { can, sessionQuery } from './session.js';
 import { SetupPage } from './setup-page.js';
 import { SignInPage } from './sign-in-page.js';
@@ -192,6 +194,21 @@ const imagesRoute = createRoute({
   component: RestaurantImagesPage,
 });
 
+// «حالة المطاعم» (slice 2.6b, AP §9.6.5): every restaurants.read session
+// sees the state; restaurants.manage changes it (the server checks).
+const restaurantStatusRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/restaurant-status',
+  validateSearch: (search: Record<string, unknown>): { city?: string; restaurant?: string } => ({
+    ...citySearch(search),
+    ...(typeof search.restaurant === 'string' ? { restaurant: search.restaurant } : {}),
+  }),
+  beforeLoad: ({ context }) => {
+    if (!canSeeRestaurantStatus(context.session)) throw redirect({ to: '/' });
+  },
+  component: RestaurantStatusPage,
+});
+
 const routeTree = rootRoute.addChildren([
   setupRoute,
   signInRoute,
@@ -202,6 +219,7 @@ const routeTree = rootRoute.addChildren([
     contentRoute,
     appSettingsRoute,
     imagesRoute,
+    restaurantStatusRoute,
     alertsRoute,
     ordersRoute.addChildren([orderRoute.addChildren([assignRoute])]),
   ]),

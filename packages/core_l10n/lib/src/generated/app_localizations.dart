@@ -2746,6 +2746,24 @@ abstract class AppLocalizations {
   /// **'وضع الضغط ما زال مفعّلاً (+{minutes} د)'**
   String merchantNoticeBusyReminder(int minutes);
 
+  /// The chime's notice of a pause by operations (RA §16 #23).
+  ///
+  /// In ar, this message translates to:
+  /// **'أوقفت العمليات مطعمك مؤقتاً: {reason}'**
+  String merchantNoticePausedByOperations(String reason);
+
+  /// The chime's notice of operations resuming the restaurant (RA §16 #23).
+  ///
+  /// In ar, this message translates to:
+  /// **'أعادت العمليات تشغيل مطعمك'**
+  String get merchantNoticeResumedByOperations;
+
+  /// The chime's notice of operations ending busy mode (RA §16 #23).
+  ///
+  /// In ar, this message translates to:
+  /// **'أنهت العمليات وضع الضغط'**
+  String get merchantNoticeBusyEndedByOperations;
+
   /// The status and hours screen (RA §6.1 #4, §10).
   ///
   /// In ar, this message translates to:

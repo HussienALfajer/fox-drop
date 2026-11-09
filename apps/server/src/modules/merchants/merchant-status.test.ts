@@ -14,7 +14,12 @@ import {
   MerchantAccountsService,
 } from '../identity/index.js';
 import { NotificationTexts } from '../content/index.js';
-import { PushQueue, RealtimePublisher, RestaurantStateRelay } from '../notifications/index.js';
+import {
+  AlertsService,
+  PushQueue,
+  RealtimePublisher,
+  RestaurantStateRelay,
+} from '../notifications/index.js';
 import { DATABASE } from '../../database/database.module.js';
 import { MerchantsService, RestaurantStatusService } from './index.js';
 
@@ -482,6 +487,7 @@ describe('state events and timers (RA §16 #24, #25, §18)', () => {
       publisher,
       app.get(PushQueue),
       app.get(NotificationTexts),
+      app.get(AlertsService),
     );
     await relay.drain(new Date());
     published.length = 0;

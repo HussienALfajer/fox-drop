@@ -111,7 +111,7 @@ DateTime? nextChange(Status status, DateTime now) {
   return moments.isEmpty ? null : moments.first;
 }
 
-/// The state changes that chime with a notice on every device (RA §16 #3,
+/// The state changes that chime with a notice on every device (RA §16 #3, #23,
 /// #24, #25), as the server's relay names them, with their values.
 sealed class StatusNotice {
   const StatusNotice();
@@ -134,6 +134,22 @@ class BusyReminder extends StatusNotice {
   final int minutes;
 }
 
+/// #23: operations paused the restaurant, with their [reason].
+class PausedByOperations extends StatusNotice {
+  const PausedByOperations(this.reason);
+  final String reason;
+}
+
+/// #23: operations resumed the restaurant.
+class ResumedByOperations extends StatusNotice {
+  const ResumedByOperations();
+}
+
+/// #23: operations ended busy mode.
+class BusyEndedByOperations extends StatusNotice {
+  const BusyEndedByOperations();
+}
+
 StatusNotice? statusNotice(Map<String, Object?> publication) {
   if (publication['type'] != 'restaurant.state_changed') return null;
   final values = publication['values'];
@@ -145,6 +161,11 @@ StatusNotice? statusNotice(Map<String, Object?> publication) {
     'busy_reminder' => BusyReminder(
       of['extraMin'] is int ? of['extraMin'] as int : 0,
     ),
+    'paused_by_operations' => PausedByOperations(
+      of['reason'] is String ? of['reason'] as String : '',
+    ),
+    'resumed_by_operations' => const ResumedByOperations(),
+    'busy_ended_by_operations' => const BusyEndedByOperations(),
     _ => null,
   };
 }
@@ -342,7 +363,7 @@ final statusNoticesProvider = NotifierProvider<StatusNotices, StatusNotice?>(
   StatusNotices.new,
 );
 
-/// RA §16 #3, #24, #25: each of these changes chimes once on every device
+/// RA §16 #3, #23, #24, #25: each of these changes chimes once on every device
 /// while the app runs, with its notice; the push covers a closed app.
 /// Watched by `MerchantApp`.
 final statusChimesProvider = Provider.autoDispose<void>((ref) {

@@ -964,6 +964,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurants/{restaurantId}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantStatusRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/status/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantStatusPause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/status/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantStatusResume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/status/busy-mode": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["adminRestaurantStatusEndBusyMode"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/holiday-close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantStatusSetHolidayClose"];
+        post?: never;
+        delete: operations["adminRestaurantStatusEndHolidayClose"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/max-active-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantStatusSetMaxActiveOrders"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cities": {
         parameters: {
             query?: never;
@@ -2988,6 +3084,75 @@ export interface components {
         };
         AdminImageSetDto_Output: {
             key: string;
+        };
+        AdminRestaurantStatusDto_Output: {
+            /**
+             * @description The operating state now (RA §7.1).
+             * @enum {string}
+             */
+            state: "draft" | "suspended" | "terminated" | "holiday" | "closed" | "paused" | "busy" | "open";
+            /** @description Who paused it while paused: the restaurant’s own buttons work only for «restaurant» (RA §7.2). */
+            pauseSource: ("restaurant" | "ops" | "auto") | null;
+            /** @description When a holiday close or a pause ends. */
+            stateUntil: string | null;
+            /** @description Inside an opening period, when it ends: «يغلق اليوم 11:30 م» (RA §7.2). */
+            closesAt: string | null;
+            /** @description Closed by the schedule, when it next opens. */
+            opensAt: string | null;
+            /** @description Busy mode while on (RA §7.3), until the end of the opening period. */
+            busyMode: {
+                extraMin: number;
+                /** Format: date-time */
+                until: string;
+            } | null;
+            /** @description Orders in placed, accepted or ready, counted only against a maximum (RA §7.4). */
+            activeOrders: number | null;
+            maxActiveOrders: number | null;
+            /** @description The holiday close in force, or the next one set (RA §10). */
+            holiday: {
+                /** Format: date-time */
+                startsAt: string;
+                /** Format: date-time */
+                endsAt: string;
+                message: string | null;
+            } | null;
+            nameAr: string;
+            /** @enum {string} */
+            accountStatus: "draft" | "test" | "active" | "suspended" | "terminated";
+            /** @description The pause in force, whatever the state: an operations or auto pause holds while closed too (AP §9.6.5); null without one. */
+            heldPauseSource: ("restaurant" | "ops" | "auto") | null;
+            /** @description Its end; null until resumed, or without one. */
+            heldPauseUntil: string | null;
+            /** @description An operations pause’s, to customers (CU §9.2). */
+            pauseMessage: string | null;
+            /** @description An operations pause’s reason. */
+            pauseReason: string | null;
+            /** @description «15 د», «30 د», «60 د» (AP §9.6.5). */
+            pauseChoicesMin: number[];
+        };
+        AdminRestaurantPauseDto: {
+            /** @description 15, 30 or 60; null with until, or for «حتى الاستئناف». */
+            minutes: number | null;
+            /** @description A later time; null with minutes, or for «حتى الاستئناف». */
+            until: string | null;
+            /** @description To customers, up to 100 characters. */
+            message: string | null;
+            /** @description Why, for the change log (AP §9.6.4). */
+            reason: string;
+        };
+        AdminRestaurantHolidayCloseDto: {
+            /** @description null: from now. */
+            startsAt: string | null;
+            /** Format: date-time */
+            endsAt: string;
+            /** @description To customers, up to 100 characters. */
+            message: string | null;
+            /** @description Why, for the change log (AP §9.6.4). */
+            reason: string;
+        };
+        AdminRestaurantMaxActiveOrdersDto: {
+            /** @description Off (null) or 1 to 50 (RA §7.4). */
+            maxActiveOrders: number | null;
         };
         AdminCitiesDto_Output: {
             /** @description The active cities, by name. */
@@ -7351,6 +7516,172 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminImageSetDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantStatusRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantStatusDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantStatusPause: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRestaurantPauseDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantStatusDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantStatusResume: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantStatusDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantStatusEndBusyMode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantStatusDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantStatusSetHolidayClose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRestaurantHolidayCloseDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantStatusDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantStatusEndHolidayClose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantStatusDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantStatusSetMaxActiveOrders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRestaurantMaxActiveOrdersDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantStatusDto_Output"];
                 };
             };
         };

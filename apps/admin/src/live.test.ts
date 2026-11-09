@@ -30,6 +30,9 @@ describe('the ops channel', () => {
     expect(staleQueries({ type: 'platform.emergency_stop' }, city)).toEqual([
       ['emergency-stop', city],
     ]);
+    expect(staleQueries({ type: 'restaurant.state_changed', restaurantId: 'r1' }, city)).toEqual([
+      ['restaurant-status', 'r1'],
+    ]);
     expect(staleQueries({ type: 'ticket.opened' }, city)).toEqual([]);
   });
 
@@ -39,6 +42,7 @@ describe('the ops channel', () => {
       ['order'],
       ['alerts', city],
       ['emergency-stop', city],
+      ['restaurant-status'],
     ]);
   });
 

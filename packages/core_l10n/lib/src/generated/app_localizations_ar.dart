@@ -1644,6 +1644,17 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String merchantNoticePausedByOperations(String reason) {
+    return 'أوقفت العمليات مطعمك مؤقتاً: $reason';
+  }
+
+  @override
+  String get merchantNoticeResumedByOperations => 'أعادت العمليات تشغيل مطعمك';
+
+  @override
+  String get merchantNoticeBusyEndedByOperations => 'أنهت العمليات وضع الضغط';
+
+  @override
   String get merchantStatusAndHours => 'الحالة والأوقات';
 
   @override

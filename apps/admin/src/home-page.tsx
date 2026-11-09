@@ -5,6 +5,7 @@ import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { canSeeImages } from './restaurant-images.js';
+import { canSeeRestaurantStatus } from './restaurant-status.js';
 import { can, useSignOut } from './session.js';
 import { useServerStatus } from './status.js';
 
@@ -48,6 +49,11 @@ export function HomePage() {
           {canSeeImages(session) && (
             <li>
               <Link to="/images">{t('images.title')}</Link>
+            </li>
+          )}
+          {canSeeRestaurantStatus(session) && (
+            <li>
+              <Link to="/restaurant-status">{t('restaurantStatus.title')}</Link>
             </li>
           )}
           {can(session, SETTINGS_READ) && (

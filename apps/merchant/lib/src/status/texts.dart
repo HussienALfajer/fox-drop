@@ -72,4 +72,8 @@ String statusNoticeText(AppLocalizations l10n, StatusNotice notice) =>
       AutoPaused(:final count) => l10n.merchantNoticeAutoPaused(count),
       PauseEnded() => l10n.merchantNoticePauseEnded,
       BusyReminder(:final minutes) => l10n.merchantNoticeBusyReminder(minutes),
+      PausedByOperations(:final reason) =>
+        l10n.merchantNoticePausedByOperations(reason),
+      ResumedByOperations() => l10n.merchantNoticeResumedByOperations,
+      BusyEndedByOperations() => l10n.merchantNoticeBusyEndedByOperations,
     };
