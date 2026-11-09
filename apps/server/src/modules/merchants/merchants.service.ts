@@ -57,7 +57,9 @@ export type MerchantsRefusal =
   | 'invalid_busy_extra'
   | 'invalid_holiday_close'
   | 'invalid_prep_time'
-  | 'invalid_max_active_orders';
+  | 'invalid_max_active_orders'
+  | 'restaurant_suspended'
+  | 'owner_only';
 
 // A change the merchants module refuses, with the reason the routes map to
 // their own answers.

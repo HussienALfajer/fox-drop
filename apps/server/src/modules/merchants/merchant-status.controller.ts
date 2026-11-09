@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   ConflictException,
+  Delete,
   ForbiddenException,
   Get,
   HttpCode,
@@ -16,9 +17,17 @@ import { z } from 'zod';
 import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
 import { MerchantController } from '../../http/route-groups.js';
 import type { AppSession, MerchantAccount } from '../identity/index.js';
-import { type MerchantChange, MerchantsRefusedError } from './merchants.service.js';
+import {
+  type MerchantChange,
+  MerchantsRefusedError,
+  MerchantsService,
+} from './merchants.service.js';
 import { pauseSources } from './operating-state.js';
-import { type RestaurantStatus, RestaurantStatusService } from './restaurant-status.service.js';
+import {
+  type RestaurantHours,
+  type RestaurantStatus,
+  RestaurantStatusService,
+} from './restaurant-status.service.js';
 
 const instant = z.iso.datetime();
 
@@ -75,6 +84,85 @@ class MerchantBusyModeDto extends createZodDto(
   }),
 ) {}
 
+const period = z.object({
+  weekday: z.int().min(0).max(6).describe('0 Sunday to 6 Saturday.'),
+  opensAt: z.int().describe('Minutes after midnight on the city clock.'),
+  closesAt: z
+    .int()
+    .describe('Minutes after midnight; not after opensAt crosses midnight (18:00–02:00).'),
+});
+
+const merchantHoursSchema = z.object({
+  periods: z
+    .array(period)
+    .describe('The weekly schedule; a weekday without a period is «مغلق طوال اليوم» (RA §10).'),
+  holiday: merchantStatusSchema.shape.holiday,
+  defaultPrepMin: z.int(),
+  prepFloorMin: z.int().describe('merchant.prep_time_floor_min.'),
+  prepCeilingMin: z.int().describe('merchant.prep_time_ceiling_min.'),
+  maxActiveOrders: z.int().nullable().describe('Off (null) or 1 to 50 (RA §7.4).'),
+  minimumOrder: z.object({
+    amount: z.string().regex(/^\d+$/).describe('Integer minor units (AP §8.6).'),
+    currency: z.string().length(3),
+  }),
+  coverage: z.object({
+    kind: z.enum(['radius', 'zones']),
+    radiusMetres: z.int().nullable(),
+    zoneCount: z.int().nullable(),
+  }),
+  commissionBp: z.int().nullable().describe('Basis points of the items value: 1500 is 15%.'),
+  settlementWeekday: z.string().describe('merchant.settlement_weekday, such as saturday.'),
+});
+
+class MerchantHoursDto extends createZodDto(merchantHoursSchema) {}
+
+class MerchantScheduleDto extends createZodDto(z.object({ periods: z.array(period).max(50) })) {}
+
+class MerchantOrderSettingsDto extends createZodDto(
+  z.object({
+    defaultPrepMin: z.int().describe('Within prepFloorMin and prepCeilingMin.'),
+    maxActiveOrders: z.int().nullable().describe('Off (null) or 1 to 50.'),
+  }),
+) {}
+
+class MerchantHolidayCloseDto extends createZodDto(
+  z.object({
+    startsAt: instant.nullable().describe('null: from now.'),
+    endsAt: instant,
+    message: z.string().max(100).nullable().describe('To customers, up to 100 characters.'),
+  }),
+) {}
+
+function hoursBody(hours: RestaurantHours): z.infer<typeof merchantHoursSchema> {
+  const { coverage } = hours;
+  return {
+    periods: hours.periods,
+    holiday:
+      hours.holiday === null
+        ? null
+        : {
+            startsAt: hours.holiday.startsAt.toISOString(),
+            endsAt: hours.holiday.endsAt.toISOString(),
+            message: hours.holiday.message,
+          },
+    defaultPrepMin: hours.defaultPrepMin,
+    prepFloorMin: hours.prepFloorMin,
+    prepCeilingMin: hours.prepCeilingMin,
+    maxActiveOrders: hours.maxActiveOrders,
+    minimumOrder: {
+      amount: hours.minimumOrder.amount.toString(),
+      currency: hours.minimumOrder.currency,
+    },
+    coverage: {
+      kind: coverage.kind,
+      radiusMetres: coverage.kind === 'radius' ? coverage.radiusMetres : null,
+      zoneCount: coverage.kind === 'zones' ? coverage.zoneIds.length : null,
+    },
+    commissionBp: hours.commissionBp,
+    settlementWeekday: hours.settlementWeekday,
+  };
+}
+
 export function statusBody(status: RestaurantStatus): z.infer<typeof merchantStatusSchema> {
   const { state } = status;
   return {
@@ -108,7 +196,10 @@ export function statusBody(status: RestaurantStatus): z.infer<typeof merchantSta
 // Idempotency-Key; each answers the status after it.
 @MerchantController()
 export class MerchantStatusController {
-  constructor(private readonly status: RestaurantStatusService) {}
+  constructor(
+    private readonly status: RestaurantStatusService,
+    private readonly merchants: MerchantsService,
+  ) {}
 
   @Get('restaurant/status')
   @AppSignedIn()
@@ -155,6 +246,86 @@ export class MerchantStatusController {
     );
     return statusBody(await this.status.status(restaurantId));
   }
+
+  // RA §10, §6.1: «الحالة والأوقات» is the owners'; cashiers see the status.
+  @Get('restaurant/hours')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: MerchantHoursDto })
+  async hours(@CurrentAppSession() session: AppSession) {
+    return hoursBody(await this.status.hours(ownerOf(session).restaurantId));
+  }
+
+  @Put('restaurant/hours')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: MerchantHoursDto })
+  async setHours(
+    @CurrentAppSession() session: AppSession,
+    @Body() body: MerchantScheduleDto,
+    @Req() request: FastifyRequest,
+  ) {
+    const { restaurantId } = ownerOf(session);
+    await answer(() =>
+      this.merchants.setWeeklySchedule(restaurantId, body.periods, changeOf(session, request)),
+    );
+    return hoursBody(await this.status.hours(restaurantId));
+  }
+
+  @Put('restaurant/order-settings')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: MerchantHoursDto })
+  async setOrderSettings(
+    @CurrentAppSession() session: AppSession,
+    @Body() body: MerchantOrderSettingsDto,
+    @Req() request: FastifyRequest,
+  ) {
+    const { restaurantId } = ownerOf(session);
+    await answer(() =>
+      this.status.setOrderSettings(restaurantId, body, changeOf(session, request)),
+    );
+    return hoursBody(await this.status.hours(restaurantId));
+  }
+
+  @Put('restaurant/holiday-close')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: MerchantStatusDto })
+  async setHolidayClose(
+    @CurrentAppSession() session: AppSession,
+    @Body() body: MerchantHolidayCloseDto,
+    @Req() request: FastifyRequest,
+  ) {
+    const { restaurantId } = ownerOf(session);
+    await answer(() =>
+      this.status.setHolidayClose(
+        restaurantId,
+        {
+          startsAt: body.startsAt === null ? null : new Date(body.startsAt),
+          endsAt: new Date(body.endsAt),
+          message: body.message,
+        },
+        changeOf(session, request),
+      ),
+    );
+    return statusBody(await this.status.status(restaurantId));
+  }
+
+  @Delete('restaurant/holiday-close')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: MerchantStatusDto })
+  async endHolidayClose(@CurrentAppSession() session: AppSession, @Req() request: FastifyRequest) {
+    const { restaurantId } = ownerOf(session);
+    await answer(() => this.status.endHolidayClose(restaurantId, changeOf(session, request)));
+    return statusBody(await this.status.status(restaurantId));
+  }
+}
+
+// RA §5.4, §18: hours, holiday closes, the prep time and the limit are the
+// owners' (MO).
+function ownerOf(session: AppSession): MerchantAccount {
+  const account = merchantOf(session);
+  if (account.role !== 'owner') {
+    throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: 'owner_only' });
+  }
+  return account;
 }
 
 // RA §7.1 «Logging»: the restaurant user, their role and the device.
@@ -176,6 +347,7 @@ export async function answer(run: () => Promise<void>): Promise<void> {
     switch (error.refusal) {
       case 'restaurant_closed':
       case 'paused_by_operations':
+      case 'restaurant_suspended':
         throw new ConflictException(body(HttpStatus.CONFLICT));
       case 'restaurant_terminated':
         throw new ForbiddenException(body(HttpStatus.FORBIDDEN));

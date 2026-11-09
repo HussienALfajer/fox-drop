@@ -93,7 +93,7 @@ async function restaurant({ open = true } = {}) {
 }
 
 const call = (
-  method: 'GET' | 'POST' | 'PUT',
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
   url: string,
   headers: Record<string, string>,
   payload?: object,
@@ -226,5 +226,139 @@ describe('busy mode (RA §7.3)', () => {
     const refused = await call('PUT', 'status/busy-mode', cashier.headers, { extraMin: 10 });
     expect(refused.statusCode).toBe(409);
     expect(refused.json().error).toBe('restaurant_closed');
+  });
+});
+
+describe('status and hours, the owners’ (RA §10)', () => {
+  it('lets only an owner read and change the hours, holiday close and limits', async () => {
+    const { id, cashier } = await restaurant();
+    for (const [method, url, payload] of [
+      ['GET', 'hours', undefined],
+      ['PUT', 'hours', { periods: [] }],
+      ['PUT', 'order-settings', { defaultPrepMin: 25, maxActiveOrders: 5 }],
+      ['PUT', 'holiday-close', { startsAt: null, endsAt: new Date().toISOString(), message: null }],
+    ] as const) {
+      const refused = await call(method, url, cashier.headers, payload);
+      expect(refused.statusCode).toBe(403);
+      expect(refused.json().error).toBe('owner_only');
+    }
+    const owner = await signedIn(id, 'owner');
+    const hours = await call('GET', 'hours', owner.headers);
+    expect(hours.statusCode).toBe(200);
+    expect(hours.json()).toEqual({
+      periods: allWeek,
+      holiday: null,
+      defaultPrepMin: 20,
+      prepFloorMin: 5,
+      prepCeilingMin: 90,
+      maxActiveOrders: null,
+      minimumOrder: { amount: '10000', currency: 'TRY' },
+      coverage: { kind: 'radius', radiusMetres: 3000, zoneCount: null },
+      commissionBp: 1500,
+      settlementWeekday: 'saturday',
+    });
+  });
+
+  it('sets several and overnight periods, and refuses overlapping ones', async () => {
+    const { id } = await restaurant();
+    const owner = await signedIn(id, 'owner');
+    // Friday 12:00–15:00 and 18:00–02:00; Saturday closed all day.
+    const periods = [
+      { weekday: 5, opensAt: 720, closesAt: 900 },
+      { weekday: 5, opensAt: 1080, closesAt: 120 },
+    ];
+    const saved = await call('PUT', 'hours', owner.headers, { periods });
+    expect(saved.statusCode).toBe(200);
+    expect(saved.json().periods).toEqual(periods);
+    const overlapping = await call('PUT', 'hours', owner.headers, {
+      periods: [...periods, { weekday: 6, opensAt: 60, closesAt: 600 }],
+    });
+    expect(overlapping.statusCode).toBe(400);
+    expect(overlapping.json().error).toBe('invalid_schedule');
+  });
+
+  it('sets the default prep time within the chooser and the maximum active orders', async () => {
+    const { id } = await restaurant();
+    const owner = await signedIn(id, 'owner');
+    const saved = await call('PUT', 'order-settings', owner.headers, {
+      defaultPrepMin: 30,
+      maxActiveOrders: 3,
+    });
+    expect(saved.json()).toMatchObject({ defaultPrepMin: 30, maxActiveOrders: 3 });
+    const status = await call('GET', 'status', owner.headers);
+    expect(status.json()).toMatchObject({ state: 'open', activeOrders: 0, maxActiveOrders: 3 });
+    for (const [payload, error] of [
+      [{ defaultPrepMin: 2, maxActiveOrders: null }, 'invalid_prep_time'],
+      [{ defaultPrepMin: 120, maxActiveOrders: null }, 'invalid_prep_time'],
+      [{ defaultPrepMin: 20, maxActiveOrders: 0 }, 'invalid_max_active_orders'],
+      [{ defaultPrepMin: 20, maxActiveOrders: 51 }, 'invalid_max_active_orders'],
+    ] as const) {
+      const refused = await call('PUT', 'order-settings', owner.headers, payload);
+      expect(refused.statusCode).toBe(400);
+      expect(refused.json().error).toBe(error);
+    }
+    const off = await call('PUT', 'order-settings', owner.headers, {
+      defaultPrepMin: 30,
+      maxActiveOrders: null,
+    });
+    expect(off.json().maxActiveOrders).toBe(null);
+  });
+
+  it('closes for a holiday with a message, shown to customers, until ended early', async () => {
+    const { id } = await restaurant();
+    const owner = await signedIn(id, 'owner');
+    const endsAt = new Date(Date.now() + 3 * 86_400_000).toISOString();
+    const closed = await call('PUT', 'holiday-close', owner.headers, {
+      startsAt: null,
+      endsAt,
+      message: 'إجازة العيد',
+    });
+    expect(closed.statusCode).toBe(200);
+    expect(closed.json()).toMatchObject({
+      state: 'holiday',
+      stateUntil: endsAt,
+      holiday: { endsAt, message: 'إجازة العيد' },
+    });
+    expect(await merchants.storefrontState(id)).toMatchObject({
+      state: { state: 'holiday' },
+      message: 'إجازة العيد',
+    });
+    // The restaurant cannot pause while closed.
+    const pause = await call('POST', 'status/pause', owner.headers, { minutes: 15 });
+    expect(pause.json().error).toBe('restaurant_closed');
+
+    const ended = await call('DELETE', 'holiday-close', owner.headers);
+    expect(ended.json()).toMatchObject({ state: 'open', holiday: null });
+  });
+
+  it('sets a later holiday close, replaced by a new one, and refuses one ending first', async () => {
+    const { id } = await restaurant();
+    const owner = await signedIn(id, 'owner');
+    const day = 86_400_000;
+    const start = Date.now();
+    const at = (days: number) => new Date(start + days * day).toISOString();
+    const later = await call('PUT', 'holiday-close', owner.headers, {
+      startsAt: at(2),
+      endsAt: at(4),
+      message: null,
+    });
+    expect(later.json()).toMatchObject({ state: 'open', holiday: { startsAt: at(2) } });
+    await call('PUT', 'holiday-close', owner.headers, {
+      startsAt: at(5),
+      endsAt: at(6),
+      message: null,
+    });
+    const { rows } = await sql.query(
+      'SELECT ended_at IS NULL AS live FROM merchants.holiday_closes WHERE restaurant_id = $1 ORDER BY created_at, id',
+      [id],
+    );
+    expect(rows.map((row) => row.live)).toEqual([false, true]);
+    const wrong = await call('PUT', 'holiday-close', owner.headers, {
+      startsAt: at(3),
+      endsAt: at(2),
+      message: null,
+    });
+    expect(wrong.statusCode).toBe(400);
+    expect(wrong.json().error).toBe('invalid_holiday_close');
   });
 });

@@ -4,8 +4,11 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
 import { SettingsService } from '../settings/index.js';
+import type { OpeningPeriod } from './hours.js';
 import {
+  type Coverage,
   type MerchantChange,
+  type Money,
   MerchantsRefusedError,
   MerchantsService,
 } from './merchants.service.js';
@@ -13,6 +16,7 @@ import type { OperatingState } from './operating-state.js';
 import { holidayCloses, pauses, restaurants } from './schema.js';
 import {
   busyModeEnd,
+  checkHolidayClose,
   PAUSE_CHOICES_MIN,
   restaurantPauseEnd,
   restaurantResume,
@@ -37,6 +41,21 @@ export interface RestaurantStatus {
   pauseChoicesMin: readonly number[];
   busyExtraOptionsMin: number[];
   busyReminderMin: number;
+}
+
+// RA §10: what «الحالة والأوقات» shows an owner.
+export interface RestaurantHours {
+  periods: OpeningPeriod[];
+  holiday: RestaurantStatus['holiday'];
+  defaultPrepMin: number;
+  prepFloorMin: number;
+  prepCeilingMin: number;
+  maxActiveOrders: number | null;
+  // Read-only, set by admins (R13).
+  minimumOrder: Money;
+  coverage: Coverage;
+  commissionBp: number | null;
+  settlementWeekday: string;
 }
 
 // RA §7, §10, §18: the restaurant's status commands. Each takes the
@@ -100,6 +119,30 @@ export class RestaurantStatusService {
       pauseChoicesMin: PAUSE_CHOICES_MIN,
       busyExtraOptionsMin,
       busyReminderMin,
+    };
+  }
+
+  async hours(restaurantId: string, now = new Date()): Promise<RestaurantHours> {
+    const restaurant = await this.merchants.restaurant(restaurantId, now);
+    if (!restaurant) throw new MerchantsRefusedError('unknown_restaurant', 'no such restaurant');
+    const scope = { cityId: restaurant.cityId };
+    const [status, prepFloorMin, prepCeilingMin, settlementWeekday] = await Promise.all([
+      this.status(restaurantId, now),
+      this.settings.get('merchant.prep_time_floor_min', scope),
+      this.settings.get('merchant.prep_time_ceiling_min', scope),
+      this.settings.get('merchant.settlement_weekday', scope),
+    ]);
+    return {
+      periods: restaurant.schedule,
+      holiday: status.holiday,
+      defaultPrepMin: restaurant.defaultPrepMin,
+      prepFloorMin,
+      prepCeilingMin,
+      maxActiveOrders: restaurant.maxActiveOrders,
+      minimumOrder: restaurant.minimumOrder,
+      coverage: restaurant.coverage,
+      commissionBp: restaurant.commissionBp,
+      settlementWeekday,
     };
   }
 
@@ -190,6 +233,139 @@ export class RestaurantStatusService {
     });
   }
 
+  // RA §10 «إغلاق لعدة أيام»: from now or a later moment until a later one,
+  // with an optional message. One at a time: a new one replaces the one in
+  // force or set. Active orders are not affected.
+  async setHolidayClose(
+    restaurantId: string,
+    close: { startsAt: Date | null; endsAt: Date; message: string | null },
+    change: MerchantChange,
+    now = new Date(),
+  ): Promise<void> {
+    const message = close.message?.trim() || null;
+    const startsAt = close.startsAt ?? now;
+    const problem = checkHolidayClose({ startsAt, endsAt: close.endsAt, message }, now);
+    if (problem !== null) throw new MerchantsRefusedError('invalid_holiday_close', problem);
+    await this.database.db.transaction(async (tx) => {
+      const row = await this.lock(tx, restaurantId);
+      // RA §18 «Holiday close / end»: not while suspended.
+      if (row.accountStatus === 'suspended') {
+        throw new MerchantsRefusedError('restaurant_suspended', 'the restaurant is suspended');
+      }
+      const before = await this.endHolidays(tx, restaurantId, change, now);
+      await tx.insert(holidayCloses).values({
+        restaurantId,
+        startsAt: startsAt.getTime() < now.getTime() ? now : startsAt,
+        endsAt: close.endsAt,
+        message,
+        ...setBy(change),
+      });
+      await this.record(tx, change, row.cityId, restaurantId, 'restaurant.holiday_close', {
+        before,
+        after: { startsAt: startsAt.toISOString(), endsAt: close.endsAt.toISOString(), message },
+      });
+    });
+  }
+
+  // RA §10: ends the holiday close in force, or cancels the one set.
+  async endHolidayClose(
+    restaurantId: string,
+    change: MerchantChange,
+    now = new Date(),
+  ): Promise<void> {
+    await this.database.db.transaction(async (tx) => {
+      const row = await this.lock(tx, restaurantId);
+      const before = await this.endHolidays(tx, restaurantId, change, now);
+      if (before === null) return;
+      await this.record(tx, change, row.cityId, restaurantId, 'restaurant.holiday_close.end', {
+        before,
+        after: null,
+      });
+    });
+  }
+
+  // RA §10: the default prep time preselected on the accept prompt (§8.5),
+  // within the chooser's limits, and the maximum active orders (off, or 1 to
+  // 50, §7.4). Each applies at once.
+  async setOrderSettings(
+    restaurantId: string,
+    settings: { defaultPrepMin: number; maxActiveOrders: number | null },
+    change: MerchantChange,
+  ): Promise<void> {
+    const { defaultPrepMin, maxActiveOrders } = settings;
+    if (
+      maxActiveOrders !== null &&
+      (!Number.isInteger(maxActiveOrders) || maxActiveOrders < 1 || maxActiveOrders > 50)
+    ) {
+      throw new MerchantsRefusedError(
+        'invalid_max_active_orders',
+        'the maximum active orders is off or 1 to 50',
+      );
+    }
+    await this.database.db.transaction(async (tx) => {
+      const row = await this.lock(tx, restaurantId);
+      const scope = { cityId: row.cityId };
+      const [floor, ceiling] = await Promise.all([
+        this.settings.get('merchant.prep_time_floor_min', scope),
+        this.settings.get('merchant.prep_time_ceiling_min', scope),
+      ]);
+      if (!Number.isInteger(defaultPrepMin) || defaultPrepMin < floor || defaultPrepMin > ceiling) {
+        throw new MerchantsRefusedError(
+          'invalid_prep_time',
+          `the default prep time is ${floor} to ${ceiling} minutes`,
+        );
+      }
+      const [current] = await tx
+        .select({
+          defaultPrepMin: restaurants.defaultPrepMin,
+          maxActiveOrders: restaurants.maxActiveOrders,
+        })
+        .from(restaurants)
+        .where(eq(restaurants.id, restaurantId));
+      if (!current) return;
+      if (current.defaultPrepMin !== defaultPrepMin) {
+        await this.record(tx, change, row.cityId, restaurantId, 'restaurant.prep_time', {
+          before: { defaultPrepMin: current.defaultPrepMin },
+          after: { defaultPrepMin },
+        });
+      }
+      if (current.maxActiveOrders !== maxActiveOrders) {
+        await this.record(tx, change, row.cityId, restaurantId, 'restaurant.max_active_orders', {
+          before: { maxActiveOrders: current.maxActiveOrders },
+          after: { maxActiveOrders },
+        });
+      }
+      await tx
+        .update(restaurants)
+        .set({ defaultPrepMin, maxActiveOrders, updatedAt: sql`now()` })
+        .where(eq(restaurants.id, restaurantId));
+    });
+  }
+
+  // The holiday closes not ended and not over: the one in force and any set.
+  private async endHolidays(
+    tx: Tx,
+    restaurantId: string,
+    change: MerchantChange,
+    now: Date,
+  ): Promise<{ startsAt: string; endsAt: string } | null> {
+    const ended = await tx
+      .update(holidayCloses)
+      .set({ endedAt: now, ...endedBy(change) })
+      .where(
+        and(
+          eq(holidayCloses.restaurantId, restaurantId),
+          isNull(holidayCloses.endedAt),
+          gt(holidayCloses.endsAt, now),
+        ),
+      )
+      .returning({ startsAt: holidayCloses.startsAt, endsAt: holidayCloses.endsAt });
+    const [first] = ended;
+    return first
+      ? { startsAt: first.startsAt.toISOString(), endsAt: first.endsAt.toISOString() }
+      : null;
+  }
+
   private async endOwnPause(
     tx: Tx,
     restaurantId: string,
@@ -244,6 +420,19 @@ export class RestaurantStatusService {
       tx,
     );
   }
+}
+
+function setBy(change: MerchantChange) {
+  const { type, id } = change.actor;
+  if (type !== 'admin' && type !== 'merchant' && type !== 'system') {
+    throw new Error(`a ${type} does not change a restaurant`);
+  }
+  return { setByType: type, setById: id };
+}
+
+function endedBy(change: MerchantChange) {
+  const { setByType, setById } = setBy(change);
+  return { endedByType: setByType, endedById: setById };
 }
 
 function refused(
