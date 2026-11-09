@@ -4,17 +4,24 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.7, rejecting an order and operations accepting or rejecting for the restaurant (`docs/roadmap.md`, Phase 2). The owner rejects with «صنف غير متوفر» and the item becomes unavailable.
+Slice 2.7b, operations accepting or rejecting for the restaurant in the panel, and the customer's rejected order (`docs/roadmap.md`, Phase 2; owner decision 2026-11-09: 2.7 is two pull requests). Operations reject for a restaurant and the customer orders again without the missing item.
 
-- **Specs:** RA §8.6 (reject: the three reasons and their side effects), RA §8.15 (accepted or rejected by operations, «قبلته العمليات»), AP §9.3.2 (the order detail's accept and reject for the restaurant), CU §11.9 (the customer's rejected order, similar restaurants, «اطلب بدون الأصناف غير المتوفرة»), with the order states and their timers in `docs/domain/`.
-- **Branch:** `feat/order-reject`.
-- **Ask the owner first:** whether 2.7 is one pull request or two (server and restaurant app, then the panel and the customer app), as 2.6 was.
+- **Specs:** AP §9.3.1 (the detail: «rejected (with reason)»), AP §9.3.2 (the rows «قبول نيابة عن المطعم» and «رفض نيابة عن المطعم», with the reason required), AP Appendix B «Restaurant rejection», CU §11.9 (the rejected and unanswered orders, up to 5 similar restaurants: open, same category, delivering to the pin; «اطلب بدون الأصناف غير المتوفرة», Q22) and §12.3 (the cart rebuilt, asking first when the current cart is not empty), CU Appendix C, CU §14 #7.
+- **Built in 2.7a (server):** `POST /v1/admin/orders/{orderId}/accept` (`prepMin`, `reason`) and `.../reject` (`rejection`, `items`, `busyExtraMin`, `pauseMin`, `reason`), the detail's `rejection` (code, label, customer text, items, `byOperations`), the customer order's `rejection` (code, `text`, `unavailableItemIds`). See `apps/server/src/modules/ordering/CLAUDE.md` «Reject» and «On the restaurant's behalf».
+- **Branch:** `feat/order-reject-panel-customer`.
+- **Ask the owner first:** the design stop (CLAUDE.md) holds for new screens: build the panel's dialogs and the customer's rejected-order view unstyled, as earlier slices did, unless the owner says the design is ready.
 - **Plan:**
-  - [ ] Server: the restaurant's reject with its reason and side effects (an unavailable item switched off, a pause, the money and timers of a `rejected` order), operations' accept and reject for the restaurant, test first.
-  - [ ] Restaurant app: «رفض» with the three reasons, and «قبلته العمليات» / rejected by operations.
-  - [ ] Panel: accept and reject on the order detail.
-  - [ ] Customer app: the rejected order, similar restaurants and «اطلب بدون الأصناف غير المتوفرة».
+  - [ ] Server: the similar restaurants of a rejected or unanswered order (CU §11.9: open, the same category, delivering to the order's pin, up to 5), on the customer's order or its own route, test first.
+  - [ ] Panel: «قبول نيابة عن المطعم» (the prep-time chooser and a reason) and «رفض نيابة عن المطعم» (the three reasons, the items, busy mode or the 30-minute pause, a reason) on the order detail while placed, and the rejection in the detail.
+  - [ ] Customer app: «نعتذر، لم يقبل المطعم طلبك» with the reason's text, the similar restaurants, and «اطلب بدون الأصناف غير المتوفرة» rebuilding the cart without `unavailableItemIds` (asking first when the cart is not empty).
   - [ ] Review, then hand over to slice 2.8.
+
+### Left from 2.7a (`feat/order-reject`)
+
+- **Before deploying to staging:** migration 0042 adds the rejection columns and a `CHECK` on `ordering.orders`; it scans every partition (fine before launch). The new restaurant APK shows «رفض» and chimes on operations' decisions; an older one keeps working without them. The panel's buttons come with 2.7b, so operations can call the routes only from 2.7b on.
+- **To check on staging:** on the restaurant app, a new order → «رفض» → «صنف غير متوفر», pick an item «حتى الغد»: the ring stops on every device, the customer gets «نعتذر، لم يقبل {المطعم} طلبك: بعض الأصناف غير متوفرة: {الأصناف}», and the item shows unavailable in the customer app until the next business day; «المطعم مغلق» pauses the restaurant «حتى أعيد الفتح» (the pill shows it); «ضغط طلبات» with «إيقاف 30 د» pauses 30 minutes.
+- **To confirm with the owner:** a rejection's pause or busy mode is skipped, and the rejection still stands, when the restaurant could not set it now (not open or busy, or under an operations or auto pause, RA §8.6 S2 says so only for «المطعم مغلق»); operations' rejection uses the restaurant's three reasons with the same side effects, the pause of «المطعم مغلق» being the restaurant's own (it can resume it), and their note required as for every operations action; «تفعيل وضع الضغط» offers each of `merchant.busy_extra_options_min` (+10, +20); the strings the spec gives no wording for («رفض الطلب #{رقم}», «اختر الأصناف غير المتوفرة», «الرفض فقط», «تأكيد الرفض», «تعذّر الرفض بهذه الاختيارات، راجعها ثم أعد المحاولة», «رُفض الطلب قبل وصول طلبك»).
+- **Not yet:** the rejection counts in the restaurant's reports by reason and actor (RA §11), history's rejected orders (RA §8.18), the sheet closing itself when the order leaves `placed` while it is open (it sends nothing then).
 
 ### Left from 2.6b (`feat/restaurant-status-ops`)
 
