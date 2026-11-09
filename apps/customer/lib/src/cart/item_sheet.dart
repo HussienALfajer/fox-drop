@@ -2,6 +2,7 @@ import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../media_image.dart';
 import 'cart.dart';
 import 'item_choice.dart';
 
@@ -152,6 +153,13 @@ class _ItemSheetState extends ConsumerState<ItemSheet> {
         child: ListView(
           shrinkWrap: true,
           children: [
+            if (item.photoKey case final photo?)
+              MediaImage(
+                imageKey: photo,
+                width: MediaQuery.sizeOf(context).width,
+                height: 200,
+                label: item.name,
+              ),
             ListTile(
               title: Text(item.name),
               subtitle: Text(

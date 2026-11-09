@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../device.dart';
+import '../media_image.dart';
 import 'browsing.dart';
 
 /// The restaurants that deliver to the point (CU §8.2), one plain list in
@@ -27,6 +28,15 @@ class RestaurantList extends ConsumerWidget {
             for (final card in value)
               ListTile(
                 key: Key('restaurant-${card.id}'),
+                leading: switch (card.logoKey) {
+                  final logo? => MediaImage(
+                    imageKey: logo,
+                    width: 56,
+                    height: 56,
+                    label: card.nameAr,
+                  ),
+                  null => null,
+                },
                 title: Text(card.nameAr),
                 subtitle: Text(
                   [

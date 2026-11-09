@@ -7,6 +7,7 @@ import 'package:customer/src/api.dart';
 import 'package:customer/src/app.dart';
 import 'package:customer/src/auth.dart';
 import 'package:customer/src/device.dart';
+import 'package:customer/src/media_image.dart';
 import 'package:customer/src/notifications/permission.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/misc.dart';
@@ -16,6 +17,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'fakes.dart';
 
 const accountId = '00000000-0000-4000-8000-000000000001';
+
+/// A 1×1 transparent PNG, every image's answer in the tests.
+final transparentPng = base64Decode(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+);
 
 /// The customer app on a [FakeServer], with memory stores: no server or
 /// device needed.
@@ -78,6 +84,9 @@ class TestApp {
   // The phone allows notifications unless a test says otherwise, so no
   // order asks (CU §4.4).
   final FakeNotificationPermission permission;
+
+  /// The image URLs the screens asked for (CU §4.5), answered from memory.
+  final mediaUrls = <String>[];
   final List<Override> overrides;
   final transport = FakeTransport();
   late final ProviderContainer container;
@@ -158,6 +167,11 @@ class TestApp {
         deviceStoreProvider.overrideWithValue(device),
         realtimeTransportProvider.overrideWithValue(transport),
         notificationPermissionProvider.overrideWithValue(permission),
+        mediaBaseProvider.overrideWithValue('https://api.test/media'),
+        mediaLoaderProvider.overrideWithValue((url) {
+          mediaUrls.add(url);
+          return MemoryImage(transparentPng);
+        }),
         ...overrides,
       ],
       retry: (retryCount, error) => null,
