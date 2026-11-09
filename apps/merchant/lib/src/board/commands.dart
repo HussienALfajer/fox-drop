@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:core_api/core_api.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:core_auth/core_auth.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,7 +11,78 @@ import '../api.dart';
 import 'board.dart';
 
 /// A board command (RA §8.5, §8.8, §8.10).
-enum CommandKind { accept, ready, confirmPickup, disputePickup, incomplete }
+enum CommandKind {
+  accept,
+  reject,
+  ready,
+  confirmPickup,
+  disputePickup,
+  incomplete,
+}
+
+/// The three rejection reasons, the codes of the closed list (RA §8.6, R3).
+enum RejectReason {
+  itemUnavailable('item_unavailable'),
+  restaurantClosed('restaurant_closed'),
+  tooBusy('too_busy');
+
+  const RejectReason(this.code);
+  final String code;
+}
+
+/// What «ضغط طلبات» also sets (RA §8.6: optional).
+sealed class TooBusyStep {
+  const TooBusyStep();
+}
+
+class RejectOnly extends TooBusyStep {
+  const RejectOnly();
+}
+
+/// «تفعيل وضع الضغط» with one of the restaurant's busy-mode options.
+class BusyModeStep extends TooBusyStep {
+  const BusyModeStep(this.extraMin);
+  final int extraMin;
+}
+
+/// «إيقاف 30 د».
+class PauseStep extends TooBusyStep {
+  const PauseStep();
+}
+
+/// RA §8.6: «إيقاف 30 د» is the only pause «ضغط طلبات» offers.
+const tooBusyPauseMin = 30;
+
+/// A rejection as the sheet sends it (RA §8.6): the reason; for «صنف غير
+/// متوفر» the items, each off «حتى الغد» (true) or «حتى أعيده» (false); for
+/// «ضغط طلبات» its step.
+class Rejection {
+  const Rejection(
+    this.reason, {
+    this.items = const {},
+    this.step = const RejectOnly(),
+  });
+
+  final RejectReason reason;
+  final Map<String, bool> items;
+  final TooBusyStep step;
+
+  /// Whether the server would take it: the items only for «صنف غير متوفر»,
+  /// where one at least is needed.
+  bool get complete =>
+      reason == RejectReason.itemUnavailable ? items.isNotEmpty : items.isEmpty;
+
+  /// The command's body, the same for each retry of its key.
+  String get body => [
+    reason.code,
+    for (final entry in items.entries) '${entry.key}:${entry.value}',
+    switch (step) {
+      RejectOnly() => '',
+      BusyModeStep(:final extraMin) => 'busy$extraMin',
+      PauseStep() => 'pause',
+    },
+  ].join(' ');
+}
 
 /// What the screen says after a command, when it says anything.
 sealed class CommandNotice {
@@ -21,6 +93,12 @@ sealed class CommandNotice {
 class AcceptedElsewhere extends CommandNotice {
   const AcceptedElsewhere(this.deviceName);
   final String? deviceName;
+}
+
+/// «قبلته العمليات»: operations accepted before this device's decision
+/// arrived (RA §8.15).
+class AcceptedByOperationsFirst extends CommandNotice {
+  const AcceptedByOperationsFirst();
 }
 
 /// «أُلغي الطلب قبل وصول قبولك» (RA §4.7).
@@ -35,6 +113,17 @@ class PickupAnsweredElsewhere extends CommandNotice {
   const PickupAnsweredElsewhere(this.outcome, this.userName);
   final String? outcome;
   final String? userName;
+}
+
+/// «رُفض الطلب قبل وصول طلبك»: rejected by another device or operations.
+class RejectedFirst extends CommandNotice {
+  const RejectedFirst();
+}
+
+/// The rejection's choices were refused (`unknown_reason`,
+/// `invalid_rejection`).
+class RejectRefused extends CommandNotice {
+  const RejectRefused();
 }
 
 /// The order changed in another way before the command arrived.
@@ -85,6 +174,36 @@ class BoardCommands extends Notifier<Set<String>> {
       orderId: orderId,
       idempotencyKey: key,
       merchantAcceptDto: MerchantAcceptDto((b) => b..prepMin = prepMin),
+    ),
+  );
+
+  /// «رفض» with its reason and steps (RA §8.6).
+  Future<CommandNotice?> reject(String orderId, Rejection rejection) => _send(
+    orderId,
+    CommandKind.reject,
+    rejection.body,
+    (key) => _api.merchantOrdersReject(
+      orderId: orderId,
+      idempotencyKey: key,
+      merchantRejectDto: MerchantRejectDto(
+        (b) => b
+          ..reason = rejection.reason.code
+          ..items = ListBuilder([
+            for (final entry in rejection.items.entries)
+              MerchantRejectDtoItemsInner(
+                (i) => i
+                  ..itemId = entry.key
+                  ..until = entry.value
+                      ? MerchantRejectDtoItemsInnerUntilEnum.tomorrow
+                      : MerchantRejectDtoItemsInnerUntilEnum.turnedBackOn,
+              ),
+          ])
+          ..busyExtraMin = switch (rejection.step) {
+            BusyModeStep(:final extraMin) => extraMin,
+            _ => null,
+          }
+          ..pauseMin = rejection.step is PauseStep ? tooBusyPauseMin : null,
+      ),
     ),
   );
 
@@ -214,18 +333,26 @@ class BoardCommands extends Notifier<Set<String>> {
         return const LinesRefused();
       case 'pickup_already_disputed':
         return const AlreadyDisputed();
+      case 'unknown_reason' || 'invalid_rejection':
+        return const RejectRefused();
       case 'order_state_changed':
         if (order is! Map) return const StateChanged();
         final status = order['status'];
         if (status == 'cancelled') return const CancelledFirst();
-        if (kind == CommandKind.accept && order['acceptance'] is Map) {
+        if (status == 'rejected') return const RejectedFirst();
+        if ((kind == CommandKind.accept || kind == CommandKind.reject) &&
+            order['acceptance'] is Map) {
           final acceptance = order['acceptance'] as Map;
+          if (acceptance['byOperations'] == true) {
+            return const AcceptedByOperationsFirst();
+          }
           return AcceptedElsewhere(acceptance['deviceName'] as String?);
         }
         final pickup = order['pickup'];
         final request = pickup is Map ? pickup['request'] : null;
         if (kind != CommandKind.accept &&
             kind != CommandKind.ready &&
+            kind != CommandKind.reject &&
             request is Map &&
             request['status'] != 'open') {
           return PickupAnsweredElsewhere(

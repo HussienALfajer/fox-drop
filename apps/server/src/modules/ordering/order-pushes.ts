@@ -22,6 +22,12 @@ export interface OrderPushFacts {
   // CU §14 #8: the customer text of the cancellation's reason.
   cancelText: string | null;
   cancelReason: string | null;
+  // CU §14 #7: the customer text of the rejection's reason; RA §16 #6: its
+  // label.
+  rejectText: string | null;
+  rejectLabel: string | null;
+  // RA §16 #5: the prep time operations chose.
+  prepMin: number | null;
   // Who made the transition (order_events.actor_type).
   actor: string;
   // RA §16 #13: the pickup payment the captain declares; CA §9.4: what the
@@ -91,7 +97,26 @@ export function orderPushes(
     case 'order.placed':
       return [merchant('merchant.new_order')];
     case 'order.accepted':
-      return [customer('customer.accepted', { الساعة: facts.promisedTime ?? '' })];
+      return [
+        customer('customer.accepted', { الساعة: facts.promisedTime ?? '' }),
+        // RA §8.15, §16 #5: accepted by operations on the restaurant's behalf.
+        ...(facts.actor === 'admin'
+          ? [merchant('merchant.accepted_by_operations', { د: String(facts.prepMin ?? '') })]
+          : []),
+      ];
+    case 'order.rejected':
+      return [
+        // CU §11.9, §14 #7: the apology, with the reason's customer text.
+        customer('customer.rejected', {
+          المطعم: facts.restaurantName,
+          السبب: facts.rejectText ?? '',
+        }),
+        // RA §8.15, §16 #6: rejected by operations on the restaurant's
+        // behalf; the restaurant's own rejection needs no push.
+        ...(facts.actor === 'admin'
+          ? [merchant('merchant.rejected_by_operations', { السبب: facts.rejectLabel ?? '' })]
+          : []),
+      ];
     case 'order.ready':
       // CA §14 #5: the assigned captain, once the restaurant presses ready.
       return captain('captain.order_ready');

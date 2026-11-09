@@ -13,6 +13,7 @@ part 'merchant_orders_dto_output_orders_inner_lines_inner.g.dart';
 /// MerchantOrdersDtoOutputOrdersInnerLinesInner
 ///
 /// Properties:
+/// * [itemId] - «صنف غير متوفر» picks the items by it (RA §8.6).
 /// * [name]
 /// * [quantity]
 /// * [options]
@@ -25,6 +26,10 @@ abstract class MerchantOrdersDtoOutputOrdersInnerLinesInner
           MerchantOrdersDtoOutputOrdersInnerLinesInner,
           MerchantOrdersDtoOutputOrdersInnerLinesInnerBuilder
         > {
+  /// «صنف غير متوفر» picks the items by it (RA §8.6).
+  @BuiltValueField(wireName: r'itemId')
+  String get itemId;
+
   @BuiltValueField(wireName: r'name')
   String get name;
 
@@ -75,6 +80,11 @@ class _$MerchantOrdersDtoOutputOrdersInnerLinesInnerSerializer
     MerchantOrdersDtoOutputOrdersInnerLinesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    yield r'itemId';
+    yield serializers.serialize(
+      object.itemId,
+      specifiedType: const FullType(String),
+    );
     yield r'name';
     yield serializers.serialize(
       object.name,
@@ -131,6 +141,15 @@ class _$MerchantOrdersDtoOutputOrdersInnerLinesInnerSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'itemId':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.itemId = valueDes;
+          break;
         case r'name':
           final valueDes =
               serializers.deserialize(

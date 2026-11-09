@@ -1780,6 +1780,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/orders/{orderId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantOrdersReject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/orders/{orderId}/ready": {
         parameters: {
             query?: never;
@@ -1870,6 +1886,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminOrdersConfirmPickup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersReject"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4225,6 +4273,17 @@ export interface components {
                     /** @description What the customer sees (CU Appendix C), from Content as it was at the cancellation. */
                     text: string;
                 } | null;
+                /** @description While rejected (CU §11.9). */
+                rejection: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description The code: item_unavailable, restaurant_closed or too_busy (RA §8.6). */
+                    reason: string;
+                    /** @description After «نعتذر، لم يقبل المطعم طلبك»: the reason's customer text (CU Appendix C) as it was at the rejection, with the items filled in. */
+                    text: string;
+                    /** @description «اطلب بدون الأصناف غير المتوفرة» rebuilds the cart without these items (CU §11.9, Q22); empty for the other reasons. */
+                    unavailableItemIds: string[];
+                } | null;
                 /** @description Once delivered; the order screen opens the rating sheet (CU §12.1). */
                 delivery: {
                     /**
@@ -4351,6 +4410,17 @@ export interface components {
                     reason: string;
                     /** @description What the customer sees (CU Appendix C), from Content as it was at the cancellation. */
                     text: string;
+                } | null;
+                /** @description While rejected (CU §11.9). */
+                rejection: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description The code: item_unavailable, restaurant_closed or too_busy (RA §8.6). */
+                    reason: string;
+                    /** @description After «نعتذر، لم يقبل المطعم طلبك»: the reason's customer text (CU Appendix C) as it was at the rejection, with the items filled in. */
+                    text: string;
+                    /** @description «اطلب بدون الأصناف غير المتوفرة» rebuilds the cart without these items (CU §11.9, Q22); empty for the other reasons. */
+                    unavailableItemIds: string[];
                 } | null;
                 /** @description Once delivered; the order screen opens the rating sheet (CU §12.1). */
                 delivery: {
@@ -4530,6 +4600,8 @@ export interface components {
                     prepDueAt: string;
                     /** @description «قُبل الطلب من جهاز {اسم الجهاز}» (RA §4.7); null when not accepted on a named device of the restaurant. */
                     deviceName: string | null;
+                    /** @description Accepted by operations on the restaurant's behalf: the badge «قبلته العمليات», and every device chimes «قبلت العمليات الطلب #{رقم} نيابة عنكم — وقت التحضير {د} د» (RA §8.15, §16 #5). */
+                    byOperations: boolean;
                 } | null;
                 /** @description «الطلب جاهز» (RA §8.8). */
                 readyAt: string | null;
@@ -4542,6 +4614,11 @@ export interface components {
                 /** @description The customer's note. */
                 note: string | null;
                 lines: {
+                    /**
+                     * Format: uuid
+                     * @description «صنف غير متوفر» picks the items by it (RA §8.6).
+                     */
+                    itemId: string;
                     name: string;
                     quantity: number;
                     options: {
@@ -4665,6 +4742,8 @@ export interface components {
                     prepDueAt: string;
                     /** @description «قُبل الطلب من جهاز {اسم الجهاز}» (RA §4.7); null when not accepted on a named device of the restaurant. */
                     deviceName: string | null;
+                    /** @description Accepted by operations on the restaurant's behalf: the badge «قبلته العمليات», and every device chimes «قبلت العمليات الطلب #{رقم} نيابة عنكم — وقت التحضير {د} د» (RA §8.15, §16 #5). */
+                    byOperations: boolean;
                 } | null;
                 /** @description «الطلب جاهز» (RA §8.8). */
                 readyAt: string | null;
@@ -4677,6 +4756,11 @@ export interface components {
                 /** @description The customer's note. */
                 note: string | null;
                 lines: {
+                    /**
+                     * Format: uuid
+                     * @description «صنف غير متوفر» picks the items by it (RA §8.6).
+                     */
+                    itemId: string;
                     name: string;
                     quantity: number;
                     options: {
@@ -4752,6 +4836,24 @@ export interface components {
                     disputedAt: string | null;
                 };
             };
+        };
+        MerchantRejectDto: {
+            /** @description A code of Content's merchant_rejection list: item_unavailable «صنف غير متوفر», restaurant_closed «المطعم مغلق», too_busy «ضغط طلبات» (R3); 400 unknown_reason otherwise. */
+            reason: string;
+            /** @description item_unavailable: one or more of the order's items, switched off at once; empty for the other reasons. */
+            items: {
+                /** Format: uuid */
+                itemId: string;
+                /**
+                 * @description «حتى الغد» (the default) or «حتى أعيده» (RA §9.3).
+                 * @enum {string}
+                 */
+                until: "tomorrow" | "turned_back_on";
+            }[];
+            /** @description too_busy only: «تفعيل وضع الضغط» with one of merchant.busy_extra_options_min, or null. */
+            busyExtraMin: number | null;
+            /** @description too_busy only: 30 for «إيقاف 30 د», or null; not with busyExtraMin (400 invalid_rejection otherwise). */
+            pauseMin: number | null;
         };
         MerchantPickupDisputeDto: {
             /** @description What the restaurant actually received, prefilled with the captain's lines. */
@@ -4849,6 +4951,32 @@ export interface components {
                 /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
                 alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address")[];
             };
+        };
+        AdminAcceptDto: {
+            /** @description Whole minutes from merchant.prep_time_floor_min to merchant.prep_time_ceiling_min (RA §8.5); 400 invalid_prep_time otherwise. */
+            prepMin: number;
+            /** @description Required (AP §9.3.2). */
+            reason: string;
+        };
+        AdminRejectDto: {
+            /** @description A code of the restaurant rejection list (AP Appendix B): item_unavailable «صنف غير متوفر» (marks the items unavailable), restaurant_closed «المطعم مغلق» (also pauses the restaurant until it reopens), too_busy «ضغط طلبات»; 400 unknown_reason otherwise. */
+            rejection: string;
+            /** @description item_unavailable: one or more of the order's items; empty for the others. */
+            items: {
+                /** Format: uuid */
+                itemId: string;
+                /**
+                 * @description «حتى الغد» or «حتى أعيده».
+                 * @enum {string}
+                 */
+                until: "tomorrow" | "turned_back_on";
+            }[];
+            /** @description too_busy only: busy mode with one of merchant.busy_extra_options_min, or null. */
+            busyExtraMin: number | null;
+            /** @description too_busy only: 30 for a 30-minute pause, or null; not with busyExtraMin (400 invalid_rejection otherwise). */
+            pauseMin: number | null;
+            /** @description Required (AP §9.3.2): the internal note, never shown to the apps. */
+            reason: string;
         };
         AdminRecordArrivalDto: {
             /** @description Required (AP §9.3.2). */
@@ -5063,6 +5191,21 @@ export interface components {
                     /** Format: date-time */
                     at: string;
                     reason: string;
+                } | null;
+                /** @description While rejected (AP §9.3.1 «rejected (with reason)»). */
+                rejection: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description The code of the restaurant rejection list. */
+                    reason: string;
+                    /** @description Its label as chosen (AP Appendix B). */
+                    label: string;
+                    /** @description What the customer sees (CU Appendix C). */
+                    customerText: string;
+                    /** @description The items switched off for item_unavailable. */
+                    itemIds: string[];
+                    /** @description Rejected by operations on the restaurant's behalf. */
+                    byOperations: boolean;
                 } | null;
                 /** @description The phone, masked and revealed with a log (AP §5.4), comes with its slice. */
                 customer: {
@@ -8770,6 +8913,35 @@ export interface operations {
             };
         };
     };
+    merchantOrdersReject: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantRejectDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderDto_Output"];
+                };
+            };
+        };
+    };
     merchantOrdersReady: {
         parameters: {
             query?: never;
@@ -8915,6 +9087,64 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminConfirmPickupDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCardDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersAccept: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminAcceptDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCardDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersReject: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRejectDto"];
             };
         };
         responses: {

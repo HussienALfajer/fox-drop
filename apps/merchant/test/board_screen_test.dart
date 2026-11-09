@@ -430,4 +430,160 @@ void main() {
     expect(app.server.to('/v1/merchant/platform'), hasLength(reads + 2));
     await app.done(tester);
   });
+
+  testWidgets('«رفض» with «صنف غير متوفر» sends the items and stops the ring '
+      '(RA §8.6)', (tester) async {
+    final app = _Board();
+    await app.pump(tester, [
+      FakeAnswer(200, boardJson([orderJson()])),
+      FakeAnswer(200, boardJson([])),
+    ]);
+    await app.up(tester);
+    expect(app.ringer.ringing, isTrue);
+
+    await tester.tap(find.byKey(const Key('reject')));
+    await tester.pumpAndSettle();
+    expect(find.text('رفض الطلب #10001'), findsOneWidget);
+    // No reason, or no item, sends nothing.
+    final confirm = find.byKey(const Key('reject-confirm'));
+    expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+    await tester.tap(find.byKey(const Key('reject-item_unavailable')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+    await tester.tap(find.byKey(const Key('reject-item-$falafelId')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('reject-back-on-$falafelId')));
+    await tester.pumpAndSettle();
+    app.server.on('/v1/merchant/orders/$_orderId/reject', [
+      FakeAnswer(200, {'order': orderJson(status: 'rejected', version: 2)}),
+    ]);
+    await tester.tap(confirm);
+    await tester.pumpAndSettle();
+
+    final sent = app.server.to('/v1/merchant/orders/$_orderId/reject').single;
+    expect(sent.data, {
+      'reason': 'item_unavailable',
+      'items': [
+        {'itemId': falafelId, 'until': 'turned_back_on'},
+      ],
+      'busyExtraMin': null,
+      'pauseMin': null,
+    });
+    expect(sent.headers['Idempotency-Key'], isNotEmpty);
+    expect(find.byKey(const Key('ringing-prompt')), findsNothing);
+    expect(app.ringer.ringing, isFalse);
+    await app.done(tester);
+  });
+
+  testWidgets('«ضغط طلبات» may add «إيقاف 30 د» (RA §8.6)', (tester) async {
+    final app = _Board();
+    await app.pump(tester, [
+      FakeAnswer(200, boardJson([orderJson()])),
+      FakeAnswer(200, boardJson([])),
+    ]);
+    await app.up(tester);
+    await tester.tap(find.byKey(const Key('reject')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('reject-too_busy')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('reject-pause')));
+    await tester.pumpAndSettle();
+    app.server.on('/v1/merchant/orders/$_orderId/reject', [
+      FakeAnswer(200, {'order': orderJson(status: 'rejected', version: 2)}),
+    ]);
+    await tester.tap(find.byKey(const Key('reject-confirm')));
+    await tester.pumpAndSettle();
+    expect(app.server.to('/v1/merchant/orders/$_orderId/reject').single.data, {
+      'reason': 'too_busy',
+      'items': <Object?>[],
+      'busyExtraMin': null,
+      'pauseMin': 30,
+    });
+    await app.done(tester);
+  });
+
+  testWidgets('operations rejecting for the restaurant chime with the reason '
+      '(RA §8.15, §16 #6)', (tester) async {
+    final app = _Board();
+    await app.pump(tester, [
+      FakeAnswer(200, boardJson([orderJson()])),
+      FakeAnswer(200, boardJson([])),
+    ]);
+    await app.up(tester);
+    expect(app.ringer.ringing, isTrue);
+    app.transport.send(
+      _channel,
+      const RealtimePublication({
+        'type': 'order.rejected',
+        'orderId': _orderId,
+        'number': '10001',
+        'version': 2,
+        'reason': 'restaurant_closed',
+        'byOperations': true,
+      }),
+    );
+    await tester.pumpAndSettle();
+    expect(app.ringer.ringing, isFalse);
+    expect(app.ringer.chimes, greaterThan(0));
+    expect(
+      find.text('رفضت العمليات الطلب #10001: المطعم مغلق'),
+      findsOneWidget,
+    );
+    await app.done(tester);
+  });
+
+  testWidgets('an order operations accepted shows «قبلته العمليات» '
+      '(RA §8.15)', (tester) async {
+    final app = _Board();
+    await app.pump(tester, [
+      FakeAnswer(
+        200,
+        boardJson([
+          orderJson(
+            status: 'accepted',
+            version: 2,
+            acceptedAfter: Duration.zero,
+            byOperations: true,
+          ),
+        ]),
+      ),
+    ]);
+    await app.up(tester);
+    await tester.tap(find.byKey(const Key('tab-preparing')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('قبلته العمليات'), findsOneWidget);
+    await app.done(tester);
+  });
+
+  testWidgets("the sheet offers Content's active reasons with their labels "
+      '(RA Appendix C)', (tester) async {
+    final app = _Board();
+    app.server.on('/v1/merchant/content', [
+      const FakeAnswer(200, {
+        'reasons': {
+          'merchant_rejection': [
+            {'code': 'item_unavailable', 'label': 'صنف نفد', 'note': 'none'},
+            {
+              'code': 'restaurant_closed',
+              'label': 'المطعم مغلق',
+              'note': 'none',
+            },
+          ],
+          'merchant_problem': <Object?>[],
+          'item_unavailable_note': <Object?>[],
+          'merchant_ticket_type': <Object?>[],
+        },
+        'faq': <Object?>[],
+      }),
+    ]);
+    await app.pump(tester, [
+      FakeAnswer(200, boardJson([orderJson()])),
+    ]);
+    await app.up(tester);
+    await tester.tap(find.byKey(const Key('reject')));
+    await tester.pumpAndSettle();
+    expect(find.text('صنف نفد'), findsOneWidget);
+    expect(find.byKey(const Key('reject-too_busy')), findsNothing);
+    await app.done(tester);
+  });
 }

@@ -411,6 +411,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
   @override
   final AdminOrderDtoOutputOrderCancellation? cancellation;
   @override
+  final AdminOrderDtoOutputOrderRejection? rejection;
+  @override
   final AdminOrderDtoOutputOrderCustomer customer;
   @override
   final String? note;
@@ -449,6 +451,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     this.acceptance,
     this.readyAt,
     this.cancellation,
+    this.rejection,
     required this.customer,
     this.note,
     required this.lines,
@@ -489,6 +492,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
         acceptance == other.acceptance &&
         readyAt == other.readyAt &&
         cancellation == other.cancellation &&
+        rejection == other.rejection &&
         customer == other.customer &&
         note == other.note &&
         lines == other.lines &&
@@ -520,6 +524,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     _$hash = $jc(_$hash, acceptance.hashCode);
     _$hash = $jc(_$hash, readyAt.hashCode);
     _$hash = $jc(_$hash, cancellation.hashCode);
+    _$hash = $jc(_$hash, rejection.hashCode);
     _$hash = $jc(_$hash, customer.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, lines.hashCode);
@@ -553,6 +558,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
           ..add('acceptance', acceptance)
           ..add('readyAt', readyAt)
           ..add('cancellation', cancellation)
+          ..add('rejection', rejection)
           ..add('customer', customer)
           ..add('note', note)
           ..add('lines', lines)
@@ -665,6 +671,12 @@ class AdminOrderDtoOutputOrderBuilder
   set cancellation(AdminOrderDtoOutputOrderCancellationBuilder? cancellation) =>
       _$this._cancellation = cancellation;
 
+  AdminOrderDtoOutputOrderRejectionBuilder? _rejection;
+  AdminOrderDtoOutputOrderRejectionBuilder get rejection =>
+      _$this._rejection ??= AdminOrderDtoOutputOrderRejectionBuilder();
+  set rejection(AdminOrderDtoOutputOrderRejectionBuilder? rejection) =>
+      _$this._rejection = rejection;
+
   AdminOrderDtoOutputOrderCustomerBuilder? _customer;
   AdminOrderDtoOutputOrderCustomerBuilder get customer =>
       _$this._customer ??= AdminOrderDtoOutputOrderCustomerBuilder();
@@ -731,6 +743,7 @@ class AdminOrderDtoOutputOrderBuilder
       _acceptance = $v.acceptance?.toBuilder();
       _readyAt = $v.readyAt;
       _cancellation = $v.cancellation?.toBuilder();
+      _rejection = $v.rejection?.toBuilder();
       _customer = $v.customer.toBuilder();
       _note = $v.note;
       _lines = $v.lines.toBuilder();
@@ -809,6 +822,7 @@ class AdminOrderDtoOutputOrderBuilder
             acceptance: _acceptance?.build(),
             readyAt: readyAt,
             cancellation: _cancellation?.build(),
+            rejection: _rejection?.build(),
             customer: customer.build(),
             note: note,
             lines: lines.build(),
@@ -839,6 +853,8 @@ class AdminOrderDtoOutputOrderBuilder
 
         _$failedField = 'cancellation';
         _cancellation?.build();
+        _$failedField = 'rejection';
+        _rejection?.build();
         _$failedField = 'customer';
         customer.build();
 

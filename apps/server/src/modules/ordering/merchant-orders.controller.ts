@@ -9,8 +9,10 @@ import {
   NotFoundException,
   Param,
   Post,
+  Req,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
@@ -65,6 +67,11 @@ const boardOrder = z.object({
         .describe(
           '«قُبل الطلب من جهاز {اسم الجهاز}» (RA §4.7); null when not accepted on a named device of the restaurant.',
         ),
+      byOperations: z
+        .boolean()
+        .describe(
+          "Accepted by operations on the restaurant's behalf: the badge «قبلته العمليات», and every device chimes «قبلت العمليات الطلب #{رقم} نيابة عنكم — وقت التحضير {د} د» (RA §8.15, §16 #5).",
+        ),
     })
     .nullable()
     .describe('Null until the order is accepted.'),
@@ -81,6 +88,7 @@ const boardOrder = z.object({
   note: z.string().nullable().describe("The customer's note."),
   lines: z.array(
     z.object({
+      itemId: z.uuid().describe('«صنف غير متوفر» picks the items by it (RA §8.6).'),
       name: z.string(),
       quantity: z.int(),
       options: z.array(z.object({ name: z.string() })),
@@ -188,6 +196,42 @@ class MerchantOrdersDto extends createZodDto(
 
 class MerchantOrderDto extends createZodDto(z.object({ order: boardOrder })) {}
 
+class MerchantRejectDto extends createZodDto(
+  z.object({
+    reason: z
+      .string()
+      .max(50)
+      .describe(
+        "A code of Content's merchant_rejection list: item_unavailable «صنف غير متوفر», restaurant_closed «المطعم مغلق», too_busy «ضغط طلبات» (R3); 400 unknown_reason otherwise.",
+      ),
+    items: z
+      .array(
+        z.object({
+          itemId: z.uuid(),
+          until: z
+            .enum(['tomorrow', 'turned_back_on'])
+            .describe('«حتى الغد» (the default) or «حتى أعيده» (RA §9.3).'),
+        }),
+      )
+      .max(50)
+      .describe(
+        "item_unavailable: one or more of the order's items, switched off at once; empty for the other reasons.",
+      ),
+    busyExtraMin: z
+      .int()
+      .nullable()
+      .describe(
+        'too_busy only: «تفعيل وضع الضغط» with one of merchant.busy_extra_options_min, or null.',
+      ),
+    pauseMin: z
+      .int()
+      .nullable()
+      .describe(
+        'too_busy only: 30 for «إيقاف 30 د», or null; not with busyExtraMin (400 invalid_rejection otherwise).',
+      ),
+  }),
+) {}
+
 class MerchantOrderParamsDto extends createZodDto(z.object({ orderId: z.uuid() })) {}
 
 class MerchantPickupDisputeDto extends createZodDto(
@@ -254,6 +298,41 @@ export class MerchantOrdersController {
     const command = await this.command(session, idempotencyKey, params.orderId);
     return this.answer(command.restaurantId, () =>
       this.commands.accept({ ...command, prepMin: body.prepMin }, new Date()),
+    );
+  }
+
+  // RA §8.6: «رفض» with one of the three reasons and its steps. The items
+  // are switched off, or the restaurant paused «حتى أعيد الفتح» (S2: only
+  // while open or busy without an operations or auto pause), or busy mode or
+  // «إيقاف 30 د» set, in the rejection's transaction. 409 order_state_changed
+  // with the order as it is now; 404 unknown_order; 400 unknown_reason,
+  // invalid_rejection; 422 idempotency_key_reused.
+  @Post('orders/:orderId/reject')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: MerchantOrderDto })
+  async reject(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: MerchantOrderParamsDto,
+    @Body() body: MerchantRejectDto,
+    @Req() request: FastifyRequest,
+  ) {
+    const command = await this.command(session, idempotencyKey, params.orderId);
+    return this.answer(command.restaurantId, () =>
+      this.commands.reject(
+        {
+          ...command,
+          ...(session.merchant ? { role: session.merchant.role } : {}),
+          ipAddress: request.ip,
+          code: body.reason,
+          items: body.items,
+          busyExtraMin: body.busyExtraMin,
+          pauseMin: body.pauseMin,
+        },
+        new Date(),
+      ),
     );
   }
 
@@ -353,7 +432,12 @@ export class MerchantOrdersController {
       if (refusal === 'unknown_order') {
         throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: refusal });
       }
-      if (refusal === 'invalid_prep_time' || refusal === 'invalid_lines') {
+      if (
+        refusal === 'invalid_prep_time' ||
+        refusal === 'invalid_lines' ||
+        refusal === 'unknown_reason' ||
+        refusal === 'invalid_rejection'
+      ) {
         throw new BadRequestException({
           statusCode: HttpStatus.BAD_REQUEST,
           error: refusal,
@@ -438,6 +522,7 @@ export class MerchantOrdersController {
           order.acceptance.device === null
             ? null
             : (deviceNames.get(order.acceptance.device) ?? null),
+        byOperations: order.acceptance.byOperations,
       },
       readyAt: order.readyAt?.toISOString() ?? null,
       customer: {
@@ -446,6 +531,7 @@ export class MerchantOrdersController {
       },
       note: order.note,
       lines: order.lines.map((line) => ({
+        itemId: line.itemId,
         name: line.name,
         quantity: line.quantity,
         options: line.options.map((option) => ({ name: option.name })),

@@ -92,6 +92,25 @@ const customerOrder = z.object({
     })
     .nullable()
     .describe('While cancelled (CU §11.9).'),
+  rejection: z
+    .object({
+      at: z.iso.datetime(),
+      reason: z
+        .string()
+        .describe('The code: item_unavailable, restaurant_closed or too_busy (RA §8.6).'),
+      text: z
+        .string()
+        .describe(
+          "After «نعتذر، لم يقبل المطعم طلبك»: the reason's customer text (CU Appendix C) as it was at the rejection, with the items filled in.",
+        ),
+      unavailableItemIds: z
+        .array(z.uuid())
+        .describe(
+          '«اطلب بدون الأصناف غير المتوفرة» rebuilds the cart without these items (CU §11.9, Q22); empty for the other reasons.',
+        ),
+    })
+    .nullable()
+    .describe('While rejected (CU §11.9).'),
   delivery: z
     .object({
       at: z.iso.datetime().describe('«تم التسليم».'),
@@ -300,6 +319,12 @@ function orderBody(
     version: order.version,
     placedAt: order.placedAt.toISOString(),
     promisedAt: order.acceptance?.promisedAt.toISOString() ?? null,
+    rejection: order.rejection && {
+      at: order.rejection.at.toISOString(),
+      reason: order.rejection.reason,
+      text: order.rejection.customerText,
+      unavailableItemIds: order.rejection.itemIds,
+    },
     cancellation: order.cancellation && {
       at: order.cancellation.at.toISOString(),
       reason: order.cancellation.reason,

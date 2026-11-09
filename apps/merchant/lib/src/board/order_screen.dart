@@ -65,6 +65,9 @@ class OrderScreen extends ConsumerWidget {
               ),
               subtitle: timer == null ? null : Text(timer),
             ),
+            // RA §8.15: «قبلته العمليات».
+            if (order.acceptance?.byOperations ?? false)
+              ListTile(title: Text(l10n.merchantBadgeByOperations)),
             ListTile(
               title: Text(
                 l10n.merchantCustomer(

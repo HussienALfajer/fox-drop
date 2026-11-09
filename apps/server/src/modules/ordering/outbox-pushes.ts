@@ -242,6 +242,9 @@ export class OutboxPushes {
       cancelText:
         order.status === 'cancelled' ? (order.cancelCustomerText ?? GENERIC_CUSTOMER_TEXT) : null,
       cancelReason: order.cancelReason,
+      rejectText: order.status === 'rejected' ? order.rejectCustomerText : null,
+      rejectLabel: order.status === 'rejected' ? order.rejectReasonLabel : null,
+      prepMin: order.prepMin,
       actor: event?.actorType ?? 'system',
       pickupAmount: pickup ? formatMoney(pickup.amount, pickup.currency, currencies) : null,
       receivedAmount: money(pickup?.receivedLines ?? null),

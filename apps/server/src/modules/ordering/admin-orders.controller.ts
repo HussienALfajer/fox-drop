@@ -30,7 +30,7 @@ import {
   paymentLines,
 } from './captain-orders.controller.js';
 import { ORDER_ALERT_CODES } from './order-alerts.js';
-import { OrderCommandRefusedError } from './order-commands.js';
+import { OrderCommandRefusedError, OrderCommands, type Rejection } from './order-commands.js';
 import { PickupCommands } from './pickup-commands.js';
 import { ResendNotification, ResendRefusedError } from './resend-notification.js';
 import { minor } from './customer-quote.controller.js';
@@ -147,6 +147,53 @@ class AdminRecordDeliveryDto extends createZodDto(
   }),
 ) {}
 
+class AdminAcceptDto extends createZodDto(
+  z.object({
+    prepMin: z
+      .int()
+      .describe(
+        'Whole minutes from merchant.prep_time_floor_min to merchant.prep_time_ceiling_min (RA §8.5); 400 invalid_prep_time otherwise.',
+      ),
+    reason: z.string().trim().min(1).max(500).describe('Required (AP §9.3.2).'),
+  }),
+) {}
+
+class AdminRejectDto extends createZodDto(
+  z.object({
+    rejection: z
+      .string()
+      .max(50)
+      .describe(
+        'A code of the restaurant rejection list (AP Appendix B): item_unavailable «صنف غير متوفر» (marks the items unavailable), restaurant_closed «المطعم مغلق» (also pauses the restaurant until it reopens), too_busy «ضغط طلبات»; 400 unknown_reason otherwise.',
+      ),
+    items: z
+      .array(
+        z.object({
+          itemId: z.uuid(),
+          until: z.enum(['tomorrow', 'turned_back_on']).describe('«حتى الغد» or «حتى أعيده».'),
+        }),
+      )
+      .max(50)
+      .describe("item_unavailable: one or more of the order's items; empty for the others."),
+    busyExtraMin: z
+      .int()
+      .nullable()
+      .describe('too_busy only: busy mode with one of merchant.busy_extra_options_min, or null.'),
+    pauseMin: z
+      .int()
+      .nullable()
+      .describe(
+        'too_busy only: 30 for a 30-minute pause, or null; not with busyExtraMin (400 invalid_rejection otherwise).',
+      ),
+    reason: z
+      .string()
+      .trim()
+      .min(1)
+      .max(500)
+      .describe('Required (AP §9.3.2): the internal note, never shown to the apps.'),
+  }),
+) {}
+
 class AdminOrderCardDto extends createZodDto(z.object({ order: card })) {}
 
 class AdminOrderDto extends createZodDto(
@@ -158,6 +205,17 @@ class AdminOrderDto extends createZodDto(
         .nullable(),
       readyAt: z.iso.datetime().nullable(),
       cancellation: z.object({ at: z.iso.datetime(), reason: z.string() }).nullable(),
+      rejection: z
+        .object({
+          at: z.iso.datetime(),
+          reason: z.string().describe('The code of the restaurant rejection list.'),
+          label: z.string().describe('Its label as chosen (AP Appendix B).'),
+          customerText: z.string().describe('What the customer sees (CU Appendix C).'),
+          itemIds: z.array(z.uuid()).describe('The items switched off for item_unavailable.'),
+          byOperations: z.boolean().describe("Rejected by operations on the restaurant's behalf."),
+        })
+        .nullable()
+        .describe('While rejected (AP §9.3.1 «rejected (with reason)»).'),
       customer: z
         .object({
           name: z.string().nullable().describe('Null before «أكمل بياناتك» (CU §5.3).'),
@@ -334,6 +392,7 @@ export class AdminOrdersController {
     private readonly captainOrders: CaptainOrders,
     private readonly pickups: PickupCommands,
     private readonly resends: ResendNotification,
+    private readonly commands: OrderCommands,
   ) {}
 
   // AP §9.3.2 «إعادة إرسال الإشعار», for OWN, OPS and SUP (operations.manage
@@ -420,6 +479,114 @@ export class AdminOrdersController {
       });
     }
     return { order: await this.card(params.orderId) };
+  }
+
+  // AP §9.3.2 «قبول نيابة عن المطعم» (RA §8.15): a placed order accepted with
+  // the prep time operations pick and their reason; the restaurant's devices
+  // chime (RA §16 #5) and its card shows «قبلته العمليات». 409
+  // order_state_changed with the order as it is now; 404 unknown_order; 400
+  // invalid_prep_time; 422 idempotency_key_reused.
+  @Post(':orderId/accept')
+  @RequirePermission('operations.manage')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOrderCardDto })
+  async accept(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminAcceptDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.onBehalf(params.orderId, () =>
+      this.commands.acceptFor(
+        {
+          orderId: params.orderId,
+          admin: { accountId: session.accountId, roles: session.roles },
+          context: requestContext(request),
+          reason: body.reason,
+          idempotencyKey,
+          prepMin: body.prepMin,
+        },
+        new Date(),
+      ),
+    );
+  }
+
+  // AP §9.3.2 «رفض نيابة عن المطعم» (RA §8.15): a placed order rejected with
+  // one of the restaurant's three reasons and their side effects (RA §8.6)
+  // and operations' reason; the customer sees the reason's text, the
+  // restaurant's devices chime with its label (RA §16 #6). 409
+  // order_state_changed; 404 unknown_order; 400 unknown_reason,
+  // invalid_rejection; 422 idempotency_key_reused.
+  @Post(':orderId/reject')
+  @RequirePermission('operations.manage')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOrderCardDto })
+  async reject(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminRejectDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    const rejection: Rejection = {
+      code: body.rejection,
+      items: body.items,
+      busyExtraMin: body.busyExtraMin,
+      pauseMin: body.pauseMin,
+    };
+    return this.onBehalf(params.orderId, () =>
+      this.commands.rejectFor(
+        {
+          orderId: params.orderId,
+          admin: { accountId: session.accountId, roles: session.roles },
+          context: requestContext(request),
+          idempotencyKey,
+          ...rejection,
+          reason: body.reason,
+        },
+        new Date(),
+      ),
+    );
+  }
+
+  // Runs a command on the restaurant's behalf and answers the card, or its
+  // refusal.
+  private async onBehalf(orderId: string, run: () => Promise<unknown>) {
+    try {
+      await run();
+    } catch (error) {
+      if (!(error instanceof OrderCommandRefusedError)) throw error;
+      const { refusal } = error;
+      if (refusal === 'unknown_order') {
+        throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: refusal });
+      }
+      if (refusal === 'idempotency_key_reused') {
+        throw new UnprocessableEntityException({
+          statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: refusal,
+        });
+      }
+      if (
+        refusal === 'invalid_prep_time' ||
+        refusal === 'unknown_reason' ||
+        refusal === 'invalid_rejection'
+      ) {
+        throw new BadRequestException({
+          statusCode: HttpStatus.BAD_REQUEST,
+          error: refusal,
+          message: error.message,
+        });
+      }
+      throw new ConflictException({
+        statusCode: HttpStatus.CONFLICT,
+        error: refusal,
+        order: await this.card(orderId),
+      });
+    }
+    return { order: await this.card(orderId) };
   }
 
   // AP §9.3.2 «تسجيل وصول الكابتن», for OWN and OPS when GPS fails at the
@@ -598,6 +765,14 @@ export class AdminOrdersController {
         cancellation: order.cancellation && {
           at: order.cancellation.at.toISOString(),
           reason: order.cancellation.reason,
+        },
+        rejection: order.rejection && {
+          at: order.rejection.at.toISOString(),
+          reason: order.rejection.reason,
+          label: order.rejection.label,
+          customerText: order.rejection.customerText,
+          itemIds: order.rejection.itemIds,
+          byOperations: order.rejection.byOperations,
         },
         customer: {
           name: profile ? [profile.firstName, profile.lastName].filter(Boolean).join(' ') : null,

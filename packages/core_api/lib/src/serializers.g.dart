@@ -10,6 +10,7 @@ Serializers _$serializers =
     (Serializers().toBuilder()
           ..add(AddReasonDto.serializer)
           ..add(AddReasonDtoNoteEnum.serializer)
+          ..add(AdminAcceptDto.serializer)
           ..add(AdminAlertDtoOutput.serializer)
           ..add(AdminAlertDtoOutputCodeEnum.serializer)
           ..add(AdminAlertDtoOutputSeverityEnum.serializer)
@@ -104,6 +105,7 @@ Serializers _$serializers =
           ..add(
             AdminOrderDtoOutputOrderPickupRequestsInnerStatusEnum.serializer,
           )
+          ..add(AdminOrderDtoOutputOrderRejection.serializer)
           ..add(AdminOrderDtoOutputOrderStatusEnum.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInner.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerActor.serializer)
@@ -133,6 +135,9 @@ Serializers _$serializers =
           ..add(AdminRecordDeliveryDtoAmountDue.serializer)
           ..add(AdminRecordDeliveryDtoReceivedInner.serializer)
           ..add(AdminRecordDeliveryDtoShortfall.serializer)
+          ..add(AdminRejectDto.serializer)
+          ..add(AdminRejectDtoItemsInner.serializer)
+          ..add(AdminRejectDtoItemsInnerUntilEnum.serializer)
           ..add(AdminResendNotificationDto.serializer)
           ..add(AdminResendNotificationDtoToEnum.serializer)
           ..add(AdminRestaurantHolidayCloseDto.serializer)
@@ -276,6 +281,7 @@ Serializers _$serializers =
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerEstimate.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerLinesInner.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerMoney.serializer)
+          ..add(CustomerActiveOrdersDtoOutputOrdersInnerRejection.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerRestaurant.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerStatusEnum.serializer)
           ..add(CustomerAddressDeletedDtoOutput.serializer)
@@ -456,6 +462,9 @@ Serializers _$serializers =
           ..add(MerchantPickupDisputeDto.serializer)
           ..add(MerchantPickupDisputeDtoReceivedLinesInner.serializer)
           ..add(MerchantRefreshDto.serializer)
+          ..add(MerchantRejectDto.serializer)
+          ..add(MerchantRejectDtoItemsInner.serializer)
+          ..add(MerchantRejectDtoItemsInnerUntilEnum.serializer)
           ..add(MerchantRestaurantDtoOutput.serializer)
           ..add(MerchantRestaurantDtoOutputAccountStatusEnum.serializer)
           ..add(MerchantRestaurantDtoOutputStateEnum.serializer)
@@ -677,6 +686,12 @@ Serializers _$serializers =
               const FullType(AdminRecordDeliveryDtoReceivedInner),
             ]),
             () => ListBuilder<AdminRecordDeliveryDtoReceivedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRejectDtoItemsInner),
+            ]),
+            () => ListBuilder<AdminRejectDtoItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1253,6 +1268,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(MerchantRejectDtoItemsInner),
+            ]),
+            () => ListBuilder<MerchantRejectDtoItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(MerchantScheduleDtoPeriodsInner),
             ]),
             () => ListBuilder<MerchantScheduleDtoPeriodsInner>(),
@@ -1298,6 +1319,14 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

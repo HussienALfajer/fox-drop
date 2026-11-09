@@ -51,20 +51,46 @@ String? columnTimer(AppLocalizations l10n, BoardOrder order, DateTime now) {
   }
 }
 
-String noticeText(AppLocalizations l10n, BoardNotice notice) =>
-    switch (notice) {
-      AutoCancelled(:final number) => l10n.merchantAutoCancelled(number),
-      Cancelled(:final number) => l10n.merchantCancelled(number),
-      PrepLate(:final number) => l10n.merchantPrepLateChime(number),
-      CaptainArrived(:final name, :final number) => l10n.merchantCaptainArrived(
-        name,
-        number,
-      ),
-      CaptainKeptWaiting(:final number, :final minutes) =>
-        l10n.merchantCaptainKeptWaiting(number, minutes),
-      PickupClosed(:final number, :final outcome, :final userName) =>
-        pickupClosedText(l10n, number, outcome?.name, userName),
+/// A rejection reason's label (RA §8.6, R3): Content's ([labels], which
+/// operations may edit), else the built-in one; an unknown code shows
+/// itself.
+String rejectReasonText(
+  AppLocalizations l10n,
+  String code, [
+  Map<String, String>? labels,
+]) =>
+    labels?[code] ??
+    switch (code) {
+      'item_unavailable' => l10n.merchantRejectItemUnavailable,
+      'restaurant_closed' => l10n.merchantRejectRestaurantClosed,
+      'too_busy' => l10n.merchantRejectTooBusy,
+      _ => code,
     };
+
+String noticeText(
+  AppLocalizations l10n,
+  BoardNotice notice, [
+  Map<String, String>? rejectionLabels,
+]) => switch (notice) {
+  AcceptedByOperations(:final number, :final prepMin) =>
+    l10n.merchantAcceptedByOperations(number, prepMin),
+  RejectedByOperations(:final number, :final reason) =>
+    l10n.merchantRejectedByOperations(
+      number,
+      rejectReasonText(l10n, reason, rejectionLabels),
+    ),
+  AutoCancelled(:final number) => l10n.merchantAutoCancelled(number),
+  Cancelled(:final number) => l10n.merchantCancelled(number),
+  PrepLate(:final number) => l10n.merchantPrepLateChime(number),
+  CaptainArrived(:final name, :final number) => l10n.merchantCaptainArrived(
+    name,
+    number,
+  ),
+  CaptainKeptWaiting(:final number, :final minutes) =>
+    l10n.merchantCaptainKeptWaiting(number, minutes),
+  PickupClosed(:final number, :final outcome, :final userName) =>
+    pickupClosedText(l10n, number, outcome?.name, userName),
+};
 
 /// How a pickup request closed, as the other devices say it (RA §8.10).
 String pickupClosedText(
@@ -91,7 +117,10 @@ String commandText(AppLocalizations l10n, CommandNotice notice) =>
         deviceName == null
             ? l10n.merchantAcceptedElsewhere
             : l10n.merchantAcceptedOnDevice(deviceName),
+      AcceptedByOperationsFirst() => l10n.merchantBadgeByOperations,
       CancelledFirst() => l10n.merchantCancelledFirst,
+      RejectedFirst() => l10n.merchantRejectedFirst,
+      RejectRefused() => l10n.merchantRejectRefused,
       PickupAnsweredElsewhere(:final outcome, :final userName) =>
         pickupClosedText(l10n, '', outcome, userName),
       StateChanged() => l10n.merchantStateChanged,

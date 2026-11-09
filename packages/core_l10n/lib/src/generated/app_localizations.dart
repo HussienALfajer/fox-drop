@@ -2943,6 +2943,114 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'يوم التسوية'**
   String get merchantHoursSettlementDay;
+
+  /// The reject button of the new-order prompt (RA §8.3, §8.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'رفض'**
+  String get merchantReject;
+
+  /// The reject sheet's title (RA §8.6); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'رفض الطلب #{number}'**
+  String merchantRejectTitle(String number);
+
+  /// Rejection reason (RA §8.6, R3).
+  ///
+  /// In ar, this message translates to:
+  /// **'صنف غير متوفر'**
+  String get merchantRejectItemUnavailable;
+
+  /// Rejection reason (RA §8.6, R3).
+  ///
+  /// In ar, this message translates to:
+  /// **'المطعم مغلق'**
+  String get merchantRejectRestaurantClosed;
+
+  /// Rejection reason (RA §8.6, R3).
+  ///
+  /// In ar, this message translates to:
+  /// **'ضغط طلبات'**
+  String get merchantRejectTooBusy;
+
+  /// The item step of «صنف غير متوفر» (RA §8.6); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر الأصناف غير المتوفرة'**
+  String get merchantRejectPickItems;
+
+  /// An item off until the next business day (RA §8.6, §9.3), the default.
+  ///
+  /// In ar, this message translates to:
+  /// **'حتى الغد'**
+  String get merchantRejectUntilTomorrow;
+
+  /// An item off until turned back on (RA §8.6, §9.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'حتى أعيده'**
+  String get merchantRejectUntilTurnedBackOn;
+
+  /// The note of «المطعم مغلق» (RA §8.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'سيتوقف مطعمك عن استقبال الطلبات حتى تعيد الفتح'**
+  String get merchantRejectClosedNote;
+
+  /// «ضغط طلبات» without busy mode or a pause (RA §8.6: optional); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرفض فقط'**
+  String get merchantRejectNothingElse;
+
+  /// «ضغط طلبات» with busy mode (RA §8.6, §7.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'تفعيل وضع الضغط +{minutes} د'**
+  String merchantRejectBusyMode(int minutes);
+
+  /// «ضغط طلبات» with a pause (RA §8.6: «إيقاف 30 د»).
+  ///
+  /// In ar, this message translates to:
+  /// **'إيقاف {minutes} د'**
+  String merchantRejectPause(int minutes);
+
+  /// Sends the rejection (RA §8.6); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد الرفض'**
+  String get merchantRejectConfirm;
+
+  /// 400 unknown_reason or invalid_rejection; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الرفض بهذه الاختيارات، راجعها ثم أعد المحاولة'**
+  String get merchantRejectRefused;
+
+  /// 409 on a rejected order, by another device or operations; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'رُفض الطلب قبل وصول طلبك'**
+  String get merchantRejectedFirst;
+
+  /// Accepted by operations (RA §8.15, §16 #5).
+  ///
+  /// In ar, this message translates to:
+  /// **'قبلت العمليات الطلب #{number} نيابة عنكم — وقت التحضير {minutes} د'**
+  String merchantAcceptedByOperations(String number, int minutes);
+
+  /// Rejected by operations (RA §8.15, §16 #6).
+  ///
+  /// In ar, this message translates to:
+  /// **'رفضت العمليات الطلب #{number}: {reason}'**
+  String merchantRejectedByOperations(String number, String reason);
+
+  /// The card's badge of an order operations accepted (RA §8.15).
+  ///
+  /// In ar, this message translates to:
+  /// **'قبلته العمليات'**
+  String get merchantBadgeByOperations;
 }
 
 class _AppLocalizationsDelegate

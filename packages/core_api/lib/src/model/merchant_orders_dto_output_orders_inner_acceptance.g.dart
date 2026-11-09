@@ -16,6 +16,8 @@ class _$MerchantOrdersDtoOutputOrdersInnerAcceptance
   final DateTime prepDueAt;
   @override
   final String? deviceName;
+  @override
+  final bool byOperations;
 
   factory _$MerchantOrdersDtoOutputOrdersInnerAcceptance([
     void Function(MerchantOrdersDtoOutputOrdersInnerAcceptanceBuilder)? updates,
@@ -27,6 +29,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerAcceptance
     required this.prepMin,
     required this.prepDueAt,
     this.deviceName,
+    required this.byOperations,
   }) : super._();
   @override
   MerchantOrdersDtoOutputOrdersInnerAcceptance rebuild(
@@ -44,7 +47,8 @@ class _$MerchantOrdersDtoOutputOrdersInnerAcceptance
         at == other.at &&
         prepMin == other.prepMin &&
         prepDueAt == other.prepDueAt &&
-        deviceName == other.deviceName;
+        deviceName == other.deviceName &&
+        byOperations == other.byOperations;
   }
 
   @override
@@ -54,6 +58,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerAcceptance
     _$hash = $jc(_$hash, prepMin.hashCode);
     _$hash = $jc(_$hash, prepDueAt.hashCode);
     _$hash = $jc(_$hash, deviceName.hashCode);
+    _$hash = $jc(_$hash, byOperations.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -66,7 +71,8 @@ class _$MerchantOrdersDtoOutputOrdersInnerAcceptance
           ..add('at', at)
           ..add('prepMin', prepMin)
           ..add('prepDueAt', prepDueAt)
-          ..add('deviceName', deviceName))
+          ..add('deviceName', deviceName)
+          ..add('byOperations', byOperations))
         .toString();
   }
 }
@@ -95,6 +101,10 @@ class MerchantOrdersDtoOutputOrdersInnerAcceptanceBuilder
   String? get deviceName => _$this._deviceName;
   set deviceName(String? deviceName) => _$this._deviceName = deviceName;
 
+  bool? _byOperations;
+  bool? get byOperations => _$this._byOperations;
+  set byOperations(bool? byOperations) => _$this._byOperations = byOperations;
+
   MerchantOrdersDtoOutputOrdersInnerAcceptanceBuilder() {
     MerchantOrdersDtoOutputOrdersInnerAcceptance._defaults(this);
   }
@@ -106,6 +116,7 @@ class MerchantOrdersDtoOutputOrdersInnerAcceptanceBuilder
       _prepMin = $v.prepMin;
       _prepDueAt = $v.prepDueAt;
       _deviceName = $v.deviceName;
+      _byOperations = $v.byOperations;
       _$v = null;
     }
     return this;
@@ -146,6 +157,11 @@ class MerchantOrdersDtoOutputOrdersInnerAcceptanceBuilder
             'prepDueAt',
           ),
           deviceName: deviceName,
+          byOperations: BuiltValueNullFieldError.checkNotNull(
+            byOperations,
+            r'MerchantOrdersDtoOutputOrdersInnerAcceptance',
+            'byOperations',
+          ),
         );
     replace(_$result);
     return _$result;

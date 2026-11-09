@@ -9,6 +9,8 @@ part of 'merchant_orders_dto_output_orders_inner_lines_inner.dart';
 class _$MerchantOrdersDtoOutputOrdersInnerLinesInner
     extends MerchantOrdersDtoOutputOrdersInnerLinesInner {
   @override
+  final String itemId;
+  @override
   final String name;
   @override
   final int quantity;
@@ -26,6 +28,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerLinesInner
       ._build();
 
   _$MerchantOrdersDtoOutputOrdersInnerLinesInner._({
+    required this.itemId,
     required this.name,
     required this.quantity,
     required this.options,
@@ -45,6 +48,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerLinesInner
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is MerchantOrdersDtoOutputOrdersInnerLinesInner &&
+        itemId == other.itemId &&
         name == other.name &&
         quantity == other.quantity &&
         options == other.options &&
@@ -55,6 +59,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerLinesInner
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, itemId.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, quantity.hashCode);
     _$hash = $jc(_$hash, options.hashCode);
@@ -69,6 +74,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerLinesInner
     return (newBuiltValueToStringHelper(
             r'MerchantOrdersDtoOutputOrdersInnerLinesInner',
           )
+          ..add('itemId', itemId)
           ..add('name', name)
           ..add('quantity', quantity)
           ..add('options', options)
@@ -85,6 +91,10 @@ class MerchantOrdersDtoOutputOrdersInnerLinesInnerBuilder
           MerchantOrdersDtoOutputOrdersInnerLinesInnerBuilder
         > {
   _$MerchantOrdersDtoOutputOrdersInnerLinesInner? _$v;
+
+  String? _itemId;
+  String? get itemId => _$this._itemId;
+  set itemId(String? itemId) => _$this._itemId = itemId;
 
   String? _name;
   String? get name => _$this._name;
@@ -119,6 +129,7 @@ class MerchantOrdersDtoOutputOrdersInnerLinesInnerBuilder
   MerchantOrdersDtoOutputOrdersInnerLinesInnerBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _itemId = $v.itemId;
       _name = $v.name;
       _quantity = $v.quantity;
       _options = $v.options.toBuilder();
@@ -150,6 +161,11 @@ class MerchantOrdersDtoOutputOrdersInnerLinesInnerBuilder
       _$result =
           _$v ??
           _$MerchantOrdersDtoOutputOrdersInnerLinesInner._(
+            itemId: BuiltValueNullFieldError.checkNotNull(
+              itemId,
+              r'MerchantOrdersDtoOutputOrdersInnerLinesInner',
+              'itemId',
+            ),
             name: BuiltValueNullFieldError.checkNotNull(
               name,
               r'MerchantOrdersDtoOutputOrdersInnerLinesInner',

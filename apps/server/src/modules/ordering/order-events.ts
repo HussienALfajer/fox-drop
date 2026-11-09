@@ -47,6 +47,9 @@ export type OrderEventType =
   | 'order.accepted'
   | 'order.ready'
   | 'order.cancelled'
+  // RA §8.6, AP §9.3.2: the restaurant, or operations on its behalf, rejected
+  // a placed order.
+  | 'order.rejected'
   // AP §8.2–8.3: the captain track changed, the status did not.
   | 'order.search_started'
   | 'order.offered'
@@ -139,6 +142,9 @@ export async function recordTransition(
       version: transition.version,
       reason: transition.publicReason === undefined ? transition.reason : transition.publicReason,
       at: transition.at.toISOString(),
+      // RA §8.15: operations acted for the restaurant, which the restaurant's
+      // devices chime (RA §16 #5, #6).
+      byOperations: transition.actor.type === 'admin',
       captainTrack,
       captainId,
       ...(transition.offerPay === undefined

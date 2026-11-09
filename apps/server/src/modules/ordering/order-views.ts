@@ -58,8 +58,15 @@ export interface OrderView {
   autoCancelAt: Date | null;
   // RA §8.5, docs/domain/03: from the restaurant's acceptance, the prep time
   // chosen, the promised time and the app installation it was accepted on
-  // (RA §18; null when another actor accepted).
-  acceptance: { at: Date; prepMin: number; promisedAt: Date; device: string | null } | null;
+  // (RA §18; null when another actor accepted), and whether operations
+  // accepted on the restaurant's behalf (RA §8.15 «قبلته العمليات»).
+  acceptance: {
+    at: Date;
+    prepMin: number;
+    promisedAt: Date;
+    device: string | null;
+    byOperations: boolean;
+  } | null;
   // RA §8.8: «الطلب جاهز».
   readyAt: Date | null;
   // AP §8.2: the captain track, and the captain from assignment.
@@ -88,6 +95,17 @@ export interface OrderView {
   } | null;
   // The customer's text for it (CU Appendix C), copied at the cancellation.
   cancellation: { at: Date; reason: string; customerText: string | null } | null;
+  // RA §8.6, CU §11.9: the rejection's reason, its label, the customer's text
+  // and the items «اطلب بدون الأصناف غير المتوفرة» leaves out.
+  rejection: {
+    at: Date;
+    reason: string;
+    label: string;
+    customerText: string;
+    itemIds: string[];
+    // RA §8.15: rejected by operations on the restaurant's behalf.
+    byOperations: boolean;
+  } | null;
   currency: string;
   money: QuoteMoney;
   deliveryFree: boolean;
@@ -157,6 +175,11 @@ export async function readOrders(
       cancelledAt: orders.cancelledAt,
       cancelReason: orders.cancelReason,
       cancelCustomerText: orders.cancelCustomerText,
+      rejectedAt: orders.rejectedAt,
+      rejectReason: orders.rejectReason,
+      rejectReasonLabel: orders.rejectReasonLabel,
+      rejectCustomerText: orders.rejectCustomerText,
+      rejectItemIds: orders.rejectItemIds,
       currency: orders.currency,
       itemsValue: orders.itemsValue,
       deliveryFee: orders.deliveryFee,
@@ -204,12 +227,18 @@ export async function readOrders(
       ),
     )
     .orderBy(asc(orderLines.orderId), asc(orderLines.position));
-  const accepted = rows.filter((row) => row.acceptedAt !== null);
-  const acceptances =
+  // The acceptance or the rejection: who decided (RA §8.15).
+  const accepted = rows.filter((row) => row.acceptedAt !== null || row.rejectedAt !== null);
+  const decisions =
     accepted.length === 0
       ? []
       : await executor
-          .select({ orderId: orderEvents.orderId, device: orderEvents.actorDevice })
+          .select({
+            orderId: orderEvents.orderId,
+            toStatus: orderEvents.toStatus,
+            device: orderEvents.actorDevice,
+            actorType: orderEvents.actorType,
+          })
           .from(orderEvents)
           .where(
             and(
@@ -223,9 +252,11 @@ export async function readOrders(
               ),
               // The acceptance itself, not a return to preparing (AP §9.3.3).
               eq(orderEvents.fromStatus, 'placed'),
-              eq(orderEvents.toStatus, 'accepted'),
+              inArray(orderEvents.toStatus, ['accepted', 'rejected']),
             ),
           );
+  const acceptances = decisions.filter((event) => event.toStatus === 'accepted');
+  const rejections = decisions.filter((event) => event.toStatus === 'rejected');
   const delivered = rows.filter((row) => row.deliveredAt !== null);
   const deliveries =
     delivered.length === 0
@@ -266,6 +297,8 @@ export async function readOrders(
               prepMin: row.prepMin,
               promisedAt: row.promisedAt,
               device: acceptances.find((event) => event.orderId === row.id)?.device ?? null,
+              byOperations:
+                acceptances.find((event) => event.orderId === row.id)?.actorType === 'admin',
             }
           : null,
       readyAt: row.readyAt,
@@ -317,6 +350,21 @@ export async function readOrders(
               at: row.cancelledAt,
               reason: row.cancelReason,
               customerText: row.cancelCustomerText,
+            }
+          : null,
+      rejection:
+        row.rejectedAt &&
+        row.rejectReason &&
+        row.rejectReasonLabel &&
+        row.rejectCustomerText !== null
+          ? {
+              at: row.rejectedAt,
+              reason: row.rejectReason,
+              label: row.rejectReasonLabel,
+              customerText: row.rejectCustomerText,
+              itemIds: (row.rejectItemIds as string[] | null) ?? [],
+              byOperations:
+                rejections.find((event) => event.orderId === row.id)?.actorType === 'admin',
             }
           : null,
       currency: row.currency,

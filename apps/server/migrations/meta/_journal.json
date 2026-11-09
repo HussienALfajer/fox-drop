@@ -295,6 +295,13 @@
       "when": 1794194823281,
       "tag": "0041_merchants_status_timers",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1794212766124,
+      "tag": "0042_ordering_rejection",
+      "breakpoints": true
     }
   ]
 }

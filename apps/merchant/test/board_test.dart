@@ -2,6 +2,7 @@ import 'package:core_realtime/core_realtime.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:merchant/src/board/alerts.dart';
 import 'package:merchant/src/board/board.dart';
+import 'package:merchant/src/board/commands.dart';
 
 import 'board_fixtures.dart';
 
@@ -154,6 +155,64 @@ void main() {
       );
     });
 
+    test('operations deciding for the restaurant chime with their message '
+        '(RA §8.15, §16 #5–6)', () {
+      final memory = AlertMemory();
+      final rejected = step(
+        memory,
+        [],
+        events: [
+          {
+            'type': 'order.rejected',
+            'orderId': a,
+            'number': '10001',
+            'reason': 'restaurant_closed',
+            'byOperations': true,
+          },
+          // The restaurant's own decision on another device: no notice.
+          {
+            'type': 'order.rejected',
+            'orderId': b,
+            'number': '10002',
+            'reason': 'too_busy',
+            'byOperations': false,
+          },
+        ],
+      );
+      expect(rejected.chime, isTrue);
+      expect(
+        rejected.notices.single,
+        isA<RejectedByOperations>()
+            .having((n) => n.number, 'number', '10001')
+            .having((n) => n.reason, 'reason', 'restaurant_closed'),
+      );
+      final accepted = step(
+        AlertMemory(),
+        [
+          orderJson(
+            id: a,
+            status: 'accepted',
+            acceptedAfter: Duration.zero,
+            prepMin: 25,
+            byOperations: true,
+          ),
+        ],
+        events: [
+          {
+            'type': 'order.accepted',
+            'orderId': a,
+            'number': '10001',
+            'reason': null,
+            'byOperations': true,
+          },
+        ],
+      );
+      expect(
+        accepted.notices.single,
+        isA<AcceptedByOperations>().having((n) => n.prepMin, 'prepMin', 25),
+      );
+    });
+
     test('an automatic cancellation chimes with its message', () {
       final result = step(
         AlertMemory(),
@@ -257,6 +316,46 @@ void main() {
       expect(step(memory, [], live: false, now: later).chime, isFalse);
       step(memory, []);
       expect(step(memory, [], live: false, now: later).chime, isFalse);
+    });
+  });
+
+  group('the rejection (RA §8.6)', () {
+    test('needs items only for «صنف غير متوفر»', () {
+      expect(const Rejection(RejectReason.itemUnavailable).complete, isFalse);
+      expect(
+        const Rejection(
+          RejectReason.itemUnavailable,
+          items: {shawarmaId: true},
+        ).complete,
+        isTrue,
+      );
+      expect(const Rejection(RejectReason.restaurantClosed).complete, isTrue);
+      expect(
+        const Rejection(
+          RejectReason.tooBusy,
+          items: {shawarmaId: true},
+        ).complete,
+        isFalse,
+      );
+    });
+
+    test('its body tells its choices apart, for the key', () {
+      expect(
+        const Rejection(RejectReason.tooBusy, step: BusyModeStep(10)).body,
+        isNot(const Rejection(RejectReason.tooBusy, step: PauseStep()).body),
+      );
+      expect(
+        const Rejection(
+          RejectReason.itemUnavailable,
+          items: {shawarmaId: true},
+        ).body,
+        isNot(
+          const Rejection(
+            RejectReason.itemUnavailable,
+            items: {shawarmaId: false},
+          ).body,
+        ),
+      );
     });
   });
 }

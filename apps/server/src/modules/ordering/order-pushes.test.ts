@@ -15,6 +15,9 @@ const facts: OrderPushFacts = {
   total: '160 ₺',
   cancelText: null,
   cancelReason: null,
+  rejectText: null,
+  rejectLabel: null,
+  prepMin: 20,
   actor: 'restaurant',
   pickupAmount: '120 ₺',
   receivedAmount: '100 ₺',
@@ -70,6 +73,33 @@ describe('the pushes of an order event', () => {
     ).toEqual([
       [customer, 'customer.cancelled', { السبب: 'لم يرد المطعم على طلبك' }],
       [restaurant, 'merchant.auto_cancelled', { رقم: '10002', العدد: '2', الحد: '3' }],
+    ]);
+  });
+
+  it('apologises for a rejection, and tells the restaurant only when operations acted (CU §14 #7, RA §16 #5, #6)', () => {
+    const rejected = {
+      captainId: null,
+      rejectText: 'بعض الأصناف غير متوفرة: شاورما',
+      rejectLabel: 'صنف غير متوفر',
+    };
+    expect(sent('order.rejected', 'item_unavailable', rejected)).toEqual([
+      [
+        customer,
+        'customer.rejected',
+        { المطعم: 'مطعم الاختبار', السبب: 'بعض الأصناف غير متوفرة: شاورما' },
+      ],
+    ]);
+    expect(sent('order.rejected', 'item_unavailable', { ...rejected, actor: 'admin' })).toEqual([
+      [
+        customer,
+        'customer.rejected',
+        { المطعم: 'مطعم الاختبار', السبب: 'بعض الأصناف غير متوفرة: شاورما' },
+      ],
+      [restaurant, 'merchant.rejected_by_operations', { رقم: '10002', السبب: 'صنف غير متوفر' }],
+    ]);
+    expect(sent('order.accepted', null, { actor: 'admin', prepMin: 25 })).toEqual([
+      [customer, 'customer.accepted', { الساعة: '9:45 م' }],
+      [restaurant, 'merchant.accepted_by_operations', { رقم: '10002', د: '25' }],
     ]);
   });
 

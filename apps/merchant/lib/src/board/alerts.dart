@@ -80,6 +80,22 @@ class Cancelled extends BoardNotice {
   final String number;
 }
 
+/// «قبلت العمليات الطلب #{رقم} نيابة عنكم — وقت التحضير {د} د» (RA §8.15,
+/// §16 #5).
+class AcceptedByOperations extends BoardNotice {
+  const AcceptedByOperations(this.number, this.prepMin);
+  final String number;
+  final int prepMin;
+}
+
+/// «رفضت العمليات الطلب #{رقم}: {السبب}» (RA §8.15, §16 #6), with the
+/// reason's code.
+class RejectedByOperations extends BoardNotice {
+  const RejectedByOperations(this.number, this.reason);
+  final String number;
+  final String reason;
+}
+
 /// «تحضير متأخر #{رقم} — اضغط «الطلب جاهز» فور الانتهاء».
 class PrepLate extends BoardNotice {
   const PrepLate(this.number);
@@ -163,17 +179,32 @@ AlertStep alertStep(
     }
   }
 
+  final board = state.value;
   for (final event in events) {
-    if (event['type'] != 'order.cancelled') continue;
     final number = '${event['number']}';
-    notices.add(
-      event['reason'] == 'merchant_auto_cancel'
-          ? AutoCancelled(number)
-          : Cancelled(number),
-    );
+    switch (event['type']) {
+      case 'order.cancelled':
+        notices.add(
+          event['reason'] == 'merchant_auto_cancel'
+              ? AutoCancelled(number)
+              : Cancelled(number),
+        );
+      // RA §8.15: operations decided for the restaurant; the restaurant's own
+      // decisions on another device only close the prompt.
+      case 'order.rejected' when event['byOperations'] == true:
+        notices.add(RejectedByOperations(number, '${event['reason']}'));
+      case 'order.accepted' when event['byOperations'] == true:
+        // The event carries no prep time: the board fetched after it does.
+        final order = board?.orders
+            .where((o) => o.id == event['orderId'])
+            .firstOrNull;
+        final prepMin = order?.acceptance?.prepMin;
+        if (prepMin != null) {
+          notices.add(AcceptedByOperations(number, prepMin));
+        }
+    }
   }
 
-  final board = state.value;
   if (board == null) {
     return AlertStep(
       ring: false,

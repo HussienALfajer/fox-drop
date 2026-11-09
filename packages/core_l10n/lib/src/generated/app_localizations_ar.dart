@@ -1756,4 +1756,70 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get merchantHoursSettlementDay => 'يوم التسوية';
+
+  @override
+  String get merchantReject => 'رفض';
+
+  @override
+  String merchantRejectTitle(String number) {
+    return 'رفض الطلب #$number';
+  }
+
+  @override
+  String get merchantRejectItemUnavailable => 'صنف غير متوفر';
+
+  @override
+  String get merchantRejectRestaurantClosed => 'المطعم مغلق';
+
+  @override
+  String get merchantRejectTooBusy => 'ضغط طلبات';
+
+  @override
+  String get merchantRejectPickItems => 'اختر الأصناف غير المتوفرة';
+
+  @override
+  String get merchantRejectUntilTomorrow => 'حتى الغد';
+
+  @override
+  String get merchantRejectUntilTurnedBackOn => 'حتى أعيده';
+
+  @override
+  String get merchantRejectClosedNote =>
+      'سيتوقف مطعمك عن استقبال الطلبات حتى تعيد الفتح';
+
+  @override
+  String get merchantRejectNothingElse => 'الرفض فقط';
+
+  @override
+  String merchantRejectBusyMode(int minutes) {
+    return 'تفعيل وضع الضغط +$minutes د';
+  }
+
+  @override
+  String merchantRejectPause(int minutes) {
+    return 'إيقاف $minutes د';
+  }
+
+  @override
+  String get merchantRejectConfirm => 'تأكيد الرفض';
+
+  @override
+  String get merchantRejectRefused =>
+      'تعذّر الرفض بهذه الاختيارات، راجعها ثم أعد المحاولة';
+
+  @override
+  String get merchantRejectedFirst => 'رُفض الطلب قبل وصول طلبك';
+
+  @override
+  String merchantAcceptedByOperations(String number, int minutes) {
+    return 'قبلت العمليات الطلب #$number نيابة عنكم — وقت التحضير $minutes د';
+  }
+
+  @override
+  String merchantRejectedByOperations(String number, String reason) {
+    return 'رفضت العمليات الطلب #$number: $reason';
+  }
+
+  @override
+  String get merchantBadgeByOperations => 'قبلته العمليات';
 }
