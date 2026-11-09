@@ -30,6 +30,21 @@ location ~ ^/v1/[a-z]+/realtime/subscribe$ {
     return 404;
 }
 
+# The images (architecture §5.8, CU §4.5): imgproxy, which serves only its
+# preset widths of public-media, through the cache. Reads only. imgproxy's
+# own Cache-Control (a year) reaches the apps; no add_header here, so the
+# server's security headers stay.
+location /media/ {
+    limit_except GET { deny all; }
+    proxy_pass http://127.0.0.1:${IMGPROXY_PORT};
+    include snippets/foxdrop-proxy.conf;
+    proxy_cache foxdrop_${FOXDROP_ENV}_media;
+    proxy_cache_valid 200 30d;
+    proxy_cache_valid 404 1m;
+    proxy_cache_lock on;
+    proxy_cache_use_stale error timeout updating;
+}
+
 location /v1/ {
     proxy_pass http://127.0.0.1:${API_PORT};
     include snippets/foxdrop-proxy.conf;

@@ -16,7 +16,7 @@ Slice 2.5, object storage and images (`docs/roadmap.md`, Phase 2 foundations): t
   - [x] The panel's routes: the restaurants, their images and items, and setting a logo, a cover or an item photo (audited), with the customer API's keys documented.
   - [x] The panel's «الصور» screen.
   - [x] The customer app: logos, covers and item photos through imgproxy, sized to the screen and cached (CU §4.5).
-  - [ ] Staging: Garage, imgproxy and the setup in `infra/compose.yaml` and the deploy, nginx's `/media/` cache and `/public-media/` upload path, the secrets, the nightly copy of the bucket, the `deploy` skill.
+  - [x] Staging: Garage, imgproxy and the setup in `infra/compose.yaml` and the deploy, nginx's `/media/` cache and `/public-media/` upload path, the secrets, the nightly copy of the bucket, the `deploy` skill.
   - [ ] Review, then hand over to slice 2.6.
 
 ### Left from 2.4d (`feat/emergency-stop-apps`)

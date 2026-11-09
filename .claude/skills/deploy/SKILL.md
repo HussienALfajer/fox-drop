@@ -9,15 +9,16 @@ Read `infra/CLAUDE.md` for the layout and rules, and the `vertex-server` skill b
 
 ## Staging at a glance
 
-| What             | Where                                                                                                                                                |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Panel            | `https://foxdrop-staging-admin.109-199-111-169.sslip.io`                                                                                             |
-| Portal           | `https://foxdrop-staging-portal.109-199-111-169.sslip.io`                                                                                            |
-| API for the apps | `https://foxdrop-staging-api.109-199-111-169.sslip.io/v1/`                                                                                           |
-| Files            | `/srv/foxdrop-staging/` (user `foxdrop-staging`): `repo.git`, `releases/<commit>`, `current`, `previous`, `shared/.env` (secrets, 600), `shared/db/` |
-| Compose project  | `foxdrop-staging` (`docker ps --filter label=com.docker.compose.project=foxdrop-staging`)                                                            |
-| Logs             | `docker logs foxdrop-staging-api-1`; a failed deploy's logs in `journalctl -t foxdrop-deploy`; nginx in `/var/log/nginx/foxdrop-staging.*.log`       |
-| Backups          | `/var/backups/foxdrop-staging/` (7 days), encrypted copies in B2 (30 days); `journalctl -t foxdrop-backup`                                           |
+| What             | Where                                                                                                                                                 |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Panel            | `https://foxdrop-staging-admin.109-199-111-169.sslip.io`                                                                                              |
+| Portal           | `https://foxdrop-staging-portal.109-199-111-169.sslip.io`                                                                                             |
+| API for the apps | `https://foxdrop-staging-api.109-199-111-169.sslip.io/v1/`                                                                                            |
+| Files            | `/srv/foxdrop-staging/` (user `foxdrop-staging`): `repo.git`, `releases/<commit>`, `current`, `previous`, `shared/.env` (secrets, 600), `shared/db/`  |
+| Compose project  | `foxdrop-staging` (`docker ps --filter label=com.docker.compose.project=foxdrop-staging`)                                                             |
+| Logs             | `docker logs foxdrop-staging-api-1`; a failed deploy's logs in `journalctl -t foxdrop-deploy`; nginx in `/var/log/nginx/foxdrop-staging.*.log`        |
+| Backups          | `/var/backups/foxdrop-staging/` (7 days), encrypted copies in B2 (30 days); `journalctl -t foxdrop-backup`                                            |
+| Images           | Garage (`foxdrop-staging-storage-1`, volume `foxdrop-staging_storage-data`), imgproxy behind `/media/` on every host, its cache in `/var/cache/nginx` |
 
 ## Deploy
 
@@ -57,6 +58,13 @@ One Compose project, `foxdrop-osrm`, in `/srv/foxdrop-osrm` (copied from `infra/
 - **Build:** `provision.sh` builds the data on its first run (several minutes: the 82 MB Syria extract, the cut, four profiles); `foxdrop-osrm-build.timer` rebuilds it every Monday at 04:30 and restarts the services. By hand, as root: `foxdrop-osrm-build`. The cut peaks at about 1.5 GB of memory for a minute.
 - **Status and logs:** `docker ps --filter label=com.docker.compose.project=foxdrop-osrm`; `journalctl -u foxdrop-osrm-build`; `docker logs foxdrop-osrm-osrm-car-1`.
 - **A failed build** leaves the running data in place (the new data is swapped in only after all four profiles build).
+
+## Object storage and images (architecture §5.8, slice 2.5)
+
+- **Containers:** `storage` (Garage, S3 API on 127.0.0.1:3114) and `imgproxy` (127.0.0.1:3115). The deploy starts `storage` with the database and runs `storage-setup` after the migrations: the one-node layout, the server's and the reader's keys (`STORAGE_KEY_ID`/`STORAGE_SECRET`, `STORAGE_READER_KEY_ID`/`STORAGE_READER_SECRET`) and the `public-media` bucket; it changes nothing once they exist.
+- **Secrets first:** the storage's six lines (`GARAGE_RPC_SECRET`, `GARAGE_ADMIN_TOKEN` and the two keys) are added by `provision.sh`. The first deploy that has the storage fails at Compose's interpolation until they exist: provision from that commit on `main`, then run `foxdrop-deploy staging <the same commit>` again. Garage never changes a key's secret: to replace a key, remove both its lines from `shared/.env`, run `provision.sh` (a new ID) and deploy.
+- **Check:** `curl -sI https://<API host>/media/_/w320/plain/<a key from the panel>` answers `200` with `Content-Type: image/webp`; a width other than 160, 320, 640 or 1280 answers `404`. Garage's own status: `docker exec foxdrop-staging-storage-1 /garage status`.
+- **The cache:** nginx keeps imgproxy's results for 30 days, 2 GB at most; a key is never reused, so nothing goes stale. Emptying it is safe (`rm -rf /var/cache/nginx/foxdrop-staging-media/*`, then `systemctl reload nginx`).
 
 ## Secrets
 
@@ -130,6 +138,8 @@ docker exec -i foxdrop-staging-postgres-1 psql -U postgres -d fox_drop -v number
 ```
 
 ## Restore a backup
+
+The images: set the `RCLONE_CONFIG_FOXDROP*` variables as `backup.sh` does (`foxdropcrypt` and `foxdropstorage`, the latter with the server's key `STORAGE_KEY_ID`/`STORAGE_SECRET`, since the reader may not write), then `rclone copy foxdropcrypt:public-media foxdropstorage:public-media`. It only adds missing objects. The database:
 
 1. Copy the dump back, if it is not in `/var/backups/foxdrop-staging/`: set the `RCLONE_CONFIG_FOXDROP*` variables as `backup.sh` does, then `rclone copyto foxdropcrypt:<name> /var/backups/foxdrop-staging/<name>`.
 2. Try it on a throwaway database first: `docker run -d --name foxdrop-restore-test -e POSTGRES_PASSWORD=x <the postgis image>`, then `docker exec -i foxdrop-restore-test pg_restore --username postgres --dbname postgres --create --no-owner --no-privileges < <dump>` and check the tables; remove the container.

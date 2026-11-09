@@ -73,9 +73,15 @@ compose() {
 
 echo "deploying $target to $environment"
 compose "$target" pull --quiet
-compose "$target" up --detach --wait --wait-timeout 120 postgres valkey
+# The storage arrived with slice 2.5; a rollback to an older release has none.
+storage=()
+if compose "$target" config --services | grep -qx storage; then storage=(storage); fi
+compose "$target" up --detach --wait --wait-timeout 120 postgres valkey "${storage[@]}"
 if [ "$migrate" = yes ]; then
   compose "$target" run --rm migrate
+  # The storage's layout, keys and bucket (architecture §5.8); changes
+  # nothing once they are there.
+  compose "$target" run --rm storage-setup
 fi
 
 if ! compose "$target" up --detach --wait --wait-timeout 180 --remove-orphans; then

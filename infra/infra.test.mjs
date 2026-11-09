@@ -109,6 +109,9 @@ test('every environment names the settings compose.yaml and nginx need', () => {
     'ADMIN_PORT',
     'PORTAL_PORT',
     'CENTRIFUGO_PORT',
+    // The object storage and imgproxy, behind nginx (architecture §5.8).
+    'STORAGE_PORT',
+    'IMGPROXY_PORT',
     // The otp-sender's reply (architecture §8.3.3 item 9); may be empty.
     'SUPPORT_WHATSAPP_NUMBER',
     // The apps' support call button (AP §9.13 contact info); may be empty.
@@ -125,4 +128,49 @@ test('every environment names the settings compose.yaml and nginx need', () => {
       .map((line) => line.split('=')[0]);
     assert.deepEqual(keys.toSorted(), needed.toSorted(), file);
   }
+});
+
+test("the storage and imgproxy run development's images and configuration", () => {
+  const development = parse(read('../compose.yaml'), { merge: true });
+  for (const name of ['storage', 'imgproxy']) {
+    assert.equal(compose.services[name].image, development.services[name].image, name);
+  }
+  assert.ok(compose.services.storage.volumes.includes('./storage/garage.toml:/etc/garage.toml:ro'));
+  assert.ok(
+    development.services.storage.volumes.includes(
+      './infra/storage/garage.toml:/etc/garage.toml:ro',
+    ),
+  );
+  assert.equal(compose.services.imgproxy.env_file, './imgproxy/imgproxy.env');
+  assert.equal(development.services.imgproxy.env_file, 'infra/imgproxy/imgproxy.env');
+});
+
+test("the storage's keys reach only the processes that use them (§15)", () => {
+  const holders = (variable) =>
+    Object.entries(compose.services)
+      .filter(([, service]) =>
+        Object.values(service.environment ?? {}).some((value) =>
+          String(value).includes(`\${${variable}:`),
+        ),
+      )
+      .map(([name]) => name)
+      .toSorted();
+  // The server's key reads and writes: the API signs and checks uploads.
+  assert.deepEqual(holders('STORAGE_SECRET'), ['api', 'storage-setup']);
+  // The reader key: imgproxy (the nightly copy reads the file on the server).
+  assert.deepEqual(holders('STORAGE_READER_SECRET'), ['imgproxy', 'storage-setup']);
+  assert.deepEqual(holders('GARAGE_ADMIN_TOKEN'), ['storage', 'storage-setup']);
+});
+
+test("imgproxy's widths are the ones the panel and the customer app ask for", () => {
+  const presets = /^IMGPROXY_PRESETS=(.*)$/m.exec(read('imgproxy/imgproxy.env'))[1];
+  const widths = presets.split(',').map((preset) => {
+    const [name, options] = preset.split('=');
+    const width = Number(/width:(\d+)/.exec(options)[1]);
+    assert.equal(name, `w${width}`);
+    return width;
+  });
+  const list = (text) => JSON.parse(`[${/\[(\d+(?:, \d+)*)\]/.exec(text)[1]}]`);
+  assert.deepEqual(list(read('../apps/admin/src/media.ts')), widths);
+  assert.deepEqual(list(read('../apps/customer/lib/src/media.dart')), widths);
 });

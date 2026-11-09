@@ -6,3 +6,9 @@
 # or sends a code. 30 a minute per address, because mobile networks put many
 # phones behind one address; the server's own limits in Valkey come on top.
 limit_req_zone $binary_remote_addr zone=foxdrop_${FOXDROP_ENV}_signin:10m rate=30r/m;
+
+# The images imgproxy makes (architecture §5.8: nginx's cache in place of a
+# CDN in V1). A key is never reused, so an entry never goes stale; the least
+# used go first past 2 GB or after 30 days unread.
+proxy_cache_path /var/cache/nginx/foxdrop-${FOXDROP_ENV}-media levels=1:2
+    keys_zone=foxdrop_${FOXDROP_ENV}_media:10m max_size=2g inactive=30d use_temp_path=off;

@@ -3,7 +3,8 @@
 # Edit infra/nginx/site.conf.template in the repository, never on the server.
 #
 # nginx is the only public gateway (architecture §15.5). Every host sends /v1
-# to the API (snippets/foxdrop-${FOXDROP_ENV}-api.conf); the panel and the
+# to the API and /media to imgproxy (snippets/foxdrop-${FOXDROP_ENV}-api.conf);
+# the panel's host sends /public-media to the storage; the panel and the
 # portal send everything else to the web container, which answers unknown
 # paths with index.html. The limit zones `general` and `perip` are the
 # server's own (conf.d/rate-limits.conf).
@@ -24,6 +25,18 @@ server {
     listen [::]:443 ssl http2;
     server_name ${ADMIN_HOST};
     include snippets/foxdrop-${FOXDROP_ENV}-server.conf;
+
+    # The panel's uploads (architecture §5.8): a PUT signed by the API for
+    # this host, passed to the storage with the same Host and path, so the
+    # signature holds and the browser needs no CORS. Nothing else reaches the
+    # storage. 8 MB is the server's limit for an image.
+    location /public-media/ {
+        limit_except PUT { deny all; }
+        client_max_body_size 9m;
+        proxy_request_buffering off;
+        proxy_pass http://127.0.0.1:${STORAGE_PORT};
+        include snippets/foxdrop-proxy.conf;
+    }
 
     location / {
         proxy_pass http://127.0.0.1:${ADMIN_PORT};

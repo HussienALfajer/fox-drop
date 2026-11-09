@@ -96,6 +96,24 @@ add_secret() {
 add_secret CENTRIFUGO_TOKEN_SECRET
 add_secret CENTRIFUGO_API_KEY
 add_secret CENTRIFUGO_PROXY_SECRET
+# The object storage (architecture §5.8): Garage's RPC secret and admin
+# token, and the S3 keys the storage setup imports (an ID is GK and 24 hex
+# digits): the server's, which reads and writes, and the reader's, for
+# imgproxy and the nightly copy. Garage never changes a key's secret, so a
+# key is replaced by removing both its lines and deploying: the setup then
+# imports a new ID.
+add_secret GARAGE_RPC_SECRET
+add_secret GARAGE_ADMIN_TOKEN
+add_storage_key() {
+  if ! grep -q "^$1=" "$env_file"; then
+    if [ -s "$env_file" ] && [ -n "$(tail -c1 "$env_file")" ]; then echo >>"$env_file"; fi
+    echo "$1=GK$(openssl rand -hex 12)" >>"$env_file"
+    echo "added $1 to $env_file"
+  fi
+  add_secret "$2"
+}
+add_storage_key STORAGE_KEY_ID STORAGE_SECRET
+add_storage_key STORAGE_READER_KEY_ID STORAGE_READER_SECRET
 chown "$user:$user" "$env_file"
 chmod 600 "$env_file"
 
@@ -111,6 +129,9 @@ install -m 440 "$sudoers" /etc/sudoers.d/foxdrop-deploy
 rm -f "$sudoers"
 
 step "nginx"
+# The media cache's parent (limits.conf.template); nginx creates the zone's
+# own folder as its worker user.
+install -d -m 755 /var/cache/nginx
 # The site relies on the server's own `general` and `perip` zones.
 nginx_config=$(nginx -T 2>/dev/null)
 for zone in 'zone=general:' 'zone=perip:'; do
@@ -118,7 +139,7 @@ for zone in 'zone=general:' 'zone=perip:'; do
 done
 # Only these variables are replaced; nginx's own $variables stay as they are.
 # shellcheck disable=SC2016
-render() { envsubst '${FOXDROP_ENV} ${ADMIN_HOST} ${PORTAL_HOST} ${API_HOST} ${API_PORT} ${ADMIN_PORT} ${PORTAL_PORT} ${CENTRIFUGO_PORT}' <"$1"; }
+render() { envsubst '${FOXDROP_ENV} ${ADMIN_HOST} ${PORTAL_HOST} ${API_HOST} ${API_PORT} ${ADMIN_PORT} ${PORTAL_PORT} ${CENTRIFUGO_PORT} ${STORAGE_PORT} ${IMGPROXY_PORT}' <"$1"; }
 available=/etc/nginx/sites-available/foxdrop-$environment
 enabled=/etc/nginx/sites-enabled/foxdrop-$environment
 nginx_files=(
