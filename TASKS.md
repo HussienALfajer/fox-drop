@@ -4,20 +4,20 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.5, object storage and images (`docs/roadmap.md`, Phase 2 foundations): the S3-compatible storage and imgproxy in development and staging, signed uploads, restaurant logos and covers and item photos in the customer app. The owner uploads an item photo and the customer sees it.
+Slice 2.6, restaurant status and hours (`docs/roadmap.md`, Phase 2, the rest of the order cycle): pause (15, 30, 60, until reopening), resume, busy mode with its reminder, holiday close, several and overnight periods, the maximum active orders, the auto-pause after 3 unanswered orders and its alert, the precedence of RA §7.1. The owner pauses the restaurant from the app and the customer sees it closed.
 
-- **Specs:** architecture §5.8 (two buckets, `public-media` through imgproxy and nginx's cache, `private-docs` with short-lived signed URLs; uploads straight from the app with a pre-signed URL, the server checking type and size before linking the file), T7 and T9 (the storage software is chosen in this slice, the same in development and on the server), §17 (the containers per environment, the nightly copy of both buckets), CU §4.5 (images per screen size), the image fields of the menu and restaurant specs the slice touches (RA §9, AP §9.6), and `docs/open-questions.md` for anything open about photos.
-- **Branch:** `feat/object-storage`.
-- **Owner decisions 2026-11-09:** Garage is the storage (T7), in development and on the server; one pull request; the panel gets a temporary «الصور» screen (pick a restaurant, upload its logo and cover and each item's photo) that the onboarding wizard and the menu editor absorb in 2.30 and 2.31. Restaurant uploads from the app (with admin review, RA §9.2) stay with 2.32.
-- **Design:** the `public-media` bucket only (`private-docs` joins with its first use, the captain documents of 2.34, with its encryption at rest). A new `files` module owns the uploads: the panel asks `POST /v1/admin/uploads` for a pre-signed `PUT` (type and size signed, so Garage refuses another body), uploads to `/public-media/<key>` on its own origin (nginx and Vite forward it to Garage, so no CORS and no new host), then links it with the restaurant's or item's route, which checks the stored object's size, type and first bytes before the record points to it. imgproxy serves only four presets (`w160`, `w320`, `w640`, `w1280`, WebP) under `/media/` on every host, cached by nginx; the apps build the URL from the key and the width they need.
-- **Plan** (one step per commit):
-  - [x] Garage and imgproxy in `compose.yaml`, the storage setup command (layout, keys, bucket) with its Testcontainers helper, architecture §4.2, §5.8, §17 and T7 updated.
-  - [x] The `files` module: `files.uploads`, the signed upload, the check before linking, `POST /v1/admin/uploads`.
-  - [x] The panel's routes: the restaurants, their images and items, and setting a logo, a cover or an item photo (audited), with the customer API's keys documented.
-  - [x] The panel's «الصور» screen.
-  - [x] The customer app: logos, covers and item photos through imgproxy, sized to the screen and cached (CU §4.5).
-  - [x] Staging: Garage, imgproxy and the setup in `infra/compose.yaml` and the deploy, nginx's `/media/` cache and `/public-media/` upload path, the secrets, the nightly copy of the bucket, the `deploy` skill.
-  - [ ] Review, then hand over to slice 2.6.
+- **Specs:** RA §7 (restaurant status, the precedence of §7.1), RA §10 (status and hours: pauses, busy mode, holiday closes, periods, the maximum active orders, the auto-pause), AP §9.6.5 (the panel's restaurant actions on status), RA Appendix A (the settings), CU §9.2 (what customers see), and `docs/open-questions.md` for anything open about status and hours.
+- **Branch:** `feat/restaurant-status`.
+- **Already built:** `operatingState` and `storefrontState` read pauses, holiday closes, busy mode and the schedule (`apps/server/src/modules/merchants/CLAUDE.md` «Operating state», «Hours», «Holiday closes and pauses»); setting them, the one-pause rule and the auto-pause are this slice.
+- **Ask the owner first:** whether the slice is one pull request or two (the server and the restaurant app, then the panel and the customer app), with the `slice-plan` skill if two.
+- **Plan:** write it as a checklist once the owner answers, one step per commit, then review and hand over to slice 2.7.
+
+### Left from 2.5 (`feat/object-storage`)
+
+- **Before the first deploy with the storage:** run `provision.sh` from the merged commit (it adds the six storage secrets, the `/media/` and `/public-media/` nginx locations, the media cache and the backup's new copy), then deploy that commit again (the `deploy` skill, «Object storage and images»). The first automatic deploy fails at Compose's interpolation until then, and staging keeps running the previous release.
+- **To check on staging:** in the panel, «الصور» → a restaurant → upload a logo, a cover and an item photo; the new customer APK shows them on the list and the restaurant page; `curl -sI https://<API host>/media/_/w320/plain/<key>` answers `image/webp`; the next night's backup shows «copied the public-media bucket to B2».
+- **To confirm with the owner:** DATA (data entry) sets a restaurant's logo and cover (AP §9.6.3 step 1 lists DATA, OPS, OWN) and item photos (`restaurants.menus`), on live restaurants too, while AP §6.1 describes DATA's work as before activation; the 8 MB limit and JPEG, PNG and WebP only; the four widths (160, 320, 640, 1280) and WebP for every image; the strings the spec gives no wording for («الصور», «رفع صورة», «استبدال الصورة», «لا توجد صورة», «حُفظت الصورة» and the refusals); the panel screen lists the first city's restaurants only (until the top bar's city selector).
+- **Not yet:** removing objects nobody links (`incoming/` files, unlinked copies, replaced images); a real upload from a browser through nginx on staging (proved locally with nginx 1.24 and curl over HTTP/1.1); the restaurant's own photos with their review (RA §9.2, 2.32); cropping in the review (AP §9.6.7); `private-docs` with the captain documents (2.34); the customer's report photos (2.24).
 
 ### Left from 2.4d (`feat/emergency-stop-apps`)
 
