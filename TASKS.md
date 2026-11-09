@@ -10,7 +10,7 @@ Slice 2.6a, restaurant status and hours in the server and the restaurant app (`d
 - **Branch:** `feat/restaurant-status`.
 - **Plan:**
   - [x] Record the split in `docs/roadmap.md` and this plan.
-  - [ ] Server: the restaurant's pause, resume and busy mode (the one-pause rule, a restaurant pause and busy mode ending with the opening period), audited with the user and device, with the restaurant routes.
+  - [x] Server: the restaurant’s pause, resume and busy mode (the one-pause rule, a restaurant pause and busy mode ending with the opening period), audited with the user and device, with the restaurant routes.
   - [ ] Server: the owners' hours, holiday close, default prep time and maximum active orders, and the status and hours reads.
   - [ ] Server: the state events (`merchants.state_outbox` relayed to `merchant:{id}` and `ops:city.{id}`), the pause-ended push (#24) and the hourly busy-mode reminder (#25) as timers.
   - [ ] Server: the auto-pause at the third unanswered order of the business day, its push (#3) and the alert «مطعم أوقف تلقائياً».

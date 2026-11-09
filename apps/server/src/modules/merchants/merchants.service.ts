@@ -50,7 +50,14 @@ export type MerchantsRefusal =
   | 'invalid_device'
   | 'device_rename_not_allowed'
   | 'reason_required'
-  | 'upload_used';
+  | 'upload_used'
+  | 'restaurant_closed'
+  | 'paused_by_operations'
+  | 'invalid_pause'
+  | 'invalid_busy_extra'
+  | 'invalid_holiday_close'
+  | 'invalid_prep_time'
+  | 'invalid_max_active_orders';
 
 // A change the merchants module refuses, with the reason the routes map to
 // their own answers.
@@ -138,6 +145,9 @@ export interface StorefrontState {
   message: string | null;
   // While closed by the schedule, its next opening; null otherwise.
   opensAt: Date | null;
+  // While inside an opening period, when it ends («يغلق اليوم 11:30 م», RA
+  // §7.2); null outside one.
+  closesAt: Date | null;
 }
 
 export interface MenuOption {
@@ -567,6 +577,11 @@ export class MerchantsService implements OnModuleInit {
     this.activeOrders = count;
   }
 
+  // RA §7.4: the restaurant's orders in placed, accepted or ready now.
+  activeOrderCount(restaurantId: string): Promise<number> {
+    return this.activeOrders(restaurantId);
+  }
+
   // The state at a moment (RA §7.1).
   async operatingState(restaurantId: string, now = new Date()): Promise<OperatingState> {
     return (await this.storefrontState(restaurantId, now)).state;
@@ -575,8 +590,12 @@ export class MerchantsService implements OnModuleInit {
   // The operating state as customers see it (CU §9.2): with the message of a
   // holiday close or an operations pause, and, while closed by the schedule,
   // when it next opens («مغلق — يفتح {اليوم} {الساعة}»).
-  async storefrontState(restaurantId: string, now = new Date()): Promise<StorefrontState> {
-    const db = this.database.db;
+  // A command reads it inside its transaction, after the restaurant's lock.
+  async storefrontState(
+    restaurantId: string,
+    now = new Date(),
+    db: Executor = this.database.db,
+  ): Promise<StorefrontState> {
     const [row] = await db
       .select({
         cityId: restaurants.cityId,
@@ -617,11 +636,12 @@ export class MerchantsService implements OnModuleInit {
       .orderBy(desc(pauses.startsAt))
       .limit(1);
     const schedule = await this.schedule(db, restaurantId);
+    const period = currentPeriod(schedule, now, timeZone);
     const state = operatingState(
       {
         accountStatus: row.accountStatus,
         holiday: holiday ?? null,
-        period: currentPeriod(schedule, now, timeZone),
+        period,
         pause: pause ?? null,
         busyMode:
           row.busyExtraMin !== null && row.busyUntil !== null
@@ -640,7 +660,7 @@ export class MerchantsService implements OnModuleInit {
           ? (pause?.message ?? null)
           : null;
     const opensAt = state.state === 'closed' ? nextOpening(schedule, now, timeZone) : null;
-    return { state, message, opensAt };
+    return { state, message, opensAt, closesAt: period?.endsAt ?? null };
   }
 
   // Whether the restaurant delivers to the point (RA R13, CU §8): the point

@@ -8,15 +8,17 @@ import { SettingsModule } from '../settings/index.js';
 import { AdminRestaurantImagesController } from './admin-restaurant-images.controller.js';
 import { MerchantMenuController } from './merchant-menu.controller.js';
 import { MerchantsService } from './merchants.service.js';
+import { RestaurantStatusService } from './restaurant-status.service.js';
+import { MerchantStatusController } from './merchant-status.controller.js';
 
 // The merchants module (architecture §4.2): restaurants, their hours, states,
 // coverage, commission and menu. Other modules read them through
 // MerchantsService only.
 @Module({
   imports: [DatabaseModule, SettingsModule, FxModule, GeoModule, AuditModule, FilesModule],
-  controllers: [MerchantMenuController, AdminRestaurantImagesController],
-  providers: [MerchantsService],
-  exports: [MerchantsService],
+  controllers: [MerchantMenuController, MerchantStatusController, AdminRestaurantImagesController],
+  providers: [MerchantsService, RestaurantStatusService],
+  exports: [MerchantsService, RestaurantStatusService],
 })
 export class MerchantsModule {}
 
@@ -44,3 +46,4 @@ export {
   type StorefrontState,
   type SwitchedOff,
 } from './merchants.service.js';
+export { type RestaurantStatus, RestaurantStatusService } from './restaurant-status.service.js';
