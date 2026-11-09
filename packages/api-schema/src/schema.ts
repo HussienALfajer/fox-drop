@@ -3952,7 +3952,7 @@ export interface components {
             status: "deleted";
         };
         CustomerRestaurantListDto_Output: {
-            /** @description CU §8.2: open first, then busy and paused, then closed. */
+            /** @description CU §8.2: open first, then busy and paused, then closed; with similarTo, the open ones only (CU §11.9). */
             restaurants: {
                 /** Format: uuid */
                 id: string;
@@ -8728,6 +8728,8 @@ export interface operations {
             query: {
                 latitude: string;
                 longitude: string;
+                /** @description CU §11.9: under a rejected or unanswered order, at its pin: up to 5 open restaurants of this restaurant's category, without it; empty when it has no category. */
+                similarTo?: string;
             };
             header?: never;
             path?: never;

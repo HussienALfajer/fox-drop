@@ -13,7 +13,7 @@ part 'customer_restaurant_list_dto_output.g.dart';
 /// CustomerRestaurantListDtoOutput
 ///
 /// Properties:
-/// * [restaurants] - CU §8.2: open first, then busy and paused, then closed.
+/// * [restaurants] - CU §8.2: open first, then busy and paused, then closed; with similarTo, the open ones only (CU §11.9).
 @BuiltValue()
 abstract class CustomerRestaurantListDtoOutput
     implements
@@ -21,7 +21,7 @@ abstract class CustomerRestaurantListDtoOutput
           CustomerRestaurantListDtoOutput,
           CustomerRestaurantListDtoOutputBuilder
         > {
-  /// CU §8.2: open first, then busy and paused, then closed.
+  /// CU §8.2: open first, then busy and paused, then closed; with similarTo, the open ones only (CU §11.9).
   @BuiltValueField(wireName: r'restaurants')
   BuiltList<CustomerRestaurantListDtoOutputRestaurantsInner> get restaurants;
 

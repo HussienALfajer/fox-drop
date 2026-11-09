@@ -22,6 +22,9 @@ import { SettingsService } from '../settings/index.js';
 // captain is known.
 const ESTIMATE_VEHICLE = 'motorbike';
 
+// CU §11.9: «up to 5 similar restaurants» under a rejected or unanswered order.
+const SIMILAR_LIMIT = 5;
+
 // CU §8.2: a restaurant card for the selected point.
 export interface RestaurantCard {
   id: string;
@@ -104,6 +107,27 @@ export class BrowsingService {
       .map((card, position) => ({ card, position }))
       .sort((a, b) => rank(a.card.state)! - rank(b.card.state)! || a.position - b.position)
       .map(({ card }) => card);
+  }
+
+  // CU §11.9: under a rejected or unanswered order, the open restaurants of
+  // the same category that deliver to the order's pin, in the list's own
+  // order, without the restaurant itself. Open in busy mode is open. Empty
+  // when the restaurant has no category.
+  async similar(id: string, point: Point, now: Date): Promise<RestaurantCard[]> {
+    const source = await this.merchants.restaurant(id, now);
+    if (source === null || source.category === null) return [];
+    const place = await this.geo.locate(point);
+    if (place === null || place.zone === null) return [];
+    const ids = await this.merchants.coveringRestaurants(place.cityId, point);
+    const candidates = await Promise.all(
+      ids.filter((other) => other !== id).map((other) => this.merchants.restaurant(other, now)),
+    );
+    const cards = await Promise.all(
+      candidates
+        .filter((restaurant) => restaurant?.category === source.category)
+        .map((restaurant) => this.card(restaurant!, point, now)),
+    );
+    return cards.filter((card) => card.state.state.state === 'open').slice(0, SIMILAR_LIMIT);
   }
 
   // CU §9.1–9.4; null for a restaurant customers do not see (CU §8.2).

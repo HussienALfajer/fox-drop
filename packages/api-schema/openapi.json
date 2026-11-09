@@ -3842,6 +3842,17 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "name": "similarTo",
+            "required": false,
+            "in": "query",
+            "description": "CU §11.9: under a rejected or unanswered order, at its pin: up to 5 open restaurants of this restaurant's category, without it; empty when it has no category.",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -12032,7 +12043,7 @@
               ],
               "additionalProperties": false
             },
-            "description": "CU §8.2: open first, then busy and paused, then closed."
+            "description": "CU §8.2: open first, then busy and paused, then closed; with similarTo, the open ones only (CU §11.9)."
           }
         },
         "required": [

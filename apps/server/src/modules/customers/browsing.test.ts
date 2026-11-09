@@ -442,3 +442,62 @@ describe('the browsing queries', () => {
     expect(answer.statusCode).toBe(400);
   });
 });
+
+describe('similar restaurants (CU §11.9)', () => {
+  const similar = (id: string, point: Point = centre) =>
+    app.inject({
+      method: 'GET',
+      url: `/v1/customer/restaurants?${query(point)}&similarTo=${id}`,
+    });
+  const category = (id: string, name: string | null) =>
+    sql.query('UPDATE merchants.restaurants SET category = $2 WHERE id = $1', [id, name]);
+  let rejecting: string;
+  let others: string[];
+
+  beforeAll(async () => {
+    rejecting = await restaurant('مطعم رفض الطلب');
+    await merchants.setWeeklySchedule(rejecting, allWeek, change);
+    for (const id of [rejecting, open, busy, paused, closed, holiday, distant]) {
+      await category(id, 'مشاوي');
+    }
+    const sweets = await restaurant('حلويات مفتوحة');
+    await merchants.setWeeklySchedule(sweets, allWeek, change);
+    await category(sweets, 'حلويات');
+    others = [];
+    for (const name of ['مشاوي ١', 'مشاوي ٢', 'مشاوي ٣', 'مشاوي ٤']) {
+      const id = await restaurant(name);
+      await merchants.setWeeklySchedule(id, allWeek, change);
+      await category(id, 'مشاوي');
+      others.push(id);
+    }
+  });
+
+  it('lists up to 5 open restaurants of the same category that deliver to the point', async () => {
+    const answer = await similar(rejecting);
+    expect(answer.statusCode).toBe(200);
+    const { restaurants } = answer.json();
+    // Open in busy mode is open; paused, closed, on holiday, not covering the
+    // point, of another category or the restaurant itself are left out.
+    expect(restaurants.map((card: { id: string }) => card.id)).toEqual([
+      open,
+      busy,
+      ...others.slice(0, 3),
+    ]);
+    expect(restaurants[0]).toMatchObject({
+      nameAr: 'مطعم مفتوح',
+      category: 'مشاوي',
+      state: { state: 'open' },
+      estimate: { fromMin: 30, toMin: 40 },
+    });
+  });
+
+  it('is empty without a category, for an unknown restaurant and outside every zone', async () => {
+    await category(rejecting, null);
+    expect((await similar(rejecting)).json()).toEqual({ restaurants: [] });
+    await category(rejecting, 'مشاوي');
+    expect((await similar(randomUUID())).json()).toEqual({ restaurants: [] });
+    expect((await similar(rejecting, { latitude: 36.7, longitude: 37.3 })).json()).toEqual({
+      restaurants: [],
+    });
+  });
+});

@@ -73,7 +73,11 @@ const card = z.object({
 
 class CustomerRestaurantListDto extends createZodDto(
   z.object({
-    restaurants: z.array(card).describe('CU §8.2: open first, then busy and paused, then closed.'),
+    restaurants: z
+      .array(card)
+      .describe(
+        'CU §8.2: open first, then busy and paused, then closed; with similarTo, the open ones only (CU §11.9).',
+      ),
   }),
 ) {}
 
@@ -148,6 +152,17 @@ class CustomerRestaurantPageDto extends createZodDto(
 
 class CustomerRestaurantPointQueryDto extends createZodDto(pointQuery) {}
 
+class CustomerRestaurantListQueryDto extends createZodDto(
+  pointQuery.extend({
+    similarTo: z
+      .uuid()
+      .optional()
+      .describe(
+        "CU §11.9: under a rejected or unanswered order, at its pin: up to 5 open restaurants of this restaurant's category, without it; empty when it has no category.",
+      ),
+  }),
+) {}
+
 class CustomerRestaurantParamsDto extends createZodDto(z.object({ restaurantId: z.uuid() })) {}
 
 // CU §8.2, §9.1–9.4: the restaurants that deliver to the selected point and a
@@ -159,8 +174,13 @@ export class CustomerBrowsingController {
   @Get()
   @Public()
   @ZodResponse({ status: 200, type: CustomerRestaurantListDto })
-  async list(@Query() query: CustomerRestaurantPointQueryDto) {
-    const cards = await this.browsing.restaurants(query, new Date());
+  async list(@Query() query: CustomerRestaurantListQueryDto) {
+    const { similarTo, ...point } = query;
+    const now = new Date();
+    const cards =
+      similarTo === undefined
+        ? await this.browsing.restaurants(point, now)
+        : await this.browsing.similar(similarTo, point, now);
     return { restaurants: cards.map(cardBody) };
   }
 
