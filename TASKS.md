@@ -4,19 +4,25 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.6a, restaurant status and hours in the server and the restaurant app (`docs/roadmap.md`, Phase 2; owner decision 2026-11-09: 2.6 is two pull requests, 2.6a the server and the restaurant app, 2.6b the panel and the customer app). The owner pauses the restaurant from the app and the customer sees it closed.
+Slice 2.6b, restaurant status in the panel and the customer app (`docs/roadmap.md`, Phase 2; owner decision 2026-11-09: 2.6 is two pull requests). Operations resume an auto-paused restaurant from the panel.
 
-- **Specs:** RA §7 (states, precedence, the status sheet, busy mode, the maximum active orders), RA §10 (status and hours), RA §18 rows «Pause / resume», «Busy mode on / off», «Holiday close / end», «Set hours, default prep time, limit», RA §16 #3, #24, #25, RA §6 (the status pill and the banners), RA §8.3 (the auto-pause), AP §9.1.3 «مطعم أوقف تلقائياً», AP §9.6.5 (the auto-pause rule and who ends a pause), RA Appendix A, RA §22 items 8, 17, 18, 20.
-- **Branch:** `feat/restaurant-status`.
+- **Specs:** AP §9.6.5 (the panel's restaurant actions: «إيقاف مؤقت» 15, 30 or 60 min, until a time or until resumed, with a customer-facing message and a reason; «استئناف»; «إنهاء وضع الضغط»; the maximum active orders on the restaurant's request; holiday close with a message and a reason; who ends a pause), AP §9.6.4 (the change log), AP §9.1.3 «مطعم أوقف تلقائياً» with its direct action «استئناف», RA §16 #23 (the restaurant's chimes of operations' pause, resume and end of busy mode), CU §9.2 and §8.2 (what customers see: closed, paused with its message and return time, busy, busy mode's «قد يستغرق الطلب وقتاً أطول قليلاً», holiday with its message), AP Appendix A.
+- **Branch:** `feat/restaurant-status-ops`.
+- **Already built (2.6a):** `RestaurantStatusService` (`apps/server/src/modules/merchants/CLAUDE.md` «Status commands», «State changes»): the one-pause rule, the auto-pause and its alert, the state outbox and relay (`restaurant.state_changed` already reaches `ops:city.{id}`), the timers. Operations' commands reuse them; the templates of RA §16 #23 are in Content.
+- **Ask the owner first:** whether a resumed auto-pause may pause the restaurant again at the next unanswered order of the same business day (today it does: every unanswered order after the limit pauses again).
 - **Plan:**
-  - [x] Record the split in `docs/roadmap.md` and this plan.
-  - [x] Server: the restaurant’s pause, resume and busy mode (the one-pause rule, a restaurant pause and busy mode ending with the opening period), audited with the user and device, with the restaurant routes.
-  - [x] Server: the owners’ hours, holiday close, default prep time and maximum active orders, and the status and hours reads.
-  - [x] Server: the state events (`merchants.state_outbox` relayed to `merchant:{id}` and `ops:city.{id}`), the pause-ended push (#24) and the hourly busy-mode reminder (#25) as timers.
-  - [x] Server: the auto-pause at the third unanswered order of the business day, its push (#3) and the alert «مطعم أوقف تلقائياً».
-  - [x] Restaurant app: the status pill and sheet, the banners (operations or auto pause, the limit, busy mode) and the chimes of the state events.
-  - [x] Restaurant app: «الحالة والأوقات» (the weekly schedule with several and overnight periods, holiday close, default prep time, maximum active orders, the read-only fields).
-  - [ ] Review, then hand over to 2.6b.
+  - [ ] Server: operations' pause (choices, until a time, until resumed; message and reason), resume (any pause, the auto-pause included), end of busy mode, holiday close and its end, maximum active orders; audited with the reason; the push of RA §16 #23; the auto-pause alert resolving at once on resume.
+  - [ ] Panel: the restaurant's status actions (on the temporary «الصور» restaurant list until the restaurant profile, 2.30) and «استئناف» from the auto-pause alert.
+  - [ ] Customer app: the restaurant's states and messages on the list and the restaurant page, and busy mode's notice (CU §8.2, §9.2).
+  - [ ] Restaurant app: the chimes of RA §16 #23.
+  - [ ] Review, then hand over to slice 2.7.
+
+### Left from 2.6a (`feat/restaurant-status`)
+
+- **Before deploying to staging:** deploy 2.6a and 2.6b close together, or warn operations: until 2.6b nothing but a database change ends an auto-pause, so a restaurant that leaves 3 orders unanswered in a business day stays paused and «مطعم أوقف تلقائياً» stays open. The new restaurant APK shows the status pill; an older one keeps working without it.
+- **To check on staging:** on the restaurant app, the pill shows «مفتوح» within opening hours; «إيقاف 15 د» makes the customer app show the restaurant closed and checkout refuse it, and «استئناف الاستقبال» opens it again; «وضع الضغط +20 د» shows the amber banner and adds 20 minutes to the customer's estimate; a third unanswered order of the day auto-pauses with a chime and the panel's warning «مطعم أوقف تلقائياً»; an owner's «الحالة والأوقات» saves several and overnight periods and a holiday close with its message.
+- **To confirm with the owner:** the status commands take no `Idempotency-Key` and the app does not retry them (RA §18 asks a key of every command; a pause repeated by the user replaces the first, and the app reads the status again after any failure); the restaurant reaches «الحالة والأوقات» from a clock button in the top bar and signs out from an icon, until the navigation of RA §6.2; the auto-pause notice and push name the day's count; the strings the spec gives no wording for («غير مفعّل», «يفتح {اليوم الساعة}», «ينتهي الإيقاف …», «وضع الضغط مفعّل: +{د} د على وقت الطلبات الجديدة», «المطعم ليس مفتوحاً الآن», «تعذّر التنفيذ، حاول مرة أخرى», and the hours screen's labels and messages); the weekdays listed Saturday first.
+- **Not yet:** the sheet's call button to operations (RA §7.2: the app has no operations number), «طلب تعديل» (RA §10, with support tickets), the contract dates (RA §10), the bottom navigation and the connection dot (RA §6.2), two banners with a counter (RA §6.3), the banner «طلبات دون رد اليوم…» (RA §8.3), a new schedule moving the end of a running pause or busy mode, the owner portal's status screens (RA §17, with the portal).
 
 ### Left from 2.5 (`feat/object-storage`)
 
