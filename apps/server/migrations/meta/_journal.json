@@ -281,6 +281,13 @@
       "when": 1794192904978,
       "tag": "0039_merchants_state_outbox",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1794193374420,
+      "tag": "0040_notifications_restaurant_alerts",
+      "breakpoints": true
     }
   ]
 }

@@ -45,6 +45,9 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnum_codeNumberStopped =
 const AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnum_awayFromAddress =
     const AdminAlertsDtoOutputAlertsInnerCodeEnum._('awayFromAddress');
+const AdminAlertsDtoOutputAlertsInnerCodeEnum
+_$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused =
+    const AdminAlertsDtoOutputAlertsInnerCodeEnum._('restaurantAutoPaused');
 
 AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
@@ -75,6 +78,8 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_codeNumberStopped;
     case 'awayFromAddress':
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_awayFromAddress;
+    case 'restaurantAutoPaused':
+      return _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused;
     default:
       throw ArgumentError(name);
   }
@@ -97,6 +102,7 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValues =
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_codesCannotSend,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_codeNumberStopped,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_awayFromAddress,
+        _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused,
       ],
     );
 
@@ -146,6 +152,9 @@ _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_otpPool =
 const AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum
 _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_otpNumber =
     const AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum._('otpNumber');
+const AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum
+_$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_restaurant =
+    const AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum._('restaurant');
 
 AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum
 _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnumValueOf(String name) {
@@ -158,6 +167,8 @@ _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnumValueOf(String name) {
       return _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_otpPool;
     case 'otpNumber':
       return _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_otpNumber;
+    case 'restaurant':
+      return _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_restaurant;
     default:
       throw ArgumentError(name);
   }
@@ -171,6 +182,7 @@ _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnumValues =
         _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_captain,
         _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_otpPool,
         _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_otpNumber,
+        _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_restaurant,
       ],
     );
 
@@ -200,6 +212,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'codesCannotSend': 'codes_cannot_send',
     'codeNumberStopped': 'code_number_stopped',
     'awayFromAddress': 'away_from_address',
+    'restaurantAutoPaused': 'restaurant_auto_paused',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -215,6 +228,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'codes_cannot_send': 'codesCannotSend',
     'code_number_stopped': 'codeNumberStopped',
     'away_from_address': 'awayFromAddress',
+    'restaurant_auto_paused': 'restaurantAutoPaused',
   };
 
   @override
@@ -287,12 +301,14 @@ class _$AdminAlertsDtoOutputAlertsInnerSubjectTypeEnumSerializer
     'captain': 'captain',
     'otpPool': 'otp_pool',
     'otpNumber': 'otp_number',
+    'restaurant': 'restaurant',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'order': 'order',
     'captain': 'captain',
     'otp_pool': 'otpPool',
     'otp_number': 'otpNumber',
+    'restaurant': 'restaurant',
   };
 
   @override
@@ -336,6 +352,8 @@ class _$AdminAlertsDtoOutputAlertsInner
   @override
   final String? captainName;
   @override
+  final String? restaurantName;
+  @override
   final DateTime raisedAt;
   @override
   final AdminAlertsDtoOutputAlertsInnerAcknowledged? acknowledged;
@@ -354,6 +372,7 @@ class _$AdminAlertsDtoOutputAlertsInner
     required this.subjectId,
     this.orderNumber,
     this.captainName,
+    this.restaurantName,
     required this.raisedAt,
     this.acknowledged,
     this.resolvedAt,
@@ -378,6 +397,7 @@ class _$AdminAlertsDtoOutputAlertsInner
         subjectId == other.subjectId &&
         orderNumber == other.orderNumber &&
         captainName == other.captainName &&
+        restaurantName == other.restaurantName &&
         raisedAt == other.raisedAt &&
         acknowledged == other.acknowledged &&
         resolvedAt == other.resolvedAt;
@@ -393,6 +413,7 @@ class _$AdminAlertsDtoOutputAlertsInner
     _$hash = $jc(_$hash, subjectId.hashCode);
     _$hash = $jc(_$hash, orderNumber.hashCode);
     _$hash = $jc(_$hash, captainName.hashCode);
+    _$hash = $jc(_$hash, restaurantName.hashCode);
     _$hash = $jc(_$hash, raisedAt.hashCode);
     _$hash = $jc(_$hash, acknowledged.hashCode);
     _$hash = $jc(_$hash, resolvedAt.hashCode);
@@ -410,6 +431,7 @@ class _$AdminAlertsDtoOutputAlertsInner
           ..add('subjectId', subjectId)
           ..add('orderNumber', orderNumber)
           ..add('captainName', captainName)
+          ..add('restaurantName', restaurantName)
           ..add('raisedAt', raisedAt)
           ..add('acknowledged', acknowledged)
           ..add('resolvedAt', resolvedAt))
@@ -458,6 +480,11 @@ class AdminAlertsDtoOutputAlertsInnerBuilder
   String? get captainName => _$this._captainName;
   set captainName(String? captainName) => _$this._captainName = captainName;
 
+  String? _restaurantName;
+  String? get restaurantName => _$this._restaurantName;
+  set restaurantName(String? restaurantName) =>
+      _$this._restaurantName = restaurantName;
+
   DateTime? _raisedAt;
   DateTime? get raisedAt => _$this._raisedAt;
   set raisedAt(DateTime? raisedAt) => _$this._raisedAt = raisedAt;
@@ -488,6 +515,7 @@ class AdminAlertsDtoOutputAlertsInnerBuilder
       _subjectId = $v.subjectId;
       _orderNumber = $v.orderNumber;
       _captainName = $v.captainName;
+      _restaurantName = $v.restaurantName;
       _raisedAt = $v.raisedAt;
       _acknowledged = $v.acknowledged?.toBuilder();
       _resolvedAt = $v.resolvedAt;
@@ -542,6 +570,7 @@ class AdminAlertsDtoOutputAlertsInnerBuilder
             ),
             orderNumber: orderNumber,
             captainName: captainName,
+            restaurantName: restaurantName,
             raisedAt: BuiltValueNullFieldError.checkNotNull(
               raisedAt,
               r'AdminAlertsDtoOutputAlertsInner',

@@ -3,6 +3,7 @@ import type { Database } from '../../database/database.js';
 import type { CaptainsService } from '../captains/index.js';
 import type { GeoService } from '../geo/index.js';
 import type { OtpSenderPoolService } from '../identity/index.js';
+import type { RestaurantStatusService } from '../merchants/index.js';
 import type { AlertCode } from './alert-rules.js';
 import { AlertsSweep } from './alerts-sweep.js';
 import type { AlertSubjectRef, AlertsService } from './alerts.service.js';
@@ -20,6 +21,7 @@ function sweep(options: {
   alerts: { type: 'number_stopped' | 'cannot_send'; numberIds: string[] }[];
   captains: { id: string; name: string; atLimit: boolean | null }[];
   openSubjects?: string[];
+  autoPaused?: { id: string; nameAr: string }[];
 }) {
   const synced: Synced[] = [];
   const alerts = {
@@ -46,7 +48,10 @@ function sweep(options: {
   const database = {
     db: { transaction: async (run: (each: object) => Promise<void>) => run(tx) },
   } as unknown as Database;
-  return { sweep: new AlertsSweep(database, alerts, pool, captains, geo), synced };
+  const restaurants = {
+    autoPaused: async () => options.autoPaused ?? [],
+  } as unknown as RestaurantStatusService;
+  return { sweep: new AlertsSweep(database, alerts, pool, captains, geo, restaurants), synced };
 }
 
 describe('the alerts sweep (AP §9.1.3)', () => {
@@ -110,6 +115,25 @@ describe('the alerts sweep (AP §9.1.3)', () => {
       { subject: 'captain:c1', evaluated: ['captain_cash_limit'], open: ['captain_cash_limit'] },
       { subject: 'captain:c2', evaluated: ['captain_cash_limit'], open: [] },
       { subject: 'captain:c9', evaluated: ['captain_cash_limit'], open: [] },
+    ]);
+  });
+
+  it('raises «مطعم أوقف تلقائياً» while the auto-pause holds, resolved once resumed', async () => {
+    const { sweep: run, synced } = sweep({
+      numbers: [],
+      alerts: [],
+      captains: [],
+      autoPaused: [{ id: 'r1', nameAr: 'مطعم الشام' }],
+      openSubjects: ['r1', 'r2'],
+    });
+    await run.autoPauses(new Date());
+    expect(synced).toEqual([
+      {
+        subject: 'restaurant:r1',
+        evaluated: ['restaurant_auto_paused'],
+        open: ['restaurant_auto_paused'],
+      },
+      { subject: 'restaurant:r2', evaluated: ['restaurant_auto_paused'], open: [] },
     ]);
   });
 });

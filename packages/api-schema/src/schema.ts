@@ -772,6 +772,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/restaurant/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantStatusRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/restaurant/status/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantStatusPause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/restaurant/status/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantStatusResume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/restaurant/status/busy-mode": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantStatusBusyMode"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/restaurant/hours": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantStatusHours"];
+        put: operations["merchantStatusSetHours"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/restaurant/order-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantStatusSetOrderSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/restaurant/holiday-close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantStatusSetHolidayClose"];
+        post?: never;
+        delete: operations["merchantStatusEndHolidayClose"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/restaurants": {
         parameters: {
             query?: never;
@@ -2730,6 +2842,117 @@ export interface components {
                 /** @description «حتى الغد»: on again at this time; null: «حتى أعيده». */
                 until: string | null;
             } | null;
+        };
+        MerchantStatusDto_Output: {
+            /**
+             * @description The operating state now (RA §7.1).
+             * @enum {string}
+             */
+            state: "draft" | "suspended" | "terminated" | "holiday" | "closed" | "paused" | "busy" | "open";
+            /** @description Who paused it while paused: the restaurant’s own buttons work only for «restaurant» (RA §7.2). */
+            pauseSource: ("restaurant" | "ops" | "auto") | null;
+            /** @description When a holiday close or a pause ends. */
+            stateUntil: string | null;
+            /** @description Inside an opening period, when it ends: «يغلق اليوم 11:30 م» (RA §7.2). */
+            closesAt: string | null;
+            /** @description Closed by the schedule, when it next opens. */
+            opensAt: string | null;
+            /** @description Busy mode while on (RA §7.3), until the end of the opening period. */
+            busyMode: {
+                extraMin: number;
+                /** Format: date-time */
+                until: string;
+            } | null;
+            /** @description Orders in placed, accepted or ready, counted only against a maximum (RA §7.4). */
+            activeOrders: number | null;
+            maxActiveOrders: number | null;
+            /** @description The holiday close in force, or the next one set (RA §10). */
+            holiday: {
+                /** Format: date-time */
+                startsAt: string;
+                /** Format: date-time */
+                endsAt: string;
+                message: string | null;
+            } | null;
+            /** @description «إيقاف 15 د», «30 د», «60 د» (RA §7.2). */
+            pauseChoicesMin: number[];
+            /** @description merchant.busy_extra_options_min. */
+            busyExtraOptionsMin: number[];
+            /** @description merchant.busy_mode_reminder_min (RA §7.3). */
+            busyReminderMin: number;
+        };
+        MerchantPauseDto: {
+            /** @description 15, 30 or 60; null for «حتى أعيد الفتح», until the opening period ends. */
+            minutes: number | null;
+        };
+        MerchantBusyModeDto: {
+            /** @description One of busyExtraOptionsMin to turn it on; null for «إلغاء وضع الضغط». */
+            extraMin: number | null;
+        };
+        MerchantHoursDto_Output: {
+            /** @description The weekly schedule; a weekday without a period is «مغلق طوال اليوم» (RA §10). */
+            periods: {
+                /** @description 0 Sunday to 6 Saturday. */
+                weekday: number;
+                /** @description Minutes after midnight on the city clock. */
+                opensAt: number;
+                /** @description Minutes after midnight; not after opensAt crosses midnight (18:00–02:00). */
+                closesAt: number;
+            }[];
+            /** @description The holiday close in force, or the next one set (RA §10). */
+            holiday: {
+                /** Format: date-time */
+                startsAt: string;
+                /** Format: date-time */
+                endsAt: string;
+                message: string | null;
+            } | null;
+            defaultPrepMin: number;
+            /** @description merchant.prep_time_floor_min. */
+            prepFloorMin: number;
+            /** @description merchant.prep_time_ceiling_min. */
+            prepCeilingMin: number;
+            /** @description Off (null) or 1 to 50 (RA §7.4). */
+            maxActiveOrders: number | null;
+            minimumOrder: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+            coverage: {
+                /** @enum {string} */
+                kind: "radius" | "zones";
+                radiusMetres: number | null;
+                zoneCount: number | null;
+            };
+            /** @description Basis points of the items value: 1500 is 15%. */
+            commissionBp: number | null;
+            /** @description merchant.settlement_weekday, such as saturday. */
+            settlementWeekday: string;
+        };
+        MerchantScheduleDto: {
+            periods: {
+                /** @description 0 Sunday to 6 Saturday. */
+                weekday: number;
+                /** @description Minutes after midnight on the city clock. */
+                opensAt: number;
+                /** @description Minutes after midnight; not after opensAt crosses midnight (18:00–02:00). */
+                closesAt: number;
+            }[];
+        };
+        MerchantOrderSettingsDto: {
+            /** @description Within prepFloorMin and prepCeilingMin. */
+            defaultPrepMin: number;
+            /** @description Off (null) or 1 to 50. */
+            maxActiveOrders: number | null;
+        };
+        MerchantHolidayCloseDto: {
+            /** @description null: from now. */
+            startsAt: string | null;
+            /** Format: date-time */
+            endsAt: string;
+            /** @description To customers, up to 100 characters. */
+            message: string | null;
         };
         AdminRestaurantsDto_Output: {
             restaurants: {
@@ -5419,20 +5642,22 @@ export interface components {
                  * @description The rule of AP §9.1.3.
                  * @enum {string}
                  */
-                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address";
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "restaurant_auto_paused";
                 /**
                  * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
                  * @enum {string}
                  */
                 severity: "critical" | "warning" | "information";
                 /** @enum {string} */
-                subjectType: "order" | "captain" | "otp_pool" | "otp_number";
+                subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant";
                 /** @description The order, captain or sending number it is about. */
                 subjectId: string;
                 /** @description For an alert about an order. */
                 orderNumber: string | null;
                 /** @description For an alert about a captain. */
                 captainName: string | null;
+                /** @description For an alert about a restaurant. */
+                restaurantName: string | null;
                 /** Format: date-time */
                 raisedAt: string;
                 /** @description «استلام»: who took it, which every recipient sees. */
@@ -5453,20 +5678,22 @@ export interface components {
              * @description The rule of AP §9.1.3.
              * @enum {string}
              */
-            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address";
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "restaurant_auto_paused";
             /**
              * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
              * @enum {string}
              */
             severity: "critical" | "warning" | "information";
             /** @enum {string} */
-            subjectType: "order" | "captain" | "otp_pool" | "otp_number";
+            subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant";
             /** @description The order, captain or sending number it is about. */
             subjectId: string;
             /** @description For an alert about an order. */
             orderNumber: string | null;
             /** @description For an alert about a captain. */
             captainName: string | null;
+            /** @description For an alert about a restaurant. */
+            restaurantName: string | null;
             /** Format: date-time */
             raisedAt: string;
             /** @description «استلام»: who took it, which every recipient sees. */
@@ -6801,6 +7028,206 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantAvailabilitySavedDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStatusRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantStatusDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStatusPause: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantPauseDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantStatusDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStatusResume: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantStatusDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStatusBusyMode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantBusyModeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantStatusDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStatusHours: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantHoursDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStatusSetHours: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantScheduleDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantHoursDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStatusSetOrderSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantOrderSettingsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantHoursDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStatusSetHolidayClose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantHolidayCloseDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantStatusDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStatusEndHolidayClose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantStatusDto_Output"];
                 };
             };
         };

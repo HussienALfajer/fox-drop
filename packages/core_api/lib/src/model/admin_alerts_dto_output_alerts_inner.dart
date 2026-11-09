@@ -20,6 +20,7 @@ part 'admin_alerts_dto_output_alerts_inner.g.dart';
 /// * [subjectId] - The order, captain or sending number it is about.
 /// * [orderNumber] - For an alert about an order.
 /// * [captainName] - For an alert about a captain.
+/// * [restaurantName] - For an alert about a restaurant.
 /// * [raisedAt]
 /// * [acknowledged]
 /// * [resolvedAt]
@@ -36,7 +37,7 @@ abstract class AdminAlertsDtoOutputAlertsInner
   /// The rule of AP §9.1.3.
   @BuiltValueField(wireName: r'code')
   AdminAlertsDtoOutputAlertsInnerCodeEnum get code;
-  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  };
+  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  restaurant_auto_paused,  };
 
   /// critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
   @BuiltValueField(wireName: r'severity')
@@ -45,7 +46,7 @@ abstract class AdminAlertsDtoOutputAlertsInner
 
   @BuiltValueField(wireName: r'subjectType')
   AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum get subjectType;
-  // enum subjectTypeEnum {  order,  captain,  otp_pool,  otp_number,  };
+  // enum subjectTypeEnum {  order,  captain,  otp_pool,  otp_number,  restaurant,  };
 
   /// The order, captain or sending number it is about.
   @BuiltValueField(wireName: r'subjectId')
@@ -58,6 +59,10 @@ abstract class AdminAlertsDtoOutputAlertsInner
   /// For an alert about a captain.
   @BuiltValueField(wireName: r'captainName')
   String? get captainName;
+
+  /// For an alert about a restaurant.
+  @BuiltValueField(wireName: r'restaurantName')
+  String? get restaurantName;
 
   @BuiltValueField(wireName: r'raisedAt')
   DateTime get raisedAt;
@@ -139,6 +144,13 @@ class _$AdminAlertsDtoOutputAlertsInnerSerializer
         ? null
         : serializers.serialize(
             object.captainName,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'restaurantName';
+    yield object.restaurantName == null
+        ? null
+        : serializers.serialize(
+            object.restaurantName,
             specifiedType: const FullType.nullable(String),
           );
     yield r'raisedAt';
@@ -260,6 +272,16 @@ class _$AdminAlertsDtoOutputAlertsInnerSerializer
           if (valueDes == null) continue;
           result.captainName = valueDes;
           break;
+        case r'restaurantName':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.restaurantName = valueDes;
+          break;
         case r'raisedAt':
           final valueDes =
               serializers.deserialize(
@@ -361,6 +383,9 @@ class AdminAlertsDtoOutputAlertsInnerCodeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'away_from_address')
   static const AdminAlertsDtoOutputAlertsInnerCodeEnum awayFromAddress =
       _$adminAlertsDtoOutputAlertsInnerCodeEnum_awayFromAddress;
+  @BuiltValueEnumConst(wireName: r'restaurant_auto_paused')
+  static const AdminAlertsDtoOutputAlertsInnerCodeEnum restaurantAutoPaused =
+      _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused;
 
   static Serializer<AdminAlertsDtoOutputAlertsInnerCodeEnum> get serializer =>
       _$adminAlertsDtoOutputAlertsInnerCodeEnumSerializer;
@@ -410,6 +435,9 @@ class AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'otp_number')
   static const AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum otpNumber =
       _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_otpNumber;
+  @BuiltValueEnumConst(wireName: r'restaurant')
+  static const AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum restaurant =
+      _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_restaurant;
 
   static Serializer<AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum>
   get serializer => _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnumSerializer;

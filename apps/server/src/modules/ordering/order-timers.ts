@@ -1,6 +1,9 @@
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
 import { ContentService } from '../content/index.js';
+import { GeoService } from '../geo/index.js';
+import { RestaurantStatusService } from '../merchants/index.js';
+import { SettingsService } from '../settings/index.js';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { QUEUES } from '../../jobs/job-queue.js';
@@ -8,6 +11,7 @@ import { Jobs } from '../../jobs/jobs.module.js';
 import { reportError } from '../../observability/error-tracking.js';
 import { lockOrder, recordTransition } from './order-events.js';
 import { orders } from './schema.js';
+import { unansweredInBusinessDay } from './unanswered.js';
 
 // The job of the automatic cancellation: the order and the version it was
 // set for (architecture §5.5).
@@ -48,11 +52,17 @@ export class OrderTimers {
     @Inject(DATABASE) private readonly database: Database,
     private readonly jobs: Jobs,
     private readonly content: ContentService,
+    private readonly geo: GeoService,
+    private readonly settings: SettingsService,
+    private readonly status: RestaurantStatusService,
   ) {}
 
   // AP §8.3: cancels a placed order the restaurant did not accept in time;
   // true when it did. The order keeps the customer's text as it is now (CU
-  // Appendix C, owner decision 2026-11-07), read before the transaction.
+  // Appendix C, owner decision 2026-11-07), read before the transaction. The
+  // cancellation that reaches merchant.auto_pause_unanswered_count in the
+  // business day auto-pauses the restaurant in the same transaction (RA §8.3,
+  // AP §9.6.5), even after closing time.
   async merchantAutoCancel(job: AutoCancelJob, now: Date): Promise<boolean> {
     const customerText = await this.content.customerText(
       'system_cancellation',
@@ -82,6 +92,18 @@ export class OrderTimers {
         reason: MERCHANT_AUTO_CANCEL,
         at: now,
       });
+      const timeZone = await this.geo.cityTimeZone(order.cityId);
+      if (timeZone !== null) {
+        const unanswered = await unansweredInBusinessDay(tx, this.settings, {
+          restaurantId: order.restaurantId,
+          cityId: order.cityId,
+          moment: now,
+          timeZone,
+        });
+        if (unanswered.count >= unanswered.limit) {
+          await this.status.autoPause(tx, order.restaurantId, unanswered.count, now);
+        }
+      }
       return true;
     });
   }

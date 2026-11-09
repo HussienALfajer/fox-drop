@@ -1,3 +1,4 @@
+import { RestaurantStatusService } from '../merchants/index.js';
 import {
   Inject,
   Injectable,
@@ -15,8 +16,9 @@ import type { AlertCode } from './alert-rules.js';
 import { AlertsService, type AlertSubjectRef } from './alerts.service.js';
 
 // How often the worker reads the conditions no transaction of ours changes:
-// the code senders' health (Valkey marks, the otp-sender's states) and the
-// captains' cash at the current rates.
+// the code senders' health (Valkey marks, the otp-sender's states), the
+// captains' cash at the current rates, and the restaurants' auto-pauses
+// (merchants cannot import this module, so it cannot sync them itself).
 export const ALERTS_SWEEP_MS = 30_000;
 
 const POOL_SUBJECT = 'pool';
@@ -35,12 +37,14 @@ export class AlertsSweep {
     private readonly pool: OtpSenderPoolService,
     private readonly captains: CaptainsService,
     private readonly geo: GeoService,
+    private readonly restaurants: RestaurantStatusService,
   ) {}
 
   async run(now: Date): Promise<void> {
     await Promise.all([
       this.senders(now).catch((error: unknown) => this.failed('code senders', error)),
       this.cashLimits(now).catch((error: unknown) => this.failed('cash limits', error)),
+      this.autoPauses(now).catch((error: unknown) => this.failed('auto-pauses', error)),
     ]);
   }
 
@@ -93,6 +97,38 @@ export class AlertsSweep {
     for (const subject of await this.alerts.openSubjects(code)) {
       if (seen.has(subject.id)) continue;
       await this.sync({ type: 'captain', id: subject.id, cityId: subject.cityId }, [code], [], now);
+    }
+  }
+
+  // AP §9.1.3 «مطعم أوقف تلقائياً»: open while the auto-pause holds,
+  // resolved once operations resume the restaurant.
+  async autoPauses(now: Date): Promise<void> {
+    const code: AlertCode = 'restaurant_auto_paused';
+    const seen = new Set<string>();
+    for (const city of await this.geo.activeCities()) {
+      for (const restaurant of await this.restaurants.autoPaused(city.id, now)) {
+        seen.add(restaurant.id);
+        await this.sync(
+          {
+            type: 'restaurant',
+            id: restaurant.id,
+            cityId: city.id,
+            details: { restaurantName: restaurant.nameAr },
+          },
+          [code],
+          [code],
+          now,
+        );
+      }
+    }
+    for (const subject of await this.alerts.openSubjects(code)) {
+      if (seen.has(subject.id)) continue;
+      await this.sync(
+        { type: 'restaurant', id: subject.id, cityId: subject.cityId },
+        [code],
+        [],
+        now,
+      );
     }
   }
 

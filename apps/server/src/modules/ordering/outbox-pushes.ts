@@ -5,14 +5,14 @@ import {
   type OnApplicationShutdown,
   type OnModuleInit,
 } from '@nestjs/common';
-import { and, asc, count, desc, eq, gte, inArray, isNull, lte, notInArray } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, lte, notInArray } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { reportError } from '../../observability/error-tracking.js';
 import { CaptainsService } from '../captains/index.js';
 import { GENERIC_CUSTOMER_TEXT, NotificationTexts } from '../content/index.js';
 import { FxService } from '../fx/index.js';
-import { GeoService, lastCutoff } from '../geo/index.js';
+import { GeoService } from '../geo/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { PushQueue, type QueuedPush } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
@@ -24,6 +24,7 @@ import {
   PICKUP_EVENTS,
 } from './order-pushes.js';
 import { orderEvents, orders, outbox, pickupRequests } from './schema.js';
+import { unansweredInBusinessDay } from './unanswered.js';
 
 // Rows taken per transaction, which holds their locks while it reads what
 // the pushes say.
@@ -278,35 +279,19 @@ export class OutboxPushes {
       : null;
   }
 
-  // RA §16 #2, RA §11: the restaurant's orders cancelled for no answer in the
-  // business day of this cancellation (from finance.business_day_cutoff on
-  // the city's clock) up to it, and the count that pauses it.
+  // RA §16 #2, RA §11: the restaurant's unanswered orders of the
+  // cancellation's business day up to it, and the count that pauses it.
   private async unanswered(
     order: typeof orders.$inferSelect,
     timeZone: string,
   ): Promise<{ count: number; limit: number } | null> {
-    const cancelledAt = order.cancelledAt;
-    if (cancelledAt === null) return null;
-    const [cutoff, limit] = await Promise.all([
-      this.settings.get('finance.business_day_cutoff', { cityId: order.cityId }),
-      this.settings.get('merchant.auto_pause_unanswered_count', { cityId: order.cityId }),
-    ]);
-    const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
-    const since = lastCutoff(cancelledAt, hours * 60 + minutes, timeZone);
-    const [row] = await this.database.db
-      .select({ count: count() })
-      .from(orders)
-      .where(
-        and(
-          eq(orders.restaurantId, order.restaurantId),
-          eq(orders.cancelReason, 'merchant_auto_cancel'),
-          gte(orders.cancelledAt, since),
-          lte(orders.cancelledAt, cancelledAt),
-          // An order cancelled for no answer was placed minutes before.
-          gte(orders.placedAt, new Date(since.getTime() - 86_400_000)),
-        ),
-      );
-    return { count: row?.count ?? 0, limit };
+    if (order.cancelledAt === null) return null;
+    return unansweredInBusinessDay(this.database.db, this.settings, {
+      restaurantId: order.restaurantId,
+      cityId: order.cityId,
+      moment: order.cancelledAt,
+      timeZone,
+    });
   }
 
   private async knownCurrencies(): Promise<Currencies> {

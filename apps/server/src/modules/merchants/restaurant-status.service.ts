@@ -488,6 +488,67 @@ export class RestaurantStatusService {
     });
   }
 
+  // RA §8.3, AP §9.6.5: the auto-pause after the business day's unanswered
+  // orders, written in the transaction of the cancellation that reached the
+  // count. It replaces a restaurant pause (one pause at a time), holds across
+  // opening periods until operations resume it, and is not added over an
+  // operations pause or an auto-pause already in force. True when it paused.
+  async autoPause(tx: Tx, restaurantId: string, count: number, now: Date): Promise<boolean> {
+    const row = await this.lock(tx, restaurantId);
+    const [held] = await tx
+      .select({ id: pauses.id })
+      .from(pauses)
+      .where(
+        and(
+          eq(pauses.restaurantId, restaurantId),
+          inArray(pauses.source, ['ops', 'auto']),
+          isNull(pauses.endedAt),
+          sql`(${pauses.endsAt} IS NULL OR ${pauses.endsAt} > ${now.toISOString()})`,
+        ),
+      )
+      .limit(1);
+    if (held) return false;
+    const system: MerchantChange = {
+      actor: { type: 'system', id: null, role: null },
+      context: { ipAddress: null, device: null },
+    };
+    await tx
+      .update(pauses)
+      .set({ endedAt: now, endedByType: 'system', endedById: null })
+      .where(
+        and(
+          eq(pauses.restaurantId, restaurantId),
+          eq(pauses.source, 'restaurant'),
+          isNull(pauses.endedAt),
+          sql`${pauses.endsAt} > ${now.toISOString()}`,
+        ),
+      );
+    await tx.insert(pauses).values({ restaurantId, source: 'auto', startsAt: now });
+    await this.record(tx, system, row.cityId, restaurantId, 'restaurant.auto_pause', {
+      before: null,
+      after: { unansweredOrders: count },
+    });
+    await this.changed(tx, row.cityId, restaurantId, 'auto_paused', now, { count });
+    return true;
+  }
+
+  // AP §9.1.3 «مطعم أوقف تلقائياً»: the city's restaurants under an
+  // auto-pause now, with their names, for the alerts sweep.
+  async autoPaused(cityId: string, now = new Date()): Promise<{ id: string; nameAr: string }[]> {
+    return this.database.db
+      .selectDistinct({ id: restaurants.id, nameAr: restaurants.nameAr })
+      .from(pauses)
+      .innerJoin(restaurants, eq(restaurants.id, pauses.restaurantId))
+      .where(
+        and(
+          eq(restaurants.cityId, cityId),
+          eq(pauses.source, 'auto'),
+          isNull(pauses.endedAt),
+          sql`${pauses.startsAt} <= ${now.toISOString()}`,
+        ),
+      );
+  }
+
   // E4: hands the committed state changes, in id order, to the relay (the
   // notifications module publishes and pushes them; this module cannot import
   // it), and marks each relayed once it returns. Rows another run holds are

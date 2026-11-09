@@ -94,6 +94,7 @@
     "order": "الطلب #{{number}}",
     "openOrder": "فتح الطلب",
     "captain": "الكابتن {{name}}",
+    "restaurant": "المطعم {{name}}",
     "notificationTitle": "تنبيه حرج: {{label}}",
     "failed": "تعذّر تحميل التنبيهات"
   },
@@ -156,7 +157,8 @@
       "collectionShortfall": "نقص في التحصيل",
       "captainCashLimit": "كابتن بلغ حد العهدة",
       "codesCannotSend": "لا يمكن إرسال رموز الدخول",
-      "codeNumberStopped": "رقم إرسال الرموز متوقف"
+      "codeNumberStopped": "رقم إرسال الرموز متوقف",
+      "restaurantAutoPaused": "مطعم أوقف تلقائياً"
     },
     "badge": {
       "needsAssignment": "بحاجة لتعيين",

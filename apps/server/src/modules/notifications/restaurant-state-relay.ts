@@ -93,6 +93,8 @@ export class RestaurantStateRelay {
           schema: 1,
           restaurantId: change.restaurantId,
           kind: change.kind,
+          // What its notice says, as its push: the count, the minutes.
+          values: change.values,
           at: change.at.toISOString(),
         },
         `merchants-state:${change.id}`,

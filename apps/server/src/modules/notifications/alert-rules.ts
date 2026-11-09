@@ -4,9 +4,9 @@
 export const alertSeverities = ['critical', 'warning', 'information'] as const;
 export type AlertSeverity = (typeof alertSeverities)[number];
 
-// What an alert is about: an order, a captain, or the WhatsApp code senders
-// (the pool as a whole, or one number).
-export const alertSubjects = ['order', 'captain', 'otp_pool', 'otp_number'] as const;
+// What an alert is about: an order, a captain, the WhatsApp code senders
+// (the pool as a whole, or one number), or a restaurant.
+export const alertSubjects = ['order', 'captain', 'otp_pool', 'otp_number', 'restaurant'] as const;
 export type AlertSubject = (typeof alertSubjects)[number];
 
 export const alertCodes = [
@@ -38,6 +38,9 @@ export const alertCodes = [
   // «تسليم بعيد عن العنوان»: arrival or delivery beyond
   // captain.customer_radius_m of the pin, with a reason.
   'away_from_address',
+  // «مطعم أوقف تلقائياً»: merchant.auto_pause_unanswered_count unanswered
+  // orders in a business day (AP §9.6.5), until operations resume it.
+  'restaurant_auto_paused',
 ] as const;
 export type AlertCode = (typeof alertCodes)[number];
 
@@ -70,6 +73,7 @@ export const ALERT_RULES: Record<AlertCode, AlertRule> = {
   codes_cannot_send: rule('critical', OPERATIONS, 'otp_pool'),
   code_number_stopped: rule('warning', ['OWN'], 'otp_number'),
   away_from_address: { ...rule('information', OPERATIONS, 'order'), resolvesItself: false },
+  restaurant_auto_paused: rule('warning', OPERATIONS, 'restaurant'),
 };
 
 function rule(

@@ -1,0 +1,2 @@
+ALTER TABLE "notifications"."alerts" DROP CONSTRAINT "alerts_subject_type";--> statement-breakpoint
+ALTER TABLE "notifications"."alerts" ADD CONSTRAINT "alerts_subject_type" CHECK ("notifications"."alerts"."subject_type" IN ('order', 'captain', 'otp_pool', 'otp_number', 'restaurant'));

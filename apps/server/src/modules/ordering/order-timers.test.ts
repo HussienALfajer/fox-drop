@@ -15,7 +15,7 @@ import { CaptainsService } from '../captains/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService, type Point } from '../geo/index.js';
 import { CODE_SENDER, type DevelopmentCodeSender } from '../identity/index.js';
-import { MerchantsService } from '../merchants/index.js';
+import { MerchantsService, RestaurantStatusService } from '../merchants/index.js';
 import { OrderTimers } from './order-timers.js';
 
 // AP §8.3: the order the restaurant does not accept within
@@ -29,6 +29,7 @@ let app: NestFastifyApplication;
 let sql: pg.Pool;
 let restaurant: string;
 let item: string;
+let azaz: string;
 
 const system = { type: 'system', id: null, role: null } as const;
 const change = { actor: system, context: { ipAddress: null, device: null }, reason: 'test' };
@@ -55,7 +56,7 @@ beforeAll(async () => {
   app = await createApiApp(ApiModule);
   await app.init();
   await app.getHttpAdapter().getInstance().ready();
-  const azaz = (await sql.query("SELECT id FROM geo.cities WHERE code = 'AZ'")).rows[0].id;
+  azaz = (await sql.query("SELECT id FROM geo.cities WHERE code = 'AZ'")).rows[0].id;
   const fx = app.get(FxService);
   await fx.setCityCurrency(azaz, { currency: 'TRY', displayOrder: 1, enabled: true }, change);
   await fx.setBaseCurrency(azaz, 'TRY', change);
@@ -306,4 +307,75 @@ describe('the automatic cancellation (AP §8.3)', () => {
       await worker?.close();
     }
   }, 60_000);
+});
+
+describe('the auto-pause (RA §8.3, AP §9.6.5)', () => {
+  it('pauses the restaurant at the third unanswered order of the day, replacing its own pause', async () => {
+    const merchants = app.get(MerchantsService);
+    const shared = restaurant;
+    const own = await merchants.createRestaurant(
+      azaz,
+      {
+        nameAr: 'مطعم لا يرد',
+        location: centre,
+        coverage: { kind: 'radius', radiusMetres: 1000 },
+        minimumOrder: { amount: 10_000n, currency: 'TRY' },
+        commissionBp: 1500,
+        defaultPrepMin: 20,
+      },
+      change,
+    );
+    await merchants.setAccountStatus(own, 'active', change);
+    await merchants.setWeeklySchedule(own, allWeek, change);
+    const category = await merchants.addCategory(own, { name: 'وجبات' }, change);
+    const sharedItem = item;
+    item = await merchants.addItem(
+      own,
+      { categoryId: category, name: 'فلافل', price: { amount: 12_000n, currency: 'TRY' } },
+      change,
+    );
+    restaurant = own;
+    try {
+      const orders = [await placed(), await placed(), await placed()];
+      const timers = app.get(OrderTimers);
+      const cancel = (order: { id: string; placedAt: string }) =>
+        timers.merchantAutoCancel(
+          { orderId: order.id, placedAt: order.placedAt, version: 1 },
+          new Date(),
+        );
+      await cancel(orders[0]!);
+      await cancel(orders[1]!);
+      expect((await merchants.operatingState(own)).state).toBe('open');
+      // The restaurant paused itself meanwhile: the auto-pause replaces it.
+      await app.get(RestaurantStatusService).pause(own, 60, {
+        actor: { type: 'merchant', id: randomUUID(), role: 'owner' },
+        context: { ipAddress: null, device: null },
+      });
+      await cancel(orders[2]!);
+      expect(await merchants.operatingState(own)).toEqual({
+        state: 'paused',
+        source: 'auto',
+        until: null,
+      });
+      const pauses = await sql.query(
+        'SELECT source, ended_at IS NOT NULL AS ended, ended_by_type FROM merchants.pauses WHERE restaurant_id = $1 ORDER BY starts_at',
+        [own],
+      );
+      expect(pauses.rows).toEqual([
+        { source: 'restaurant', ended: true, ended_by_type: 'system' },
+        { source: 'auto', ended: false, ended_by_type: null },
+      ]);
+      const changes = await sql.query(
+        "SELECT payload FROM merchants.state_outbox WHERE restaurant_id = $1 AND kind = 'auto_paused'",
+        [own],
+      );
+      expect(changes.rows).toEqual([{ payload: { schema: 1, values: { count: 3 } } }]);
+      expect(
+        (await app.get(RestaurantStatusService).autoPaused(azaz)).map((row) => row.id),
+      ).toContain(own);
+    } finally {
+      restaurant = shared;
+      item = sharedItem;
+    }
+  });
 });
