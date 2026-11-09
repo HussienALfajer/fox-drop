@@ -8,7 +8,7 @@ name: fox-drop
 
 # The OSRM image, the same as infra/osrm/compose.yaml's (infra.test.mjs).
 x-osrm: &osrm
-  image: ghcr.io/project-osrm/osrm-backend:v6.0.0@sha256:729461bcc9ae9e6aafa92c0f93db9b060a32e85d5e72092c01ae4a4a9f1eb564
+  image: ghcr.io/project-osrm/osrm-backend:v26.4.0@sha256:d01fa0c7b74cea5ef89565222840e66c7359e0db1d8a2ff59eb62dec1dc6858e
   profiles: [osrm]
   volumes:
     - osrm-data:/data:ro
