@@ -1780,6 +1780,30 @@ abstract class AppLocalizations {
   /// **'لم يرد المطعم على طلبك، نعتذر'**
   String get customerNoRestaurantResponse;
 
+  /// Up to 5 similar restaurants under a rejected or unanswered order (CU §11.9); the spec gives no heading.
+  ///
+  /// In ar, this message translates to:
+  /// **'مطاعم مشابهة'**
+  String get customerSimilarRestaurants;
+
+  /// Rebuilds the cart without the unavailable items (CU §11.9, Q22).
+  ///
+  /// In ar, this message translates to:
+  /// **'اطلب بدون الأصناف غير المتوفرة'**
+  String get customerOrderWithoutUnavailable;
+
+  /// Asked before a rebuild replaces a cart that is not empty (CU §11.9, §12.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'ستُستبدل سلتك الحالية من {current}. هل تتابع؟'**
+  String customerReplaceCart(String current);
+
+  /// Lines a rebuild skipped (CU §12.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم نضف: {items} لأنها غير متوفرة'**
+  String customerNotAdded(String items);
+
   /// Cancelled by operations (CU §11.9); the customer-facing reason (CU Appendix C) shows under it.
   ///
   /// In ar, this message translates to:

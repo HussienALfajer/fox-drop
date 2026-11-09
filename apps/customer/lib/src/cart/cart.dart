@@ -189,6 +189,14 @@ class CartController extends AsyncNotifier<CartState> {
     CartLine line,
   ) => _save(restaurantId, restaurantName, [line]);
 
+  /// The cart rebuilt from an order (CU §11.9, §12.3), replacing whatever
+  /// it held: the screen asks first when it is not empty.
+  Future<void> replaceWith(
+    String restaurantId,
+    String restaurantName,
+    List<CartLine> lines,
+  ) => _save(restaurantId, restaurantName, lines);
+
   /// «−» and «+»; 0 removes the line.
   Future<void> setQuantity(int index, int quantity) => _change((lines) {
     if (index >= lines.length) return;
