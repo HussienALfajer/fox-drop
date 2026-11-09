@@ -224,7 +224,8 @@
       "pickedUp": "تأكد الاستلام",
       "pickupDisputed": "خلاف على دفعة الاستلام",
       "arrivedAtCustomer": "الكابتن عند الزبون",
-      "delivered": "تم التسليم"
+      "delivered": "تم التسليم",
+      "cancellationAcknowledged": "أكّد المطعم الإلغاء"
     },
     "actor": {
       "system": "النظام",
@@ -300,6 +301,55 @@
       "stateChanged": "تغيّرت حالة الطلب قبل وصول قرارك",
       "invalidPrepTime": "وقت التحضير غير مقبول",
       "refused": "تعذّر التنفيذ بهذه الاختيارات، راجعها ثم أعد المحاولة"
+    },
+    "responsible": {
+      "restaurant": "المطعم",
+      "captain": "الكابتن",
+      "customer": "الزبون",
+      "platform": "المنصة"
+    },
+    "cash": {
+      "returned": "نعم",
+      "not_returned": "لا",
+      "not_paid": "لم يدفع الكابتن بعد"
+    },
+    "cancellation": {
+      "title": "سبب الإلغاء: {{label}}",
+      "by": "ألغاه: {{actor}}",
+      "opsNote": "ملاحظة العمليات: {{note}}",
+      "customerNote": "كتب الزبون: «{{note}}»",
+      "customerText": "ما يراه الزبون: «{{text}}»",
+      "responsible": "المسؤول: {{party}}",
+      "foodPrepared": "تم تحضير الطعام",
+      "cash": "هل أعاد المطعم المبلغ للكابتن؟ {{answer}}",
+      "merchantCredit": "تعويض المطعم: {{amount}}",
+      "captainCompensation": "تعويض الكابتن: {{amount}}",
+      "acknowledged": "أكّد المطعم الإلغاء الساعة {{time}}",
+      "captainSeen": "اطّلع الكابتن على الإلغاء الساعة {{time}}"
+    },
+    "cancel": {
+      "title": "إلغاء الطلب",
+      "reasonList": "سبب الإلغاء",
+      "responsible": "المسؤول عن الإلغاء",
+      "foodPrepared": "تم تحضير الطعام؟",
+      "compensateCaptain": "تعويض الكابتن",
+      "cashQuestion": "هل أعاد المطعم المبلغ للكابتن؟",
+      "captainPaid": "دفع الكابتن للمطعم: {{lines}}",
+      "preview": "القيود التي ستُسجَّل",
+      "pickResponsible": "اختر المسؤول لتظهر القيود",
+      "confirm": "تأكيد الإلغاء",
+      "captainPayUnset": "لا أجر لمركبة الكابتن في جدول أجور الطلب، فلا يمكن تعويضه",
+      "entry": {
+        "merchantCredit": "يُقيَّد للمطعم «{{name}}» {{amount}} (حساب المطعم): تعويض عن طلب أُلغي بعد التحضير.",
+        "platformCost": "تتحمّل المنصة {{amount}} (كلفة تشغيلية).",
+        "captainPay": "يُقيَّد للكابتن «{{name}}» أجر {{amount}} (مستحقات) على المنصة (كلفة تشغيلية).",
+        "captainPayTest": "يُقيَّد للكابتن «{{name}}» أجر {{amount}} (مستحقات) على المنصة (كلفة الطلبات التجريبية).",
+        "captainCustody": "يُعاد للكابتن «{{name}}» {{amount}} (عهدة).",
+        "merchantDebit": "يُسجَّل على المطعم «{{name}}» {{amount}} (حساب المطعم): دفعة الاستلام التي لم يُعِدها.",
+        "strike": "تُسجَّل على الزبون مخالفة إلغاء متأخر.",
+        "nothing": "لا قيود مالية لهذا الإلغاء.",
+        "unknown": "قيد لا تعرضه اللوحة بعد؛ لا يمكن التأكيد."
+      }
     }
   },
   "assign": {

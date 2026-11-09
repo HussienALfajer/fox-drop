@@ -12,9 +12,9 @@ Slice 2.8c, the panel's «إلغاء الطلب» and the customer's «أُلغ�
 - **Branch:** `feat/order-cancel-panel`.
 - **Ask the owner first:** the Arabic labels of the preview's entries and of the responsible parties (the spec gives none for a cancellation); stop on anything else the specs leave open.
 - **Plan:**
-  - [ ] Server: the detail gives the cancellation (code, label, customer text, responsible party, food prepared, cash answer, credit and compensation, who and when, operations' note to the panel only) and the dialog's choices (Content's active `ops_cancel` reasons) while the order can be cancelled; the customer's cancel reason and «سبب آخر» text on the detail and timeline. Failing tests first; regenerate the API.
-  - [ ] Panel: «إلغاء الطلب» on the detail (placed, accepted, ready) with the reason, the responsible party, «تم تحضير الطعام؟», «تعويض الكابتن» when allowed, the cash question when asked, the preview of the entries refreshed on each choice, operations' note; the cancellation on the detail and timeline.
-  - [ ] Customer app: «أُلغي طلبك» with the reason's customer text when operations cancelled (CU §11.9).
+  - [x] Server: the detail gives the cancellation (code, label, customer text, responsible party, food prepared, cash answer, credit and compensation, who and when, operations' note to the panel only) and the dialog's choices (Content's active `ops_cancel` reasons) while the order can be cancelled; the customer's cancel reason and «سبب آخر» text on the detail and timeline. Failing tests first; regenerate the API.
+  - [x] Panel: «إلغاء الطلب» on the detail (placed, accepted, ready) with the reason, the responsible party, «تم تحضير الطعام؟», «تعويض الكابتن» when allowed, the cash question when asked, the preview of the entries refreshed on each choice, operations' note; the cancellation on the detail and timeline.
+  - [x] Customer app: «أُلغي طلبك» with the reason's customer text when operations cancelled (CU §11.9): already built (`titleOf`'s `Cancelled`, test «an order operations cancelled shows its reason» since slice 2.1's review), and since 2.8b the order keeps the `ops_cancel` customer text; nothing to change.
   - [ ] Review, hand over to 2.9, pull request.
 
 ### Left from 2.8b (`feat/order-cancel-ops`)
