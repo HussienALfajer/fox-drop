@@ -8,7 +8,7 @@ environment:
 resolution: workspace
 
 dependencies:
-  built_collection: 5.1.2
+  built_collection: 6.0.0
   built_value: 8.13.0
   dio: 5.11.1
   one_of_serializer: 1.5.0
