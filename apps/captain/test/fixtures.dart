@@ -163,6 +163,20 @@ Map<String, Object?> orderJson({
   };
 }
 
+/// An order of this captain cancelled by operations (CA §9.10), as
+/// `GET /v1/captain/orders/active` sends it beside the active order.
+Map<String, Object?> cancelledJson({
+  String? cash = 'returned',
+  Map<String, Object?>? compensation,
+}) => {
+  'orderId': orderId,
+  'number': '10423',
+  'reason': 'طلب الزبون الإلغاء',
+  'cash': cash,
+  'compensation': compensation,
+  'at': now.toIso8601String(),
+};
+
 /// A pickup request of the active order.
 Map<String, Object?> requestJson({
   String status = 'open',
@@ -264,6 +278,7 @@ class FakeLocation implements LocationSource {
 class FakeRinger implements Ringer {
   bool ringing = false;
   int chimes = 0;
+  int cancellations = 0;
 
   @override
   void ring() => ringing = true;
@@ -273,6 +288,9 @@ class FakeRinger implements Ringer {
 
   @override
   void chime() => chimes++;
+
+  @override
+  void cancellation() => cancellations++;
 }
 
 class FakeTransport implements RealtimeTransport {
@@ -329,11 +347,13 @@ class TestApp {
   /// The server's clock in the test, which [advance] moves.
   DateTime clockNow = now;
 
-  /// The answers of the three reads, consumed in order (the last repeats).
+  /// The answers of the three reads, consumed in order (the last repeats);
+  /// [cancelled] goes with every answer of the active order.
   void work({
     required List<Map<String, Object?>> availability,
     List<Map<String, Object?>?> offers = const [null],
     List<Map<String, Object?>?> orders = const [null],
+    Map<String, Object?>? cancelled,
   }) {
     server.on('/v1/captain/availability', [
       for (final a in availability) FakeAnswer(200, a),
@@ -342,7 +362,8 @@ class TestApp {
       for (final o in offers) FakeAnswer(200, {'offer': o}),
     ]);
     server.on('/v1/captain/orders/active', [
-      for (final o in orders) FakeAnswer(200, {'order': o}),
+      for (final o in orders)
+        FakeAnswer(200, {'order': o, 'cancelled': cancelled}),
     ]);
   }
 

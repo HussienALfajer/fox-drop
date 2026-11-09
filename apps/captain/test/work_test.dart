@@ -14,6 +14,7 @@ Work work({
   String state = 'online_available',
   Map<String, Object?>? offer,
   Map<String, Object?>? order,
+  Map<String, Object?>? cancelled,
 }) => Work(
   availability: standardSerializers.deserializeWith(
     CaptainAvailabilityDtoOutput.serializer,
@@ -30,6 +31,12 @@ Work work({
       : standardSerializers.deserializeWith(
           CaptainActiveOrderDtoOutputOrder.serializer,
           order,
+        ),
+  cancelled: cancelled == null
+      ? null
+      : standardSerializers.deserializeWith(
+          CaptainActiveOrderDtoOutputCancelled.serializer,
+          cancelled,
         ),
 );
 
@@ -235,6 +242,24 @@ void main() {
         ).single,
         isA<PickupDisputed>(),
       );
+    });
+
+    test('an order cancelled by operations rings once (CA §9.10, §14)', () {
+      final busy = work(
+        state: 'busy',
+        order: orderJson(track: 'at_merchant'),
+      );
+      final cancelled = work(cancelled: cancelledJson());
+      expect(
+        alertStep(busy, cancelled, now, answered).single,
+        isA<OrderCancelled>()
+            .having((a) => a.cancelled.orderId, 'orderId', orderId)
+            .having((a) => a.chimes, 'chimes', false),
+      );
+      // Still waiting for «حسناً»: not again.
+      expect(alertStep(cancelled, cancelled, now, answered), isEmpty);
+      // Acknowledged: nothing to announce.
+      expect(alertStep(cancelled, work(), now, answered), isEmpty);
     });
 
     test('the offer rings while open and in time, unless answered here', () {

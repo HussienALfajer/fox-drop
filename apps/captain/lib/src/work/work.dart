@@ -15,15 +15,25 @@ typedef RequestStatus = CaptainActiveOrderDtoOutputOrderPickupRequestStatusEnum;
 typedef RequestOutcome =
     CaptainActiveOrderDtoOutputOrderPickupRequestOutcomeEnum;
 typedef Summary = CaptainDeliverySummaryDtoOutputSummary;
+typedef Cancelled = CaptainActiveOrderDtoOutputCancelled;
+typedef CancelledCash = CaptainActiveOrderDtoOutputCancelledCashEnum;
 
 /// What the captain's screens show, always as the server answered it: the
-/// availability (CA §7), the open offer (CA §8) and the active order (CA §9).
+/// availability (CA §7), the open offer (CA §8), the active order (CA §9)
+/// and an order operations cancelled that the captain has not yet seen
+/// (CA §9.10).
 class Work {
-  const Work({required this.availability, this.offer, this.order});
+  const Work({
+    required this.availability,
+    this.offer,
+    this.order,
+    this.cancelled,
+  });
 
   final Availability availability;
   final Offer? offer;
   final ActiveOrder? order;
+  final Cancelled? cancelled;
 
   AvailabilityState get state => availability.availability.state;
 
@@ -77,6 +87,7 @@ final workFeedProvider = Provider.autoDispose<LiveFeed<Work>?>((ref) {
         availability: availability.data!,
         offer: offer.data!.offer,
         order: order.data!.order,
+        cancelled: order.data!.cancelled,
       );
     },
     versions: (work) => {

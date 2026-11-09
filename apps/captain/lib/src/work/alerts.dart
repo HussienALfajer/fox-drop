@@ -10,11 +10,15 @@ import 'work.dart';
 /// The sounds of CA §4.4. Until the design's bundled sounds (owner decision
 /// 2026-11-07, as the restaurant app), the offer ring is the phone's alarm
 /// sound, looping on the alarm stream so the media volume and silent mode do
-/// not mute it, and the chime is the phone's notification sound.
+/// not mute it, and the chime and the cancellation sound are the phone's
+/// notification sound.
 abstract interface class Ringer {
   void ring();
   void stop();
   void chime();
+
+  /// An order operations cancelled (CA §9.10, §14 #11).
+  void cancellation();
 }
 
 /// The phone's sounds through `flutter_ringtone_player` (Android; iOS waits
@@ -53,6 +57,10 @@ class PhoneRinger implements Ringer {
     if (!_supported || _replay != null) return;
     unawaited(_player.playNotification());
   }
+
+  // The bundled cancellation sound waits for the design (the design stop).
+  @override
+  void cancellation() => chime();
 }
 
 final ringerProvider = Provider<Ringer>((ref) => PhoneRinger());
@@ -122,6 +130,13 @@ class PickupDisputed extends Alert {
   const PickupDisputed();
 }
 
+/// «أُلغيت المهمة: {السبب}» (CA §9.10, §14 #11): the cancellation card shows
+/// it, with the cancellation sound instead of the chime.
+class OrderCancelled extends Alert {
+  const OrderCancelled(this.cancelled) : super(chimes: false);
+  final Cancelled cancelled;
+}
+
 /// The offers and orders answered on this phone, whose closing it does not
 /// announce as another's.
 class Answered {
@@ -147,6 +162,10 @@ List<Alert> alertStep(
     alerts.add(
       now.isBefore(offer.expiresAt) ? const OfferGone() : const OfferExpired(),
     );
+  }
+  final cancelled = after.cancelled;
+  if (cancelled != null && before.cancelled?.orderId != cancelled.orderId) {
+    alerts.add(OrderCancelled(cancelled));
   }
   final was = before.order;
   final order = after.order;
