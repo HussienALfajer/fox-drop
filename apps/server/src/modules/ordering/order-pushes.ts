@@ -121,6 +121,8 @@ export function orderPushes(
       // CA §14 #5: the assigned captain, once the restaurant presses ready.
       return captain('captain.order_ready');
     case 'order.cancelled':
+      // RA §16 #4: the customer cancelled while placed; they need no push.
+      if (facts.actor === 'customer') return [merchant('merchant.customer_cancelled')];
       return [
         // AP §8.3: the apology, with the reason's customer text.
         customer('customer.cancelled', { السبب: facts.cancelText ?? '' }),

@@ -185,6 +185,7 @@ void main() {
               'at': '2026-11-07T12:07:00.000Z',
               'reason': 'merchant_auto_cancel',
               'text': 'لم يرد المطعم على طلبك',
+              'byCustomer': false,
             },
           ),
         }),
@@ -386,6 +387,7 @@ void main() {
             'at': '2026-11-07T12:07:00.000Z',
             'reason': 'no_captain',
             'text': 'لم نجد كابتناً متاحاً لطلبك',
+            'byCustomer': false,
           },
         ),
       }),
@@ -393,6 +395,190 @@ void main() {
     // The customer-facing reason the order kept from Content (CU Appendix C).
     expect(_status(tester), 'أُلغي طلبك — لم نجد كابتناً متاحاً لطلبك');
     await app.done(tester);
+  });
+
+  group('«مساعدة» and «إلغاء الطلب» (CU §11.4–11.5)', () {
+    void reasons(TestApp app) {
+      app.server.on('/v1/customer/content', [
+        const FakeAnswer(200, {
+          'reasons': {
+            'customer_cancel': [
+              {'code': 'changed_mind', 'label': 'غيّرت رأيي', 'note': 'none'},
+              {'code': 'other', 'label': 'سبب آخر', 'note': 'optional'},
+            ],
+            'customer_problem': <Object?>[],
+            'order_note': <Object?>[],
+            'restaurant_rating_low': <Object?>[],
+            'restaurant_rating_mid': <Object?>[],
+            'restaurant_rating_high': <Object?>[],
+            'captain_rating_low': <Object?>[],
+            'captain_rating_mid': <Object?>[],
+            'captain_rating_high': <Object?>[],
+          },
+          'faq': <Object?>[],
+        }),
+      ]);
+      app.server.on('/v1/customer/contact', [
+        const FakeAnswer(200, {
+          'phone': '+963944000000',
+          'whatsapp': '+963944000001',
+        }),
+      ]);
+    }
+
+    const cancelPath = '/v1/customer/orders/$_orderId/cancel';
+
+    Future<void> openCancel(WidgetTester tester) async {
+      await tester.tap(find.byKey(const Key('order-help')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('help-cancel')));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets(
+      'cancels a placed order with a reason, then shows «ألغيت طلبك»',
+      (tester) async {
+        final app = await open(
+          tester,
+          [
+            FakeAnswer(200, {'order': _order()}),
+            FakeAnswer(200, {
+              'order': _order(
+                status: 'cancelled',
+                version: 2,
+                cancellation: {
+                  'at': '2026-11-07T12:02:00.000Z',
+                  'reason': 'other',
+                  'text': 'نعتذر، لم نتمكن من إكمال طلبك',
+                  'byCustomer': true,
+                },
+              ),
+            }),
+          ],
+          before: (app) {
+            reasons(app);
+            app.server.on(cancelPath, [
+              FakeAnswer(200, {
+                'order': _order(
+                  status: 'cancelled',
+                  version: 2,
+                  cancellation: {
+                    'at': '2026-11-07T12:02:00.000Z',
+                    'reason': 'other',
+                    'text': 'نعتذر، لم نتمكن من إكمال طلبك',
+                    'byCustomer': true,
+                  },
+                ),
+              }),
+            ]);
+          },
+        );
+        await openCancel(tester);
+        final confirm = find.byKey(const Key('cancel-confirm'));
+        expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+        await tester.tap(find.byKey(const Key('cancel-reason-other')));
+        await tester.pumpAndSettle();
+        // «سبب آخر» takes an optional text.
+        await tester.enterText(find.byKey(const Key('cancel-note')), 'تأخرت');
+        await tester.tap(confirm);
+        await tester.pumpAndSettle();
+
+        final sent = app.server.to(cancelPath).single;
+        expect(sent.data, {'reason': 'other', 'note': 'تأخرت'});
+        expect(sent.headers['Idempotency-Key'], isNotEmpty);
+        expect(_status(tester), 'ألغيت طلبك');
+        expect(find.byKey(const Key('order-help')), findsNothing);
+        await app.done(tester);
+      },
+    );
+
+    testWidgets(
+      '«إلغاء الطلب» is on the screen while placed, and a failed read of the reasons offers a retry',
+      (tester) async {
+        final app = await open(
+          tester,
+          [
+            FakeAnswer(200, {'order': _order()}),
+          ],
+          before: (app) => app.server.on('/v1/customer/content', [
+            const FakeAnswer(500, {'statusCode': 500}),
+          ]),
+        );
+        await tester.tap(find.byKey(const Key('order-cancel')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('cancel-reasons-retry')), findsOneWidget);
+        reasons(app);
+        await tester.tap(find.byKey(const Key('cancel-reasons-retry')));
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const Key('cancel-reason-changed_mind')),
+          findsOneWidget,
+        );
+        await app.done(tester);
+      },
+    );
+
+    testWidgets('the race with acceptance shows its message', (tester) async {
+      final accepted = _order(status: 'accepted', version: 2);
+      final app = await open(
+        tester,
+        [
+          FakeAnswer(200, {'order': _order()}),
+          FakeAnswer(200, {'order': accepted}),
+        ],
+        before: (app) {
+          reasons(app);
+          app.server.on(cancelPath, [
+            FakeAnswer(409, {
+              'statusCode': 409,
+              'error': 'order_state_changed',
+              'order': accepted,
+            }),
+          ]);
+        },
+      );
+      await openCancel(tester);
+      await tester.tap(find.byKey(const Key('cancel-reason-changed_mind')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('cancel-confirm')));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('قبل المطعم طلبك قبل لحظات. لإلغائه تواصل مع الدعم.'),
+        findsOneWidget,
+      );
+      expect(_status(tester), startsWith('المطعم يحضّر طلبك'));
+      await app.done(tester);
+    });
+
+    testWidgets(
+      'after acceptance «مساعدة» explains and warns, and opens support with the order',
+      (tester) async {
+        final app = await open(tester, [
+          FakeAnswer(200, {'order': _order(status: 'accepted', version: 2)}),
+        ], before: reasons);
+        expect(find.byKey(const Key('order-cancel')), findsNothing);
+        await tester.tap(find.byKey(const Key('order-help')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('help-cancel')), findsNothing);
+        expect(find.text('لإلغاء الطلب تواصل مع الدعم'), findsOneWidget);
+        expect(
+          find.text(
+            'الإلغاء بعد قبول المطعم يُحتسب عليك، وتكراره قد يوقف حسابك مؤقتاً.',
+          ),
+          findsOneWidget,
+        );
+        await tester.tap(find.byKey(const Key('help-call')));
+        await tester.tap(find.byKey(const Key('help-whatsapp')));
+        expect(app.launched.first.toString(), 'tel:+963944000000');
+        expect(
+          app.launched.last.toString(),
+          Uri.https('wa.me', '/963944000001', {
+            'text': 'بخصوص الطلب #10423',
+          }).toString(),
+        );
+        await app.done(tester);
+      },
+    );
   });
 
   testWidgets('home shows the active order and opens it (CU §6)', (

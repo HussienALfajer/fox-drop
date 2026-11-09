@@ -4078,6 +4078,63 @@
         ]
       }
     },
+    "/v1/customer/orders/{orderId}/cancel": {
+      "post": {
+        "operationId": "customerOrdersCancel",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerCancelOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
     "/v1/merchant/orders": {
       "get": {
         "operationId": "merchantOrdersBoard",
@@ -13244,12 +13301,17 @@
                         "text": {
                           "type": "string",
                           "description": "What the customer sees (CU Appendix C), from Content as it was at the cancellation."
+                        },
+                        "byCustomer": {
+                          "type": "boolean",
+                          "description": "The customer cancelled it themselves while placed: «ألغيت طلبك» instead of the text (CU §11.4, §11.9)."
                         }
                       },
                       "required": [
                         "at",
                         "reason",
-                        "text"
+                        "text",
+                        "byCustomer"
                       ],
                       "additionalProperties": false
                     },
@@ -13806,12 +13868,17 @@
                       "text": {
                         "type": "string",
                         "description": "What the customer sees (CU Appendix C), from Content as it was at the cancellation."
+                      },
+                      "byCustomer": {
+                        "type": "boolean",
+                        "description": "The customer cancelled it themselves while placed: «ألغيت طلبك» instead of the text (CU §11.4, §11.9)."
                       }
                     },
                     "required": [
                       "at",
                       "reason",
-                      "text"
+                      "text",
+                      "byCustomer"
                     ],
                     "additionalProperties": false
                   },
@@ -14522,6 +14589,33 @@
           "quoteVersion",
           "addressId",
           "unsavedAddress",
+          "note"
+        ]
+      },
+      "CustomerCancelOrderDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "A code of Content's customer_cancel list (AP Appendix B)."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The optional text of «سبب آخر»; null for the other reasons."
+          }
+        },
+        "required": [
+          "reason",
           "note"
         ]
       },

@@ -14,6 +14,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation
   final String reason;
   @override
   final String text;
+  @override
+  final bool byCustomer;
 
   factory _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation([
     void Function(CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder)?
@@ -27,6 +29,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation
     required this.at,
     required this.reason,
     required this.text,
+    required this.byCustomer,
   }) : super._();
   @override
   CustomerActiveOrdersDtoOutputOrdersInnerCancellation rebuild(
@@ -45,7 +48,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation
     return other is CustomerActiveOrdersDtoOutputOrdersInnerCancellation &&
         at == other.at &&
         reason == other.reason &&
-        text == other.text;
+        text == other.text &&
+        byCustomer == other.byCustomer;
   }
 
   @override
@@ -54,6 +58,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation
     _$hash = $jc(_$hash, at.hashCode);
     _$hash = $jc(_$hash, reason.hashCode);
     _$hash = $jc(_$hash, text.hashCode);
+    _$hash = $jc(_$hash, byCustomer.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -65,7 +70,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation
           )
           ..add('at', at)
           ..add('reason', reason)
-          ..add('text', text))
+          ..add('text', text)
+          ..add('byCustomer', byCustomer))
         .toString();
   }
 }
@@ -90,6 +96,10 @@ class CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder
   String? get text => _$this._text;
   set text(String? text) => _$this._text = text;
 
+  bool? _byCustomer;
+  bool? get byCustomer => _$this._byCustomer;
+  set byCustomer(bool? byCustomer) => _$this._byCustomer = byCustomer;
+
   CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder() {
     CustomerActiveOrdersDtoOutputOrdersInnerCancellation._defaults(this);
   }
@@ -100,6 +110,7 @@ class CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder
       _at = $v.at;
       _reason = $v.reason;
       _text = $v.text;
+      _byCustomer = $v.byCustomer;
       _$v = null;
     }
     return this;
@@ -139,6 +150,11 @@ class CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder
             text,
             r'CustomerActiveOrdersDtoOutputOrdersInnerCancellation',
             'text',
+          ),
+          byCustomer: BuiltValueNullFieldError.checkNotNull(
+            byCustomer,
+            r'CustomerActiveOrdersDtoOutputOrdersInnerCancellation',
+            'byCustomer',
           ),
         );
     replace(_$result);

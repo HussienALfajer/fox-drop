@@ -1,17 +1,21 @@
 import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../emergency_stop.dart';
 import '../notifications/notifications_off_banner.dart';
+import 'cancel_order.dart';
+import 'cancel_order_sheet.dart';
 import 'order_again_section.dart';
+import 'order_help_sheet.dart';
 import 'order_live.dart';
 
 /// The order screen (CU §11): the status title and subtitle of §11.2, the
 /// five-step progress, the time, the captain card from assignment and the
-/// summary, kept live over the order's channel. The map, «مساعدة»,
-/// «إلغاء الطلب», the other banners and the rating sheet come with their slices.
-/// Unstyled until the design.
+/// summary, kept live over the order's channel, and «مساعدة» with
+/// «إلغاء الطلب» while placed (CU §11.4–11.5). The map, the other banners
+/// and the rating sheet come with their slices. Unstyled until the design.
 class OrderScreen extends ConsumerWidget {
   const OrderScreen({super.key, required this.orderId});
 
@@ -45,8 +49,41 @@ class OrderScreen extends ConsumerWidget {
       for (final e in order.equivalents) l10n.formatMoney(e.amount, e.currency),
     ].join(' / ');
 
+    Future<void> cancel() async {
+      final outcome = await showCancelOrder(context, order.id);
+      // CU §11.4: the restaurant accepted first.
+      if (outcome == CancelOutcome.tooLate && context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.customerCancelTooLate)));
+      }
+    }
+
+    Future<void> help() async {
+      final choice = await showOrderHelp(context, order);
+      if (!context.mounted) return;
+      switch (choice) {
+        case HelpChoice.faq:
+          await context.push('/faq');
+        case HelpChoice.cancel:
+          await cancel();
+        case null:
+          break;
+      }
+    }
+
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.customerOrderNumber(order.number))),
+      appBar: AppBar(
+        title: Text(l10n.customerOrderNumber(order.number)),
+        actions: [
+          if (!ended)
+            TextButton(
+              key: const Key('order-help'),
+              onPressed: help,
+              child: Text(l10n.customerHelp),
+            ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(orderFeedProvider(orderId)).refresh(),
         child: ListView(
@@ -134,6 +171,13 @@ class OrderScreen extends ConsumerWidget {
               subtitle: Text(order.address.landmark),
             ),
             ListTile(title: Text(l10n.customerTotal), trailing: Text(total())),
+            // CU §11.1: «إلغاء الطلب», while placed only (§11.4).
+            if (cancelHelpAt(order.status.name) == CancelHelp.cancel)
+              TextButton(
+                key: const Key('order-cancel'),
+                onPressed: cancel,
+                child: Text(l10n.customerCancelOrder),
+              ),
           ],
         ),
       ),
@@ -177,6 +221,7 @@ class OrderScreen extends ConsumerWidget {
     Delivered() => (l10n.customerStatusDelivered, l10n.customerEnjoy),
     NoRestaurantResponse() => (l10n.customerNoRestaurantResponse, null),
     Rejected(:final text) => (l10n.customerRejected, text),
+    CancelledByYou() => (l10n.customerCancelledByYou, null),
     Cancelled(:final text) => (l10n.customerCancelled, text),
     Failed() => (l10n.customerDeliveryFailed, null),
   };

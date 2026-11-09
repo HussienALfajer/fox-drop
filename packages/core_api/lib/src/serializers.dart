@@ -211,6 +211,7 @@ import 'package:core_api/src/model/customer_address_fields_dto.dart';
 import 'package:core_api/src/model/customer_address_list_dto_output.dart';
 import 'package:core_api/src/model/customer_address_list_dto_output_addresses_inner.dart';
 import 'package:core_api/src/model/customer_address_list_dto_output_addresses_inner_location.dart';
+import 'package:core_api/src/model/customer_cancel_order_dto.dart';
 import 'package:core_api/src/model/customer_code_request_dto.dart';
 import 'package:core_api/src/model/customer_code_sent_dto_output.dart';
 import 'package:core_api/src/model/customer_content_dto_output.dart';
@@ -559,6 +560,7 @@ part 'serializers.g.dart';
   CustomerAddressListDtoOutput,
   CustomerAddressListDtoOutputAddressesInner,
   CustomerAddressListDtoOutputAddressesInnerLocation,
+  CustomerCancelOrderDto,
   CustomerCodeRequestDto,
   CustomerCodeSentDtoOutput,
   CustomerContentDtoOutput,

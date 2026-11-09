@@ -400,6 +400,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/customer/orders': 'app_session',
   'GET /v1/customer/orders/active': 'app_session',
   'GET /v1/customer/orders/{orderId}': 'app_session',
+  'POST /v1/customer/orders/{orderId}/cancel': 'app_session',
   'POST /v1/customer/realtime/token': 'app_session',
   'GET /v1/customer/notifications': 'app_session',
   'PUT /v1/customer/push-token': 'app_session',

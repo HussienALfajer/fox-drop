@@ -51,6 +51,7 @@ interface Row {
   type: 'order.placed' | 'order.cancelled' | 'order.offered' | 'order.assigned';
   version: number;
   captainTrack?: string;
+  byCustomer?: boolean;
 }
 
 const payloadOf = (row: Row) => ({
@@ -63,6 +64,7 @@ const payloadOf = (row: Row) => ({
   status: row.type === 'order.cancelled' ? 'cancelled' : 'placed',
   version: row.version,
   ...(row.captainTrack ? { captainTrack: row.captainTrack, captainId: null } : {}),
+  ...(row.byCustomer === undefined ? {} : { byCustomer: row.byCustomer }),
   reason: null,
   at: new Date().toISOString(),
 });
@@ -87,6 +89,21 @@ const versionsOn = async (channel: string) =>
   ((await centrifugo.history(channel)) as { version: number }[]).map((data) => data.version);
 
 describe('the outbox relay (architecture §5.5, E4)', () => {
+  it("tells the restaurant the customer's own cancellation, and false for a row before slice 2.8a (RA §8.3)", async () => {
+    const order = { orderId: randomUUID(), restaurantId: randomUUID() };
+    await insert({ ...order, type: 'order.placed', version: 1 });
+    await insert({ ...order, type: 'order.cancelled', version: 2, byCustomer: true });
+    await relay.drain(new Date());
+    const history = (await centrifugo.history(`merchant:${order.restaurantId}`)) as {
+      version: number;
+      byCustomer: boolean;
+    }[];
+    expect(history.map(({ version, byCustomer }) => ({ version, byCustomer }))).toEqual([
+      { version: 1, byCustomer: false },
+      { version: 2, byCustomer: true },
+    ]);
+  });
+
   it("publishes each row to its restaurant's, its city's and its order's channels, in id order, once", async () => {
     const order = { orderId: randomUUID(), restaurantId: randomUUID() };
     const placed = await insert({ ...order, type: 'order.placed', version: 1 });

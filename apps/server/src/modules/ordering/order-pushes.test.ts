@@ -76,6 +76,16 @@ describe('the pushes of an order event', () => {
     ]);
   });
 
+  it("chimes the restaurant's devices when the customer cancels, and sends the customer nothing (RA §16 #4, CU §11.4)", () => {
+    expect(
+      sent('order.cancelled', 'changed_mind', {
+        captainId: null,
+        actor: 'customer',
+        cancelReason: 'changed_mind',
+      }),
+    ).toEqual([[restaurant, 'merchant.customer_cancelled', { رقم: '10002' }]]);
+  });
+
   it('apologises for a rejection, and tells the restaurant only when operations acted (CU §14 #7, RA §16 #5, #6)', () => {
     const rejected = {
       captainId: null,
