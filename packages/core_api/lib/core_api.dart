@@ -212,6 +212,7 @@ export 'package:core_api/src/model/customer_address_fields_dto.dart';
 export 'package:core_api/src/model/customer_address_list_dto_output.dart';
 export 'package:core_api/src/model/customer_address_list_dto_output_addresses_inner.dart';
 export 'package:core_api/src/model/customer_address_list_dto_output_addresses_inner_location.dart';
+export 'package:core_api/src/model/customer_cancel_order_dto.dart';
 export 'package:core_api/src/model/customer_code_request_dto.dart';
 export 'package:core_api/src/model/customer_code_sent_dto_output.dart';
 export 'package:core_api/src/model/customer_content_dto_output.dart';

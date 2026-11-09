@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   ConflictException,
   Get,
@@ -11,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
-import { GENERIC_CUSTOMER_TEXT } from '../content/index.js';
+import { GENERIC_CUSTOMER_TEXT, NOTE_MAX } from '../content/index.js';
 import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { CustomerController } from '../../http/route-groups.js';
@@ -27,6 +28,7 @@ import {
   payInCurrency,
   quoteBody,
 } from './customer-quote.controller.js';
+import { OrderCommandRefusedError, OrderCommands } from './order-commands.js';
 import type { OrderView } from './order-views.js';
 import { OrderRefusedError, OrdersService } from './orders.service.js';
 import { orderStatuses } from './schema.js';
@@ -88,6 +90,11 @@ const customerOrder = z.object({
         .string()
         .describe(
           'What the customer sees (CU Appendix C), from Content as it was at the cancellation.',
+        ),
+      byCustomer: z
+        .boolean()
+        .describe(
+          'The customer cancelled it themselves while placed: «ألغيت طلبك» instead of the text (CU §11.4, §11.9).',
         ),
     })
     .nullable()
@@ -193,6 +200,21 @@ class CustomerActiveOrdersDto extends createZodDto(
 
 class CustomerOrderParamsDto extends createZodDto(z.object({ orderId: z.uuid() })) {}
 
+class CustomerCancelOrderDto extends createZodDto(
+  z.object({
+    reason: z
+      .string()
+      .min(1)
+      .max(64)
+      .describe("A code of Content's customer_cancel list (AP Appendix B)."),
+    note: z
+      .string()
+      .max(NOTE_MAX)
+      .nullable()
+      .describe('The optional text of «سبب آخر»; null for the other reasons.'),
+  }),
+) {}
+
 // CU §10.7: placing the order. A repeat of the command with its
 // Idempotency-Key answers the order it placed. CU §4.3, §11: the order
 // screen's reads, which the app fetches on opening, after every reconnect
@@ -203,6 +225,7 @@ export class CustomerOrdersController {
     private readonly orders: OrdersService,
     private readonly merchants: MerchantsService,
     private readonly captains: CaptainsService,
+    private readonly commands: OrderCommands,
   ) {}
 
   @Get('orders/active')
@@ -286,6 +309,61 @@ export class CustomerOrdersController {
     }
   }
 
+  // CU §11.4: «إلغاء الطلب» while the restaurant has not answered. 409
+  // order_state_changed with the order as it is now: accepted in the
+  // meantime, «قبل المطعم طلبك قبل لحظات. لإلغائه تواصل مع الدعم.»; 404
+  // unknown_order; 400 unknown_reason, reason_note_required,
+  // reason_note_not_allowed; 422 idempotency_key_reused.
+  @Post('orders/:orderId/cancel')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CustomerOrderDto })
+  async cancel(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: CustomerOrderParamsDto,
+    @Body() body: CustomerCancelOrderDto,
+  ) {
+    try {
+      const order = await this.commands.cancelByCustomer(
+        {
+          accountId: session.accountId,
+          idempotencyKey,
+          orderId: params.orderId,
+          reason: body.reason,
+          note: body.note,
+        },
+        new Date(),
+      );
+      return { order: await this.withNames(order) };
+    } catch (error) {
+      if (!(error instanceof OrderCommandRefusedError)) throw error;
+      const { refusal } = error;
+      if (refusal === 'unknown_order') {
+        throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: refusal });
+      }
+      if (refusal === 'idempotency_key_reused') {
+        throw new UnprocessableEntityException({
+          statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: refusal,
+        });
+      }
+      if (refusal === 'order_state_changed' && error.order !== null) {
+        throw new ConflictException({
+          statusCode: HttpStatus.CONFLICT,
+          error: refusal,
+          order: await this.withNames(error.order),
+        });
+      }
+      throw new BadRequestException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        error: refusal,
+        message: error.message,
+      });
+    }
+  }
+
   private async withNames(order: OrderView) {
     const [names, captains] = await Promise.all([
       this.merchants.names([order.restaurantId]),
@@ -329,6 +407,7 @@ function orderBody(
       at: order.cancellation.at.toISOString(),
       reason: order.cancellation.reason,
       text: order.cancellation.customerText ?? GENERIC_CUSTOMER_TEXT,
+      byCustomer: order.cancellation.byCustomer,
     },
     delivery: order.delivery && {
       at: order.delivery.at.toISOString(),

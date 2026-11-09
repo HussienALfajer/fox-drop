@@ -299,6 +299,7 @@ Serializers _$serializers =
           ..add(CustomerAddressListDtoOutputAddressesInner.serializer)
           ..add(CustomerAddressListDtoOutputAddressesInnerLabelEnum.serializer)
           ..add(CustomerAddressListDtoOutputAddressesInnerLocation.serializer)
+          ..add(CustomerCancelOrderDto.serializer)
           ..add(CustomerCodeRequestDto.serializer)
           ..add(CustomerCodeSentDtoOutput.serializer)
           ..add(CustomerCodeSentDtoOutputChannelEnum.serializer)

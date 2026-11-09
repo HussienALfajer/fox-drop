@@ -33,6 +33,9 @@ export type OrderCommandRefusal =
   // RA §8.6: a reason not on the list, or steps that do not fit it.
   | 'unknown_reason'
   | 'invalid_rejection'
+  // CU §11.4: «سبب آخر» takes its optional text; the other reasons none.
+  | 'reason_note_required'
+  | 'reason_note_not_allowed'
   // RA §8.10: payment lines (pickup-commands.ts).
   | 'invalid_lines'
   | 'currency_not_accepted'
@@ -64,6 +67,13 @@ export interface MerchantCommand {
   // effects keeps (RA §8.6).
   role?: string;
   ipAddress?: string | null;
+}
+
+// CU §11.4: the customer's own command on their order.
+export interface CustomerCommand {
+  accountId: string;
+  idempotencyKey: string;
+  orderId: string;
 }
 
 // RA §8.6, R3: the three reasons of Content's closed merchant_rejection
@@ -147,16 +157,19 @@ export interface OnBehalfChoices {
 
 // The state a command needs and the one it leaves.
 type Transition = {
-  verb: 'accept' | 'ready' | 'reject';
+  verb: 'accept' | 'ready' | 'reject' | 'cancel';
   from: 'placed' | 'accepted';
-  to: 'accepted' | 'ready' | 'rejected';
+  to: 'accepted' | 'ready' | 'rejected' | 'cancelled';
 };
 
-// Who runs a command: a user of the restaurant on its device (RA §18), or
+// Who runs a command: a user of the restaurant on its device (RA §18),
 // operations on the restaurant's behalf (AP §9.3.2), on any order, with the
-// reason the event and the audit keep.
+// reason the event and the audit keep, or the customer on their own order
+// (CU §11.4).
 type Caller =
-  { kind: 'restaurant'; command: MerchantCommand } | { kind: 'admin'; command: AdminOrderCommand };
+  | { kind: 'restaurant'; command: MerchantCommand }
+  | { kind: 'admin'; command: AdminOrderCommand }
+  | { kind: 'customer'; command: CustomerCommand };
 
 // A state change of the command (the columns it sets) and what the
 // transaction sends with it.
@@ -166,6 +179,9 @@ type Change = {
   // What the apps' channels publish as the reason (RA §8.6: the rejection's
   // code); the restaurant's event keeps it too, operations' keeps their note.
   publicReason?: string;
+  // What the event row keeps as the reason, when not the public one: the
+  // customer's text of «سبب آخر» (CU §11.4).
+  eventReason?: string;
   // Written in the transaction after the order's own change (RA §8.6).
   effects?: (tx: Tx) => Promise<void>;
 };
@@ -297,6 +313,52 @@ export class OrderCommands {
       { ...rejectionHash(command), reason: command.reason },
       now,
       (order) => this.rejection(order, command, change, now),
+    );
+  }
+
+  // CU §11.4: the customer cancels their own order while the restaurant has
+  // not answered, with a reason of Content's customer_cancel list (AP
+  // Appendix B) and the text «سبب آخر» takes. No food was prepared, no strike
+  // applies and the restaurant's unanswered count is left alone (only the
+  // automatic cancellation counts). Once the order left placed (the race
+  // with acceptance) it answers order_state_changed with the order as it is
+  // now. 400 unknown_reason, reason_note_required, reason_note_not_allowed.
+  async cancelByCustomer(
+    command: CustomerCommand & { reason: string; note: string | null },
+    now: Date,
+  ): Promise<OrderView> {
+    return this.run(
+      { kind: 'customer', command },
+      { verb: 'cancel', from: 'placed', to: 'cancelled' },
+      { reason: command.reason, note: command.note },
+      now,
+      async () => {
+        let chosen: { code: string; note: string | null };
+        try {
+          chosen = await this.content.choose('customer_cancel', {
+            code: command.reason,
+            note: command.note,
+          });
+        } catch (error) {
+          if (!(error instanceof ContentRefusedError)) throw error;
+          const refusal =
+            error.refusal === 'reason_note_required' || error.refusal === 'reason_note_not_allowed'
+              ? error.refusal
+              : 'unknown_reason';
+          throw new OrderCommandRefusedError(refusal, error.message);
+        }
+        return {
+          // CU §11.9 «ألغيت طلبك»: no customer text of a reason.
+          set: {
+            cancelledAt: now,
+            cancelReason: chosen.code,
+            cancelCustomerText: null,
+            foodPrepared: false,
+          },
+          publicReason: chosen.code,
+          ...(chosen.note === null ? {} : { eventReason: chosen.note }),
+        };
+      },
     );
   }
 
@@ -462,14 +524,17 @@ export class OrderCommands {
     const { command } = caller;
     const accountId =
       caller.kind === 'admin' ? caller.command.admin.accountId : caller.command.accountId;
+    const owner =
+      caller.kind === 'restaurant'
+        ? { restaurantId: caller.command.restaurantId }
+        : caller.kind === 'customer'
+          ? { customerAccountId: caller.command.accountId }
+          : {};
     const key = { accountId, idempotencyKey: command.idempotencyKey };
     const requestHash = commandHash({ verb: transition.verb, orderId: command.orderId, ...body });
     const earlier = await this.replay(this.database.db, key, requestHash, now);
     if (earlier !== null) return this.read(earlier);
-    const order = await this.find(
-      command.orderId,
-      caller.kind === 'restaurant' ? caller.command.restaurantId : null,
-    );
+    const order = await this.find(command.orderId, owner);
     if (order.status !== transition.from) {
       // A repeat sent with the first may read the order after the first
       // committed: it answers the first's order (architecture §5.3).
@@ -506,9 +571,10 @@ export class OrderCommands {
         actor:
           caller.kind === 'restaurant'
             ? { type: 'restaurant', id: accountId, device: caller.command.deviceId }
-            : { type: 'admin', id: accountId },
+            : { type: caller.kind, id: accountId },
         // An operations note stays in the event row and the audit (AP §10).
-        reason: caller.kind === 'restaurant' ? publicReason : caller.command.reason,
+        reason:
+          caller.kind === 'admin' ? caller.command.reason : (prepared.eventReason ?? publicReason),
         publicReason,
         at: now,
       });
@@ -550,8 +616,12 @@ export class OrderCommands {
   }
 
   // The order, read without a lock; the restaurant's own only when a
-  // restaurant asks: another restaurant's or an unknown one is unknown_order.
-  private async find(orderId: string, restaurantId: string | null): Promise<OrderAtStart> {
+  // restaurant asks, the customer's own when a customer does: another's or an
+  // unknown one is unknown_order.
+  private async find(
+    orderId: string,
+    owner: { restaurantId?: string; customerAccountId?: string },
+  ): Promise<OrderAtStart> {
     const [order] = await this.database.db
       .select({
         id: orders.id,
@@ -565,9 +635,15 @@ export class OrderCommands {
       })
       .from(orders)
       .where(
-        restaurantId === null
-          ? eq(orders.id, orderId)
-          : and(eq(orders.id, orderId), eq(orders.restaurantId, restaurantId)),
+        and(
+          eq(orders.id, orderId),
+          owner.restaurantId === undefined
+            ? undefined
+            : eq(orders.restaurantId, owner.restaurantId),
+          owner.customerAccountId === undefined
+            ? undefined
+            : eq(orders.customerAccountId, owner.customerAccountId),
+        ),
       );
     if (!order) throw new OrderCommandRefusedError('unknown_order', 'no such order');
     return order;

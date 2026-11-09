@@ -145,6 +145,9 @@ export async function recordTransition(
       // RA §8.15: operations acted for the restaurant, which the restaurant's
       // devices chime (RA §16 #5, #6).
       byOperations: transition.actor.type === 'admin',
+      // RA §8.3: the customer cancelled while placed, which the restaurant's
+      // devices chime (RA §16 #4).
+      byCustomer: transition.actor.type === 'customer',
       captainTrack,
       captainId,
       ...(transition.offerPay === undefined

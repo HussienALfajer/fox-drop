@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, type SQL, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, or, type SQL, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { equivalent, type RateSnapshot } from '../fx/index.js';
 import type { Point } from '../geo/index.js';
@@ -93,8 +93,14 @@ export interface OrderView {
     shortfall: ({ amount: bigint } & RecordedReason) | null;
     recordedBy: { type: string; id: string; reason: string | null };
   } | null;
-  // The customer's text for it (CU Appendix C), copied at the cancellation.
-  cancellation: { at: Date; reason: string; customerText: string | null } | null;
+  // The customer's text for it (CU Appendix C), copied at the cancellation;
+  // byCustomer for the customer's own while placed (CU §11.4, §11.9).
+  cancellation: {
+    at: Date;
+    reason: string;
+    customerText: string | null;
+    byCustomer: boolean;
+  } | null;
   // RA §8.6, CU §11.9: the rejection's reason, its label, the customer's text
   // and the items «اطلب بدون الأصناف غير المتوفرة» leaves out.
   rejection: {
@@ -227,8 +233,11 @@ export async function readOrders(
       ),
     )
     .orderBy(asc(orderLines.orderId), asc(orderLines.position));
-  // The acceptance or the rejection: who decided (RA §8.15).
-  const accepted = rows.filter((row) => row.acceptedAt !== null || row.rejectedAt !== null);
+  // The acceptance, the rejection or the cancellation: who decided (RA
+  // §8.15, CU §11.9).
+  const accepted = rows.filter(
+    (row) => row.acceptedAt !== null || row.rejectedAt !== null || row.cancelledAt !== null,
+  );
   const decisions =
     accepted.length === 0
       ? []
@@ -250,13 +259,19 @@ export async function readOrders(
                 orderEvents.orderPlacedAt,
                 accepted.map((row) => row.placedAt),
               ),
-              // The acceptance itself, not a return to preparing (AP §9.3.3).
-              eq(orderEvents.fromStatus, 'placed'),
-              inArray(orderEvents.toStatus, ['accepted', 'rejected']),
+              or(
+                // The acceptance itself, not a return to preparing (AP §9.3.3).
+                and(
+                  eq(orderEvents.fromStatus, 'placed'),
+                  inArray(orderEvents.toStatus, ['accepted', 'rejected']),
+                ),
+                eq(orderEvents.toStatus, 'cancelled'),
+              ),
             ),
           );
   const acceptances = decisions.filter((event) => event.toStatus === 'accepted');
   const rejections = decisions.filter((event) => event.toStatus === 'rejected');
+  const cancellations = decisions.filter((event) => event.toStatus === 'cancelled');
   const delivered = rows.filter((row) => row.deliveredAt !== null);
   const deliveries =
     delivered.length === 0
@@ -350,6 +365,8 @@ export async function readOrders(
               at: row.cancelledAt,
               reason: row.cancelReason,
               customerText: row.cancelCustomerText,
+              byCustomer:
+                cancellations.find((event) => event.orderId === row.id)?.actorType === 'customer',
             }
           : null,
       rejection:

@@ -45,6 +45,9 @@ interface OutboxPayload {
   // From slice 2.7a: operations acted for the restaurant (RA §8.15); absent
   // before.
   byOperations?: boolean;
+  // From slice 2.8a: the customer cancelled while placed (RA §8.3); absent
+  // before.
+  byCustomer?: boolean;
   // From slice 1.11: the captain track (AP §8.2) and the captain the event is
   // about (an offer's, or the one assigned); absent before.
   captainTrack?: string | null;
@@ -58,6 +61,7 @@ function publication(type: string, payload: OutboxPayload) {
   const { schema, orderId, number, restaurantId, status, version, reason, at } = payload;
   const captainTrack = payload.captainTrack ?? null;
   const byOperations = payload.byOperations ?? false;
+  const byCustomer = payload.byCustomer ?? false;
   return {
     type,
     schema,
@@ -69,6 +73,7 @@ function publication(type: string, payload: OutboxPayload) {
     reason,
     at,
     byOperations,
+    byCustomer,
     captainTrack,
   };
 }

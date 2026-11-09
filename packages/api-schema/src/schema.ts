@@ -1748,6 +1748,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/orders/{orderId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerOrdersCancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/orders": {
         parameters: {
             query?: never;
@@ -4272,6 +4288,8 @@ export interface components {
                     reason: string;
                     /** @description What the customer sees (CU Appendix C), from Content as it was at the cancellation. */
                     text: string;
+                    /** @description The customer cancelled it themselves while placed: «ألغيت طلبك» instead of the text (CU §11.4, §11.9). */
+                    byCustomer: boolean;
                 } | null;
                 /** @description While rejected (CU §11.9). */
                 rejection: {
@@ -4410,6 +4428,8 @@ export interface components {
                     reason: string;
                     /** @description What the customer sees (CU Appendix C), from Content as it was at the cancellation. */
                     text: string;
+                    /** @description The customer cancelled it themselves while placed: «ألغيت طلبك» instead of the text (CU §11.4, §11.9). */
+                    byCustomer: boolean;
                 } | null;
                 /** @description While rejected (CU §11.9). */
                 rejection: {
@@ -4565,6 +4585,12 @@ export interface components {
                 directions: string | null;
             } | null;
             /** @description To the restaurant and the captain, up to 200 characters; no phone number. */
+            note: string | null;
+        };
+        CustomerCancelOrderDto: {
+            /** @description A code of Content's customer_cancel list (AP Appendix B). */
+            reason: string;
+            /** @description The optional text of «سبب آخر»; null for the other reasons. */
             note: string | null;
         };
         MerchantOrdersDto_Output: {
@@ -8881,6 +8907,35 @@ export interface operations {
         };
         responses: {
             201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOrderDto_Output"];
+                };
+            };
+        };
+    };
+    customerOrdersCancel: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerCancelOrderDto"];
+            };
+        };
+        responses: {
+            200: {
                 headers: {
                     "Server-Time": components["headers"]["Server-Time"];
                     [name: string]: unknown;
