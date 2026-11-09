@@ -7,6 +7,9 @@ import 'package:merchant/src/board/board.dart';
 
 final placedAt = DateTime.utc(2026, 11, 7, 12);
 
+const shawarmaId = '00000000-0000-4000-8000-0000000000c1';
+const falafelId = '00000000-0000-4000-8000-0000000000c2';
+
 /// One order of `GET /v1/merchant/orders` as JSON.
 Map<String, Object?> orderJson({
   String id = '00000000-0000-4000-8000-0000000000a1',
@@ -16,6 +19,7 @@ Map<String, Object?> orderJson({
   DateTime? placed,
   Duration? acceptedAfter,
   int prepMin = 20,
+  bool byOperations = false,
   String? captainTrack,
   String? captainName,
   DateTime? arrivedAt,
@@ -43,13 +47,15 @@ Map<String, Object?> orderJson({
             'prepDueAt': accepted
                 .add(Duration(minutes: prepMin))
                 .toIso8601String(),
-            'deviceName': 'كاشير 1',
+            'deviceName': byOperations ? null : 'كاشير 1',
+            'byOperations': byOperations,
           },
     'readyAt': null,
     'customer': {'firstName': 'أحمد', 'neighbourhood': 'المركز'},
     'note': 'بدون بصل',
     'lines': [
       {
+        'itemId': shawarmaId,
         'name': 'شاورما',
         'quantity': 2,
         'options': [
@@ -57,6 +63,14 @@ Map<String, Object?> orderJson({
         ],
         'note': null,
         'lineTotal': '24000',
+      },
+      {
+        'itemId': falafelId,
+        'name': 'فلافل',
+        'quantity': 1,
+        'options': <Object?>[],
+        'note': null,
+        'lineTotal': '0',
       },
     ],
     'currency': 'TRY',

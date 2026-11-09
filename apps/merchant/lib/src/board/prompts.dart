@@ -2,9 +2,12 @@ import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../content.dart';
+import '../status/status.dart';
 import 'board.dart';
 import 'commands.dart';
 import 'dispute_sheet.dart';
+import 'reject_sheet.dart';
 import 'texts.dart';
 
 /// The stacked prompts of what rings, oldest first, with a counter (RA
@@ -53,7 +56,7 @@ class RingingPrompt extends StatelessWidget {
 
 /// RA §8.3: «طلب جديد #{رقم}», the items with their options and notes, the
 /// customer note, the items value, the auto-cancel countdown and the
-/// prep-time chooser with «قبول — {د} د». «رفض» comes with reject (RA §8.6).
+/// prep-time chooser with «قبول — {د} د», and «رفض» (RA §8.6).
 class NewOrderPrompt extends ConsumerStatefulWidget {
   const NewOrderPrompt({
     super.key,
@@ -166,7 +169,32 @@ class _NewOrderPromptState extends ConsumerState<NewOrderPrompt> {
             sending ? l10n.merchantSending : l10n.merchantAccept(_prep),
           ),
         ),
+        OutlinedButton(
+          key: const Key('reject'),
+          onPressed: sending ? null : _reject,
+          child: Text(l10n.merchantReject),
+        ),
       ],
+    );
+  }
+
+  // RA §8.6: the reason and its step, then the command; busy mode offers the
+  // restaurant's options when its status is known.
+  Future<void> _reject() async {
+    final status = ref.read(statusProvider).value?.value;
+    final reasons = ref.read(rejectionReasonsProvider);
+    if (reasons.hasError) ref.invalidate(rejectionReasonsProvider);
+    final rejection = await showRejectSheet(
+      context,
+      widget.order,
+      status?.busyExtraOptionsMin.toList() ?? const [],
+      reasons.value,
+    );
+    if (rejection == null || !mounted) return;
+    await _run(
+      ref
+          .read(boardCommandsProvider.notifier)
+          .reject(widget.order.id, rejection),
     );
   }
 

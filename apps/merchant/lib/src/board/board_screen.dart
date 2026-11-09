@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../content.dart';
 import '../api.dart';
 import '../auth.dart';
 import '../platform.dart';
@@ -77,11 +78,21 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     ref.watch(boardAlertsProvider);
+    // Read before a rejection needs its labels (RA §8.6, §16 #6).
+    ref.watch(rejectionReasonsProvider);
     ref.listen(boardNoticesProvider, (previous, notices) {
       final messenger = ScaffoldMessenger.of(context);
       for (final notice in notices) {
         messenger.showSnackBar(
-          SnackBar(content: Text(noticeText(l10n, notice))),
+          SnackBar(
+            content: Text(
+              noticeText(
+                l10n,
+                notice,
+                ref.read(rejectionReasonsProvider).value,
+              ),
+            ),
+          ),
         );
       }
     });
@@ -310,6 +321,9 @@ class OrderCard extends ConsumerWidget {
                     .take(2)
                     .map((l) => '${l.quantity} × ${l.name}')
                     .join('، '),
+                // RA §8.15: «قبلته العمليات».
+                if (order.acceptance?.byOperations ?? false)
+                  l10n.merchantBadgeByOperations,
                 if (line != null) captainLineText(l10n, line, now),
                 ?timer,
               ].join('\n'),
