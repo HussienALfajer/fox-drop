@@ -77,6 +77,9 @@ export const restaurants = merchants.table(
     // period ends.
     busyExtraMin: smallint('busy_extra_min'),
     busyUntil: timestamp('busy_until', { withTimezone: true }),
+    // When busy mode was last turned on: its hourly reminder (RA §7.3) acts
+    // only for the busy mode it was set for.
+    busyStartedAt: timestamp('busy_started_at', { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -225,6 +228,29 @@ export const pauses = merchants.table(
       sql`${table.source} <> 'restaurant' OR ${table.endsAt} IS NOT NULL`,
     ),
     changedByValues('pauses_ended_by_type_values', table.endedByType),
+  ],
+);
+
+// RA §18, architecture §5.5, E4: a change of a restaurant's state, written in
+// the transaction of the change; the worker's RestaurantStateRelay publishes
+// it to the restaurant's and the city's operations channels and queues its
+// push, then sets relayed_at, the only column the application role changes.
+export const stateOutbox = merchants.table(
+  'state_outbox',
+  {
+    id: bigint('id', { mode: 'bigint' }).primaryKey().generatedAlwaysAsIdentity(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    restaurantId: uuid('restaurant_id').notNull(),
+    cityId: uuid('city_id').notNull(),
+    // What changed (state-events.ts), such as paused or auto_paused.
+    kind: text('kind').notNull(),
+    payload: jsonb('payload').notNull(),
+    relayedAt: timestamp('relayed_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('state_outbox_unrelayed')
+      .on(table.id)
+      .where(sql`${table.relayedAt} IS NULL`),
   ],
 );
 

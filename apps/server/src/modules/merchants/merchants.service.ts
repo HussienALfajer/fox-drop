@@ -4,6 +4,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
+import { Jobs } from '../../jobs/jobs.module.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { FilesService } from '../files/index.js';
 import { FxService } from '../fx/index.js';
@@ -18,6 +19,7 @@ import {
   type OpeningPeriod,
 } from './hours.js';
 import { type AccountStatus, type OperatingState, operatingState } from './operating-state.js';
+import { recordStateChange } from './state-events.js';
 import {
   categories,
   commissionRates,
@@ -234,6 +236,7 @@ export class MerchantsService implements OnModuleInit {
     private readonly audit: AuditService,
     private readonly settings: SettingsService,
     private readonly files: FilesService,
+    private readonly jobs: Jobs,
   ) {}
 
   // The minimum orders and menu prices are in the city's base currency
@@ -516,6 +519,12 @@ export class MerchantsService implements OnModuleInit {
         },
         tx,
       );
+      await recordStateChange(tx, this.jobs, {
+        restaurantId,
+        cityId: row.cityId,
+        kind: 'hours',
+        at: new Date(),
+      });
     });
   }
 

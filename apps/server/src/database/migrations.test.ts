@@ -591,6 +591,16 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
     ).rejects.toThrow(/platform_outbox_apps/);
   });
 
+  it('let the application role mark a restaurant state change relayed, and change nothing else', async () => {
+    const { rows } = await appQuery(
+      `INSERT INTO merchants.state_outbox (created_at, restaurant_id, city_id, kind, payload) VALUES (now(), '${randomUUID()}', '${randomUUID()}', 'paused', '{}') RETURNING id`,
+    );
+    await appQuery(`UPDATE merchants.state_outbox SET relayed_at = now() WHERE id = ${rows[0].id}`);
+    await expect(
+      appQuery(`UPDATE merchants.state_outbox SET kind = 'resumed' WHERE id = ${rows[0].id}`),
+    ).rejects.toThrow(/permission denied/);
+  });
+
   it('keep an emergency stop as it started, one open per city, and its attempts unchanged', async () => {
     const admin = randomUUID();
     const start = (city: string) =>

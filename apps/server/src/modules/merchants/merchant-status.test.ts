@@ -13,7 +13,10 @@ import {
   type DevelopmentCodeSender,
   MerchantAccountsService,
 } from '../identity/index.js';
-import { MerchantsService } from './index.js';
+import { NotificationTexts } from '../content/index.js';
+import { PushQueue, RealtimePublisher, RestaurantStateRelay } from '../notifications/index.js';
+import { DATABASE } from '../../database/database.module.js';
+import { MerchantsService, RestaurantStatusService } from './index.js';
 
 // The restaurant's status sheet (RA §7.1–7.3, §18): pause, resume and busy
 // mode from the restaurant app, by an owner or a cashier.
@@ -360,5 +363,120 @@ describe('status and hours, the owners’ (RA §10)', () => {
     });
     expect(wrong.statusCode).toBe(400);
     expect(wrong.json().error).toBe('invalid_holiday_close');
+  });
+});
+
+describe('state events and timers (RA §16 #24, #25, §18)', () => {
+  const kinds = async (id: string) =>
+    (
+      await sql.query(
+        'SELECT kind, payload FROM merchants.state_outbox WHERE restaurant_id = $1 ORDER BY id',
+        [id],
+      )
+    ).rows;
+  const jobsOf = async (name: string, id: string) =>
+    (
+      await sql.query(
+        `SELECT data, start_after FROM pgboss.job WHERE name = $1 AND data->>'restaurantId' = $2`,
+        [name, id],
+      )
+    ).rows;
+
+  it('records a change for every command, and sets the timed pause’s end', async () => {
+    const { id, cashier } = await restaurant();
+    const owner = await signedIn(id, 'owner');
+    await call('POST', 'status/pause', cashier.headers, { minutes: 15 });
+    await call('POST', 'status/resume', cashier.headers);
+    await call('PUT', 'status/busy-mode', cashier.headers, { extraMin: 10 });
+    await call('PUT', 'hours', owner.headers, { periods: allWeek });
+    await call('PUT', 'order-settings', owner.headers, { defaultPrepMin: 25, maxActiveOrders: 4 });
+    expect((await kinds(id)).map((row) => row.kind)).toEqual([
+      'hours',
+      'paused',
+      'resumed',
+      'busy_mode',
+      'hours',
+      'order_settings',
+    ]);
+    const [pauseEnd] = await jobsOf('merchants-pause-end', id);
+    expect(pauseEnd).toBeDefined();
+    const [reminder] = await jobsOf('merchants-busy-reminder', id);
+    expect(new Date(reminder.start_after).getTime() - Date.now()).toBeGreaterThan(59 * 60_000);
+  });
+
+  it('tells the restaurant its pause ended only when it ended on its own', async () => {
+    const service = app.get(RestaurantStatusService);
+    const { id, cashier } = await restaurant();
+    await call('POST', 'status/pause', cashier.headers, { minutes: 15 });
+    const [{ data }] = await jobsOf('merchants-pause-end', id);
+    // Too early: nothing.
+    expect(await service.pauseEnded(data)).toBe(false);
+    const later = new Date(Date.now() + 16 * 60_000);
+    expect(await service.pauseEnded(data, later)).toBe(true);
+    expect((await kinds(id)).at(-1)).toEqual({
+      kind: 'pause_ended',
+      payload: { schema: 1, values: { push: true } },
+    });
+
+    // A pause resumed early has no end to tell.
+    await call('POST', 'status/pause', cashier.headers, { minutes: 30 });
+    await call('POST', 'status/resume', cashier.headers);
+    const jobs = await jobsOf('merchants-pause-end', id);
+    expect(await service.pauseEnded(jobs.at(-1)!.data, new Date(Date.now() + 31 * 60_000))).toBe(
+      false,
+    );
+  });
+
+  it('reminds of busy mode while it is the one the job was set for', async () => {
+    const service = app.get(RestaurantStatusService);
+    const { id, cashier } = await restaurant();
+    await call('PUT', 'status/busy-mode', cashier.headers, { extraMin: 20 });
+    const [{ data }] = await jobsOf('merchants-busy-reminder', id);
+    expect(await service.busyReminder(data)).toBe(true);
+    expect((await kinds(id)).at(-1)).toEqual({
+      kind: 'busy_reminder',
+      payload: { schema: 1, values: { extraMin: 20 } },
+    });
+    // Off, then on again: the old job is without effect.
+    await call('PUT', 'status/busy-mode', cashier.headers, { extraMin: null });
+    await call('PUT', 'status/busy-mode', cashier.headers, { extraMin: 10 });
+    expect(await service.busyReminder(data)).toBe(false);
+  });
+
+  it('relays each change once to the restaurant and the city, with its push', async () => {
+    const published: { channels: string[]; data: Record<string, unknown> }[] = [];
+    const publisher = {
+      enabled: true,
+      broadcast: (channels: string[], data: Record<string, unknown>) => {
+        published.push({ channels, data });
+        return Promise.resolve();
+      },
+    } as unknown as RealtimePublisher;
+    const relay = new RestaurantStateRelay(
+      app.get(DATABASE),
+      app.get(RestaurantStatusService),
+      publisher,
+      app.get(PushQueue),
+      app.get(NotificationTexts),
+    );
+    await relay.drain(new Date());
+    published.length = 0;
+    const { id, cashier } = await restaurant();
+    await call('PUT', 'status/busy-mode', cashier.headers, { extraMin: 20 });
+    const [{ data }] = await jobsOf('merchants-busy-reminder', id);
+    await app.get(RestaurantStatusService).busyReminder(data);
+    expect(await relay.drain(new Date())).toBeGreaterThanOrEqual(3);
+    const mine = published.filter((entry) => entry.data.restaurantId === id);
+    expect(mine.map((entry) => entry.data.kind)).toEqual(['hours', 'busy_mode', 'busy_reminder']);
+    expect(mine[0]!.channels).toEqual([`merchant:${id}`, `ops:city.${azaz}`]);
+    expect(mine[0]!.data).toMatchObject({ type: 'restaurant.state_changed', schema: 1 });
+    const pushes = await sql.query(
+      `SELECT template_key, body FROM notifications.push_messages WHERE restaurant_id = $1`,
+      [id],
+    );
+    expect(pushes.rows).toEqual([
+      { template_key: 'merchant.busy_reminder', body: 'وضع الضغط ما زال مفعّلاً (+20 د)' },
+    ]);
+    expect(await relay.drain(new Date())).toBe(0);
   });
 });

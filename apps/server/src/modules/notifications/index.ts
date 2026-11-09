@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
+import { JobsModule } from '../../jobs/jobs.module.js';
+import { ContentModule } from '../content/index.js';
 import { CaptainsModule } from '../captains/index.js';
 import { GeoModule } from '../geo/index.js';
 import { IdentityModule, OpenAppSessionsModule, OtpSenderPoolModule } from '../identity/index.js';
@@ -13,6 +15,7 @@ import { CustomerNotificationsController } from './customer-notifications.contro
 import { PUSH_SENDER, pushSenderFromEnvironment } from './fcm-sender.js';
 import { AppChangeBroadcasts, PlatformBroadcasts } from './platform-broadcasts.js';
 import { PlatformRelay, PlatformRelayWorker } from './platform-relay.js';
+import { RestaurantStateRelay, RestaurantStateRelayWorker } from './restaurant-state-relay.js';
 import { PushDevices } from './push-devices.js';
 import { PushQueue } from './push-queue.js';
 import { PushRelay, PushRelayWorker } from './push-relay.js';
@@ -101,11 +104,19 @@ export class PushWorkerModule {}
 })
 export class AlertsWorkerModule {}
 
-// The worker's relay of the platform broadcasts (platform-relay.ts) to the
-// restaurants', captains' and panel's channels.
+// The worker's relays of the platform broadcasts (platform-relay.ts) to the
+// restaurants', captains' and panel's channels, and of the restaurants' state
+// changes (restaurant-state-relay.ts) with their pushes.
 @Module({
-  imports: [DatabaseModule, CaptainsModule, GeoModule, MerchantsModule],
-  providers: [RealtimePublisher, PlatformRelay, PlatformRelayWorker],
+  imports: [DatabaseModule, JobsModule, CaptainsModule, GeoModule, MerchantsModule, ContentModule],
+  providers: [
+    RealtimePublisher,
+    PushQueue,
+    PlatformRelay,
+    PlatformRelayWorker,
+    RestaurantStateRelay,
+    RestaurantStateRelayWorker,
+  ],
 })
 export class PlatformRelayWorkerModule {}
 
@@ -123,3 +134,4 @@ export {
   type PlatformBroadcast,
   PlatformBroadcasts,
 } from './platform-broadcasts.js';
+export { RestaurantStateRelay } from './restaurant-state-relay.js';
