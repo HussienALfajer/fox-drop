@@ -1,5 +1,6 @@
 import 'package:core_l10n/core_l10n.dart';
 import 'package:customer/src/browsing/browsing.dart';
+import 'package:customer/src/media.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -113,6 +114,42 @@ void main() {
     await tester.tap(find.text('أوقات العمل'));
     await tester.pumpAndSettle();
     expect(find.text('10:00 ص – 11:00 م'), findsOneWidget);
+  });
+
+  test('an image is asked at the smallest width that fills it (CU §4.5)', () {
+    expect(mediaWidth(56), 160);
+    expect(mediaWidth(161), 320);
+    expect(mediaWidth(1080), 1280);
+    expect(mediaWidth(3000), 1280);
+    expect(
+      mediaUrl('https://api.test/media', 'menu/items/a.jpg', 300),
+      'https://api.test/media/_/w320/plain/menu/items/a.jpg',
+    );
+  });
+
+  testWidgets('a restaurant page shows its cover, logo and item photos', (
+    tester,
+  ) async {
+    final page = shamPage();
+    page['logoKey'] = 'restaurants/logos/sham.png';
+    page['coverKey'] = 'restaurants/covers/sham.png';
+    final category = (page['menu']! as List<Object?>).first!;
+    final items = (category as Map<String, Object?>)['items']! as List<Object?>;
+    (items.first! as Map<String, Object?>)['photoKey'] = 'menu/items/one.png';
+    final app = await browsingApp(tester, page: page);
+    await openSham(tester);
+
+    // The test phone is 800 pixels wide: the cover takes the 1280 preset,
+    // the 56 and 64 pixel logo and photo the 160 one.
+    expect(
+      app.mediaUrls,
+      containsAll([
+        'https://api.test/media/_/w1280/plain/restaurants/covers/sham.png',
+        'https://api.test/media/_/w160/plain/restaurants/logos/sham.png',
+        'https://api.test/media/_/w160/plain/menu/items/one.png',
+      ]),
+    );
+    expect(find.bySemanticsLabel('مطعم الشام'), findsWidgets);
   });
 
   testWidgets('a closed restaurant keeps its menu with the add button off', (

@@ -9,6 +9,7 @@ import '../emergency_stop.dart';
 import '../cart/item_choice.dart';
 import '../cart/item_sheet.dart';
 import '../device.dart';
+import '../media_image.dart';
 import 'browsing.dart';
 
 /// A restaurant's page (CU §9.1–9.3, §9.5's badge): the header, the state,
@@ -81,9 +82,25 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
     final search = _search.trim();
     return ListView(
       children: [
+        if (r.coverKey case final cover?)
+          MediaImage(
+            imageKey: cover,
+            width: MediaQuery.sizeOf(context).width,
+            height: 160,
+            label: r.nameAr,
+          ),
         // CU §4.7: browsing goes on during an emergency stop, with its message.
         const EmergencyStopNotice(),
         ListTile(
+          leading: switch (r.logoKey) {
+            final logo? => MediaImage(
+              imageKey: logo,
+              width: 56,
+              height: 56,
+              label: r.nameAr,
+            ),
+            null => null,
+          },
           title: Text(r.nameAr),
           subtitle: Text(
             [
@@ -197,6 +214,15 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
           };
     return ListTile(
       key: Key('item-${item.id}'),
+      leading: switch (item.photoKey) {
+        final photo? => MediaImage(
+          imageKey: photo,
+          width: 64,
+          height: 64,
+          label: item.name,
+        ),
+        null => null,
+      },
       title: Text(item.name),
       subtitle: Text([?item.description, price, ?unavailable].join('\n')),
       enabled: item.available,

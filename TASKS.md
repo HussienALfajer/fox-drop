@@ -4,12 +4,20 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.5, object storage and images (`docs/roadmap.md`, Phase 2 foundations): the S3-compatible storage and imgproxy in development and staging, signed uploads, restaurant logos and covers and item photos in the customer app. The owner uploads an item photo and the customer sees it.
+Slice 2.6, restaurant status and hours (`docs/roadmap.md`, Phase 2, the rest of the order cycle): pause (15, 30, 60, until reopening), resume, busy mode with its reminder, holiday close, several and overnight periods, the maximum active orders, the auto-pause after 3 unanswered orders and its alert, the precedence of RA §7.1. The owner pauses the restaurant from the app and the customer sees it closed.
 
-- **Specs:** architecture §5.8 (two buckets, `public-media` through imgproxy and nginx's cache, `private-docs` with short-lived signed URLs; uploads straight from the app with a pre-signed URL, the server checking type and size before linking the file), T7 and T9 (the storage software is chosen in this slice, the same in development and on the server), §17 (the containers per environment, the nightly copy of both buckets), CU §4.5 (images per screen size), the image fields of the menu and restaurant specs the slice touches (RA §9, AP §9.6), and `docs/open-questions.md` for anything open about photos.
-- **Branch:** `feat/object-storage`.
-- **Ask the owner first:** which S3-compatible storage (T7: MinIO no longer publishes images; candidates such as Garage or SeaweedFS), and whether the slice is one pull request or two (storage and uploads, then the customer app's images), with the `slice-plan` skill if two.
-- **Plan:** write it as a checklist once the owner answers, one step per commit: the storage and imgproxy in `compose.yaml` and the staging deploy, the server's files module with the signed upload and the check before linking, who uploads which image (the panel and the restaurant app's menu, per the specs), the customer app showing logos, covers and item photos through imgproxy, then review and hand over to slice 2.6.
+- **Specs:** RA §7 (restaurant status, the precedence of §7.1), RA §10 (status and hours: pauses, busy mode, holiday closes, periods, the maximum active orders, the auto-pause), AP §9.6.5 (the panel's restaurant actions on status), RA Appendix A (the settings), CU §9.2 (what customers see), and `docs/open-questions.md` for anything open about status and hours.
+- **Branch:** `feat/restaurant-status`.
+- **Already built:** `operatingState` and `storefrontState` read pauses, holiday closes, busy mode and the schedule (`apps/server/src/modules/merchants/CLAUDE.md` «Operating state», «Hours», «Holiday closes and pauses»); setting them, the one-pause rule and the auto-pause are this slice.
+- **Ask the owner first:** whether the slice is one pull request or two (the server and the restaurant app, then the panel and the customer app), with the `slice-plan` skill if two.
+- **Plan:** write it as a checklist once the owner answers, one step per commit, then review and hand over to slice 2.7.
+
+### Left from 2.5 (`feat/object-storage`)
+
+- **Before the first deploy with the storage:** run `provision.sh` from the merged commit (it adds the six storage secrets, the `/media/` and `/public-media/` nginx locations, the media cache and the backup's new copy), then deploy that commit again (the `deploy` skill, «Object storage and images»). The first automatic deploy fails at Compose's interpolation until then, and staging keeps running the previous release.
+- **To check on staging:** in the panel, «الصور» → a restaurant → upload a logo, a cover and an item photo; the new customer APK shows them on the list and the restaurant page; `curl -sI https://<API host>/media/_/w320/plain/<key>` answers `image/webp`; the next night's backup shows «copied the public-media bucket to B2».
+- **To confirm with the owner:** DATA (data entry) sets a restaurant's logo and cover (AP §9.6.3 step 1 lists DATA, OPS, OWN) and item photos (`restaurants.menus`), on live restaurants too, while AP §6.1 describes DATA's work as before activation; the 8 MB limit and JPEG, PNG and WebP only; the four widths (160, 320, 640, 1280) and WebP for every image; the strings the spec gives no wording for («الصور», «رفع صورة», «استبدال الصورة», «لا توجد صورة», «حُفظت الصورة» and the refusals); the panel screen lists the first city's restaurants only (until the top bar's city selector).
+- **Not yet:** removing objects nobody links (`incoming/` files, unlinked copies, replaced images); a real upload from a browser through nginx on staging (proved locally with nginx 1.24 and curl over HTTP/1.1); the restaurant's own photos with their review (RA §9.2, 2.32); cropping in the review (AP §9.6.7); `private-docs` with the captain documents (2.34); the customer's report photos (2.24).
 
 ### Left from 2.4d (`feat/emergency-stop-apps`)
 

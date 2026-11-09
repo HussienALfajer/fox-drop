@@ -772,6 +772,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantImagesList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantImagesImages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/logo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantImagesLogo"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/cover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantImagesCover"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/items/{itemId}/photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantImagesItemPhoto"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cities": {
         parameters: {
             query?: never;
@@ -782,6 +862,22 @@ export interface paths {
         get: operations["adminCitiesList"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminUploadsCreate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2635,6 +2731,41 @@ export interface components {
                 until: string | null;
             } | null;
         };
+        AdminRestaurantsDto_Output: {
+            restaurants: {
+                /** Format: uuid */
+                id: string;
+                nameAr: string;
+            }[];
+        };
+        AdminRestaurantImagesDto_Output: {
+            /** @description Its key in public-media, shown through /media/ (architecture §5.8); null without one. */
+            logoKey: string | null;
+            /** @description Its key in public-media, shown through /media/ (architecture §5.8); null without one. */
+            coverKey: string | null;
+            categories: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                items: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    /** @description Its key in public-media, shown through /media/ (architecture §5.8); null without one. */
+                    photoKey: string | null;
+                }[];
+            }[];
+        };
+        AdminSetImageDto: {
+            /**
+             * Format: uuid
+             * @description From POST /v1/admin/uploads, once the PUT is done.
+             */
+            uploadId: string;
+        };
+        AdminImageSetDto_Output: {
+            key: string;
+        };
         AdminCitiesDto_Output: {
             /** @description The active cities, by name. */
             cities: {
@@ -2646,6 +2777,27 @@ export interface components {
                 /** @description The city's clock, such as Asia/Damascus. */
                 timeZone: string;
             }[];
+        };
+        AdminNewUploadDto: {
+            /**
+             * @description The record the file is for (architecture §5.8).
+             * @enum {string}
+             */
+            purpose: "restaurant_logo" | "restaurant_cover" | "item_photo";
+            /** @enum {string} */
+            contentType: "image/jpeg" | "image/png" | "image/webp";
+            sizeBytes: number;
+        };
+        AdminUploadDto_Output: {
+            /**
+             * Format: uuid
+             * @description Links the file once uploaded (the record’s own route).
+             */
+            uploadId: string;
+            /** @description A PUT of the exact bytes, with the same Content-Type, on the panel’s own origin. */
+            url: string;
+            /** Format: date-time */
+            expiresAt: string;
         };
         CaptainAvailabilityDto_Output: {
             /** @description CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «لا تصلك عروض» with its reasons, «موقوف». */
@@ -3371,7 +3523,9 @@ export interface components {
                 nameAr: string;
                 nameEn: string | null;
                 category: string | null;
+                /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
                 logoKey: string | null;
+                /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
                 coverKey: string | null;
                 /** @description The average rating; null is «جديد» (Q16). Ratings arrive with their slice. */
                 rating: number | null;
@@ -3416,7 +3570,9 @@ export interface components {
             nameAr: string;
             nameEn: string | null;
             category: string | null;
+            /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
             logoKey: string | null;
+            /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
             coverKey: string | null;
             /** @description The average rating; null is «جديد» (Q16). Ratings arrive with their slice. */
             rating: number | null;
@@ -3490,7 +3646,7 @@ export interface components {
                     id: string;
                     name: string;
                     description: string | null;
-                    /** @description Null until the object storage arrives (T7). */
+                    /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
                     photoKey: string | null;
                     price: {
                         /** @description Integer minor units (AP §8.6). */
@@ -6649,6 +6805,129 @@ export interface operations {
             };
         };
     };
+    adminRestaurantImagesList: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantsDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantImagesImages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantImagesDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantImagesLogo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetImageDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminImageSetDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantImagesCover: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetImageDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminImageSetDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantImagesItemPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetImageDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminImageSetDto_Output"];
+                };
+            };
+        };
+    };
     adminCitiesList: {
         parameters: {
             query?: never;
@@ -6665,6 +6944,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCitiesDto_Output"];
+                };
+            };
+        };
+    };
+    adminUploadsCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminNewUploadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUploadDto_Output"];
                 };
             };
         };

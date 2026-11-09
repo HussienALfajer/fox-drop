@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# Backs up one FOX DROP environment's database (architecture §17.2), installed
-# as /usr/local/bin/foxdrop-backup by provision.sh and run nightly by
-# foxdrop-backup@<environment>.timer:
+# Backs up one FOX DROP environment's database and images (architecture §5.8,
+# §17.2), installed as /usr/local/bin/foxdrop-backup by provision.sh and run
+# nightly by foxdrop-backup@<environment>.timer:
 #   foxdrop-backup <environment>
 # A custom-format pg_dump, checked by pg_restore, kept 7 days in
 # /var/backups/foxdrop-<environment>, and copied encrypted (rclone crypt) to
-# Backblaze B2, where copies older than 30 days are deleted. The B2 key and
+# Backblaze B2, where dumps older than 30 days are deleted; then the
+# public-media bucket, copied encrypted to B2 under public-media/. The B2 key and
 # the encryption password are in the environment's shared/.env; without them
 # the local copy is still made and the run fails, so the journal shows it.
 set -euo pipefail
@@ -61,5 +62,25 @@ RCLONE_CONFIG_FOXDROPCRYPT_PASSWORD=$(rclone obscure - <<<"$BACKUP_ENCRYPTION_PA
 export RCLONE_CONFIG_FOXDROPCRYPT_PASSWORD
 
 rclone copyto "$dir/$name" "foxdropcrypt:$name"
-rclone delete --min-age 30d foxdropcrypt:
+# Only the dumps at the top expire; the images below public-media/ stay.
+rclone delete --min-age 30d --max-depth 1 --include '*.dump' foxdropcrypt:
 echo "copied $name to B2 bucket $B2_BUCKET, encrypted"
+
+# The public-media bucket (architecture §5.8), read from the storage's S3 API
+# on its loopback port with the reader key. A key is never reused, so a copy
+# adds the new images and never changes or removes one.
+STORAGE_READER_KEY_ID=$(setting STORAGE_READER_KEY_ID)
+STORAGE_READER_SECRET=$(setting STORAGE_READER_SECRET)
+storage_port=$(sed -n 's/^STORAGE_PORT=//p' "$home/current/infra/environments/$environment.env")
+if [ -z "$STORAGE_READER_KEY_ID" ] || [ -z "$STORAGE_READER_SECRET" ] || [ -z "$storage_port" ]; then
+  die "no copy of the images: the storage's reader key or port is missing (provision.sh, then a deploy)"
+fi
+export RCLONE_CONFIG_FOXDROPSTORAGE_TYPE=s3
+export RCLONE_CONFIG_FOXDROPSTORAGE_PROVIDER=Other
+export RCLONE_CONFIG_FOXDROPSTORAGE_ENDPOINT=http://127.0.0.1:$storage_port
+export RCLONE_CONFIG_FOXDROPSTORAGE_REGION=garage
+export RCLONE_CONFIG_FOXDROPSTORAGE_FORCE_PATH_STYLE=true
+export RCLONE_CONFIG_FOXDROPSTORAGE_ACCESS_KEY_ID=$STORAGE_READER_KEY_ID
+export RCLONE_CONFIG_FOXDROPSTORAGE_SECRET_ACCESS_KEY=$STORAGE_READER_SECRET
+rclone copy foxdropstorage:public-media foxdropcrypt:public-media
+echo "copied the public-media bucket to B2, encrypted"

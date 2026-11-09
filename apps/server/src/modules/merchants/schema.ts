@@ -49,7 +49,7 @@ export const restaurants = merchants.table(
     nameEn: text('name_en'),
     category: text('category'),
     description: text('description'),
-    // Object storage keys; the storage arrives with the first upload (T7).
+    // Keys in public-media (architecture §5.8), set from the panel's uploads.
     logoKey: text('logo_key'),
     coverKey: text('cover_key'),
     location: point('location').notNull(),

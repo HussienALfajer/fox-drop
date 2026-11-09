@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
 import { AuditModule } from '../audit/index.js';
+import { FilesModule } from '../files/index.js';
 import { FxModule } from '../fx/index.js';
 import { GeoModule } from '../geo/index.js';
 import { SettingsModule } from '../settings/index.js';
+import { AdminRestaurantImagesController } from './admin-restaurant-images.controller.js';
 import { MerchantMenuController } from './merchant-menu.controller.js';
 import { MerchantsService } from './merchants.service.js';
 
@@ -11,8 +13,8 @@ import { MerchantsService } from './merchants.service.js';
 // coverage, commission and menu. Other modules read them through
 // MerchantsService only.
 @Module({
-  imports: [DatabaseModule, SettingsModule, FxModule, GeoModule, AuditModule],
-  controllers: [MerchantMenuController],
+  imports: [DatabaseModule, SettingsModule, FxModule, GeoModule, AuditModule, FilesModule],
+  controllers: [MerchantMenuController, AdminRestaurantImagesController],
   providers: [MerchantsService],
   exports: [MerchantsService],
 })

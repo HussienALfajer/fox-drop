@@ -5,6 +5,7 @@ import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
+import { FilesService } from '../files/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService, nextCutoff, type Point } from '../geo/index.js';
 import { lockCityCurrencies, SettingsService } from '../settings/index.js';
@@ -48,7 +49,8 @@ export type MerchantsRefusal =
   | 'restaurant_terminated'
   | 'invalid_device'
   | 'device_rename_not_allowed'
-  | 'reason_required';
+  | 'reason_required'
+  | 'upload_used';
 
 // A change the merchants module refuses, with the reason the routes map to
 // their own answers.
@@ -101,7 +103,8 @@ export interface Restaurant {
   nameEn: string | null;
   category: string | null;
   description: string | null;
-  // Object storage keys; null until the storage arrives (T7).
+  // Keys in public-media, served by imgproxy (architecture §5.8); null
+  // without an image.
   logoKey: string | null;
   coverKey: string | null;
   accountStatus: AccountStatus;
@@ -158,7 +161,8 @@ export interface MenuItem {
   code: string;
   name: string;
   description: string | null;
-  // Object storage key; null until the storage arrives (T7).
+  // Its key in public-media, served by imgproxy (architecture §5.8); null
+  // without a photo.
   photoKey: string | null;
   price: Money;
   // Whether a customer can order it now: its switch, its category's (and its
@@ -217,6 +221,7 @@ export class MerchantsService implements OnModuleInit {
     private readonly fx: FxService,
     private readonly audit: AuditService,
     private readonly settings: SettingsService,
+    private readonly files: FilesService,
   ) {}
 
   // The minimum orders and menu prices are in the city's base currency
@@ -1167,6 +1172,97 @@ export class MerchantsService implements OnModuleInit {
         tx,
       );
       return after;
+    });
+  }
+
+  // AP §9.6.3: the restaurant's logo or cover from an admin's upload,
+  // published at once (an admin's edit needs no review, AP §9.6.7). The files
+  // module copies and checks the file before the transaction (no storage call
+  // under the restaurant's lock) and marks it linked in it. Setting the
+  // same upload again changes nothing; another record's upload is refused.
+  async setRestaurantImage(
+    restaurantId: string,
+    image: 'logo' | 'cover',
+    uploadId: string,
+    change: MerchantChange,
+  ): Promise<string> {
+    const purpose = image === 'logo' ? 'restaurant_logo' : 'restaurant_cover';
+    await this.files.prepare(uploadId, purpose);
+    return this.database.db.transaction(async (tx) => {
+      const row = await this.lockRestaurant(tx, restaurantId);
+      const column = image === 'logo' ? restaurants.logoKey : restaurants.coverKey;
+      const [{ before }] = (await tx
+        .select({ before: column })
+        .from(restaurants)
+        .where(eq(restaurants.id, restaurantId))) as [{ before: string | null }];
+      const { key, alreadyLinked } = await this.files.link(tx, uploadId);
+      if (alreadyLinked) {
+        if (before === key) return key;
+        throw new MerchantsRefusedError('upload_used', 'the upload is linked elsewhere');
+      }
+      await tx
+        .update(restaurants)
+        .set({ [image === 'logo' ? 'logoKey' : 'coverKey']: key, updatedAt: sql`now()` })
+        .where(eq(restaurants.id, restaurantId));
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId: row.cityId,
+          action: `restaurant.${image}`,
+          target: { type: 'restaurant', id: restaurantId },
+          before: { key: before },
+          after: { key },
+          reason: null,
+        },
+        tx,
+      );
+      return key;
+    });
+  }
+
+  // AP §9.6.6: an item's photo from an admin's upload, published at once.
+  // As setRestaurantImage; the restaurant's lock orders it with the menu's
+  // other changes.
+  async setItemPhoto(
+    restaurantId: string,
+    itemId: string,
+    uploadId: string,
+    change: MerchantChange,
+  ): Promise<string> {
+    await this.files.prepare(uploadId, 'item_photo');
+    return this.database.db.transaction(async (tx) => {
+      const row = await this.lockRestaurant(tx, restaurantId);
+      const [item] = await tx
+        .select({ before: items.photoKey })
+        .from(items)
+        .where(
+          and(eq(items.id, itemId), eq(items.restaurantId, restaurantId), isNull(items.deletedAt)),
+        );
+      if (!item) throw new MerchantsRefusedError('unknown_menu_row', 'no such item here');
+      const { key, alreadyLinked } = await this.files.link(tx, uploadId);
+      if (alreadyLinked) {
+        if (item.before === key) return key;
+        throw new MerchantsRefusedError('upload_used', 'the upload is linked elsewhere');
+      }
+      await tx
+        .update(items)
+        .set({ photoKey: key, updatedAt: sql`now()` })
+        .where(eq(items.id, itemId));
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId: row.cityId,
+          action: 'menu.item.photo',
+          target: { type: 'menu_item', id: itemId },
+          before: { key: item.before },
+          after: { key },
+          reason: null,
+        },
+        tx,
+      );
+      return key;
     });
   }
 

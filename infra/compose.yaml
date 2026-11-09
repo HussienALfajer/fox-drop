@@ -6,7 +6,7 @@
 #
 # Every published port is on 127.0.0.1: Docker bypasses the host firewall,
 # and nginx is the only public gateway (§15.5). infra.test.mjs checks it.
-# imgproxy and the object storage join with their first use.
+# The object storage (Garage) and imgproxy serve the images (§5.8).
 
 x-server: &server
   image: ghcr.io/hussienalfajer/fox-drop-server:${FOXDROP_RELEASE:?}
@@ -103,11 +103,78 @@ services:
     environment:
       MIGRATION_DATABASE_URL: postgres://fox_drop_migrator:${FOX_DROP_MIGRATOR_PASSWORD:?}@postgres:5432/fox_drop
 
+  # The object storage (architecture §5.8, T7): Garage, as in development
+  # (storage/garage.toml). Its S3 API on STORAGE_PORT is reached only through
+  # nginx's /public-media on the panel's host (PUT only) and by the nightly
+  # copy; its admin API stays on this network, for the setup.
+  storage:
+    # The same image as the development compose.yaml (infra.test.mjs).
+    image: dxflrs/garage:v2.5.0
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    environment:
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:?}
+      GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN:?}
+    volumes:
+      - ./storage/garage.toml:/etc/garage.toml:ro
+      - storage-data:/var/lib/garage
+    ports:
+      - 127.0.0.1:${STORAGE_PORT:?}:3900
+    mem_limit: 256m
+
+  # Sets up the storage's layout, keys and bucket, safe to run again; run by
+  # the deploy with `run --rm storage-setup` before the release starts.
+  storage-setup:
+    <<: *server
+    profiles: [storage-setup]
+    restart: 'no'
+    depends_on:
+      storage:
+        condition: service_started
+    networks: [default]
+    command: [node, dist/storage/storage-setup-command.js]
+    environment:
+      STORAGE_ADMIN_URL: http://storage:3903
+      GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN:?}
+      STORAGE_KEY_ID: ${STORAGE_KEY_ID:?}
+      STORAGE_SECRET: ${STORAGE_SECRET:?}
+      STORAGE_READER_KEY_ID: ${STORAGE_READER_KEY_ID:?}
+      STORAGE_READER_SECRET: ${STORAGE_READER_SECRET:?}
+
+  # The images (architecture §5.8, CU §4.5): public-media at four widths,
+  # read with the reader key, behind nginx's cached /media/ on every host.
+  imgproxy:
+    # The same image as the development compose.yaml (infra.test.mjs).
+    image: darthsim/imgproxy:v4.0.22
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    env_file: ./imgproxy/imgproxy.env
+    environment:
+      IMGPROXY_S3_ENDPOINT: http://storage:3900
+      AWS_ACCESS_KEY_ID: ${STORAGE_READER_KEY_ID:?}
+      AWS_SECRET_ACCESS_KEY: ${STORAGE_READER_SECRET:?}
+    ports:
+      - 127.0.0.1:${IMGPROXY_PORT:?}:8080
+    healthcheck:
+      test: [CMD, imgproxy, health]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    # Two workers (imgproxy.env), each decoding at most a 50-megapixel source.
+    mem_limit: 768m
+
   api:
     <<: *server
     environment:
       <<: [*server-environment, *centrifugo-publish]
       PROCESS_ROLE: api
+      # Signs the panel's uploads and checks them before linking (§5.8).
+      STORAGE_URL: http://storage:3900
+      STORAGE_KEY_ID: ${STORAGE_KEY_ID:?}
+      STORAGE_SECRET: ${STORAGE_SECRET:?}
       # App Check on the code requests (§8.3.3 item 1).
       FIREBASE_PROJECT_NUMBER: ${FIREBASE_PROJECT_NUMBER:-}
       # The support numbers the apps show (AP §9.13 contact info).
@@ -222,3 +289,4 @@ networks:
 
 volumes:
   postgres-data:
+  storage-data:

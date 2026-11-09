@@ -9,6 +9,7 @@ environment:
 resolution: workspace
 
 dependencies:
+  cached_network_image: 4.0.5
   core_api: any
   core_auth: any
   core_l10n: any

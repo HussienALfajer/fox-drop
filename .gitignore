@@ -38,8 +38,8 @@ test-results/
 blob-report/
 
 # Local uploads and storage
-storage/
-uploads/
+/storage/
+/uploads/
 .data/
 
 # Logs

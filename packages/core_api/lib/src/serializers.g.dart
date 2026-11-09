@@ -43,6 +43,10 @@ Serializers _$serializers =
           ..add(AdminFaqDtoOutput.serializer)
           ..add(AdminFaqsDtoOutput.serializer)
           ..add(AdminFaqsDtoOutputCustomerInner.serializer)
+          ..add(AdminImageSetDtoOutput.serializer)
+          ..add(AdminNewUploadDto.serializer)
+          ..add(AdminNewUploadDtoContentTypeEnum.serializer)
+          ..add(AdminNewUploadDtoPurposeEnum.serializer)
           ..add(AdminNotificationResentDtoOutput.serializer)
           ..add(AdminNotificationTextDtoOutput.serializer)
           ..add(AdminNotificationTextDtoOutputAudienceEnum.serializer)
@@ -131,8 +135,16 @@ Serializers _$serializers =
           ..add(AdminRecordDeliveryDtoShortfall.serializer)
           ..add(AdminResendNotificationDto.serializer)
           ..add(AdminResendNotificationDtoToEnum.serializer)
+          ..add(AdminRestaurantImagesDtoOutput.serializer)
+          ..add(AdminRestaurantImagesDtoOutputCategoriesInner.serializer)
+          ..add(
+            AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner.serializer,
+          )
+          ..add(AdminRestaurantsDtoOutput.serializer)
+          ..add(AdminRestaurantsDtoOutputRestaurantsInner.serializer)
           ..add(AdminResumeEmergencyStopDto.serializer)
           ..add(AdminSessionDtoOutput.serializer)
+          ..add(AdminSetImageDto.serializer)
           ..add(AdminShortfallsDtoOutput.serializer)
           ..add(AdminShortfallsDtoOutputShortfallsInner.serializer)
           ..add(AdminStartEmergencyStopDto.serializer)
@@ -143,6 +155,7 @@ Serializers _$serializers =
           ..add(AdminTextsDtoOutputContact.serializer)
           ..add(AdminUpdateContactDto.serializer)
           ..add(AdminUpdateNotificationTextDto.serializer)
+          ..add(AdminUploadDtoOutput.serializer)
           ..add(AdminWorkRulesDto.serializer)
           ..add(AdminWorkRulesDtoOutput.serializer)
           ..add(BackupCodesDtoOutput.serializer)
@@ -641,6 +654,29 @@ Serializers _$serializers =
               const FullType(AdminRecordDeliveryDtoReceivedInner),
             ]),
             () => ListBuilder<AdminRecordDeliveryDtoReceivedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRestaurantImagesDtoOutputCategoriesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantImagesDtoOutputCategoriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRestaurantsDtoOutputRestaurantsInner),
+            ]),
+            () => ListBuilder<AdminRestaurantsDtoOutputRestaurantsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

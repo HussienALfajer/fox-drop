@@ -71,10 +71,10 @@
 
 ## 5.8 Files and images
 
-- **S3-compatible object storage self-hosted on the server** (T9), the same software as in development (T7), chosen in the slice that first stores a file. It listens only on the server and is reached through nginx on FOX DROP's domain, so phones in Syria reach it without any outside provider. Two buckets per environment:
-  - `public-media`: menu photos, logos, banners. Served by nginx through **imgproxy**, which resizes and converts to WebP or AVIF per screen size (CU §4.5); nginx caches the results, in place of a CDN in V1.
-  - `private-docs`: captain documents, contracts, report photos. Encrypted at rest, never public, opened with short-lived signed URLs, every view audited.
-- Uploads go directly from the app to storage with a pre-signed URL. The server checks type and size before linking the file to a record.
+- **S3-compatible object storage self-hosted on the server** (T9): **Garage**, the same software as in development (T7). It listens only on the server and is reached through nginx on FOX DROP's domain, so phones in Syria reach it without any outside provider. The server's storage setup (`apps/server/src/storage/`) creates its layout, its keys (the server's, which reads and writes, and a reader for imgproxy and the backups) and its buckets, and runs again on every deploy. Two buckets per environment:
+  - `public-media` (slice 2.5): menu photos, logos, covers, later banners. Served by nginx through **imgproxy** under `/media/` on every host, which resizes and converts to WebP at four fixed widths (160, 320, 640 and 1280 pixels; presets only, so the URLs need no signature) for the app to pick by screen size (CU §4.5); nginx caches the results, in place of a CDN in V1. A key names one upload and is never reused, so a cached image never goes stale.
+  - `private-docs` (with its first use, the captain documents): captain documents, contracts, report photos. Encrypted at rest, never public, opened with short-lived signed URLs, every view audited.
+- Uploads go directly from the app to storage with a pre-signed `PUT` that signs the type and the size, so the storage refuses any other body; the panel uploads to `/public-media/incoming/<file>` on its own origin, which nginx forwards to the storage for `PUT` only (no CORS). Before linking the file to a record, the server copies it to its published key, which no upload URL covers, and checks the copy's size, type and first bytes (the `files` module, §4.2); nginx serves only published keys.
 - Both buckets are copied every night, encrypted, to a destination off the server (§17.2).
 
 ## 5.9 Exports

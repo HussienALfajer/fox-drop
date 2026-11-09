@@ -30,6 +30,28 @@ location ~ ^/v1/[a-z]+/realtime/subscribe$ {
     return 404;
 }
 
+# The images (architecture §5.8, CU §4.5): imgproxy through the cache, for
+# exactly one shape of URL, a preset width of a published file
+# (/media/_/w320/plain/menu/items/<uuid>.jpg), so no other URL can make
+# imgproxy work and the cache cannot be bypassed (its key is the path, the
+# query string ignored). Reads only. imgproxy's own Cache-Control (a year)
+# reaches the apps; no add_header here, so the server's security headers stay.
+location ~ "^/media/_/w(160|320|640|1280)/plain/(restaurants/logos|restaurants/covers|menu/items)/[0-9a-f-]{36}\.(jpg|png|webp)$" {
+    limit_except GET { deny all; }
+    proxy_pass http://127.0.0.1:${IMGPROXY_PORT}$uri;
+    include snippets/foxdrop-proxy.conf;
+    proxy_cache foxdrop_${FOXDROP_ENV}_media;
+    proxy_cache_key $uri;
+    proxy_cache_valid 200 30d;
+    proxy_cache_valid 404 1m;
+    proxy_cache_lock on;
+    proxy_cache_use_stale error timeout updating;
+}
+
+location /media/ {
+    return 404;
+}
+
 location /v1/ {
     proxy_pass http://127.0.0.1:${API_PORT};
     include snippets/foxdrop-proxy.conf;

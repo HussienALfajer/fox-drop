@@ -1,8 +1,9 @@
 # The local development services (architecture §17.1). Copy .env.example to
 # .env first; every value there is fake and only for this machine.
 #   docker compose up --detach
-# OSRM starts only with its profile (below); the S3-compatible object storage
-# joins with its first use (T7).
+# OSRM starts only with its profile (below). After the first start, set up the
+# object storage (its layout, keys and bucket; safe to run again):
+#   pnpm --filter @fox-drop/server storage:setup
 name: fox-drop
 
 # The OSRM image, the same as infra/osrm/compose.yaml's (infra.test.mjs).
@@ -73,6 +74,35 @@ services:
     ports:
       - 127.0.0.1:${CENTRIFUGO_PORT:-8000}:8000
 
+  # The object storage (architecture §5.8, T7): Garage, as on staging
+  # (infra/storage/garage.toml). The panel uploads through Vite's
+  # /public-media proxy to the S3 API on 3900; the setup command uses the
+  # admin API on 3903.
+  storage:
+    image: dxflrs/garage:v2.5.0
+    environment:
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:?copy .env.example to .env}
+      GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN:?copy .env.example to .env}
+    volumes:
+      - ./infra/storage/garage.toml:/etc/garage.toml:ro
+      - storage-data:/var/lib/garage
+    ports:
+      - 127.0.0.1:${STORAGE_PORT:-3900}:3900
+      - 127.0.0.1:${STORAGE_ADMIN_PORT:-3903}:3903
+
+  # The images (architecture §5.8, CU §4.5): imgproxy reads public-media with
+  # the reader key and serves /media/... on 8088, which the panel reaches
+  # through Vite's /media proxy and the Android emulator at 10.0.2.2:8088.
+  imgproxy:
+    image: darthsim/imgproxy:v4.0.22
+    env_file: infra/imgproxy/imgproxy.env
+    environment:
+      IMGPROXY_S3_ENDPOINT: http://storage:3900
+      AWS_ACCESS_KEY_ID: ${STORAGE_READER_KEY_ID:?copy .env.example to .env}
+      AWS_SECRET_ACCESS_KEY: ${STORAGE_READER_SECRET:?copy .env.example to .env}
+    ports:
+      - 127.0.0.1:${IMGPROXY_PORT:-8088}:8080
+
   # OSRM (architecture §7.1): one osrm-routed per vehicle profile over Azaz's
   # region, as on staging. Build the data once (it downloads the 82 MB Syria
   # extract into the osrm-data volume, never into the repository), and again
@@ -128,4 +158,5 @@ services:
 
 volumes:
   postgres-data:
+  storage-data:
   osrm-data:
