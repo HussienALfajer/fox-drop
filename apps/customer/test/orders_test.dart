@@ -174,21 +174,36 @@ void main() {
   testWidgets('an order the restaurant did not answer says so (CU §11.9)', (
     tester,
   ) async {
-    final app = await open(tester, [
-      FakeAnswer(200, {
-        'order': _order(
-          status: 'cancelled',
-          version: 2,
-          cancellation: {
-            'at': '2026-11-07T12:07:00.000Z',
-            'reason': 'merchant_auto_cancel',
-            'text': 'لم يرد المطعم على طلبك',
-          },
-        ),
-      }),
-    ]);
+    final app = await open(
+      tester,
+      [
+        FakeAnswer(200, {
+          'order': _order(
+            status: 'cancelled',
+            version: 2,
+            cancellation: {
+              'at': '2026-11-07T12:07:00.000Z',
+              'reason': 'merchant_auto_cancel',
+              'text': 'لم يرد المطعم على طلبك',
+            },
+          ),
+        }),
+      ],
+      before: (app) => app.server.on('/v1/customer/restaurants', [
+        FakeAnswer(200, {
+          'restaurants': [card(nourId, 'مطعم النور')],
+        }),
+      ]),
+    );
     expect(_status(tester), 'لم يرد المطعم على طلبك، نعتذر');
     expect(find.byKey(const Key('step-confirm')), findsNothing);
+    // CU §11.9: with similar restaurants at its pin, and no rebuild.
+    expect(find.byKey(const Key('similar-$nourId')), findsOneWidget);
+    expect(
+      app.server.to('/v1/customer/restaurants').single.uri.queryParameters,
+      {'latitude': '36.5862', 'longitude': '37.0463', 'similarTo': shamId},
+    );
+    expect(find.byKey(const Key('order-without-unavailable')), findsNothing);
     await app.done(tester);
   });
 

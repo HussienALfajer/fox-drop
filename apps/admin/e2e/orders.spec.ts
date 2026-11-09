@@ -318,3 +318,78 @@ test('rejects a placed order for the restaurant with its items and a reason', as
     reason: 'اتصل المطعم',
   });
 });
+
+// AP §9.3.2 «قبول نيابة عن المطعم»: any whole minute within the limits, then
+// the detail read again shows the order accepted.
+test('accepts a placed order for the restaurant with a typed prep time', async ({ page }) => {
+  await fakeSession(page, ['operations.read', 'operations.manage']);
+  await fakeOperations(page);
+  const placed = {
+    ...detail,
+    status: 'placed',
+    captainTrack: null,
+    promisedAt: null,
+    acceptance: null,
+    readyAt: null,
+    onBehalf: {
+      prepTime: { options: [10, 15, 20], stepMin: 5, floorMin: 5, ceilingMin: 90, defaultMin: 20 },
+      rejectionReasons: [{ code: 'too_busy', label: 'ضغط طلبات' }],
+      busyExtraOptionsMin: [10, 20],
+    },
+  };
+  let accepted = false;
+  await page.route(`**/v1/admin/orders/${orderId}`, (route) =>
+    route.fulfill({ json: { order: accepted ? detail : placed } }),
+  );
+  let sent: unknown;
+  await page.route(`**/v1/admin/orders/${orderId}/accept`, (route) => {
+    sent = route.request().postDataJSON();
+    accepted = true;
+    return route.fulfill({ json: { order: card } });
+  });
+  await page.goto(`/orders/${orderId}`);
+
+  const accept = page.getByRole('form', { name: 'قبول نيابة عن المطعم' });
+  await accept.getByRole('spinbutton', { name: 'وقت التحضير (دقائق)' }).fill('23');
+  await accept.getByRole('textbox', { name: 'السبب (للسجل الداخلي)' }).fill('المطعم لا يرد');
+  await accept.getByRole('button', { name: 'تأكيد القبول' }).click();
+
+  await expect(page.getByRole('form', { name: 'قبول نيابة عن المطعم' })).toHaveCount(0);
+  expect(sent).toEqual({ prepMin: 23, reason: 'المطعم لا يرد' });
+});
+
+// AP §9.3.1: a rejected order shows its reason, the items and what the
+// customer sees.
+test('shows a rejection by operations in the detail', async ({ page }) => {
+  await fakeSession(page, ['operations.read', 'operations.manage']);
+  await fakeOperations(page);
+  await page.route(`**/v1/admin/orders/${orderId}`, (route) =>
+    route.fulfill({
+      json: {
+        order: {
+          ...detail,
+          status: 'rejected',
+          captainTrack: null,
+          promisedAt: null,
+          acceptance: null,
+          readyAt: null,
+          rejection: {
+            at: later(-5),
+            reason: 'item_unavailable',
+            label: 'صنف غير متوفر',
+            customerText: 'بعض الأصناف غير متوفرة: شاورما',
+            itemIds: ['01900000-0000-7000-8000-0000000000b1'],
+            byOperations: true,
+          },
+        },
+      },
+    }),
+  );
+  await page.goto(`/orders/${orderId}`);
+  const panel = page.getByRole('complementary', { name: 'تفاصيل الطلب' });
+  await expect(panel.getByText('سبب الرفض: صنف غير متوفر')).toBeVisible();
+  await expect(panel.getByText('رفضته العمليات نيابة عن المطعم')).toBeVisible();
+  await expect(panel.getByText('الأصناف غير المتوفرة: شاورما')).toBeVisible();
+  await expect(panel.getByText('ما يراه الزبون: «بعض الأصناف غير متوفرة: شاورما»')).toBeVisible();
+  await expect(panel.getByRole('form', { name: 'رفض نيابة عن المطعم' })).toHaveCount(0);
+});

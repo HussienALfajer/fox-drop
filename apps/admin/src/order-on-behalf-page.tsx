@@ -48,7 +48,7 @@ function AcceptForm({ choices, decide }: { choices: OnBehalfChoices; decide: Dec
     decide.mutate({ kind: 'accept', body: { prepMin: minutes, reason: reason.trim() } });
   };
   return (
-    <form onSubmit={submit} aria-labelledby={title}>
+    <form onSubmit={submit} aria-labelledby={title} noValidate>
       <h3 id={title}>{t('order.onBehalf.acceptTitle')}</h3>
       <p>
         {prepTime.options.map((option) => (
@@ -68,7 +68,8 @@ function AcceptForm({ choices, decide }: { choices: OnBehalfChoices; decide: Dec
           type="number"
           min={prepTime.floorMin}
           max={prepTime.ceilingMin}
-          step={prepTime.stepMin}
+          // Any whole minute within the limits, not only the chips' steps (RA §8.5).
+          step={1}
           value={minutes}
           onChange={(event) => setMinutes(event.target.valueAsNumber)}
         />
@@ -126,7 +127,7 @@ function RejectForm({
     if (body) decide.mutate({ kind: 'reject', body });
   };
   return (
-    <form onSubmit={submit} aria-labelledby={title}>
+    <form onSubmit={submit} aria-labelledby={title} noValidate>
       <h3 id={title}>{t('order.onBehalf.rejectTitle')}</h3>
       <fieldset>
         {choices.rejectionReasons.map((choice) => (

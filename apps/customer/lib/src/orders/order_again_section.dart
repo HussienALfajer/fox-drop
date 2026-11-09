@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../api.dart';
-import '../cart/cart.dart';
 import '../media_image.dart';
 import 'order_again.dart';
 import 'order_live.dart';
@@ -76,14 +74,14 @@ class OrderAgainSection extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final router = GoRouter.of(context);
-    final cart = ref.read(cartProvider.notifier);
-    final current = await cart.current();
+    final again = ref.read(orderAgainProvider);
+    final current = await again.cartToReplace();
     if (current != null) {
       if (!context.mounted) return;
       final replace = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          content: Text(l10n.customerReplaceCart(current.restaurantName)),
+          content: Text(l10n.customerReplaceCart(current)),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -98,34 +96,24 @@ class OrderAgainSection extends ConsumerWidget {
       );
       if (replace != true) return;
     }
-    final Rebuilt? rebuilt;
+    final OrderAgainResult result;
     try {
-      rebuilt = await rebuildFromOrder(
-        ref.read(coreApiProvider).getCustomerApi(),
-        order,
-        unavailable,
-      );
+      result = await again.run(order, unavailable);
     } on Object {
       messenger.showSnackBar(SnackBar(content: Text(l10n.statusError)));
       return;
     }
-    if (rebuilt == null) {
+    if (result is RestaurantGone) {
       messenger.showSnackBar(SnackBar(content: Text(l10n.statusError)));
       return;
     }
-    if (rebuilt.skipped.isNotEmpty) {
+    if (result.skipped.isNotEmpty) {
       messenger.showSnackBar(
         SnackBar(
-          content: Text(l10n.customerNotAdded(rebuilt.skipped.join('، '))),
+          content: Text(l10n.customerNotAdded(result.skipped.join('، '))),
         ),
       );
     }
-    if (rebuilt.lines.isEmpty) return;
-    await cart.replaceWith(
-      order.restaurant.id,
-      order.restaurant.nameAr,
-      rebuilt.lines,
-    );
-    router.push('/cart');
+    if (result is CartRebuilt) router.push('/cart');
   }
 }

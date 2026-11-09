@@ -119,15 +119,22 @@ export class BrowsingService {
     const place = await this.geo.locate(point);
     if (place === null || place.zone === null) return [];
     const ids = await this.merchants.coveringRestaurants(place.cityId, point);
-    const candidates = await Promise.all(
+    const restaurants = await Promise.all(
       ids.filter((other) => other !== id).map((other) => this.merchants.restaurant(other, now)),
     );
-    const cards = await Promise.all(
-      candidates
-        .filter((restaurant) => restaurant?.category === source.category)
-        .map((restaurant) => this.card(restaurant!, point, now)),
+    const sameCategory = restaurants.filter(
+      (restaurant): restaurant is Restaurant => restaurant?.category === source.category,
     );
-    return cards.filter((card) => card.state.state.state === 'open').slice(0, SIMILAR_LIMIT);
+    // The state first, so only the open ones are priced and measured.
+    const states = await Promise.all(
+      sameCategory.map((restaurant) => this.merchants.storefrontState(restaurant.id, now)),
+    );
+    const open = sameCategory
+      .filter((_, index) => states[index]!.state.state === 'open')
+      .slice(0, SIMILAR_LIMIT);
+    const cards = await Promise.all(open.map((restaurant) => this.card(restaurant, point, now)));
+    // A restaurant paused since its state was read is left out.
+    return cards.filter((card) => card.state.state.state === 'open');
   }
 
   // CU §9.1–9.4; null for a restaurant customers do not see (CU §8.2).

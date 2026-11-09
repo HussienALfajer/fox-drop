@@ -121,20 +121,64 @@ List<OrderedLine> orderedLines(CustomerOrder order) => [
     ),
 ];
 
-/// CU §11.9 (Q22): the order's lines without [without], from the
-/// restaurant's menu at the order's pin now; null when customers no longer
-/// see the restaurant.
-Future<Rebuilt?> rebuildFromOrder(
-  CustomerApi api,
-  CustomerOrder order,
-  Set<String> without,
-) async {
-  final response = await api.customerBrowsingPage(
-    restaurantId: order.restaurant.id,
-    latitude: '${order.address.location.latitude}',
-    longitude: '${order.address.location.longitude}',
-  );
-  final page = response.data;
-  if (page == null) return null;
-  return rebuildLines(orderedLines(order), page.menu, without);
+/// What «اطلب بدون الأصناف غير المتوفرة» did.
+sealed class OrderAgainResult {
+  const OrderAgainResult(this.skipped);
+
+  /// «لم نضف: {الأصناف} لأنها غير متوفرة».
+  final List<String> skipped;
+}
+
+/// The cart holds the rebuilt lines: the screen opens it.
+class CartRebuilt extends OrderAgainResult {
+  const CartRebuilt(super.skipped);
+}
+
+/// Every line was skipped: the cart is left as it was.
+class NothingToAdd extends OrderAgainResult {
+  const NothingToAdd(super.skipped);
+}
+
+/// Customers no longer see the restaurant.
+class RestaurantGone extends OrderAgainResult {
+  const RestaurantGone() : super(const []);
+}
+
+/// CU §11.9 (Q22), §12.3: rebuilding the cart from an order.
+final orderAgainProvider = Provider<OrderAgain>(OrderAgain.new);
+
+class OrderAgain {
+  OrderAgain(this._ref);
+
+  final Ref _ref;
+
+  /// The restaurant of a cart the rebuild would replace, or null when the
+  /// cart is empty: the screen asks first.
+  Future<String?> cartToReplace() async =>
+      (await _ref.read(cartProvider.notifier).current())?.restaurantName;
+
+  /// The order's lines without [without], from the restaurant's menu at the
+  /// order's pin now, replacing the cart.
+  Future<OrderAgainResult> run(CustomerOrder order, Set<String> without) async {
+    final response = await _ref
+        .read(coreApiProvider)
+        .getCustomerApi()
+        .customerBrowsingPage(
+          restaurantId: order.restaurant.id,
+          latitude: '${order.address.location.latitude}',
+          longitude: '${order.address.location.longitude}',
+        );
+    final page = response.data;
+    if (page == null) return const RestaurantGone();
+    final rebuilt = rebuildLines(orderedLines(order), page.menu, without);
+    if (rebuilt.lines.isEmpty) return NothingToAdd(rebuilt.skipped);
+    await _ref
+        .read(cartProvider.notifier)
+        .replaceWith(
+          order.restaurant.id,
+          order.restaurant.nameAr,
+          rebuilt.lines,
+        );
+    return CartRebuilt(rebuilt.skipped);
+  }
 }
