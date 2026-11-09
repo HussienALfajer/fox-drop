@@ -274,6 +274,27 @@
       "when": 1794181435716,
       "tag": "0038_files_uploads",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1794192904978,
+      "tag": "0039_merchants_state_outbox",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1794193374420,
+      "tag": "0040_notifications_restaurant_alerts",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1794194823281,
+      "tag": "0041_merchants_status_timers",
+      "breakpoints": true
     }
   ]
 }

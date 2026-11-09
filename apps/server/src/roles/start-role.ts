@@ -9,6 +9,7 @@ import { CaptainsWorkerModule } from '../modules/captains/index.js';
 import { DispatchWorkerModule } from '../modules/dispatch/index.js';
 import { OtpSenderModule } from '../modules/identity/index.js';
 import { LedgerWorkerModule } from '../modules/ledger/index.js';
+import { MerchantsWorkerModule } from '../modules/merchants/index.js';
 import {
   AlertsWorkerModule,
   PlatformRelayWorkerModule,
@@ -32,6 +33,7 @@ const BACKGROUND_MODULES: Record<BackgroundRole, Type[]> = {
     AlertsWorkerModule,
     PushWorkerModule,
     PlatformRelayWorkerModule,
+    MerchantsWorkerModule,
   ],
   dispatcher: [],
   'otp-sender': [OtpSenderModule],

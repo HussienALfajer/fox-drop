@@ -27,6 +27,12 @@ export const QUEUES = {
   orderAlerts: 'ordering-order-alerts',
   // AP §9.1.6: the optional automatic resume of an emergency stop.
   emergencyResume: 'ordering-emergency-resume',
+  // RA §18, E4: a run of the restaurant state relay, sent with each change.
+  restaurantStateRelay: 'merchants-state-relay',
+  // RA §16 #24: a timed pause reached its end.
+  pauseEnd: 'merchants-pause-end',
+  // RA §7.3, §16 #25: busy mode's reminder, every merchant.busy_mode_reminder_min.
+  busyReminder: 'merchants-busy-reminder',
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];

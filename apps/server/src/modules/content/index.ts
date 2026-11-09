@@ -53,6 +53,10 @@ export {
 } from './content.service.js';
 export { GENERIC_CUSTOMER_TEXT, type ReasonList } from './lists.js';
 export { NotificationTexts, type RenderedNotification } from './notification-texts.service.js';
-export { type NotificationLevel, type NotificationPriority } from './notification-templates.js';
+export {
+  type NotificationLevel,
+  type NotificationPriority,
+  notificationTemplate,
+} from './notification-templates.js';
 export { type TermsAudience, termsAudiences } from './lists.js';
 export { TermsService, type TermsVersion } from './terms.service.js';

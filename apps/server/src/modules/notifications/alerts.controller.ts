@@ -32,6 +32,7 @@ class AdminAlertDto extends createZodDto(
     subjectId: z.string().describe('The order, captain or sending number it is about.'),
     orderNumber: z.string().nullable().describe('For an alert about an order.'),
     captainName: z.string().nullable().describe('For an alert about a captain.'),
+    restaurantName: z.string().nullable().describe('For an alert about a restaurant.'),
     raisedAt: z.iso.datetime(),
     acknowledged: z
       .object({ at: z.iso.datetime(), byId: z.uuid(), byName: z.string().nullable() })
@@ -94,6 +95,7 @@ export class AdminAlertsController {
       subjectId: alert.subjectId,
       orderNumber: alert.details.orderNumber ?? null,
       captainName: alert.details.captainName ?? null,
+      restaurantName: alert.details.restaurantName ?? null,
       raisedAt: alert.raisedAt.toISOString(),
       acknowledged:
         alert.acknowledgedAt && alert.acknowledgedBy

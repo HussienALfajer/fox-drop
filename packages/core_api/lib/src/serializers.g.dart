@@ -373,6 +373,7 @@ Serializers _$serializers =
           ..add(MerchantAvailabilityDtoTypeEnum.serializer)
           ..add(MerchantAvailabilityDtoUntilEnum.serializer)
           ..add(MerchantAvailabilitySavedDtoOutput.serializer)
+          ..add(MerchantBusyModeDto.serializer)
           ..add(MerchantCodeRequestDto.serializer)
           ..add(MerchantCodeRequestDtoPlatformEnum.serializer)
           ..add(MerchantCodeSentDtoOutput.serializer)
@@ -392,6 +393,11 @@ Serializers _$serializers =
           ..add(MerchantDeviceSavedDtoOutput.serializer)
           ..add(MerchantDeviceSavedDtoOutputStatusEnum.serializer)
           ..add(MerchantEmergencyStopDtoOutput.serializer)
+          ..add(MerchantHolidayCloseDto.serializer)
+          ..add(MerchantHoursDtoOutput.serializer)
+          ..add(MerchantHoursDtoOutputCoverage.serializer)
+          ..add(MerchantHoursDtoOutputCoverageKindEnum.serializer)
+          ..add(MerchantHoursDtoOutputPeriodsInner.serializer)
           ..add(MerchantMenuDtoOutput.serializer)
           ..add(MerchantMenuDtoOutputCategoriesInner.serializer)
           ..add(MerchantMenuDtoOutputCategoriesInnerItemsInner.serializer)
@@ -413,6 +419,7 @@ Serializers _$serializers =
           ..add(MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum.serializer)
           ..add(MerchantOrderDtoOutputOrderPickupRequestStatusEnum.serializer)
           ..add(MerchantOrderDtoOutputOrderStatusEnum.serializer)
+          ..add(MerchantOrderSettingsDto.serializer)
           ..add(MerchantOrdersDtoOutput.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInner.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerAcceptance.serializer)
@@ -437,12 +444,15 @@ Serializers _$serializers =
           )
           ..add(MerchantOrdersDtoOutputOrdersInnerStatusEnum.serializer)
           ..add(MerchantOrdersDtoOutputPrepTime.serializer)
+          ..add(MerchantPauseDto.serializer)
           ..add(MerchantPickupDisputeDto.serializer)
           ..add(MerchantPickupDisputeDtoReceivedLinesInner.serializer)
           ..add(MerchantRefreshDto.serializer)
           ..add(MerchantRestaurantDtoOutput.serializer)
           ..add(MerchantRestaurantDtoOutputAccountStatusEnum.serializer)
           ..add(MerchantRestaurantDtoOutputStateEnum.serializer)
+          ..add(MerchantScheduleDto.serializer)
+          ..add(MerchantScheduleDtoPeriodsInner.serializer)
           ..add(MerchantSessionDtoOutput.serializer)
           ..add(MerchantSessionDtoOutputRoleEnum.serializer)
           ..add(MerchantSignInDto.serializer)
@@ -450,6 +460,11 @@ Serializers _$serializers =
           ..add(MerchantSignedInDtoOutputRoleEnum.serializer)
           ..add(MerchantSignedOutDtoOutput.serializer)
           ..add(MerchantSignedOutDtoOutputStatusEnum.serializer)
+          ..add(MerchantStatusDtoOutput.serializer)
+          ..add(MerchantStatusDtoOutputBusyMode.serializer)
+          ..add(MerchantStatusDtoOutputHoliday.serializer)
+          ..add(MerchantStatusDtoOutputPauseSourceEnum.serializer)
+          ..add(MerchantStatusDtoOutputStateEnum.serializer)
           ..add(MerchantTokensDtoOutput.serializer)
           ..add(PlatformDtoOutput.serializer)
           ..add(PlatformDtoOutputUpdateNeedEnum.serializer)
@@ -1132,6 +1147,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(MerchantHoursDtoOutputPeriodsInner),
+            ]),
+            () => ListBuilder<MerchantHoursDtoOutputPeriodsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(MerchantMenuDtoOutputCategoriesInner),
             ]),
             () => ListBuilder<MerchantMenuDtoOutputCategoriesInner>(),
@@ -1221,6 +1242,12 @@ Serializers _$serializers =
               const FullType(MerchantPickupDisputeDtoReceivedLinesInner),
             ]),
             () => ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantScheduleDtoPeriodsInner),
+            ]),
+            () => ListBuilder<MerchantScheduleDtoPeriodsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1319,6 +1346,14 @@ Serializers _$serializers =
               const FullType(TeamUsersDtoOutputUsersInner),
             ]),
             () => ListBuilder<TeamUsersDtoOutputUsersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(int)]),
+            () => ListBuilder<int>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(int)]),
+            () => ListBuilder<int>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(int)]),

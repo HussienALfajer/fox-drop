@@ -43,6 +43,7 @@ export const alertKeys = {
   captain_cash_limit: 'order.alert.captainCashLimit',
   codes_cannot_send: 'order.alert.codesCannotSend',
   code_number_stopped: 'order.alert.codeNumberStopped',
+  restaurant_auto_paused: 'order.alert.restaurantAutoPaused',
 } as const satisfies Record<AlertCode, string>;
 
 export const badgeKeys = {

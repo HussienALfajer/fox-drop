@@ -20,6 +20,7 @@ part 'admin_alert_dto_output.g.dart';
 /// * [subjectId] - The order, captain or sending number it is about.
 /// * [orderNumber] - For an alert about an order.
 /// * [captainName] - For an alert about a captain.
+/// * [restaurantName] - For an alert about a restaurant.
 /// * [raisedAt]
 /// * [acknowledged]
 /// * [resolvedAt]
@@ -32,7 +33,7 @@ abstract class AdminAlertDtoOutput
   /// The rule of AP §9.1.3.
   @BuiltValueField(wireName: r'code')
   AdminAlertDtoOutputCodeEnum get code;
-  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  };
+  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  restaurant_auto_paused,  };
 
   /// critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
   @BuiltValueField(wireName: r'severity')
@@ -41,7 +42,7 @@ abstract class AdminAlertDtoOutput
 
   @BuiltValueField(wireName: r'subjectType')
   AdminAlertDtoOutputSubjectTypeEnum get subjectType;
-  // enum subjectTypeEnum {  order,  captain,  otp_pool,  otp_number,  };
+  // enum subjectTypeEnum {  order,  captain,  otp_pool,  otp_number,  restaurant,  };
 
   /// The order, captain or sending number it is about.
   @BuiltValueField(wireName: r'subjectId')
@@ -54,6 +55,10 @@ abstract class AdminAlertDtoOutput
   /// For an alert about a captain.
   @BuiltValueField(wireName: r'captainName')
   String? get captainName;
+
+  /// For an alert about a restaurant.
+  @BuiltValueField(wireName: r'restaurantName')
+  String? get restaurantName;
 
   @BuiltValueField(wireName: r'raisedAt')
   DateTime get raisedAt;
@@ -130,6 +135,13 @@ class _$AdminAlertDtoOutputSerializer
         ? null
         : serializers.serialize(
             object.captainName,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'restaurantName';
+    yield object.restaurantName == null
+        ? null
+        : serializers.serialize(
+            object.restaurantName,
             specifiedType: const FullType.nullable(String),
           );
     yield r'raisedAt';
@@ -249,6 +261,16 @@ class _$AdminAlertDtoOutputSerializer
           if (valueDes == null) continue;
           result.captainName = valueDes;
           break;
+        case r'restaurantName':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.restaurantName = valueDes;
+          break;
         case r'raisedAt':
           final valueDes =
               serializers.deserialize(
@@ -350,6 +372,9 @@ class AdminAlertDtoOutputCodeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'away_from_address')
   static const AdminAlertDtoOutputCodeEnum awayFromAddress =
       _$adminAlertDtoOutputCodeEnum_awayFromAddress;
+  @BuiltValueEnumConst(wireName: r'restaurant_auto_paused')
+  static const AdminAlertDtoOutputCodeEnum restaurantAutoPaused =
+      _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused;
 
   static Serializer<AdminAlertDtoOutputCodeEnum> get serializer =>
       _$adminAlertDtoOutputCodeEnumSerializer;
@@ -398,6 +423,9 @@ class AdminAlertDtoOutputSubjectTypeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'otp_number')
   static const AdminAlertDtoOutputSubjectTypeEnum otpNumber =
       _$adminAlertDtoOutputSubjectTypeEnum_otpNumber;
+  @BuiltValueEnumConst(wireName: r'restaurant')
+  static const AdminAlertDtoOutputSubjectTypeEnum restaurant =
+      _$adminAlertDtoOutputSubjectTypeEnum_restaurant;
 
   static Serializer<AdminAlertDtoOutputSubjectTypeEnum> get serializer =>
       _$adminAlertDtoOutputSubjectTypeEnumSerializer;

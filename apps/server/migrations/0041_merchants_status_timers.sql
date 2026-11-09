@@ -1,0 +1,3 @@
+ALTER TABLE "merchants"."pauses" ADD COLUMN "end_told_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "merchants"."restaurants" ADD COLUMN "busy_reminded_at" timestamp with time zone;--> statement-breakpoint
+CREATE INDEX "pauses_auto_open" ON "merchants"."pauses" USING btree ("restaurant_id") WHERE "merchants"."pauses"."source" = 'auto' AND "merchants"."pauses"."ended_at" IS NULL;

@@ -259,6 +259,7 @@ import 'package:core_api/src/model/emergency_sign_in_code_request_dto.dart';
 import 'package:core_api/src/model/merchant_accept_dto.dart';
 import 'package:core_api/src/model/merchant_availability_dto.dart';
 import 'package:core_api/src/model/merchant_availability_saved_dto_output.dart';
+import 'package:core_api/src/model/merchant_busy_mode_dto.dart';
 import 'package:core_api/src/model/merchant_code_request_dto.dart';
 import 'package:core_api/src/model/merchant_code_sent_dto_output.dart';
 import 'package:core_api/src/model/merchant_content_dto_output.dart';
@@ -268,6 +269,10 @@ import 'package:core_api/src/model/merchant_content_dto_output_reasons_merchant_
 import 'package:core_api/src/model/merchant_device_dto.dart';
 import 'package:core_api/src/model/merchant_device_saved_dto_output.dart';
 import 'package:core_api/src/model/merchant_emergency_stop_dto_output.dart';
+import 'package:core_api/src/model/merchant_holiday_close_dto.dart';
+import 'package:core_api/src/model/merchant_hours_dto_output.dart';
+import 'package:core_api/src/model/merchant_hours_dto_output_coverage.dart';
+import 'package:core_api/src/model/merchant_hours_dto_output_periods_inner.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner.dart';
@@ -279,6 +284,7 @@ import 'package:core_api/src/model/merchant_order_dto_output.dart';
 import 'package:core_api/src/model/merchant_order_dto_output_order.dart';
 import 'package:core_api/src/model/merchant_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/merchant_order_dto_output_order_pickup_request.dart';
+import 'package:core_api/src/model/merchant_order_settings_dto.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_acceptance.dart';
@@ -290,14 +296,20 @@ import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup_request.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_prep_time.dart';
+import 'package:core_api/src/model/merchant_pause_dto.dart';
 import 'package:core_api/src/model/merchant_pickup_dispute_dto.dart';
 import 'package:core_api/src/model/merchant_pickup_dispute_dto_received_lines_inner.dart';
 import 'package:core_api/src/model/merchant_refresh_dto.dart';
 import 'package:core_api/src/model/merchant_restaurant_dto_output.dart';
+import 'package:core_api/src/model/merchant_schedule_dto.dart';
+import 'package:core_api/src/model/merchant_schedule_dto_periods_inner.dart';
 import 'package:core_api/src/model/merchant_session_dto_output.dart';
 import 'package:core_api/src/model/merchant_sign_in_dto.dart';
 import 'package:core_api/src/model/merchant_signed_in_dto_output.dart';
 import 'package:core_api/src/model/merchant_signed_out_dto_output.dart';
+import 'package:core_api/src/model/merchant_status_dto_output.dart';
+import 'package:core_api/src/model/merchant_status_dto_output_busy_mode.dart';
+import 'package:core_api/src/model/merchant_status_dto_output_holiday.dart';
 import 'package:core_api/src/model/merchant_tokens_dto_output.dart';
 import 'package:core_api/src/model/platform_dto_output.dart';
 import 'package:core_api/src/model/push_token_dto.dart';
@@ -581,6 +593,7 @@ part 'serializers.g.dart';
   MerchantAcceptDto,
   MerchantAvailabilityDto,
   MerchantAvailabilitySavedDtoOutput,
+  MerchantBusyModeDto,
   MerchantCodeRequestDto,
   MerchantCodeSentDtoOutput,
   MerchantContentDtoOutput,
@@ -590,6 +603,10 @@ part 'serializers.g.dart';
   MerchantDeviceDto,
   MerchantDeviceSavedDtoOutput,
   MerchantEmergencyStopDtoOutput,
+  MerchantHolidayCloseDto,
+  MerchantHoursDtoOutput,
+  MerchantHoursDtoOutputCoverage,
+  MerchantHoursDtoOutputPeriodsInner,
   MerchantMenuDtoOutput,
   MerchantMenuDtoOutputCategoriesInner,
   MerchantMenuDtoOutputCategoriesInnerItemsInner,
@@ -601,6 +618,7 @@ part 'serializers.g.dart';
   MerchantOrderDtoOutputOrder,
   MerchantOrderDtoOutputOrderPickup,
   MerchantOrderDtoOutputOrderPickupRequest,
+  MerchantOrderSettingsDto,
   MerchantOrdersDtoOutput,
   MerchantOrdersDtoOutputOrdersInner,
   MerchantOrdersDtoOutputOrdersInnerAcceptance,
@@ -612,14 +630,20 @@ part 'serializers.g.dart';
   MerchantOrdersDtoOutputOrdersInnerPickup,
   MerchantOrdersDtoOutputOrdersInnerPickupRequest,
   MerchantOrdersDtoOutputPrepTime,
+  MerchantPauseDto,
   MerchantPickupDisputeDto,
   MerchantPickupDisputeDtoReceivedLinesInner,
   MerchantRefreshDto,
   MerchantRestaurantDtoOutput,
+  MerchantScheduleDto,
+  MerchantScheduleDtoPeriodsInner,
   MerchantSessionDtoOutput,
   MerchantSignInDto,
   MerchantSignedInDtoOutput,
   MerchantSignedOutDtoOutput,
+  MerchantStatusDtoOutput,
+  MerchantStatusDtoOutputBusyMode,
+  MerchantStatusDtoOutputHoliday,
   MerchantTokensDtoOutput,
   PlatformDtoOutput,
   PushTokenDto,
@@ -825,6 +849,18 @@ Serializers serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(AdminFaqDtoItemsInner)]),
             () => ListBuilder<AdminFaqDtoItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantHoursDtoOutputPeriodsInner),
+            ]),
+            () => ListBuilder<MerchantHoursDtoOutputPeriodsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantScheduleDtoPeriodsInner),
+            ]),
+            () => ListBuilder<MerchantScheduleDtoPeriodsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltMap, [FullType(String), FullType(String)]),

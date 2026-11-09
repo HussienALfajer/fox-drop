@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'platform.dart';
 import 'push.dart';
 import 'router.dart';
+import 'status/status.dart';
 import 'terms.dart';
 
 /// The restaurant app «تطبيق المطعم»: Arabic only, right to left (AP §4.7).
@@ -24,6 +25,8 @@ class MerchantApp extends ConsumerWidget {
     final platform = ref.watch(platformCheckProvider);
     // RA §18: the platform broadcasts, and "on every reconnect" (RA §4.2).
     ref.watch(platformBroadcastsProvider);
+    // RA §16 #3, #24, #25: the restaurant's state changes chime.
+    ref.watch(statusChimesProvider);
     final router = ref.watch(routerProvider);
     return MaterialApp.router(
       routerConfig: router,

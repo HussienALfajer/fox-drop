@@ -77,6 +77,11 @@ export const restaurants = merchants.table(
     // period ends.
     busyExtraMin: smallint('busy_extra_min'),
     busyUntil: timestamp('busy_until', { withTimezone: true }),
+    // When busy mode was last turned on: its hourly reminder (RA §7.3) acts
+    // only for the busy mode it was set for.
+    busyStartedAt: timestamp('busy_started_at', { withTimezone: true }),
+    // The moment of the latest reminder sent, so a repeated job sends none.
+    busyRemindedAt: timestamp('busy_reminded_at', { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -214,10 +219,17 @@ export const pauses = merchants.table(
     endedAt: timestamp('ended_at', { withTimezone: true }),
     endedByType: text('ended_by_type', { enum: changedByTypes }),
     endedById: uuid('ended_by_id'),
+    // RA §16 #24: when its natural end was told, so a repeated timer tells
+    // nothing.
+    endToldAt: timestamp('end_told_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
   (table) => [
     index('pauses_restaurant').on(table.restaurantId, table.startsAt.desc()),
+    // The alerts sweep's auto-pauses in force (AP §9.1.3).
+    index('pauses_auto_open')
+      .on(table.restaurantId)
+      .where(sql`${table.source} = 'auto' AND ${table.endedAt} IS NULL`),
     check('pauses_source_values', sql`${table.source} IN ('restaurant', 'ops', 'auto')`),
     check('pauses_period', sql`${table.endsAt} > ${table.startsAt}`),
     check(
@@ -225,6 +237,29 @@ export const pauses = merchants.table(
       sql`${table.source} <> 'restaurant' OR ${table.endsAt} IS NOT NULL`,
     ),
     changedByValues('pauses_ended_by_type_values', table.endedByType),
+  ],
+);
+
+// RA §18, architecture §5.5, E4: a change of a restaurant's state, written in
+// the transaction of the change; the worker's RestaurantStateRelay publishes
+// it to the restaurant's and the city's operations channels and queues its
+// push, then sets relayed_at, the only column the application role changes.
+export const stateOutbox = merchants.table(
+  'state_outbox',
+  {
+    id: bigint('id', { mode: 'bigint' }).primaryKey().generatedAlwaysAsIdentity(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    restaurantId: uuid('restaurant_id').notNull(),
+    cityId: uuid('city_id').notNull(),
+    // What changed (state-events.ts), such as paused or auto_paused.
+    kind: text('kind').notNull(),
+    payload: jsonb('payload').notNull(),
+    relayedAt: timestamp('relayed_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('state_outbox_unrelayed')
+      .on(table.id)
+      .where(sql`${table.relayedAt} IS NULL`),
   ],
 );
 

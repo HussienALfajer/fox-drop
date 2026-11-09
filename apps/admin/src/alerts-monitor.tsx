@@ -43,7 +43,9 @@ function CityAlarm({
         ? t('alerts.order', { number: alert.orderNumber })
         : alert.captainName
           ? t('alerts.captain', { name: alert.captainName })
-          : '',
+          : alert.restaurantName
+            ? t('alerts.restaurant', { name: alert.restaurantName })
+            : '',
     }),
     [t],
   );

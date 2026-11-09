@@ -106,6 +106,9 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
       <span>{t(alertKeys[alert.code])}</span>{' '}
       {alert.orderNumber && <span>{t('alerts.order', { number: alert.orderNumber })}</span>}{' '}
       {alert.captainName && <span>{t('alerts.captain', { name: alert.captainName })}</span>}{' '}
+      {alert.restaurantName && (
+        <span>{t('alerts.restaurant', { name: alert.restaurantName })}</span>
+      )}{' '}
       <span>{t('alerts.raisedAt', { time: time(alert.raisedAt) })}</span>{' '}
       {alert.acknowledged && (
         <span>
