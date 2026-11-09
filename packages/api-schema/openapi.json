@@ -16844,13 +16844,18 @@
               }
             ],
             "description": "While asked: what the captain paid (the last pickup request's lines, or the items value)."
+          },
+          "strike": {
+            "type": "boolean",
+            "description": "The customer gets a late-cancellation strike (docs/domain/08): from accepted or ready with the customer responsible."
           }
         },
         "required": [
           "entries",
           "cashAsked",
           "compensationAllowed",
-          "cashLines"
+          "cashLines",
+          "strike"
         ],
         "additionalProperties": false
       },
@@ -17813,19 +17818,235 @@
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                       },
                       "reason": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The stored code (merchant_auto_cancel for the timer)."
+                      },
+                      "label": {
+                        "description": "The reason's label: operations' as chosen (ops_cancel), the customer's from Content (customer_cancel); null for the automatic cancellation.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "note": {
+                        "description": "The customer's «سبب آخر» text, or operations' internal note.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "customerText": {
+                        "description": "What the customer sees (CU Appendix C); null for their own cancellation.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "by": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Who cancelled."
+                      },
+                      "responsible": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "restaurant",
+                              "captain",
+                              "customer",
+                              "platform"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "Operations' cancellation only (docs/domain/09)."
+                      },
+                      "foodPrepared": {
+                        "type": "boolean",
+                        "description": "«تم تحضير الطعام؟»."
+                      },
+                      "cash": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "returned",
+                              "not_returned",
+                              "not_paid"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "«هل أعاد المطعم المبلغ للكابتن؟», when the captain had reached the restaurant."
+                      },
+                      "merchantCredit": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "amount": {
+                                "type": "string",
+                                "pattern": "^-?\\d+$",
+                                "description": "Integer minor units (AP §8.6)."
+                              },
+                              "currency": {
+                                "type": "string",
+                                "minLength": 3,
+                                "maxLength": 3
+                              }
+                            },
+                            "required": [
+                              "amount",
+                              "currency"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "The food credited to the restaurant."
+                      },
+                      "captainCompensation": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "amount": {
+                                "type": "string",
+                                "pattern": "^-?\\d+$",
+                                "description": "Integer minor units (AP §8.6)."
+                              },
+                              "currency": {
+                                "type": "string",
+                                "minLength": 3,
+                                "maxLength": 3
+                              }
+                            },
+                            "required": [
+                              "amount",
+                              "currency"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "«تعويض الكابتن»."
+                      },
+                      "acknowledgedAt": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "A restaurant device's «حسناً»."
+                      },
+                      "captainSeenAt": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "The captain's «حسناً»."
                       }
                     },
                     "required": [
                       "at",
-                      "reason"
+                      "reason",
+                      "label",
+                      "note",
+                      "customerText",
+                      "by",
+                      "responsible",
+                      "foodPrepared",
+                      "cash",
+                      "merchantCredit",
+                      "captainCompensation",
+                      "acknowledgedAt",
+                      "captainSeenAt"
                     ],
                     "additionalProperties": false
                   },
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "AP §9.3.1 «cancellation (reason and party)»."
+              },
+              "cancelChoices": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "reasons": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "label"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "description": "Content's active ops_cancel reasons, in order (AP Appendix B)."
+                      }
+                    },
+                    "required": [
+                      "reasons"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "While placed, accepted or ready: the choices of «إلغاء الطلب» (AP §9.3.2)."
               },
               "rejection": {
                 "anyOf": [
@@ -18860,6 +19081,7 @@
               "acceptance",
               "readyAt",
               "cancellation",
+              "cancelChoices",
               "rejection",
               "onBehalf",
               "customer",

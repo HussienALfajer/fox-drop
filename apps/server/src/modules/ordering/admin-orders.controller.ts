@@ -31,6 +31,7 @@ import {
 } from './captain-orders.controller.js';
 import { ORDER_ALERT_CODES } from './order-alerts.js';
 import {
+  CANCELLABLE,
   type CancellationPreview,
   OrderCommandRefusedError,
   OrderCommands,
@@ -282,6 +283,11 @@ class AdminCancelPreviewAnswerDto extends createZodDto(
       .describe(
         "While asked: what the captain paid (the last pickup request's lines, or the items value).",
       ),
+    strike: z
+      .boolean()
+      .describe(
+        'The customer gets a late-cancellation strike (docs/domain/08): from accepted or ready with the customer responsible.',
+      ),
   }),
 ) {}
 
@@ -295,7 +301,51 @@ class AdminOrderDto extends createZodDto(
         .object({ at: z.iso.datetime(), prepMin: z.int(), prepDueAt: z.iso.datetime() })
         .nullable(),
       readyAt: z.iso.datetime().nullable(),
-      cancellation: z.object({ at: z.iso.datetime(), reason: z.string() }).nullable(),
+      cancellation: z
+        .object({
+          at: z.iso.datetime(),
+          reason: z.string().describe('The stored code (merchant_auto_cancel for the timer).'),
+          label: z
+            .string()
+            .nullable()
+            .describe(
+              "The reason's label: operations' as chosen (ops_cancel), the customer's from Content (customer_cancel); null for the automatic cancellation.",
+            ),
+          note: z
+            .string()
+            .nullable()
+            .describe("The customer's «سبب آخر» text, or operations' internal note."),
+          customerText: z
+            .string()
+            .nullable()
+            .describe('What the customer sees (CU Appendix C); null for their own cancellation.'),
+          by: z.object({ type: z.string(), id: z.uuid().nullable() }).describe('Who cancelled.'),
+          responsible: z
+            .enum(responsibleParties)
+            .nullable()
+            .describe("Operations' cancellation only (docs/domain/09)."),
+          foodPrepared: z.boolean().describe('«تم تحضير الطعام؟».'),
+          cash: z
+            .enum(cashAnswers)
+            .nullable()
+            .describe(
+              '«هل أعاد المطعم المبلغ للكابتن؟», when the captain had reached the restaurant.',
+            ),
+          merchantCredit: money.nullable().describe('The food credited to the restaurant.'),
+          captainCompensation: money.nullable().describe('«تعويض الكابتن».'),
+          acknowledgedAt: z.iso.datetime().nullable().describe("A restaurant device's «حسناً»."),
+          captainSeenAt: z.iso.datetime().nullable().describe("The captain's «حسناً»."),
+        })
+        .nullable()
+        .describe('AP §9.3.1 «cancellation (reason and party)».'),
+      cancelChoices: z
+        .object({
+          reasons: z
+            .array(z.object({ code: z.string(), label: z.string() }))
+            .describe("Content's active ops_cancel reasons, in order (AP Appendix B)."),
+        })
+        .nullable()
+        .describe('While placed, accepted or ready: the choices of «إلغاء الطلب» (AP §9.3.2).'),
       rejection: z
         .object({
           at: z.iso.datetime(),
@@ -733,7 +783,7 @@ export class AdminOrdersController {
         new Date(),
       );
     });
-    const { entries, cashAsked, compensationAllowed, cashLines } = preview!;
+    const { entries, cashAsked, compensationAllowed, cashLines, strike } = preview!;
     return {
       entries: entries.map((entry) => ({
         type: entry.type,
@@ -744,6 +794,7 @@ export class AdminOrdersController {
       cashAsked,
       compensationAllowed,
       cashLines: cashLines && linesBody(cashLines),
+      strike,
     };
   }
 
@@ -944,14 +995,29 @@ export class AdminOrdersController {
       throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: 'unknown_order' });
     }
     const { order } = item;
-    const [profile, timeline, onBehalf] = await Promise.all([
+    const { cancellation } = order;
+    const [profile, timeline, onBehalf, cancelReasons, customerLabel] = await Promise.all([
       this.customers.profile(order.customerAccountId),
       this.views.timeline(order),
       order.status === 'placed'
         ? this.commands.onBehalfChoices(order.restaurantId, order.cityId, now)
         : null,
+      CANCELLABLE.includes(order.status) ? this.commands.cancelReasons() : null,
+      cancellation?.byCustomer ? this.commands.customerCancelLabel(cancellation.reason) : null,
     ]);
     const { acceptance } = order;
+    // The cancellation itself, not its acknowledgement (RA §8.14).
+    const cancelEvent = timeline.find(
+      (event) => event.to === 'cancelled' && event.from !== 'cancelled',
+    );
+    // The event row keeps operations' note, or the customer's «سبب آخر» text
+    // when given (else the code), or the timer's code.
+    const cancelNote =
+      cancelEvent && cancellation && cancelEvent.reason !== cancellation.reason
+        ? (cancelEvent.reason ?? null)
+        : null;
+    const base = (amount: bigint | null) =>
+      amount === null ? null : { amount: amount.toString(), currency: order.currency };
     return {
       order: {
         ...cardBody(item),
@@ -962,10 +1028,25 @@ export class AdminOrdersController {
           prepDueAt: new Date(acceptance.at.getTime() + acceptance.prepMin * 60_000).toISOString(),
         },
         readyAt: order.readyAt?.toISOString() ?? null,
-        cancellation: order.cancellation && {
-          at: order.cancellation.at.toISOString(),
-          reason: order.cancellation.reason,
+        cancellation: cancellation && {
+          at: cancellation.at.toISOString(),
+          reason: cancellation.reason,
+          label: cancellation.label ?? customerLabel,
+          note:
+            cancelEvent?.actor.type === 'admin' || cancelEvent?.actor.type === 'customer'
+              ? cancelNote
+              : null,
+          customerText: cancellation.customerText,
+          by: cancelEvent?.actor ?? { type: 'system', id: null },
+          responsible: cancellation.responsible,
+          foodPrepared: cancellation.foodPrepared,
+          cash: cancellation.cash,
+          merchantCredit: base(cancellation.merchantCredit),
+          captainCompensation: base(cancellation.captainCompensation),
+          acknowledgedAt: cancellation.acknowledgedAt?.toISOString() ?? null,
+          captainSeenAt: cancellation.captainSeenAt?.toISOString() ?? null,
         },
+        cancelChoices: cancelReasons && { reasons: cancelReasons },
         rejection: order.rejection && {
           at: order.rejection.at.toISOString(),
           reason: order.rejection.reason,

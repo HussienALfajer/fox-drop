@@ -193,6 +193,9 @@ async function admin(roles: string[]) {
       post(`/v1/admin/orders/${orderId}/assign`, { captainId }),
     cancel: (orderId: string, body: object, key?: string) =>
       post(`/v1/admin/orders/${orderId}/cancel`, body, key),
+    detail: async (orderId: string) =>
+      (await app.inject({ method: 'GET', url: `/v1/admin/orders/${orderId}`, cookies })).json()
+        .order,
     preview: (orderId: string, body: object) =>
       app.inject({
         method: 'POST',
@@ -635,6 +638,7 @@ describe('the captain at the restaurant (AP §8.1, CA §9.10)', () => {
       compensationAllowed: false,
       cashLines: null,
       entries: [],
+      strike: false,
     });
   });
 
@@ -719,6 +723,84 @@ describe('the captain at the restaurant (AP §8.1, CA §9.10)', () => {
         )
       ).rows[0].captain_id,
     ).toBe(captain.captainId);
+  });
+});
+
+describe('the detail (AP §9.3.1, §9.3.2; slice 2.8c)', () => {
+  it("offers Content's ops_cancel reasons while the order can be cancelled", async () => {
+    const order = await acceptedOrder();
+    const ops = await admin(['OPS']);
+    const before = await ops.detail(order.id);
+    expect(before.cancellation).toBeNull();
+    expect(before.cancelChoices.reasons.map((r: { code: string }) => r.code)).toEqual([
+      'customer_request',
+      'restaurant_no_response',
+      'restaurant_closed',
+      'item_sold_out',
+      'no_captain',
+      'outside_zone',
+      'emergency',
+      'other',
+    ]);
+    expect(before.cancelChoices.reasons[6]).toEqual({ code: 'emergency', label: 'ظرف طارئ' });
+    expect((await ops.cancel(order.id, plain)).statusCode).toBe(200);
+    expect((await ops.detail(order.id)).cancelChoices).toBeNull();
+  });
+
+  it("shows operations' cancellation with its party, money, note and who", async () => {
+    const order = await acceptedOrder();
+    const ops = await admin(['OPS']);
+    expect((await ops.cancel(order.id, { ...plain, foodPrepared: true })).statusCode).toBe(200);
+    const { cancellation } = await ops.detail(order.id);
+    expect(cancellation).toMatchObject({
+      reason: 'emergency',
+      label: 'ظرف طارئ',
+      customerText: 'ظرف طارئ منعنا من إكمال طلبك',
+      note: 'ملاحظة العمليات',
+      by: { type: 'admin', id: ops.accountId },
+      responsible: 'platform',
+      foodPrepared: true,
+      cash: null,
+      merchantCredit: { amount: '20400', currency: 'TRY' },
+      captainCompensation: null,
+      acknowledgedAt: null,
+      captainSeenAt: null,
+    });
+  });
+
+  it("shows the customer's own reason and «سبب آخر» text", async () => {
+    const order = await placedOrder();
+    const cancelled = await app.inject({
+      method: 'POST',
+      url: `/v1/customer/orders/${order.id}/cancel`,
+      headers: { ...order.customer, 'idempotency-key': randomUUID() },
+      payload: { reason: 'other', note: 'تأخرت كثيراً' },
+    });
+    expect(cancelled.statusCode).toBe(200);
+    const ops = await admin(['SUP']);
+    const { cancellation } = await ops.detail(order.id);
+    expect(cancellation).toMatchObject({
+      reason: 'other',
+      label: 'سبب آخر',
+      note: 'تأخرت كثيراً',
+      by: { type: 'customer' },
+      customerText: null,
+      responsible: null,
+      foodPrepared: false,
+      merchantCredit: null,
+    });
+  });
+
+  it('previews the late-cancellation strike (docs/domain/08, 09)', async () => {
+    const accepted = await acceptedOrder();
+    const placed = await placedOrder();
+    const ops = await admin(['OPS']);
+    const byCustomer = { ...plain, responsible: 'customer', reason: undefined };
+    expect((await ops.preview(accepted.id, byCustomer)).json().strike).toBe(true);
+    expect(
+      (await ops.preview(accepted.id, { ...byCustomer, responsible: 'platform' })).json().strike,
+    ).toBe(false);
+    expect((await ops.preview(placed.id, byCustomer)).json().strike).toBe(false);
   });
 });
 

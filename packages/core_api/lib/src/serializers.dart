@@ -62,7 +62,10 @@ import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart'
 import 'package:core_api/src/model/admin_order_dto_output.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices_reasons_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancellation.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_cancellation_by.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer_address.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer_arrival.dart';
@@ -76,7 +79,6 @@ import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner_opti
 import 'package:core_api/src/model/admin_order_dto_output_order_money.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf_prep_time.dart';
-import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf_rejection_reasons_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_dispute.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_requests_inner.dart';
@@ -419,7 +421,10 @@ part 'serializers.g.dart';
   AdminOrderDtoOutput,
   AdminOrderDtoOutputOrder,
   AdminOrderDtoOutputOrderAcceptance,
+  AdminOrderDtoOutputOrderCancelChoices,
+  AdminOrderDtoOutputOrderCancelChoicesReasonsInner,
   AdminOrderDtoOutputOrderCancellation,
+  AdminOrderDtoOutputOrderCancellationBy,
   AdminOrderDtoOutputOrderCustomer,
   AdminOrderDtoOutputOrderCustomerAddress,
   AdminOrderDtoOutputOrderCustomerArrival,
@@ -433,7 +438,6 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderMoney,
   AdminOrderDtoOutputOrderOnBehalf,
   AdminOrderDtoOutputOrderOnBehalfPrepTime,
-  AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner,
   AdminOrderDtoOutputOrderPickup,
   AdminOrderDtoOutputOrderPickupDispute,
   AdminOrderDtoOutputOrderPickupRequestsInner,
@@ -792,6 +796,15 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderDtoOutputOrderCancelChoicesReasonsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(MerchantMenuDtoOutputCategoriesInner),
             ]),
             () => ListBuilder<MerchantMenuDtoOutputCategoriesInner>(),
@@ -933,15 +946,6 @@ Serializers serializers =
             () =>
                 ListBuilder<
                   MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
-              FullType(AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner
                 >(),
           )
           ..addBuilderFactory(

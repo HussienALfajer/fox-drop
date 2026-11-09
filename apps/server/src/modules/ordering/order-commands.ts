@@ -110,7 +110,7 @@ export interface Rejection {
 }
 
 // AP §8.1, docs/domain/01: operations cancel before pickup.
-const CANCELLABLE: OrderView['status'][] = ['placed', 'accepted', 'ready'];
+export const CANCELLABLE: OrderView['status'][] = ['placed', 'accepted', 'ready'];
 
 // AP §9.3.2 «إلغاء الطلب»: operations' choices (the reason's code apart).
 export interface OpsCancellation {
@@ -141,6 +141,8 @@ export interface CancellationPreview {
   cashAsked: boolean;
   compensationAllowed: boolean;
   cashLines: { currency: string; amount: bigint }[] | null;
+  // docs/domain/08: the choices give the customer a late-cancellation strike.
+  strike: boolean;
 }
 
 // RA §8.6: «إيقاف 30 د» is the only pause «ضغط طلبات» offers.
@@ -579,7 +581,24 @@ export class OrderCommands {
       cashAsked: result.cashAsked,
       compensationAllowed: result.compensationAllowed,
       cashLines: result.cashAsked ? facts.cashLines : null,
+      strike: result.strike,
     };
+  }
+
+  // AP §9.3.2 «إلغاء الطلب» (slice 2.8c): the reasons the panel's dialog
+  // offers, Content's active ops_cancel reasons in order (AP Appendix B).
+  async cancelReasons(): Promise<{ code: string; label: string }[]> {
+    return (await this.content.reasonsOf('ops_cancel'))
+      .filter((reason) => reason.active)
+      .map(({ code, label }) => ({ code, label }));
+  }
+
+  // AP §9.3.1 (slice 2.8c): the label of the customer's own cancel reason,
+  // which the order keeps by its code only; a reason removed since still
+  // has its label (removing only hides it from new choices).
+  async customerCancelLabel(code: string): Promise<string | null> {
+    const reasons = await this.content.reasonsOf('customer_cancel');
+    return reasons.find((reason) => reason.code === code)?.label ?? null;
   }
 
   // RA §8.14, §18 (slice 2.8b): «حسناً» on any of the restaurant's devices

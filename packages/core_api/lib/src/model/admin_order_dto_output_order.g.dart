@@ -411,6 +411,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
   @override
   final AdminOrderDtoOutputOrderCancellation? cancellation;
   @override
+  final AdminOrderDtoOutputOrderCancelChoices? cancelChoices;
+  @override
   final AdminOrderDtoOutputOrderRejection? rejection;
   @override
   final AdminOrderDtoOutputOrderOnBehalf? onBehalf;
@@ -453,6 +455,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     this.acceptance,
     this.readyAt,
     this.cancellation,
+    this.cancelChoices,
     this.rejection,
     this.onBehalf,
     required this.customer,
@@ -495,6 +498,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
         acceptance == other.acceptance &&
         readyAt == other.readyAt &&
         cancellation == other.cancellation &&
+        cancelChoices == other.cancelChoices &&
         rejection == other.rejection &&
         onBehalf == other.onBehalf &&
         customer == other.customer &&
@@ -528,6 +532,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     _$hash = $jc(_$hash, acceptance.hashCode);
     _$hash = $jc(_$hash, readyAt.hashCode);
     _$hash = $jc(_$hash, cancellation.hashCode);
+    _$hash = $jc(_$hash, cancelChoices.hashCode);
     _$hash = $jc(_$hash, rejection.hashCode);
     _$hash = $jc(_$hash, onBehalf.hashCode);
     _$hash = $jc(_$hash, customer.hashCode);
@@ -563,6 +568,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
           ..add('acceptance', acceptance)
           ..add('readyAt', readyAt)
           ..add('cancellation', cancellation)
+          ..add('cancelChoices', cancelChoices)
           ..add('rejection', rejection)
           ..add('onBehalf', onBehalf)
           ..add('customer', customer)
@@ -677,6 +683,13 @@ class AdminOrderDtoOutputOrderBuilder
   set cancellation(AdminOrderDtoOutputOrderCancellationBuilder? cancellation) =>
       _$this._cancellation = cancellation;
 
+  AdminOrderDtoOutputOrderCancelChoicesBuilder? _cancelChoices;
+  AdminOrderDtoOutputOrderCancelChoicesBuilder get cancelChoices =>
+      _$this._cancelChoices ??= AdminOrderDtoOutputOrderCancelChoicesBuilder();
+  set cancelChoices(
+    AdminOrderDtoOutputOrderCancelChoicesBuilder? cancelChoices,
+  ) => _$this._cancelChoices = cancelChoices;
+
   AdminOrderDtoOutputOrderRejectionBuilder? _rejection;
   AdminOrderDtoOutputOrderRejectionBuilder get rejection =>
       _$this._rejection ??= AdminOrderDtoOutputOrderRejectionBuilder();
@@ -755,6 +768,7 @@ class AdminOrderDtoOutputOrderBuilder
       _acceptance = $v.acceptance?.toBuilder();
       _readyAt = $v.readyAt;
       _cancellation = $v.cancellation?.toBuilder();
+      _cancelChoices = $v.cancelChoices?.toBuilder();
       _rejection = $v.rejection?.toBuilder();
       _onBehalf = $v.onBehalf?.toBuilder();
       _customer = $v.customer.toBuilder();
@@ -835,6 +849,7 @@ class AdminOrderDtoOutputOrderBuilder
             acceptance: _acceptance?.build(),
             readyAt: readyAt,
             cancellation: _cancellation?.build(),
+            cancelChoices: _cancelChoices?.build(),
             rejection: _rejection?.build(),
             onBehalf: _onBehalf?.build(),
             customer: customer.build(),
@@ -867,6 +882,8 @@ class AdminOrderDtoOutputOrderBuilder
 
         _$failedField = 'cancellation';
         _cancellation?.build();
+        _$failedField = 'cancelChoices';
+        _cancelChoices?.build();
         _$failedField = 'rejection';
         _rejection?.build();
         _$failedField = 'onBehalf';

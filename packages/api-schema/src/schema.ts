@@ -5152,6 +5152,8 @@ export interface components {
                 amount: string;
                 currency: string;
             }[] | null;
+            /** @description The customer gets a late-cancellation strike (docs/domain/08): from accepted or ready with the customer responsible. */
+            strike: boolean;
         };
         AdminRecordArrivalDto: {
             /** @description Required (AP §9.3.2). */
@@ -5362,10 +5364,53 @@ export interface components {
                     prepDueAt: string;
                 } | null;
                 readyAt: string | null;
+                /** @description AP §9.3.1 «cancellation (reason and party)». */
                 cancellation: {
                     /** Format: date-time */
                     at: string;
+                    /** @description The stored code (merchant_auto_cancel for the timer). */
                     reason: string;
+                    /** @description The reason's label: operations' as chosen (ops_cancel), the customer's from Content (customer_cancel); null for the automatic cancellation. */
+                    label: string | null;
+                    /** @description The customer's «سبب آخر» text, or operations' internal note. */
+                    note: string | null;
+                    /** @description What the customer sees (CU Appendix C); null for their own cancellation. */
+                    customerText: string | null;
+                    /** @description Who cancelled. */
+                    by: {
+                        type: string;
+                        id: string | null;
+                    };
+                    /** @description Operations' cancellation only (docs/domain/09). */
+                    responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
+                    /** @description «تم تحضير الطعام؟». */
+                    foodPrepared: boolean;
+                    /** @description «هل أعاد المطعم المبلغ للكابتن؟», when the captain had reached the restaurant. */
+                    cash: ("returned" | "not_returned" | "not_paid") | null;
+                    /** @description The food credited to the restaurant. */
+                    merchantCredit: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    /** @description «تعويض الكابتن». */
+                    captainCompensation: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    /** @description A restaurant device's «حسناً». */
+                    acknowledgedAt: string | null;
+                    /** @description The captain's «حسناً». */
+                    captainSeenAt: string | null;
+                } | null;
+                /** @description While placed, accepted or ready: the choices of «إلغاء الطلب» (AP §9.3.2). */
+                cancelChoices: {
+                    /** @description Content's active ops_cancel reasons, in order (AP Appendix B). */
+                    reasons: {
+                        code: string;
+                        label: string;
+                    }[];
                 } | null;
                 /** @description While rejected (AP §9.3.1 «rejected (with reason)»). */
                 rejection: {

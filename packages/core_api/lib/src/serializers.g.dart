@@ -94,7 +94,12 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrder.serializer)
           ..add(AdminOrderDtoOutputOrderAcceptance.serializer)
           ..add(AdminOrderDtoOutputOrderAlertsEnum.serializer)
+          ..add(AdminOrderDtoOutputOrderCancelChoices.serializer)
+          ..add(AdminOrderDtoOutputOrderCancelChoicesReasonsInner.serializer)
           ..add(AdminOrderDtoOutputOrderCancellation.serializer)
+          ..add(AdminOrderDtoOutputOrderCancellationBy.serializer)
+          ..add(AdminOrderDtoOutputOrderCancellationCashEnum.serializer)
+          ..add(AdminOrderDtoOutputOrderCancellationResponsibleEnum.serializer)
           ..add(AdminOrderDtoOutputOrderCaptainTrackEnum.serializer)
           ..add(AdminOrderDtoOutputOrderCustomer.serializer)
           ..add(AdminOrderDtoOutputOrderCustomerAddress.serializer)
@@ -111,9 +116,6 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderMoney.serializer)
           ..add(AdminOrderDtoOutputOrderOnBehalf.serializer)
           ..add(AdminOrderDtoOutputOrderOnBehalfPrepTime.serializer)
-          ..add(
-            AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner.serializer,
-          )
           ..add(AdminOrderDtoOutputOrderPickup.serializer)
           ..add(AdminOrderDtoOutputOrderPickupDispute.serializer)
           ..add(AdminOrderDtoOutputOrderPickupRequestsInner.serializer)
@@ -650,24 +652,31 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
-              const FullType(AdminOrderDtoOutputOrderLinesInnerOptionsInner),
-            ]),
-            () => ListBuilder<AdminOrderDtoOutputOrderLinesInnerOptionsInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(
-                AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner,
-              ),
+              const FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
             ]),
             () =>
                 ListBuilder<
-                  AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner
+                  AdminOrderDtoOutputOrderCancelChoicesReasonsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderDtoOutputOrderCancelChoicesReasonsInner
                 >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(int)]),
             () => ListBuilder<int>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderDtoOutputOrderLinesInnerOptionsInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderLinesInnerOptionsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

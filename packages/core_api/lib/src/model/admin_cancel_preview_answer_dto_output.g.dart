@@ -16,6 +16,8 @@ class _$AdminCancelPreviewAnswerDtoOutput
   final bool compensationAllowed;
   @override
   final BuiltList<CaptainWentOfflineDtoOutputHandIn?>? cashLines;
+  @override
+  final bool strike;
 
   factory _$AdminCancelPreviewAnswerDtoOutput([
     void Function(AdminCancelPreviewAnswerDtoOutputBuilder)? updates,
@@ -26,6 +28,7 @@ class _$AdminCancelPreviewAnswerDtoOutput
     required this.cashAsked,
     required this.compensationAllowed,
     this.cashLines,
+    required this.strike,
   }) : super._();
   @override
   AdminCancelPreviewAnswerDtoOutput rebuild(
@@ -43,7 +46,8 @@ class _$AdminCancelPreviewAnswerDtoOutput
         entries == other.entries &&
         cashAsked == other.cashAsked &&
         compensationAllowed == other.compensationAllowed &&
-        cashLines == other.cashLines;
+        cashLines == other.cashLines &&
+        strike == other.strike;
   }
 
   @override
@@ -53,6 +57,7 @@ class _$AdminCancelPreviewAnswerDtoOutput
     _$hash = $jc(_$hash, cashAsked.hashCode);
     _$hash = $jc(_$hash, compensationAllowed.hashCode);
     _$hash = $jc(_$hash, cashLines.hashCode);
+    _$hash = $jc(_$hash, strike.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -63,7 +68,8 @@ class _$AdminCancelPreviewAnswerDtoOutput
           ..add('entries', entries)
           ..add('cashAsked', cashAsked)
           ..add('compensationAllowed', compensationAllowed)
-          ..add('cashLines', cashLines))
+          ..add('cashLines', cashLines)
+          ..add('strike', strike))
         .toString();
   }
 }
@@ -99,6 +105,10 @@ class AdminCancelPreviewAnswerDtoOutputBuilder
   set cashLines(ListBuilder<CaptainWentOfflineDtoOutputHandIn?>? cashLines) =>
       _$this._cashLines = cashLines;
 
+  bool? _strike;
+  bool? get strike => _$this._strike;
+  set strike(bool? strike) => _$this._strike = strike;
+
   AdminCancelPreviewAnswerDtoOutputBuilder() {
     AdminCancelPreviewAnswerDtoOutput._defaults(this);
   }
@@ -110,6 +120,7 @@ class AdminCancelPreviewAnswerDtoOutputBuilder
       _cashAsked = $v.cashAsked;
       _compensationAllowed = $v.compensationAllowed;
       _cashLines = $v.cashLines?.toBuilder();
+      _strike = $v.strike;
       _$v = null;
     }
     return this;
@@ -148,6 +159,11 @@ class AdminCancelPreviewAnswerDtoOutputBuilder
               'compensationAllowed',
             ),
             cashLines: _cashLines?.build(),
+            strike: BuiltValueNullFieldError.checkNotNull(
+              strike,
+              r'AdminCancelPreviewAnswerDtoOutput',
+              'strike',
+            ),
           );
     } catch (_) {
       late String _$failedField;

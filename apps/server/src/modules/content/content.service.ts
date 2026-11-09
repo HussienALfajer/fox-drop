@@ -144,6 +144,16 @@ export class ContentService {
     }));
   }
 
+  // One list's reasons in order, inactive ones included: the panel names a
+  // reason an order kept by its code, and offers only the active ones.
+  async reasonsOf(list: ReasonList): Promise<{ code: string; label: string; active: boolean }[]> {
+    return this.database.db
+      .select({ code: reasons.code, label: reasons.label, active: reasons.active })
+      .from(reasons)
+      .where(eq(reasons.list, list))
+      .orderBy(asc(reasons.position));
+  }
+
   // The lists an app reads, each with its active reasons in order.
   async listsFor(app: ContentApp): Promise<Record<string, ReasonChoice[]>> {
     const names = reasonListNames.filter((list) =>

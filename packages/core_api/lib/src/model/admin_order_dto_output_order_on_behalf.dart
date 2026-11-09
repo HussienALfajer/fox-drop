@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf_rejection_reasons_inner.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices_reasons_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf_prep_time.dart';
 import 'package:built_value/built_value.dart';
@@ -29,7 +29,7 @@ abstract class AdminOrderDtoOutputOrderOnBehalf
 
   /// «رفض نيابة عن المطعم»: the restaurant's reasons (AP Appendix B), in order.
   @BuiltValueField(wireName: r'rejectionReasons')
-  BuiltList<AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner>
+  BuiltList<AdminOrderDtoOutputOrderCancelChoicesReasonsInner>
   get rejectionReasons;
 
   /// «ضغط طلبات»: busy mode with one of merchant.busy_extra_options_min.
@@ -75,7 +75,7 @@ class _$AdminOrderDtoOutputOrderOnBehalfSerializer
     yield serializers.serialize(
       object.rejectionReasons,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner),
+        FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
       ]),
     );
     yield r'busyExtraOptionsMin';
@@ -127,12 +127,12 @@ class _$AdminOrderDtoOutputOrderOnBehalfSerializer
                     value,
                     specifiedType: const FullType(BuiltList, [
                       FullType(
-                        AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner,
+                        AdminOrderDtoOutputOrderCancelChoicesReasonsInner,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner
+                    AdminOrderDtoOutputOrderCancelChoicesReasonsInner
                   >;
           result.rejectionReasons.replace(valueDes);
           break;

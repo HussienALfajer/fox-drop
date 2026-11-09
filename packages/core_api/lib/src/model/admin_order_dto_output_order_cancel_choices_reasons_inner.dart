@@ -6,19 +6,19 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_order_dto_output_order_on_behalf_rejection_reasons_inner.g.dart';
+part 'admin_order_dto_output_order_cancel_choices_reasons_inner.g.dart';
 
-/// AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner
+/// AdminOrderDtoOutputOrderCancelChoicesReasonsInner
 ///
 /// Properties:
 /// * [code]
 /// * [label]
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner
+abstract class AdminOrderDtoOutputOrderCancelChoicesReasonsInner
     implements
         Built<
-          AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner,
-          AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInnerBuilder
+          AdminOrderDtoOutputOrderCancelChoicesReasonsInner,
+          AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder
         > {
   @BuiltValueField(wireName: r'code')
   String get code;
@@ -26,43 +26,38 @@ abstract class AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner
   @BuiltValueField(wireName: r'label')
   String get label;
 
-  AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner._();
+  AdminOrderDtoOutputOrderCancelChoicesReasonsInner._();
 
-  factory AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner([
-    void updates(
-      AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInnerBuilder b,
-    ),
-  ]) = _$AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner;
+  factory AdminOrderDtoOutputOrderCancelChoicesReasonsInner([
+    void updates(AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder b),
+  ]) = _$AdminOrderDtoOutputOrderCancelChoicesReasonsInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(
-    AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInnerBuilder b,
+    AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder b,
   ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner>
+  static Serializer<AdminOrderDtoOutputOrderCancelChoicesReasonsInner>
   get serializer =>
-      _$AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInnerSerializer();
+      _$AdminOrderDtoOutputOrderCancelChoicesReasonsInnerSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInnerSerializer
+class _$AdminOrderDtoOutputOrderCancelChoicesReasonsInnerSerializer
     implements
-        PrimitiveSerializer<
-          AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner
-        > {
+        PrimitiveSerializer<AdminOrderDtoOutputOrderCancelChoicesReasonsInner> {
   @override
   final Iterable<Type> types = const [
-    AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner,
-    _$AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner,
+    AdminOrderDtoOutputOrderCancelChoicesReasonsInner,
+    _$AdminOrderDtoOutputOrderCancelChoicesReasonsInner,
   ];
 
   @override
-  final String wireName =
-      r'AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner';
+  final String wireName = r'AdminOrderDtoOutputOrderCancelChoicesReasonsInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner object, {
+    AdminOrderDtoOutputOrderCancelChoicesReasonsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'code';
@@ -80,7 +75,7 @@ class _$AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner object, {
+    AdminOrderDtoOutputOrderCancelChoicesReasonsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -95,8 +90,7 @@ class _$AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInnerBuilder
-    result,
+    required AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -130,13 +124,12 @@ class _$AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInnerSerializer
   }
 
   @override
-  AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner deserialize(
+  AdminOrderDtoOutputOrderCancelChoicesReasonsInner deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result =
-        AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInnerBuilder();
+    final result = AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
