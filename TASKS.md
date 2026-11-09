@@ -4,13 +4,19 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.6, restaurant status and hours (`docs/roadmap.md`, Phase 2, the rest of the order cycle): pause (15, 30, 60, until reopening), resume, busy mode with its reminder, holiday close, several and overnight periods, the maximum active orders, the auto-pause after 3 unanswered orders and its alert, the precedence of RA §7.1. The owner pauses the restaurant from the app and the customer sees it closed.
+Slice 2.6a, restaurant status and hours in the server and the restaurant app (`docs/roadmap.md`, Phase 2; owner decision 2026-11-09: 2.6 is two pull requests, 2.6a the server and the restaurant app, 2.6b the panel and the customer app). The owner pauses the restaurant from the app and the customer sees it closed.
 
-- **Specs:** RA §7 (restaurant status, the precedence of §7.1), RA §10 (status and hours: pauses, busy mode, holiday closes, periods, the maximum active orders, the auto-pause), AP §9.6.5 (the panel's restaurant actions on status), RA Appendix A (the settings), CU §9.2 (what customers see), and `docs/open-questions.md` for anything open about status and hours.
+- **Specs:** RA §7 (states, precedence, the status sheet, busy mode, the maximum active orders), RA §10 (status and hours), RA §18 rows «Pause / resume», «Busy mode on / off», «Holiday close / end», «Set hours, default prep time, limit», RA §16 #3, #24, #25, RA §6 (the status pill and the banners), RA §8.3 (the auto-pause), AP §9.1.3 «مطعم أوقف تلقائياً», AP §9.6.5 (the auto-pause rule and who ends a pause), RA Appendix A, RA §22 items 8, 17, 18, 20.
 - **Branch:** `feat/restaurant-status`.
-- **Already built:** `operatingState` and `storefrontState` read pauses, holiday closes, busy mode and the schedule (`apps/server/src/modules/merchants/CLAUDE.md` «Operating state», «Hours», «Holiday closes and pauses»); setting them, the one-pause rule and the auto-pause are this slice.
-- **Ask the owner first:** whether the slice is one pull request or two (the server and the restaurant app, then the panel and the customer app), with the `slice-plan` skill if two.
-- **Plan:** write it as a checklist once the owner answers, one step per commit, then review and hand over to slice 2.7.
+- **Plan:**
+  - [x] Record the split in `docs/roadmap.md` and this plan.
+  - [ ] Server: the restaurant's pause, resume and busy mode (the one-pause rule, a restaurant pause and busy mode ending with the opening period), audited with the user and device, with the restaurant routes.
+  - [ ] Server: the owners' hours, holiday close, default prep time and maximum active orders, and the status and hours reads.
+  - [ ] Server: the state events (`merchants.state_outbox` relayed to `merchant:{id}` and `ops:city.{id}`), the pause-ended push (#24) and the hourly busy-mode reminder (#25) as timers.
+  - [ ] Server: the auto-pause at the third unanswered order of the business day, its push (#3) and the alert «مطعم أوقف تلقائياً».
+  - [ ] Restaurant app: the status pill and sheet, the banners (operations or auto pause, the limit, busy mode) and the chimes of the state events.
+  - [ ] Restaurant app: «الحالة والأوقات» (the weekly schedule with several and overnight periods, holiday close, default prep time, maximum active orders, the read-only fields).
+  - [ ] Review, then hand over to 2.6b.
 
 ### Left from 2.5 (`feat/object-storage`)
 
