@@ -95,9 +95,12 @@ class NoRestaurantResponse extends OrderTitle {
   const NoRestaurantResponse();
 }
 
-/// CU §11.9: «نعتذر، لم يقبل المطعم طلبك».
+/// CU §11.9: «نعتذر، لم يقبل المطعم طلبك», with the reason's customer text
+/// the order kept (CU Appendix C).
 class Rejected extends OrderTitle {
-  const Rejected();
+  const Rejected(this.text);
+
+  final String? text;
 }
 
 /// CU §11.9: «أُلغي طلبك» by operations, with the customer-facing reason
@@ -126,7 +129,7 @@ OrderTitle titleOf(CustomerOrder order) {
     'pickedUp' || 'picked_up' => OnTheWay(captain?.firstName ?? ''),
     'arrived' => const AtDoor(),
     'delivered' => const Delivered(),
-    'rejected' => const Rejected(),
+    'rejected' => Rejected(order.rejection?.text),
     'failed' => const Failed(),
     _ =>
       order.cancellation?.reason == 'merchant_auto_cancel'

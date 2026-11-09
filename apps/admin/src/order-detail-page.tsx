@@ -14,6 +14,8 @@ import {
   requestStatusKeys,
 } from './order-detail.js';
 import { statusKeys, trackKeys, vehicleKey } from './order-labels.js';
+import { DecideOnBehalf } from './order-on-behalf-page.js';
+import { canDecide } from './order-on-behalf.js';
 import { Badges } from './orders-board-page.js';
 import {
   canResend,
@@ -32,8 +34,9 @@ function linesText(lines: Lines): string {
 }
 
 // AP §9.3.1: the order detail beside the board, live over the board's
-// channel. Its actions come with their slices; this one has «تعيين كابتن»
-// (AP §9.3.2), whose picker opens below it.
+// channel. Its actions come with their slices: «تعيين كابتن» (AP §9.3.2),
+// whose picker opens below it, and while placed «قبول نيابة عن المطعم» and
+// «رفض نيابة عن المطعم».
 export function OrderDetailPage() {
   const { t } = useTranslation();
   const { orderId } = route.useParams();
@@ -64,7 +67,7 @@ export function OrderDetailPage() {
   const detail = order.data;
   const time = (at: string) => formatTime(at, city.timeZone);
   const money = (amount: string) => formatMoney({ amount, currency: detail.money.currency });
-  const { customer, pickup, delivery, cancellation } = detail;
+  const { customer, pickup, delivery, cancellation, rejection } = detail;
 
   return (
     <section aria-labelledby="order-title">
@@ -94,7 +97,38 @@ export function OrderDetailPage() {
           )}
         </p>
       )}
+      {rejection && (
+        <>
+          <p>
+            {t('order.rejectedAt', { time: time(rejection.at) })}{' '}
+            {t('order.rejection.title', { label: rejection.label })}
+          </p>
+          {rejection.byOperations && <p>{t('order.rejection.byOperations')}</p>}
+          {rejection.itemIds.length > 0 && (
+            <p>
+              {t('order.rejection.items', {
+                names: [
+                  ...new Set(
+                    detail.lines
+                      .filter((line) => rejection.itemIds.includes(line.itemId))
+                      .map((line) => line.name),
+                  ),
+                ].join('، '),
+              })}
+            </p>
+          )}
+          <p>{t('order.rejection.customerText', { text: rejection.customerText })}</p>
+        </>
+      )}
       <Badges card={detail} />
+      {canDecide(session, detail) && (
+        <DecideOnBehalf
+          key={orderId}
+          orderId={orderId}
+          choices={detail.onBehalf}
+          lines={detail.lines}
+        />
+      )}
       {canResend(session) && (
         <ResendNotification orderId={orderId} targets={resendTargets(detail)} />
       )}

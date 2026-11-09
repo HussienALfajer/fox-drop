@@ -1043,6 +1043,23 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerNoRestaurantResponse => 'لم يرد المطعم على طلبك، نعتذر';
 
   @override
+  String get customerSimilarRestaurants => 'مطاعم مشابهة';
+
+  @override
+  String get customerOrderWithoutUnavailable =>
+      'اطلب بدون الأصناف غير المتوفرة';
+
+  @override
+  String customerReplaceCart(String current) {
+    return 'ستُستبدل سلتك الحالية من $current. هل تتابع؟';
+  }
+
+  @override
+  String customerNotAdded(String items) {
+    return 'لم نضف: $items لأنها غير متوفرة';
+  }
+
+  @override
   String get customerCancelled => 'أُلغي طلبك';
 
   @override

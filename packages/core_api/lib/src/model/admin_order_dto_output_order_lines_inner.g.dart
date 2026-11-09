@@ -9,6 +9,8 @@ part of 'admin_order_dto_output_order_lines_inner.dart';
 class _$AdminOrderDtoOutputOrderLinesInner
     extends AdminOrderDtoOutputOrderLinesInner {
   @override
+  final String itemId;
+  @override
   final String name;
   @override
   final int quantity;
@@ -26,6 +28,7 @@ class _$AdminOrderDtoOutputOrderLinesInner
   ]) => (AdminOrderDtoOutputOrderLinesInnerBuilder()..update(updates))._build();
 
   _$AdminOrderDtoOutputOrderLinesInner._({
+    required this.itemId,
     required this.name,
     required this.quantity,
     required this.options,
@@ -46,6 +49,7 @@ class _$AdminOrderDtoOutputOrderLinesInner
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is AdminOrderDtoOutputOrderLinesInner &&
+        itemId == other.itemId &&
         name == other.name &&
         quantity == other.quantity &&
         options == other.options &&
@@ -57,6 +61,7 @@ class _$AdminOrderDtoOutputOrderLinesInner
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, itemId.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, quantity.hashCode);
     _$hash = $jc(_$hash, options.hashCode);
@@ -70,6 +75,7 @@ class _$AdminOrderDtoOutputOrderLinesInner
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'AdminOrderDtoOutputOrderLinesInner')
+          ..add('itemId', itemId)
           ..add('name', name)
           ..add('quantity', quantity)
           ..add('options', options)
@@ -87,6 +93,10 @@ class AdminOrderDtoOutputOrderLinesInnerBuilder
           AdminOrderDtoOutputOrderLinesInnerBuilder
         > {
   _$AdminOrderDtoOutputOrderLinesInner? _$v;
+
+  String? _itemId;
+  String? get itemId => _$this._itemId;
+  set itemId(String? itemId) => _$this._itemId = itemId;
 
   String? _name;
   String? get name => _$this._name;
@@ -123,6 +133,7 @@ class AdminOrderDtoOutputOrderLinesInnerBuilder
   AdminOrderDtoOutputOrderLinesInnerBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _itemId = $v.itemId;
       _name = $v.name;
       _quantity = $v.quantity;
       _options = $v.options.toBuilder();
@@ -155,6 +166,11 @@ class AdminOrderDtoOutputOrderLinesInnerBuilder
       _$result =
           _$v ??
           _$AdminOrderDtoOutputOrderLinesInner._(
+            itemId: BuiltValueNullFieldError.checkNotNull(
+              itemId,
+              r'AdminOrderDtoOutputOrderLinesInner',
+              'itemId',
+            ),
             name: BuiltValueNullFieldError.checkNotNull(
               name,
               r'AdminOrderDtoOutputOrderLinesInner',

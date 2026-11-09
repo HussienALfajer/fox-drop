@@ -671,6 +671,38 @@ describe('operations accept or reject for the restaurant (AP §9.3.2, RA §8.15)
     expect(rows).toEqual([]);
   });
 
+  it("gives the dialogs' choices in the detail while the order is placed", async () => {
+    const menu = await menuOf('مطعم خيارات العمليات');
+    const order = await placedAt(menu.id, [menu.items[0]!]);
+    const ops = await admin(['OPS']);
+    const detail = async () =>
+      (
+        await app.inject({
+          method: 'GET',
+          url: `/v1/admin/orders/${order.id}`,
+          cookies: ops.cookies,
+        })
+      ).json().order;
+    expect((await detail()).lines[0].itemId).toBe(menu.items[0]);
+    expect((await detail()).onBehalf).toEqual({
+      prepTime: {
+        options: [10, 15, 20, 30, 45],
+        stepMin: 5,
+        floorMin: 5,
+        ceilingMin: 90,
+        defaultMin: 20,
+      },
+      rejectionReasons: [
+        { code: 'item_unavailable', label: 'صنف غير متوفر' },
+        { code: 'restaurant_closed', label: 'المطعم مغلق' },
+        { code: 'too_busy', label: 'ضغط طلبات' },
+      ],
+      busyExtraOptionsMin: [10, 20],
+    });
+    await ops.post(`/v1/admin/orders/${order.id}/accept`, { prepMin: 20, reason: 'test' });
+    expect((await detail()).onBehalf).toBeNull();
+  });
+
   it('needs operations.manage', async () => {
     const menu = await menuOf('مطعم الصلاحيات');
     const order = await placedAt(menu.id, [menu.items[0]!]);

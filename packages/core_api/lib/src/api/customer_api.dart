@@ -549,6 +549,7 @@ class CustomerApi {
   /// Parameters:
   /// * [latitude]
   /// * [longitude]
+  /// * [similarTo] - CU §11.9: under a rejected or unanswered order, at its pin: up to 5 open restaurants of this restaurant's category, without it; empty when it has no category.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -561,6 +562,7 @@ class CustomerApi {
   Future<Response<CustomerRestaurantListDtoOutput>> customerBrowsingList({
     required String latitude,
     required String longitude,
+    String? similarTo,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -587,6 +589,12 @@ class CustomerApi {
         longitude,
         const FullType(String),
       ),
+      if (similarTo != null)
+        r'similarTo': encodeQueryParameter(
+          _serializers,
+          similarTo,
+          const FullType(String),
+        ),
     };
 
     final _response = await _dio.request<Object>(

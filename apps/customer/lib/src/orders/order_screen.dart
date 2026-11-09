@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../emergency_stop.dart';
 import '../notifications/notifications_off_banner.dart';
+import 'order_again_section.dart';
 import 'order_live.dart';
 
 /// The order screen (CU §11): the status title and subtitle of §11.2, the
@@ -55,6 +56,8 @@ class OrderScreen extends ConsumerWidget {
               title: Text(title),
               subtitle: subtitle == null ? null : Text(subtitle),
             ),
+            // CU §11.9: a rejected or unanswered order.
+            OrderAgainSection(order: order),
             // CU §11.6: the emergency stop's delay notice.
             if (!ended) EmergencyDelayNotice(orderId: orderId),
             // CU §4.4: notifications refused at the first order.
@@ -173,7 +176,7 @@ class OrderScreen extends ConsumerWidget {
     ),
     Delivered() => (l10n.customerStatusDelivered, l10n.customerEnjoy),
     NoRestaurantResponse() => (l10n.customerNoRestaurantResponse, null),
-    Rejected() => (l10n.customerRejected, null),
+    Rejected(:final text) => (l10n.customerRejected, text),
     Cancelled(:final text) => (l10n.customerCancelled, text),
     Failed() => (l10n.customerDeliveryFailed, null),
   };

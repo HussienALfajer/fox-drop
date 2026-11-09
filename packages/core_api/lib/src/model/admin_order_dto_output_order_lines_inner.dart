@@ -13,6 +13,7 @@ part 'admin_order_dto_output_order_lines_inner.g.dart';
 /// AdminOrderDtoOutputOrderLinesInner
 ///
 /// Properties:
+/// * [itemId] - «رفض نيابة عن المطعم» picks the unavailable items by it.
 /// * [name]
 /// * [quantity]
 /// * [options]
@@ -26,6 +27,10 @@ abstract class AdminOrderDtoOutputOrderLinesInner
           AdminOrderDtoOutputOrderLinesInner,
           AdminOrderDtoOutputOrderLinesInnerBuilder
         > {
+  /// «رفض نيابة عن المطعم» picks the unavailable items by it.
+  @BuiltValueField(wireName: r'itemId')
+  String get itemId;
+
   @BuiltValueField(wireName: r'name')
   String get name;
 
@@ -76,6 +81,11 @@ class _$AdminOrderDtoOutputOrderLinesInnerSerializer
     AdminOrderDtoOutputOrderLinesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    yield r'itemId';
+    yield serializers.serialize(
+      object.itemId,
+      specifiedType: const FullType(String),
+    );
     yield r'name';
     yield serializers.serialize(
       object.name,
@@ -137,6 +147,15 @@ class _$AdminOrderDtoOutputOrderLinesInnerSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'itemId':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.itemId = valueDes;
+          break;
         case r'name':
           final valueDes =
               serializers.deserialize(

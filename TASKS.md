@@ -4,17 +4,20 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.7b, operations accepting or rejecting for the restaurant in the panel, and the customer's rejected order (`docs/roadmap.md`, Phase 2; owner decision 2026-11-09: 2.7 is two pull requests). Operations reject for a restaurant and the customer orders again without the missing item.
+Slice 2.8, cancellation (`docs/roadmap.md`, Phase 2): the customer's own while `placed` and its race with acceptance, operations' with a reason, a responsible party and the prepared-food credit, voiding an open pickup request and the cash question, withdrawing an offer, the ring until acknowledged. The owner cancels after the captain reached the restaurant and is asked about the cash.
 
-- **Specs:** AP §9.3.1 (the detail: «rejected (with reason)»), AP §9.3.2 (the rows «قبول نيابة عن المطعم» and «رفض نيابة عن المطعم», with the reason required), AP Appendix B «Restaurant rejection», CU §11.9 (the rejected and unanswered orders, up to 5 similar restaurants: open, same category, delivering to the pin; «اطلب بدون الأصناف غير المتوفرة», Q22) and §12.3 (the cart rebuilt, asking first when the current cart is not empty), CU Appendix C, CU §14 #7.
-- **Built in 2.7a (server):** `POST /v1/admin/orders/{orderId}/accept` (`prepMin`, `reason`) and `.../reject` (`rejection`, `items`, `busyExtraMin`, `pauseMin`, `reason`), the detail's `rejection` (code, label, customer text, items, `byOperations`), the customer order's `rejection` (code, `text`, `unavailableItemIds`). See `apps/server/src/modules/ordering/CLAUDE.md` «Reject» and «On the restaurant's behalf».
-- **Branch:** `feat/order-reject-panel-customer`.
-- **Ask the owner first:** the design stop (CLAUDE.md) holds for new screens: build the panel's dialogs and the customer's rejected-order view unstyled, as earlier slices did, unless the owner says the design is ready.
+- **Specs:** AP §8.1 (the transitions and the pickup request voided on cancel), §8.3 (the timers), §8.8 (the late-cancellation strike), §9.3.2 (the row «إلغاء الطلب» with its reason, responsible party and «تم تحضير الطعام؟»), AP Appendix B (the cancellation reasons), RA §8.10 («هل أعاد المطعم المبلغ للكابتن؟»), RA §8.14 (the cancelled order's ring until acknowledged), CU §11.4 (cancelling while placed, the race «قبل المطعم طلبك قبل لحظات…»), CU §11.9 («أُلغي طلبك» with the reason and the compensation code), CA §9.10 (the captain's order cancelled), and each one's definition of done. Read `apps/server/src/modules/ordering/CLAUDE.md` «Not yet» first: it lists what cancellation must clear.
+- **Branch:** per pull request, as the split decides (`feat/order-cancel…`).
+- **Ask the owner first:** the split into pull requests (root `CLAUDE.md`; 2.6 and 2.7 were each server then panel and apps), and the open items the specs leave (the prepared-food credit's amount and its ledger entries; who pays when no party is responsible). The design stop holds: screens stay unstyled.
 - **Plan:**
-  - [ ] Server: the similar restaurants of a rejected or unanswered order (CU §11.9: open, the same category, delivering to the order's pin, up to 5), on the customer's order or its own route, test first.
-  - [ ] Panel: «قبول نيابة عن المطعم» (the prep-time chooser and a reason) and «رفض نيابة عن المطعم» (the three reasons, the items, busy mode or the 30-minute pause, a reason) on the order detail while placed, and the rejection in the detail.
-  - [ ] Customer app: «نعتذر، لم يقبل المطعم طلبك» with the reason's text, the similar restaurants, and «اطلب بدون الأصناف غير المتوفرة» rebuilding the cart without `unavailableItemIds` (asking first when the cart is not empty).
-  - [ ] Review, then hand over to slice 2.8.
+  - [ ] Split 2.8 into pull requests with the `slice-plan` skill, and get the owner's approval.
+  - [ ] Write each pull request's steps here as a checklist, then build them in order.
+
+### Left from 2.7b (`feat/order-reject-panel-customer`)
+
+- **To check on staging:** in the panel, a placed order's detail → «رفض نيابة عن المطعم» → «صنف غير متوفر», pick an item «حتى الغد», a reason → the detail shows «سبب الرفض: صنف غير متوفر», the item and «ما يراه الزبون: …»; the customer app shows «نعتذر، لم يقبل المطعم طلبك» with the reason, the similar restaurants (set a category on two restaurants of the same zone first) and «اطلب بدون الأصناف غير المتوفرة», which opens the cart without the item; «قبول نيابة عن المطعم» with a typed 23 minutes shows «قبلته العمليات» in the restaurant app.
+- **To confirm with the owner:** «open» for similar restaurants includes busy mode, and a restaurant without a category has none; the similar list and the rebuilt cart are read at the order's pin, while the restaurant page and checkout they lead to use the customer's current delivery point; the strings the spec gives no wording for (customer: «مطاعم مشابهة», «ستُستبدل سلتك الحالية من {المطعم}. هل تتابع؟»; panel: «تأكيد القبول», «وقت التحضير (دقائق)», «وقت التحضير بين … و… دقيقة», «السبب (للسجل الداخلي)», «تغيّرت حالة الطلب قبل وصول قرارك», «وقت التحضير غير مقبول», «تعذّر التنفيذ بهذه الاختيارات، راجعها ثم أعد المحاولة», «سبب الرفض: …», «رفضته العمليات نيابة عن المطعم», «الأصناف غير المتوفرة: …», «ما يراه الزبون: …», «رُفض الساعة …»).
+- **Not yet:** «اطلب مرة أخرى» and «طلباتي» (CU §12.3, with order history; `rebuildLines` is ready for it); the panel's forms closing by themselves when the order leaves `placed` while one is half filled (the detail's live read removes them).
 
 ### Left from 2.7a (`feat/order-reject`)
 

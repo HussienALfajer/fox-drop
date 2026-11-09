@@ -95,6 +95,11 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderLinesInner.serializer)
           ..add(AdminOrderDtoOutputOrderLinesInnerOptionsInner.serializer)
           ..add(AdminOrderDtoOutputOrderMoney.serializer)
+          ..add(AdminOrderDtoOutputOrderOnBehalf.serializer)
+          ..add(AdminOrderDtoOutputOrderOnBehalfPrepTime.serializer)
+          ..add(
+            AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner.serializer,
+          )
           ..add(AdminOrderDtoOutputOrderPickup.serializer)
           ..add(AdminOrderDtoOutputOrderPickupDispute.serializer)
           ..add(AdminOrderDtoOutputOrderPickupRequestsInner.serializer)
@@ -618,6 +623,21 @@ Serializers _$serializers =
               const FullType(AdminOrderDtoOutputOrderLinesInnerOptionsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderLinesInnerOptionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(int)]),
+            () => ListBuilder<int>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1383,6 +1403,10 @@ Serializers _$serializers =
               const FullType(TeamUsersDtoOutputUsersInner),
             ]),
             () => ListBuilder<TeamUsersDtoOutputUsersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(int)]),
+            () => ListBuilder<int>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(int)]),

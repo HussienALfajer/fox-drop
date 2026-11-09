@@ -216,6 +216,32 @@ class AdminOrderDto extends createZodDto(
         })
         .nullable()
         .describe('While rejected (AP §9.3.1 «rejected (with reason)»).'),
+      onBehalf: z
+        .object({
+          prepTime: z
+            .object({
+              options: z.array(z.int()).describe('The chips (merchant.prep_time_options).'),
+              stepMin: z.int(),
+              floorMin: z.int(),
+              ceilingMin: z.int(),
+              defaultMin: z
+                .int()
+                .describe(
+                  "Preselected: the restaurant's default prep time plus busy mode's minutes while it is on.",
+                ),
+            })
+            .describe('«قبول نيابة عن المطعم»: the prep-time chooser of RA §8.5.'),
+          rejectionReasons: z
+            .array(z.object({ code: z.string(), label: z.string() }))
+            .describe("«رفض نيابة عن المطعم»: the restaurant's reasons (AP Appendix B), in order."),
+          busyExtraOptionsMin: z
+            .array(z.int())
+            .describe('«ضغط طلبات»: busy mode with one of merchant.busy_extra_options_min.'),
+        })
+        .nullable()
+        .describe(
+          "While placed: the choices of AP §9.3.2's accept and reject on the restaurant's behalf.",
+        ),
       customer: z
         .object({
           name: z.string().nullable().describe('Null before «أكمل بياناتك» (CU §5.3).'),
@@ -244,6 +270,7 @@ class AdminOrderDto extends createZodDto(
       note: z.string().nullable(),
       lines: z.array(
         z.object({
+          itemId: z.uuid().describe('«رفض نيابة عن المطعم» picks the unavailable items by it.'),
           name: z.string(),
           quantity: z.int(),
           options: z.array(z.object({ name: z.string(), priceDelta: minor })),
@@ -742,14 +769,18 @@ export class AdminOrdersController {
   @RequirePermission('operations.read')
   @ZodResponse({ status: 200, type: AdminOrderDto })
   async order(@Param() params: AdminOrderParamsDto) {
-    const item = await this.views.order(params.orderId, new Date());
+    const now = new Date();
+    const item = await this.views.order(params.orderId, now);
     if (item === null) {
       throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: 'unknown_order' });
     }
     const { order } = item;
-    const [profile, timeline] = await Promise.all([
+    const [profile, timeline, onBehalf] = await Promise.all([
       this.customers.profile(order.customerAccountId),
       this.views.timeline(order),
+      order.status === 'placed'
+        ? this.commands.onBehalfChoices(order.restaurantId, order.cityId, now)
+        : null,
     ]);
     const { acceptance } = order;
     return {
@@ -774,6 +805,7 @@ export class AdminOrdersController {
           itemIds: order.rejection.itemIds,
           byOperations: order.rejection.byOperations,
         },
+        onBehalf,
         customer: {
           name: profile ? [profile.firstName, profile.lastName].filter(Boolean).join(' ') : null,
           address: {
@@ -793,6 +825,7 @@ export class AdminOrdersController {
         },
         note: order.note,
         lines: order.lines.map((line) => ({
+          itemId: line.itemId,
           name: line.name,
           quantity: line.quantity,
           options: line.options.map((option) => ({

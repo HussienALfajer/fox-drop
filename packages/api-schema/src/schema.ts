@@ -3952,7 +3952,7 @@ export interface components {
             status: "deleted";
         };
         CustomerRestaurantListDto_Output: {
-            /** @description CU §8.2: open first, then busy and paused, then closed. */
+            /** @description CU §8.2: open first, then busy and paused, then closed; with similarTo, the open ones only (CU §11.9). */
             restaurants: {
                 /** Format: uuid */
                 id: string;
@@ -5207,6 +5207,26 @@ export interface components {
                     /** @description Rejected by operations on the restaurant's behalf. */
                     byOperations: boolean;
                 } | null;
+                /** @description While placed: the choices of AP §9.3.2's accept and reject on the restaurant's behalf. */
+                onBehalf: {
+                    /** @description «قبول نيابة عن المطعم»: the prep-time chooser of RA §8.5. */
+                    prepTime: {
+                        /** @description The chips (merchant.prep_time_options). */
+                        options: number[];
+                        stepMin: number;
+                        floorMin: number;
+                        ceilingMin: number;
+                        /** @description Preselected: the restaurant's default prep time plus busy mode's minutes while it is on. */
+                        defaultMin: number;
+                    };
+                    /** @description «رفض نيابة عن المطعم»: the restaurant's reasons (AP Appendix B), in order. */
+                    rejectionReasons: {
+                        code: string;
+                        label: string;
+                    }[];
+                    /** @description «ضغط طلبات»: busy mode with one of merchant.busy_extra_options_min. */
+                    busyExtraOptionsMin: number[];
+                } | null;
                 /** @description The phone, masked and revealed with a log (AP §5.4), comes with its slice. */
                 customer: {
                     /** @description Null before «أكمل بياناتك» (CU §5.3). */
@@ -5239,6 +5259,11 @@ export interface components {
                 };
                 note: string | null;
                 lines: {
+                    /**
+                     * Format: uuid
+                     * @description «رفض نيابة عن المطعم» picks the unavailable items by it.
+                     */
+                    itemId: string;
                     name: string;
                     quantity: number;
                     options: {
@@ -8728,6 +8753,8 @@ export interface operations {
             query: {
                 latitude: string;
                 longitude: string;
+                /** @description CU §11.9: under a rejected or unanswered order, at its pin: up to 5 open restaurants of this restaurant's category, without it; empty when it has no category. */
+                similarTo?: string;
             };
             header?: never;
             path?: never;

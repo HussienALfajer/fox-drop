@@ -1,5 +1,6 @@
 import 'package:core_auth/testing.dart';
 import 'package:core_realtime/core_realtime.dart';
+import 'package:customer/src/cart/cart.dart';
 import 'package:customer/src/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,6 +15,8 @@ Map<String, Object?> _order({
   int version = 1,
   Map<String, Object?>? captain,
   Map<String, Object?>? cancellation,
+  Map<String, Object?>? rejection,
+  List<Map<String, Object?>>? lines,
   String? promisedAt,
 }) => {
   'id': _orderId,
@@ -23,6 +26,7 @@ Map<String, Object?> _order({
   'placedAt': '2026-11-07T12:00:00.000Z',
   'promisedAt': promisedAt,
   'cancellation': cancellation,
+  'rejection': rejection,
   'delivery': null,
   'restaurant': {'id': shamId, 'nameAr': 'مطعم الشام', 'nameEn': null},
   'captain': captain,
@@ -36,17 +40,19 @@ Map<String, Object?> _order({
     'total': '14000',
   },
   'equivalents': <Object>[],
-  'lines': [
-    {
-      'itemId': shawarmaId,
-      'name': 'شاورما دجاج',
-      'quantity': 2,
-      'note': null,
-      'options': <Object>[],
-      'unitPrice': '6500',
-      'lineTotal': '13000',
-    },
-  ],
+  'lines':
+      lines ??
+      [
+        {
+          'itemId': shawarmaId,
+          'name': 'شاورما دجاج',
+          'quantity': 2,
+          'note': null,
+          'options': <Object>[],
+          'unitPrice': '6500',
+          'lineTotal': '13000',
+        },
+      ],
   'payIn': null,
   'note': null,
   'estimate': {'fromMin': 30, 'toMin': 40},
@@ -78,9 +84,14 @@ String _status(WidgetTester tester) {
 
 // CU §11: the order screen follows the order live (CU §4.3).
 void main() {
-  Future<TestApp> open(WidgetTester tester, List<FakeAnswer> answers) async {
+  Future<TestApp> open(
+    WidgetTester tester,
+    List<FakeAnswer> answers, {
+    void Function(TestApp app)? before,
+  }) async {
     final app = TestApp(signedIn: true);
     app.server.on('/v1/customer/orders/$_orderId', answers);
+    before?.call(app);
     app.server.on('/v1/customer/orders/active', [
       const FakeAnswer(200, {'orders': <Object>[]}),
     ]);
@@ -163,22 +174,204 @@ void main() {
   testWidgets('an order the restaurant did not answer says so (CU §11.9)', (
     tester,
   ) async {
-    final app = await open(tester, [
-      FakeAnswer(200, {
-        'order': _order(
-          status: 'cancelled',
-          version: 2,
-          cancellation: {
-            'at': '2026-11-07T12:07:00.000Z',
-            'reason': 'merchant_auto_cancel',
-            'text': 'لم يرد المطعم على طلبك',
-          },
-        ),
-      }),
-    ]);
+    final app = await open(
+      tester,
+      [
+        FakeAnswer(200, {
+          'order': _order(
+            status: 'cancelled',
+            version: 2,
+            cancellation: {
+              'at': '2026-11-07T12:07:00.000Z',
+              'reason': 'merchant_auto_cancel',
+              'text': 'لم يرد المطعم على طلبك',
+            },
+          ),
+        }),
+      ],
+      before: (app) => app.server.on('/v1/customer/restaurants', [
+        FakeAnswer(200, {
+          'restaurants': [card(nourId, 'مطعم النور')],
+        }),
+      ]),
+    );
     expect(_status(tester), 'لم يرد المطعم على طلبك، نعتذر');
     expect(find.byKey(const Key('step-confirm')), findsNothing);
+    // CU §11.9: with similar restaurants at its pin, and no rebuild.
+    expect(find.byKey(const Key('similar-$nourId')), findsOneWidget);
+    expect(
+      app.server.to('/v1/customer/restaurants').single.uri.queryParameters,
+      {'latitude': '36.5862', 'longitude': '37.0463', 'similarTo': shamId},
+    );
+    expect(find.byKey(const Key('order-without-unavailable')), findsNothing);
     await app.done(tester);
+  });
+
+  group('a rejected order (CU §11.9, Q22)', () {
+    Map<String, Object?> line(
+      String itemId,
+      String name, {
+      List<String> options = const [],
+      String? note,
+      int quantity = 1,
+    }) => {
+      'itemId': itemId,
+      'name': name,
+      'quantity': quantity,
+      'note': note,
+      'options': [
+        for (final id in options) {'id': id, 'name': 'خيار', 'priceDelta': '0'},
+      ],
+      'unitPrice': '5000',
+      'lineTotal': '5000',
+    };
+
+    final rejected = _order(
+      status: 'rejected',
+      version: 2,
+      rejection: {
+        'at': '2026-11-07T12:03:00.000Z',
+        'reason': 'item_unavailable',
+        'text': 'بعض الأصناف غير متوفرة: فلافل',
+        'unavailableItemIds': [falafelId],
+      },
+      lines: [
+        line(
+          shawarmaId,
+          'شاورما دجاج',
+          options: [largeId, cheeseId],
+          note: 'بدون بصل',
+          quantity: 2,
+        ),
+        line(falafelId, 'فلافل'),
+        line(fulId, 'فول'),
+      ],
+    );
+
+    void answers(TestApp app) {
+      app.server.on('/v1/customer/restaurants', [
+        FakeAnswer(200, {
+          'restaurants': [card(nourId, 'مطعم النور')],
+        }),
+      ]);
+      app.server.on('/v1/customer/restaurants/$shamId', [
+        FakeAnswer(200, shamPage()),
+      ]);
+    }
+
+    testWidgets('shows the reason and the similar restaurants at its pin', (
+      tester,
+    ) async {
+      final app = await open(tester, [
+        FakeAnswer(200, {'order': rejected}),
+      ], before: answers);
+      expect(
+        _status(tester),
+        'نعتذر، لم يقبل المطعم طلبك — بعض الأصناف غير متوفرة: فلافل',
+      );
+      expect(find.text('مطاعم مشابهة'), findsOneWidget);
+      expect(find.byKey(const Key('similar-$nourId')), findsOneWidget);
+      final asked = app.server.to('/v1/customer/restaurants').single;
+      expect(asked.uri.queryParameters, {
+        'latitude': '36.5862',
+        'longitude': '37.0463',
+        'similarTo': shamId,
+      });
+      await app.done(tester);
+    });
+
+    testWidgets(
+      '«اطلب بدون الأصناف غير المتوفرة» rebuilds the cart at current prices',
+      (tester) async {
+        final app = await open(tester, [
+          FakeAnswer(200, {'order': rejected}),
+        ], before: answers);
+        await tester.tap(find.byKey(const Key('order-without-unavailable')));
+        await tester.pumpAndSettle();
+
+        final cart = app.container.read(cartProvider).value!.cart!;
+        expect(cart.restaurantId, shamId);
+        // The falafel is left out; the breakfast item is out of its window
+        // now, so it is skipped and named.
+        expect(cart.lines, hasLength(1));
+        final shawarma = cart.lines.single;
+        expect(shawarma.optionIds, [largeId, cheeseId]);
+        expect(shawarma.quantity, 2);
+        expect(shawarma.note, 'بدون بصل');
+        // 5000 + 1000 large + 500 cheese, from today's menu.
+        expect(shawarma.unitPrice, '6500');
+        expect(find.text('لم نضف: فول لأنها غير متوفرة'), findsOneWidget);
+        expect(app.container.read(routerProvider).state.uri.path, '/cart');
+        await app.done(tester);
+      },
+    );
+
+    testWidgets('asks before it replaces a cart that is not empty', (
+      tester,
+    ) async {
+      final app = await open(tester, [
+        FakeAnswer(200, {'order': rejected}),
+      ], before: answers);
+      const kept = CartLine(
+        itemId: falafelId,
+        name: 'فلافل',
+        optionIds: [],
+        optionNames: [],
+        quantity: 1,
+        note: null,
+        unitPrice: '3000',
+        currency: 'TRY',
+      );
+      await app.container
+          .read(cartProvider.notifier)
+          .startNew(nourId, 'مطعم النور', kept);
+      await tester.tap(find.byKey(const Key('order-without-unavailable')));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('ستُستبدل سلتك الحالية من مطعم النور. هل تتابع؟'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('إلغاء'));
+      await tester.pumpAndSettle();
+      expect(
+        app.container.read(cartProvider).value!.cart!.restaurantId,
+        nourId,
+      );
+
+      await tester.tap(find.byKey(const Key('order-without-unavailable')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('متابعة'));
+      await tester.pumpAndSettle();
+      expect(
+        app.container.read(cartProvider).value!.cart!.restaurantId,
+        shamId,
+      );
+      await app.done(tester);
+    });
+
+    testWidgets('offers no rebuild for another reason', (tester) async {
+      final app = await open(tester, [
+        FakeAnswer(200, {
+          'order': _order(
+            status: 'rejected',
+            version: 2,
+            rejection: {
+              'at': '2026-11-07T12:03:00.000Z',
+              'reason': 'restaurant_closed',
+              'text': 'المطعم مغلق حالياً',
+              'unavailableItemIds': <String>[],
+            },
+          ),
+        }),
+      ], before: answers);
+      expect(
+        _status(tester),
+        'نعتذر، لم يقبل المطعم طلبك — المطعم مغلق حالياً',
+      );
+      expect(find.byKey(const Key('order-without-unavailable')), findsNothing);
+      expect(find.byKey(const Key('similar-$nourId')), findsOneWidget);
+      await app.done(tester);
+    });
   });
 
   testWidgets('an order operations cancelled shows its reason (CU §11.9)', (

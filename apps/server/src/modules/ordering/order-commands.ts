@@ -134,6 +134,17 @@ export interface PrepTimeChooser {
   defaultMin: number;
 }
 
+// AP §9.3.2: what operations choose from to accept or reject on the
+// restaurant's behalf, as the restaurant's own prompt and sheet do (RA §8.5,
+// §8.6).
+export interface OnBehalfChoices {
+  prepTime: PrepTimeChooser;
+  // Content's active merchant_rejection reasons, in order.
+  rejectionReasons: { code: string; label: string }[];
+  // «تفعيل وضع الضغط» with «ضغط طلبات».
+  busyExtraOptionsMin: number[];
+}
+
 // The state a command needs and the one it leaves.
 type Transition = {
   verb: 'accept' | 'ready' | 'reject';
@@ -204,6 +215,22 @@ export class OrderCommands {
       floorMin,
       ceilingMin,
       defaultMin: Math.min(Math.max(preselected, floorMin), ceilingMin),
+    };
+  }
+
+  async onBehalfChoices(restaurantId: string, cityId: string, now: Date): Promise<OnBehalfChoices> {
+    const [prepTime, lists, busyExtraOptionsMin] = await Promise.all([
+      this.prepTimeChooser(restaurantId, now),
+      this.content.listsFor('merchant'),
+      this.settings.get('merchant.busy_extra_options_min', { cityId }),
+    ]);
+    return {
+      prepTime,
+      rejectionReasons: (lists.merchant_rejection ?? []).map(({ code, label }) => ({
+        code,
+        label,
+      })),
+      busyExtraOptionsMin,
     };
   }
 
