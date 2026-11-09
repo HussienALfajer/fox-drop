@@ -4,18 +4,24 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.6b, restaurant status in the panel and the customer app (`docs/roadmap.md`, Phase 2; owner decision 2026-11-09: 2.6 is two pull requests). Operations resume an auto-paused restaurant from the panel.
+Slice 2.7, rejecting an order and operations accepting or rejecting for the restaurant (`docs/roadmap.md`, Phase 2). The owner rejects with «صنف غير متوفر» and the item becomes unavailable.
 
-- **Specs:** AP §9.6.5 (the panel's restaurant actions: «إيقاف مؤقت» 15, 30 or 60 min, until a time or until resumed, with a customer-facing message and a reason; «استئناف»; «إنهاء وضع الضغط»; the maximum active orders on the restaurant's request; holiday close with a message and a reason; who ends a pause), AP §9.6.4 (the change log), AP §9.1.3 «مطعم أوقف تلقائياً» with its direct action «استئناف», RA §16 #23 (the restaurant's chimes of operations' pause, resume and end of busy mode), CU §9.2 and §8.2 (what customers see: closed, paused with its message and return time, busy, busy mode's «قد يستغرق الطلب وقتاً أطول قليلاً», holiday with its message), AP Appendix A.
-- **Branch:** `feat/restaurant-status-ops`.
-- **Already built (2.6a):** `RestaurantStatusService` (`apps/server/src/modules/merchants/CLAUDE.md` «Status commands», «State changes»): the one-pause rule, the auto-pause and its alert, the state outbox and relay (`restaurant.state_changed` already reaches `ops:city.{id}`), the timers. Operations' commands reuse them; the templates of RA §16 #23 are in Content.
-- **Ask the owner first:** whether a resumed auto-pause may pause the restaurant again at the next unanswered order of the same business day (today it does: every unanswered order after the limit pauses again).
+- **Specs:** RA §8.6 (reject: the three reasons and their side effects), RA §8.15 (accepted or rejected by operations, «قبلته العمليات»), AP §9.3.2 (the order detail's accept and reject for the restaurant), CU §11.9 (the customer's rejected order, similar restaurants, «اطلب بدون الأصناف غير المتوفرة»), with the order states and their timers in `docs/domain/`.
+- **Branch:** `feat/order-reject`.
+- **Ask the owner first:** whether 2.7 is one pull request or two (server and restaurant app, then the panel and the customer app), as 2.6 was.
 - **Plan:**
-  - [ ] Server: operations' pause (choices, until a time, until resumed; message and reason), resume (any pause, the auto-pause included), end of busy mode, holiday close and its end, maximum active orders; audited with the reason; the push of RA §16 #23; the auto-pause alert resolving at once on resume.
-  - [ ] Panel: the restaurant's status actions (on the temporary «الصور» restaurant list until the restaurant profile, 2.30) and «استئناف» from the auto-pause alert.
-  - [ ] Customer app: the restaurant's states and messages on the list and the restaurant page, and busy mode's notice (CU §8.2, §9.2).
-  - [ ] Restaurant app: the chimes of RA §16 #23.
-  - [ ] Review, then hand over to slice 2.7.
+  - [ ] Server: the restaurant's reject with its reason and side effects (an unavailable item switched off, a pause, the money and timers of a `rejected` order), operations' accept and reject for the restaurant, test first.
+  - [ ] Restaurant app: «رفض» with the three reasons, and «قبلته العمليات» / rejected by operations.
+  - [ ] Panel: accept and reject on the order detail.
+  - [ ] Customer app: the rejected order, similar restaurants and «اطلب بدون الأصناف غير المتوفرة».
+  - [ ] Review, then hand over to slice 2.8.
+
+### Left from 2.6b (`feat/restaurant-status-ops`)
+
+- **Before deploying to staging:** deploy with 2.6a (see below). The new restaurant APK chimes on operations' pause, resume and end of busy mode; an older one only reads its status again.
+- **To check on staging:** in the panel, «حالة المطاعم» → a restaurant → «إيقاف مؤقت» 15 د with a message and a reason: the restaurant app shows «أوقفته العمليات» with a chime and «أوقفت العمليات مطعمك مؤقتاً: {السبب}», its own «استئناف الاستقبال» is refused, and the customer app shows «المطعم متوقف مؤقتاً، يعود خلال 15 د» with the message; «استئناف» opens it again with «أعادت العمليات تشغيل مطعمك»; a third unanswered order of the day raises «مطعم أوقف تلقائياً», whose «استئناف» resumes the restaurant and closes the alert within seconds; «إنهاء وضع الضغط», a holiday close with its reason, and the maximum active orders.
+- **To confirm with the owner:** the pause's message to customers is optional (AP §9.6.5 says the pause comes «with a customer-facing message»); an operations pause works in any state and replaces any pause in force, the auto-pause included; the reason is the one RA §16 #23 shows the restaurant; the same pause again within 60 s (or with the same end) is a repeat that changes nothing, so the admin routes take no `Idempotency-Key`; a long pause until a time shows customers «يعود خلال 2880 د» (CU §9.2 gives no wording for days or hours); the panel's strings the spec gives no wording for («حالة المطاعم», the explanations and labels, «إيقاف قائم يبدأ مع الفتح: …», the refusals).
+- **Not yet:** the pickup currencies (AP §9.6.4, RA §12.7), the profile's «سجل التغييرات» tab (AP §9.6.4, with the profile, 2.30), the chime of a suspension by operations (RA §16 #23, with suspension from the panel), the customer list updating live (no `customer:` channel).
 
 ### Left from 2.6a (`feat/restaurant-status`)
 
