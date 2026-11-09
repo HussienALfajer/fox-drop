@@ -15,6 +15,7 @@ part 'merchant_orders_dto_output_orders_inner_acceptance.g.dart';
 /// * [prepMin] - The prep time chosen (RA §8.5).
 /// * [prepDueAt] - While accepted, the prep countdown runs to it; past it the card turns red and counts up, «متأخر {د} د» (RA §8.7).
 /// * [deviceName] - «قُبل الطلب من جهاز {اسم الجهاز}» (RA §4.7); null when not accepted on a named device of the restaurant.
+/// * [byOperations] - Accepted by operations on the restaurant's behalf: the badge «قبلته العمليات», and every device chimes «قبلت العمليات الطلب #{رقم} نيابة عنكم — وقت التحضير {د} د» (RA §8.15, §16 #5).
 @BuiltValue()
 abstract class MerchantOrdersDtoOutputOrdersInnerAcceptance
     implements
@@ -36,6 +37,10 @@ abstract class MerchantOrdersDtoOutputOrdersInnerAcceptance
   /// «قُبل الطلب من جهاز {اسم الجهاز}» (RA §4.7); null when not accepted on a named device of the restaurant.
   @BuiltValueField(wireName: r'deviceName')
   String? get deviceName;
+
+  /// Accepted by operations on the restaurant's behalf: the badge «قبلته العمليات», and every device chimes «قبلت العمليات الطلب #{رقم} نيابة عنكم — وقت التحضير {د} د» (RA §8.15, §16 #5).
+  @BuiltValueField(wireName: r'byOperations')
+  bool get byOperations;
 
   MerchantOrdersDtoOutputOrdersInnerAcceptance._();
 
@@ -92,6 +97,11 @@ class _$MerchantOrdersDtoOutputOrdersInnerAcceptanceSerializer
             object.deviceName,
             specifiedType: const FullType.nullable(String),
           );
+    yield r'byOperations';
+    yield serializers.serialize(
+      object.byOperations,
+      specifiedType: const FullType(bool),
+    );
   }
 
   @override
@@ -152,6 +162,15 @@ class _$MerchantOrdersDtoOutputOrdersInnerAcceptanceSerializer
                   as String?;
           if (valueDes == null) continue;
           result.deviceName = valueDes;
+          break;
+        case r'byOperations':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.byOperations = valueDes;
           break;
         default:
           unhandled.add(key);

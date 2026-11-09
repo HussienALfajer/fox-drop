@@ -1135,75 +1135,137 @@ export class MerchantsService implements OnModuleInit {
     change: MerchantChange,
     now = new Date(),
   ): Promise<SwitchedOff> {
-    const [city] = await this.database.db
-      .select({ cityId: restaurants.cityId })
-      .from(restaurants)
-      .where(eq(restaurants.id, restaurantId));
-    if (!city) throw new MerchantsRefusedError('unknown_restaurant', 'no such restaurant');
-    let until: Date | null = null;
-    if (!availability.available && availability.until === 'tomorrow') {
-      const timeZone = await this.geo.cityTimeZone(city.cityId);
-      if (timeZone === null) throw new Error(`restaurant ${restaurantId} is in an unknown city`);
-      const cutoff = await this.settings.get('finance.business_day_cutoff', {
-        cityId: city.cityId,
-      });
-      const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
-      until = nextCutoff(now, hours * 60 + minutes, timeZone);
-    }
-    const table = { category: categories, item: items, option: options }[target.type];
+    const until = availability.available
+      ? null
+      : await this.switchedOffUntil(restaurantId, availability.until, now);
     return this.database.db.transaction(async (tx) => {
       const row = await this.lockRestaurant(tx, restaurantId);
       // RA §5.5: a terminated restaurant keeps only its money section.
       if (row.accountStatus === 'terminated') {
         throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
       }
-      const [found] =
-        target.type === 'option'
-          ? await tx
-              .select({ id: options.id })
-              .from(options)
-              .innerJoin(optionGroups, eq(optionGroups.id, options.groupId))
-              .where(
-                and(
-                  eq(options.id, target.id),
-                  eq(optionGroups.restaurantId, restaurantId),
-                  isNull(options.deletedAt),
-                  isNull(optionGroups.deletedAt),
-                ),
-              )
-          : await this.ownRow(
-              tx,
-              target.type === 'item' ? items : categories,
-              restaurantId,
-              target.id,
-            );
-      if (!found) {
+      const switched = await this.writeAvailability(
+        tx,
+        row.cityId,
+        restaurantId,
+        target,
+        availability.available,
+        until,
+        change,
+        now,
+      );
+      if (!switched) {
         throw new MerchantsRefusedError('unknown_menu_row', `no such ${target.type} here`);
       }
-      const [before] = await tx
-        .select({ available: table.available, unavailableUntil: table.unavailableUntil })
-        .from(table)
-        .where(eq(table.id, target.id));
-      await tx
-        .update(table)
-        .set({ available: availability.available, unavailableUntil: until, updatedAt: now })
-        .where(eq(table.id, target.id));
-      const after: SwitchedOff = availability.available ? null : { until };
-      await this.audit.recordWrite(
-        {
-          actor: change.actor,
-          context: change.context,
-          cityId: row.cityId,
-          action: `menu.${target.type}.availability`,
-          target: { type: `menu_${target.type}`, id: target.id },
-          before: { switchedOff: before ? switchedOff(before, now) : null },
-          after: { switchedOff: after },
-          reason: change.reason ?? null,
-        },
-        tx,
-      );
-      return after;
+      return availability.available ? null : { until };
     });
+  }
+
+  // RA §9.3: the end of a switch off: «حتى الغد» is the next business-day
+  // cutoff on the city's clock (RA §4.9), «حتى أعيده» none (null).
+  async switchedOffUntil(
+    restaurantId: string,
+    until: 'tomorrow' | 'turned_back_on',
+    now: Date,
+  ): Promise<Date | null> {
+    if (until === 'turned_back_on') return null;
+    const [city] = await this.database.db
+      .select({ cityId: restaurants.cityId })
+      .from(restaurants)
+      .where(eq(restaurants.id, restaurantId));
+    if (!city) throw new MerchantsRefusedError('unknown_restaurant', 'no such restaurant');
+    const timeZone = await this.geo.cityTimeZone(city.cityId);
+    if (timeZone === null) throw new Error(`restaurant ${restaurantId} is in an unknown city`);
+    const cutoff = await this.settings.get('finance.business_day_cutoff', {
+      cityId: city.cityId,
+    });
+    const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
+    return nextCutoff(now, hours * 60 + minutes, timeZone);
+  }
+
+  // RA §8.6 «صنف غير متوفر»: the rejection's items switched off at once, in
+  // the order's transaction (after the order's lock), each until the end
+  // `switchedOffUntil` gave. An item deleted from the menu since is left
+  // alone. Audited as the restaurant's own switch.
+  async switchOffForRejection(
+    tx: Tx,
+    restaurantId: string,
+    switches: { itemId: string; until: Date | null }[],
+    change: MerchantChange,
+    now: Date,
+  ): Promise<void> {
+    const row = await this.lockRestaurant(tx, restaurantId);
+    for (const each of switches) {
+      await this.writeAvailability(
+        tx,
+        row.cityId,
+        restaurantId,
+        { type: 'item', id: each.itemId },
+        false,
+        each.until,
+        change,
+        now,
+      );
+    }
+  }
+
+  // One row's switch with its audit; false when the row is not the
+  // restaurant's (or deleted).
+  private async writeAvailability(
+    tx: Tx,
+    cityId: string,
+    restaurantId: string,
+    target: { type: 'category' | 'item' | 'option'; id: string },
+    available: boolean,
+    until: Date | null,
+    change: MerchantChange,
+    now: Date,
+  ): Promise<boolean> {
+    const table = { category: categories, item: items, option: options }[target.type];
+    const [found] =
+      target.type === 'option'
+        ? await tx
+            .select({ id: options.id })
+            .from(options)
+            .innerJoin(optionGroups, eq(optionGroups.id, options.groupId))
+            .where(
+              and(
+                eq(options.id, target.id),
+                eq(optionGroups.restaurantId, restaurantId),
+                isNull(options.deletedAt),
+                isNull(optionGroups.deletedAt),
+              ),
+            )
+        : await this.ownRow(
+            tx,
+            target.type === 'item' ? items : categories,
+            restaurantId,
+            target.id,
+          );
+    if (!found) return false;
+    const [before] = await tx
+      .select({ available: table.available, unavailableUntil: table.unavailableUntil })
+      .from(table)
+      .where(eq(table.id, target.id));
+    await tx
+      .update(table)
+      .set({ available, unavailableUntil: available ? null : until, updatedAt: now })
+      .where(eq(table.id, target.id));
+    const after: SwitchedOff = available ? null : { until };
+    await this.audit.recordWrite(
+      {
+        actor: change.actor,
+        context: change.context,
+        cityId,
+        action: `menu.${target.type}.availability`,
+        target: { type: `menu_${target.type}`, id: target.id },
+        before: { switchedOff: before ? switchedOff(before, now) : null },
+        after: { switchedOff: after },
+        reason: change.reason ?? null,
+      },
+      tx,
+    );
+    return true;
   }
 
   // AP §9.6.3: the restaurant's logo or cover from an admin's upload,

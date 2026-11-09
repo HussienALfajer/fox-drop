@@ -4,10 +4,17 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
 import { Jobs } from '../../jobs/jobs.module.js';
+import { AuditService } from '../audit/index.js';
 import { CaptainsService } from '../captains/index.js';
+import { ContentRefusedError, ContentService } from '../content/index.js';
 import { GeoService, tripMinutes } from '../geo/index.js';
-import { MerchantsService } from '../merchants/index.js';
+import {
+  type MerchantChange,
+  MerchantsService,
+  RestaurantStatusService,
+} from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
+import type { AdminOrderCommand } from './captain-orders.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
 import { lockOrder, recordTransition } from './order-events.js';
 import type { SearchStartJob } from './order-timers.js';
@@ -23,6 +30,9 @@ export type OrderCommandRefusal =
   | 'order_state_changed'
   | 'invalid_prep_time'
   | 'idempotency_key_reused'
+  // RA §8.6: a reason not on the list, or steps that do not fit it.
+  | 'unknown_reason'
+  | 'invalid_rejection'
   // RA §8.10: payment lines (pickup-commands.ts).
   | 'invalid_lines'
   | 'currency_not_accepted'
@@ -50,6 +60,67 @@ export interface MerchantCommand {
   deviceId: string;
   idempotencyKey: string;
   orderId: string;
+  // The user's role and address, which the audit of a rejection's side
+  // effects keeps (RA §8.6).
+  role?: string;
+  ipAddress?: string | null;
+}
+
+// RA §8.6, R3: the three reasons of Content's closed merchant_rejection
+// list, each with its own behaviour.
+export const REJECTION_REASONS = ['item_unavailable', 'restaurant_closed', 'too_busy'] as const;
+export type RejectionReason = (typeof REJECTION_REASONS)[number];
+
+// RA §8.6: the rejection with its steps: the items of «صنف غير متوفر», each
+// «حتى الغد» or «حتى أعيده»; for «ضغط طلبات» optionally «تفعيل وضع الضغط»
+// (its minutes) or «إيقاف 30 د».
+export interface Rejection {
+  // The reason's code in Content's merchant_rejection list.
+  code: string;
+  items: { itemId: string; until: 'tomorrow' | 'turned_back_on' }[];
+  busyExtraMin: number | null;
+  pauseMin: number | null;
+}
+
+// RA §8.6: «إيقاف 30 د» is the only pause «ضغط طلبات» offers.
+export const TOO_BUSY_PAUSE_MIN = 30;
+
+// RA §8.6: why the rejection's steps do not fit its reason, or null. The
+// items are the order's (each once) and only for «صنف غير متوفر», where at
+// least one is required; busy mode or the 30-minute pause, not both, only
+// for «ضغط طلبات».
+export function rejectionProblem(rejection: Rejection, orderItemIds: string[]): string | null {
+  if (!(REJECTION_REASONS as readonly string[]).includes(rejection.code)) {
+    return 'unknown_reason';
+  }
+  const ids = rejection.items.map((item) => item.itemId);
+  if (rejection.code === 'item_unavailable') {
+    if (ids.length === 0) return 'pick the unavailable items';
+    if (new Set(ids).size !== ids.length) return 'each item once';
+    if (ids.some((id) => !orderItemIds.includes(id))) return "the items are the order's";
+  } else if (ids.length > 0) {
+    return 'items only for item_unavailable';
+  }
+  if (rejection.code !== 'too_busy') {
+    if (rejection.busyExtraMin !== null || rejection.pauseMin !== null) {
+      return 'busy mode or a pause only for too_busy';
+    }
+  } else if (rejection.busyExtraMin !== null && rejection.pauseMin !== null) {
+    return 'busy mode or a pause, not both';
+  } else if (rejection.pauseMin !== null && rejection.pauseMin !== TOO_BUSY_PAUSE_MIN) {
+    return `the pause is ${TOO_BUSY_PAUSE_MIN} minutes`;
+  }
+  return null;
+}
+
+// What a rejection's key hashes: the reason and its steps.
+function rejectionHash(rejection: Rejection) {
+  return {
+    code: rejection.code,
+    items: rejection.items,
+    busyExtraMin: rejection.busyExtraMin,
+    pauseMin: rejection.pauseMin,
+  };
 }
 
 // RA §8.5: the prep-time chooser of the accept prompt.
@@ -65,17 +136,30 @@ export interface PrepTimeChooser {
 
 // The state a command needs and the one it leaves.
 type Transition = {
-  verb: 'accept' | 'ready';
+  verb: 'accept' | 'ready' | 'reject';
   from: 'placed' | 'accepted';
-  to: 'accepted' | 'ready';
+  to: 'accepted' | 'ready' | 'rejected';
 };
+
+// Who runs a command: a user of the restaurant on its device (RA §18), or
+// operations on the restaurant's behalf (AP §9.3.2), on any order, with the
+// reason the event and the audit keep.
+type Caller =
+  { kind: 'restaurant'; command: MerchantCommand } | { kind: 'admin'; command: AdminOrderCommand };
 
 // A state change of the command (the columns it sets) and what the
 // transaction sends with it.
 type Change = {
   set: Partial<typeof orders.$inferInsert>;
   searchStartAt?: Date;
+  // What the apps' channels publish as the reason (RA §8.6: the rejection's
+  // code); the restaurant's event keeps it too, operations' keeps their note.
+  publicReason?: string;
+  // Written in the transaction after the order's own change (RA §8.6).
+  effects?: (tx: Tx) => Promise<void>;
 };
+
+type Tx = Parameters<Parameters<Database['db']['transaction']>[0]>[0];
 
 // The restaurant's commands on an order (RA §8.5–8.8, §18): each takes the
 // order's lock, checks its state, writes the change, its event, its outbox row
@@ -92,6 +176,9 @@ export class OrderCommands {
     private readonly geo: GeoService,
     private readonly settings: SettingsService,
     private readonly jobs: Jobs,
+    private readonly content: ContentService,
+    private readonly status: RestaurantStatusService,
+    private readonly audit: AuditService,
   ) {}
 
   async prepTimeChooser(restaurantId: string, now: Date): Promise<PrepTimeChooser> {
@@ -126,55 +213,188 @@ export class OrderCommands {
   // timer (AP §8.3, §9.12.6) and operations' prep-late moment.
   async accept(command: MerchantCommand & { prepMin: number }, now: Date): Promise<OrderView> {
     return this.run(
-      command,
+      { kind: 'restaurant', command },
       { verb: 'accept', from: 'placed', to: 'accepted' },
       { prepMin: command.prepMin },
       now,
-      async (order) => {
-        const { cityId } = order;
-        const [floor, ceiling, bufferMin, speedKmh, searchBufferMin, prepLateMin] =
-          await Promise.all([
-            this.settings.get('merchant.prep_time_floor_min', { cityId }),
-            this.settings.get('merchant.prep_time_ceiling_min', { cityId }),
-            this.settings.get('order.eta_buffer_min', { cityId }),
-            this.settings.get('order.eta_speed_kmh', { cityId }),
-            this.settings.get('dispatch.search_start_buffer_min', { cityId }),
-            this.settings.get('order.prep_late_ops_alert_min', { cityId }),
-          ]);
-        const { prepMin } = command;
-        if (!Number.isInteger(prepMin) || prepMin < floor || prepMin > ceiling) {
-          throw new OrderCommandRefusedError(
-            'invalid_prep_time',
-            `the prep time is whole minutes from ${floor} to ${ceiling}`,
-          );
-        }
-        const prepDue = now.getTime() + prepMin * MINUTE_MS;
-        // An order placed before slice 1.10 kept no trip.
-        const promisedAt = new Date(
-          Math.ceil(
-            (prepDue + (order.tripSeconds ?? 0) * 1000 + bufferMin * MINUTE_MS) / PROMISE_STEP_MS,
-          ) * PROMISE_STEP_MS,
-        );
-        const etaMs = await this.nearestCaptainEta(order, speedKmh, now);
-        // Owner decision 2026-11-06: once, at acceptance; at once when the
-        // moment has passed or no captain is online.
-        const searchStartAt = new Date(
-          etaMs === null
-            ? now.getTime()
-            : Math.max(now.getTime(), Math.round(prepDue - etaMs - searchBufferMin * MINUTE_MS)),
-        );
-        return {
-          set: {
-            acceptedAt: now,
-            prepMin,
-            promisedAt,
-            searchStartAt,
-            prepLateAlertAt: new Date(prepDue + prepLateMin * MINUTE_MS),
-          },
-          searchStartAt,
-        };
-      },
+      (order) => this.acceptance(order, command.prepMin, now),
     );
+  }
+
+  // AP §9.3.2 «قبول نيابة عن المطعم» (RA §8.15): the same acceptance by
+  // operations, with their reason; the restaurant's devices chime with the
+  // prep time (RA §16 #5) and its card shows «قبلته العمليات».
+  async acceptFor(command: AdminOrderCommand & { prepMin: number }, now: Date): Promise<OrderView> {
+    return this.run(
+      { kind: 'admin', command },
+      { verb: 'accept', from: 'placed', to: 'accepted' },
+      { prepMin: command.prepMin, reason: command.reason },
+      now,
+      (order) => this.acceptance(order, command.prepMin, now),
+    );
+  }
+
+  // RA §8.6: «رفض» with one of the three reasons and its steps. The order
+  // becomes rejected and keeps the reason, its label, the customer's text
+  // (CU Appendix C; «{الأصناف}» filled with the items' names) and the items;
+  // in the same transaction the items are switched off, or the restaurant
+  // paused «حتى أعيد الفتح» (S2), or busy mode or «إيقاف 30 د» set, each only
+  // when the restaurant could set it now. 400 unknown_reason,
+  // invalid_rejection.
+  async reject(command: MerchantCommand & Rejection, now: Date): Promise<OrderView> {
+    const change: MerchantChange = {
+      actor: { type: 'merchant', id: command.accountId, role: command.role ?? null },
+      context: { ipAddress: command.ipAddress ?? null, device: command.deviceId },
+    };
+    return this.run(
+      { kind: 'restaurant', command },
+      { verb: 'reject', from: 'placed', to: 'rejected' },
+      rejectionHash(command),
+      now,
+      (order) => this.rejection(order, command, change, now),
+    );
+  }
+
+  // AP §9.3.2 «رفض نيابة عن المطعم» (RA §8.15): the same rejection by
+  // operations, with their reason; the restaurant's devices chime with the
+  // rejection's label (RA §16 #6).
+  async rejectFor(command: AdminOrderCommand & Rejection, now: Date): Promise<OrderView> {
+    const change: MerchantChange = {
+      actor: { type: 'admin', id: command.admin.accountId, role: command.admin.roles.join(',') },
+      context: command.context,
+      reason: command.reason,
+    };
+    return this.run(
+      { kind: 'admin', command },
+      { verb: 'reject', from: 'placed', to: 'rejected' },
+      { ...rejectionHash(command), reason: command.reason },
+      now,
+      (order) => this.rejection(order, command, change, now),
+    );
+  }
+
+  private async rejection(
+    order: OrderAtStart,
+    rejection: Rejection,
+    change: MerchantChange,
+    now: Date,
+  ): Promise<Change> {
+    const view = await this.read(order);
+    const problem = rejectionProblem(
+      rejection,
+      view.lines.map((line) => line.itemId),
+    );
+    if (problem !== null) {
+      throw problem === 'unknown_reason'
+        ? new OrderCommandRefusedError('unknown_reason', `${rejection.code} is not a reason`)
+        : new OrderCommandRefusedError('invalid_rejection', problem);
+    }
+    const reason = rejection.code as RejectionReason;
+    let label: string;
+    try {
+      ({ label } = await this.content.choose('merchant_rejection', { code: reason, note: null }));
+    } catch (error) {
+      if (!(error instanceof ContentRefusedError)) throw error;
+      throw new OrderCommandRefusedError('unknown_reason', error.message);
+    }
+    const names = [
+      ...new Set(
+        view.lines
+          .filter((line) => rejection.items.some((item) => item.itemId === line.itemId))
+          .map((line) => line.name),
+      ),
+    ];
+    const customerText = (await this.content.customerText('merchant_rejection', reason)).replace(
+      '{الأصناف}',
+      names.join('، '),
+    );
+    if (rejection.busyExtraMin !== null) {
+      const options = await this.settings.get('merchant.busy_extra_options_min', {
+        cityId: order.cityId,
+      });
+      if (!options.includes(rejection.busyExtraMin)) {
+        throw new OrderCommandRefusedError(
+          'invalid_rejection',
+          `busy mode adds one of ${options.join(', ')} minutes`,
+        );
+      }
+    }
+    const ends = new Map<string, Date | null>();
+    for (const until of new Set(rejection.items.map((item) => item.until))) {
+      ends.set(until, await this.merchants.switchedOffUntil(order.restaurantId, until, now));
+    }
+    const { restaurantId } = order;
+    return {
+      set: {
+        rejectedAt: now,
+        rejectReason: reason,
+        rejectReasonLabel: label,
+        rejectCustomerText: customerText,
+        rejectItemIds: rejection.items.map((item) => item.itemId),
+      },
+      publicReason: reason,
+      effects: async (tx) => {
+        if (reason === 'item_unavailable') {
+          const switches = rejection.items.map((item) => ({
+            itemId: item.itemId,
+            until: ends.get(item.until) ?? null,
+          }));
+          await this.merchants.switchOffForRejection(tx, restaurantId, switches, change, now);
+        } else if (reason === 'restaurant_closed') {
+          await this.status.afterRejection(tx, restaurantId, { pauseMin: null }, change, now);
+        } else if (rejection.busyExtraMin !== null) {
+          const effect = { busyExtraMin: rejection.busyExtraMin };
+          await this.status.afterRejection(tx, restaurantId, effect, change, now);
+        } else if (rejection.pauseMin !== null) {
+          const effect = { pauseMin: rejection.pauseMin };
+          await this.status.afterRejection(tx, restaurantId, effect, change, now);
+        }
+      },
+    };
+  }
+
+  // RA §8.5: the acceptance's columns and its search start.
+  private async acceptance(order: OrderAtStart, prepMin: number, now: Date): Promise<Change> {
+    const { cityId } = order;
+    const [floor, ceiling, bufferMin, speedKmh, searchBufferMin, prepLateMin] = await Promise.all([
+      this.settings.get('merchant.prep_time_floor_min', { cityId }),
+      this.settings.get('merchant.prep_time_ceiling_min', { cityId }),
+      this.settings.get('order.eta_buffer_min', { cityId }),
+      this.settings.get('order.eta_speed_kmh', { cityId }),
+      this.settings.get('dispatch.search_start_buffer_min', { cityId }),
+      this.settings.get('order.prep_late_ops_alert_min', { cityId }),
+    ]);
+    if (!Number.isInteger(prepMin) || prepMin < floor || prepMin > ceiling) {
+      throw new OrderCommandRefusedError(
+        'invalid_prep_time',
+        `the prep time is whole minutes from ${floor} to ${ceiling}`,
+      );
+    }
+    const prepDue = now.getTime() + prepMin * MINUTE_MS;
+    // An order placed before slice 1.10 kept no trip.
+    const promisedAt = new Date(
+      Math.ceil(
+        (prepDue + (order.tripSeconds ?? 0) * 1000 + bufferMin * MINUTE_MS) / PROMISE_STEP_MS,
+      ) * PROMISE_STEP_MS,
+    );
+    const etaMs = await this.nearestCaptainEta(order, speedKmh, now);
+    // Owner decision 2026-11-06: once, at acceptance; at once when the
+    // moment has passed or no captain is online.
+    const searchStartAt = new Date(
+      etaMs === null
+        ? now.getTime()
+        : Math.max(now.getTime(), Math.round(prepDue - etaMs - searchBufferMin * MINUTE_MS)),
+    );
+    return {
+      set: {
+        acceptedAt: now,
+        prepMin,
+        promisedAt,
+        searchStartAt,
+        prepLateAlertAt: new Date(prepDue + prepLateMin * MINUTE_MS),
+      },
+      searchStartAt,
+    };
   }
 
   // RA §8.8: an accepted order becomes ready, early or late, with no undo.
@@ -184,7 +404,7 @@ export class OrderCommands {
   // with its timer.
   async ready(command: MerchantCommand, now: Date): Promise<OrderView> {
     return this.run(
-      command,
+      { kind: 'restaurant', command },
       { verb: 'ready', from: 'accepted', to: 'ready' },
       {},
       now,
@@ -206,20 +426,27 @@ export class OrderCommands {
   }
 
   private async run(
-    command: MerchantCommand,
+    caller: Caller,
     transition: Transition,
     body: object,
     now: Date,
     change: (order: OrderAtStart) => Promise<Change>,
   ): Promise<OrderView> {
+    const { command } = caller;
+    const accountId =
+      caller.kind === 'admin' ? caller.command.admin.accountId : caller.command.accountId;
+    const key = { accountId, idempotencyKey: command.idempotencyKey };
     const requestHash = commandHash({ verb: transition.verb, orderId: command.orderId, ...body });
-    const earlier = await this.replay(this.database.db, command, requestHash, now);
+    const earlier = await this.replay(this.database.db, key, requestHash, now);
     if (earlier !== null) return this.read(earlier);
-    const order = await this.find(command);
+    const order = await this.find(
+      command.orderId,
+      caller.kind === 'restaurant' ? caller.command.restaurantId : null,
+    );
     if (order.status !== transition.from) {
       // A repeat sent with the first may read the order after the first
       // committed: it answers the first's order (architecture §5.3).
-      const first = await this.replay(this.database.db, command, requestHash, now);
+      const first = await this.replay(this.database.db, key, requestHash, now);
       if (first !== null) return this.read(first);
       throw await this.stateChanged(order);
     }
@@ -227,6 +454,7 @@ export class OrderCommands {
     const noCaptainAlertMin = prepared.searchStartAt
       ? await this.settings.get('dispatch.no_captain_alert_min', { cityId: order.cityId })
       : 0;
+    const publicReason = prepared.publicReason ?? null;
 
     // pg-boss connects before the lock is taken, never while it is held.
     await this.jobs.ready();
@@ -235,7 +463,7 @@ export class OrderCommands {
       if (!locked) throw new Error(`order ${order.id} not found`);
       // A repeat sent with the first waits on the lock, then answers the
       // first's order.
-      const repeat = await this.replay(tx, command, requestHash, now);
+      const repeat = await this.replay(tx, key, requestHash, now);
       if (repeat !== null) return { done: true as const };
       if (locked.status !== transition.from) return { done: false as const };
       const version = locked.version + 1;
@@ -248,8 +476,13 @@ export class OrderCommands {
         from: transition.from,
         to: transition.to,
         version,
-        actor: { type: 'restaurant', id: command.accountId, device: command.deviceId },
-        reason: null,
+        actor:
+          caller.kind === 'restaurant'
+            ? { type: 'restaurant', id: accountId, device: caller.command.deviceId }
+            : { type: 'admin', id: accountId },
+        // An operations note stays in the event row and the audit (AP §10).
+        reason: caller.kind === 'restaurant' ? publicReason : caller.command.reason,
+        publicReason,
         at: now,
       });
       if (prepared.searchStartAt) {
@@ -265,16 +498,33 @@ export class OrderCommands {
           db: inTransaction(tx),
         });
       }
-      await keepKey(tx, command.accountId, command.idempotencyKey, requestHash, order, now);
+      await prepared.effects?.(tx);
+      if (caller.kind === 'admin') {
+        const { admin, context, reason } = caller.command;
+        await this.audit.recordWrite(
+          {
+            actor: { type: 'admin', id: admin.accountId, role: admin.roles.join(',') },
+            context,
+            cityId: locked.cityId,
+            action: `order.${transition.verb}`,
+            target: { type: 'order', id: locked.id },
+            before: { status: locked.status },
+            after: { status: transition.to, ...body, reason: publicReason },
+            reason,
+          },
+          tx,
+        );
+      }
+      await keepKey(tx, accountId, command.idempotencyKey, requestHash, order, now);
       return { done: true as const };
     });
     if (!outcome.done) throw await this.stateChanged(order);
     return this.read(order);
   }
 
-  // The restaurant's own order, read without a lock: another restaurant's or
-  // an unknown one is unknown_order.
-  private async find(command: MerchantCommand): Promise<OrderAtStart> {
+  // The order, read without a lock; the restaurant's own only when a
+  // restaurant asks: another restaurant's or an unknown one is unknown_order.
+  private async find(orderId: string, restaurantId: string | null): Promise<OrderAtStart> {
     const [order] = await this.database.db
       .select({
         id: orders.id,
@@ -287,7 +537,11 @@ export class OrderCommands {
         searchStartAt: orders.searchStartAt,
       })
       .from(orders)
-      .where(and(eq(orders.id, command.orderId), eq(orders.restaurantId, command.restaurantId)));
+      .where(
+        restaurantId === null
+          ? eq(orders.id, orderId)
+          : and(eq(orders.id, orderId), eq(orders.restaurantId, restaurantId)),
+      );
     if (!order) throw new OrderCommandRefusedError('unknown_order', 'no such order');
     return order;
   }
@@ -331,12 +585,12 @@ export class OrderCommands {
 
   private async replay(
     executor: Parameters<typeof replayKey>[0],
-    command: MerchantCommand,
+    key: { accountId: string; idempotencyKey: string },
     requestHash: string,
     now: Date,
   ) {
     try {
-      return await replayKey(executor, command.accountId, command.idempotencyKey, requestHash, now);
+      return await replayKey(executor, key.accountId, key.idempotencyKey, requestHash, now);
     } catch (error) {
       if (!(error instanceof IdempotencyKeyReusedError)) throw error;
       throw new OrderCommandRefusedError('idempotency_key_reused', error.message);

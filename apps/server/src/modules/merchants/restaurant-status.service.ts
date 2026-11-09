@@ -25,6 +25,7 @@ import {
   PAUSE_CHOICES_MIN,
   restaurantPauseEnd,
   restaurantResume,
+  type StatusRefusal,
 } from './status-rules.js';
 
 type Tx = Parameters<Parameters<Database['db']['transaction']>[0]>[0];
@@ -223,33 +224,75 @@ export class RestaurantStatusService {
     now = new Date(),
   ): Promise<void> {
     await this.database.db.transaction(async (tx) => {
-      const row = await this.lock(tx, restaurantId);
-      const { state, closesAt } = await this.merchants.storefrontState(restaurantId, now, tx);
-      const outcome = restaurantPauseEnd(state, closesAt, minutes, now);
-      if ('refusal' in outcome) throw refused(outcome.refusal);
-      // Its own pause is replaced (one pause at a time).
-      await this.endOwnPause(tx, restaurantId, change, now);
-      const [pause] = await tx
-        .insert(pauses)
-        .values({
-          restaurantId,
-          source: 'restaurant',
-          startsAt: now,
-          endsAt: outcome.endsAt,
-          setById: change.actor.id,
-        })
-        .returning({ id: pauses.id });
-      const job: PauseEndJob = { pauseId: pause!.id, restaurantId };
-      await this.jobs.send(QUEUES.pauseEnd, job, {
-        startAfter: outcome.endsAt,
-        db: inTransaction(tx),
-      });
-      await this.record(tx, change, row.cityId, restaurantId, 'restaurant.pause', {
-        before: { state: state.state },
-        after: { minutes, until: outcome.endsAt.toISOString() },
-      });
-      await this.changed(tx, row.cityId, restaurantId, 'paused', now);
+      const refusal = await this.pauseIn(tx, restaurantId, minutes, change, now);
+      if (refusal !== null) throw refused(refusal);
     });
+  }
+
+  // RA §8.6, S2: the pause or busy mode a rejection sets, in the order's
+  // transaction (after the order's lock, as the auto-pause). It is set only
+  // when the restaurant could set it itself now: open or busy, and no
+  // operations pause or auto-pause in force; otherwise nothing changes and
+  // the rejection stands. True when it was set.
+  async afterRejection(
+    tx: Tx,
+    restaurantId: string,
+    effect: { pauseMin: number | null } | { busyExtraMin: number },
+    change: MerchantChange,
+    now: Date,
+  ): Promise<boolean> {
+    const refusal =
+      'busyExtraMin' in effect
+        ? await this.busyModeIn(tx, restaurantId, effect.busyExtraMin, change, now, {
+            onlyWhileOpen: true,
+          })
+        : await this.pauseIn(tx, restaurantId, effect.pauseMin, change, now, {
+            onlyWhileOpen: true,
+          });
+    return refusal === null;
+  }
+
+  private async pauseIn(
+    tx: Tx,
+    restaurantId: string,
+    minutes: number | null,
+    change: MerchantChange,
+    now: Date,
+    { onlyWhileOpen = false } = {},
+  ): Promise<StatusRefusal | null> {
+    // A rejection leaves a terminated restaurant alone rather than fail (RA §8.6).
+    const row = onlyWhileOpen
+      ? await this.lockAny(tx, restaurantId)
+      : await this.lock(tx, restaurantId);
+    const { state, closesAt } = await this.merchants.storefrontState(restaurantId, now, tx);
+    if (onlyWhileOpen && state.state !== 'open' && state.state !== 'busy') {
+      return 'restaurant_closed';
+    }
+    const outcome = restaurantPauseEnd(state, closesAt, minutes, now);
+    if ('refusal' in outcome) return outcome.refusal;
+    // Its own pause is replaced (one pause at a time).
+    await this.endOwnPause(tx, restaurantId, change, now);
+    const [pause] = await tx
+      .insert(pauses)
+      .values({
+        restaurantId,
+        source: 'restaurant',
+        startsAt: now,
+        endsAt: outcome.endsAt,
+        setById: change.actor.id,
+      })
+      .returning({ id: pauses.id });
+    const job: PauseEndJob = { pauseId: pause!.id, restaurantId };
+    await this.jobs.send(QUEUES.pauseEnd, job, {
+      startAfter: outcome.endsAt,
+      db: inTransaction(tx),
+    });
+    await this.record(tx, change, row.cityId, restaurantId, 'restaurant.pause', {
+      before: { state: state.state },
+      after: { minutes, until: outcome.endsAt.toISOString() },
+    });
+    await this.changed(tx, row.cityId, restaurantId, 'paused', now);
+    return null;
   }
 
   // RA §7.2 «استئناف الاستقبال»: ends the restaurant's own pause.
@@ -405,50 +448,66 @@ export class RestaurantStatusService {
     now = new Date(),
   ): Promise<void> {
     await this.database.db.transaction(async (tx) => {
-      const row = await this.lock(tx, restaurantId);
-      const [current] = await tx
-        .select({ extraMin: restaurants.busyExtraMin, until: restaurants.busyUntil })
-        .from(restaurants)
-        .where(eq(restaurants.id, restaurantId));
-      const before =
-        current?.extraMin != null && current.until !== null && current.until > now
-          ? { extraMin: current.extraMin }
-          : null;
-      if (extraMin === null) {
-        if (before === null) return;
-        await tx
-          .update(restaurants)
-          .set({ busyExtraMin: null, busyUntil: null, busyStartedAt: null, updatedAt: sql`now()` })
-          .where(eq(restaurants.id, restaurantId));
-      } else {
-        const { state, closesAt } = await this.merchants.storefrontState(restaurantId, now, tx);
-        const options = await this.settings.get('merchant.busy_extra_options_min', {
-          cityId: row.cityId,
-        });
-        const outcome = busyModeEnd(state, closesAt, extraMin, options);
-        if ('refusal' in outcome) throw refused(outcome.refusal);
-        if (before?.extraMin === extraMin) return;
-        await tx
-          .update(restaurants)
-          .set({
-            busyExtraMin: extraMin,
-            busyUntil: outcome.endsAt,
-            busyStartedAt: now,
-            updatedAt: sql`now()`,
-          })
-          .where(eq(restaurants.id, restaurantId));
-        await this.remindBusyMode(tx, row.cityId, { restaurantId, startedAt: now }, now);
-      }
-      await this.record(tx, change, row.cityId, restaurantId, 'restaurant.busy_mode', {
-        before,
-        after: extraMin === null ? null : { extraMin },
-      });
-      const kind =
-        extraMin === null && change.actor.type === 'admin'
-          ? 'busy_ended_by_operations'
-          : 'busy_mode';
-      await this.changed(tx, row.cityId, restaurantId, kind, now);
+      const refusal = await this.busyModeIn(tx, restaurantId, extraMin, change, now);
+      if (refusal !== null) throw refused(refusal);
     });
+  }
+
+  private async busyModeIn(
+    tx: Tx,
+    restaurantId: string,
+    extraMin: number | null,
+    change: MerchantChange,
+    now: Date,
+    { onlyWhileOpen = false } = {},
+  ): Promise<StatusRefusal | null> {
+    const row = onlyWhileOpen
+      ? await this.lockAny(tx, restaurantId)
+      : await this.lock(tx, restaurantId);
+    const [current] = await tx
+      .select({ extraMin: restaurants.busyExtraMin, until: restaurants.busyUntil })
+      .from(restaurants)
+      .where(eq(restaurants.id, restaurantId));
+    const before =
+      current?.extraMin != null && current.until !== null && current.until > now
+        ? { extraMin: current.extraMin }
+        : null;
+    if (extraMin === null) {
+      if (before === null) return null;
+      await tx
+        .update(restaurants)
+        .set({ busyExtraMin: null, busyUntil: null, busyStartedAt: null, updatedAt: sql`now()` })
+        .where(eq(restaurants.id, restaurantId));
+    } else {
+      const { state, closesAt } = await this.merchants.storefrontState(restaurantId, now, tx);
+      if (onlyWhileOpen && state.state !== 'open' && state.state !== 'busy') {
+        return 'restaurant_closed';
+      }
+      const options = await this.settings.get('merchant.busy_extra_options_min', {
+        cityId: row.cityId,
+      });
+      const outcome = busyModeEnd(state, closesAt, extraMin, options);
+      if ('refusal' in outcome) return outcome.refusal;
+      if (before?.extraMin === extraMin) return null;
+      await tx
+        .update(restaurants)
+        .set({
+          busyExtraMin: extraMin,
+          busyUntil: outcome.endsAt,
+          busyStartedAt: now,
+          updatedAt: sql`now()`,
+        })
+        .where(eq(restaurants.id, restaurantId));
+      await this.remindBusyMode(tx, row.cityId, { restaurantId, startedAt: now }, now);
+    }
+    await this.record(tx, change, row.cityId, restaurantId, 'restaurant.busy_mode', {
+      before,
+      after: extraMin === null ? null : { extraMin },
+    });
+    const kind =
+      extraMin === null && change.actor.type === 'admin' ? 'busy_ended_by_operations' : 'busy_mode';
+    await this.changed(tx, row.cityId, restaurantId, kind, now);
+    return null;
   }
 
   // RA §10 «إغلاق لعدة أيام»: from now or a later moment until a later one,

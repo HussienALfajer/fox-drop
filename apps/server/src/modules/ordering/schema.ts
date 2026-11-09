@@ -205,12 +205,26 @@ export const orders = ordering.table(
     // when the order is cancelled.
     cancelCustomerText: text('cancel_customer_text'),
     foodPrepared: boolean('food_prepared'),
+    // RA §8.6, AP §9.3.2: a rejected order keeps when and why (the code of
+    // Content's merchant_rejection list and its label as chosen), the text
+    // the customer sees, filled with the items for «صنف غير متوفر» (CU
+    // Appendix C), and those items' ids, which «اطلب بدون الأصناف غير
+    // المتوفرة» leaves out (CU §11.9).
+    rejectedAt: timestamp('rejected_at', { withTimezone: true }),
+    rejectReason: text('reject_reason'),
+    rejectReasonLabel: text('reject_reason_label'),
+    rejectCustomerText: text('reject_customer_text'),
+    rejectItemIds: jsonb('reject_item_ids'),
   },
   (table) => [
     primaryKey({ columns: [table.id, table.placedAt] }),
     check(
       'orders_cancellation',
       sql`(${table.status} = 'cancelled') = (${table.cancelledAt} IS NOT NULL AND ${table.cancelReason} IS NOT NULL AND ${table.foodPrepared} IS NOT NULL)`,
+    ),
+    check(
+      'orders_rejection',
+      sql`(${table.status} = 'rejected') = (${table.rejectedAt} IS NOT NULL AND ${table.rejectReason} IS NOT NULL AND ${table.rejectReasonLabel} IS NOT NULL AND ${table.rejectCustomerText} IS NOT NULL AND ${table.rejectItemIds} IS NOT NULL)`,
     ),
     index('orders_city_number').on(table.cityId, table.number),
     index('orders_customer_status').on(table.customerAccountId, table.status),

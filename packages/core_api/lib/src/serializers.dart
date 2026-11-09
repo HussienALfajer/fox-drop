@@ -15,6 +15,7 @@ import 'package:core_api/src/date_serializer.dart';
 import 'package:core_api/src/model/date.dart';
 
 import 'package:core_api/src/model/add_reason_dto.dart';
+import 'package:core_api/src/model/admin_accept_dto.dart';
 import 'package:core_api/src/model/admin_alert_dto_output.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner.dart';
@@ -71,6 +72,7 @@ import 'package:core_api/src/model/admin_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_dispute.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_requests_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_requests_inner_closed_by.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_rejection.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_actor.dart';
 import 'package:core_api/src/model/admin_picker_dto_output.dart';
@@ -89,6 +91,8 @@ import 'package:core_api/src/model/admin_record_delivery_dto.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_amount_due.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_received_inner.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_shortfall.dart';
+import 'package:core_api/src/model/admin_reject_dto.dart';
+import 'package:core_api/src/model/admin_reject_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_resend_notification_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_holiday_close_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output.dart';
@@ -196,6 +200,7 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_estimate.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_money.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_rejection.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_restaurant.dart';
 import 'package:core_api/src/model/customer_address_deleted_dto_output.dart';
 import 'package:core_api/src/model/customer_address_dto_output.dart';
@@ -304,6 +309,8 @@ import 'package:core_api/src/model/merchant_pause_dto.dart';
 import 'package:core_api/src/model/merchant_pickup_dispute_dto.dart';
 import 'package:core_api/src/model/merchant_pickup_dispute_dto_received_lines_inner.dart';
 import 'package:core_api/src/model/merchant_refresh_dto.dart';
+import 'package:core_api/src/model/merchant_reject_dto.dart';
+import 'package:core_api/src/model/merchant_reject_dto_items_inner.dart';
 import 'package:core_api/src/model/merchant_restaurant_dto_output.dart';
 import 'package:core_api/src/model/merchant_schedule_dto.dart';
 import 'package:core_api/src/model/merchant_schedule_dto_periods_inner.dart';
@@ -353,6 +360,7 @@ part 'serializers.g.dart';
 
 @SerializersFor([
   AddReasonDto,
+  AdminAcceptDto,
   AdminAlertDtoOutput,
   AdminAlertsDtoOutput,
   AdminAlertsDtoOutputAlertsInner,
@@ -409,6 +417,7 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderPickupDispute,
   AdminOrderDtoOutputOrderPickupRequestsInner,
   AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy,
+  AdminOrderDtoOutputOrderRejection,
   AdminOrderDtoOutputOrderTimelineInner,
   AdminOrderDtoOutputOrderTimelineInnerActor,
   AdminPickerDtoOutput,
@@ -427,6 +436,8 @@ part 'serializers.g.dart';
   AdminRecordDeliveryDtoAmountDue,
   AdminRecordDeliveryDtoReceivedInner,
   AdminRecordDeliveryDtoShortfall,
+  AdminRejectDto,
+  AdminRejectDtoItemsInner,
   AdminResendNotificationDto,
   AdminRestaurantHolidayCloseDto,
   AdminRestaurantImagesDtoOutput,
@@ -534,6 +545,7 @@ part 'serializers.g.dart';
   CustomerActiveOrdersDtoOutputOrdersInnerEstimate,
   CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
   CustomerActiveOrdersDtoOutputOrdersInnerMoney,
+  CustomerActiveOrdersDtoOutputOrdersInnerRejection,
   CustomerActiveOrdersDtoOutputOrdersInnerRestaurant,
   CustomerAddressDeletedDtoOutput,
   CustomerAddressDtoOutput,
@@ -642,6 +654,8 @@ part 'serializers.g.dart';
   MerchantPickupDisputeDto,
   MerchantPickupDisputeDtoReceivedLinesInner,
   MerchantRefreshDto,
+  MerchantRejectDto,
+  MerchantRejectDtoItemsInner,
   MerchantRestaurantDtoOutput,
   MerchantScheduleDto,
   MerchantScheduleDtoPeriodsInner,
@@ -914,6 +928,14 @@ Serializers serializers =
               FullType(SenderPoolDtoOutputNumbersInner),
             ]),
             () => ListBuilder<SenderPoolDtoOutputNumbersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(MerchantRejectDtoItemsInner)]),
+            () => ListBuilder<MerchantRejectDtoItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(AdminRejectDtoItemsInner)]),
+            () => ListBuilder<AdminRejectDtoItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

@@ -276,7 +276,9 @@ export class OperationsViews {
                   ? view.customerArrival.at
                   : view.status === 'cancelled' && view.cancellation
                     ? view.cancellation.at
-                    : view.placedAt,
+                    : view.status === 'rejected' && view.rejection
+                      ? view.rejection.at
+                      : view.placedAt,
         // AP §9.2.1: the acceptance alert, the prep time, the no-captain-after-
         // ready limit; the promised time and the no-answer window with their
         // slices.

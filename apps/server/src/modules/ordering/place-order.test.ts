@@ -779,7 +779,9 @@ describe("the order's reads, for the screens and the polling fallback (CU §4.3,
       // The first name only, never the last name (RA §8.4).
       customer: { firstName: 'سامر', neighbourhood: 'المركز' },
       note: 'الرجاء الاتصال عند الوصول',
-      lines: [{ name: 'شاورما', quantity: 1, options: [], note: null, lineTotal: '12000' }],
+      lines: [
+        { itemId: item, name: 'شاورما', quantity: 1, options: [], note: null, lineTotal: '12000' },
+      ],
       currency: 'TRY',
       itemsValue: '12000',
       // No captain before the search starts (RA §8.1).

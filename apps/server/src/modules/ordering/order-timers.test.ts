@@ -267,9 +267,14 @@ describe('the automatic cancellation (AP §8.3)', () => {
   it('leaves an order that moved on since the timer was set', async () => {
     const order = await placed();
     // Acceptance itself is proved through its route (accept-and-ready.test.ts).
-    await sql.query("UPDATE ordering.orders SET status = 'rejected', version = 2 WHERE id = $1", [
-      order.id,
-    ]);
+    await sql.query(
+      `UPDATE ordering.orders
+          SET status = 'rejected', version = 2, rejected_at = now(), reject_reason = 'too_busy',
+              reject_reason_label = 'ضغط طلبات', reject_customer_text = 'المطعم مشغول جداً الآن',
+              reject_item_ids = '[]'
+        WHERE id = $1`,
+      [order.id],
+    );
     expect(
       await app
         .get(OrderTimers)

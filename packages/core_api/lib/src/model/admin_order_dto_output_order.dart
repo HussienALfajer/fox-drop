@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_rejection.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_delivery.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.dart';
@@ -44,6 +45,7 @@ part 'admin_order_dto_output_order.g.dart';
 /// * [acceptance]
 /// * [readyAt]
 /// * [cancellation]
+/// * [rejection]
 /// * [customer]
 /// * [note]
 /// * [lines]
@@ -121,6 +123,9 @@ abstract class AdminOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'cancellation')
   AdminOrderDtoOutputOrderCancellation? get cancellation;
+
+  @BuiltValueField(wireName: r'rejection')
+  AdminOrderDtoOutputOrderRejection? get rejection;
 
   @BuiltValueField(wireName: r'customer')
   AdminOrderDtoOutputOrderCustomer get customer;
@@ -290,6 +295,15 @@ class _$AdminOrderDtoOutputOrderSerializer
             object.cancellation,
             specifiedType: const FullType.nullable(
               AdminOrderDtoOutputOrderCancellation,
+            ),
+          );
+    yield r'rejection';
+    yield object.rejection == null
+        ? null
+        : serializers.serialize(
+            object.rejection,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderRejection,
             ),
           );
     yield r'customer';
@@ -558,6 +572,18 @@ class _$AdminOrderDtoOutputOrderSerializer
                   as AdminOrderDtoOutputOrderCancellation?;
           if (valueDes == null) continue;
           result.cancellation.replace(valueDes);
+          break;
+        case r'rejection':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderRejection,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderRejection?;
+          if (valueDes == null) continue;
+          result.rejection.replace(valueDes);
           break;
         case r'customer':
           final valueDes =

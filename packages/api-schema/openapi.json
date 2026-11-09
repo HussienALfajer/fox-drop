@@ -4150,6 +4150,63 @@
         ]
       }
     },
+    "/v1/merchant/orders/{orderId}/reject": {
+      "post": {
+        "operationId": "merchantOrdersReject",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantRejectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
     "/v1/merchant/orders/{orderId}/ready": {
       "post": {
         "operationId": "merchantOrdersReady",
@@ -4426,6 +4483,120 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/AdminConfirmPickupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderCardDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/orders/{orderId}/accept": {
+      "post": {
+        "operationId": "adminOrdersAccept",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminAcceptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderCardDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/orders/{orderId}/reject": {
+      "post": {
+        "operationId": "adminOrdersReject",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRejectDto"
               }
             }
           }
@@ -13077,6 +13248,48 @@
                   ],
                   "description": "While cancelled (CU §11.9)."
                 },
+                "rejection": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "reason": {
+                          "type": "string",
+                          "description": "The code: item_unavailable, restaurant_closed or too_busy (RA §8.6)."
+                        },
+                        "text": {
+                          "type": "string",
+                          "description": "After «نعتذر، لم يقبل المطعم طلبك»: the reason's customer text (CU Appendix C) as it was at the rejection, with the items filled in."
+                        },
+                        "unavailableItemIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "description": "«اطلب بدون الأصناف غير المتوفرة» rebuilds the cart without these items (CU §11.9, Q22); empty for the other reasons."
+                        }
+                      },
+                      "required": [
+                        "at",
+                        "reason",
+                        "text",
+                        "unavailableItemIds"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "While rejected (CU §11.9)."
+                },
                 "delivery": {
                   "anyOf": [
                     {
@@ -13488,6 +13701,7 @@
                 "placedAt",
                 "promisedAt",
                 "cancellation",
+                "rejection",
                 "delivery",
                 "restaurant",
                 "captain",
@@ -13595,6 +13809,48 @@
                   }
                 ],
                 "description": "While cancelled (CU §11.9)."
+              },
+              "rejection": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "reason": {
+                        "type": "string",
+                        "description": "The code: item_unavailable, restaurant_closed or too_busy (RA §8.6)."
+                      },
+                      "text": {
+                        "type": "string",
+                        "description": "After «نعتذر، لم يقبل المطعم طلبك»: the reason's customer text (CU Appendix C) as it was at the rejection, with the items filled in."
+                      },
+                      "unavailableItemIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "description": "«اطلب بدون الأصناف غير المتوفرة» rebuilds the cart without these items (CU §11.9, Q22); empty for the other reasons."
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "reason",
+                      "text",
+                      "unavailableItemIds"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "While rejected (CU §11.9)."
               },
               "delivery": {
                 "anyOf": [
@@ -14007,6 +14263,7 @@
               "placedAt",
               "promisedAt",
               "cancellation",
+              "rejection",
               "delivery",
               "restaurant",
               "captain",
@@ -14354,13 +14611,18 @@
                             "string",
                             "null"
                           ]
+                        },
+                        "byOperations": {
+                          "type": "boolean",
+                          "description": "Accepted by operations on the restaurant's behalf: the badge «قبلته العمليات», and every device chimes «قبلت العمليات الطلب #{رقم} نيابة عنكم — وقت التحضير {د} د» (RA §8.15, §16 #5)."
                         }
                       },
                       "required": [
                         "at",
                         "prepMin",
                         "prepDueAt",
-                        "deviceName"
+                        "deviceName",
+                        "byOperations"
                       ],
                       "additionalProperties": false
                     },
@@ -14416,6 +14678,12 @@
                   "items": {
                     "type": "object",
                     "properties": {
+                      "itemId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                        "description": "«صنف غير متوفر» picks the items by it (RA §8.6)."
+                      },
                       "name": {
                         "type": "string"
                       },
@@ -14452,6 +14720,7 @@
                       }
                     },
                     "required": [
+                      "itemId",
                       "name",
                       "quantity",
                       "options",
@@ -14935,13 +15204,18 @@
                           "string",
                           "null"
                         ]
+                      },
+                      "byOperations": {
+                        "type": "boolean",
+                        "description": "Accepted by operations on the restaurant's behalf: the badge «قبلته العمليات», and every device chimes «قبلت العمليات الطلب #{رقم} نيابة عنكم — وقت التحضير {د} د» (RA §8.15, §16 #5)."
                       }
                     },
                     "required": [
                       "at",
                       "prepMin",
                       "prepDueAt",
-                      "deviceName"
+                      "deviceName",
+                      "byOperations"
                     ],
                     "additionalProperties": false
                   },
@@ -14997,6 +15271,12 @@
                 "items": {
                   "type": "object",
                   "properties": {
+                    "itemId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "description": "«صنف غير متوفر» picks the items by it (RA §8.6)."
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -15033,6 +15313,7 @@
                     }
                   },
                   "required": [
+                    "itemId",
                     "name",
                     "quantity",
                     "options",
@@ -15358,6 +15639,75 @@
           "order"
         ],
         "additionalProperties": false
+      },
+      "MerchantRejectDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 50,
+            "description": "A code of Content's merchant_rejection list: item_unavailable «صنف غير متوفر», restaurant_closed «المطعم مغلق», too_busy «ضغط طلبات» (R3); 400 unknown_reason otherwise."
+          },
+          "items": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "until": {
+                  "type": "string",
+                  "enum": [
+                    "tomorrow",
+                    "turned_back_on"
+                  ],
+                  "description": "«حتى الغد» (the default) or «حتى أعيده» (RA §9.3)."
+                }
+              },
+              "required": [
+                "itemId",
+                "until"
+              ]
+            },
+            "description": "item_unavailable: one or more of the order's items, switched off at once; empty for the other reasons."
+          },
+          "busyExtraMin": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "too_busy only: «تفعيل وضع الضغط» with one of merchant.busy_extra_options_min, or null."
+          },
+          "pauseMin": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "too_busy only: 30 for «إيقاف 30 د», or null; not with busyExtraMin (400 invalid_rejection otherwise)."
+          }
+        },
+        "required": [
+          "reason",
+          "items",
+          "busyExtraMin",
+          "pauseMin"
+        ]
       },
       "MerchantPickupDisputeDto": {
         "type": "object",
@@ -15788,6 +16138,103 @@
           "order"
         ],
         "additionalProperties": false
+      },
+      "AdminAcceptDto": {
+        "type": "object",
+        "properties": {
+          "prepMin": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Whole minutes from merchant.prep_time_floor_min to merchant.prep_time_ceiling_min (RA §8.5); 400 invalid_prep_time otherwise."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Required (AP §9.3.2)."
+          }
+        },
+        "required": [
+          "prepMin",
+          "reason"
+        ]
+      },
+      "AdminRejectDto": {
+        "type": "object",
+        "properties": {
+          "rejection": {
+            "type": "string",
+            "maxLength": 50,
+            "description": "A code of the restaurant rejection list (AP Appendix B): item_unavailable «صنف غير متوفر» (marks the items unavailable), restaurant_closed «المطعم مغلق» (also pauses the restaurant until it reopens), too_busy «ضغط طلبات»; 400 unknown_reason otherwise."
+          },
+          "items": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "until": {
+                  "type": "string",
+                  "enum": [
+                    "tomorrow",
+                    "turned_back_on"
+                  ],
+                  "description": "«حتى الغد» or «حتى أعيده»."
+                }
+              },
+              "required": [
+                "itemId",
+                "until"
+              ]
+            },
+            "description": "item_unavailable: one or more of the order's items; empty for the others."
+          },
+          "busyExtraMin": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "too_busy only: busy mode with one of merchant.busy_extra_options_min, or null."
+          },
+          "pauseMin": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "too_busy only: 30 for a 30-minute pause, or null; not with busyExtraMin (400 invalid_rejection otherwise)."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Required (AP §9.3.2): the internal note, never shown to the apps."
+          }
+        },
+        "required": [
+          "rejection",
+          "items",
+          "busyExtraMin",
+          "pauseMin",
+          "reason"
+        ]
       },
       "AdminRecordArrivalDto": {
         "type": "object",
@@ -16762,6 +17209,58 @@
                   }
                 ]
               },
+              "rejection": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "reason": {
+                        "type": "string",
+                        "description": "The code of the restaurant rejection list."
+                      },
+                      "label": {
+                        "type": "string",
+                        "description": "Its label as chosen (AP Appendix B)."
+                      },
+                      "customerText": {
+                        "type": "string",
+                        "description": "What the customer sees (CU Appendix C)."
+                      },
+                      "itemIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "description": "The items switched off for item_unavailable."
+                      },
+                      "byOperations": {
+                        "type": "boolean",
+                        "description": "Rejected by operations on the restaurant's behalf."
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "reason",
+                      "label",
+                      "customerText",
+                      "itemIds",
+                      "byOperations"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "While rejected (AP §9.3.1 «rejected (with reason)»)."
+              },
               "customer": {
                 "type": "object",
                 "properties": {
@@ -17644,6 +18143,7 @@
               "acceptance",
               "readyAt",
               "cancellation",
+              "rejection",
               "customer",
               "note",
               "lines",
