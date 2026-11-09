@@ -126,6 +126,32 @@ void main() {
       expect(rings.map((r) => r.order.id), [a, b]);
       expect(rings.first, isA<PickupRinging>());
     });
+
+    test("operations' cancellation after acceptance rings until «حسناً» "
+        '(RA §8.14)', () {
+      final state = board([
+        orderJson(id: a, placed: placedAt.add(const Duration(minutes: 40))),
+        orderJson(
+          id: b,
+          status: 'cancelled',
+          acceptedAfter: Duration.zero,
+          cancellation: cancellationJson(),
+        ),
+        // A cancelled order without the record never rings.
+        orderJson(id: c, status: 'cancelled'),
+      ]);
+      final rings = ringing(state);
+      expect(rings.map((r) => r.order.id), [b, a]);
+      expect(
+        rings.first,
+        isA<CancelledRinging>().having(
+          (r) => r.cancellation.label,
+          'label',
+          'تعذر الوصول إلى الزبون',
+        ),
+      );
+      expect(columnOf(state.orders[1]), isNull);
+    });
   });
 
   group('alerts (RA §4.7, §8.3, §8.7, §8.9, §8.10)', () {
@@ -253,6 +279,94 @@ void main() {
       );
     });
 
+    test("operations' cancellation that rings has no chime notice of its own; "
+        'a placed order operations cancelled keeps its chime', () {
+      final rings = step(
+        AlertMemory(),
+        [
+          orderJson(
+            id: a,
+            status: 'cancelled',
+            acceptedAfter: Duration.zero,
+            cancellation: cancellationJson(),
+          ),
+        ],
+        events: [
+          {
+            'type': 'order.cancelled',
+            'orderId': a,
+            'number': '10001',
+            'reason': 'customer_unreachable',
+            'byOperations': true,
+            'byCustomer': false,
+          },
+        ],
+      );
+      expect(rings.ring, isTrue);
+      expect(rings.notices, isEmpty);
+      final placed = step(
+        AlertMemory(),
+        [],
+        events: [
+          {
+            'type': 'order.cancelled',
+            'orderId': b,
+            'number': '10002',
+            'reason': 'customer_unreachable',
+            'byOperations': true,
+            'byCustomer': false,
+          },
+        ],
+      );
+      expect(placed.chime, isTrue);
+      expect(
+        placed.notices.single,
+        isA<Cancelled>().having((n) => n.number, 'number', '10002'),
+      );
+    });
+
+    test('«حسناً» on any device stops the ring without a notice', () {
+      final memory = AlertMemory();
+      final cancelled = orderJson(
+        status: 'cancelled',
+        acceptedAfter: Duration.zero,
+        cancellation: cancellationJson(),
+      );
+      expect(step(memory, [cancelled]).ring, isTrue);
+      final acknowledged = step(
+        memory,
+        [],
+        events: [
+          {
+            'type': 'order.cancellation_acknowledged',
+            'orderId': a,
+            'number': '10001',
+            'reason': null,
+            'byOperations': false,
+            'byCustomer': false,
+          },
+        ],
+      );
+      expect(acknowledged.ring, isFalse);
+      expect(acknowledged.notices, isEmpty);
+      expect(acknowledged.chime, isFalse);
+    });
+
+    test('a pickup request voided by the cancellation says nothing', () {
+      final memory = AlertMemory();
+      step(memory, [orderJson(status: 'ready', request: requestJson())]);
+      final cancelled = step(memory, [
+        orderJson(
+          status: 'cancelled',
+          version: 2,
+          acceptedAfter: Duration.zero,
+          request: requestJson(status: 'voided', outcome: 'cancelled'),
+          cancellation: cancellationJson(),
+        ),
+      ]);
+      expect(cancelled.notices, isEmpty);
+    });
+
     test('a late prep chimes at its time, then every 5 minutes', () {
       final memory = AlertMemory();
       final order = orderJson(status: 'accepted', acceptedAfter: Duration.zero);
@@ -295,6 +409,34 @@ void main() {
         isA<CaptainKeptWaiting>().having((n) => n.minutes, 'minutes', 10),
       );
       expect(step(memory, [arrived], now: later).notices, isEmpty);
+    });
+
+    test('a cancelled order never chimes the captain arriving or waiting', () {
+      final memory = AlertMemory();
+      final before = orderJson(
+        status: 'accepted',
+        acceptedAfter: Duration.zero,
+        captainTrack: 'assigned',
+        captainName: 'سامر',
+      );
+      // An older server still sends the arrival on a cancelled order.
+      final cancelled = orderJson(
+        status: 'cancelled',
+        acceptedAfter: Duration.zero,
+        captainTrack: 'at_merchant',
+        captainName: 'سامر',
+        arrivedAt: placedAt,
+        version: 2,
+        cancellation: cancellationJson(),
+      );
+      step(memory, [before]);
+      final later = placedAt.add(const Duration(minutes: 10));
+      expect(
+        step(memory, [cancelled], now: later).notices,
+        isNot(
+          contains(anyOf(isA<CaptainArrived>(), isA<CaptainKeptWaiting>())),
+        ),
+      );
     });
 
     test('a prompt closed by another device says who answered', () {

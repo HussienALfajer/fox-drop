@@ -26,6 +26,7 @@ Map<String, Object?> orderJson({
   Map<String, Object?>? request,
   DateTime? pickedUpAt,
   DateTime? disputeUntil,
+  Map<String, Object?>? cancellation,
 }) {
   final at = placed ?? placedAt;
   final accepted = acceptedAfter == null ? null : at.add(acceptedAfter);
@@ -94,8 +95,18 @@ Map<String, Object?> orderJson({
       'disputeUntil': disputeUntil?.toIso8601String(),
       'disputedAt': null,
     },
+    'cancellation': cancellation,
   };
 }
+
+/// An order's `cancellation` as the board gives it: only operations'
+/// cancellation after acceptance, until «حسناً» (RA §8.14).
+Map<String, Object?> cancellationJson({DateTime? at}) => {
+  'at': (at ?? placedAt.add(const Duration(minutes: 30))).toIso8601String(),
+  'reason': 'customer_unreachable',
+  'label': 'تعذر الوصول إلى الزبون',
+  'byOperations': true,
+};
 
 Map<String, Object?> requestJson({
   String id = '00000000-0000-4000-8000-0000000000b1',

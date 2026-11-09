@@ -89,7 +89,12 @@ const CUSTOMER_SKIPS = new Set([
   'order.pickup_requested',
   'order.pickup_rejected',
   'order.pickup_disputed',
+  // RA §8.14: the restaurant's «حسناً», for its devices only.
+  'order.cancellation_acknowledged',
 ]);
+
+// The restaurant's own steps the captain's channel never carries.
+const CAPTAIN_SKIPS = new Set(['order.cancellation_acknowledged']);
 
 function customerPublication(type: string, payload: OutboxPayload) {
   const { schema, orderId, number, restaurantId, status, version, reason, at } = payload;
@@ -145,7 +150,9 @@ export class OutboxRelay {
                 // Architecture §6.2: the panel's board and detail of the city.
                 opsChannel(payload.cityId),
                 // CA §15: the offer's captain, or the order's once assigned.
-                ...(payload.captainId ? [captainChannel(payload.captainId)] : []),
+                ...(payload.captainId && !CAPTAIN_SKIPS.has(row.type)
+                  ? [captainChannel(payload.captainId)]
+                  : []),
               ],
               publication(row.type, payload),
               `outbox:${row.id}`,

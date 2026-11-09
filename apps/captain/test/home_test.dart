@@ -667,4 +667,63 @@ void main() {
     expect(app.server.to('/v1/captain/platform'), hasLength(reads + 1));
     await app.done(tester);
   });
+
+  testWidgets('shows the order operations cancelled until «حسناً» (CA §9.10)', (
+    tester,
+  ) async {
+    final app = TestApp();
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [orderJson(track: 'at_merchant')],
+    );
+    await app.pump(tester);
+    await app.live(tester);
+    expect(find.text('الخطوة 2 من 4: عند المطعم'), findsOneWidget);
+
+    app.work(
+      availability: [availabilityJson(state: 'online_available')],
+      cancelled: cancelledJson(compensation: moneyJson('1500')),
+    );
+    app.transport.event('order.cancelled', 4);
+    await app.settle(tester);
+    expect(find.text('أُلغيت المهمة: طلب الزبون الإلغاء'), findsOneWidget);
+    expect(find.text('استرجع المبلغ من المطعم'), findsOneWidget);
+    expect(find.text('تعويض: 15 ₺'), findsOneWidget);
+    expect(app.ringer.cancellations, 1);
+    expect(app.ringer.chimes, 0);
+
+    app.server.on('/v1/captain/orders/$orderId/acknowledge-cancellation', [
+      const FakeAnswer(200, {'order': null, 'cancelled': null}),
+    ]);
+    app.work(availability: [availabilityJson(state: 'online_available')]);
+    await app.tapVisible(tester, find.text('حسناً'));
+    await app.settle(tester);
+    expect(
+      app.server.to('/v1/captain/orders/$orderId/acknowledge-cancellation'),
+      hasLength(1),
+    );
+    expect(find.textContaining('أُلغيت المهمة'), findsNothing);
+    expect(find.text('متصل متاح'), findsOneWidget);
+    expect(app.ringer.cancellations, 1);
+    await app.done(tester);
+  });
+
+  testWidgets('a cancellation waiting on opening shows without its sound, '
+      'with the cash kept by the restaurant (CA §9.10)', (tester) async {
+    final app = TestApp();
+    app.work(
+      availability: [availabilityJson()],
+      cancelled: cancelledJson(cash: 'not_returned'),
+    );
+    await app.pump(tester);
+    await app.live(tester);
+    expect(find.text('أُلغيت المهمة: طلب الزبون الإلغاء'), findsOneWidget);
+    expect(
+      find.text('لا تسترجع المبلغ، يُخصم من المطعم في التسوية'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('تعويض'), findsNothing);
+    expect(app.ringer.cancellations, 0);
+    await app.done(tester);
+  });
 }

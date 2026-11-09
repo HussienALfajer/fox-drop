@@ -1,13 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { AuditService } from '../audit/index.js';
 import { CaptainsService } from '../captains/index.js';
+import { CustomersService } from '../customers/index.js';
 import { ContentRefusedError, ContentService } from '../content/index.js';
 import { GeoService, tripMinutes } from '../geo/index.js';
+import { LedgerService } from '../ledger/index.js';
 import {
   type MerchantChange,
   MerchantsService,
@@ -15,11 +17,20 @@ import {
 } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 import type { AdminOrderCommand } from './captain-orders.js';
+import {
+  type CancellationChoices,
+  type CancellationFacts,
+  cancellationEntries,
+  type CashAnswer,
+  type ResponsibleParty,
+} from './cancellation.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
 import { lockOrder, recordTransition } from './order-events.js';
+import { OrderAssignments } from './order-assignments.js';
+import { baseTotal, linesOf } from './pickup-booking.js';
 import type { SearchStartJob } from './order-timers.js';
-import { orderKey, readOrders, type OrderView } from './order-views.js';
-import { orders } from './schema.js';
+import { orderKey, readOrders, snapshotOf, type OrderView } from './order-views.js';
+import { orders, pickupRequests } from './schema.js';
 
 const MINUTE_MS = 60_000;
 // docs/domain/03: the promised time is rounded up to the next 5 minutes.
@@ -40,7 +51,13 @@ export type OrderCommandRefusal =
   | 'invalid_lines'
   | 'currency_not_accepted'
   | 'amount_mismatch'
-  | 'pickup_already_disputed';
+  | 'pickup_already_disputed'
+  // AP §9.3.2 «إلغاء الطلب» (slice 2.8b, cancellation.ts).
+  | 'invalid_cancellation'
+  | 'compensation_not_allowed'
+  | 'captain_pay_unset'
+  | 'cash_answer_required'
+  | 'cash_answer_not_allowed';
 
 // A restaurant command the order refuses; order_state_changed carries the
 // order as it is now, which the app explains (RA §4.7).
@@ -90,6 +107,40 @@ export interface Rejection {
   items: { itemId: string; until: 'tomorrow' | 'turned_back_on' }[];
   busyExtraMin: number | null;
   pauseMin: number | null;
+}
+
+// AP §8.1, docs/domain/01: operations cancel before pickup.
+const CANCELLABLE: OrderView['status'][] = ['placed', 'accepted', 'ready'];
+
+// AP §9.3.2 «إلغاء الطلب»: operations' choices (the reason's code apart).
+export interface OpsCancellation {
+  responsible: ResponsibleParty;
+  foodPrepared: boolean;
+  compensateCaptain: boolean;
+  cash: CashAnswer | null;
+}
+
+function choicesOf(choices: OpsCancellation): CancellationChoices {
+  return {
+    responsible: choices.responsible,
+    foodPrepared: choices.foodPrepared,
+    compensateCaptain: choices.compensateCaptain,
+    cash: choices.cash,
+  };
+}
+
+// docs/domain/09: the preview of every entry the cancellation would post.
+export interface CancellationPreview {
+  entries: {
+    type: string;
+    account: string;
+    party: { kind: 'merchant' | 'captain' | 'platform'; id: string | null; name: string | null };
+    amount: bigint;
+    currency: string;
+  }[];
+  cashAsked: boolean;
+  compensationAllowed: boolean;
+  cashLines: { currency: string; amount: bigint }[] | null;
 }
 
 // RA §8.6: «إيقاف 30 د» is the only pause «ضغط طلبات» offers.
@@ -158,7 +209,7 @@ export interface OnBehalfChoices {
 // The state a command needs and the one it leaves.
 type Transition = {
   verb: 'accept' | 'ready' | 'reject' | 'cancel';
-  from: 'placed' | 'accepted';
+  from: OrderView['status'][];
   to: 'accepted' | 'ready' | 'rejected' | 'cancelled';
 };
 
@@ -182,6 +233,12 @@ type Change = {
   // What the event row keeps as the reason, when not the public one: the
   // customer's text of «سبب آخر» (CU §11.4).
   eventReason?: string;
+  // Under the order's lock: false when what the change was worked out from
+  // moved since, answered as order_state_changed (slice 2.8b).
+  guard?: (tx: Tx) => Promise<boolean>;
+  // Written in the transaction before the order's own transition, which
+  // follows its version (an offer withdrawn, slice 2.8b).
+  before?: (tx: Tx) => Promise<void>;
   // Written in the transaction after the order's own change (RA §8.6).
   effects?: (tx: Tx) => Promise<void>;
 };
@@ -206,6 +263,9 @@ export class OrderCommands {
     private readonly content: ContentService,
     private readonly status: RestaurantStatusService,
     private readonly audit: AuditService,
+    private readonly ledger: LedgerService,
+    private readonly customers: CustomersService,
+    private readonly assignments: OrderAssignments,
   ) {}
 
   async prepTimeChooser(restaurantId: string, now: Date): Promise<PrepTimeChooser> {
@@ -257,7 +317,7 @@ export class OrderCommands {
   async accept(command: MerchantCommand & { prepMin: number }, now: Date): Promise<OrderView> {
     return this.run(
       { kind: 'restaurant', command },
-      { verb: 'accept', from: 'placed', to: 'accepted' },
+      { verb: 'accept', from: ['placed'], to: 'accepted' },
       { prepMin: command.prepMin },
       now,
       (order) => this.acceptance(order, command.prepMin, now),
@@ -270,7 +330,7 @@ export class OrderCommands {
   async acceptFor(command: AdminOrderCommand & { prepMin: number }, now: Date): Promise<OrderView> {
     return this.run(
       { kind: 'admin', command },
-      { verb: 'accept', from: 'placed', to: 'accepted' },
+      { verb: 'accept', from: ['placed'], to: 'accepted' },
       { prepMin: command.prepMin, reason: command.reason },
       now,
       (order) => this.acceptance(order, command.prepMin, now),
@@ -291,7 +351,7 @@ export class OrderCommands {
     };
     return this.run(
       { kind: 'restaurant', command },
-      { verb: 'reject', from: 'placed', to: 'rejected' },
+      { verb: 'reject', from: ['placed'], to: 'rejected' },
       rejectionHash(command),
       now,
       (order) => this.rejection(order, command, change, now),
@@ -309,7 +369,7 @@ export class OrderCommands {
     };
     return this.run(
       { kind: 'admin', command },
-      { verb: 'reject', from: 'placed', to: 'rejected' },
+      { verb: 'reject', from: ['placed'], to: 'rejected' },
       { ...rejectionHash(command), reason: command.reason },
       now,
       (order) => this.rejection(order, command, change, now),
@@ -329,7 +389,7 @@ export class OrderCommands {
   ): Promise<OrderView> {
     return this.run(
       { kind: 'customer', command },
-      { verb: 'cancel', from: 'placed', to: 'cancelled' },
+      { verb: 'cancel', from: ['placed'], to: 'cancelled' },
       { reason: command.reason, note: command.note },
       now,
       async () => {
@@ -360,6 +420,357 @@ export class OrderCommands {
         };
       },
     );
+  }
+
+  // AP §9.3.2 «إلغاء الطلب» (slice 2.8b; docs/domain/01, 08, 09; AP §8.1):
+  // operations cancel a placed, accepted or ready order with a reason of
+  // Content's ops_cancel list, the responsible party, whether food was
+  // prepared, «تعويض الكابتن» and the cash answer, and their note (the
+  // event row's reason and the audit's; the apps hear only the code). In one
+  // transaction: an open offer withdrawn first (dispatch's hook), the order
+  // cancelled with the label and the customer text copied, the open pickup
+  // request voided, the entries (cancellationEntries), the late-cancellation
+  // strike and the audit. The order keeps its captain, who is free at once
+  // (CAPTAIN_ACTIVE ends at cancelled). 400 unknown_reason,
+  // invalid_cancellation; 409 compensation_not_allowed, captain_pay_unset,
+  // cash_answer_required, cash_answer_not_allowed, order_state_changed.
+  async cancelFor(
+    command: AdminOrderCommand & OpsCancellation & { code: string },
+    now: Date,
+  ): Promise<OrderView> {
+    const choices = choicesOf(command);
+    const actor = { type: 'admin' as const, id: command.admin.accountId };
+    return this.run(
+      { kind: 'admin', command },
+      { verb: 'cancel', from: CANCELLABLE, to: 'cancelled' },
+      { cancellation: command.code, ...choices, reason: command.reason },
+      now,
+      async (order) => {
+        const { label } = await this.opsReason(command.code);
+        const customerText = await this.content.customerText('ops_cancel', command.code);
+        const read = await this.cancellationFacts(this.database.db, order, now);
+        const result = this.entries(read.facts, choices);
+        const [strikes, windowDays] = result.strike
+          ? await Promise.all([
+              this.settings.get('customer.late_cancel_strikes', { cityId: order.cityId }),
+              this.settings.get('customer.late_cancel_window_days', { cityId: order.cityId }),
+            ])
+          : [0, 0];
+        return {
+          set: {
+            cancelledAt: now,
+            cancelReason: command.code,
+            cancelReasonLabel: label,
+            cancelCustomerText: customerText,
+            foodPrepared: choices.foodPrepared,
+            cancelResponsible: choices.responsible,
+            cancelCash: choices.cash,
+            cancelMerchantCredit: result.merchantCredit,
+            cancelCaptainCompensation: result.captainCompensation,
+          },
+          publicReason: command.code,
+          // The entries were worked out from the order before the lock.
+          guard: async (tx) => (await this.ownFacts(tx, order)).key === read.key,
+          before: async (tx) => {
+            await this.assignments.beforeCancel(tx, order.id, order.placedAt, actor, now);
+            // docs/domain/02: the open request voided below returns the
+            // track to at_merchant, which the cancellation publishes.
+            await tx
+              .update(orders)
+              .set({ captainTrack: 'at_merchant' })
+              .where(
+                and(orderKey(order.id, order.placedAt), eq(orders.captainTrack, 'pickup_pending')),
+              );
+          },
+          effects: async (tx) => {
+            await tx
+              .update(pickupRequests)
+              .set({
+                status: 'voided',
+                outcome: 'cancelled',
+                closedAt: now,
+                closedByType: 'admin',
+                closedById: actor.id,
+                reason: command.reason,
+              })
+              .where(
+                and(
+                  eq(pickupRequests.orderId, order.id),
+                  eq(pickupRequests.orderPlacedAt, order.placedAt),
+                  eq(pickupRequests.status, 'open'),
+                ),
+              );
+            for (const journal of result.journals) {
+              const entries = [];
+              for (const entry of journal.entries) {
+                const accountId = await this.ledger.openAccount(
+                  {
+                    cityId: order.cityId,
+                    purpose: entry.account,
+                    ownerId: entry.party.id,
+                    currency: entry.currency,
+                  },
+                  tx,
+                );
+                entries.push({ accountId, currency: entry.currency, amount: entry.amount });
+              }
+              await this.ledger.post(
+                {
+                  cityId: order.cityId,
+                  type: journal.type,
+                  source: { kind: 'order', id: order.id },
+                  actor,
+                  reason: journal.reason,
+                  entries,
+                },
+                tx,
+              );
+            }
+            if (result.strike) {
+              await this.customers.recordLateCancel(tx, {
+                accountId: read.customerAccountId,
+                orderId: order.id,
+                cityId: order.cityId,
+                at: now,
+                strikes,
+                windowDays,
+              });
+            }
+          },
+        };
+      },
+    );
+  }
+
+  // AP §9.3.2, docs/domain/09: what a cancellation with these choices would
+  // book, for the dialog; it writes nothing. It refuses what the choices
+  // can never be (invalid_cancellation, captain_pay_unset), not a missing
+  // cash answer or a choice the order does not allow: it books what is
+  // allowed and answers cashAsked, compensationAllowed and cashLines, which
+  // tell the dialog what to ask. The reason is checked only when given.
+  async previewCancel(
+    orderId: string,
+    choices: OpsCancellation & { code: string | null },
+    now: Date,
+  ): Promise<CancellationPreview> {
+    const order = await this.find(orderId, {});
+    if (!CANCELLABLE.includes(order.status)) throw await this.stateChanged(order);
+    if (choices.code !== null) await this.opsReason(choices.code);
+    const { facts } = await this.cancellationFacts(this.database.db, order, now);
+    const result = this.entries(facts, choicesOf(choices), { preview: true });
+    const entries = result.journals.flatMap((journal) =>
+      journal.entries.map((entry) => ({ type: journal.type, ...entry })),
+    );
+    const [names, captain] = await Promise.all([
+      this.merchants.names([order.restaurantId]),
+      facts.captainId === null ? null : this.captains.captain(facts.captainId, now),
+    ]);
+    const name = (party: { kind: string; id: string | null }) =>
+      party.kind === 'merchant'
+        ? (names.get(order.restaurantId)?.nameAr ?? null)
+        : party.kind === 'captain'
+          ? (captain?.name ?? null)
+          : null;
+    return {
+      entries: entries.map((entry) => ({
+        ...entry,
+        party: { ...entry.party, name: name(entry.party) },
+      })),
+      cashAsked: result.cashAsked,
+      compensationAllowed: result.compensationAllowed,
+      cashLines: result.cashAsked ? facts.cashLines : null,
+    };
+  }
+
+  // RA §8.14, §18 (slice 2.8b): «حسناً» on any of the restaurant's devices
+  // after operations cancelled an accepted order: the order keeps who and
+  // which device, and order.cancellation_acknowledged (cancelled to
+  // cancelled) tells every device to drop it and stop ringing. Already
+  // acknowledged answers the order quietly; any other order is
+  // order_state_changed.
+  async acknowledgeCancellation(command: MerchantCommand, now: Date): Promise<OrderView> {
+    const key = { accountId: command.accountId, idempotencyKey: command.idempotencyKey };
+    const requestHash = commandHash({ verb: 'acknowledge_cancellation', orderId: command.orderId });
+    const earlier = await this.replay(this.database.db, key, requestHash, now);
+    if (earlier !== null) return this.read(earlier);
+    const order = await this.find(command.orderId, { restaurantId: command.restaurantId });
+    const before = await this.ringing(this.database.db, order);
+    if (before === 'acknowledged') return this.read(order);
+    if (before === 'not_ringing') throw await this.stateChanged(order);
+    await this.jobs.ready();
+    const done = await this.database.db.transaction(async (tx) => {
+      const locked = await lockOrder(tx, order.id, order.placedAt);
+      if (!locked) throw new Error(`order ${order.id} not found`);
+      if ((await this.replay(tx, key, requestHash, now)) !== null) return true;
+      const state = await this.ringing(tx, order);
+      if (state === 'acknowledged') return true;
+      if (state === 'not_ringing') return false;
+      const version = locked.version + 1;
+      await tx
+        .update(orders)
+        .set({
+          version,
+          cancelAcknowledgedAt: now,
+          cancelAcknowledgedBy: command.accountId,
+          cancelAcknowledgedDevice: command.deviceId,
+        })
+        .where(orderKey(order.id, order.placedAt));
+      await recordTransition(tx, this.jobs, locked, {
+        type: 'order.cancellation_acknowledged',
+        from: 'cancelled',
+        to: 'cancelled',
+        version,
+        actor: { type: 'restaurant', id: command.accountId, device: command.deviceId },
+        reason: null,
+        at: now,
+      });
+      await keepKey(tx, command.accountId, command.idempotencyKey, requestHash, order, now);
+      return true;
+    });
+    if (!done) throw await this.stateChanged(order);
+    return this.read(order);
+  }
+
+  // Whether the order rings for «حسناً»: cancelled by operations (only
+  // their path keeps the label) after acceptance.
+  private async ringing(
+    executor: Pick<Database['db'], 'select'>,
+    order: { id: string; placedAt: Date },
+  ): Promise<'ringing' | 'acknowledged' | 'not_ringing'> {
+    const [row] = await executor
+      .select({
+        status: orders.status,
+        acceptedAt: orders.acceptedAt,
+        label: orders.cancelReasonLabel,
+        acknowledgedAt: orders.cancelAcknowledgedAt,
+      })
+      .from(orders)
+      .where(orderKey(order.id, order.placedAt));
+    if (!row || row.status !== 'cancelled' || row.acceptedAt === null || row.label === null) {
+      return 'not_ringing';
+    }
+    return row.acknowledgedAt === null ? 'ringing' : 'acknowledged';
+  }
+
+  // The ops_cancel reason and its label; a note is not allowed by the list.
+  private async opsReason(code: string): Promise<{ label: string }> {
+    try {
+      return await this.content.choose('ops_cancel', { code, note: null });
+    } catch (error) {
+      if (!(error instanceof ContentRefusedError)) throw error;
+      throw new OrderCommandRefusedError('unknown_reason', error.message);
+    }
+  }
+
+  private entries(
+    facts: CancellationFacts,
+    choices: CancellationChoices,
+    options: { preview?: boolean } = {},
+  ) {
+    const result = cancellationEntries(facts, choices, options);
+    if ('problem' in result) {
+      throw new OrderCommandRefusedError(result.problem, `the cancellation is ${result.problem}`);
+    }
+    return result;
+  }
+
+  // What the cancellation's entries depend on: the order's own rows, read
+  // again under the lock (the key), and the captain's base pay for their
+  // vehicle, read before the transaction.
+  private async cancellationFacts(
+    executor: Pick<Database['db'], 'select'>,
+    order: OrderAtStart,
+    now: Date,
+  ): Promise<{ facts: CancellationFacts; key: string; customerAccountId: string }> {
+    const own = await this.ownFacts(executor, order);
+    const { row } = own;
+    let captainPay: bigint | null = null;
+    if (row.captainId !== null && row.payTableId !== null) {
+      const captain = await this.captains.captain(row.captainId, now);
+      if (!captain) throw new Error(`captain ${row.captainId} not found`);
+      const parts = await this.captains.payParts(
+        row.payTableId,
+        captain.vehicle,
+        row.tripMetres ?? 0,
+        0,
+      );
+      captainPay = parts?.base ?? null;
+    }
+    const snapshot = snapshotOf(row.rateSnapshot);
+    // Owner decision 2026-11-09: the captain's last request's lines (what the
+    // restaurant says it received when it disputed the amount), else the
+    // items value in the base currency.
+    const cashLines = own.request
+      ? linesOf(
+          own.request.outcome === 'amount_incorrect'
+            ? own.request.receivedLines
+            : own.request.lines,
+        )
+      : [{ currency: row.currency, amount: row.itemsValue }];
+    return {
+      key: own.key,
+      customerAccountId: row.customerAccountId,
+      facts: {
+        status: row.status as CancellationFacts['status'],
+        restaurantId: row.restaurantId,
+        captainId: row.captainId,
+        arrivedAtMerchant: row.arrivedAtMerchantAt !== null,
+        currency: row.currency,
+        itemsValue: row.itemsValue,
+        discount: row.discount,
+        commissionBp: row.commissionBp,
+        testOrder: row.testOrder,
+        cashLines,
+        cashBase: baseTotal(snapshot, cashLines),
+        captainPay,
+      },
+    };
+  }
+
+  private async ownFacts(
+    executor: Pick<Database['db'], 'select'>,
+    order: { id: string; placedAt: Date },
+  ) {
+    const [row] = await executor
+      .select({
+        status: orders.status,
+        customerAccountId: orders.customerAccountId,
+        restaurantId: orders.restaurantId,
+        captainId: orders.captainId,
+        arrivedAtMerchantAt: orders.arrivedAtMerchantAt,
+        currency: orders.currency,
+        itemsValue: orders.itemsValue,
+        discount: orders.discount,
+        commissionBp: orders.commissionBp,
+        testOrder: orders.testOrder,
+        payTableId: orders.payTableId,
+        tripMetres: orders.tripMetres,
+        rateSnapshot: orders.rateSnapshot,
+      })
+      .from(orders)
+      .where(orderKey(order.id, order.placedAt));
+    if (!row) throw new Error(`order ${order.id} not found`);
+    const [request] = await executor
+      .select({
+        id: pickupRequests.id,
+        status: pickupRequests.status,
+        outcome: pickupRequests.outcome,
+        lines: pickupRequests.lines,
+        receivedLines: pickupRequests.receivedLines,
+      })
+      .from(pickupRequests)
+      .where(
+        and(eq(pickupRequests.orderId, order.id), eq(pickupRequests.orderPlacedAt, order.placedAt)),
+      )
+      .orderBy(desc(pickupRequests.openedAt))
+      .limit(1);
+    const key = JSON.stringify([
+      row.status,
+      row.captainId,
+      row.arrivedAtMerchantAt?.toISOString() ?? null,
+      request ? [request.id, request.status, request.outcome] : null,
+    ]);
+    return { row, request: request ?? null, key };
   }
 
   private async rejection(
@@ -494,7 +905,7 @@ export class OrderCommands {
   async ready(command: MerchantCommand, now: Date): Promise<OrderView> {
     return this.run(
       { kind: 'restaurant', command },
-      { verb: 'ready', from: 'accepted', to: 'ready' },
+      { verb: 'ready', from: ['accepted'], to: 'ready' },
       {},
       now,
       async (order) => {
@@ -535,7 +946,7 @@ export class OrderCommands {
     const earlier = await this.replay(this.database.db, key, requestHash, now);
     if (earlier !== null) return this.read(earlier);
     const order = await this.find(command.orderId, owner);
-    if (order.status !== transition.from) {
+    if (!transition.from.includes(order.status)) {
       // A repeat sent with the first may read the order after the first
       // committed: it answers the first's order (architecture §5.3).
       const first = await this.replay(this.database.db, key, requestHash, now);
@@ -557,15 +968,23 @@ export class OrderCommands {
       // first's order.
       const repeat = await this.replay(tx, key, requestHash, now);
       if (repeat !== null) return { done: true as const };
-      if (locked.status !== transition.from) return { done: false as const };
-      const version = locked.version + 1;
+      if (!transition.from.includes(locked.status)) return { done: false as const };
+      if (prepared.guard && !(await prepared.guard(tx))) return { done: false as const };
+      // A change of the captain track before the transition (an offer
+      // withdrawn) moves the version: the order is read again under its lock.
+      let current = locked;
+      if (prepared.before) {
+        await prepared.before(tx);
+        current = (await lockOrder(tx, order.id, order.placedAt))!;
+      }
+      const version = current.version + 1;
       await tx
         .update(orders)
         .set({ ...prepared.set, status: transition.to, version })
         .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
-      await recordTransition(tx, this.jobs, locked, {
+      await recordTransition(tx, this.jobs, current, {
         type: `order.${transition.to}`,
-        from: transition.from,
+        from: current.status,
         to: transition.to,
         version,
         actor:

@@ -601,6 +601,38 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
     ).rejects.toThrow(/permission denied/);
   });
 
+  it("keep a customer's late-cancellation strikes unchanged and one open review stop that only ends", async () => {
+    const account = randomUUID();
+    const order = randomUUID();
+    const { rows } = await appQuery(
+      `INSERT INTO customers.late_cancel_strikes (customer_account_id, order_id, city_id, at) VALUES ('${account}', '${order}', '${randomUUID()}', now()) RETURNING id`,
+    );
+    await expect(
+      appQuery(
+        `INSERT INTO customers.late_cancel_strikes (customer_account_id, order_id, city_id, at) VALUES ('${account}', '${order}', '${randomUUID()}', now())`,
+      ),
+    ).rejects.toThrow(/late_cancel_strikes_order/);
+    await expect(
+      appQuery(`UPDATE customers.late_cancel_strikes SET at = now() WHERE id = '${rows[0].id}'`),
+    ).rejects.toThrow(/permission denied/);
+    const stop = () =>
+      appQuery(
+        `INSERT INTO customers.review_stops (customer_account_id, started_at, order_id) VALUES ('${account}', now(), '${order}') RETURNING id`,
+      );
+    const { rows: stops } = await stop();
+    await expect(stop()).rejects.toThrow(/review_stops_one_open/);
+    await expect(
+      appQuery(`UPDATE customers.review_stops SET started_at = now() WHERE id = '${stops[0].id}'`),
+    ).rejects.toThrow(/permission denied/);
+    await expect(
+      appQuery(`UPDATE customers.review_stops SET ended_at = now() WHERE id = '${stops[0].id}'`),
+    ).rejects.toThrow(/review_stops_end/);
+    await appQuery(
+      `UPDATE customers.review_stops SET ended_at = now(), ended_by = '${randomUUID()}' WHERE id = '${stops[0].id}'`,
+    );
+    await stop();
+  });
+
   it('keep an emergency stop as it started, one open per city, and its attempts unchanged', async () => {
     const admin = randomUUID();
     const start = (city: string) =>

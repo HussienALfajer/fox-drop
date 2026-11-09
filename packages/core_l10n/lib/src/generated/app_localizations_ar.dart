@@ -1888,4 +1888,32 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get merchantBadgeByOperations => 'قبلته العمليات';
+
+  @override
+  String merchantCancelledByOperations(String number, String reason) {
+    return 'أوقف التحضير — أُلغي الطلب #$number: $reason';
+  }
+
+  @override
+  String get merchantOk => 'حسناً';
+
+  @override
+  String captainTaskCancelled(String reason) {
+    return 'أُلغيت المهمة: $reason';
+  }
+
+  @override
+  String get captainCashTakeBack => 'استرجع المبلغ من المطعم';
+
+  @override
+  String get captainCashKeepWithRestaurant =>
+      'لا تسترجع المبلغ، يُخصم من المطعم في التسوية';
+
+  @override
+  String captainCompensation(String amount) {
+    return 'تعويض: $amount';
+  }
+
+  @override
+  String get customerReviewStop => 'حسابك موقوف حتى مراجعة فريق الدعم';
 }

@@ -284,6 +284,8 @@ class _$MerchantOrdersDtoOutputOrdersInner
   @override
   final MerchantOrdersDtoOutputOrdersInnerCaptainArrival? captainArrival;
   @override
+  final MerchantOrdersDtoOutputOrdersInnerCancellation? cancellation;
+  @override
   final MerchantOrdersDtoOutputOrdersInnerPickup pickup;
 
   factory _$MerchantOrdersDtoOutputOrdersInner([
@@ -308,6 +310,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
     this.captainTrack,
     this.captain,
     this.captainArrival,
+    this.cancellation,
     required this.pickup,
   }) : super._();
   @override
@@ -340,6 +343,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
         captainTrack == other.captainTrack &&
         captain == other.captain &&
         captainArrival == other.captainArrival &&
+        cancellation == other.cancellation &&
         pickup == other.pickup;
   }
 
@@ -363,6 +367,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
     _$hash = $jc(_$hash, captainTrack.hashCode);
     _$hash = $jc(_$hash, captain.hashCode);
     _$hash = $jc(_$hash, captainArrival.hashCode);
+    _$hash = $jc(_$hash, cancellation.hashCode);
     _$hash = $jc(_$hash, pickup.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -388,6 +393,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
           ..add('captainTrack', captainTrack)
           ..add('captain', captain)
           ..add('captainArrival', captainArrival)
+          ..add('cancellation', cancellation)
           ..add('pickup', pickup))
         .toString();
   }
@@ -490,6 +496,14 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
     MerchantOrdersDtoOutputOrdersInnerCaptainArrivalBuilder? captainArrival,
   ) => _$this._captainArrival = captainArrival;
 
+  MerchantOrdersDtoOutputOrdersInnerCancellationBuilder? _cancellation;
+  MerchantOrdersDtoOutputOrdersInnerCancellationBuilder get cancellation =>
+      _$this._cancellation ??=
+          MerchantOrdersDtoOutputOrdersInnerCancellationBuilder();
+  set cancellation(
+    MerchantOrdersDtoOutputOrdersInnerCancellationBuilder? cancellation,
+  ) => _$this._cancellation = cancellation;
+
   MerchantOrdersDtoOutputOrdersInnerPickupBuilder? _pickup;
   MerchantOrdersDtoOutputOrdersInnerPickupBuilder get pickup =>
       _$this._pickup ??= MerchantOrdersDtoOutputOrdersInnerPickupBuilder();
@@ -520,6 +534,7 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
       _captainTrack = $v.captainTrack;
       _captain = $v.captain?.toBuilder();
       _captainArrival = $v.captainArrival?.toBuilder();
+      _cancellation = $v.cancellation?.toBuilder();
       _pickup = $v.pickup.toBuilder();
       _$v = null;
     }
@@ -592,6 +607,7 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
             captainTrack: captainTrack,
             captain: _captain?.build(),
             captainArrival: _captainArrival?.build(),
+            cancellation: _cancellation?.build(),
             pickup: pickup.build(),
           );
     } catch (_) {
@@ -610,6 +626,8 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
         _captain?.build();
         _$failedField = 'captainArrival';
         _captainArrival?.build();
+        _$failedField = 'cancellation';
+        _cancellation?.build();
         _$failedField = 'pickup';
         pickup.build();
       } catch (e) {

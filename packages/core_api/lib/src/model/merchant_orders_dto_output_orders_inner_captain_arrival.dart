@@ -8,7 +8,7 @@ import 'package:built_value/serializer.dart';
 
 part 'merchant_orders_dto_output_orders_inner_captain_arrival.g.dart';
 
-/// While the captain waits at the restaurant (RA §8.9), else null.
+/// While the captain waits at the restaurant for an accepted or ready order (RA §8.9), else null.
 ///
 /// Properties:
 /// * [at] - «وصل الكابتن {الاسم} لاستلام الطلب #{رقم}»; the waiting timer counts from it.

@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, or, type SQL, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, ne, or, type SQL, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { equivalent, type RateSnapshot } from '../fx/index.js';
 import type { Point } from '../geo/index.js';
@@ -100,6 +100,16 @@ export interface OrderView {
     reason: string;
     customerText: string | null;
     byCustomer: boolean;
+    // Operations' cancellation (slice 2.8b): the ops_cancel reason's label
+    // (null on every other path), the cash answer and the captain's
+    // compensation, and when a restaurant device and the captain
+    // acknowledged it (RA §8.14, CA §9.10).
+    label: string | null;
+    byOperations: boolean;
+    cash: 'returned' | 'not_returned' | 'not_paid' | null;
+    captainCompensation: bigint | null;
+    acknowledgedAt: Date | null;
+    captainSeenAt: Date | null;
   } | null;
   // RA §8.6, CU §11.9: the rejection's reason, its label, the customer's text
   // and the items «اطلب بدون الأصناف غير المتوفرة» leaves out.
@@ -181,6 +191,11 @@ export async function readOrders(
       cancelledAt: orders.cancelledAt,
       cancelReason: orders.cancelReason,
       cancelCustomerText: orders.cancelCustomerText,
+      cancelReasonLabel: orders.cancelReasonLabel,
+      cancelCash: orders.cancelCash,
+      cancelCaptainCompensation: orders.cancelCaptainCompensation,
+      cancelAcknowledgedAt: orders.cancelAcknowledgedAt,
+      cancelCaptainSeenAt: orders.cancelCaptainSeenAt,
       rejectedAt: orders.rejectedAt,
       rejectReason: orders.rejectReason,
       rejectReasonLabel: orders.rejectReasonLabel,
@@ -265,7 +280,8 @@ export async function readOrders(
                   eq(orderEvents.fromStatus, 'placed'),
                   inArray(orderEvents.toStatus, ['accepted', 'rejected']),
                 ),
-                eq(orderEvents.toStatus, 'cancelled'),
+                // The cancellation itself, not its acknowledgement (RA §8.14).
+                and(eq(orderEvents.toStatus, 'cancelled'), ne(orderEvents.fromStatus, 'cancelled')),
               ),
             ),
           );
@@ -367,6 +383,13 @@ export async function readOrders(
               customerText: row.cancelCustomerText,
               byCustomer:
                 cancellations.find((event) => event.orderId === row.id)?.actorType === 'customer',
+              label: row.cancelReasonLabel,
+              byOperations:
+                cancellations.find((event) => event.orderId === row.id)?.actorType === 'admin',
+              cash: row.cancelCash,
+              captainCompensation: row.cancelCaptainCompensation,
+              acknowledgedAt: row.cancelAcknowledgedAt,
+              captainSeenAt: row.cancelCaptainSeenAt,
             }
           : null,
       rejection:
@@ -429,6 +452,11 @@ export async function readOrders(
     };
   });
 }
+
+// An order is cancelled within hours of its placing: a read of cancelled
+// orders bounds placed_at by its window plus this margin, so the order's
+// month partitions prune.
+export const CANCELLED_AFTER_PLACING_MS = 2 * 24 * 60 * 60 * 1000;
 
 // The order's id and placing time, the key of its partitioned row.
 export function orderKey(id: string, placedAt: Date): SQL | undefined {

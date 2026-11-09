@@ -1,6 +1,6 @@
 # customers module
 
-The customers' profiles and saved addresses (architecture §4.2; CU §5.3, §7), and their browsing of the restaurants that deliver to a point (CU §8.2, §8.4, §9.1–9.4). Trust, strikes and dues (AP §8.8) join with their slices.
+The customers' profiles and saved addresses (architecture §4.2; CU §5.3, §7), and their browsing of the restaurants that deliver to a point (CU §8.2, §8.4, §9.1–9.4). The late-cancellation strikes and review stop (docs/domain/08); trust and dues (AP §8.8) join with their slices.
 
 ## Rules
 
@@ -14,6 +14,7 @@ The customers' profiles and saved addresses (architecture §4.2; CU §5.3, §7),
 - **The menu customers see (CU §9.3):** read through `MerchantsService.menu(id, now)` only. Hidden categories and items are left out; a category keeps its daily `window` (minutes on the city clock). An unavailable item keeps its place with `unavailableReason`: `unavailable` («غير متوفر حالياً») when any switch holding it back (its own, its category's, the options of a required group with none left) is off until turned back on; else `tomorrow` («يتوفر غداً») when some are off until the next cutoff; else `window` («متوفر من {الساعة}»), its category's window. `fromPrice` («من {أقل سعر}») is set when a required group has an option with a price delta: the price with each required group's cheapest available choices, and none when an option is in another currency. The restaurant's `logoKey` and `coverKey` and the item's `photoKey` are keys in `public-media` (null without an image), set from the panel (slice 2.5); the app shows them through imgproxy at a width it picks (architecture §5.8, CU §4.5).
 - **The estimate (CU §8.4, docs/domain/03):** `estimateRange` and `tripMinutes` from `geo`: default prep + busy-mode minutes + the trip at `order.eta_speed_kmh` + `order.eta_buffer_min`, from a multiple of 5 to 10 minutes later. The trip is the motorbike's distance (`GeoService.distance`, so `pricing.distance_method` applies), as the fee's is. Ratings are not built: `rating` and `ratingCount` are always null, «جديد». A card measures the trip once: a distance-band fee's distance, or else `GeoService.distance`. A restaurant suspended between the list and its card is left out; its page answers `404`.
 - **Snapshots (Q6):** an order keeps its own copy of the address, so editing or deleting one changes no order. `orderAddress(accountId, { addressId } | { fields })` gives it: a saved address of this customer (`unknown_address` otherwise) or the fields of an unsaved one (CU §7.4, another contact number encrypted here), with the active zone at the pin now as «الحي» (`outside_zones` outside every one). The route schemas of the address fields are in `address-fields.ts`; `unsavedAddressFields` and `withRecipient` are exported for the order command.
+- **Late-cancellation strikes and the review stop (docs/domain/08; slice 2.8b, owner decision 2026-11-09):** `late_cancel_strikes` (one per order, never changed) and `review_stops` (one open per account, a partial unique index; the application role may change only `ended_at` and `ended_by`, together). `recordLateCancel(tx, …)` runs in operations' cancellation's transaction (after the order's lock): it takes the customer's ordering lock (`customerOrderLock(accountId)`, exported for placing, which placing takes first, so a stop and a placing take turns; placing never takes an order's lock), records the strike, counts the customer's strikes within `customer.late_cancel_window_days` and opens a stop at `customer.late_cancel_strikes` (both read by the caller with the order's city). `reviewStopped(accountId, executor?)` is what the quote shows as `review_stop` («حسابك موقوف حتى مراجعة فريق الدعم») and what placing reads again under the customer's lock.
 
 ## Not yet
 
@@ -22,5 +23,5 @@ The customers' profiles and saved addresses (architecture §4.2; CU §5.3, §7),
 - Recognising the account's own number typed as another contact number (it then asks for a recipient).
 - Home sections, banners, categories, search, favourites (CU §8.1, §8.3, §9.6) and the price report (§9.5): Phase 2 (owner decision 2026-11-06).
 - One road distance per card: the OSRM `table` matrix replaces it when lists grow.
-- Account states (CU §5.5), closing the account (§5.6), trust, strikes and dues (AP §8.8).
+- Account states (CU §5.5), closing the account (§5.6), trust and dues (AP §8.8); support ending a review stop and its panel (slice 2.25).
 - The panel's customer screens (AP §9.8).

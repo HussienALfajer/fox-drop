@@ -303,6 +303,14 @@ class Commands extends Notifier<Set<String>> {
         return answer;
       });
 
+  /// «حسناً» on an order operations cancelled (CA §9.10): no key and no
+  /// location, since it only records once that the captain saw it.
+  Future<Notice?> acknowledgeCancellation(String orderId) async => (await _send(
+    orderId,
+    'acknowledge-cancellation',
+    (_) => _api.captainOrdersAcknowledgeCancellation(orderId: orderId),
+  )).$2;
+
   static AdminRecordDeliveryDtoReceivedInner _line(Money line) =>
       AdminRecordDeliveryDtoReceivedInner(
         (l) => l

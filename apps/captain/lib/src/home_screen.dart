@@ -142,7 +142,8 @@ class _AvailabilityView extends ConsumerWidget {
 
 /// Over the home: the offline bar (CA §4.6), the offer and its ring (CA
 /// §8.2, §4.4), the chimes and messages of CA §14, the hand-in reminder
-/// (CA §7.5) and the order summary (CA §9.8). It also starts and stops the
+/// (CA §7.5), the order summary (CA §9.8) and the order operations
+/// cancelled (CA §9.10). It also starts and stops the
 /// location with the availability (CA §4.3) and keeps the screen on while
 /// online.
 class WorkLayer extends ConsumerStatefulWidget {
@@ -250,6 +251,11 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
         now,
         ref.read(answeredProvider),
       )) {
+        // The cancellation card says it, with its own sound.
+        if (alert is OrderCancelled) {
+          _ringer.cancellation();
+          continue;
+        }
         if (alert.chimes) _ringer.chime();
         _show(l10n.alertText(alert));
       }
@@ -288,6 +294,8 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
             Positioned.fill(child: _SummaryCard(summary: summary)),
           if (handIn != null)
             Positioned.fill(child: _HandInCard(amount: handIn)),
+          if (work?.cancelled case final cancelled?)
+            Positioned.fill(child: _CancelledCard(cancelled: cancelled)),
           if (offer != null) Positioned.fill(child: OfferSheet(offer: offer)),
         ],
       ),
@@ -317,6 +325,57 @@ class _HandInCard extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// CA §9.10: the order operations cancelled, what to do about the cash paid
+/// to the restaurant and the compensation, until «حسناً»; the availability
+/// shows under it.
+class _CancelledCard extends ConsumerWidget {
+  const _CancelledCard({required this.cancelled});
+
+  final Cancelled cancelled;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final sending = ref.watch(commandsProvider).contains(cancelled.orderId);
+    final cash = l10n.cashText(cancelled.cash);
+    final compensation = cancelled.compensation;
+    return Material(
+      child: ListView(
+        padding: const EdgeInsetsDirectional.all(16),
+        children: [
+          Text(
+            l10n.captainTaskCancelled(cancelled.reason),
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          if (cash != null) Text(cash),
+          if (compensation != null)
+            Text(
+              l10n.captainCompensation(
+                l10n.formatMoney(compensation.amount, compensation.currency),
+              ),
+            ),
+          FilledButton(
+            onPressed: sending
+                ? null
+                : () async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    final notice = await ref
+                        .read(commandsProvider.notifier)
+                        .acknowledgeCancellation(cancelled.orderId);
+                    if (notice != null) {
+                      messenger.showSnackBar(
+                        SnackBar(content: Text(l10n.noticeText(notice))),
+                      );
+                    }
+                  },
+            child: Text(sending ? l10n.captainSending : l10n.captainOk),
+          ),
+        ],
       ),
     );
   }

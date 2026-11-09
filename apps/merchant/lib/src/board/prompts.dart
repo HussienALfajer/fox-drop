@@ -47,6 +47,12 @@ class RingingPrompt extends StatelessWidget {
               request: request,
               now: now,
             ),
+            CancelledRinging(:final order, :final cancellation) =>
+              CancelledPrompt(
+                key: ValueKey('cancelled-${order.id}'),
+                order: order,
+                cancellation: cancellation,
+              ),
           },
         ],
       ),
@@ -296,6 +302,50 @@ class PickupPrompt extends ConsumerWidget {
               ? null
               : () => run(commands.incomplete(order.id, request.id)),
           child: Text(l10n.merchantOrderIncomplete),
+        ),
+      ],
+    );
+  }
+}
+
+/// RA §8.14, §18: «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» and «حسناً»,
+/// which rings until any device answers it.
+class CancelledPrompt extends ConsumerWidget {
+  const CancelledPrompt({
+    super.key,
+    required this.order,
+    required this.cancellation,
+  });
+
+  final BoardOrder order;
+  final BoardCancellation cancellation;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final sending = ref.watch(boardCommandsProvider).contains(order.id);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          l10n.merchantCancelledByOperations(order.number, cancellation.label),
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        FilledButton(
+          key: const Key('acknowledge-cancellation'),
+          onPressed: sending
+              ? null
+              : () async {
+                  final notice = await ref
+                      .read(boardCommandsProvider.notifier)
+                      .acknowledgeCancellation(order.id);
+                  if (notice != null && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(commandText(l10n, notice))),
+                    );
+                  }
+                },
+          child: Text(sending ? l10n.merchantSending : l10n.merchantOk),
         ),
       ],
     );

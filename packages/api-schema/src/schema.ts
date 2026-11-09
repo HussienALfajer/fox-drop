@@ -1876,6 +1876,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/orders/{orderId}/acknowledge-cancellation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantOrdersAcknowledgeCancellation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/resend-notification": {
         parameters: {
             query?: never;
@@ -1934,6 +1950,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminOrdersReject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersCancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/cancel-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersCancelPreview"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2030,6 +2078,22 @@ export interface paths {
         get: operations["captainOrdersActive"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/orders/{orderId}/acknowledge-cancellation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainOrdersAcknowledgeCancellation"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4253,7 +4317,7 @@ export interface components {
             /** @description CU §10.6: every one blocks ordering; the texts are in Appendix C. */
             problems: {
                 /** @enum {string} */
-                code: "update_required" | "maintenance" | "platform_closed" | "outside_zones" | "not_covered" | "restaurant_closed" | "below_minimum_order" | "minimum_not_in_base_currency" | "delivery_unpriced" | "rates_unavailable" | "captain_pay_unset" | "one_order_at_a_time" | "active_order_limit" | "no_captain_nearby" | "terms_pending" | "emergency_stop" | "item_not_found" | "item_unavailable" | "option_not_found" | "option_unavailable" | "options_invalid" | "price_not_in_base_currency" | "price_changed";
+                code: "update_required" | "maintenance" | "platform_closed" | "outside_zones" | "not_covered" | "restaurant_closed" | "below_minimum_order" | "minimum_not_in_base_currency" | "delivery_unpriced" | "rates_unavailable" | "captain_pay_unset" | "one_order_at_a_time" | "active_order_limit" | "no_captain_nearby" | "terms_pending" | "emergency_stop" | "review_stop" | "item_not_found" | "item_unavailable" | "option_not_found" | "option_unavailable" | "options_invalid" | "price_not_in_base_currency" | "price_changed";
                 /** @description The cart line, for a line problem. */
                 line: number | null;
                 /** @description platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}». */
@@ -4665,7 +4729,7 @@ export interface components {
                     /** @enum {string} */
                     vehicle: "walking" | "bicycle" | "motorbike" | "car";
                 } | null;
-                /** @description While the captain waits at the restaurant (RA §8.9), else null. */
+                /** @description While the captain waits at the restaurant for an accepted or ready order (RA §8.9), else null. */
                 captainArrival: {
                     /**
                      * Format: date-time
@@ -4677,6 +4741,17 @@ export interface components {
                      * @description Not picked up by then: every device chimes «الكابتن ينتظر الطلب #{رقم} منذ {د} دقائق» (RA §8.9).
                      */
                     waitingAlertAt: string;
+                } | null;
+                /** @description RA §8.14: operations cancelled the accepted order; every device rings with «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» until «حسناً» on any of them (POST …/acknowledge-cancellation), then the board drops the order. Null otherwise, and once acknowledged. */
+                cancellation: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description The code of Content's ops_cancel list. */
+                    reason: string;
+                    /** @description {السبب} of «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}». */
+                    label: string;
+                    /** @description Always true: only operations cancel after acceptance. */
+                    byOperations: boolean;
                 } | null;
                 /** @description The pickup confirmation (RA §8.10). */
                 pickup: {
@@ -4807,7 +4882,7 @@ export interface components {
                     /** @enum {string} */
                     vehicle: "walking" | "bicycle" | "motorbike" | "car";
                 } | null;
-                /** @description While the captain waits at the restaurant (RA §8.9), else null. */
+                /** @description While the captain waits at the restaurant for an accepted or ready order (RA §8.9), else null. */
                 captainArrival: {
                     /**
                      * Format: date-time
@@ -4819,6 +4894,17 @@ export interface components {
                      * @description Not picked up by then: every device chimes «الكابتن ينتظر الطلب #{رقم} منذ {د} دقائق» (RA §8.9).
                      */
                     waitingAlertAt: string;
+                } | null;
+                /** @description RA §8.14: operations cancelled the accepted order; every device rings with «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» until «حسناً» on any of them (POST …/acknowledge-cancellation), then the board drops the order. Null otherwise, and once acknowledged. */
+                cancellation: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description The code of Content's ops_cancel list. */
+                    reason: string;
+                    /** @description {السبب} of «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}». */
+                    label: string;
+                    /** @description Always true: only operations cancel after acceptance. */
+                    byOperations: boolean;
                 } | null;
                 /** @description The pickup confirmation (RA §8.10). */
                 pickup: {
@@ -5003,6 +5089,69 @@ export interface components {
             pauseMin: number | null;
             /** @description Required (AP §9.3.2): the internal note, never shown to the apps. */
             reason: string;
+        };
+        AdminCancelDto: {
+            /** @description A code of Content's ops_cancel list (AP Appendix B); 400 unknown_reason otherwise. */
+            cancellation: string;
+            /**
+             * @description The responsible party (docs/domain/09): «المطعم», «الكابتن», «الزبون», «المنصة».
+             * @enum {string}
+             */
+            responsible: "restaurant" | "captain" | "customer" | "platform";
+            /** @description «تم تحضير الطعام؟». From accepted or ready with the restaurant not responsible, the merchant net is credited on platform.operating_cost; true on a placed order is 400 invalid_cancellation. */
+            foodPrepared: boolean;
+            /** @description «تعويض الكابتن»: the pay table's base pay for the captain's vehicle; only once the assigned captain reached the restaurant (409 compensation_not_allowed; 409 captain_pay_unset without a rate). */
+            compensateCaptain: boolean;
+            /** @description «هل أعاد المطعم المبلغ للكابتن؟», required exactly when the captain reached the restaurant (409 cash_answer_required, cash_answer_not_allowed): returned «نعم», not_returned «لا» (the payment on the captain's custody and a merchant.debit), not_paid «لم يدفع الكابتن بعد». */
+            cash: ("returned" | "not_returned" | "not_paid") | null;
+            /** @description Required (AP §9.3.2): the internal note, never shown to the apps. */
+            reason: string;
+        };
+        AdminCancelPreviewDto: {
+            /** @description Checked when given (400 unknown_reason). */
+            cancellation?: string | null;
+            /**
+             * @description The responsible party (docs/domain/09): «المطعم», «الكابتن», «الزبون», «المنصة».
+             * @enum {string}
+             */
+            responsible: "restaurant" | "captain" | "customer" | "platform";
+            /** @description «تم تحضير الطعام؟». From accepted or ready with the restaurant not responsible, the merchant net is credited on platform.operating_cost; true on a placed order is 400 invalid_cancellation. */
+            foodPrepared: boolean;
+            /** @description «تعويض الكابتن»: the pay table's base pay for the captain's vehicle; only once the assigned captain reached the restaurant (409 compensation_not_allowed; 409 captain_pay_unset without a rate). */
+            compensateCaptain: boolean;
+            /** @description «هل أعاد المطعم المبلغ للكابتن؟», required exactly when the captain reached the restaurant (409 cash_answer_required, cash_answer_not_allowed): returned «نعم», not_returned «لا» (the payment on the captain's custody and a merchant.debit), not_paid «لم يدفع الكابتن بعد». */
+            cash: ("returned" | "not_returned" | "not_paid") | null;
+        };
+        AdminCancelPreviewAnswerDto_Output: {
+            /** @description Every entry the cancellation would post (docs/domain/09). */
+            entries: {
+                /** @description The journal type, such as merchant.credit. */
+                type: string;
+                /** @description The account purpose, such as merchant.account. */
+                account: string;
+                party: {
+                    /** @enum {string} */
+                    kind: "merchant" | "captain" | "platform";
+                    id: string | null;
+                    name: string | null;
+                };
+                /** @description From the platform's side: + a debit, − a credit. */
+                amount: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+            }[];
+            /** @description The captain reached the restaurant: ask the cash question. */
+            cashAsked: boolean;
+            /** @description «تعويض الكابتن» may be chosen. */
+            compensationAllowed: boolean;
+            /** @description While asked: what the captain paid (the last pickup request's lines, or the items value). */
+            cashLines: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            }[] | null;
         };
         AdminRecordArrivalDto: {
             /** @description Required (AP §9.3.2). */
@@ -5605,6 +5754,25 @@ export interface components {
                     /** @description captain.customer_radius_m: «وصلت» and «تم التسليم» need no reason within it (K4, C9). */
                     customerMetres: number;
                 };
+            } | null;
+            /** @description The latest order operations cancelled within 12 hours that the captain has not acknowledged (POST …/acknowledge-cancellation); the app plays the cancellation sound when one appears. */
+            cancelled: {
+                /** Format: uuid */
+                orderId: string;
+                /** @description Shown as #10423 (AP §4.8). */
+                number: string;
+                /** @description {السبب} of «أُلغيت المهمة: {السبب}»: the reason as operations chose it. */
+                reason: string;
+                /** @description returned «استرجع المبلغ من المطعم»; not_returned «لا تسترجع المبلغ، يُخصم من المطعم في التسوية»; not_paid or null: no cash line. */
+                cash: ("returned" | "not_returned" | "not_paid") | null;
+                /** @description «تعويض: {المبلغ}» when operations compensated the captain. */
+                compensation: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                } | null;
+                /** Format: date-time */
+                at: string;
             } | null;
         };
         CaptainArriveDto: {
@@ -9128,6 +9296,31 @@ export interface operations {
             };
         };
     };
+    merchantOrdersAcknowledgeCancellation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderDto_Output"];
+                };
+            };
+        };
+    };
     adminOrdersResendNotification: {
         parameters: {
             query?: never;
@@ -9237,6 +9430,61 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminOrderCardDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersCancel: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCancelDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCardDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersCancelPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCancelPreviewDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCancelPreviewAnswerDto_Output"];
                 };
             };
         };
@@ -9370,6 +9618,28 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainActiveOrderDto_Output"];
+                };
+            };
+        };
+    };
+    captainOrdersAcknowledgeCancellation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;

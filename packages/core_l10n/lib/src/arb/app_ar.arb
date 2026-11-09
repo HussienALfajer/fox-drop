@@ -1021,5 +1021,19 @@
   "merchantRejectedByOperations": "رفضت العمليات الطلب #{number}: {reason}",
   "@merchantRejectedByOperations": {"description": "Rejected by operations (RA §8.15, §16 #6).", "placeholders": {"number": {"type": "String"}, "reason": {"type": "String"}}},
   "merchantBadgeByOperations": "قبلته العمليات",
-  "@merchantBadgeByOperations": {"description": "The card's badge of an order operations accepted (RA §8.15)."}
+  "@merchantBadgeByOperations": {"description": "The card's badge of an order operations accepted (RA §8.15)."},
+  "merchantCancelledByOperations": "أوقف التحضير — أُلغي الطلب #{number}: {reason}",
+  "@merchantCancelledByOperations": {"description": "The ring prompt after operations cancelled an accepted order, until «حسناً» on any device (RA §8.14, §16 #18); {reason} is the reason's label.", "placeholders": {"number": {"type": "String"}, "reason": {"type": "String"}}},
+  "merchantOk": "حسناً",
+  "@merchantOk": {"description": "Acknowledges operations' cancellation and stops the ring on every device (RA §8.14, §18)."},
+  "captainTaskCancelled": "أُلغيت المهمة: {reason}",
+  "@captainTaskCancelled": {"description": "The cancellation card after operations cancelled the captain's order (CA §9.10, §14 #11); {reason} is the reason's label.", "placeholders": {"reason": {"type": "String"}}},
+  "captainCashTakeBack": "استرجع المبلغ من المطعم",
+  "@captainCashTakeBack": {"description": "The cancellation card when the restaurant returned the pickup payment (CA §9.10; owner decision 2026-11-09)."},
+  "captainCashKeepWithRestaurant": "لا تسترجع المبلغ، يُخصم من المطعم في التسوية",
+  "@captainCashKeepWithRestaurant": {"description": "The cancellation card when the restaurant kept the pickup payment (CA §9.10; owner decision 2026-11-09)."},
+  "captainCompensation": "تعويض: {amount}",
+  "@captainCompensation": {"description": "The compensation operations granted on the cancellation card (CA §9.10, §14 #11); {amount} is formatted with formatMoney.", "placeholders": {"amount": {"type": "String"}}},
+  "customerReviewStop": "حسابك موقوف حتى مراجعة فريق الدعم",
+  "@customerReviewStop": {"description": "The checkout problem review_stop: late cancellations stopped ordering until support reviews the account (docs/domain/08; owner decision 2026-11-09)."}
 }

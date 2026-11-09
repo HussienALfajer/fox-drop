@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -23,7 +23,13 @@ import {
 import { CAPTAIN_ACTIVE } from './order-assignments.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
 import { lockOrder, type OrderRow, recordTransition } from './order-events.js';
-import { orderKey, readOrders, snapshotOf, type OrderView } from './order-views.js';
+import {
+  CANCELLED_AFTER_PLACING_MS,
+  orderKey,
+  readOrders,
+  snapshotOf,
+  type OrderView,
+} from './order-views.js';
 import {
   checkLines,
   lockForPickup,
@@ -123,6 +129,20 @@ export interface AdminOrderCommand {
   idempotencyKey: string;
 }
 
+// CA §9.10: how long an unacknowledged cancellation card stays.
+export const CANCELLED_CARD_MS = 12 * 60 * 60 * 1000;
+
+// CA §9.10: operations cancelled the captain's order.
+export interface CaptainCancellation {
+  orderId: string;
+  number: bigint;
+  // The ops_cancel reason's label (owner decision 2026-11-09).
+  reason: string;
+  cash: 'returned' | 'not_returned' | 'not_paid' | null;
+  compensation: { amount: bigint; currency: string } | null;
+  at: Date;
+}
+
 // The captain's active order (CA §9) with the restaurant it is picked up
 // from.
 export interface CaptainActiveOrder {
@@ -175,6 +195,76 @@ export class CaptainOrders {
           : 'unknown_reason';
       throw new CaptainOrderRefusedError(refusal, error.message);
     }
+  }
+
+  // CA §9.10 (slice 2.8b): the captain's latest order operations cancelled
+  // (only their path keeps the label) within CANCELLED_CARD_MS that the
+  // captain has not acknowledged, for the card «أُلغيت المهمة: {السبب}» with
+  // the cash instruction and «تعويض: {المبلغ}»; null otherwise. An offered
+  // captain never had the order, so gets none.
+  async cancelled(captainId: string, now: Date): Promise<CaptainCancellation | null> {
+    const [row] = await this.database.db
+      .select({
+        orderId: orders.id,
+        number: orders.number,
+        label: orders.cancelReasonLabel,
+        cash: orders.cancelCash,
+        compensation: orders.cancelCaptainCompensation,
+        currency: orders.currency,
+        at: orders.cancelledAt,
+      })
+      .from(orders)
+      .where(
+        and(
+          eq(orders.captainId, captainId),
+          eq(orders.status, 'cancelled'),
+          isNotNull(orders.cancelReasonLabel),
+          isNull(orders.cancelCaptainSeenAt),
+          gt(orders.cancelledAt, new Date(now.getTime() - CANCELLED_CARD_MS)),
+          gt(
+            orders.placedAt,
+            new Date(now.getTime() - CANCELLED_CARD_MS - CANCELLED_AFTER_PLACING_MS),
+          ),
+        ),
+      )
+      .orderBy(desc(orders.cancelledAt))
+      .limit(1);
+    if (!row || row.label === null || row.at === null) return null;
+    return {
+      orderId: row.orderId,
+      number: row.number,
+      reason: row.label,
+      cash: row.cash,
+      compensation:
+        row.compensation === null ? null : { amount: row.compensation, currency: row.currency },
+      at: row.at,
+    };
+  }
+
+  // CA §9.10 «حسناً» on the cancellation card: the order keeps when the
+  // captain saw it, so the card shows no more. Idempotent by its nature (it
+  // sets a moment once), it records nothing about the place, so it takes no
+  // fix. Another captain's order is unknown_order; one operations did not
+  // cancel is order_state_changed.
+  async acknowledgeCancellation(captainId: string, orderId: string, now: Date): Promise<void> {
+    const [row] = await this.database.db
+      .select({
+        placedAt: orders.placedAt,
+        status: orders.status,
+        label: orders.cancelReasonLabel,
+        seenAt: orders.cancelCaptainSeenAt,
+      })
+      .from(orders)
+      .where(and(eq(orders.id, orderId), eq(orders.captainId, captainId)));
+    if (!row) throw new CaptainOrderRefusedError('unknown_order', 'no such order');
+    if (row.status !== 'cancelled' || row.label === null) {
+      throw new CaptainOrderRefusedError('order_state_changed', 'not cancelled by operations');
+    }
+    if (row.seenAt !== null) return;
+    await this.database.db
+      .update(orders)
+      .set({ cancelCaptainSeenAt: now })
+      .where(and(orderKey(orderId, row.placedAt), isNull(orders.cancelCaptainSeenAt)));
   }
 
   // CA §9: the order assigned to the captain until it ends, or null (no

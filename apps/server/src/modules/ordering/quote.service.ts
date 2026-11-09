@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CaptainsService } from '../captains/index.js';
+import { CustomersService } from '../customers/index.js';
 import { TermsService } from '../content/index.js';
 import { equivalent, FxRefusedError, FxService, type RateSnapshot } from '../fx/index.js';
 import {
@@ -51,6 +52,9 @@ export type QuoteProblemCode =
   | 'terms_pending'
   // AP §9.1.6, CU §4.7: the city's emergency stop, with its browsing message.
   | 'emergency_stop'
+  // docs/domain/08 (slice 2.8b): late cancellations stopped the account's
+  // ordering, «حسابك موقوف حتى مراجعة فريق الدعم».
+  | 'review_stop'
   | LineProblem;
 
 export interface QuoteProblem {
@@ -144,6 +148,7 @@ export class QuoteService {
     private readonly captains: CaptainsService,
     private readonly terms: TermsService,
     private readonly emergencyStops: EmergencyStops,
+    private readonly customers: CustomersService,
   ) {}
 
   async quote(request: QuoteRequest, now: Date): Promise<Quote> {
@@ -219,6 +224,7 @@ export class QuoteService {
       );
       if (limit.reached) problem(limit.trusted ? 'active_order_limit' : 'one_order_at_a_time');
       if (await this.terms.pending('customer', request.customerAccountId)) problem('terms_pending');
+      if (await this.customers.reviewStopped(request.customerAccountId)) problem('review_stop');
     }
 
     const baseCurrency = snapshot?.baseCurrency ?? (await this.fx.baseCurrency(cityId));

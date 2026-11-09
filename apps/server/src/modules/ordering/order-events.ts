@@ -47,6 +47,9 @@ export type OrderEventType =
   | 'order.accepted'
   | 'order.ready'
   | 'order.cancelled'
+  // RA §8.14, §18 (slice 2.8b): «حسناً» on a restaurant device after
+  // operations cancelled an accepted order (cancelled to cancelled).
+  | 'order.cancellation_acknowledged'
   // RA §8.6, AP §9.3.2: the restaurant, or operations on its behalf, rejected
   // a placed order.
   | 'order.rejected'

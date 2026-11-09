@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_cancellation.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_acceptance.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain.dart';
@@ -35,6 +36,7 @@ part 'merchant_orders_dto_output_orders_inner.g.dart';
 /// * [captainTrack] - The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts.
 /// * [captain]
 /// * [captainArrival]
+/// * [cancellation]
 /// * [pickup]
 @BuiltValue()
 abstract class MerchantOrdersDtoOutputOrdersInner
@@ -104,6 +106,9 @@ abstract class MerchantOrdersDtoOutputOrdersInner
 
   @BuiltValueField(wireName: r'captainArrival')
   MerchantOrdersDtoOutputOrdersInnerCaptainArrival? get captainArrival;
+
+  @BuiltValueField(wireName: r'cancellation')
+  MerchantOrdersDtoOutputOrdersInnerCancellation? get cancellation;
 
   @BuiltValueField(wireName: r'pickup')
   MerchantOrdersDtoOutputOrdersInnerPickup get pickup;
@@ -249,6 +254,15 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
             object.captainArrival,
             specifiedType: const FullType.nullable(
               MerchantOrdersDtoOutputOrdersInnerCaptainArrival,
+            ),
+          );
+    yield r'cancellation';
+    yield object.cancellation == null
+        ? null
+        : serializers.serialize(
+            object.cancellation,
+            specifiedType: const FullType.nullable(
+              MerchantOrdersDtoOutputOrdersInnerCancellation,
             ),
           );
     yield r'pickup';
@@ -454,6 +468,18 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
                   as MerchantOrdersDtoOutputOrdersInnerCaptainArrival?;
           if (valueDes == null) continue;
           result.captainArrival.replace(valueDes);
+          break;
+        case r'cancellation':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      MerchantOrdersDtoOutputOrdersInnerCancellation,
+                    ),
+                  )
+                  as MerchantOrdersDtoOutputOrdersInnerCancellation?;
+          if (valueDes == null) continue;
+          result.cancellation.replace(valueDes);
           break;
         case r'pickup':
           final valueDes =

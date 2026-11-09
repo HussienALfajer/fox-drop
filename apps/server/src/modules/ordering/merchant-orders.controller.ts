@@ -125,7 +125,20 @@ const boardOrder = z.object({
         ),
     })
     .nullable()
-    .describe('While the captain waits at the restaurant (RA §8.9), else null.'),
+    .describe(
+      'While the captain waits at the restaurant for an accepted or ready order (RA §8.9), else null.',
+    ),
+  cancellation: z
+    .object({
+      at: z.iso.datetime(),
+      reason: z.string().describe("The code of Content's ops_cancel list."),
+      label: z.string().describe('{السبب} of «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}».'),
+      byOperations: z.boolean().describe('Always true: only operations cancel after acceptance.'),
+    })
+    .nullable()
+    .describe(
+      'RA §8.14: operations cancelled the accepted order; every device rings with «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» until «حسناً» on any of them (POST …/acknowledge-cancellation), then the board drops the order. Null otherwise, and once acknowledged.',
+    ),
   pickup: z
     .object({
       request: z
@@ -408,6 +421,27 @@ export class MerchantOrdersController {
     return this.answer(command.restaurantId, () => this.pickups.incomplete(command, new Date()));
   }
 
+  // RA §8.14, §18 «حسناً» (slice 2.8b): after operations cancelled an
+  // accepted order; every device's board drops it and stops ringing
+  // (order.cancellation_acknowledged). Already acknowledged answers the
+  // order quietly; 409 order_state_changed for an order that does not ring;
+  // 404 unknown_order; 422 idempotency_key_reused.
+  @Post('orders/:orderId/acknowledge-cancellation')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: MerchantOrderDto })
+  async acknowledgeCancellation(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: MerchantOrderParamsDto,
+  ) {
+    const command = await this.command(session, idempotencyKey, params.orderId);
+    return this.answer(command.restaurantId, () =>
+      this.commands.acknowledgeCancellation(command, new Date()),
+    );
+  }
+
   private async command(
     session: AppSession,
     idempotencyKey: string,
@@ -542,14 +576,29 @@ export class MerchantOrdersController {
       itemsValue: order.money.itemsValue.toString(),
       captainTrack: order.captainTrack,
       captain: captainLine(order.captainId === null ? undefined : captains.get(order.captainId)),
-      // RA §8.9: only while the captain waits at the restaurant, so the app
-      // never chimes after pickup.
+      // RA §8.9: only while the captain waits at the restaurant for an
+      // accepted or ready order, so the app never chimes after pickup or a
+      // cancellation.
       captainArrival:
         order.captainArrival &&
+        (order.status === 'accepted' || order.status === 'ready') &&
         (order.captainTrack === 'at_merchant' || order.captainTrack === 'pickup_pending')
           ? {
               at: order.captainArrival.at.toISOString(),
               waitingAlertAt: order.captainArrival.waitingAlertAt.toISOString(),
+            }
+          : null,
+      // RA §8.14: only while it rings, until «حسناً» on any device.
+      cancellation:
+        order.cancellation &&
+        order.cancellation.label !== null &&
+        order.cancellation.acknowledgedAt === null &&
+        order.acceptance
+          ? {
+              at: order.cancellation.at.toISOString(),
+              reason: order.cancellation.reason,
+              label: order.cancellation.label,
+              byOperations: order.cancellation.byOperations,
             }
           : null,
       pickup: pickupBody(

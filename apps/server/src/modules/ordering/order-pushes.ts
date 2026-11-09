@@ -22,6 +22,10 @@ export interface OrderPushFacts {
   // CU §14 #8: the customer text of the cancellation's reason.
   cancelText: string | null;
   cancelReason: string | null;
+  // RA §16 #18, CA §14 #11: the ops_cancel reason's label (owner decision
+  // 2026-11-09), and whether the restaurant had accepted the order.
+  cancelLabel: string | null;
+  accepted: boolean;
   // CU §14 #7: the customer text of the rejection's reason; RA §16 #6: its
   // label.
   rejectText: string | null;
@@ -123,6 +127,17 @@ export function orderPushes(
     case 'order.cancelled':
       // RA §16 #4: the customer cancelled while placed; they need no push.
       if (facts.actor === 'customer') return [merchant('merchant.customer_cancelled')];
+      if (facts.actor === 'admin') {
+        const label = { السبب: facts.cancelLabel ?? '' };
+        return [
+          customer('customer.cancelled', { السبب: facts.cancelText ?? '' }),
+          // RA §8.14, §16 #18: the restaurant stops preparing; a placed order
+          // only chimes on its board.
+          ...(facts.accepted ? [merchant('merchant.cancelled_after_acceptance', label)] : []),
+          // CA §9.10, §14 #11: the assigned captain; an offered one hears nothing.
+          ...captain('captain.cancelled', label),
+        ];
+      }
       return [
         // AP §8.3: the apology, with the reason's customer text.
         customer('customer.cancelled', { السبب: facts.cancelText ?? '' }),

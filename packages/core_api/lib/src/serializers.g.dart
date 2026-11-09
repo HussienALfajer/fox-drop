@@ -23,6 +23,20 @@ Serializers _$serializers =
           ..add(AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum.serializer)
           ..add(AdminAssignDto.serializer)
           ..add(AdminBoardDtoOutput.serializer)
+          ..add(AdminCancelDto.serializer)
+          ..add(AdminCancelDtoCashEnum.serializer)
+          ..add(AdminCancelDtoResponsibleEnum.serializer)
+          ..add(AdminCancelPreviewAnswerDtoOutput.serializer)
+          ..add(AdminCancelPreviewAnswerDtoOutputEntriesInner.serializer)
+          ..add(AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount.serializer)
+          ..add(AdminCancelPreviewAnswerDtoOutputEntriesInnerParty.serializer)
+          ..add(
+            AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum
+                .serializer,
+          )
+          ..add(AdminCancelPreviewDto.serializer)
+          ..add(AdminCancelPreviewDtoCashEnum.serializer)
+          ..add(AdminCancelPreviewDtoResponsibleEnum.serializer)
           ..add(AdminCitiesDtoOutput.serializer)
           ..add(AdminCitiesDtoOutputCitiesInner.serializer)
           ..add(AdminConfirmPickupDto.serializer)
@@ -178,6 +192,8 @@ Serializers _$serializers =
           ..add(AdminWorkRulesDtoOutput.serializer)
           ..add(BackupCodesDtoOutput.serializer)
           ..add(CaptainActiveOrderDtoOutput.serializer)
+          ..add(CaptainActiveOrderDtoOutputCancelled.serializer)
+          ..add(CaptainActiveOrderDtoOutputCancelledCashEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputOrder.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderArrival.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderCaptainTrackEnum.serializer)
@@ -443,6 +459,7 @@ Serializers _$serializers =
           ..add(MerchantOrdersDtoOutput.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInner.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerAcceptance.serializer)
+          ..add(MerchantOrdersDtoOutputOrdersInnerCancellation.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerCaptain.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerCaptainArrival.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum.serializer)
@@ -546,6 +563,18 @@ Serializers _$serializers =
               const FullType(AdminAlertsDtoOutputAlertsInner),
             ]),
             () => ListBuilder<AdminAlertsDtoOutputAlertsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCancelPreviewAnswerDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminCancelPreviewAnswerDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+            ]),
+            () => ListBuilder<CaptainWentOfflineDtoOutputHandIn?>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

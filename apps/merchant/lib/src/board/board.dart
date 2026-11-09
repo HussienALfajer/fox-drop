@@ -14,6 +14,7 @@ typedef PickupRequestStatus =
     MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum;
 typedef PickupOutcome =
     MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum;
+typedef BoardCancellation = MerchantOrdersDtoOutputOrdersInnerCancellation;
 
 /// The board's columns, right to left (RA §8.1–8.2).
 enum BoardColumn { incoming, preparing, ready, withCaptain }
@@ -128,8 +129,9 @@ CaptainLine? captainLine(BoardOrder order) {
   };
 }
 
-/// What rings on the board (RA §4.4): new orders and open pickup requests,
-/// oldest first. One sound plays for all of them; the prompts stack.
+/// What rings on the board (RA §4.4): new orders, open pickup requests and
+/// operations' cancellations after acceptance, oldest first. One sound plays
+/// for all of them; the prompts stack.
 sealed class Ringing {
   const Ringing(this.order);
   final BoardOrder order;
@@ -151,11 +153,24 @@ class PickupRinging extends Ringing {
   DateTime get since => request.confirmBy;
 }
 
+/// «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» until «حسناً» on any
+/// device (RA §8.14, §18). The server lists a cancelled order with its
+/// `cancellation` only until then.
+class CancelledRinging extends Ringing {
+  const CancelledRinging(super.order, this.cancellation);
+  final BoardCancellation cancellation;
+  @override
+  DateTime get since => cancellation.at;
+}
+
 List<Ringing> ringing(Board board) {
   final items = <Ringing>[
     for (final order in board.orders)
       if (order.status == OrderStatus.placed)
         NewOrderRinging(order)
+      else if (order.status == OrderStatus.cancelled &&
+          order.cancellation != null)
+        CancelledRinging(order, order.cancellation!)
       else if (openRequest(order) case final request?)
         PickupRinging(order, request),
   ]..sort((a, b) => a.since.compareTo(b.since));

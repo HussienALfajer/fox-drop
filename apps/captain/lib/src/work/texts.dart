@@ -114,6 +114,15 @@ extension CaptainTexts on AppLocalizations {
     PickedUp() => captainPickedUp,
     PickupRefused(:final request) => refusalText(request),
     PickupDisputed() => captainPickupDisputed,
+    OrderCancelled(:final cancelled) => captainTaskCancelled(cancelled.reason),
+  };
+
+  /// What to do about the cash paid to the restaurant on a cancelled order
+  /// (CA §9.10), or null when there is nothing to say.
+  String? cashText(CancelledCash? cash) => switch (cash) {
+    CancelledCash.returned => captainCashTakeBack,
+    CancelledCash.notReturned => captainCashKeepWithRestaurant,
+    _ => null,
   };
 
   /// The restaurant's answer to a refused pickup request (CA §9.4 item 4).

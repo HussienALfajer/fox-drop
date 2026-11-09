@@ -9,12 +9,14 @@ part of 'captain_active_order_dto_output.dart';
 class _$CaptainActiveOrderDtoOutput extends CaptainActiveOrderDtoOutput {
   @override
   final CaptainActiveOrderDtoOutputOrder? order;
+  @override
+  final CaptainActiveOrderDtoOutputCancelled? cancelled;
 
   factory _$CaptainActiveOrderDtoOutput([
     void Function(CaptainActiveOrderDtoOutputBuilder)? updates,
   ]) => (CaptainActiveOrderDtoOutputBuilder()..update(updates))._build();
 
-  _$CaptainActiveOrderDtoOutput._({this.order}) : super._();
+  _$CaptainActiveOrderDtoOutput._({this.order, this.cancelled}) : super._();
   @override
   CaptainActiveOrderDtoOutput rebuild(
     void Function(CaptainActiveOrderDtoOutputBuilder) updates,
@@ -27,22 +29,26 @@ class _$CaptainActiveOrderDtoOutput extends CaptainActiveOrderDtoOutput {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is CaptainActiveOrderDtoOutput && order == other.order;
+    return other is CaptainActiveOrderDtoOutput &&
+        order == other.order &&
+        cancelled == other.cancelled;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, order.hashCode);
+    _$hash = $jc(_$hash, cancelled.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-      r'CaptainActiveOrderDtoOutput',
-    )..add('order', order)).toString();
+    return (newBuiltValueToStringHelper(r'CaptainActiveOrderDtoOutput')
+          ..add('order', order)
+          ..add('cancelled', cancelled))
+        .toString();
   }
 }
 
@@ -60,6 +66,12 @@ class CaptainActiveOrderDtoOutputBuilder
   set order(CaptainActiveOrderDtoOutputOrderBuilder? order) =>
       _$this._order = order;
 
+  CaptainActiveOrderDtoOutputCancelledBuilder? _cancelled;
+  CaptainActiveOrderDtoOutputCancelledBuilder get cancelled =>
+      _$this._cancelled ??= CaptainActiveOrderDtoOutputCancelledBuilder();
+  set cancelled(CaptainActiveOrderDtoOutputCancelledBuilder? cancelled) =>
+      _$this._cancelled = cancelled;
+
   CaptainActiveOrderDtoOutputBuilder() {
     CaptainActiveOrderDtoOutput._defaults(this);
   }
@@ -68,6 +80,7 @@ class CaptainActiveOrderDtoOutputBuilder
     final $v = _$v;
     if ($v != null) {
       _order = $v.order?.toBuilder();
+      _cancelled = $v.cancelled?.toBuilder();
       _$v = null;
     }
     return this;
@@ -89,12 +102,19 @@ class CaptainActiveOrderDtoOutputBuilder
   _$CaptainActiveOrderDtoOutput _build() {
     _$CaptainActiveOrderDtoOutput _$result;
     try {
-      _$result = _$v ?? _$CaptainActiveOrderDtoOutput._(order: _order?.build());
+      _$result =
+          _$v ??
+          _$CaptainActiveOrderDtoOutput._(
+            order: _order?.build(),
+            cancelled: _cancelled?.build(),
+          );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'order';
         _order?.build();
+        _$failedField = 'cancelled';
+        _cancelled?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'CaptainActiveOrderDtoOutput',

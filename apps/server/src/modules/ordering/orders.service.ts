@@ -1,5 +1,5 @@
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
-import { and, eq, gt, inArray, or, sql } from 'drizzle-orm';
+import { and, eq, gt, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -10,6 +10,7 @@ import {
   type CustomersRefusal,
   CustomersRefusedError,
   CustomersService,
+  customerOrderLock,
   type UnsavedAddressFields,
 } from '../customers/index.js';
 import { FxRefusedError, FxService, type RateSnapshot } from '../fx/index.js';
@@ -20,7 +21,7 @@ import { recordTransition } from './order-events.js';
 import type { AutoCancelJob } from './order-timers.js';
 import { EmergencyStops } from './emergency-stop.js';
 import { type Quote, type QuoteRequest, QuoteRefusedError, QuoteService } from './quote.service.js';
-import { orderKey, readOrders, type OrderView } from './order-views.js';
+import { CANCELLED_AFTER_PLACING_MS, orderKey, readOrders, type OrderView } from './order-views.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
 import { orderLines, orderNumbers, orders } from './schema.js';
 
@@ -63,6 +64,9 @@ export interface PlaceOrder {
 
 // A check the transaction failed (a limit reached, the rates changed since
 // the quote): the quote is run again after the rollback and shows it.
+// RA §8.14: how long an unacknowledged cancellation stays on the board.
+export const CANCELLATION_RING_MS = 24 * 60 * 60 * 1000;
+
 class Requote extends Error {}
 
 // The order and its placing (architecture §4.2, §5.5; CU §10.7). The quote is
@@ -153,11 +157,16 @@ export class OrdersService implements OnModuleInit {
       placed = await this.database.db.transaction(async (tx) => {
         // The customer's lock first, then the restaurant's, so two placings
         // never wait on each other in turn.
-        await lock(tx, `orders:customer:${command.accountId}`);
+        await lock(tx, customerOrderLock(command.accountId));
         const repeat = await this.replay(tx, command, requestHash, now);
         if (repeat !== null) return repeat;
         if ((await this.activeOrders.customer(command.accountId, rules, tx)).reached) {
           throw new Requote('the customer reached the active-order limit');
+        }
+        // docs/domain/08: a review stop opened since the quote (it opens
+        // under this lock) refuses the order.
+        if (await this.customers.reviewStopped(command.accountId, tx)) {
+          throw new Requote('the account is stopped for review');
         }
         await lock(tx, `orders:restaurant:${restaurant.id}`);
         if (
@@ -346,6 +355,19 @@ export class OrdersService implements OnModuleInit {
         or(
           inArray(orders.status, UNTIL_ENDED),
           and(eq(orders.status, 'delivered'), gt(orders.pickedUpAt, disputableSince)),
+          // RA §8.14, §18 (slice 2.8b): an order operations cancelled after
+          // acceptance rings until «حسناً» on any device, for a day at most.
+          and(
+            eq(orders.status, 'cancelled'),
+            isNotNull(orders.acceptedAt),
+            isNotNull(orders.cancelReasonLabel),
+            isNull(orders.cancelAcknowledgedAt),
+            gt(orders.cancelledAt, new Date(now.getTime() - CANCELLATION_RING_MS)),
+            gt(
+              orders.placedAt,
+              new Date(now.getTime() - CANCELLATION_RING_MS - CANCELLED_AFTER_PLACING_MS),
+            ),
+          ),
         ),
       ),
     );

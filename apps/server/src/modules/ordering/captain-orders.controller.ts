@@ -20,13 +20,14 @@ import type { AppSession } from '../identity/index.js';
 import type { PickupRequestView } from './pickup-views.js';
 import {
   type CaptainActiveOrder,
+  type CaptainCancellation,
   CaptainOrderRefusedError,
   CaptainOrders,
   type DeliverySummary,
   WEAK_GPS_METRES,
 } from './captain-orders.js';
 import { minor } from './customer-quote.controller.js';
-import { captainTracks, orderStatuses } from './schema.js';
+import { captainTracks, cashAnswers, orderStatuses } from './schema.js';
 
 const money = z.object({ amount: minor, currency: z.string().length(3) });
 // RA §8.10: one line per currency, the amounts in minor units.
@@ -203,8 +204,52 @@ const activeOrder = z
   })
   .describe('The active order (CA §9).');
 
+// CA §9.10 (slice 2.8b): the order operations cancelled, until the captain's
+// «حسناً».
+const cancelledTask = z
+  .object({
+    orderId: z.uuid(),
+    number: z.string().describe('Shown as #10423 (AP §4.8).'),
+    reason: z
+      .string()
+      .describe('{السبب} of «أُلغيت المهمة: {السبب}»: the reason as operations chose it.'),
+    cash: z
+      .enum(cashAnswers)
+      .nullable()
+      .describe(
+        'returned «استرجع المبلغ من المطعم»; not_returned «لا تسترجع المبلغ، يُخصم من المطعم في التسوية»; not_paid or null: no cash line.',
+      ),
+    compensation: money
+      .nullable()
+      .describe('«تعويض: {المبلغ}» when operations compensated the captain.'),
+    at: z.iso.datetime(),
+  })
+  .nullable()
+  .describe(
+    'The latest order operations cancelled within 12 hours that the captain has not acknowledged (POST …/acknowledge-cancellation); the app plays the cancellation sound when one appears.',
+  );
+
+function cancelledBody(cancelled: CaptainCancellation | null) {
+  return (
+    cancelled && {
+      orderId: cancelled.orderId,
+      number: cancelled.number.toString(),
+      reason: cancelled.reason,
+      cash: cancelled.cash,
+      compensation: cancelled.compensation && {
+        amount: cancelled.compensation.amount.toString(),
+        currency: cancelled.compensation.currency,
+      },
+      at: cancelled.at.toISOString(),
+    }
+  );
+}
+
 class CaptainActiveOrderDto extends createZodDto(
-  z.object({ order: activeOrder.nullable().describe('Null without an active order.') }),
+  z.object({
+    order: activeOrder.nullable().describe('Null without an active order.'),
+    cancelled: cancelledTask,
+  }),
 ) {}
 
 class CaptainOrderDto extends createZodDto(z.object({ order: activeOrder })) {}
@@ -448,8 +493,34 @@ export class CaptainOrdersController {
   @AppSignedIn()
   @ZodResponse({ status: 200, type: CaptainActiveOrderDto })
   async active(@CurrentAppSession() session: AppSession) {
-    const active = await this.orders.active(captainOf(session), new Date());
-    return { order: active && activeOrderBody(active) };
+    const captainId = captainOf(session);
+    const now = new Date();
+    const [active, cancelled] = await Promise.all([
+      this.orders.active(captainId, now),
+      this.orders.cancelled(captainId, now),
+    ]);
+    return { order: active && activeOrderBody(active), cancelled: cancelledBody(cancelled) };
+  }
+
+  // CA §9.10 «حسناً» on the cancellation card (slice 2.8b): answers the
+  // active read without it. Idempotent by its nature (a repeat changes
+  // nothing), so it takes no key, and it needs no fix. 409
+  // order_state_changed for an order operations did not cancel; 404
+  // unknown_order for another captain's.
+  @Post(':orderId/acknowledge-cancellation')
+  @AppSignedIn()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CaptainActiveOrderDto })
+  async acknowledgeCancellation(
+    @CurrentAppSession() session: AppSession,
+    @Param() params: CaptainOrderParamsDto,
+  ) {
+    const captainId = captainOf(session);
+    return refusalsAsHttp(captainId, this.orders, async () => {
+      const now = new Date();
+      await this.orders.acknowledgeCancellation(captainId, params.orderId, now);
+      return this.active(session);
+    });
   }
 
   // CA §9.2 «وصلت إلى المطعم». 409 too_far_from_restaurant with the distance

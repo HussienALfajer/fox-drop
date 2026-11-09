@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, count, desc, eq, gte, inArray, isNull, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -7,7 +7,14 @@ import { TermsService } from '../content/index.js';
 import { GeoService, type Point } from '../geo/index.js';
 import { PhoneCipher } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
-import { type addressLabels, addresses, type genders, profiles } from './schema.js';
+import {
+  type addressLabels,
+  addresses,
+  type genders,
+  lateCancelStrikes,
+  profiles,
+  reviewStops,
+} from './schema.js';
 
 export type CustomersRefusal =
   'terms_required' | 'invalid_birthday' | 'outside_zones' | 'address_limit' | 'unknown_address';
@@ -117,6 +124,75 @@ export class CustomersService {
       cityId: place.cityId,
       zone: place.zone,
     };
+  }
+
+  // docs/domain/08 (slice 2.8b): operations cancelled the customer's order
+  // after acceptance with the customer responsible. In the cancellation's
+  // transaction, under the customer's ordering lock (the lock placing takes
+  // first, so a stop and a placing take turns): the strike, then the
+  // customer's strikes within windowDays; at `strikes` the account's
+  // ordering stops until support reviews it (one open stop at a time).
+  async recordLateCancel(
+    tx: Tx,
+    strike: {
+      accountId: string;
+      orderId: string;
+      cityId: string;
+      at: Date;
+      strikes: number;
+      windowDays: number;
+    },
+  ): Promise<{ reviewStopped: boolean }> {
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtextextended(${customerOrderLock(strike.accountId)}, 0))`,
+    );
+    await tx
+      .insert(lateCancelStrikes)
+      .values({
+        customerAccountId: strike.accountId,
+        orderId: strike.orderId,
+        cityId: strike.cityId,
+        at: strike.at,
+      })
+      .onConflictDoNothing({ target: lateCancelStrikes.orderId });
+    const since = new Date(strike.at.getTime() - strike.windowDays * 24 * 60 * 60 * 1000);
+    const [counted] = await tx
+      .select({ n: count() })
+      .from(lateCancelStrikes)
+      .where(
+        and(
+          eq(lateCancelStrikes.customerAccountId, strike.accountId),
+          gte(lateCancelStrikes.at, since),
+        ),
+      );
+    if ((counted?.n ?? 0) < strike.strikes) return { reviewStopped: false };
+    await tx
+      .insert(reviewStops)
+      .values({
+        customerAccountId: strike.accountId,
+        startedAt: strike.at,
+        orderId: strike.orderId,
+      })
+      .onConflictDoNothing({
+        target: reviewStops.customerAccountId,
+        where: sql`${reviewStops.endedAt} IS NULL`,
+      });
+    return { reviewStopped: true };
+  }
+
+  // docs/domain/08: the account's ordering is stopped until support reviews
+  // it («حسابك موقوف حتى مراجعة فريق الدعم»); placing reads it again under
+  // the customer's lock through its transaction.
+  async reviewStopped(
+    accountId: string,
+    executor: Pick<NodePgDatabase, 'select'> = this.database.db,
+  ): Promise<boolean> {
+    const rows = await executor
+      .select({ id: reviewStops.id })
+      .from(reviewStops)
+      .where(and(eq(reviewStops.customerAccountId, accountId), isNull(reviewStops.endedAt)))
+      .limit(1);
+    return rows.length > 0;
   }
 
   // The details of CU §5.3; null until the customer completes them.
@@ -456,6 +532,13 @@ async function clearDefault(tx: Tx, accountId: string, now: Date): Promise<void>
     .update(addresses)
     .set({ isDefault: false, updatedAt: now })
     .where(and(eq(addresses.accountId, accountId), eq(addresses.isDefault, true)));
+}
+
+// docs/domain/08, CU §10.7: the name of the customer's ordering advisory
+// lock, which placing takes first and a late-cancellation strike takes, so
+// a review stop and a placing take turns.
+export function customerOrderLock(accountId: string): string {
+  return `orders:customer:${accountId}`;
 }
 
 // A customer's address changes take turns, so the limit and the one default

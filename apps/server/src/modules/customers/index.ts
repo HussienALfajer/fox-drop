@@ -35,6 +35,7 @@ export {
   type CustomersRefusal,
   CustomersRefusedError,
   CustomersService,
+  customerOrderLock,
   type Location,
   type OrderAddress,
   type Profile,

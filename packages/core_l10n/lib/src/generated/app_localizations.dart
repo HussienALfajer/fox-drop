@@ -3159,6 +3159,48 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'قبلته العمليات'**
   String get merchantBadgeByOperations;
+
+  /// The ring prompt after operations cancelled an accepted order, until «حسناً» on any device (RA §8.14, §16 #18); {reason} is the reason's label.
+  ///
+  /// In ar, this message translates to:
+  /// **'أوقف التحضير — أُلغي الطلب #{number}: {reason}'**
+  String merchantCancelledByOperations(String number, String reason);
+
+  /// Acknowledges operations' cancellation and stops the ring on every device (RA §8.14, §18).
+  ///
+  /// In ar, this message translates to:
+  /// **'حسناً'**
+  String get merchantOk;
+
+  /// The cancellation card after operations cancelled the captain's order (CA §9.10, §14 #11); {reason} is the reason's label.
+  ///
+  /// In ar, this message translates to:
+  /// **'أُلغيت المهمة: {reason}'**
+  String captainTaskCancelled(String reason);
+
+  /// The cancellation card when the restaurant returned the pickup payment (CA §9.10; owner decision 2026-11-09).
+  ///
+  /// In ar, this message translates to:
+  /// **'استرجع المبلغ من المطعم'**
+  String get captainCashTakeBack;
+
+  /// The cancellation card when the restaurant kept the pickup payment (CA §9.10; owner decision 2026-11-09).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تسترجع المبلغ، يُخصم من المطعم في التسوية'**
+  String get captainCashKeepWithRestaurant;
+
+  /// The compensation operations granted on the cancellation card (CA §9.10, §14 #11); {amount} is formatted with formatMoney.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعويض: {amount}'**
+  String captainCompensation(String amount);
+
+  /// The checkout problem review_stop: late cancellations stopped ordering until support reviews the account (docs/domain/08; owner decision 2026-11-09).
+  ///
+  /// In ar, this message translates to:
+  /// **'حسابك موقوف حتى مراجعة فريق الدعم'**
+  String get customerReviewStop;
 }
 
 class _AppLocalizationsDelegate
