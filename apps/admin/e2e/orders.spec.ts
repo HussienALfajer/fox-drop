@@ -38,6 +38,8 @@ const detail = {
   acceptance: { at: later(-30), prepMin: 15, prepDueAt: later(-15) },
   readyAt: later(-16),
   cancellation: null,
+  rejection: null,
+  onBehalf: null,
   customer: {
     name: 'أحمد',
     address: {
@@ -54,7 +56,15 @@ const detail = {
   },
   note: null,
   lines: [
-    { name: 'شاورما', quantity: 2, options: [], note: null, unitPrice: '500', lineTotal: '1000' },
+    {
+      itemId: '01900000-0000-7000-8000-0000000000b1',
+      name: 'شاورما',
+      quantity: 2,
+      options: [],
+      note: null,
+      unitPrice: '500',
+      lineTotal: '1000',
+    },
   ],
   money: {
     currency: 'USD',
@@ -256,4 +266,55 @@ test('is hidden and closed without operations', async ({ page }) => {
 
   await page.goto('/orders');
   await expect(page).toHaveURL(/\/$/);
+});
+
+// AP §9.3.2 «رفض نيابة عن المطعم»: a placed order, rejected with an item the
+// restaurant says is out, and operations' note.
+test('rejects a placed order for the restaurant with its items and a reason', async ({ page }) => {
+  await fakeSession(page, ['operations.read', 'operations.manage']);
+  await fakeOperations(page);
+  const placed = {
+    ...detail,
+    status: 'placed',
+    captainTrack: null,
+    promisedAt: null,
+    acceptance: null,
+    readyAt: null,
+    onBehalf: {
+      prepTime: { options: [10, 15, 20], stepMin: 5, floorMin: 5, ceilingMin: 90, defaultMin: 20 },
+      rejectionReasons: [
+        { code: 'item_unavailable', label: 'صنف غير متوفر' },
+        { code: 'restaurant_closed', label: 'المطعم مغلق' },
+        { code: 'too_busy', label: 'ضغط طلبات' },
+      ],
+      busyExtraOptionsMin: [10, 20],
+    },
+  };
+  await page.route(`**/v1/admin/orders/${orderId}`, (route) =>
+    route.fulfill({ json: { order: placed } }),
+  );
+  let sent: unknown;
+  await page.route(`**/v1/admin/orders/${orderId}/reject`, (route) => {
+    sent = route.request().postDataJSON();
+    return route.fulfill({ status: 409, json: { statusCode: 409, error: 'order_state_changed' } });
+  });
+  await page.goto(`/orders/${orderId}`);
+
+  const reject = page.getByRole('form', { name: 'رفض نيابة عن المطعم' });
+  const confirm = reject.getByRole('button', { name: 'تأكيد الرفض' });
+  await reject.getByRole('radio', { name: 'صنف غير متوفر' }).check();
+  await reject.getByRole('checkbox', { name: 'شاورما' }).check();
+  await reject.getByRole('combobox').selectOption('turned_back_on');
+  await expect(confirm).toBeDisabled();
+  await reject.getByRole('textbox', { name: 'السبب (للسجل الداخلي)' }).fill('اتصل المطعم');
+  await confirm.click();
+
+  await expect(page.getByRole('alert')).toHaveText('تغيّرت حالة الطلب قبل وصول قرارك');
+  expect(sent).toEqual({
+    rejection: 'item_unavailable',
+    items: [{ itemId: '01900000-0000-7000-8000-0000000000b1', until: 'turned_back_on' }],
+    busyExtraMin: null,
+    pauseMin: null,
+    reason: 'اتصل المطعم',
+  });
 });

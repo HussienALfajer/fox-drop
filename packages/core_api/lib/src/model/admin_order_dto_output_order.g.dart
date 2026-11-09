@@ -413,6 +413,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
   @override
   final AdminOrderDtoOutputOrderRejection? rejection;
   @override
+  final AdminOrderDtoOutputOrderOnBehalf? onBehalf;
+  @override
   final AdminOrderDtoOutputOrderCustomer customer;
   @override
   final String? note;
@@ -452,6 +454,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     this.readyAt,
     this.cancellation,
     this.rejection,
+    this.onBehalf,
     required this.customer,
     this.note,
     required this.lines,
@@ -493,6 +496,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
         readyAt == other.readyAt &&
         cancellation == other.cancellation &&
         rejection == other.rejection &&
+        onBehalf == other.onBehalf &&
         customer == other.customer &&
         note == other.note &&
         lines == other.lines &&
@@ -525,6 +529,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     _$hash = $jc(_$hash, readyAt.hashCode);
     _$hash = $jc(_$hash, cancellation.hashCode);
     _$hash = $jc(_$hash, rejection.hashCode);
+    _$hash = $jc(_$hash, onBehalf.hashCode);
     _$hash = $jc(_$hash, customer.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, lines.hashCode);
@@ -559,6 +564,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
           ..add('readyAt', readyAt)
           ..add('cancellation', cancellation)
           ..add('rejection', rejection)
+          ..add('onBehalf', onBehalf)
           ..add('customer', customer)
           ..add('note', note)
           ..add('lines', lines)
@@ -677,6 +683,12 @@ class AdminOrderDtoOutputOrderBuilder
   set rejection(AdminOrderDtoOutputOrderRejectionBuilder? rejection) =>
       _$this._rejection = rejection;
 
+  AdminOrderDtoOutputOrderOnBehalfBuilder? _onBehalf;
+  AdminOrderDtoOutputOrderOnBehalfBuilder get onBehalf =>
+      _$this._onBehalf ??= AdminOrderDtoOutputOrderOnBehalfBuilder();
+  set onBehalf(AdminOrderDtoOutputOrderOnBehalfBuilder? onBehalf) =>
+      _$this._onBehalf = onBehalf;
+
   AdminOrderDtoOutputOrderCustomerBuilder? _customer;
   AdminOrderDtoOutputOrderCustomerBuilder get customer =>
       _$this._customer ??= AdminOrderDtoOutputOrderCustomerBuilder();
@@ -744,6 +756,7 @@ class AdminOrderDtoOutputOrderBuilder
       _readyAt = $v.readyAt;
       _cancellation = $v.cancellation?.toBuilder();
       _rejection = $v.rejection?.toBuilder();
+      _onBehalf = $v.onBehalf?.toBuilder();
       _customer = $v.customer.toBuilder();
       _note = $v.note;
       _lines = $v.lines.toBuilder();
@@ -823,6 +836,7 @@ class AdminOrderDtoOutputOrderBuilder
             readyAt: readyAt,
             cancellation: _cancellation?.build(),
             rejection: _rejection?.build(),
+            onBehalf: _onBehalf?.build(),
             customer: customer.build(),
             note: note,
             lines: lines.build(),
@@ -855,6 +869,8 @@ class AdminOrderDtoOutputOrderBuilder
         _cancellation?.build();
         _$failedField = 'rejection';
         _rejection?.build();
+        _$failedField = 'onBehalf';
+        _onBehalf?.build();
         _$failedField = 'customer';
         customer.build();
 

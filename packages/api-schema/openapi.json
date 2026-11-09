@@ -17272,6 +17272,98 @@
                 ],
                 "description": "While rejected (AP §9.3.1 «rejected (with reason)»)."
               },
+              "onBehalf": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "prepTime": {
+                        "type": "object",
+                        "properties": {
+                          "options": {
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "description": "The chips (merchant.prep_time_options)."
+                          },
+                          "stepMin": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "floorMin": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "ceilingMin": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "defaultMin": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991,
+                            "description": "Preselected: the restaurant's default prep time plus busy mode's minutes while it is on."
+                          }
+                        },
+                        "required": [
+                          "options",
+                          "stepMin",
+                          "floorMin",
+                          "ceilingMin",
+                          "defaultMin"
+                        ],
+                        "additionalProperties": false,
+                        "description": "«قبول نيابة عن المطعم»: the prep-time chooser of RA §8.5."
+                      },
+                      "rejectionReasons": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "label"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "description": "«رفض نيابة عن المطعم»: the restaurant's reasons (AP Appendix B), in order."
+                      },
+                      "busyExtraOptionsMin": {
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "description": "«ضغط طلبات»: busy mode with one of merchant.busy_extra_options_min."
+                      }
+                    },
+                    "required": [
+                      "prepTime",
+                      "rejectionReasons",
+                      "busyExtraOptionsMin"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "While placed: the choices of AP §9.3.2's accept and reject on the restaurant's behalf."
+              },
               "customer": {
                 "type": "object",
                 "properties": {
@@ -17422,6 +17514,12 @@
                 "items": {
                   "type": "object",
                   "properties": {
+                    "itemId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "description": "«رفض نيابة عن المطعم» picks the unavailable items by it."
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -17469,6 +17567,7 @@
                     }
                   },
                   "required": [
+                    "itemId",
                     "name",
                     "quantity",
                     "options",
@@ -18155,6 +18254,7 @@
               "readyAt",
               "cancellation",
               "rejection",
+              "onBehalf",
               "customer",
               "note",
               "lines",

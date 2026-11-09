@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_order_dto_output_order_customer.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_rejection.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
@@ -46,6 +47,7 @@ part 'admin_order_dto_output_order.g.dart';
 /// * [readyAt]
 /// * [cancellation]
 /// * [rejection]
+/// * [onBehalf]
 /// * [customer]
 /// * [note]
 /// * [lines]
@@ -126,6 +128,9 @@ abstract class AdminOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'rejection')
   AdminOrderDtoOutputOrderRejection? get rejection;
+
+  @BuiltValueField(wireName: r'onBehalf')
+  AdminOrderDtoOutputOrderOnBehalf? get onBehalf;
 
   @BuiltValueField(wireName: r'customer')
   AdminOrderDtoOutputOrderCustomer get customer;
@@ -304,6 +309,15 @@ class _$AdminOrderDtoOutputOrderSerializer
             object.rejection,
             specifiedType: const FullType.nullable(
               AdminOrderDtoOutputOrderRejection,
+            ),
+          );
+    yield r'onBehalf';
+    yield object.onBehalf == null
+        ? null
+        : serializers.serialize(
+            object.onBehalf,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderOnBehalf,
             ),
           );
     yield r'customer';
@@ -584,6 +598,18 @@ class _$AdminOrderDtoOutputOrderSerializer
                   as AdminOrderDtoOutputOrderRejection?;
           if (valueDes == null) continue;
           result.rejection.replace(valueDes);
+          break;
+        case r'onBehalf':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderOnBehalf,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderOnBehalf?;
+          if (valueDes == null) continue;
+          result.onBehalf.replace(valueDes);
           break;
         case r'customer':
           final valueDes =

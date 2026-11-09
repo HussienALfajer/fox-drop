@@ -68,6 +68,9 @@ import 'package:core_api/src/model/admin_order_dto_output_order_delivery_shortfa
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner_options_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_money.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf_prep_time.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf_rejection_reasons_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_dispute.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_requests_inner.dart';
@@ -413,6 +416,9 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderLinesInner,
   AdminOrderDtoOutputOrderLinesInnerOptionsInner,
   AdminOrderDtoOutputOrderMoney,
+  AdminOrderDtoOutputOrderOnBehalf,
+  AdminOrderDtoOutputOrderOnBehalfPrepTime,
+  AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner,
   AdminOrderDtoOutputOrderPickup,
   AdminOrderDtoOutputOrderPickupDispute,
   AdminOrderDtoOutputOrderPickupRequestsInner,
@@ -903,6 +909,15 @@ Serializers serializers =
             () =>
                 ListBuilder<
                   MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner
                 >(),
           )
           ..addBuilderFactory(

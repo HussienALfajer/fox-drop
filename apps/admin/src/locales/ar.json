@@ -179,6 +179,7 @@
     "acceptance": "قُبل الساعة {{time}}، التحضير {{prepMin}} دقيقة حتى {{due}}",
     "readyAt": "جاهز منذ الساعة {{time}}",
     "cancelledAt": "أُلغي الساعة {{time}}",
+    "rejectedAt": "رُفض الساعة {{time}}",
     "captain": "الكابتن",
     "offerOpen": "أُرسل عرض إلى كابتن، بانتظار رده.",
     "restaurant": "المطعم",
@@ -273,6 +274,32 @@
       "sent": "أُعيد الإرسال: «{{text}}»",
       "nothingToResend": "لم يُرسل لهذا الطرف إشعار عن هذا الطلب بعد",
       "notActive": "الطلب لم يعد نشطاً أو لا كابتن عليه"
+    },
+    "rejection": {
+      "title": "سبب الرفض: {{label}}",
+      "byOperations": "رفضته العمليات نيابة عن المطعم",
+      "customerText": "ما يراه الزبون: «{{text}}»",
+      "items": "الأصناف غير المتوفرة: {{names}}"
+    },
+    "onBehalf": {
+      "acceptTitle": "قبول نيابة عن المطعم",
+      "prepTime": "وقت التحضير (دقائق)",
+      "prepMinutes": "{{minutes}} د",
+      "prepOutOfRange": "وقت التحضير بين {{floor}} و{{ceiling}} دقيقة",
+      "acceptConfirm": "تأكيد القبول",
+      "rejectTitle": "رفض نيابة عن المطعم",
+      "pickItems": "اختر الأصناف غير المتوفرة",
+      "untilTomorrow": "حتى الغد",
+      "untilTurnedBackOn": "حتى أعيده",
+      "closedNote": "سيتوقف المطعم عن استقبال الطلبات حتى يعيد الفتح",
+      "nothingElse": "الرفض فقط",
+      "busyMode": "تفعيل وضع الضغط +{{minutes}} د",
+      "pause": "إيقاف {{minutes}} د",
+      "reason": "السبب (للسجل الداخلي)",
+      "rejectConfirm": "تأكيد الرفض",
+      "stateChanged": "تغيّرت حالة الطلب قبل وصول قرارك",
+      "invalidPrepTime": "وقت التحضير غير مقبول",
+      "refused": "تعذّر التنفيذ بهذه الاختيارات، راجعها ثم أعد المحاولة"
     }
   },
   "assign": {
