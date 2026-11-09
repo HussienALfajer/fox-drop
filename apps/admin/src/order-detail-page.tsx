@@ -4,14 +4,18 @@ import { useTranslation } from 'react-i18next';
 import { canAssign, OPERATIONS_MANAGE } from './assign-captain.js';
 import { chosenCity, citiesQuery } from './cities.js';
 import { formatMoney, formatTime } from './format.js';
+import { CancelOrder } from './order-cancel-page.js';
+import { canCancel } from './order-cancel.js';
 import {
   actorKey,
   cancelReasonKeys,
+  cashKeys,
   eventKey,
   eventReason,
   orderQuery,
   outcomeKeys,
   requestStatusKeys,
+  responsibleKeys,
 } from './order-detail.js';
 import { statusKeys, trackKeys, vehicleKey } from './order-labels.js';
 import { DecideOnBehalf } from './order-on-behalf-page.js';
@@ -35,8 +39,8 @@ function linesText(lines: Lines): string {
 
 // AP §9.3.1: the order detail beside the board, live over the board's
 // channel. Its actions come with their slices: «تعيين كابتن» (AP §9.3.2),
-// whose picker opens below it, and while placed «قبول نيابة عن المطعم» and
-// «رفض نيابة عن المطعم».
+// whose picker opens below it, while placed «قبول نيابة عن المطعم» and
+// «رفض نيابة عن المطعم», and until pickup «إلغاء الطلب».
 export function OrderDetailPage() {
   const { t } = useTranslation();
   const { orderId } = route.useParams();
@@ -68,6 +72,11 @@ export function OrderDetailPage() {
   const time = (at: string) => formatTime(at, city.timeZone);
   const money = (amount: string) => formatMoney({ amount, currency: detail.money.currency });
   const { customer, pickup, delivery, cancellation, rejection } = detail;
+  // The reason as chosen, or the timer's (AP §8.3); an unknown code is hidden.
+  const cancelLabel =
+    cancellation &&
+    (cancellation.label ??
+      (cancellation.reason in cancelReasonKeys ? t(cancelReasonKeys[cancellation.reason]!) : null));
 
   return (
     <section aria-labelledby="order-title">
@@ -90,12 +99,59 @@ export function OrderDetailPage() {
       )}
       {detail.readyAt && <p>{t('order.readyAt', { time: time(detail.readyAt) })}</p>}
       {cancellation && (
-        <p>
-          {t('order.cancelledAt', { time: time(cancellation.at) })}
-          {cancellation.reason in cancelReasonKeys && (
-            <span> {t(cancelReasonKeys[cancellation.reason]!)}</span>
+        <>
+          <p>
+            {t('order.cancelledAt', { time: time(cancellation.at) })}{' '}
+            {cancelLabel && t('order.cancellation.title', { label: cancelLabel })}
+          </p>
+          <p>{t('order.cancellation.by', { actor: t(actorKey(cancellation.by.type)) })}</p>
+          {cancellation.note && (
+            <p>
+              {t(
+                cancellation.by.type === 'admin'
+                  ? 'order.cancellation.opsNote'
+                  : 'order.cancellation.customerNote',
+                { note: cancellation.note },
+              )}
+            </p>
           )}
-        </p>
+          {cancellation.customerText && (
+            <p>{t('order.cancellation.customerText', { text: cancellation.customerText })}</p>
+          )}
+          {cancellation.responsible && (
+            <p>
+              {t('order.cancellation.responsible', {
+                party: t(responsibleKeys[cancellation.responsible]),
+              })}
+            </p>
+          )}
+          {cancellation.foodPrepared && <p>{t('order.cancellation.foodPrepared')}</p>}
+          {cancellation.cash && (
+            <p>{t('order.cancellation.cash', { answer: t(cashKeys[cancellation.cash]) })}</p>
+          )}
+          {cancellation.merchantCredit && (
+            <p>
+              {t('order.cancellation.merchantCredit', {
+                amount: formatMoney(cancellation.merchantCredit),
+              })}
+            </p>
+          )}
+          {cancellation.captainCompensation && (
+            <p>
+              {t('order.cancellation.captainCompensation', {
+                amount: formatMoney(cancellation.captainCompensation),
+              })}
+            </p>
+          )}
+          {cancellation.acknowledgedAt && (
+            <p>
+              {t('order.cancellation.acknowledged', { time: time(cancellation.acknowledgedAt) })}
+            </p>
+          )}
+          {cancellation.captainSeenAt && (
+            <p>{t('order.cancellation.captainSeen', { time: time(cancellation.captainSeenAt) })}</p>
+          )}
+        </>
       )}
       {rejection && (
         <>
@@ -127,6 +183,15 @@ export function OrderDetailPage() {
           orderId={orderId}
           choices={detail.onBehalf}
           lines={detail.lines}
+        />
+      )}
+      {canCancel(session, detail) && (
+        <CancelOrder
+          key={orderId}
+          orderId={orderId}
+          status={detail.status}
+          version={detail.version}
+          choices={detail.cancelChoices}
         />
       )}
       {canResend(session) && (
@@ -272,12 +337,29 @@ export function OrderDetailPage() {
         {detail.timeline.map((event) => {
           const key = eventKey(event.type);
           const reason = eventReason(event);
+          // AP §9.3.1 «cancellation (reason and party)»: the reason as chosen
+          // and the responsible party, beside operations' note.
+          const cancelled = event.type === 'order.cancelled' && cancellation;
           return (
             <li key={event.version}>
               <time dateTime={event.at}>{time(event.at)}</time>{' '}
               {key ? t(key) : t(statusKeys[event.to])}{' '}
               {t('order.by', { actor: t(actorKey(event.actor.type)) })}
-              {reason && <span> {'key' in reason ? t(reason.key) : reason.text}</span>}
+              {cancelled && cancelLabel && <span> {cancelLabel}</span>}
+              {cancelled && cancellation.responsible && (
+                <span>
+                  {' '}
+                  {t('order.cancellation.responsible', {
+                    party: t(responsibleKeys[cancellation.responsible]),
+                  })}
+                </span>
+              )}
+              {cancelled && cancellation.by.type === 'customer' && cancellation.note && (
+                <span> {cancellation.note}</span>
+              )}
+              {reason && !(cancelled && 'key' in reason) && (
+                <span> {'key' in reason ? t(reason.key) : reason.text}</span>
+              )}
             </li>
           );
         })}

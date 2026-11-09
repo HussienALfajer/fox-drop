@@ -23,6 +23,8 @@ import {
 import { type AccountPurpose, LedgerService } from '../ledger/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
+import { ContentService } from '../content/index.js';
+import { OrderTimers } from './order-timers.js';
 
 // AP §9.3.2 «إلغاء الطلب», AP §8.1, docs/domain/01, 08, 09; RA §8.14, §18;
 // CA §9.10 (slice 2.8b): operations cancel a placed, accepted or ready order
@@ -193,6 +195,9 @@ async function admin(roles: string[]) {
       post(`/v1/admin/orders/${orderId}/assign`, { captainId }),
     cancel: (orderId: string, body: object, key?: string) =>
       post(`/v1/admin/orders/${orderId}/cancel`, body, key),
+    detail: async (orderId: string) =>
+      (await app.inject({ method: 'GET', url: `/v1/admin/orders/${orderId}`, cookies })).json()
+        .order,
     preview: (orderId: string, body: object) =>
       app.inject({
         method: 'POST',
@@ -380,7 +385,8 @@ const row = async (orderId: string) =>
     await sql.query(
       `SELECT status, cancel_reason, cancel_reason_label, cancel_customer_text, food_prepared,
               cancel_responsible, cancel_cash, cancel_merchant_credit, cancel_captain_compensation,
-              cancel_acknowledged_at, cancel_acknowledged_device, cancel_captain_seen_at, captain_id
+              cancel_acknowledged_at, cancel_acknowledged_device, cancel_captain_seen_at, captain_id,
+              placed_at
          FROM ordering.orders WHERE id = $1`,
       [orderId],
     )
@@ -635,6 +641,7 @@ describe('the captain at the restaurant (AP §8.1, CA §9.10)', () => {
       compensationAllowed: false,
       cashLines: null,
       entries: [],
+      strike: false,
     });
   });
 
@@ -719,6 +726,168 @@ describe('the captain at the restaurant (AP §8.1, CA §9.10)', () => {
         )
       ).rows[0].captain_id,
     ).toBe(captain.captainId);
+  });
+});
+
+describe('the detail (AP §9.3.1, §9.3.2; slice 2.8c)', () => {
+  it("offers Content's ops_cancel reasons while the order can be cancelled", async () => {
+    const order = await acceptedOrder();
+    const ops = await admin(['OPS']);
+    const before = await ops.detail(order.id);
+    expect(before.cancellation).toBeNull();
+    expect(before.cancelChoices.reasons.map((r: { code: string }) => r.code)).toEqual([
+      'customer_request',
+      'restaurant_no_response',
+      'restaurant_closed',
+      'item_sold_out',
+      'no_captain',
+      'outside_zone',
+      'emergency',
+      'other',
+    ]);
+    expect(before.cancelChoices.reasons[6]).toEqual({ code: 'emergency', label: 'ظرف طارئ' });
+    expect((await ops.cancel(order.id, plain)).statusCode).toBe(200);
+    expect((await ops.detail(order.id)).cancelChoices).toBeNull();
+  });
+
+  it("shows operations' cancellation with its party, money, note and who", async () => {
+    const order = await acceptedOrder();
+    const ops = await admin(['OPS']);
+    expect((await ops.cancel(order.id, { ...plain, foodPrepared: true })).statusCode).toBe(200);
+    const { cancellation } = await ops.detail(order.id);
+    expect(cancellation).toMatchObject({
+      reason: 'emergency',
+      label: 'ظرف طارئ',
+      customerText: 'ظرف طارئ منعنا من إكمال طلبك',
+      note: 'ملاحظة العمليات',
+      by: { type: 'admin', id: ops.accountId },
+      responsible: 'platform',
+      foodPrepared: true,
+      cash: null,
+      merchantCredit: { amount: '20400', currency: 'TRY' },
+      captainCompensation: null,
+      acknowledgedAt: null,
+      captainSeenAt: null,
+    });
+  });
+
+  it("shows the customer's own reason and «سبب آخر» text", async () => {
+    const order = await placedOrder();
+    const cancelled = await app.inject({
+      method: 'POST',
+      url: `/v1/customer/orders/${order.id}/cancel`,
+      headers: { ...order.customer, 'idempotency-key': randomUUID() },
+      payload: { reason: 'other', note: 'تأخرت كثيراً' },
+    });
+    expect(cancelled.statusCode).toBe(200);
+    const ops = await admin(['SUP']);
+    const { cancellation } = await ops.detail(order.id);
+    expect(cancellation).toMatchObject({
+      reason: 'other',
+      label: 'سبب آخر',
+      note: 'تأخرت كثيراً',
+      by: { type: 'customer' },
+      customerText: null,
+      responsible: null,
+      foodPrepared: false,
+      merchantCredit: null,
+    });
+  });
+
+  it('offers no reason Content removed, and still names a removed customer reason', async () => {
+    const content = app.get(ContentService);
+    const ops = await admin(['OPS']);
+    const edit = {
+      admin: { accountId: ops.accountId, roles: ['OWN'] },
+      context: { ipAddress: null, device: null },
+    };
+    const accepted = await acceptedOrder();
+    const placed = await placedOrder();
+    const cancelled = await app.inject({
+      method: 'POST',
+      url: `/v1/customer/orders/${placed.id}/cancel`,
+      headers: { ...placed.customer, 'idempotency-key': randomUUID() },
+      payload: { reason: 'changed_mind', note: null },
+    });
+    expect(cancelled.statusCode).toBe(200);
+    const noText = { customerText: null, note: 'none' } as const;
+    await content.updateReason(
+      'ops_cancel',
+      'outside_zone',
+      {
+        label: 'العنوان خارج المنطقة',
+        customerText: 'العنوان خارج منطقة التوصيل',
+        note: 'none',
+        active: false,
+      },
+      edit,
+    );
+    await content.updateReason(
+      'customer_cancel',
+      'changed_mind',
+      { label: 'غيّرت رأيي', ...noText, active: false },
+      edit,
+    );
+    try {
+      const codes = (await ops.detail(accepted.id)).cancelChoices.reasons.map(
+        (reason: { code: string }) => reason.code,
+      );
+      expect(codes).not.toContain('outside_zone');
+      expect((await ops.detail(placed.id)).cancellation).toMatchObject({
+        reason: 'changed_mind',
+        label: 'غيّرت رأيي',
+        note: null,
+        by: { type: 'customer' },
+      });
+    } finally {
+      await content.updateReason(
+        'ops_cancel',
+        'outside_zone',
+        {
+          label: 'العنوان خارج المنطقة',
+          customerText: 'العنوان خارج منطقة التوصيل',
+          note: 'none',
+          active: true,
+        },
+        edit,
+      );
+      await content.updateReason(
+        'customer_cancel',
+        'changed_mind',
+        { label: 'غيّرت رأيي', ...noText, active: true },
+        edit,
+      );
+    }
+  });
+
+  it("shows the timer's cancellation by the system, without a label or a note (AP §8.3)", async () => {
+    const order = await placedOrder();
+    const placedAt = ((await row(order.id)).placed_at as Date).toISOString();
+    expect(
+      await app
+        .get(OrderTimers)
+        .merchantAutoCancel({ orderId: order.id, placedAt, version: 1 }, new Date()),
+    ).toBe(true);
+    const { cancellation } = await (await admin(['SUP'])).detail(order.id);
+    expect(cancellation).toMatchObject({
+      reason: 'merchant_auto_cancel',
+      label: null,
+      note: null,
+      by: { type: 'system', id: null },
+      responsible: null,
+    });
+  });
+
+  it('previews the late-cancellation strike (docs/domain/08, 09)', async () => {
+    const accepted = await acceptedOrder();
+    const placed = await placedOrder();
+    const ops = await admin(['OPS']);
+    const byCustomer = { ...plain, responsible: 'customer', reason: undefined };
+    expect((await ops.preview(accepted.id, byCustomer)).json().strike).toBe(true);
+    expect(
+      (await ops.preview(accepted.id, { ...byCustomer, responsible: 'platform' })).json().strike,
+    ).toBe(false);
+    expect((await ops.preview(placed.id, byCustomer)).json().strike).toBe(false);
   });
 });
 

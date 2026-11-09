@@ -18,6 +18,7 @@ part 'admin_cancel_preview_answer_dto_output.g.dart';
 /// * [cashAsked] - The captain reached the restaurant: ask the cash question.
 /// * [compensationAllowed] - «تعويض الكابتن» may be chosen.
 /// * [cashLines] - While asked: what the captain paid (the last pickup request's lines, or the items value).
+/// * [strike] - The customer gets a late-cancellation strike (docs/domain/08): from accepted or ready with the customer responsible.
 @BuiltValue()
 abstract class AdminCancelPreviewAnswerDtoOutput
     implements
@@ -40,6 +41,10 @@ abstract class AdminCancelPreviewAnswerDtoOutput
   /// While asked: what the captain paid (the last pickup request's lines, or the items value).
   @BuiltValueField(wireName: r'cashLines')
   BuiltList<CaptainWentOfflineDtoOutputHandIn?>? get cashLines;
+
+  /// The customer gets a late-cancellation strike (docs/domain/08): from accepted or ready with the customer responsible.
+  @BuiltValueField(wireName: r'strike')
+  bool get strike;
 
   AdminCancelPreviewAnswerDtoOutput._();
 
@@ -97,6 +102,11 @@ class _$AdminCancelPreviewAnswerDtoOutputSerializer
               FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
             ]),
           );
+    yield r'strike';
+    yield serializers.serialize(
+      object.strike,
+      specifiedType: const FullType(bool),
+    );
   }
 
   @override
@@ -164,6 +174,15 @@ class _$AdminCancelPreviewAnswerDtoOutputSerializer
                   as BuiltList<CaptainWentOfflineDtoOutputHandIn?>?;
           if (valueDes == null) continue;
           result.cashLines.replace(valueDes);
+          break;
+        case r'strike':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.strike = valueDes;
           break;
         default:
           unhandled.add(key);

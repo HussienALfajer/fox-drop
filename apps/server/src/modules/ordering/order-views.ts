@@ -107,6 +107,11 @@ export interface OrderView {
     label: string | null;
     byOperations: boolean;
     cash: 'returned' | 'not_returned' | 'not_paid' | null;
+    // docs/domain/09 (slice 2.8c, the panel's detail): the responsible party,
+    // «تم تحضير الطعام؟» and the restaurant's food credit.
+    responsible: 'restaurant' | 'captain' | 'customer' | 'platform' | null;
+    foodPrepared: boolean;
+    merchantCredit: bigint | null;
     captainCompensation: bigint | null;
     acknowledgedAt: Date | null;
     captainSeenAt: Date | null;
@@ -193,6 +198,9 @@ export async function readOrders(
       cancelCustomerText: orders.cancelCustomerText,
       cancelReasonLabel: orders.cancelReasonLabel,
       cancelCash: orders.cancelCash,
+      cancelResponsible: orders.cancelResponsible,
+      foodPrepared: orders.foodPrepared,
+      cancelMerchantCredit: orders.cancelMerchantCredit,
       cancelCaptainCompensation: orders.cancelCaptainCompensation,
       cancelAcknowledgedAt: orders.cancelAcknowledgedAt,
       cancelCaptainSeenAt: orders.cancelCaptainSeenAt,
@@ -387,6 +395,9 @@ export async function readOrders(
               byOperations:
                 cancellations.find((event) => event.orderId === row.id)?.actorType === 'admin',
               cash: row.cancelCash,
+              responsible: row.cancelResponsible,
+              foodPrepared: row.foodPrepared ?? false,
+              merchantCredit: row.cancelMerchantCredit,
               captainCompensation: row.cancelCaptainCompensation,
               acknowledgedAt: row.cancelAcknowledgedAt,
               captainSeenAt: row.cancelCaptainSeenAt,

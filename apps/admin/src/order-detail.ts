@@ -42,6 +42,7 @@ export const eventKeys = {
   'order.pickup_disputed': 'order.event.pickupDisputed',
   'order.arrived_at_customer': 'order.event.arrivedAtCustomer',
   'order.delivered': 'order.event.delivered',
+  'order.cancellation_acknowledged': 'order.event.cancellationAcknowledged',
 } as const;
 
 export function eventKey(type: string | null): (typeof eventKeys)[keyof typeof eventKeys] | null {
@@ -107,6 +108,23 @@ export function eventReason(event: {
 }
 
 export const cancelReasonKeys: Record<string, ReasonKey> = reasonKeysByType['order.cancelled'];
+
+type Cancellation = NonNullable<OrderDetail['cancellation']>;
+
+// AP Appendix C: the responsible parties.
+export const responsibleKeys = {
+  restaurant: 'order.responsible.restaurant',
+  captain: 'order.responsible.captain',
+  customer: 'order.responsible.customer',
+  platform: 'order.responsible.platform',
+} as const satisfies Record<NonNullable<Cancellation['responsible']>, string>;
+
+// docs/domain/01: the answers to «هل أعاد المطعم المبلغ للكابتن؟».
+export const cashKeys = {
+  returned: 'order.cash.returned',
+  not_returned: 'order.cash.not_returned',
+  not_paid: 'order.cash.not_paid',
+} as const satisfies Record<NonNullable<Cancellation['cash']>, string>;
 
 export const outcomeKeys = {
   normal: 'order.outcome.normal',
