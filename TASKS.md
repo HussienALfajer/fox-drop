@@ -4,14 +4,16 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.8, cancellation (`docs/roadmap.md`, Phase 2): the customer's own while `placed` and its race with acceptance, operations' with a reason, a responsible party and the prepared-food credit, voiding an open pickup request and the cash question, withdrawing an offer, the ring until acknowledged. The owner cancels after the captain reached the restaurant and is asked about the cash.
+Slice 2.8a, the customer's own cancellation (`docs/roadmap.md`, Phase 2, the first of 2.8's three pull requests, split approved by the owner 2026-11-09).
 
-- **Specs:** AP §8.1 (the transitions and the pickup request voided on cancel), §8.3 (the timers), §8.8 (the late-cancellation strike), §9.3.2 (the row «إلغاء الطلب» with its reason, responsible party and «تم تحضير الطعام؟»), AP Appendix B (the cancellation reasons), RA §8.10 («هل أعاد المطعم المبلغ للكابتن؟»), RA §8.14 (the cancelled order's ring until acknowledged), CU §11.4 (cancelling while placed, the race «قبل المطعم طلبك قبل لحظات…»), CU §11.9 («أُلغي طلبك» with the reason and the compensation code), CA §9.10 (the captain's order cancelled), and each one's definition of done. Read `apps/server/src/modules/ordering/CLAUDE.md` «Not yet» first: it lists what cancellation must clear.
-- **Branch:** per pull request, as the split decides (`feat/order-cancel…`).
-- **Ask the owner first:** the split into pull requests (root `CLAUDE.md`; 2.6 and 2.7 were each server then panel and apps), and the open items the specs leave (the prepared-food credit's amount and its ledger entries; who pays when no party is responsible). The design stop holds: screens stay unstyled.
+- **Specs:** CU §11.4 (cancelling while `placed`, the race, after acceptance), CU §11.5 («مساعدة» with «إلغاء الطلب» or the explanation), CU §11.9 («ألغيت طلبك»), AP §8.1 and docs/domain/01 (the customer cancels only while `placed`), docs/domain/03 (self-cancel fixed to `placed`), AP Appendix B (the self-cancel list, Content's `customer_cancel`), RA §8.3 (the prompt closes with a chime and «ألغى الزبون الطلب #{رقم}», not unanswered), and CU §19 item 18.
+- **Branch:** `feat/order-cancel-customer`.
+- **Owner decisions 2026-11-09 for the rest of 2.8:** the prepared-food credit is always booked to `platform.operating_cost` (docs/domain/09); 2.8b records the late-cancellation strike and applies its block «موقوف حتى مراجعة الدعم» (lifting it from the panel comes with 2.25); the compensation code of the cancel dialog and of «أُلغي طلبك» comes with 2.22. 2.8b then 2.8c follow, each its own pull request and session.
 - **Plan:**
-  - [ ] Split 2.8 into pull requests with the `slice-plan` skill, and get the owner's approval.
-  - [ ] Write each pull request's steps here as a checklist, then build them in order.
+  - [ ] Server: `POST /v1/customer/orders/{orderId}/cancel` (`reason` from Content's active `customer_cancel` list, `note` for «سبب آخر», `Idempotency-Key`): a `placed` order of the signed-in customer becomes `cancelled` (actor `customer`, `food_prepared` false, no strike, not unanswered); an accepted order answers `409 order_state_changed` with the order, so the app shows «قبل المطعم طلبك قبل لحظات. لإلغائه تواصل مع الدعم.»; the auto-cancel job left without effect; the customer's order read gives the cancellation as the customer's own. Failing tests first; regenerate the API.
+  - [ ] Restaurant app: the prompt and board close on the customer's cancellation with a chime and «ألغى الزبون الطلب #{رقم}» (the event's reason tells it apart).
+  - [ ] Customer app: «مساعدة» on the active order with «اتصال بالدعم» and «واتساب الدعم» from Content, «إلغاء الطلب» while `placed` (the reason sheet with optional text for «سبب آخر», «نعم، ألغِ الطلب»), after acceptance «لإلغاء الطلب تواصل مع الدعم» with the warning «الإلغاء بعد قبول المطعم يُحتسب عليك، وتكراره قد يوقف حسابك مؤقتاً.», the race's message, and «ألغيت طلبك» on the cancelled order.
+  - [ ] Review, hand over to 2.8b, pull request.
 
 ### Left from 2.7b (`feat/order-reject-panel-customer`)
 

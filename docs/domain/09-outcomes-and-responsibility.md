@@ -36,7 +36,7 @@ Every order that ends after pickup gets an outcome. Every outcome except `normal
 **Cancellation before pickup** (status `accepted` or `ready`). Normally the captain has not paid the restaurant yet (pickup is atomic, §8.1). If the captain had already reached the restaurant, the cash question in §8.1 is answered first. Then:
 
 - OPS records whether food was prepared, and who is responsible.
-- If food was prepared and the restaurant is not responsible, the platform credits the restaurant with the merchant net (`merchant.credit`), which is what it would have kept from a normal order.
+- If food was prepared and the restaurant is not responsible, the platform credits the restaurant with the merchant net (`merchant.credit`), which is what it would have kept from a normal order. The platform bears this credit as `platform.operating_cost`, whoever is responsible; a responsible customer or captain is not charged for it (owner decision 2026-11-09).
 - If the customer is responsible, the late-cancel strike applies.
 - If no food was prepared, there is no money effect on the restaurant.
 - **Captain:** if a captain was assigned and had already arrived at the restaurant, OPS MAY tick «تعويض الكابتن» (compensate the captain). This posts `earn.order_pay` equal to the order's base pay, booked to `platform.operating_cost`. There is no automatic pay otherwise.
