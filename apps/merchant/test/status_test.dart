@@ -132,7 +132,7 @@ void main() {
     });
   });
 
-  group('the notices (RA §16 #3, #24, #25)', () {
+  group('the notices (RA §16 #3, #23, #24, #25)', () {
     Map<String, Object?> event(String kind, Map<String, Object?> values) => {
       'type': 'restaurant.state_changed',
       'kind': kind,
@@ -151,6 +151,21 @@ void main() {
       expect(
         statusNotice(event('busy_reminder', {'extraMin': 20})),
         isA<BusyReminder>().having((n) => n.minutes, 'minutes', 20),
+      );
+    });
+
+    test('reads what operations did (RA §16 #23)', () {
+      expect(
+        statusNotice(event('paused_by_operations', {'reason': 'عطل'})),
+        isA<PausedByOperations>().having((n) => n.reason, 'reason', 'عطل'),
+      );
+      expect(
+        statusNotice(event('resumed_by_operations', {'endedAuto': true})),
+        isA<ResumedByOperations>(),
+      );
+      expect(
+        statusNotice(event('busy_ended_by_operations', {})),
+        isA<BusyEndedByOperations>(),
       );
     });
 
