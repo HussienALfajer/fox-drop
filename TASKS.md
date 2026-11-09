@@ -12,7 +12,7 @@ Slice 2.8a, the customer's own cancellation (`docs/roadmap.md`, Phase 2, the fir
 - **Plan:**
   - [x] Server: `POST /v1/customer/orders/{orderId}/cancel` (`reason` from Content's active `customer_cancel` list, `note` for «سبب آخر», `Idempotency-Key`): a `placed` order of the signed-in customer becomes `cancelled` (actor `customer`, `food_prepared` false, no strike, not unanswered); an accepted order answers `409 order_state_changed` with the order, so the app shows «قبل المطعم طلبك قبل لحظات. لإلغائه تواصل مع الدعم.»; the auto-cancel job left without effect; the customer's order read gives the cancellation as the customer's own. Failing tests first; regenerate the API.
   - [x] Restaurant app: the prompt and board close on the customer's cancellation with a chime and «ألغى الزبون الطلب #{رقم}» (the event's reason tells it apart).
-  - [ ] Customer app: «مساعدة» on the active order with «اتصال بالدعم» and «واتساب الدعم» from Content, «إلغاء الطلب» while `placed` (the reason sheet with optional text for «سبب آخر», «نعم، ألغِ الطلب»), after acceptance «لإلغاء الطلب تواصل مع الدعم» with the warning «الإلغاء بعد قبول المطعم يُحتسب عليك، وتكراره قد يوقف حسابك مؤقتاً.», the race's message, and «ألغيت طلبك» on the cancelled order.
+  - [x] Customer app: «مساعدة» on the active order with «اتصال بالدعم» and «واتساب الدعم» from Content, «إلغاء الطلب» while `placed` (the reason sheet with optional text for «سبب آخر», «نعم، ألغِ الطلب»), after acceptance «لإلغاء الطلب تواصل مع الدعم» with the warning «الإلغاء بعد قبول المطعم يُحتسب عليك، وتكراره قد يوقف حسابك مؤقتاً.», the race's message, and «ألغيت طلبك» on the cancelled order.
   - [ ] Review, hand over to 2.8b, pull request.
 
 ### Left from 2.7b (`feat/order-reject-panel-customer`)

@@ -111,6 +111,11 @@ class Cancelled extends OrderTitle {
   final String? text;
 }
 
+/// CU §11.9: «ألغيت طلبك», the customer's own while placed (§11.4).
+class CancelledByYou extends OrderTitle {
+  const CancelledByYou();
+}
+
 /// CU §11.9: «تعذّر التسليم».
 class Failed extends OrderTitle {
   const Failed();
@@ -132,7 +137,9 @@ OrderTitle titleOf(CustomerOrder order) {
     'rejected' => Rejected(order.rejection?.text),
     'failed' => const Failed(),
     _ =>
-      order.cancellation?.reason == 'merchant_auto_cancel'
+      order.cancellation?.byCustomer ?? false
+          ? const CancelledByYou()
+          : order.cancellation?.reason == 'merchant_auto_cancel'
           ? const NoRestaurantResponse()
           : Cancelled(order.cancellation?.text),
   };

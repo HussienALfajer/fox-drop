@@ -87,6 +87,9 @@ class TestApp {
 
   /// The image URLs the screens asked for (CU §4.5), answered from memory.
   final mediaUrls = <String>[];
+
+  /// The `tel:` and WhatsApp links the app opened.
+  final launched = <Uri>[];
   final List<Override> overrides;
   final transport = FakeTransport();
   late final ProviderContainer container;
@@ -171,6 +174,10 @@ class TestApp {
         mediaLoaderProvider.overrideWithValue((url) {
           mediaUrls.add(url);
           return MemoryImage(transparentPng);
+        }),
+        customerAuth.launch.overrideWithValue((uri) async {
+          launched.add(uri);
+          return true;
         }),
         ...overrides,
       ],
