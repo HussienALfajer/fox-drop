@@ -73,8 +73,15 @@ class AutoCancelled extends BoardNotice {
   final String number;
 }
 
+/// «ألغى الزبون الطلب #{رقم}»: the customer cancelled while placed (RA §8.3,
+/// §16 #4).
+class CustomerCancelled extends BoardNotice {
+  const CustomerCancelled(this.number);
+  final String number;
+}
+
 /// «أُلغي الطلب #{رقم}»: another cancellation, whose prompts come with their
-/// slices (RA §8.3, §8.14).
+/// slices (RA §8.14).
 class Cancelled extends BoardNotice {
   const Cancelled(this.number);
   final String number;
@@ -187,6 +194,8 @@ AlertStep alertStep(
         notices.add(
           event['reason'] == 'merchant_auto_cancel'
               ? AutoCancelled(number)
+              : event['byCustomer'] == true
+              ? CustomerCancelled(number)
               : Cancelled(number),
         );
       // RA §8.15: operations decided for the restaurant; the restaurant's own

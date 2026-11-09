@@ -232,6 +232,27 @@ void main() {
       );
     });
 
+    test("the customer's cancellation chimes with its message (RA §8.3)", () {
+      final result = step(
+        AlertMemory(),
+        [],
+        events: [
+          {
+            'type': 'order.cancelled',
+            'number': '10001',
+            'reason': 'changed_mind',
+            'byOperations': false,
+            'byCustomer': true,
+          },
+        ],
+      );
+      expect(result.chime, isTrue);
+      expect(
+        result.notices.single,
+        isA<CustomerCancelled>().having((n) => n.number, 'number', '10001'),
+      );
+    });
+
     test('a late prep chimes at its time, then every 5 minutes', () {
       final memory = AlertMemory();
       final order = orderJson(status: 'accepted', acceptedAfter: Duration.zero);

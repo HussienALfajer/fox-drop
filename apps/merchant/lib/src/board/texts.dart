@@ -80,6 +80,7 @@ String noticeText(
       rejectReasonText(l10n, reason, rejectionLabels),
     ),
   AutoCancelled(:final number) => l10n.merchantAutoCancelled(number),
+  CustomerCancelled(:final number) => l10n.merchantCustomerCancelled(number),
   Cancelled(:final number) => l10n.merchantCancelled(number),
   PrepLate(:final number) => l10n.merchantPrepLateChime(number),
   CaptainArrived(:final name, :final number) => l10n.merchantCaptainArrived(

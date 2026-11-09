@@ -1540,7 +1540,13 @@ abstract class AppLocalizations {
   /// **'أُلغي الطلب #{number} لعدم الرد'**
   String merchantAutoCancelled(String number);
 
-  /// Another cancellation until its prompt (RA §8.3, §8.14); the spec gives no wording.
+  /// The customer cancelled while placed (RA §8.3, §16 #4).
+  ///
+  /// In ar, this message translates to:
+  /// **'ألغى الزبون الطلب #{number}'**
+  String merchantCustomerCancelled(String number);
+
+  /// Another cancellation until its prompt (RA §8.14); the spec gives no wording.
   ///
   /// In ar, this message translates to:
   /// **'أُلغي الطلب #{number}'**
@@ -1803,6 +1809,84 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'لم نضف: {items} لأنها غير متوفرة'**
   String customerNotAdded(String items);
+
+  /// The customer cancelled their own order while placed (CU §11.9).
+  ///
+  /// In ar, this message translates to:
+  /// **'ألغيت طلبك'**
+  String get customerCancelledByYou;
+
+  /// Opens the help sheet of an active order (CU §11.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'مساعدة'**
+  String get customerHelp;
+
+  /// Calls the support phone number (CU §11.5, AP §9.13 contact info).
+  ///
+  /// In ar, this message translates to:
+  /// **'اتصال بالدعم'**
+  String get customerCallSupport;
+
+  /// Opens WhatsApp with the support number (CU §11.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'واتساب الدعم'**
+  String get customerWhatsappSupport;
+
+  /// The WhatsApp message prefilled from an order's help sheet (CU §11.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'بخصوص الطلب #{number}'**
+  String customerWhatsappOrderMessage(String number);
+
+  /// Cancels the order while placed (CU §11.4); also the reason sheet's title.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء الطلب'**
+  String get customerCancelOrder;
+
+  /// Sends the cancellation with the chosen reason (CU §11.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'نعم، ألغِ الطلب'**
+  String get customerCancelConfirm;
+
+  /// The text of «سبب آخر» (CU §11.4); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب السبب'**
+  String get customerCancelReasonNote;
+
+  /// In the help sheet after acceptance (CU §11.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'لإلغاء الطلب تواصل مع الدعم'**
+  String get customerCancelViaSupport;
+
+  /// The help sheet's warning after acceptance (CU §11.4, AP §8.8).
+  ///
+  /// In ar, this message translates to:
+  /// **'الإلغاء بعد قبول المطعم يُحتسب عليك، وتكراره قد يوقف حسابك مؤقتاً.'**
+  String get customerLateCancelWarning;
+
+  /// The race with acceptance (CU §11.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'قبل المطعم طلبك قبل لحظات. لإلغائه تواصل مع الدعم.'**
+  String get customerCancelTooLate;
+
+  /// The panel changed the self-cancel reasons meanwhile; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيّرت قائمة الأسباب، اختر السبب مرة أخرى'**
+  String get customerCancelReasonsChanged;
+
+  /// The cancellation got no answer; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الإلغاء، حاول مرة أخرى'**
+  String get customerCancelFailed;
 
   /// Cancelled by operations (CU §11.9); the customer-facing reason (CU Appendix C) shows under it.
   ///

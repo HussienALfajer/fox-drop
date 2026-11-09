@@ -886,6 +886,11 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String merchantCustomerCancelled(String number) {
+    return 'ألغى الزبون الطلب #$number';
+  }
+
+  @override
   String merchantCancelled(String number) {
     return 'أُلغي الطلب #$number';
   }
@@ -1058,6 +1063,50 @@ class AppLocalizationsAr extends AppLocalizations {
   String customerNotAdded(String items) {
     return 'لم نضف: $items لأنها غير متوفرة';
   }
+
+  @override
+  String get customerCancelledByYou => 'ألغيت طلبك';
+
+  @override
+  String get customerHelp => 'مساعدة';
+
+  @override
+  String get customerCallSupport => 'اتصال بالدعم';
+
+  @override
+  String get customerWhatsappSupport => 'واتساب الدعم';
+
+  @override
+  String customerWhatsappOrderMessage(String number) {
+    return 'بخصوص الطلب #$number';
+  }
+
+  @override
+  String get customerCancelOrder => 'إلغاء الطلب';
+
+  @override
+  String get customerCancelConfirm => 'نعم، ألغِ الطلب';
+
+  @override
+  String get customerCancelReasonNote => 'اكتب السبب';
+
+  @override
+  String get customerCancelViaSupport => 'لإلغاء الطلب تواصل مع الدعم';
+
+  @override
+  String get customerLateCancelWarning =>
+      'الإلغاء بعد قبول المطعم يُحتسب عليك، وتكراره قد يوقف حسابك مؤقتاً.';
+
+  @override
+  String get customerCancelTooLate =>
+      'قبل المطعم طلبك قبل لحظات. لإلغائه تواصل مع الدعم.';
+
+  @override
+  String get customerCancelReasonsChanged =>
+      'تغيّرت قائمة الأسباب، اختر السبب مرة أخرى';
+
+  @override
+  String get customerCancelFailed => 'تعذّر الإلغاء، حاول مرة أخرى';
 
   @override
   String get customerCancelled => 'أُلغي طلبك';
