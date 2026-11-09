@@ -492,6 +492,32 @@ void main() {
       },
     );
 
+    testWidgets(
+      '«إلغاء الطلب» is on the screen while placed, and a failed read of the reasons offers a retry',
+      (tester) async {
+        final app = await open(
+          tester,
+          [
+            FakeAnswer(200, {'order': _order()}),
+          ],
+          before: (app) => app.server.on('/v1/customer/content', [
+            const FakeAnswer(500, {'statusCode': 500}),
+          ]),
+        );
+        await tester.tap(find.byKey(const Key('order-cancel')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('cancel-reasons-retry')), findsOneWidget);
+        reasons(app);
+        await tester.tap(find.byKey(const Key('cancel-reasons-retry')));
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const Key('cancel-reason-changed_mind')),
+          findsOneWidget,
+        );
+        await app.done(tester);
+      },
+    );
+
     testWidgets('the race with acceptance shows its message', (tester) async {
       final accepted = _order(status: 'accepted', version: 2);
       final app = await open(
@@ -530,6 +556,7 @@ void main() {
         final app = await open(tester, [
           FakeAnswer(200, {'order': _order(status: 'accepted', version: 2)}),
         ], before: reasons);
+        expect(find.byKey(const Key('order-cancel')), findsNothing);
         await tester.tap(find.byKey(const Key('order-help')));
         await tester.pumpAndSettle();
         expect(find.byKey(const Key('help-cancel')), findsNothing);

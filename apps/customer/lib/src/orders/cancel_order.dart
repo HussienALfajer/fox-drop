@@ -47,6 +47,17 @@ class CancelOrder {
       _key = uuidV4();
       _keyFor = fingerprint;
     }
+    // The sheet may be dismissed while the command runs: the command lives
+    // until its answer, so its key and the order's refresh are not lost.
+    final alive = _ref.keepAlive();
+    try {
+      return await _send(reason, note);
+    } finally {
+      alive.close();
+    }
+  }
+
+  Future<CancelOutcome> _send(String reason, String? note) async {
     final api = _ref.read(coreApiProvider).getCustomerApi();
     try {
       await api.customerOrdersCancel(

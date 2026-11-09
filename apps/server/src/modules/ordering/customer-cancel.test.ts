@@ -386,6 +386,31 @@ describe('POST /v1/customer/orders/{orderId}/cancel (CU §11.4)', () => {
     expect(reused.json().error).toBe('idempotency_key_reused');
   });
 
+  it('never counts as unanswered, so it never auto-pauses the restaurant (RA §8.3)', async () => {
+    const menu = await menuOf('مطعم العدّاد');
+    await app
+      .get(SettingsService)
+      .update('merchant.auto_pause_unanswered_count', { cityId: azaz }, 1, bySystem);
+    try {
+      const order = await placedAt(menu.id, [menu.items[0]!]);
+      const placedEvent = (
+        await sql.query(
+          `SELECT payload FROM ordering.outbox WHERE order_id = $1 AND order_version = 1`,
+          [order.id],
+        )
+      ).rows[0];
+      expect(placedEvent.payload.byCustomer).toBe(false);
+      const answer = await cancel(order.id, order.customer, { reason: 'changed_mind', note: null });
+      expect(answer.statusCode).toBe(200);
+      const { state } = await app.get(MerchantsService).storefrontState(menu.id);
+      expect(state.state).toBe('open');
+    } finally {
+      await app
+        .get(SettingsService)
+        .update('merchant.auto_pause_unanswered_count', { cityId: azaz }, 3, bySystem);
+    }
+  });
+
   it('needs the Idempotency-Key', async () => {
     const menu = await menuOf('مطعم المفتاح');
     const order = await placedAt(menu.id, [menu.items[0]!]);

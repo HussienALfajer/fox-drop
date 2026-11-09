@@ -49,6 +49,16 @@ class OrderScreen extends ConsumerWidget {
       for (final e in order.equivalents) l10n.formatMoney(e.amount, e.currency),
     ].join(' / ');
 
+    Future<void> cancel() async {
+      final outcome = await showCancelOrder(context, order.id);
+      // CU §11.4: the restaurant accepted first.
+      if (outcome == CancelOutcome.tooLate && context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.customerCancelTooLate)));
+      }
+    }
+
     Future<void> help() async {
       final choice = await showOrderHelp(context, order);
       if (!context.mounted) return;
@@ -56,13 +66,7 @@ class OrderScreen extends ConsumerWidget {
         case HelpChoice.faq:
           await context.push('/faq');
         case HelpChoice.cancel:
-          final outcome = await showCancelOrder(context, order.id);
-          // CU §11.4: the restaurant accepted first.
-          if (outcome == CancelOutcome.tooLate && context.mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(l10n.customerCancelTooLate)));
-          }
+          await cancel();
         case null:
           break;
       }
@@ -167,6 +171,13 @@ class OrderScreen extends ConsumerWidget {
               subtitle: Text(order.address.landmark),
             ),
             ListTile(title: Text(l10n.customerTotal), trailing: Text(total())),
+            // CU §11.1: «إلغاء الطلب», while placed only (§11.4).
+            if (cancelHelpAt(order.status.name) == CancelHelp.cancel)
+              TextButton(
+                key: const Key('order-cancel'),
+                onPressed: cancel,
+                child: Text(l10n.customerCancelOrder),
+              ),
           ],
         ),
       ),

@@ -72,7 +72,8 @@ class _CancelOrderSheetState extends ConsumerState<CancelOrderSheet> {
     final l10n = AppLocalizations.of(context);
     // Keeps the command, and its key, while the sheet is open.
     ref.watch(cancelOrderProvider(widget.orderId));
-    final reasons = ref.watch(contentProvider).value?.cancelReasons ?? [];
+    final content = ref.watch(contentProvider);
+    final reasons = content.value?.cancelReasons ?? const <ReasonChoice>[];
     return Padding(
       padding: EdgeInsetsDirectional.only(
         start: 16,
@@ -85,6 +86,15 @@ class _CancelOrderSheetState extends ConsumerState<CancelOrderSheet> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(l10n.customerCancelOrder),
+          if (content.isLoading && !content.hasValue)
+            const Center(child: CircularProgressIndicator()),
+          // A failed read of Content is read again (AP §9.13).
+          if (content.hasError && !content.hasValue)
+            TextButton(
+              key: const Key('cancel-reasons-retry'),
+              onPressed: () => ref.invalidate(contentProvider),
+              child: Text(l10n.contentFailed),
+            ),
           RadioGroup<String>(
             groupValue: _chosen?.code,
             onChanged: (code) => setState(
@@ -105,7 +115,8 @@ class _CancelOrderSheetState extends ConsumerState<CancelOrderSheet> {
             TextField(
               key: const Key('cancel-note'),
               controller: _note,
-              maxLength: 200,
+              // The server's limit of a reason's text (Content's NOTE_MAX).
+              maxLength: 300,
               decoration: InputDecoration(
                 labelText: l10n.customerCancelReasonNote,
               ),
