@@ -14,8 +14,8 @@ Slice 2.6a, restaurant status and hours in the server and the restaurant app (`d
   - [x] Server: the owners’ hours, holiday close, default prep time and maximum active orders, and the status and hours reads.
   - [x] Server: the state events (`merchants.state_outbox` relayed to `merchant:{id}` and `ops:city.{id}`), the pause-ended push (#24) and the hourly busy-mode reminder (#25) as timers.
   - [x] Server: the auto-pause at the third unanswered order of the business day, its push (#3) and the alert «مطعم أوقف تلقائياً».
-  - [ ] Restaurant app: the status pill and sheet, the banners (operations or auto pause, the limit, busy mode) and the chimes of the state events.
-  - [ ] Restaurant app: «الحالة والأوقات» (the weekly schedule with several and overnight periods, holiday close, default prep time, maximum active orders, the read-only fields).
+  - [x] Restaurant app: the status pill and sheet, the banners (operations or auto pause, the limit, busy mode) and the chimes of the state events.
+  - [x] Restaurant app: «الحالة والأوقات» (the weekly schedule with several and overnight periods, holiday close, default prep time, maximum active orders, the read-only fields).
   - [ ] Review, then hand over to 2.6b.
 
 ### Left from 2.5 (`feat/object-storage`)

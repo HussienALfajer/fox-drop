@@ -10,6 +10,9 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../api.dart';
 import '../auth.dart';
 import '../platform.dart';
+import '../status/status.dart';
+import '../status/status_sheet.dart';
+import '../status/texts.dart' show statusNoticeText;
 import '../terms.dart';
 import 'alerts.dart';
 import 'board.dart';
@@ -81,6 +84,13 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
           SnackBar(content: Text(noticeText(l10n, notice))),
         );
       }
+    });
+    // RA §16 #3, #24, #25: the status chimes' notices.
+    ref.listen(statusNoticesProvider, (previous, notice) {
+      if (notice == null) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(statusNoticeText(l10n, notice))));
     });
     final state = ref.watch(boardProvider).value;
     final board = state?.value;
@@ -158,10 +168,20 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
           appBar: AppBar(
             title: Text(l10n.merchantAppName),
             actions: [
-              TextButton(
+              // RA §6.2: the status pill opens the status sheet.
+              const StatusPillButton(),
+              // RA §6.1 #4, until the navigation of RA §6.2 (the design).
+              IconButton(
+                key: const Key('open-status-and-hours'),
+                tooltip: l10n.merchantStatusAndHours,
+                onPressed: () => context.push('/status-and-hours'),
+                icon: const Icon(Icons.schedule),
+              ),
+              IconButton(
+                tooltip: l10n.signOut,
                 onPressed: () =>
                     ref.read(merchantAuth.session.notifier).signOut(),
-                child: Text(l10n.signOut),
+                icon: const Icon(Icons.logout),
               ),
             ],
             bottom: wide
@@ -229,6 +249,8 @@ class BoardAlertsLayer extends ConsumerWidget {
           // RA §6.3 item 2, after no connection.
           if (ref.watch(emergencyStopProvider) case final stop?)
             EmergencyStopBanner(check: stop),
+          // RA §6.3 items 3 and 6.
+          const StatusBanners(),
           Expanded(
             child: Stack(
               children: [

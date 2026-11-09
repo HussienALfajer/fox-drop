@@ -1532,4 +1532,217 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get customerCannotOrderNow => 'لا يمكن استقبال الطلبات الآن';
+
+  @override
+  String get merchantStatusOpen => 'مفتوح';
+
+  @override
+  String merchantStatusBusyMode(int minutes) {
+    return 'وضع الضغط +$minutes د';
+  }
+
+  @override
+  String merchantStatusBusyExtra(int minutes) {
+    return '+$minutes د';
+  }
+
+  @override
+  String get merchantStatusBusy => 'مشغول';
+
+  @override
+  String get merchantStatusPaused => 'موقوف مؤقتاً';
+
+  @override
+  String get merchantStatusPausedByOperations => 'أوقفته العمليات';
+
+  @override
+  String get merchantStatusAutoPaused => 'أُوقف تلقائياً';
+
+  @override
+  String get merchantStatusClosed => 'مغلق';
+
+  @override
+  String merchantStatusHoliday(String date) {
+    return 'إجازة حتى $date';
+  }
+
+  @override
+  String get merchantStatusSuspended => 'معلّق';
+
+  @override
+  String get merchantStatusInactive => 'غير مفعّل';
+
+  @override
+  String merchantStatusPauseFirst(int minutes) {
+    return 'إيقاف $minutes د';
+  }
+
+  @override
+  String merchantStatusMinutes(int minutes) {
+    return '$minutes د';
+  }
+
+  @override
+  String get merchantStatusPauseUntilReopening => 'حتى أعيد الفتح';
+
+  @override
+  String get merchantStatusBusyModeOff => 'إلغاء وضع الضغط';
+
+  @override
+  String get merchantStatusResume => 'استئناف الاستقبال';
+
+  @override
+  String get merchantStatusLockedByOperations =>
+      'أوقفت العمليات مطعمك — اتصل بهم لإعادة التشغيل';
+
+  @override
+  String get merchantStatusToday => 'اليوم';
+
+  @override
+  String merchantStatusClosesAt(String when) {
+    return 'يغلق $when';
+  }
+
+  @override
+  String merchantStatusOpensAt(String when) {
+    return 'يفتح $when';
+  }
+
+  @override
+  String merchantStatusPauseEnds(String when) {
+    return 'ينتهي الإيقاف $when';
+  }
+
+  @override
+  String merchantStatusLimitBanner(int count) {
+    return 'وصلت إلى الحد الأقصى ($count طلبات جارية). لن تصلك طلبات جديدة حتى يُستلم أحدها.';
+  }
+
+  @override
+  String merchantStatusBusyModeBanner(int minutes) {
+    return 'وضع الضغط مفعّل: +$minutes د على وقت الطلبات الجديدة';
+  }
+
+  @override
+  String get merchantStatusRefusedClosed => 'المطعم ليس مفتوحاً الآن';
+
+  @override
+  String get merchantStatusRefusedOther => 'تعذّر التنفيذ، حاول مرة أخرى';
+
+  @override
+  String merchantNoticeAutoPaused(int count) {
+    return 'أُوقف مطعمك تلقائياً بعد $count طلبات دون رد. تواصل مع العمليات لإعادة التشغيل.';
+  }
+
+  @override
+  String get merchantNoticePauseEnded =>
+      'انتهى الإيقاف المؤقت — مطعمك يستقبل الطلبات';
+
+  @override
+  String merchantNoticeBusyReminder(int minutes) {
+    return 'وضع الضغط ما زال مفعّلاً (+$minutes د)';
+  }
+
+  @override
+  String get merchantStatusAndHours => 'الحالة والأوقات';
+
+  @override
+  String get merchantHoursSchedule => 'جدول الأسبوع';
+
+  @override
+  String get merchantHoursClosedAllDay => 'مغلق طوال اليوم';
+
+  @override
+  String get merchantHoursAddPeriod => 'إضافة فترة';
+
+  @override
+  String get merchantHoursTo => 'إلى';
+
+  @override
+  String get merchantHoursRemovePeriod => 'حذف الفترة';
+
+  @override
+  String get merchantHoursSaved => 'حُفظ التعديل';
+
+  @override
+  String get merchantHoursInvalidSchedule =>
+      'الفترات متداخلة أو أقصر من 30 دقيقة';
+
+  @override
+  String get merchantHoursInvalidHoliday => 'اختر موعد انتهاء بعد موعد البداية';
+
+  @override
+  String get merchantHoursInvalidSettings => 'القيمة خارج الحدود المسموحة';
+
+  @override
+  String get merchantHoursHoliday => 'إغلاق لعدة أيام';
+
+  @override
+  String merchantHoursHolidayFromTo(String from, String to) {
+    return 'مغلق من $from حتى $to';
+  }
+
+  @override
+  String get merchantHoursEndHoliday => 'إنهاء الإغلاق';
+
+  @override
+  String get merchantHoursFromNow => 'من الآن';
+
+  @override
+  String merchantHoursFrom(String when) {
+    return 'من $when';
+  }
+
+  @override
+  String get merchantHoursUntilPick => 'حتى… اختر التاريخ والساعة';
+
+  @override
+  String merchantHoursUntil(String when) {
+    return 'حتى $when';
+  }
+
+  @override
+  String get merchantHoursHolidayMessage => 'رسالة للزبائن (اختياري)';
+
+  @override
+  String get merchantHoursCloseHoliday => 'إغلاق المطعم';
+
+  @override
+  String get merchantHoursDefaultPrep => 'وقت التحضير الافتراضي';
+
+  @override
+  String get merchantHoursMaxActiveOrders => 'الحد الأقصى للطلبات الجارية';
+
+  @override
+  String get merchantHoursNoLimit => 'بلا حد';
+
+  @override
+  String get merchantHoursSetByFoxDrop => 'تحددها FOX DROP';
+
+  @override
+  String get merchantHoursMinimumOrder => 'الحد الأدنى للطلب';
+
+  @override
+  String get merchantHoursCoverage => 'منطقة التوصيل';
+
+  @override
+  String merchantHoursCoverageRadius(String distance) {
+    return 'حتى $distance من المطعم';
+  }
+
+  @override
+  String merchantHoursCoverageZones(int count) {
+    return '$count مناطق';
+  }
+
+  @override
+  String get merchantHoursCommission => 'العمولة';
+
+  @override
+  String merchantHoursPercent(String value) {
+    return '$value%';
+  }
+
+  @override
+  String get merchantHoursSettlementDay => 'يوم التسوية';
 }

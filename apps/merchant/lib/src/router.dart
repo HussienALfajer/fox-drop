@@ -12,6 +12,7 @@ import 'device_name_screen.dart';
 import 'not_found_screen.dart';
 import 'platform.dart';
 import 'starting_screen.dart';
+import 'status/hours_screen.dart';
 import 'terms.dart';
 
 /// Signed out, every route leads to sign-in; signed in on a device without a
@@ -50,6 +51,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/orders/:id',
         builder: (context, state) =>
             OrderScreen(orderId: state.pathParameters['id']!),
+      ),
+      // RA §6.1 #4, §10: the status for everyone, the hours for owners.
+      GoRoute(
+        path: '/status-and-hours',
+        builder: (context, state) => const HoursScreen(),
       ),
       // AP §9.13, RA §4.10: the restaurant terms, which owners accept.
       GoRoute(

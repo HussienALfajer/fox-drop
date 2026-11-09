@@ -2577,6 +2577,354 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'لا يمكن استقبال الطلبات الآن'**
   String get customerCannotOrderNow;
+
+  /// Restaurant state «Open» (RA §7.1, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'مفتوح'**
+  String get merchantStatusOpen;
+
+  /// Busy mode on, the pill and the sheet's first busy-mode button (RA §7.1, §7.2, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'وضع الضغط +{minutes} د'**
+  String merchantStatusBusyMode(int minutes);
+
+  /// The status sheet's other busy-mode buttons, such as «+20 د» (RA §7.2, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'+{minutes} د'**
+  String merchantStatusBusyExtra(int minutes);
+
+  /// Restaurant state at the maximum active orders (RA §7.1, §7.4, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'مشغول'**
+  String get merchantStatusBusy;
+
+  /// Restaurant state paused by the restaurant (RA §7.1, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'موقوف مؤقتاً'**
+  String get merchantStatusPaused;
+
+  /// Restaurant state paused by operations (RA §7.1, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'أوقفته العمليات'**
+  String get merchantStatusPausedByOperations;
+
+  /// Restaurant state auto-paused after unanswered orders (RA §7.1, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'أُوقف تلقائياً'**
+  String get merchantStatusAutoPaused;
+
+  /// Restaurant state closed by the schedule (RA §7.1, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'مغلق'**
+  String get merchantStatusClosed;
+
+  /// Restaurant state on a holiday close (RA §7.1, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'إجازة حتى {date}'**
+  String merchantStatusHoliday(String date);
+
+  /// Restaurant state suspended (RA §7.1, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'معلّق'**
+  String get merchantStatusSuspended;
+
+  /// The pill of a draft or terminated restaurant, which takes no orders (AP §9.6.1). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير مفعّل'**
+  String get merchantStatusInactive;
+
+  /// The status sheet's first pause button, «إيقاف 15 د» (RA §7.2, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'إيقاف {minutes} د'**
+  String merchantStatusPauseFirst(int minutes);
+
+  /// The status sheet's other pause buttons, «30 د» and «60 د» (RA §7.2, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'{minutes} د'**
+  String merchantStatusMinutes(int minutes);
+
+  /// The pause until the end of the opening period (RA §7.2, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'حتى أعيد الفتح'**
+  String get merchantStatusPauseUntilReopening;
+
+  /// Turns busy mode off (RA §7.2, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء وضع الضغط'**
+  String get merchantStatusBusyModeOff;
+
+  /// Ends the restaurant's own pause (RA §7.2, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'استئناف الاستقبال'**
+  String get merchantStatusResume;
+
+  /// Why the status sheet's buttons are off while operations or the auto-pause paused the restaurant, and its red banner (RA §7.2, §6.3 item 3).
+  ///
+  /// In ar, this message translates to:
+  /// **'أوقفت العمليات مطعمك — اتصل بهم لإعادة التشغيل'**
+  String get merchantStatusLockedByOperations;
+
+  /// «يغلق اليوم 11:30 م» (RA §7.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'اليوم'**
+  String get merchantStatusToday;
+
+  /// The next schedule change inside an opening period, «يغلق اليوم 11:30 م» (RA §7.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'يغلق {when}'**
+  String merchantStatusClosesAt(String when);
+
+  /// The next schedule change while closed by the schedule (RA §7.2). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'يفتح {when}'**
+  String merchantStatusOpensAt(String when);
+
+  /// When the pause ends, the status sheet's remaining time (RA §7.2). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'ينتهي الإيقاف {when}'**
+  String merchantStatusPauseEnds(String when);
+
+  /// The amber banner at the maximum active orders (RA §7.4, §6.3 item 6, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'وصلت إلى الحد الأقصى ({count} طلبات جارية). لن تصلك طلبات جديدة حتى يُستلم أحدها.'**
+  String merchantStatusLimitBanner(int count);
+
+  /// The amber banner while busy mode is on (RA §6.3 item 6, §7.3). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'وضع الضغط مفعّل: +{minutes} د على وقت الطلبات الجديدة'**
+  String merchantStatusBusyModeBanner(int minutes);
+
+  /// The server refused a pause or busy mode because the restaurant is not open (RA §18). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'المطعم ليس مفتوحاً الآن'**
+  String get merchantStatusRefusedClosed;
+
+  /// A status command failed for another reason. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر التنفيذ، حاول مرة أخرى'**
+  String get merchantStatusRefusedOther;
+
+  /// The chime's notice of the auto-pause (RA §16 #3).
+  ///
+  /// In ar, this message translates to:
+  /// **'أُوقف مطعمك تلقائياً بعد {count} طلبات دون رد. تواصل مع العمليات لإعادة التشغيل.'**
+  String merchantNoticeAutoPaused(int count);
+
+  /// The chime's notice of a pause that ended on its own (RA §16 #24).
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهى الإيقاف المؤقت — مطعمك يستقبل الطلبات'**
+  String get merchantNoticePauseEnded;
+
+  /// Busy mode's hourly reminder (RA §7.3, §16 #25).
+  ///
+  /// In ar, this message translates to:
+  /// **'وضع الضغط ما زال مفعّلاً (+{minutes} د)'**
+  String merchantNoticeBusyReminder(int minutes);
+
+  /// The status and hours screen (RA §6.1 #4, §10).
+  ///
+  /// In ar, this message translates to:
+  /// **'الحالة والأوقات'**
+  String get merchantStatusAndHours;
+
+  /// The weekly schedule's heading (RA §10). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'جدول الأسبوع'**
+  String get merchantHoursSchedule;
+
+  /// A weekday without an opening period (RA §10).
+  ///
+  /// In ar, this message translates to:
+  /// **'مغلق طوال اليوم'**
+  String get merchantHoursClosedAllDay;
+
+  /// Adds an opening period to a weekday (RA §10). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة فترة'**
+  String get merchantHoursAddPeriod;
+
+  /// Between a period's opening and closing times (RA §10). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلى'**
+  String get merchantHoursTo;
+
+  /// Removes an opening period (RA §10). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف الفترة'**
+  String get merchantHoursRemovePeriod;
+
+  /// A save of the status and hours screen answered; it applies at once (RA §10). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'حُفظ التعديل'**
+  String get merchantHoursSaved;
+
+  /// The server refused the weekly schedule (RA §10: no overlap, 30 minutes or more). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الفترات متداخلة أو أقصر من 30 دقيقة'**
+  String get merchantHoursInvalidSchedule;
+
+  /// The server refused the holiday close's moments (RA §10). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر موعد انتهاء بعد موعد البداية'**
+  String get merchantHoursInvalidHoliday;
+
+  /// The server refused the default prep time or the maximum (RA §10). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'القيمة خارج الحدود المسموحة'**
+  String get merchantHoursInvalidSettings;
+
+  /// The holiday close (RA §10).
+  ///
+  /// In ar, this message translates to:
+  /// **'إغلاق لعدة أيام'**
+  String get merchantHoursHoliday;
+
+  /// The holiday close in force or set (RA §10). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'مغلق من {from} حتى {to}'**
+  String merchantHoursHolidayFromTo(String from, String to);
+
+  /// Ends the holiday close, or cancels the one set (RA §10). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إنهاء الإغلاق'**
+  String get merchantHoursEndHoliday;
+
+  /// The holiday close starts now; tap to choose a moment (RA §10). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'من الآن'**
+  String get merchantHoursFromNow;
+
+  /// The holiday close's chosen start (RA §10). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'من {when}'**
+  String merchantHoursFrom(String when);
+
+  /// The holiday close's end, not chosen yet (RA §10). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'حتى… اختر التاريخ والساعة'**
+  String get merchantHoursUntilPick;
+
+  /// The holiday close's chosen end (RA §10). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'حتى {when}'**
+  String merchantHoursUntil(String when);
+
+  /// The holiday close's optional message, up to 100 characters (RA §10). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'رسالة للزبائن (اختياري)'**
+  String get merchantHoursHolidayMessage;
+
+  /// Sets the holiday close (RA §10). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إغلاق المطعم'**
+  String get merchantHoursCloseHoliday;
+
+  /// The default prep time, preselected on the accept prompt (RA §10, §8.5). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'وقت التحضير الافتراضي'**
+  String get merchantHoursDefaultPrep;
+
+  /// The maximum active orders (RA §7.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'الحد الأقصى للطلبات الجارية'**
+  String get merchantHoursMaxActiveOrders;
+
+  /// The maximum active orders off, the default (RA §7.4). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'بلا حد'**
+  String get merchantHoursNoLimit;
+
+  /// The read-only fields an admin sets (RA §10, R13). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحددها FOX DROP'**
+  String get merchantHoursSetByFoxDrop;
+
+  /// Read-only (RA §10, R13). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحد الأدنى للطلب'**
+  String get merchantHoursMinimumOrder;
+
+  /// Read-only delivery coverage (RA §10, R13). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'منطقة التوصيل'**
+  String get merchantHoursCoverage;
+
+  /// Coverage by a radius (owner decision 2026-11-06). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'حتى {distance} من المطعم'**
+  String merchantHoursCoverageRadius(String distance);
+
+  /// Coverage by the city's zones (owner decision 2026-11-06). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} مناطق'**
+  String merchantHoursCoverageZones(int count);
+
+  /// Read-only commission (RA §10, R13). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'العمولة'**
+  String get merchantHoursCommission;
+
+  /// A percentage, such as the commission «15%».
+  ///
+  /// In ar, this message translates to:
+  /// **'{value}%'**
+  String merchantHoursPercent(String value);
+
+  /// Read-only settlement day (RA §10, R13). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'يوم التسوية'**
+  String get merchantHoursSettlementDay;
 }
 
 class _AppLocalizationsDelegate
