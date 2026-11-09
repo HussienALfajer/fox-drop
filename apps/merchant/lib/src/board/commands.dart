@@ -18,6 +18,7 @@ enum CommandKind {
   confirmPickup,
   disputePickup,
   incomplete,
+  acknowledgeCancellation,
 }
 
 /// The three rejection reasons, the codes of the closed list (RA §8.6, R3).
@@ -270,6 +271,18 @@ class BoardCommands extends Notifier<Set<String>> {
     );
   }
 
+  /// «حسناً» on operations' cancellation after acceptance (RA §8.14, §18):
+  /// every device's board drops the order, so the ring stops on all.
+  Future<CommandNotice?> acknowledgeCancellation(String orderId) => _send(
+    orderId,
+    CommandKind.acknowledgeCancellation,
+    '',
+    (key) => _api.merchantOrdersAcknowledgeCancellation(
+      orderId: orderId,
+      idempotencyKey: key,
+    ),
+  );
+
   // One command at a time per order. Its key belongs to the command's body:
   // a call without an answer (none, a 5xx, a 408 or a 429) is sent again
   // with the same key after a backoff until the server answers (RA §4.7),
@@ -324,7 +337,13 @@ class BoardCommands extends Notifier<Set<String>> {
     }
   }
 
-  CommandNotice _refused(CommandKind kind, Response<Object?> answer) {
+  CommandNotice? _refused(CommandKind kind, Response<Object?> answer) {
+    // The order no longer waits for «حسناً»: the board fetched after the
+    // answer drops it, with nothing to explain.
+    if (kind == CommandKind.acknowledgeCancellation &&
+        answer.statusCode == 409) {
+      return null;
+    }
     final body = answer.data;
     final error = body is Map ? body['error'] : null;
     final order = body is Map ? body['order'] : null;

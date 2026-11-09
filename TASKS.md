@@ -13,7 +13,7 @@ Slice 2.8b, operations' cancellation in the server and the restaurant and captai
 - **Before deploying to staging:** raise `app.customer.min_version` to the 2.8b customer build, since older builds cannot read the quote's new `review_stop` problem; migration 0043 adds a `CHECK` on `ordering.orders` that scans every partition (fine before launch).
 - **Plan:**
   - [x] Server: `POST /v1/admin/orders/{orderId}/cancel` (`operations.manage`, `Idempotency-Key`) with the `ops_cancel` reason, the responsible party, `foodPrepared`, `compensateCaptain`, the cash answer when the captain reached the restaurant, and operations' note; `POST .../cancel-preview` of the entries; in one transaction the order `cancelled`, the open pickup request voided, an open offer withdrawn, the captain freed, the ledger entries, the strike and its block, the audit; the restaurant's «حسناً» (`POST /v1/merchant/orders/{orderId}/acknowledge-cancellation`, RA §18) and the captain's cancellation record in its active read. Failing tests first; regenerate the API.
-  - [ ] Restaurant app: the ring until «حسناً» with «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» on every device (RA §8.14).
+  - [x] Restaurant app: the ring until «حسناً» with «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» on every device (RA §8.14).
   - [ ] Captain app: the cancellation sound and «أُلغيت المهمة: {السبب}», the cash instruction, «تعويض: {المبلغ}», the order leaving the app (CA §9.10, K17).
   - [ ] Customer app: the checkout problem «حسابك موقوف حتى مراجعة فريق الدعم».
   - [ ] Review, hand over to 2.8c, pull request.

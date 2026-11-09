@@ -190,6 +190,18 @@ AlertStep alertStep(
   for (final event in events) {
     final number = '${event['number']}';
     switch (event['type']) {
+      // Operations' cancellation after acceptance rings with its own prompt
+      // (RA §8.14); one of a placed order keeps its chime.
+      case 'order.cancelled'
+          when event['byOperations'] == true &&
+              (board?.orders.any(
+                    (o) =>
+                        o.id == event['orderId'] &&
+                        o.status == OrderStatus.cancelled &&
+                        o.cancellation != null,
+                  ) ??
+                  false):
+        break;
       case 'order.cancelled':
         notices.add(
           event['reason'] == 'merchant_auto_cancel'
@@ -226,8 +238,11 @@ AlertStep alertStep(
   };
   for (final order in board.orders) {
     final previous = before[order.id];
-    // Captain arrived: the arrival appeared since the last board.
-    final arrival = order.captainArrival;
+    // Captain arrived: the arrival appeared since the last board. A
+    // cancelled order has no captain waiting for it (RA §8.9, §8.14).
+    final arrival = order.status == OrderStatus.cancelled
+        ? null
+        : order.captainArrival;
     if (memory.board != null &&
         previous != null &&
         previous.captainArrival == null &&
@@ -258,7 +273,10 @@ AlertStep alertStep(
     // A pickup prompt closed by another device's answer.
     final request = order.pickup.request;
     final was = previous?.pickup.request;
-    if (was != null &&
+    // A request the cancellation voided closes with the cancellation's own
+    // prompt or chime.
+    if (order.status != OrderStatus.cancelled &&
+        was != null &&
         request != null &&
         was.id == request.id &&
         was.status == PickupRequestStatus.open &&
@@ -336,10 +354,13 @@ final boardAlertsProvider = Provider.autoDispose<void>((ref) {
       final deadline = switch (item) {
         NewOrderRinging(:final order) => order.autoCancelAt,
         PickupRinging(:final request) => request.confirmBy,
+        // Only «حسناً» ends it, on this device or another one.
+        CancelledRinging() => null,
       };
       final key = switch (item) {
         NewOrderRinging(:final order) => order.id,
         PickupRinging(:final request) => request.id,
+        CancelledRinging(:final order) => 'cancelled-${order.id}',
       };
       if (deadline != null &&
           now.isAfter(deadline.add(ringDeadlineGrace)) &&

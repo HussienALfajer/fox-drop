@@ -321,6 +321,82 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets("operations' cancellation after acceptance rings until "
+      '«حسناً» (RA §8.14, §18)', (tester) async {
+    final app = _Board();
+    final cancelled = orderJson(
+      status: 'cancelled',
+      version: 3,
+      acceptedAfter: Duration.zero,
+      cancellation: cancellationJson(),
+    );
+    final acknowledged = {...cancelled, 'version': 4, 'cancellation': null};
+    await app.pump(tester, [
+      FakeAnswer(200, boardJson([cancelled])),
+      FakeAnswer(200, boardJson([])),
+    ]);
+    await app.up(tester);
+
+    expect(
+      find.text('أوقف التحضير — أُلغي الطلب #10001: تعذر الوصول إلى الزبون'),
+      findsOneWidget,
+    );
+    expect(app.ringer.ringing, isTrue);
+    app.server.on('/v1/merchant/orders/$_orderId/acknowledge-cancellation', [
+      FakeAnswer(200, {'order': acknowledged}),
+    ]);
+    await tester.tap(find.byKey(const Key('acknowledge-cancellation')));
+    await tester.pumpAndSettle();
+
+    final sent = app.server
+        .to('/v1/merchant/orders/$_orderId/acknowledge-cancellation')
+        .single;
+    expect(sent.headers['Idempotency-Key'], isNotEmpty);
+    expect(find.byKey(const Key('ringing-prompt')), findsNothing);
+    expect(app.ringer.ringing, isFalse);
+    await app.done(tester);
+  });
+
+  testWidgets("«حسناً» on another device stops this one's ring", (
+    tester,
+  ) async {
+    final app = _Board();
+    await app.pump(tester, [
+      FakeAnswer(
+        200,
+        boardJson([
+          orderJson(
+            status: 'cancelled',
+            version: 3,
+            acceptedAfter: Duration.zero,
+            cancellation: cancellationJson(),
+          ),
+        ]),
+      ),
+      FakeAnswer(200, boardJson([])),
+    ]);
+    await app.up(tester);
+    expect(app.ringer.ringing, isTrue);
+    final chimes = app.ringer.chimes;
+    app.transport.send(
+      _channel,
+      const RealtimePublication({
+        'type': 'order.cancellation_acknowledged',
+        'orderId': _orderId,
+        'number': '10001',
+        'version': 4,
+        'reason': null,
+        'byOperations': false,
+        'byCustomer': false,
+      }),
+    );
+    await tester.pumpAndSettle();
+    expect(app.ringer.ringing, isFalse);
+    expect(app.ringer.chimes, chimes);
+    expect(find.byKey(const Key('ringing-prompt')), findsNothing);
+    await app.done(tester);
+  });
+
   testWidgets('a ringing order past its deadline fetches the board again', (
     tester,
   ) async {
