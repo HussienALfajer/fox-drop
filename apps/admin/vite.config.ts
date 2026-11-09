@@ -4,11 +4,15 @@ import { defineConfig } from 'vitest/config';
 // The panel calls the API on its own origin under /v1 (owner decision
 // 2026-11-05): in development Vite forwards /v1 to the local server, so the
 // __Host- session cookie works without CORS, and Centrifugo's WebSocket to the
-// local Centrifugo (compose.yaml allows these origins). In production the
-// edge does both.
+// local Centrifugo (compose.yaml allows these origins). The images come from
+// imgproxy under /media, and uploads go to the storage under /public-media
+// with the Host unchanged, since the server signs them for this origin
+// (ADMIN_PANEL_URL, architecture §5.8). In production the edge does all four.
 const api = {
   '/v1': 'http://localhost:3000',
   '/connection/websocket': { target: 'ws://localhost:8000', ws: true },
+  '/media': 'http://localhost:8088',
+  '/public-media': 'http://localhost:3900',
 };
 
 export default defineConfig({

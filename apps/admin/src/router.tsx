@@ -25,6 +25,8 @@ import { OPERATIONS_READ } from './orders-board.js';
 import { OrdersBoardPage } from './orders-board-page.js';
 import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { ContentPage } from './content-page.js';
+import { canSeeImages } from './restaurant-images.js';
+import { RestaurantImagesPage } from './restaurant-images-page.js';
 import { can, sessionQuery } from './session.js';
 import { SetupPage } from './setup-page.js';
 import { SignInPage } from './sign-in-page.js';
@@ -175,6 +177,21 @@ const appSettingsRoute = createRoute({
   component: AppSettingsPage,
 });
 
+// «الصور» (slice 2.5): logos and covers (restaurants.manage) and item photos
+// (restaurants.menus); the server checks each.
+const imagesRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/images',
+  validateSearch: (search: Record<string, unknown>): { city?: string; restaurant?: string } => ({
+    ...citySearch(search),
+    ...(typeof search.restaurant === 'string' ? { restaurant: search.restaurant } : {}),
+  }),
+  beforeLoad: ({ context }) => {
+    if (!canSeeImages(context.session)) throw redirect({ to: '/' });
+  },
+  component: RestaurantImagesPage,
+});
+
 const routeTree = rootRoute.addChildren([
   setupRoute,
   signInRoute,
@@ -184,6 +201,7 @@ const routeTree = rootRoute.addChildren([
     emergencyStopRoute,
     contentRoute,
     appSettingsRoute,
+    imagesRoute,
     alertsRoute,
     ordersRoute.addChildren([orderRoute.addChildren([assignRoute])]),
   ]),

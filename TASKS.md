@@ -14,7 +14,7 @@ Slice 2.5, object storage and images (`docs/roadmap.md`, Phase 2 foundations): t
   - [x] Garage and imgproxy in `compose.yaml`, the storage setup command (layout, keys, bucket) with its Testcontainers helper, architecture §4.2, §5.8, §17 and T7 updated.
   - [x] The `files` module: `files.uploads`, the signed upload, the check before linking, `POST /v1/admin/uploads`.
   - [x] The panel's routes: the restaurants, their images and items, and setting a logo, a cover or an item photo (audited), with the customer API's keys documented.
-  - [ ] The panel's «الصور» screen.
+  - [x] The panel's «الصور» screen.
   - [ ] The customer app: logos, covers and item photos through imgproxy, sized to the screen and cached (CU §4.5).
   - [ ] Staging: Garage, imgproxy and the setup in `infra/compose.yaml` and the deploy, nginx's `/media/` cache and `/public-media/` upload path, the secrets, the nightly copy of the bucket, the `deploy` skill.
   - [ ] Review, then hand over to slice 2.6.
