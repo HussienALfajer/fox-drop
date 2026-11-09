@@ -1177,7 +1177,8 @@ export class MerchantsService implements OnModuleInit {
 
   // AP §9.6.3: the restaurant's logo or cover from an admin's upload,
   // published at once (an admin's edit needs no review, AP §9.6.7). The files
-  // module checks the stored file before the record points to it. Setting the
+  // module copies and checks the file before the transaction (no storage call
+  // under the restaurant's lock) and marks it linked in it. Setting the
   // same upload again changes nothing; another record's upload is refused.
   async setRestaurantImage(
     restaurantId: string,
@@ -1185,6 +1186,8 @@ export class MerchantsService implements OnModuleInit {
     uploadId: string,
     change: MerchantChange,
   ): Promise<string> {
+    const purpose = image === 'logo' ? 'restaurant_logo' : 'restaurant_cover';
+    await this.files.prepare(uploadId, purpose);
     return this.database.db.transaction(async (tx) => {
       const row = await this.lockRestaurant(tx, restaurantId);
       const column = image === 'logo' ? restaurants.logoKey : restaurants.coverKey;
@@ -1192,8 +1195,7 @@ export class MerchantsService implements OnModuleInit {
         .select({ before: column })
         .from(restaurants)
         .where(eq(restaurants.id, restaurantId))) as [{ before: string | null }];
-      const purpose = image === 'logo' ? 'restaurant_logo' : 'restaurant_cover';
-      const { key, alreadyLinked } = await this.files.claim(tx, uploadId, purpose);
+      const { key, alreadyLinked } = await this.files.link(tx, uploadId);
       if (alreadyLinked) {
         if (before === key) return key;
         throw new MerchantsRefusedError('upload_used', 'the upload is linked elsewhere');
@@ -1228,6 +1230,7 @@ export class MerchantsService implements OnModuleInit {
     uploadId: string,
     change: MerchantChange,
   ): Promise<string> {
+    await this.files.prepare(uploadId, 'item_photo');
     return this.database.db.transaction(async (tx) => {
       const row = await this.lockRestaurant(tx, restaurantId);
       const [item] = await tx
@@ -1237,7 +1240,7 @@ export class MerchantsService implements OnModuleInit {
           and(eq(items.id, itemId), eq(items.restaurantId, restaurantId), isNull(items.deletedAt)),
         );
       if (!item) throw new MerchantsRefusedError('unknown_menu_row', 'no such item here');
-      const { key, alreadyLinked } = await this.files.claim(tx, uploadId, 'item_photo');
+      const { key, alreadyLinked } = await this.files.link(tx, uploadId);
       if (alreadyLinked) {
         if (item.before === key) return key;
         throw new MerchantsRefusedError('upload_used', 'the upload is linked elsewhere');

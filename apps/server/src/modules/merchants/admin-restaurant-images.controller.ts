@@ -16,7 +16,7 @@ import { z } from 'zod';
 import { CurrentAdminSession, RequireAnyPermission, RequirePermission } from '../../http/access.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
-import { FilesRefusedError } from '../files/index.js';
+import { FilesRefusedError, RESTAURANT_PROFILE } from '../files/index.js';
 import type { AdminSession } from '../identity/index.js';
 import {
   type MerchantChange,
@@ -92,7 +92,7 @@ function adminChange(session: AdminSession, request: FastifyRequest): MerchantCh
 }
 
 // The panel's «الصور» (slice 2.5, owner decision 2026-11-09): a restaurant's
-// logo and cover (AP §9.6.3, restaurants.manage) and its items' photos
+// logo and cover (AP §9.6.3 step 1, restaurants.manage or restaurants.create) and its items' photos
 // (AP §9.6.6, restaurants.menus), until the onboarding wizard (2.30) and the
 // menu editor (2.31) take them. Setting an image sets a state to a value, so
 // it takes no Idempotency-Key. The refusals: 404 unknown_restaurant,
@@ -138,7 +138,7 @@ export class AdminRestaurantImagesController {
   }
 
   @Put(':restaurantId/logo')
-  @RequirePermission('restaurants.manage')
+  @RequireAnyPermission(...RESTAURANT_PROFILE)
   @ZodResponse({ status: 200, type: AdminImageSetDto })
   async logo(
     @Param() params: AdminRestaurantParamsDto,
@@ -150,7 +150,7 @@ export class AdminRestaurantImagesController {
   }
 
   @Put(':restaurantId/cover')
-  @RequirePermission('restaurants.manage')
+  @RequireAnyPermission(...RESTAURANT_PROFILE)
   @ZodResponse({ status: 200, type: AdminImageSetDto })
   async cover(
     @Param() params: AdminRestaurantParamsDto,

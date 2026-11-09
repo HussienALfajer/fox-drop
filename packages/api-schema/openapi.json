@@ -7485,10 +7485,6 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
             "description": "Links the file once uploaded (the record’s own route)."
           },
-          "key": {
-            "type": "string",
-            "description": "The object’s key in public-media, as the records keep it."
-          },
           "url": {
             "type": "string",
             "description": "A PUT of the exact bytes, with the same Content-Type, on the panel’s own origin."
@@ -7501,7 +7497,6 @@
         },
         "required": [
           "uploadId",
-          "key",
           "url",
           "expiresAt"
         ],

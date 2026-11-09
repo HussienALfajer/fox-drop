@@ -14,6 +14,7 @@ import { FilesService } from './files.service.js';
 })
 export class FilesModule {}
 
+export { RESTAURANT_PROFILE } from './admin-uploads.controller.js';
 export {
   FilesRefusedError,
   type FilesExecutor,

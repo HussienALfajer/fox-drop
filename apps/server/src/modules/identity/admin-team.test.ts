@@ -322,13 +322,19 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/customer/platform': 'public',
   'GET /v1/merchant/platform': 'public',
   'GET /v1/captain/platform': 'public',
-  'POST /v1/admin/uploads': { anyOf: ['restaurants.manage', 'restaurants.menus'] },
+  'POST /v1/admin/uploads': {
+    anyOf: ['restaurants.manage', 'restaurants.create', 'restaurants.menus'],
+  },
   'GET /v1/admin/restaurants': { anyOf: ['restaurants.read', 'restaurants.menus'] },
   'GET /v1/admin/restaurants/{restaurantId}/images': {
     anyOf: ['restaurants.read', 'restaurants.menus'],
   },
-  'PUT /v1/admin/restaurants/{restaurantId}/logo': 'restaurants.manage',
-  'PUT /v1/admin/restaurants/{restaurantId}/cover': 'restaurants.manage',
+  'PUT /v1/admin/restaurants/{restaurantId}/logo': {
+    anyOf: ['restaurants.manage', 'restaurants.create'],
+  },
+  'PUT /v1/admin/restaurants/{restaurantId}/cover': {
+    anyOf: ['restaurants.manage', 'restaurants.create'],
+  },
   'PUT /v1/admin/restaurants/{restaurantId}/items/{itemId}/photo': 'restaurants.menus',
   'GET /v1/admin/emergency-stop': 'session',
   'POST /v1/admin/emergency-stop': 'emergency_stop.toggle',

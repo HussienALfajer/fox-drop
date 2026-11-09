@@ -12,7 +12,6 @@ part 'admin_upload_dto_output.g.dart';
 ///
 /// Properties:
 /// * [uploadId] - Links the file once uploaded (the record’s own route).
-/// * [key] - The object’s key in public-media, as the records keep it.
 /// * [url] - A PUT of the exact bytes, with the same Content-Type, on the panel’s own origin.
 /// * [expiresAt]
 @BuiltValue()
@@ -21,10 +20,6 @@ abstract class AdminUploadDtoOutput
   /// Links the file once uploaded (the record’s own route).
   @BuiltValueField(wireName: r'uploadId')
   String get uploadId;
-
-  /// The object’s key in public-media, as the records keep it.
-  @BuiltValueField(wireName: r'key')
-  String get key;
 
   /// A PUT of the exact bytes, with the same Content-Type, on the panel’s own origin.
   @BuiltValueField(wireName: r'url')
@@ -65,11 +60,6 @@ class _$AdminUploadDtoOutputSerializer
     yield r'uploadId';
     yield serializers.serialize(
       object.uploadId,
-      specifiedType: const FullType(String),
-    );
-    yield r'key';
-    yield serializers.serialize(
-      object.key,
       specifiedType: const FullType(String),
     );
     yield r'url';
@@ -117,15 +107,6 @@ class _$AdminUploadDtoOutputSerializer
                   )
                   as String;
           result.uploadId = valueDes;
-          break;
-        case r'key':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
-          result.key = valueDes;
           break;
         case r'url':
           final valueDes =

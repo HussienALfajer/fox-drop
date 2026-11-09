@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { randomBytes } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ApiModule } from '../../api.module.js';
 import { createDatabase, type Database } from '../../database/database.js';
@@ -87,8 +88,24 @@ async function ask(roles: string[], payload: object) {
 const put = (url: string, body: Buffer, type = 'image/png') =>
   fetch(url, { method: 'PUT', body, headers: { 'content-type': type } });
 
-const claim = (uploadId: string, purpose = 'item_photo' as const, now?: Date) =>
-  db.db.transaction((tx) => files.claim(tx, uploadId, purpose, now));
+// Both halves of linking, as the merchants module calls them.
+const claim = async (uploadId: string, purpose = 'item_photo' as const, now?: Date) => {
+  await files.prepare(uploadId, purpose, now);
+  return db.db.transaction((tx) => files.link(tx, uploadId, now));
+};
+
+// The stored object, as imgproxy reads it.
+const stored = async (key: string) =>
+  Buffer.from(
+    await new S3Client({
+      endpoint: storage.url,
+      region: 'garage',
+      forcePathStyle: true,
+      credentials: { accessKeyId: storage.reader.id, secretAccessKey: storage.reader.secret },
+    })
+      .send(new GetObjectCommand({ Bucket: 'public-media', Key: key }))
+      .then((object) => object.Body!.transformToByteArray()),
+  );
 
 async function refusal(promise: Promise<unknown>) {
   const error = await promise.catch((caught: unknown) => caught);
@@ -105,26 +122,37 @@ describe('POST /v1/admin/uploads', () => {
     });
     expect(response.statusCode).toBe(201);
     const upload = response.json();
-    expect(upload.key).toMatch(/^menu\/items\/[0-9a-f-]{36}\.png$/);
-    expect(new URL(upload.url).pathname).toBe(`/public-media/${upload.key}`);
+    const name = /^\/public-media\/incoming\/([0-9a-f-]{36}\.png)$/.exec(
+      new URL(upload.url).pathname,
+    )?.[1];
+    expect(name).toBeDefined();
 
     expect((await put(upload.url, Buffer.concat([png, Buffer.from('x')]))).status).toBe(403);
     expect((await put(upload.url, png, 'image/jpeg')).status).toBe(403);
     expect((await put(upload.url, png)).status).toBe(200);
 
-    expect(await claim(upload.uploadId)).toEqual({ key: upload.key, alreadyLinked: false });
+    const key = `menu/items/${name}`;
+    expect(await claim(upload.uploadId)).toEqual({ key, alreadyLinked: false });
     const { rows } = await sql.query('SELECT linked_at FROM files.uploads WHERE id = $1', [
       upload.uploadId,
     ]);
     expect(rows[0].linked_at).not.toBeNull();
-    expect(await claim(upload.uploadId)).toEqual({ key: upload.key, alreadyLinked: true });
+    expect(await claim(upload.uploadId)).toEqual({ key, alreadyLinked: true });
+
+    // The URL still writes for its 10 minutes, but only to incoming/: the
+    // published file, checked once, never changes.
+    const other = Buffer.concat([png.subarray(0, 8), Buffer.alloc(png.length - 8)]);
+    expect((await put(upload.url, other)).status).toBe(200);
+    expect(await stored(key)).toEqual(png);
   });
 
-  it('lets a menu editor upload item photos but not logos (AP §6.2)', async () => {
+  it('lets each role upload what it may set (AP §6.2, §9.6.3 step 1)', async () => {
     const body = { contentType: 'image/png', sizeBytes: 100 };
     expect((await ask(['DATA'], { ...body, purpose: 'item_photo' })).statusCode).toBe(201);
-    expect((await ask(['DATA'], { ...body, purpose: 'restaurant_logo' })).statusCode).toBe(403);
+    expect((await ask(['DATA'], { ...body, purpose: 'restaurant_logo' })).statusCode).toBe(201);
     expect((await ask(['OPS'], { ...body, purpose: 'restaurant_cover' })).statusCode).toBe(201);
+    // FIN reads no restaurant and edits no menu.
+    expect((await ask(['FIN'], { ...body, purpose: 'item_photo' })).statusCode).toBe(403);
   });
 
   it('refuses another type and a file over 8 MB', async () => {
@@ -143,7 +171,7 @@ describe('POST /v1/admin/uploads', () => {
   });
 });
 
-describe('FilesService.claim', () => {
+describe('FilesService.prepare and link', () => {
   async function upload(body: Buffer, purpose: 'item_photo' | 'restaurant_logo' = 'item_photo') {
     const { accountId } = await admin(['OWN']);
     return files.createUpload(

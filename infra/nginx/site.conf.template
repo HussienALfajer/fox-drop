@@ -29,13 +29,17 @@ server {
     # The panel's uploads (architecture §5.8): a PUT signed by the API for
     # this host, passed to the storage with the same Host and path, so the
     # signature holds and the browser needs no CORS. Nothing else reaches the
-    # storage. 8 MB is the server's limit for an image.
-    location /public-media/ {
+    # storage, and only incoming/, the uploads' folder. 8 MB is the server's
+    # limit for an image; nginx buffers the body, so Garage always gets its
+    # signed Content-Length. The session cookie stays here, and the signed
+    # query stays out of the access log.
+    location /public-media/incoming/ {
         limit_except PUT { deny all; }
         client_max_body_size 9m;
-        proxy_request_buffering off;
+        access_log off;
         proxy_pass http://127.0.0.1:${STORAGE_PORT};
         include snippets/foxdrop-proxy.conf;
+        proxy_set_header Cookie "";
     }
 
     location / {

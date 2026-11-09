@@ -8,7 +8,7 @@ import {
   IMAGE_TYPES,
   type ImageRefusal,
   type ImageTarget,
-  RESTAURANTS_MANAGE,
+  canSetProfileImages,
   RESTAURANTS_MENUS,
   restaurantImagesQuery,
   restaurantsQuery,
@@ -95,7 +95,7 @@ function RestaurantImages({
   const images = useQuery(restaurantImagesQuery(restaurantId));
   if (images.isPending) return <p role="status">{t('status.loading')}</p>;
   if (images.isError) return <p role="alert">{t('common.failed')}</p>;
-  const profile = can(session, RESTAURANTS_MANAGE);
+  const profile = canSetProfileImages(session);
   const menu = can(session, RESTAURANTS_MENUS);
   return (
     <>

@@ -104,7 +104,14 @@ async function uploaded(call: Call, purpose: string, body = jpeg) {
     sizeBytes: body.length,
   });
   expect(answer.statusCode).toBe(201);
-  const { uploadId, url, key } = answer.json();
+  const { uploadId, url } = answer.json();
+  // Where the checked file is published (the files module's folders).
+  const folder = {
+    item_photo: 'menu/items',
+    restaurant_logo: 'restaurants/logos',
+    restaurant_cover: 'restaurants/covers',
+  }[purpose];
+  const key = `${folder}/${new URL(url).pathname.split('/').at(-1)}`;
   const put = await fetch(url, {
     method: 'PUT',
     body,
@@ -239,5 +246,8 @@ describe('the panel’s images', () => {
       uploadId: photo.uploadId,
     });
     expect([unknown.statusCode, unknown.json().error]).toEqual([404, 'unknown_menu_row']);
+
+    const nowhere = await own('GET', `/v1/admin/restaurants/${randomUUID()}/images`);
+    expect([nowhere.statusCode, nowhere.json().error]).toEqual([404, 'unknown_restaurant']);
   });
 });

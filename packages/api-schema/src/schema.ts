@@ -2794,8 +2794,6 @@ export interface components {
              * @description Links the file once uploaded (the record’s own route).
              */
             uploadId: string;
-            /** @description The object’s key in public-media, as the records keep it. */
-            key: string;
             /** @description A PUT of the exact bytes, with the same Content-Type, on the panel’s own origin. */
             url: string;
             /** Format: date-time */

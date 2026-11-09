@@ -163,7 +163,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 6
-    mem_limit: 512m
+    # Two workers (imgproxy.env), each decoding at most a 50-megapixel source.
+    mem_limit: 768m
 
   api:
     <<: *server

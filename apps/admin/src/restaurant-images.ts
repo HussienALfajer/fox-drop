@@ -6,11 +6,18 @@ import { type AdminSession, can } from './session.js';
 // AP §6.2: who reads the restaurants and who sets which image.
 export const RESTAURANTS_READ = 'restaurants.read';
 export const RESTAURANTS_MANAGE = 'restaurants.manage';
+export const RESTAURANTS_CREATE = 'restaurants.create';
 export const RESTAURANTS_MENUS = 'restaurants.menus';
 
 // «الصور» lists restaurants for those who read them or edit menus.
 export function canSeeImages(session: AdminSession | null | undefined): boolean {
   return can(session, RESTAURANTS_READ) || can(session, RESTAURANTS_MENUS);
+}
+
+// The logo and cover: those who manage restaurants or add them (AP §9.6.3
+// step 1: DATA, OPS, OWN).
+export function canSetProfileImages(session: AdminSession | null | undefined): boolean {
+  return can(session, RESTAURANTS_MANAGE) || can(session, RESTAURANTS_CREATE);
 }
 
 export type RestaurantImages = components['schemas']['AdminRestaurantImagesDto_Output'];
