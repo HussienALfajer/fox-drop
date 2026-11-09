@@ -10,11 +10,12 @@ export const opsChannel = (cityId: string): string => `ops:city.${cityId}`;
 
 // What an event of the channel carries that the panel uses: an order's
 // (order.placed, order.accepted…), an alert's (alert.raised,
-// alert.acknowledged, alert.resolved) or the emergency stop's
-// (platform.emergency_stop).
+// alert.acknowledged, alert.resolved), the emergency stop's
+// (platform.emergency_stop) or a restaurant's state (restaurant.state_changed).
 export interface OpsEvent {
   type: string;
   orderId?: string;
+  restaurantId?: string;
 }
 
 // The reads an event makes stale. An alert change also refreshes the board
@@ -28,13 +29,23 @@ export function staleQueries(event: OpsEvent, cityId: string): QueryKey[] {
     return [['alerts', cityId], ['orders-board', cityId], ['order']];
   // AP §7: the emergency stop started or ended (the top bar).
   if (event.type === 'platform.emergency_stop') return [['emergency-stop', cityId]];
+  // AP §9.6.5: a restaurant paused, resumed, busy or closed, by anyone.
+  if (event.type === 'restaurant.state_changed' && event.restaurantId) {
+    return [['restaurant-status', event.restaurantId]];
+  }
   return [];
 }
 
 // §10.3: after every (re)subscription the panel reads the city's full state
 // again: what it missed while away has no other way in.
 export function cityQueries(cityId: string): QueryKey[] {
-  return [['orders-board', cityId], ['order'], ['alerts', cityId], ['emergency-stop', cityId]];
+  return [
+    ['orders-board', cityId],
+    ['order'],
+    ['alerts', cityId],
+    ['emergency-stop', cityId],
+    ['restaurant-status'],
+  ];
 }
 
 // The cities whose channel is subscribed now. A read of a live city waits

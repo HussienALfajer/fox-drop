@@ -99,3 +99,10 @@ export function soundPlan(alerts: AdminAlert[], heard: ReadonlySet<string>): Sou
 export function orderOf(alert: AdminAlert): string | null {
   return alert.subjectType === 'order' ? alert.subjectId : null;
 }
+
+// AP §9.1.3 «مطعم أوقف تلقائياً»: its restaurant, for «استئناف».
+export function autoPausedRestaurantOf(alert: AdminAlert): string | null {
+  return alert.code === 'restaurant_auto_paused' && alert.subjectType === 'restaurant'
+    ? alert.subjectId
+    : null;
+}

@@ -7,6 +7,7 @@ import {
   type AdminAlert,
   alertHistoryQuery,
   alertsQuery,
+  autoPausedRestaurantOf,
   orderOf,
   useAcknowledgeAlert,
 } from './alerts.js';
@@ -15,6 +16,7 @@ import { formatDateTime } from './format.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { can } from './session.js';
 import { alertKeys } from './order-labels.js';
+import { canChangeRestaurantStatus, useResumeRestaurant } from './restaurant-status.js';
 
 const alertsRoute = getRouteApi('/signed-in/alerts');
 const signedIn = getRouteApi('/signed-in');
@@ -47,6 +49,7 @@ function CityAlerts({ city }: { city: City }) {
         {open.data?.map((alert) => (
           <li key={alert.id}>
             <AlertLine alert={alert} city={city} />
+            <ResumeRestaurant alert={alert} city={city} />
             {alert.acknowledged === null && (
               <button
                 type="button"
@@ -65,6 +68,31 @@ function CityAlerts({ city }: { city: City }) {
       </button>
       {showHistory && <History city={city} />}
     </main>
+  );
+}
+
+// AP §9.1.3: «مطعم أوقف تلقائياً» with its direct action «استئناف» (OWN,
+// OPS), and a link to the restaurant's state.
+function ResumeRestaurant({ alert, city }: { alert: AdminAlert; city: City }) {
+  const { t } = useTranslation();
+  const { session } = signedIn.useRouteContext();
+  const restaurantId = autoPausedRestaurantOf(alert);
+  const resume = useResumeRestaurant(restaurantId ?? '');
+  if (restaurantId === null) return null;
+  return (
+    <>
+      {canChangeRestaurantStatus(session) && (
+        <button type="button" disabled={resume.isPending} onClick={() => resume.mutate()}>
+          {t('alerts.resumeRestaurant')}
+        </button>
+      )}{' '}
+      <Link to="/restaurant-status" search={{ city: city.code, restaurant: restaurantId }}>
+        {t('alerts.openRestaurant')}
+      </Link>
+      {(resume.isError || resume.data?.status === 'refused') && (
+        <p role="alert">{t('common.failed')}</p>
+      )}
+    </>
   );
 }
 
