@@ -12,13 +12,14 @@ part 'admin_session_dto_output.g.dart';
 /// AdminSessionDtoOutput
 ///
 /// Properties:
-/// * [accountId] 
-/// * [roles] 
+/// * [accountId]
+/// * [roles]
 /// * [permissions] - The union of the roles' permissions (AP §6.1), so the panel hides what is not allowed.
-/// * [signedInAt] 
+/// * [signedInAt]
 /// * [expiresAt] - When the session ends unless used again before (AP §5.2).
 @BuiltValue()
-abstract class AdminSessionDtoOutput implements Built<AdminSessionDtoOutput, AdminSessionDtoOutputBuilder> {
+abstract class AdminSessionDtoOutput
+    implements Built<AdminSessionDtoOutput, AdminSessionDtoOutputBuilder> {
   @BuiltValueField(wireName: r'accountId')
   String get accountId;
 
@@ -38,18 +39,25 @@ abstract class AdminSessionDtoOutput implements Built<AdminSessionDtoOutput, Adm
 
   AdminSessionDtoOutput._();
 
-  factory AdminSessionDtoOutput([void updates(AdminSessionDtoOutputBuilder b)]) = _$AdminSessionDtoOutput;
+  factory AdminSessionDtoOutput([
+    void updates(AdminSessionDtoOutputBuilder b),
+  ]) = _$AdminSessionDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminSessionDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminSessionDtoOutput> get serializer => _$AdminSessionDtoOutputSerializer();
+  static Serializer<AdminSessionDtoOutput> get serializer =>
+      _$AdminSessionDtoOutputSerializer();
 }
 
-class _$AdminSessionDtoOutputSerializer implements PrimitiveSerializer<AdminSessionDtoOutput> {
+class _$AdminSessionDtoOutputSerializer
+    implements PrimitiveSerializer<AdminSessionDtoOutput> {
   @override
-  final Iterable<Type> types = const [AdminSessionDtoOutput, _$AdminSessionDtoOutput];
+  final Iterable<Type> types = const [
+    AdminSessionDtoOutput,
+    _$AdminSessionDtoOutput,
+  ];
 
   @override
   final String wireName = r'AdminSessionDtoOutput';
@@ -92,7 +100,11 @@ class _$AdminSessionDtoOutputSerializer implements PrimitiveSerializer<AdminSess
     AdminSessionDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -108,38 +120,52 @@ class _$AdminSessionDtoOutputSerializer implements PrimitiveSerializer<AdminSess
       final value = serializedList[i + 1];
       switch (key) {
         case r'accountId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.accountId = valueDes;
           break;
         case r'roles':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.roles.replace(valueDes);
           break;
         case r'permissions':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.permissions.replace(valueDes);
           break;
         case r'signedInAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.signedInAt = valueDes;
           break;
         case r'expiresAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.expiresAt = valueDes;
           break;
         default:
@@ -170,5 +196,3 @@ class _$AdminSessionDtoOutputSerializer implements PrimitiveSerializer<AdminSess
     return result.build();
   }
 }
-
-

@@ -14,7 +14,8 @@ part 'captain_deliver_dto_away.g.dart';
 /// * [reason] - The reason's code in its Content list.
 /// * [note] - The text of a reason that needs one («أخرى»), and only of it.
 @BuiltValue()
-abstract class CaptainDeliverDtoAway implements Built<CaptainDeliverDtoAway, CaptainDeliverDtoAwayBuilder> {
+abstract class CaptainDeliverDtoAway
+    implements Built<CaptainDeliverDtoAway, CaptainDeliverDtoAwayBuilder> {
   /// The reason's code in its Content list.
   @BuiltValueField(wireName: r'reason')
   String get reason;
@@ -25,18 +26,25 @@ abstract class CaptainDeliverDtoAway implements Built<CaptainDeliverDtoAway, Cap
 
   CaptainDeliverDtoAway._();
 
-  factory CaptainDeliverDtoAway([void updates(CaptainDeliverDtoAwayBuilder b)]) = _$CaptainDeliverDtoAway;
+  factory CaptainDeliverDtoAway([
+    void updates(CaptainDeliverDtoAwayBuilder b),
+  ]) = _$CaptainDeliverDtoAway;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainDeliverDtoAwayBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainDeliverDtoAway> get serializer => _$CaptainDeliverDtoAwaySerializer();
+  static Serializer<CaptainDeliverDtoAway> get serializer =>
+      _$CaptainDeliverDtoAwaySerializer();
 }
 
-class _$CaptainDeliverDtoAwaySerializer implements PrimitiveSerializer<CaptainDeliverDtoAway> {
+class _$CaptainDeliverDtoAwaySerializer
+    implements PrimitiveSerializer<CaptainDeliverDtoAway> {
   @override
-  final Iterable<Type> types = const [CaptainDeliverDtoAway, _$CaptainDeliverDtoAway];
+  final Iterable<Type> types = const [
+    CaptainDeliverDtoAway,
+    _$CaptainDeliverDtoAway,
+  ];
 
   @override
   final String wireName = r'CaptainDeliverDtoAway';
@@ -52,10 +60,12 @@ class _$CaptainDeliverDtoAwaySerializer implements PrimitiveSerializer<CaptainDe
       specifiedType: const FullType(String),
     );
     yield r'note';
-    yield object.note == null ? null : serializers.serialize(
-      object.note,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.note == null
+        ? null
+        : serializers.serialize(
+            object.note,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -64,7 +74,11 @@ class _$CaptainDeliverDtoAwaySerializer implements PrimitiveSerializer<CaptainDe
     CaptainDeliverDtoAway object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -80,17 +94,21 @@ class _$CaptainDeliverDtoAwaySerializer implements PrimitiveSerializer<CaptainDe
       final value = serializedList[i + 1];
       switch (key) {
         case r'reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.reason = valueDes;
           break;
         case r'note':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.note = valueDes;
           break;
@@ -122,5 +140,3 @@ class _$CaptainDeliverDtoAwaySerializer implements PrimitiveSerializer<CaptainDe
     return result.build();
   }
 }
-
-

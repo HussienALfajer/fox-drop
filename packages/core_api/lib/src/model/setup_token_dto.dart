@@ -11,21 +11,24 @@ part 'setup_token_dto.g.dart';
 /// SetupTokenDto
 ///
 /// Properties:
-/// * [token] 
+/// * [token]
 @BuiltValue()
-abstract class SetupTokenDto implements Built<SetupTokenDto, SetupTokenDtoBuilder> {
+abstract class SetupTokenDto
+    implements Built<SetupTokenDto, SetupTokenDtoBuilder> {
   @BuiltValueField(wireName: r'token')
   String get token;
 
   SetupTokenDto._();
 
-  factory SetupTokenDto([void updates(SetupTokenDtoBuilder b)]) = _$SetupTokenDto;
+  factory SetupTokenDto([void updates(SetupTokenDtoBuilder b)]) =
+      _$SetupTokenDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SetupTokenDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SetupTokenDto> get serializer => _$SetupTokenDtoSerializer();
+  static Serializer<SetupTokenDto> get serializer =>
+      _$SetupTokenDtoSerializer();
 }
 
 class _$SetupTokenDtoSerializer implements PrimitiveSerializer<SetupTokenDto> {
@@ -53,7 +56,11 @@ class _$SetupTokenDtoSerializer implements PrimitiveSerializer<SetupTokenDto> {
     SetupTokenDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -69,10 +76,12 @@ class _$SetupTokenDtoSerializer implements PrimitiveSerializer<SetupTokenDto> {
       final value = serializedList[i + 1];
       switch (key) {
         case r'token':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.token = valueDes;
           break;
         default:
@@ -103,5 +112,3 @@ class _$SetupTokenDtoSerializer implements PrimitiveSerializer<SetupTokenDto> {
     return result.build();
   }
 }
-
-

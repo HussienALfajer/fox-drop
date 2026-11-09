@@ -13,12 +13,17 @@ part 'customer_active_orders_dto_output_orders_inner_money.g.dart';
 /// Properties:
 /// * [itemsValue] - Integer minor units (AP §8.6).
 /// * [deliveryFee] - Integer minor units (AP §8.6).
-/// * [deliveryFree] 
+/// * [deliveryFree]
 /// * [discount] - Integer minor units (AP §8.6).
 /// * [rounding] - Integer minor units (AP §8.6).
 /// * [total] - Integer minor units (AP §8.6).
 @BuiltValue()
-abstract class CustomerActiveOrdersDtoOutputOrdersInnerMoney implements Built<CustomerActiveOrdersDtoOutputOrdersInnerMoney, CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder> {
+abstract class CustomerActiveOrdersDtoOutputOrdersInnerMoney
+    implements
+        Built<
+          CustomerActiveOrdersDtoOutputOrdersInnerMoney,
+          CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder
+        > {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'itemsValue')
   String get itemsValue;
@@ -44,18 +49,28 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerMoney implements Built<Cu
 
   CustomerActiveOrdersDtoOutputOrdersInnerMoney._();
 
-  factory CustomerActiveOrdersDtoOutputOrdersInnerMoney([void updates(CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder b)]) = _$CustomerActiveOrdersDtoOutputOrdersInnerMoney;
+  factory CustomerActiveOrdersDtoOutputOrdersInnerMoney([
+    void updates(CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder b),
+  ]) = _$CustomerActiveOrdersDtoOutputOrdersInnerMoney;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder b) => b;
+  static void _defaults(
+    CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerMoney> get serializer => _$CustomerActiveOrdersDtoOutputOrdersInnerMoneySerializer();
+  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerMoney>
+  get serializer => _$CustomerActiveOrdersDtoOutputOrdersInnerMoneySerializer();
 }
 
-class _$CustomerActiveOrdersDtoOutputOrdersInnerMoneySerializer implements PrimitiveSerializer<CustomerActiveOrdersDtoOutputOrdersInnerMoney> {
+class _$CustomerActiveOrdersDtoOutputOrdersInnerMoneySerializer
+    implements
+        PrimitiveSerializer<CustomerActiveOrdersDtoOutputOrdersInnerMoney> {
   @override
-  final Iterable<Type> types = const [CustomerActiveOrdersDtoOutputOrdersInnerMoney, _$CustomerActiveOrdersDtoOutputOrdersInnerMoney];
+  final Iterable<Type> types = const [
+    CustomerActiveOrdersDtoOutputOrdersInnerMoney,
+    _$CustomerActiveOrdersDtoOutputOrdersInnerMoney,
+  ];
 
   @override
   final String wireName = r'CustomerActiveOrdersDtoOutputOrdersInnerMoney';
@@ -103,7 +118,11 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerMoneySerializer implements Primi
     CustomerActiveOrdersDtoOutputOrdersInnerMoney object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -119,45 +138,57 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerMoneySerializer implements Primi
       final value = serializedList[i + 1];
       switch (key) {
         case r'itemsValue':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.itemsValue = valueDes;
           break;
         case r'deliveryFee':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.deliveryFee = valueDes;
           break;
         case r'deliveryFree':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.deliveryFree = valueDes;
           break;
         case r'discount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.discount = valueDes;
           break;
         case r'rounding':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.rounding = valueDes;
           break;
         case r'total':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.total = valueDes;
           break;
         default:
@@ -188,5 +219,3 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerMoneySerializer implements Primi
     return result.build();
   }
 }
-
-

@@ -19,7 +19,8 @@ part 'admin_reject_dto.g.dart';
 /// * [pauseMin] - too_busy only: 30 for a 30-minute pause, or null; not with busyExtraMin (400 invalid_rejection otherwise).
 /// * [reason] - Required (AP §9.3.2): the internal note, never shown to the apps.
 @BuiltValue()
-abstract class AdminRejectDto implements Built<AdminRejectDto, AdminRejectDtoBuilder> {
+abstract class AdminRejectDto
+    implements Built<AdminRejectDto, AdminRejectDtoBuilder> {
   /// A code of the restaurant rejection list (AP Appendix B): item_unavailable «صنف غير متوفر» (marks the items unavailable), restaurant_closed «المطعم مغلق» (also pauses the restaurant until it reopens), too_busy «ضغط طلبات»; 400 unknown_reason otherwise.
   @BuiltValueField(wireName: r'rejection')
   String get rejection;
@@ -42,16 +43,19 @@ abstract class AdminRejectDto implements Built<AdminRejectDto, AdminRejectDtoBui
 
   AdminRejectDto._();
 
-  factory AdminRejectDto([void updates(AdminRejectDtoBuilder b)]) = _$AdminRejectDto;
+  factory AdminRejectDto([void updates(AdminRejectDtoBuilder b)]) =
+      _$AdminRejectDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminRejectDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRejectDto> get serializer => _$AdminRejectDtoSerializer();
+  static Serializer<AdminRejectDto> get serializer =>
+      _$AdminRejectDtoSerializer();
 }
 
-class _$AdminRejectDtoSerializer implements PrimitiveSerializer<AdminRejectDto> {
+class _$AdminRejectDtoSerializer
+    implements PrimitiveSerializer<AdminRejectDto> {
   @override
   final Iterable<Type> types = const [AdminRejectDto, _$AdminRejectDto];
 
@@ -71,18 +75,24 @@ class _$AdminRejectDtoSerializer implements PrimitiveSerializer<AdminRejectDto> 
     yield r'items';
     yield serializers.serialize(
       object.items,
-      specifiedType: const FullType(BuiltList, [FullType(AdminRejectDtoItemsInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminRejectDtoItemsInner),
+      ]),
     );
     yield r'busyExtraMin';
-    yield object.busyExtraMin == null ? null : serializers.serialize(
-      object.busyExtraMin,
-      specifiedType: const FullType.nullable(int),
-    );
+    yield object.busyExtraMin == null
+        ? null
+        : serializers.serialize(
+            object.busyExtraMin,
+            specifiedType: const FullType.nullable(int),
+          );
     yield r'pauseMin';
-    yield object.pauseMin == null ? null : serializers.serialize(
-      object.pauseMin,
-      specifiedType: const FullType.nullable(int),
-    );
+    yield object.pauseMin == null
+        ? null
+        : serializers.serialize(
+            object.pauseMin,
+            specifiedType: const FullType.nullable(int),
+          );
     yield r'reason';
     yield serializers.serialize(
       object.reason,
@@ -96,7 +106,11 @@ class _$AdminRejectDtoSerializer implements PrimitiveSerializer<AdminRejectDto> 
     AdminRejectDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -112,40 +126,52 @@ class _$AdminRejectDtoSerializer implements PrimitiveSerializer<AdminRejectDto> 
       final value = serializedList[i + 1];
       switch (key) {
         case r'rejection':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.rejection = valueDes;
           break;
         case r'items':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(AdminRejectDtoItemsInner)]),
-          ) as BuiltList<AdminRejectDtoItemsInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminRejectDtoItemsInner),
+                    ]),
+                  )
+                  as BuiltList<AdminRejectDtoItemsInner>;
           result.items.replace(valueDes);
           break;
         case r'busyExtraMin':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(int),
-          ) as int?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(int),
+                  )
+                  as int?;
           if (valueDes == null) continue;
           result.busyExtraMin = valueDes;
           break;
         case r'pauseMin':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(int),
-          ) as int?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(int),
+                  )
+                  as int?;
           if (valueDes == null) continue;
           result.pauseMin = valueDes;
           break;
         case r'reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.reason = valueDes;
           break;
         default:
@@ -176,5 +202,3 @@ class _$AdminRejectDtoSerializer implements PrimitiveSerializer<AdminRejectDto> 
     return result.build();
   }
 }
-
-

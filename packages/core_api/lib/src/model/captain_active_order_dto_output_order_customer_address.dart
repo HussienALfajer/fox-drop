@@ -12,12 +12,17 @@ part 'captain_active_order_dto_output_order_customer_address.g.dart';
 ///
 /// Properties:
 /// * [neighbourhood] - «الحي».
-/// * [street] 
-/// * [floor] 
-/// * [landmark] 
+/// * [street]
+/// * [floor]
+/// * [landmark]
 /// * [directions] - The customer's directions.
 @BuiltValue()
-abstract class CaptainActiveOrderDtoOutputOrderCustomerAddress implements Built<CaptainActiveOrderDtoOutputOrderCustomerAddress, CaptainActiveOrderDtoOutputOrderCustomerAddressBuilder> {
+abstract class CaptainActiveOrderDtoOutputOrderCustomerAddress
+    implements
+        Built<
+          CaptainActiveOrderDtoOutputOrderCustomerAddress,
+          CaptainActiveOrderDtoOutputOrderCustomerAddressBuilder
+        > {
   /// «الحي».
   @BuiltValueField(wireName: r'neighbourhood')
   String get neighbourhood;
@@ -37,18 +42,29 @@ abstract class CaptainActiveOrderDtoOutputOrderCustomerAddress implements Built<
 
   CaptainActiveOrderDtoOutputOrderCustomerAddress._();
 
-  factory CaptainActiveOrderDtoOutputOrderCustomerAddress([void updates(CaptainActiveOrderDtoOutputOrderCustomerAddressBuilder b)]) = _$CaptainActiveOrderDtoOutputOrderCustomerAddress;
+  factory CaptainActiveOrderDtoOutputOrderCustomerAddress([
+    void updates(CaptainActiveOrderDtoOutputOrderCustomerAddressBuilder b),
+  ]) = _$CaptainActiveOrderDtoOutputOrderCustomerAddress;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CaptainActiveOrderDtoOutputOrderCustomerAddressBuilder b) => b;
+  static void _defaults(
+    CaptainActiveOrderDtoOutputOrderCustomerAddressBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainActiveOrderDtoOutputOrderCustomerAddress> get serializer => _$CaptainActiveOrderDtoOutputOrderCustomerAddressSerializer();
+  static Serializer<CaptainActiveOrderDtoOutputOrderCustomerAddress>
+  get serializer =>
+      _$CaptainActiveOrderDtoOutputOrderCustomerAddressSerializer();
 }
 
-class _$CaptainActiveOrderDtoOutputOrderCustomerAddressSerializer implements PrimitiveSerializer<CaptainActiveOrderDtoOutputOrderCustomerAddress> {
+class _$CaptainActiveOrderDtoOutputOrderCustomerAddressSerializer
+    implements
+        PrimitiveSerializer<CaptainActiveOrderDtoOutputOrderCustomerAddress> {
   @override
-  final Iterable<Type> types = const [CaptainActiveOrderDtoOutputOrderCustomerAddress, _$CaptainActiveOrderDtoOutputOrderCustomerAddress];
+  final Iterable<Type> types = const [
+    CaptainActiveOrderDtoOutputOrderCustomerAddress,
+    _$CaptainActiveOrderDtoOutputOrderCustomerAddress,
+  ];
 
   @override
   final String wireName = r'CaptainActiveOrderDtoOutputOrderCustomerAddress';
@@ -69,20 +85,24 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerAddressSerializer implements Pri
       specifiedType: const FullType(String),
     );
     yield r'floor';
-    yield object.floor == null ? null : serializers.serialize(
-      object.floor,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.floor == null
+        ? null
+        : serializers.serialize(
+            object.floor,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'landmark';
     yield serializers.serialize(
       object.landmark,
       specifiedType: const FullType(String),
     );
     yield r'directions';
-    yield object.directions == null ? null : serializers.serialize(
-      object.directions,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.directions == null
+        ? null
+        : serializers.serialize(
+            object.directions,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -91,7 +111,11 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerAddressSerializer implements Pri
     CaptainActiveOrderDtoOutputOrderCustomerAddress object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -107,39 +131,49 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerAddressSerializer implements Pri
       final value = serializedList[i + 1];
       switch (key) {
         case r'neighbourhood':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.neighbourhood = valueDes;
           break;
         case r'street':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.street = valueDes;
           break;
         case r'floor':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.floor = valueDes;
           break;
         case r'landmark':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.landmark = valueDes;
           break;
         case r'directions':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.directions = valueDes;
           break;
@@ -171,5 +205,3 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerAddressSerializer implements Pri
     return result.build();
   }
 }
-
-

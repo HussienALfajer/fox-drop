@@ -11,10 +11,15 @@ part 'customer_active_orders_dto_output_orders_inner_estimate.g.dart';
 /// The range shown while placed (CU §11.1).
 ///
 /// Properties:
-/// * [fromMin] 
-/// * [toMin] 
+/// * [fromMin]
+/// * [toMin]
 @BuiltValue()
-abstract class CustomerActiveOrdersDtoOutputOrdersInnerEstimate implements Built<CustomerActiveOrdersDtoOutputOrdersInnerEstimate, CustomerActiveOrdersDtoOutputOrdersInnerEstimateBuilder> {
+abstract class CustomerActiveOrdersDtoOutputOrdersInnerEstimate
+    implements
+        Built<
+          CustomerActiveOrdersDtoOutputOrdersInnerEstimate,
+          CustomerActiveOrdersDtoOutputOrdersInnerEstimateBuilder
+        > {
   @BuiltValueField(wireName: r'fromMin')
   int get fromMin;
 
@@ -23,18 +28,29 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerEstimate implements Built
 
   CustomerActiveOrdersDtoOutputOrdersInnerEstimate._();
 
-  factory CustomerActiveOrdersDtoOutputOrdersInnerEstimate([void updates(CustomerActiveOrdersDtoOutputOrdersInnerEstimateBuilder b)]) = _$CustomerActiveOrdersDtoOutputOrdersInnerEstimate;
+  factory CustomerActiveOrdersDtoOutputOrdersInnerEstimate([
+    void updates(CustomerActiveOrdersDtoOutputOrdersInnerEstimateBuilder b),
+  ]) = _$CustomerActiveOrdersDtoOutputOrdersInnerEstimate;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerActiveOrdersDtoOutputOrdersInnerEstimateBuilder b) => b;
+  static void _defaults(
+    CustomerActiveOrdersDtoOutputOrdersInnerEstimateBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerEstimate> get serializer => _$CustomerActiveOrdersDtoOutputOrdersInnerEstimateSerializer();
+  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerEstimate>
+  get serializer =>
+      _$CustomerActiveOrdersDtoOutputOrdersInnerEstimateSerializer();
 }
 
-class _$CustomerActiveOrdersDtoOutputOrdersInnerEstimateSerializer implements PrimitiveSerializer<CustomerActiveOrdersDtoOutputOrdersInnerEstimate> {
+class _$CustomerActiveOrdersDtoOutputOrdersInnerEstimateSerializer
+    implements
+        PrimitiveSerializer<CustomerActiveOrdersDtoOutputOrdersInnerEstimate> {
   @override
-  final Iterable<Type> types = const [CustomerActiveOrdersDtoOutputOrdersInnerEstimate, _$CustomerActiveOrdersDtoOutputOrdersInnerEstimate];
+  final Iterable<Type> types = const [
+    CustomerActiveOrdersDtoOutputOrdersInnerEstimate,
+    _$CustomerActiveOrdersDtoOutputOrdersInnerEstimate,
+  ];
 
   @override
   final String wireName = r'CustomerActiveOrdersDtoOutputOrdersInnerEstimate';
@@ -62,7 +78,11 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerEstimateSerializer implements Pr
     CustomerActiveOrdersDtoOutputOrdersInnerEstimate object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -78,17 +98,15 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerEstimateSerializer implements Pr
       final value = serializedList[i + 1];
       switch (key) {
         case r'fromMin':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.fromMin = valueDes;
           break;
         case r'toMin':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.toMin = valueDes;
           break;
         default:
@@ -119,5 +137,3 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerEstimateSerializer implements Pr
     return result.build();
   }
 }
-
-

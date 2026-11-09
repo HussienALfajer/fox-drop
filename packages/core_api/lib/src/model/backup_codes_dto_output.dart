@@ -14,25 +14,32 @@ part 'backup_codes_dto_output.g.dart';
 /// Properties:
 /// * [backupCodes] - The 10 single-use backup codes, shown this once only (AP §5.1).
 @BuiltValue()
-abstract class BackupCodesDtoOutput implements Built<BackupCodesDtoOutput, BackupCodesDtoOutputBuilder> {
+abstract class BackupCodesDtoOutput
+    implements Built<BackupCodesDtoOutput, BackupCodesDtoOutputBuilder> {
   /// The 10 single-use backup codes, shown this once only (AP §5.1).
   @BuiltValueField(wireName: r'backupCodes')
   BuiltList<String> get backupCodes;
 
   BackupCodesDtoOutput._();
 
-  factory BackupCodesDtoOutput([void updates(BackupCodesDtoOutputBuilder b)]) = _$BackupCodesDtoOutput;
+  factory BackupCodesDtoOutput([void updates(BackupCodesDtoOutputBuilder b)]) =
+      _$BackupCodesDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(BackupCodesDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<BackupCodesDtoOutput> get serializer => _$BackupCodesDtoOutputSerializer();
+  static Serializer<BackupCodesDtoOutput> get serializer =>
+      _$BackupCodesDtoOutputSerializer();
 }
 
-class _$BackupCodesDtoOutputSerializer implements PrimitiveSerializer<BackupCodesDtoOutput> {
+class _$BackupCodesDtoOutputSerializer
+    implements PrimitiveSerializer<BackupCodesDtoOutput> {
   @override
-  final Iterable<Type> types = const [BackupCodesDtoOutput, _$BackupCodesDtoOutput];
+  final Iterable<Type> types = const [
+    BackupCodesDtoOutput,
+    _$BackupCodesDtoOutput,
+  ];
 
   @override
   final String wireName = r'BackupCodesDtoOutput';
@@ -55,7 +62,11 @@ class _$BackupCodesDtoOutputSerializer implements PrimitiveSerializer<BackupCode
     BackupCodesDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -71,10 +82,14 @@ class _$BackupCodesDtoOutputSerializer implements PrimitiveSerializer<BackupCode
       final value = serializedList[i + 1];
       switch (key) {
         case r'backupCodes':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.backupCodes.replace(valueDes);
           break;
         default:
@@ -105,5 +120,3 @@ class _$BackupCodesDtoOutputSerializer implements PrimitiveSerializer<BackupCode
     return result.build();
   }
 }
-
-

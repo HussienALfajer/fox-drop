@@ -12,26 +12,34 @@ part 'captain_order_dto_output.g.dart';
 /// CaptainOrderDtoOutput
 ///
 /// Properties:
-/// * [order] 
+/// * [order]
 @BuiltValue()
-abstract class CaptainOrderDtoOutput implements Built<CaptainOrderDtoOutput, CaptainOrderDtoOutputBuilder> {
+abstract class CaptainOrderDtoOutput
+    implements Built<CaptainOrderDtoOutput, CaptainOrderDtoOutputBuilder> {
   @BuiltValueField(wireName: r'order')
   CaptainOrderDtoOutputOrder get order;
 
   CaptainOrderDtoOutput._();
 
-  factory CaptainOrderDtoOutput([void updates(CaptainOrderDtoOutputBuilder b)]) = _$CaptainOrderDtoOutput;
+  factory CaptainOrderDtoOutput([
+    void updates(CaptainOrderDtoOutputBuilder b),
+  ]) = _$CaptainOrderDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainOrderDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainOrderDtoOutput> get serializer => _$CaptainOrderDtoOutputSerializer();
+  static Serializer<CaptainOrderDtoOutput> get serializer =>
+      _$CaptainOrderDtoOutputSerializer();
 }
 
-class _$CaptainOrderDtoOutputSerializer implements PrimitiveSerializer<CaptainOrderDtoOutput> {
+class _$CaptainOrderDtoOutputSerializer
+    implements PrimitiveSerializer<CaptainOrderDtoOutput> {
   @override
-  final Iterable<Type> types = const [CaptainOrderDtoOutput, _$CaptainOrderDtoOutput];
+  final Iterable<Type> types = const [
+    CaptainOrderDtoOutput,
+    _$CaptainOrderDtoOutput,
+  ];
 
   @override
   final String wireName = r'CaptainOrderDtoOutput';
@@ -54,7 +62,11 @@ class _$CaptainOrderDtoOutputSerializer implements PrimitiveSerializer<CaptainOr
     CaptainOrderDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -70,10 +82,12 @@ class _$CaptainOrderDtoOutputSerializer implements PrimitiveSerializer<CaptainOr
       final value = serializedList[i + 1];
       switch (key) {
         case r'order':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainOrderDtoOutputOrder),
-          ) as CaptainOrderDtoOutputOrder;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(CaptainOrderDtoOutputOrder),
+                  )
+                  as CaptainOrderDtoOutputOrder;
           result.order.replace(valueDes);
           break;
         default:
@@ -104,5 +118,3 @@ class _$CaptainOrderDtoOutputSerializer implements PrimitiveSerializer<CaptainOr
     return result.build();
   }
 }
-
-

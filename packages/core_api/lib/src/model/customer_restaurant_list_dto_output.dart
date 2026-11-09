@@ -15,25 +15,37 @@ part 'customer_restaurant_list_dto_output.g.dart';
 /// Properties:
 /// * [restaurants] - CU §8.2: open first, then busy and paused, then closed; with similarTo, the open ones only (CU §11.9).
 @BuiltValue()
-abstract class CustomerRestaurantListDtoOutput implements Built<CustomerRestaurantListDtoOutput, CustomerRestaurantListDtoOutputBuilder> {
+abstract class CustomerRestaurantListDtoOutput
+    implements
+        Built<
+          CustomerRestaurantListDtoOutput,
+          CustomerRestaurantListDtoOutputBuilder
+        > {
   /// CU §8.2: open first, then busy and paused, then closed; with similarTo, the open ones only (CU §11.9).
   @BuiltValueField(wireName: r'restaurants')
   BuiltList<CustomerRestaurantListDtoOutputRestaurantsInner> get restaurants;
 
   CustomerRestaurantListDtoOutput._();
 
-  factory CustomerRestaurantListDtoOutput([void updates(CustomerRestaurantListDtoOutputBuilder b)]) = _$CustomerRestaurantListDtoOutput;
+  factory CustomerRestaurantListDtoOutput([
+    void updates(CustomerRestaurantListDtoOutputBuilder b),
+  ]) = _$CustomerRestaurantListDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerRestaurantListDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerRestaurantListDtoOutput> get serializer => _$CustomerRestaurantListDtoOutputSerializer();
+  static Serializer<CustomerRestaurantListDtoOutput> get serializer =>
+      _$CustomerRestaurantListDtoOutputSerializer();
 }
 
-class _$CustomerRestaurantListDtoOutputSerializer implements PrimitiveSerializer<CustomerRestaurantListDtoOutput> {
+class _$CustomerRestaurantListDtoOutputSerializer
+    implements PrimitiveSerializer<CustomerRestaurantListDtoOutput> {
   @override
-  final Iterable<Type> types = const [CustomerRestaurantListDtoOutput, _$CustomerRestaurantListDtoOutput];
+  final Iterable<Type> types = const [
+    CustomerRestaurantListDtoOutput,
+    _$CustomerRestaurantListDtoOutput,
+  ];
 
   @override
   final String wireName = r'CustomerRestaurantListDtoOutput';
@@ -46,7 +58,9 @@ class _$CustomerRestaurantListDtoOutputSerializer implements PrimitiveSerializer
     yield r'restaurants';
     yield serializers.serialize(
       object.restaurants,
-      specifiedType: const FullType(BuiltList, [FullType(CustomerRestaurantListDtoOutputRestaurantsInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(CustomerRestaurantListDtoOutputRestaurantsInner),
+      ]),
     );
   }
 
@@ -56,7 +70,11 @@ class _$CustomerRestaurantListDtoOutputSerializer implements PrimitiveSerializer
     CustomerRestaurantListDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -72,10 +90,14 @@ class _$CustomerRestaurantListDtoOutputSerializer implements PrimitiveSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'restaurants':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CustomerRestaurantListDtoOutputRestaurantsInner)]),
-          ) as BuiltList<CustomerRestaurantListDtoOutputRestaurantsInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CustomerRestaurantListDtoOutputRestaurantsInner),
+                    ]),
+                  )
+                  as BuiltList<CustomerRestaurantListDtoOutputRestaurantsInner>;
           result.restaurants.replace(valueDes);
           break;
         default:
@@ -106,5 +128,3 @@ class _$CustomerRestaurantListDtoOutputSerializer implements PrimitiveSerializer
     return result.build();
   }
 }
-
-

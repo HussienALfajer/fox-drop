@@ -11,15 +11,20 @@ part 'admin_order_dto_output_order_money.g.dart';
 /// AdminOrderDtoOutputOrderMoney
 ///
 /// Properties:
-/// * [currency] 
+/// * [currency]
 /// * [itemsValue] - Integer minor units (AP §8.6).
 /// * [deliveryFee] - Integer minor units (AP §8.6).
 /// * [discount] - Integer minor units (AP §8.6).
-/// * [rounding] 
+/// * [rounding]
 /// * [total] - Integer minor units (AP §8.6).
 /// * [pickupPayment] - Paid by the captain at pickup (D26: the items value).
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderMoney implements Built<AdminOrderDtoOutputOrderMoney, AdminOrderDtoOutputOrderMoneyBuilder> {
+abstract class AdminOrderDtoOutputOrderMoney
+    implements
+        Built<
+          AdminOrderDtoOutputOrderMoney,
+          AdminOrderDtoOutputOrderMoneyBuilder
+        > {
   @BuiltValueField(wireName: r'currency')
   String get currency;
 
@@ -48,18 +53,25 @@ abstract class AdminOrderDtoOutputOrderMoney implements Built<AdminOrderDtoOutpu
 
   AdminOrderDtoOutputOrderMoney._();
 
-  factory AdminOrderDtoOutputOrderMoney([void updates(AdminOrderDtoOutputOrderMoneyBuilder b)]) = _$AdminOrderDtoOutputOrderMoney;
+  factory AdminOrderDtoOutputOrderMoney([
+    void updates(AdminOrderDtoOutputOrderMoneyBuilder b),
+  ]) = _$AdminOrderDtoOutputOrderMoney;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderDtoOutputOrderMoneyBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderMoney> get serializer => _$AdminOrderDtoOutputOrderMoneySerializer();
+  static Serializer<AdminOrderDtoOutputOrderMoney> get serializer =>
+      _$AdminOrderDtoOutputOrderMoneySerializer();
 }
 
-class _$AdminOrderDtoOutputOrderMoneySerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderMoney> {
+class _$AdminOrderDtoOutputOrderMoneySerializer
+    implements PrimitiveSerializer<AdminOrderDtoOutputOrderMoney> {
   @override
-  final Iterable<Type> types = const [AdminOrderDtoOutputOrderMoney, _$AdminOrderDtoOutputOrderMoney];
+  final Iterable<Type> types = const [
+    AdminOrderDtoOutputOrderMoney,
+    _$AdminOrderDtoOutputOrderMoney,
+  ];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderMoney';
@@ -112,7 +124,11 @@ class _$AdminOrderDtoOutputOrderMoneySerializer implements PrimitiveSerializer<A
     AdminOrderDtoOutputOrderMoney object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -128,52 +144,66 @@ class _$AdminOrderDtoOutputOrderMoneySerializer implements PrimitiveSerializer<A
       final value = serializedList[i + 1];
       switch (key) {
         case r'currency':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.currency = valueDes;
           break;
         case r'itemsValue':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.itemsValue = valueDes;
           break;
         case r'deliveryFee':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.deliveryFee = valueDes;
           break;
         case r'discount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.discount = valueDes;
           break;
         case r'rounding':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.rounding = valueDes;
           break;
         case r'total':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.total = valueDes;
           break;
         case r'pickupPayment':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.pickupPayment = valueDes;
           break;
         default:
@@ -204,5 +234,3 @@ class _$AdminOrderDtoOutputOrderMoneySerializer implements PrimitiveSerializer<A
     return result.build();
   }
 }
-
-

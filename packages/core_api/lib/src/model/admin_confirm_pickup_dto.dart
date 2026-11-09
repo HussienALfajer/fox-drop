@@ -16,7 +16,8 @@ part 'admin_confirm_pickup_dto.g.dart';
 /// * [lines] - The agreed lines, prefilled from the captain's last request.
 /// * [reason] - Required (AP §9.3.2).
 @BuiltValue()
-abstract class AdminConfirmPickupDto implements Built<AdminConfirmPickupDto, AdminConfirmPickupDtoBuilder> {
+abstract class AdminConfirmPickupDto
+    implements Built<AdminConfirmPickupDto, AdminConfirmPickupDtoBuilder> {
   /// The agreed lines, prefilled from the captain's last request.
   @BuiltValueField(wireName: r'lines')
   BuiltList<MerchantPickupDisputeDtoReceivedLinesInner> get lines;
@@ -27,18 +28,25 @@ abstract class AdminConfirmPickupDto implements Built<AdminConfirmPickupDto, Adm
 
   AdminConfirmPickupDto._();
 
-  factory AdminConfirmPickupDto([void updates(AdminConfirmPickupDtoBuilder b)]) = _$AdminConfirmPickupDto;
+  factory AdminConfirmPickupDto([
+    void updates(AdminConfirmPickupDtoBuilder b),
+  ]) = _$AdminConfirmPickupDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminConfirmPickupDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminConfirmPickupDto> get serializer => _$AdminConfirmPickupDtoSerializer();
+  static Serializer<AdminConfirmPickupDto> get serializer =>
+      _$AdminConfirmPickupDtoSerializer();
 }
 
-class _$AdminConfirmPickupDtoSerializer implements PrimitiveSerializer<AdminConfirmPickupDto> {
+class _$AdminConfirmPickupDtoSerializer
+    implements PrimitiveSerializer<AdminConfirmPickupDto> {
   @override
-  final Iterable<Type> types = const [AdminConfirmPickupDto, _$AdminConfirmPickupDto];
+  final Iterable<Type> types = const [
+    AdminConfirmPickupDto,
+    _$AdminConfirmPickupDto,
+  ];
 
   @override
   final String wireName = r'AdminConfirmPickupDto';
@@ -51,7 +59,9 @@ class _$AdminConfirmPickupDtoSerializer implements PrimitiveSerializer<AdminConf
     yield r'lines';
     yield serializers.serialize(
       object.lines,
-      specifiedType: const FullType(BuiltList, [FullType(MerchantPickupDisputeDtoReceivedLinesInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(MerchantPickupDisputeDtoReceivedLinesInner),
+      ]),
     );
     yield r'reason';
     yield serializers.serialize(
@@ -66,7 +76,11 @@ class _$AdminConfirmPickupDtoSerializer implements PrimitiveSerializer<AdminConf
     AdminConfirmPickupDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -82,17 +96,23 @@ class _$AdminConfirmPickupDtoSerializer implements PrimitiveSerializer<AdminConf
       final value = serializedList[i + 1];
       switch (key) {
         case r'lines':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(MerchantPickupDisputeDtoReceivedLinesInner)]),
-          ) as BuiltList<MerchantPickupDisputeDtoReceivedLinesInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(MerchantPickupDisputeDtoReceivedLinesInner),
+                    ]),
+                  )
+                  as BuiltList<MerchantPickupDisputeDtoReceivedLinesInner>;
           result.lines.replace(valueDes);
           break;
         case r'reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.reason = valueDes;
           break;
         default:
@@ -123,5 +143,3 @@ class _$AdminConfirmPickupDtoSerializer implements PrimitiveSerializer<AdminConf
     return result.build();
   }
 }
-
-

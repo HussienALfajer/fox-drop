@@ -11,10 +11,15 @@ part 'captain_delivery_summary_dto_output_summary_custody_change.g.dart';
 /// «تغيّرت عهدتك: {+المبلغ}»: the net collected minus the pickup payment.
 ///
 /// Properties:
-/// * [amount] 
-/// * [currency] 
+/// * [amount]
+/// * [currency]
 @BuiltValue()
-abstract class CaptainDeliverySummaryDtoOutputSummaryCustodyChange implements Built<CaptainDeliverySummaryDtoOutputSummaryCustodyChange, CaptainDeliverySummaryDtoOutputSummaryCustodyChangeBuilder> {
+abstract class CaptainDeliverySummaryDtoOutputSummaryCustodyChange
+    implements
+        Built<
+          CaptainDeliverySummaryDtoOutputSummaryCustodyChange,
+          CaptainDeliverySummaryDtoOutputSummaryCustodyChangeBuilder
+        > {
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
@@ -23,21 +28,35 @@ abstract class CaptainDeliverySummaryDtoOutputSummaryCustodyChange implements Bu
 
   CaptainDeliverySummaryDtoOutputSummaryCustodyChange._();
 
-  factory CaptainDeliverySummaryDtoOutputSummaryCustodyChange([void updates(CaptainDeliverySummaryDtoOutputSummaryCustodyChangeBuilder b)]) = _$CaptainDeliverySummaryDtoOutputSummaryCustodyChange;
+  factory CaptainDeliverySummaryDtoOutputSummaryCustodyChange([
+    void updates(CaptainDeliverySummaryDtoOutputSummaryCustodyChangeBuilder b),
+  ]) = _$CaptainDeliverySummaryDtoOutputSummaryCustodyChange;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CaptainDeliverySummaryDtoOutputSummaryCustodyChangeBuilder b) => b;
+  static void _defaults(
+    CaptainDeliverySummaryDtoOutputSummaryCustodyChangeBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainDeliverySummaryDtoOutputSummaryCustodyChange> get serializer => _$CaptainDeliverySummaryDtoOutputSummaryCustodyChangeSerializer();
+  static Serializer<CaptainDeliverySummaryDtoOutputSummaryCustodyChange>
+  get serializer =>
+      _$CaptainDeliverySummaryDtoOutputSummaryCustodyChangeSerializer();
 }
 
-class _$CaptainDeliverySummaryDtoOutputSummaryCustodyChangeSerializer implements PrimitiveSerializer<CaptainDeliverySummaryDtoOutputSummaryCustodyChange> {
+class _$CaptainDeliverySummaryDtoOutputSummaryCustodyChangeSerializer
+    implements
+        PrimitiveSerializer<
+          CaptainDeliverySummaryDtoOutputSummaryCustodyChange
+        > {
   @override
-  final Iterable<Type> types = const [CaptainDeliverySummaryDtoOutputSummaryCustodyChange, _$CaptainDeliverySummaryDtoOutputSummaryCustodyChange];
+  final Iterable<Type> types = const [
+    CaptainDeliverySummaryDtoOutputSummaryCustodyChange,
+    _$CaptainDeliverySummaryDtoOutputSummaryCustodyChange,
+  ];
 
   @override
-  final String wireName = r'CaptainDeliverySummaryDtoOutputSummaryCustodyChange';
+  final String wireName =
+      r'CaptainDeliverySummaryDtoOutputSummaryCustodyChange';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
@@ -62,7 +81,11 @@ class _$CaptainDeliverySummaryDtoOutputSummaryCustodyChangeSerializer implements
     CaptainDeliverySummaryDtoOutputSummaryCustodyChange object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -78,17 +101,21 @@ class _$CaptainDeliverySummaryDtoOutputSummaryCustodyChangeSerializer implements
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.currency = valueDes;
           break;
         default:
@@ -119,5 +146,3 @@ class _$CaptainDeliverySummaryDtoOutputSummaryCustodyChangeSerializer implements
     return result.build();
   }
 }
-
-

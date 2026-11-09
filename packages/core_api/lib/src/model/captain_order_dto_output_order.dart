@@ -21,24 +21,26 @@ part 'captain_order_dto_output_order.g.dart';
 /// The active order (CA §9).
 ///
 /// Properties:
-/// * [id] 
+/// * [id]
 /// * [number] - Shown as #10423 (AP §4.8).
-/// * [status] 
+/// * [status]
 /// * [version] - Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown.
 /// * [captainTrack] - The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».
-/// * [restaurant] 
-/// * [preparation] 
-/// * [arrival] 
-/// * [itemCount] 
+/// * [restaurant]
+/// * [preparation]
+/// * [arrival]
+/// * [itemCount]
 /// * [lines] - The item check (C7): one tick box per line.
 /// * [note] - The customer's note.
-/// * [pickupPayment] 
-/// * [collect] 
-/// * [pickup] 
-/// * [customer] 
-/// * [radii] 
+/// * [pickupPayment]
+/// * [collect]
+/// * [pickup]
+/// * [customer]
+/// * [radii]
 @BuiltValue()
-abstract class CaptainOrderDtoOutputOrder implements Built<CaptainOrderDtoOutputOrder, CaptainOrderDtoOutputOrderBuilder> {
+abstract class CaptainOrderDtoOutputOrder
+    implements
+        Built<CaptainOrderDtoOutputOrder, CaptainOrderDtoOutputOrderBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -96,18 +98,25 @@ abstract class CaptainOrderDtoOutputOrder implements Built<CaptainOrderDtoOutput
 
   CaptainOrderDtoOutputOrder._();
 
-  factory CaptainOrderDtoOutputOrder([void updates(CaptainOrderDtoOutputOrderBuilder b)]) = _$CaptainOrderDtoOutputOrder;
+  factory CaptainOrderDtoOutputOrder([
+    void updates(CaptainOrderDtoOutputOrderBuilder b),
+  ]) = _$CaptainOrderDtoOutputOrder;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainOrderDtoOutputOrderBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainOrderDtoOutputOrder> get serializer => _$CaptainOrderDtoOutputOrderSerializer();
+  static Serializer<CaptainOrderDtoOutputOrder> get serializer =>
+      _$CaptainOrderDtoOutputOrderSerializer();
 }
 
-class _$CaptainOrderDtoOutputOrderSerializer implements PrimitiveSerializer<CaptainOrderDtoOutputOrder> {
+class _$CaptainOrderDtoOutputOrderSerializer
+    implements PrimitiveSerializer<CaptainOrderDtoOutputOrder> {
   @override
-  final Iterable<Type> types = const [CaptainOrderDtoOutputOrder, _$CaptainOrderDtoOutputOrder];
+  final Iterable<Type> types = const [
+    CaptainOrderDtoOutputOrder,
+    _$CaptainOrderDtoOutputOrder,
+  ];
 
   @override
   final String wireName = r'CaptainOrderDtoOutputOrder';
@@ -150,13 +159,19 @@ class _$CaptainOrderDtoOutputOrderSerializer implements PrimitiveSerializer<Capt
     yield r'preparation';
     yield serializers.serialize(
       object.preparation,
-      specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderPreparation),
+      specifiedType: const FullType(
+        CaptainActiveOrderDtoOutputOrderPreparation,
+      ),
     );
     yield r'arrival';
-    yield object.arrival == null ? null : serializers.serialize(
-      object.arrival,
-      specifiedType: const FullType.nullable(CaptainActiveOrderDtoOutputOrderArrival),
-    );
+    yield object.arrival == null
+        ? null
+        : serializers.serialize(
+            object.arrival,
+            specifiedType: const FullType.nullable(
+              CaptainActiveOrderDtoOutputOrderArrival,
+            ),
+          );
     yield r'itemCount';
     yield serializers.serialize(
       object.itemCount,
@@ -165,17 +180,23 @@ class _$CaptainOrderDtoOutputOrderSerializer implements PrimitiveSerializer<Capt
     yield r'lines';
     yield serializers.serialize(
       object.lines,
-      specifiedType: const FullType(BuiltList, [FullType(CaptainActiveOrderDtoOutputOrderLinesInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(CaptainActiveOrderDtoOutputOrderLinesInner),
+      ]),
     );
     yield r'note';
-    yield object.note == null ? null : serializers.serialize(
-      object.note,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.note == null
+        ? null
+        : serializers.serialize(
+            object.note,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'pickupPayment';
     yield serializers.serialize(
       object.pickupPayment,
-      specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderPickupPayment),
+      specifiedType: const FullType(
+        CaptainActiveOrderDtoOutputOrderPickupPayment,
+      ),
     );
     yield r'collect';
     yield serializers.serialize(
@@ -205,7 +226,11 @@ class _$CaptainOrderDtoOutputOrderSerializer implements PrimitiveSerializer<Capt
     CaptainOrderDtoOutputOrder object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -221,117 +246,165 @@ class _$CaptainOrderDtoOutputOrderSerializer implements PrimitiveSerializer<Capt
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'number':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.number = valueDes;
           break;
         case r'status':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainOrderDtoOutputOrderStatusEnum),
-          ) as CaptainOrderDtoOutputOrderStatusEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainOrderDtoOutputOrderStatusEnum,
+                    ),
+                  )
+                  as CaptainOrderDtoOutputOrderStatusEnum;
           result.status = valueDes;
           break;
         case r'version':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.version = valueDes;
           break;
         case r'captainTrack':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainOrderDtoOutputOrderCaptainTrackEnum),
-          ) as CaptainOrderDtoOutputOrderCaptainTrackEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainOrderDtoOutputOrderCaptainTrackEnum,
+                    ),
+                  )
+                  as CaptainOrderDtoOutputOrderCaptainTrackEnum;
           result.captainTrack = valueDes;
           break;
         case r'restaurant':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderRestaurant),
-          ) as CaptainActiveOrderDtoOutputOrderRestaurant;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainActiveOrderDtoOutputOrderRestaurant,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderRestaurant;
           result.restaurant.replace(valueDes);
           break;
         case r'preparation':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderPreparation),
-          ) as CaptainActiveOrderDtoOutputOrderPreparation;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainActiveOrderDtoOutputOrderPreparation,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderPreparation;
           result.preparation.replace(valueDes);
           break;
         case r'arrival':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(CaptainActiveOrderDtoOutputOrderArrival),
-          ) as CaptainActiveOrderDtoOutputOrderArrival?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainActiveOrderDtoOutputOrderArrival,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderArrival?;
           if (valueDes == null) continue;
           result.arrival.replace(valueDes);
           break;
         case r'itemCount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.itemCount = valueDes;
           break;
         case r'lines':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CaptainActiveOrderDtoOutputOrderLinesInner)]),
-          ) as BuiltList<CaptainActiveOrderDtoOutputOrderLinesInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CaptainActiveOrderDtoOutputOrderLinesInner),
+                    ]),
+                  )
+                  as BuiltList<CaptainActiveOrderDtoOutputOrderLinesInner>;
           result.lines.replace(valueDes);
           break;
         case r'note':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.note = valueDes;
           break;
         case r'pickupPayment':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderPickupPayment),
-          ) as CaptainActiveOrderDtoOutputOrderPickupPayment;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainActiveOrderDtoOutputOrderPickupPayment,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderPickupPayment;
           result.pickupPayment.replace(valueDes);
           break;
         case r'collect':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderCollect),
-          ) as CaptainActiveOrderDtoOutputOrderCollect;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainActiveOrderDtoOutputOrderCollect,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderCollect;
           result.collect.replace(valueDes);
           break;
         case r'pickup':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainOrderDtoOutputOrderPickup),
-          ) as CaptainOrderDtoOutputOrderPickup;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainOrderDtoOutputOrderPickup,
+                    ),
+                  )
+                  as CaptainOrderDtoOutputOrderPickup;
           result.pickup.replace(valueDes);
           break;
         case r'customer':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainOrderDtoOutputOrderCustomer),
-          ) as CaptainOrderDtoOutputOrderCustomer;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainOrderDtoOutputOrderCustomer,
+                    ),
+                  )
+                  as CaptainOrderDtoOutputOrderCustomer;
           result.customer.replace(valueDes);
           break;
         case r'radii':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderRadii),
-          ) as CaptainActiveOrderDtoOutputOrderRadii;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainActiveOrderDtoOutputOrderRadii,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderRadii;
           result.radii.replace(valueDes);
           break;
         default:
@@ -363,61 +436,80 @@ class _$CaptainOrderDtoOutputOrderSerializer implements PrimitiveSerializer<Capt
   }
 }
 
-
 class CaptainOrderDtoOutputOrderStatusEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'placed')
-  static const CaptainOrderDtoOutputOrderStatusEnum placed = _$captainOrderDtoOutputOrderStatusEnum_placed;
+  static const CaptainOrderDtoOutputOrderStatusEnum placed =
+      _$captainOrderDtoOutputOrderStatusEnum_placed;
   @BuiltValueEnumConst(wireName: r'accepted')
-  static const CaptainOrderDtoOutputOrderStatusEnum accepted = _$captainOrderDtoOutputOrderStatusEnum_accepted;
+  static const CaptainOrderDtoOutputOrderStatusEnum accepted =
+      _$captainOrderDtoOutputOrderStatusEnum_accepted;
   @BuiltValueEnumConst(wireName: r'ready')
-  static const CaptainOrderDtoOutputOrderStatusEnum ready = _$captainOrderDtoOutputOrderStatusEnum_ready;
+  static const CaptainOrderDtoOutputOrderStatusEnum ready =
+      _$captainOrderDtoOutputOrderStatusEnum_ready;
   @BuiltValueEnumConst(wireName: r'picked_up')
-  static const CaptainOrderDtoOutputOrderStatusEnum pickedUp = _$captainOrderDtoOutputOrderStatusEnum_pickedUp;
+  static const CaptainOrderDtoOutputOrderStatusEnum pickedUp =
+      _$captainOrderDtoOutputOrderStatusEnum_pickedUp;
   @BuiltValueEnumConst(wireName: r'arrived')
-  static const CaptainOrderDtoOutputOrderStatusEnum arrived = _$captainOrderDtoOutputOrderStatusEnum_arrived;
+  static const CaptainOrderDtoOutputOrderStatusEnum arrived =
+      _$captainOrderDtoOutputOrderStatusEnum_arrived;
   @BuiltValueEnumConst(wireName: r'delivered')
-  static const CaptainOrderDtoOutputOrderStatusEnum delivered = _$captainOrderDtoOutputOrderStatusEnum_delivered;
+  static const CaptainOrderDtoOutputOrderStatusEnum delivered =
+      _$captainOrderDtoOutputOrderStatusEnum_delivered;
   @BuiltValueEnumConst(wireName: r'rejected')
-  static const CaptainOrderDtoOutputOrderStatusEnum rejected = _$captainOrderDtoOutputOrderStatusEnum_rejected;
+  static const CaptainOrderDtoOutputOrderStatusEnum rejected =
+      _$captainOrderDtoOutputOrderStatusEnum_rejected;
   @BuiltValueEnumConst(wireName: r'cancelled')
-  static const CaptainOrderDtoOutputOrderStatusEnum cancelled = _$captainOrderDtoOutputOrderStatusEnum_cancelled;
+  static const CaptainOrderDtoOutputOrderStatusEnum cancelled =
+      _$captainOrderDtoOutputOrderStatusEnum_cancelled;
   @BuiltValueEnumConst(wireName: r'failed')
-  static const CaptainOrderDtoOutputOrderStatusEnum failed = _$captainOrderDtoOutputOrderStatusEnum_failed;
+  static const CaptainOrderDtoOutputOrderStatusEnum failed =
+      _$captainOrderDtoOutputOrderStatusEnum_failed;
 
-  static Serializer<CaptainOrderDtoOutputOrderStatusEnum> get serializer => _$captainOrderDtoOutputOrderStatusEnumSerializer;
+  static Serializer<CaptainOrderDtoOutputOrderStatusEnum> get serializer =>
+      _$captainOrderDtoOutputOrderStatusEnumSerializer;
 
-  const CaptainOrderDtoOutputOrderStatusEnum._(String name): super(name);
+  const CaptainOrderDtoOutputOrderStatusEnum._(String name) : super(name);
 
-  static BuiltSet<CaptainOrderDtoOutputOrderStatusEnum> get values => _$captainOrderDtoOutputOrderStatusEnumValues;
-  static CaptainOrderDtoOutputOrderStatusEnum valueOf(String name) => _$captainOrderDtoOutputOrderStatusEnumValueOf(name);
+  static BuiltSet<CaptainOrderDtoOutputOrderStatusEnum> get values =>
+      _$captainOrderDtoOutputOrderStatusEnumValues;
+  static CaptainOrderDtoOutputOrderStatusEnum valueOf(String name) =>
+      _$captainOrderDtoOutputOrderStatusEnumValueOf(name);
 }
 
 /// The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».
 class CaptainOrderDtoOutputOrderCaptainTrackEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'searching')
-  static const CaptainOrderDtoOutputOrderCaptainTrackEnum searching = _$captainOrderDtoOutputOrderCaptainTrackEnum_searching;
+  static const CaptainOrderDtoOutputOrderCaptainTrackEnum searching =
+      _$captainOrderDtoOutputOrderCaptainTrackEnum_searching;
   @BuiltValueEnumConst(wireName: r'offered')
-  static const CaptainOrderDtoOutputOrderCaptainTrackEnum offered = _$captainOrderDtoOutputOrderCaptainTrackEnum_offered;
+  static const CaptainOrderDtoOutputOrderCaptainTrackEnum offered =
+      _$captainOrderDtoOutputOrderCaptainTrackEnum_offered;
   @BuiltValueEnumConst(wireName: r'assigned')
-  static const CaptainOrderDtoOutputOrderCaptainTrackEnum assigned = _$captainOrderDtoOutputOrderCaptainTrackEnum_assigned;
+  static const CaptainOrderDtoOutputOrderCaptainTrackEnum assigned =
+      _$captainOrderDtoOutputOrderCaptainTrackEnum_assigned;
   @BuiltValueEnumConst(wireName: r'at_merchant')
-  static const CaptainOrderDtoOutputOrderCaptainTrackEnum atMerchant = _$captainOrderDtoOutputOrderCaptainTrackEnum_atMerchant;
+  static const CaptainOrderDtoOutputOrderCaptainTrackEnum atMerchant =
+      _$captainOrderDtoOutputOrderCaptainTrackEnum_atMerchant;
   @BuiltValueEnumConst(wireName: r'pickup_pending')
-  static const CaptainOrderDtoOutputOrderCaptainTrackEnum pickupPending = _$captainOrderDtoOutputOrderCaptainTrackEnum_pickupPending;
+  static const CaptainOrderDtoOutputOrderCaptainTrackEnum pickupPending =
+      _$captainOrderDtoOutputOrderCaptainTrackEnum_pickupPending;
   @BuiltValueEnumConst(wireName: r'picked_up')
-  static const CaptainOrderDtoOutputOrderCaptainTrackEnum pickedUp = _$captainOrderDtoOutputOrderCaptainTrackEnum_pickedUp;
+  static const CaptainOrderDtoOutputOrderCaptainTrackEnum pickedUp =
+      _$captainOrderDtoOutputOrderCaptainTrackEnum_pickedUp;
   @BuiltValueEnumConst(wireName: r'at_customer')
-  static const CaptainOrderDtoOutputOrderCaptainTrackEnum atCustomer = _$captainOrderDtoOutputOrderCaptainTrackEnum_atCustomer;
+  static const CaptainOrderDtoOutputOrderCaptainTrackEnum atCustomer =
+      _$captainOrderDtoOutputOrderCaptainTrackEnum_atCustomer;
   @BuiltValueEnumConst(wireName: r'done')
-  static const CaptainOrderDtoOutputOrderCaptainTrackEnum done = _$captainOrderDtoOutputOrderCaptainTrackEnum_done;
+  static const CaptainOrderDtoOutputOrderCaptainTrackEnum done =
+      _$captainOrderDtoOutputOrderCaptainTrackEnum_done;
 
-  static Serializer<CaptainOrderDtoOutputOrderCaptainTrackEnum> get serializer => _$captainOrderDtoOutputOrderCaptainTrackEnumSerializer;
+  static Serializer<CaptainOrderDtoOutputOrderCaptainTrackEnum>
+  get serializer => _$captainOrderDtoOutputOrderCaptainTrackEnumSerializer;
 
-  const CaptainOrderDtoOutputOrderCaptainTrackEnum._(String name): super(name);
+  const CaptainOrderDtoOutputOrderCaptainTrackEnum._(String name) : super(name);
 
-  static BuiltSet<CaptainOrderDtoOutputOrderCaptainTrackEnum> get values => _$captainOrderDtoOutputOrderCaptainTrackEnumValues;
-  static CaptainOrderDtoOutputOrderCaptainTrackEnum valueOf(String name) => _$captainOrderDtoOutputOrderCaptainTrackEnumValueOf(name);
+  static BuiltSet<CaptainOrderDtoOutputOrderCaptainTrackEnum> get values =>
+      _$captainOrderDtoOutputOrderCaptainTrackEnumValues;
+  static CaptainOrderDtoOutputOrderCaptainTrackEnum valueOf(String name) =>
+      _$captainOrderDtoOutputOrderCaptainTrackEnumValueOf(name);
 }
-

@@ -14,7 +14,8 @@ part 'admin_update_contact_dto.g.dart';
 /// * [phone] - E.164, or null to hide «اتصال بالدعم».
 /// * [whatsapp] - E.164, or null to hide «واتساب الدعم».
 @BuiltValue()
-abstract class AdminUpdateContactDto implements Built<AdminUpdateContactDto, AdminUpdateContactDtoBuilder> {
+abstract class AdminUpdateContactDto
+    implements Built<AdminUpdateContactDto, AdminUpdateContactDtoBuilder> {
   /// E.164, or null to hide «اتصال بالدعم».
   @BuiltValueField(wireName: r'phone')
   String? get phone;
@@ -25,18 +26,25 @@ abstract class AdminUpdateContactDto implements Built<AdminUpdateContactDto, Adm
 
   AdminUpdateContactDto._();
 
-  factory AdminUpdateContactDto([void updates(AdminUpdateContactDtoBuilder b)]) = _$AdminUpdateContactDto;
+  factory AdminUpdateContactDto([
+    void updates(AdminUpdateContactDtoBuilder b),
+  ]) = _$AdminUpdateContactDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminUpdateContactDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminUpdateContactDto> get serializer => _$AdminUpdateContactDtoSerializer();
+  static Serializer<AdminUpdateContactDto> get serializer =>
+      _$AdminUpdateContactDtoSerializer();
 }
 
-class _$AdminUpdateContactDtoSerializer implements PrimitiveSerializer<AdminUpdateContactDto> {
+class _$AdminUpdateContactDtoSerializer
+    implements PrimitiveSerializer<AdminUpdateContactDto> {
   @override
-  final Iterable<Type> types = const [AdminUpdateContactDto, _$AdminUpdateContactDto];
+  final Iterable<Type> types = const [
+    AdminUpdateContactDto,
+    _$AdminUpdateContactDto,
+  ];
 
   @override
   final String wireName = r'AdminUpdateContactDto';
@@ -47,15 +55,19 @@ class _$AdminUpdateContactDtoSerializer implements PrimitiveSerializer<AdminUpda
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'phone';
-    yield object.phone == null ? null : serializers.serialize(
-      object.phone,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.phone == null
+        ? null
+        : serializers.serialize(
+            object.phone,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'whatsapp';
-    yield object.whatsapp == null ? null : serializers.serialize(
-      object.whatsapp,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.whatsapp == null
+        ? null
+        : serializers.serialize(
+            object.whatsapp,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -64,7 +76,11 @@ class _$AdminUpdateContactDtoSerializer implements PrimitiveSerializer<AdminUpda
     AdminUpdateContactDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -80,18 +96,22 @@ class _$AdminUpdateContactDtoSerializer implements PrimitiveSerializer<AdminUpda
       final value = serializedList[i + 1];
       switch (key) {
         case r'phone':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.phone = valueDes;
           break;
         case r'whatsapp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.whatsapp = valueDes;
           break;
@@ -123,5 +143,3 @@ class _$AdminUpdateContactDtoSerializer implements PrimitiveSerializer<AdminUpda
     return result.build();
   }
 }
-
-

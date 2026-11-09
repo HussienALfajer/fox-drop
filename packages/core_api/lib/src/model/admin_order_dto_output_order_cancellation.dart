@@ -11,10 +11,15 @@ part 'admin_order_dto_output_order_cancellation.g.dart';
 /// AdminOrderDtoOutputOrderCancellation
 ///
 /// Properties:
-/// * [at] 
-/// * [reason] 
+/// * [at]
+/// * [reason]
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderCancellation implements Built<AdminOrderDtoOutputOrderCancellation, AdminOrderDtoOutputOrderCancellationBuilder> {
+abstract class AdminOrderDtoOutputOrderCancellation
+    implements
+        Built<
+          AdminOrderDtoOutputOrderCancellation,
+          AdminOrderDtoOutputOrderCancellationBuilder
+        > {
   @BuiltValueField(wireName: r'at')
   DateTime get at;
 
@@ -23,18 +28,25 @@ abstract class AdminOrderDtoOutputOrderCancellation implements Built<AdminOrderD
 
   AdminOrderDtoOutputOrderCancellation._();
 
-  factory AdminOrderDtoOutputOrderCancellation([void updates(AdminOrderDtoOutputOrderCancellationBuilder b)]) = _$AdminOrderDtoOutputOrderCancellation;
+  factory AdminOrderDtoOutputOrderCancellation([
+    void updates(AdminOrderDtoOutputOrderCancellationBuilder b),
+  ]) = _$AdminOrderDtoOutputOrderCancellation;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderDtoOutputOrderCancellationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderCancellation> get serializer => _$AdminOrderDtoOutputOrderCancellationSerializer();
+  static Serializer<AdminOrderDtoOutputOrderCancellation> get serializer =>
+      _$AdminOrderDtoOutputOrderCancellationSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderCancellationSerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderCancellation> {
+class _$AdminOrderDtoOutputOrderCancellationSerializer
+    implements PrimitiveSerializer<AdminOrderDtoOutputOrderCancellation> {
   @override
-  final Iterable<Type> types = const [AdminOrderDtoOutputOrderCancellation, _$AdminOrderDtoOutputOrderCancellation];
+  final Iterable<Type> types = const [
+    AdminOrderDtoOutputOrderCancellation,
+    _$AdminOrderDtoOutputOrderCancellation,
+  ];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderCancellation';
@@ -62,7 +74,11 @@ class _$AdminOrderDtoOutputOrderCancellationSerializer implements PrimitiveSeria
     AdminOrderDtoOutputOrderCancellation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -78,17 +94,21 @@ class _$AdminOrderDtoOutputOrderCancellationSerializer implements PrimitiveSeria
       final value = serializedList[i + 1];
       switch (key) {
         case r'at':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.at = valueDes;
           break;
         case r'reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.reason = valueDes;
           break;
         default:
@@ -119,5 +139,3 @@ class _$AdminOrderDtoOutputOrderCancellationSerializer implements PrimitiveSeria
     return result.build();
   }
 }
-
-

@@ -11,12 +11,17 @@ part 'admin_cities_dto_output_cities_inner.g.dart';
 /// AdminCitiesDtoOutputCitiesInner
 ///
 /// Properties:
-/// * [id] 
+/// * [id]
 /// * [code] - Such as AZ (AP §4.8).
-/// * [name] 
+/// * [name]
 /// * [timeZone] - The city's clock, such as Asia/Damascus.
 @BuiltValue()
-abstract class AdminCitiesDtoOutputCitiesInner implements Built<AdminCitiesDtoOutputCitiesInner, AdminCitiesDtoOutputCitiesInnerBuilder> {
+abstract class AdminCitiesDtoOutputCitiesInner
+    implements
+        Built<
+          AdminCitiesDtoOutputCitiesInner,
+          AdminCitiesDtoOutputCitiesInnerBuilder
+        > {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -33,18 +38,25 @@ abstract class AdminCitiesDtoOutputCitiesInner implements Built<AdminCitiesDtoOu
 
   AdminCitiesDtoOutputCitiesInner._();
 
-  factory AdminCitiesDtoOutputCitiesInner([void updates(AdminCitiesDtoOutputCitiesInnerBuilder b)]) = _$AdminCitiesDtoOutputCitiesInner;
+  factory AdminCitiesDtoOutputCitiesInner([
+    void updates(AdminCitiesDtoOutputCitiesInnerBuilder b),
+  ]) = _$AdminCitiesDtoOutputCitiesInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminCitiesDtoOutputCitiesInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminCitiesDtoOutputCitiesInner> get serializer => _$AdminCitiesDtoOutputCitiesInnerSerializer();
+  static Serializer<AdminCitiesDtoOutputCitiesInner> get serializer =>
+      _$AdminCitiesDtoOutputCitiesInnerSerializer();
 }
 
-class _$AdminCitiesDtoOutputCitiesInnerSerializer implements PrimitiveSerializer<AdminCitiesDtoOutputCitiesInner> {
+class _$AdminCitiesDtoOutputCitiesInnerSerializer
+    implements PrimitiveSerializer<AdminCitiesDtoOutputCitiesInner> {
   @override
-  final Iterable<Type> types = const [AdminCitiesDtoOutputCitiesInner, _$AdminCitiesDtoOutputCitiesInner];
+  final Iterable<Type> types = const [
+    AdminCitiesDtoOutputCitiesInner,
+    _$AdminCitiesDtoOutputCitiesInner,
+  ];
 
   @override
   final String wireName = r'AdminCitiesDtoOutputCitiesInner';
@@ -82,7 +94,11 @@ class _$AdminCitiesDtoOutputCitiesInnerSerializer implements PrimitiveSerializer
     AdminCitiesDtoOutputCitiesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -98,31 +114,39 @@ class _$AdminCitiesDtoOutputCitiesInnerSerializer implements PrimitiveSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'code':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.code = valueDes;
           break;
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'timeZone':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.timeZone = valueDes;
           break;
         default:
@@ -153,5 +177,3 @@ class _$AdminCitiesDtoOutputCitiesInnerSerializer implements PrimitiveSerializer
     return result.build();
   }
 }
-
-

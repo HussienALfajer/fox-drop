@@ -13,7 +13,7 @@ part 'customer_new_address_dto.g.dart';
 /// CustomerNewAddressDto
 ///
 /// Properties:
-/// * [location] 
+/// * [location]
 /// * [label] - «البيت», «العمل» or «آخر».
 /// * [customLabel] - The name of an «آخر» address; null otherwise.
 /// * [street] - «الشارع والبناء».
@@ -24,7 +24,8 @@ part 'customer_new_address_dto.g.dart';
 /// * [directions] - «توجيهات للكابتن», optional.
 /// * [isDefault] - Make it the default; the first address always is.
 @BuiltValue()
-abstract class CustomerNewAddressDto implements Built<CustomerNewAddressDto, CustomerNewAddressDtoBuilder> {
+abstract class CustomerNewAddressDto
+    implements Built<CustomerNewAddressDto, CustomerNewAddressDtoBuilder> {
   @BuiltValueField(wireName: r'location')
   CustomerNewAddressDtoLocation get location;
 
@@ -67,18 +68,25 @@ abstract class CustomerNewAddressDto implements Built<CustomerNewAddressDto, Cus
 
   CustomerNewAddressDto._();
 
-  factory CustomerNewAddressDto([void updates(CustomerNewAddressDtoBuilder b)]) = _$CustomerNewAddressDto;
+  factory CustomerNewAddressDto([
+    void updates(CustomerNewAddressDtoBuilder b),
+  ]) = _$CustomerNewAddressDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerNewAddressDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerNewAddressDto> get serializer => _$CustomerNewAddressDtoSerializer();
+  static Serializer<CustomerNewAddressDto> get serializer =>
+      _$CustomerNewAddressDtoSerializer();
 }
 
-class _$CustomerNewAddressDtoSerializer implements PrimitiveSerializer<CustomerNewAddressDto> {
+class _$CustomerNewAddressDtoSerializer
+    implements PrimitiveSerializer<CustomerNewAddressDto> {
   @override
-  final Iterable<Type> types = const [CustomerNewAddressDto, _$CustomerNewAddressDto];
+  final Iterable<Type> types = const [
+    CustomerNewAddressDto,
+    _$CustomerNewAddressDto,
+  ];
 
   @override
   final String wireName = r'CustomerNewAddressDto';
@@ -99,40 +107,50 @@ class _$CustomerNewAddressDtoSerializer implements PrimitiveSerializer<CustomerN
       specifiedType: const FullType(CustomerNewAddressDtoLabelEnum),
     );
     yield r'customLabel';
-    yield object.customLabel == null ? null : serializers.serialize(
-      object.customLabel,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.customLabel == null
+        ? null
+        : serializers.serialize(
+            object.customLabel,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'street';
     yield serializers.serialize(
       object.street,
       specifiedType: const FullType(String),
     );
     yield r'floor';
-    yield object.floor == null ? null : serializers.serialize(
-      object.floor,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.floor == null
+        ? null
+        : serializers.serialize(
+            object.floor,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'landmark';
     yield serializers.serialize(
       object.landmark,
       specifiedType: const FullType(String),
     );
     yield r'contactPhone';
-    yield object.contactPhone == null ? null : serializers.serialize(
-      object.contactPhone,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.contactPhone == null
+        ? null
+        : serializers.serialize(
+            object.contactPhone,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'recipientName';
-    yield object.recipientName == null ? null : serializers.serialize(
-      object.recipientName,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.recipientName == null
+        ? null
+        : serializers.serialize(
+            object.recipientName,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'directions';
-    yield object.directions == null ? null : serializers.serialize(
-      object.directions,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.directions == null
+        ? null
+        : serializers.serialize(
+            object.directions,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'isDefault';
     yield serializers.serialize(
       object.isDefault,
@@ -146,7 +164,11 @@ class _$CustomerNewAddressDtoSerializer implements PrimitiveSerializer<CustomerN
     CustomerNewAddressDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -162,78 +184,102 @@ class _$CustomerNewAddressDtoSerializer implements PrimitiveSerializer<CustomerN
       final value = serializedList[i + 1];
       switch (key) {
         case r'location':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CustomerNewAddressDtoLocation),
-          ) as CustomerNewAddressDtoLocation;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CustomerNewAddressDtoLocation,
+                    ),
+                  )
+                  as CustomerNewAddressDtoLocation;
           result.location.replace(valueDes);
           break;
         case r'label':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CustomerNewAddressDtoLabelEnum),
-          ) as CustomerNewAddressDtoLabelEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CustomerNewAddressDtoLabelEnum,
+                    ),
+                  )
+                  as CustomerNewAddressDtoLabelEnum;
           result.label = valueDes;
           break;
         case r'customLabel':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.customLabel = valueDes;
           break;
         case r'street':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.street = valueDes;
           break;
         case r'floor':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.floor = valueDes;
           break;
         case r'landmark':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.landmark = valueDes;
           break;
         case r'contactPhone':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.contactPhone = valueDes;
           break;
         case r'recipientName':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.recipientName = valueDes;
           break;
         case r'directions':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.directions = valueDes;
           break;
         case r'isDefault':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.isDefault = valueDes;
           break;
         default:
@@ -265,22 +311,25 @@ class _$CustomerNewAddressDtoSerializer implements PrimitiveSerializer<CustomerN
   }
 }
 
-
 /// «البيت», «العمل» or «آخر».
 class CustomerNewAddressDtoLabelEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'home')
-  static const CustomerNewAddressDtoLabelEnum home = _$customerNewAddressDtoLabelEnum_home;
+  static const CustomerNewAddressDtoLabelEnum home =
+      _$customerNewAddressDtoLabelEnum_home;
   @BuiltValueEnumConst(wireName: r'work')
-  static const CustomerNewAddressDtoLabelEnum work = _$customerNewAddressDtoLabelEnum_work;
+  static const CustomerNewAddressDtoLabelEnum work =
+      _$customerNewAddressDtoLabelEnum_work;
   @BuiltValueEnumConst(wireName: r'other')
-  static const CustomerNewAddressDtoLabelEnum other = _$customerNewAddressDtoLabelEnum_other;
+  static const CustomerNewAddressDtoLabelEnum other =
+      _$customerNewAddressDtoLabelEnum_other;
 
-  static Serializer<CustomerNewAddressDtoLabelEnum> get serializer => _$customerNewAddressDtoLabelEnumSerializer;
+  static Serializer<CustomerNewAddressDtoLabelEnum> get serializer =>
+      _$customerNewAddressDtoLabelEnumSerializer;
 
-  const CustomerNewAddressDtoLabelEnum._(String name): super(name);
+  const CustomerNewAddressDtoLabelEnum._(String name) : super(name);
 
-  static BuiltSet<CustomerNewAddressDtoLabelEnum> get values => _$customerNewAddressDtoLabelEnumValues;
-  static CustomerNewAddressDtoLabelEnum valueOf(String name) => _$customerNewAddressDtoLabelEnumValueOf(name);
+  static BuiltSet<CustomerNewAddressDtoLabelEnum> get values =>
+      _$customerNewAddressDtoLabelEnumValues;
+  static CustomerNewAddressDtoLabelEnum valueOf(String name) =>
+      _$customerNewAddressDtoLabelEnumValueOf(name);
 }
-

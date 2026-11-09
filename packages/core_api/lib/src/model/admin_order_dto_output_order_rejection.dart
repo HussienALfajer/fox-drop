@@ -12,14 +12,19 @@ part 'admin_order_dto_output_order_rejection.g.dart';
 /// While rejected (AP §9.3.1 «rejected (with reason)»).
 ///
 /// Properties:
-/// * [at] 
+/// * [at]
 /// * [reason] - The code of the restaurant rejection list.
 /// * [label] - Its label as chosen (AP Appendix B).
 /// * [customerText] - What the customer sees (CU Appendix C).
 /// * [itemIds] - The items switched off for item_unavailable.
 /// * [byOperations] - Rejected by operations on the restaurant's behalf.
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderRejection implements Built<AdminOrderDtoOutputOrderRejection, AdminOrderDtoOutputOrderRejectionBuilder> {
+abstract class AdminOrderDtoOutputOrderRejection
+    implements
+        Built<
+          AdminOrderDtoOutputOrderRejection,
+          AdminOrderDtoOutputOrderRejectionBuilder
+        > {
   @BuiltValueField(wireName: r'at')
   DateTime get at;
 
@@ -45,18 +50,25 @@ abstract class AdminOrderDtoOutputOrderRejection implements Built<AdminOrderDtoO
 
   AdminOrderDtoOutputOrderRejection._();
 
-  factory AdminOrderDtoOutputOrderRejection([void updates(AdminOrderDtoOutputOrderRejectionBuilder b)]) = _$AdminOrderDtoOutputOrderRejection;
+  factory AdminOrderDtoOutputOrderRejection([
+    void updates(AdminOrderDtoOutputOrderRejectionBuilder b),
+  ]) = _$AdminOrderDtoOutputOrderRejection;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderDtoOutputOrderRejectionBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderRejection> get serializer => _$AdminOrderDtoOutputOrderRejectionSerializer();
+  static Serializer<AdminOrderDtoOutputOrderRejection> get serializer =>
+      _$AdminOrderDtoOutputOrderRejectionSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderRejectionSerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderRejection> {
+class _$AdminOrderDtoOutputOrderRejectionSerializer
+    implements PrimitiveSerializer<AdminOrderDtoOutputOrderRejection> {
   @override
-  final Iterable<Type> types = const [AdminOrderDtoOutputOrderRejection, _$AdminOrderDtoOutputOrderRejection];
+  final Iterable<Type> types = const [
+    AdminOrderDtoOutputOrderRejection,
+    _$AdminOrderDtoOutputOrderRejection,
+  ];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderRejection';
@@ -104,7 +116,11 @@ class _$AdminOrderDtoOutputOrderRejectionSerializer implements PrimitiveSerializ
     AdminOrderDtoOutputOrderRejection object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -120,45 +136,59 @@ class _$AdminOrderDtoOutputOrderRejectionSerializer implements PrimitiveSerializ
       final value = serializedList[i + 1];
       switch (key) {
         case r'at':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.at = valueDes;
           break;
         case r'reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.reason = valueDes;
           break;
         case r'label':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.label = valueDes;
           break;
         case r'customerText':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.customerText = valueDes;
           break;
         case r'itemIds':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.itemIds.replace(valueDes);
           break;
         case r'byOperations':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.byOperations = valueDes;
           break;
         default:
@@ -189,5 +219,3 @@ class _$AdminOrderDtoOutputOrderRejectionSerializer implements PrimitiveSerializ
     return result.build();
   }
 }
-
-

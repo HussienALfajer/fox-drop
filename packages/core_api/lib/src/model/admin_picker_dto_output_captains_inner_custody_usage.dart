@@ -12,9 +12,14 @@ part 'admin_picker_dto_output_captains_inner_custody_usage.g.dart';
 ///
 /// Properties:
 /// * [amount] - Minor units of the currency, as a string.
-/// * [currency] 
+/// * [currency]
 @BuiltValue()
-abstract class AdminPickerDtoOutputCaptainsInnerCustodyUsage implements Built<AdminPickerDtoOutputCaptainsInnerCustodyUsage, AdminPickerDtoOutputCaptainsInnerCustodyUsageBuilder> {
+abstract class AdminPickerDtoOutputCaptainsInnerCustodyUsage
+    implements
+        Built<
+          AdminPickerDtoOutputCaptainsInnerCustodyUsage,
+          AdminPickerDtoOutputCaptainsInnerCustodyUsageBuilder
+        > {
   /// Minor units of the currency, as a string.
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -24,18 +29,28 @@ abstract class AdminPickerDtoOutputCaptainsInnerCustodyUsage implements Built<Ad
 
   AdminPickerDtoOutputCaptainsInnerCustodyUsage._();
 
-  factory AdminPickerDtoOutputCaptainsInnerCustodyUsage([void updates(AdminPickerDtoOutputCaptainsInnerCustodyUsageBuilder b)]) = _$AdminPickerDtoOutputCaptainsInnerCustodyUsage;
+  factory AdminPickerDtoOutputCaptainsInnerCustodyUsage([
+    void updates(AdminPickerDtoOutputCaptainsInnerCustodyUsageBuilder b),
+  ]) = _$AdminPickerDtoOutputCaptainsInnerCustodyUsage;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminPickerDtoOutputCaptainsInnerCustodyUsageBuilder b) => b;
+  static void _defaults(
+    AdminPickerDtoOutputCaptainsInnerCustodyUsageBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminPickerDtoOutputCaptainsInnerCustodyUsage> get serializer => _$AdminPickerDtoOutputCaptainsInnerCustodyUsageSerializer();
+  static Serializer<AdminPickerDtoOutputCaptainsInnerCustodyUsage>
+  get serializer => _$AdminPickerDtoOutputCaptainsInnerCustodyUsageSerializer();
 }
 
-class _$AdminPickerDtoOutputCaptainsInnerCustodyUsageSerializer implements PrimitiveSerializer<AdminPickerDtoOutputCaptainsInnerCustodyUsage> {
+class _$AdminPickerDtoOutputCaptainsInnerCustodyUsageSerializer
+    implements
+        PrimitiveSerializer<AdminPickerDtoOutputCaptainsInnerCustodyUsage> {
   @override
-  final Iterable<Type> types = const [AdminPickerDtoOutputCaptainsInnerCustodyUsage, _$AdminPickerDtoOutputCaptainsInnerCustodyUsage];
+  final Iterable<Type> types = const [
+    AdminPickerDtoOutputCaptainsInnerCustodyUsage,
+    _$AdminPickerDtoOutputCaptainsInnerCustodyUsage,
+  ];
 
   @override
   final String wireName = r'AdminPickerDtoOutputCaptainsInnerCustodyUsage';
@@ -63,7 +78,11 @@ class _$AdminPickerDtoOutputCaptainsInnerCustodyUsageSerializer implements Primi
     AdminPickerDtoOutputCaptainsInnerCustodyUsage object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -79,17 +98,21 @@ class _$AdminPickerDtoOutputCaptainsInnerCustodyUsageSerializer implements Primi
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.currency = valueDes;
           break;
         default:
@@ -120,5 +143,3 @@ class _$AdminPickerDtoOutputCaptainsInnerCustodyUsageSerializer implements Primi
     return result.build();
   }
 }
-
-

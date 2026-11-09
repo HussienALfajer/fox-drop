@@ -11,29 +11,50 @@ part 'merchant_orders_dto_output_orders_inner_lines_inner_options_inner.g.dart';
 /// MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner
 ///
 /// Properties:
-/// * [name] 
+/// * [name]
 @BuiltValue()
-abstract class MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner implements Built<MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner, MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerBuilder> {
+abstract class MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner
+    implements
+        Built<
+          MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner,
+          MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerBuilder
+        > {
   @BuiltValueField(wireName: r'name')
   String get name;
 
   MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner._();
 
-  factory MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner([void updates(MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerBuilder b)]) = _$MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner;
+  factory MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner([
+    void updates(
+      MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerBuilder b,
+    ),
+  ]) = _$MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerBuilder b) => b;
+  static void _defaults(
+    MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner> get serializer => _$MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerSerializer();
+  static Serializer<MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner>
+  get serializer =>
+      _$MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerSerializer();
 }
 
-class _$MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerSerializer implements PrimitiveSerializer<MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner> {
+class _$MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerSerializer
+    implements
+        PrimitiveSerializer<
+          MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner
+        > {
   @override
-  final Iterable<Type> types = const [MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner, _$MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner];
+  final Iterable<Type> types = const [
+    MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner,
+    _$MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner,
+  ];
 
   @override
-  final String wireName = r'MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner';
+  final String wireName =
+      r'MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
@@ -53,7 +74,11 @@ class _$MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerSerializer imple
     MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -61,7 +86,8 @@ class _$MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerSerializer imple
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerBuilder result,
+    required MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerBuilder
+    result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -69,10 +95,12 @@ class _$MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerSerializer imple
       final value = serializedList[i + 1];
       switch (key) {
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         default:
@@ -89,7 +117,8 @@ class _$MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerSerializer imple
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerBuilder();
+    final result =
+        MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
@@ -103,5 +132,3 @@ class _$MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInnerSerializer imple
     return result.build();
   }
 }
-
-

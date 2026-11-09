@@ -11,10 +11,11 @@ part 'admin_faq_dto_items_inner.g.dart';
 /// AdminFaqDtoItemsInner
 ///
 /// Properties:
-/// * [question] 
-/// * [answer] 
+/// * [question]
+/// * [answer]
 @BuiltValue()
-abstract class AdminFaqDtoItemsInner implements Built<AdminFaqDtoItemsInner, AdminFaqDtoItemsInnerBuilder> {
+abstract class AdminFaqDtoItemsInner
+    implements Built<AdminFaqDtoItemsInner, AdminFaqDtoItemsInnerBuilder> {
   @BuiltValueField(wireName: r'question')
   String get question;
 
@@ -23,18 +24,25 @@ abstract class AdminFaqDtoItemsInner implements Built<AdminFaqDtoItemsInner, Adm
 
   AdminFaqDtoItemsInner._();
 
-  factory AdminFaqDtoItemsInner([void updates(AdminFaqDtoItemsInnerBuilder b)]) = _$AdminFaqDtoItemsInner;
+  factory AdminFaqDtoItemsInner([
+    void updates(AdminFaqDtoItemsInnerBuilder b),
+  ]) = _$AdminFaqDtoItemsInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminFaqDtoItemsInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminFaqDtoItemsInner> get serializer => _$AdminFaqDtoItemsInnerSerializer();
+  static Serializer<AdminFaqDtoItemsInner> get serializer =>
+      _$AdminFaqDtoItemsInnerSerializer();
 }
 
-class _$AdminFaqDtoItemsInnerSerializer implements PrimitiveSerializer<AdminFaqDtoItemsInner> {
+class _$AdminFaqDtoItemsInnerSerializer
+    implements PrimitiveSerializer<AdminFaqDtoItemsInner> {
   @override
-  final Iterable<Type> types = const [AdminFaqDtoItemsInner, _$AdminFaqDtoItemsInner];
+  final Iterable<Type> types = const [
+    AdminFaqDtoItemsInner,
+    _$AdminFaqDtoItemsInner,
+  ];
 
   @override
   final String wireName = r'AdminFaqDtoItemsInner';
@@ -62,7 +70,11 @@ class _$AdminFaqDtoItemsInnerSerializer implements PrimitiveSerializer<AdminFaqD
     AdminFaqDtoItemsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -78,17 +90,21 @@ class _$AdminFaqDtoItemsInnerSerializer implements PrimitiveSerializer<AdminFaqD
       final value = serializedList[i + 1];
       switch (key) {
         case r'question':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.question = valueDes;
           break;
         case r'answer':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.answer = valueDes;
           break;
         default:
@@ -119,5 +135,3 @@ class _$AdminFaqDtoItemsInnerSerializer implements PrimitiveSerializer<AdminFaqD
     return result.build();
   }
 }
-
-

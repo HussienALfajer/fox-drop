@@ -11,11 +11,13 @@ part 'admin_resume_emergency_stop_dto.g.dart';
 /// AdminResumeEmergencyStopDto
 ///
 /// Properties:
-/// * [cityId] 
+/// * [cityId]
 /// * [stopId] - The stop the panel shows, so a resume never ends a newer one.
 /// * [serviceBack] - «الخدمة عادت» (CU §14 #19), to the customers who tried to order; null sends none.
 @BuiltValue()
-abstract class AdminResumeEmergencyStopDto implements Built<AdminResumeEmergencyStopDto, AdminResumeEmergencyStopDtoBuilder> {
+abstract class AdminResumeEmergencyStopDto
+    implements
+        Built<AdminResumeEmergencyStopDto, AdminResumeEmergencyStopDtoBuilder> {
   @BuiltValueField(wireName: r'cityId')
   String get cityId;
 
@@ -29,18 +31,25 @@ abstract class AdminResumeEmergencyStopDto implements Built<AdminResumeEmergency
 
   AdminResumeEmergencyStopDto._();
 
-  factory AdminResumeEmergencyStopDto([void updates(AdminResumeEmergencyStopDtoBuilder b)]) = _$AdminResumeEmergencyStopDto;
+  factory AdminResumeEmergencyStopDto([
+    void updates(AdminResumeEmergencyStopDtoBuilder b),
+  ]) = _$AdminResumeEmergencyStopDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminResumeEmergencyStopDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminResumeEmergencyStopDto> get serializer => _$AdminResumeEmergencyStopDtoSerializer();
+  static Serializer<AdminResumeEmergencyStopDto> get serializer =>
+      _$AdminResumeEmergencyStopDtoSerializer();
 }
 
-class _$AdminResumeEmergencyStopDtoSerializer implements PrimitiveSerializer<AdminResumeEmergencyStopDto> {
+class _$AdminResumeEmergencyStopDtoSerializer
+    implements PrimitiveSerializer<AdminResumeEmergencyStopDto> {
   @override
-  final Iterable<Type> types = const [AdminResumeEmergencyStopDto, _$AdminResumeEmergencyStopDto];
+  final Iterable<Type> types = const [
+    AdminResumeEmergencyStopDto,
+    _$AdminResumeEmergencyStopDto,
+  ];
 
   @override
   final String wireName = r'AdminResumeEmergencyStopDto';
@@ -61,10 +70,12 @@ class _$AdminResumeEmergencyStopDtoSerializer implements PrimitiveSerializer<Adm
       specifiedType: const FullType(String),
     );
     yield r'serviceBack';
-    yield object.serviceBack == null ? null : serializers.serialize(
-      object.serviceBack,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.serviceBack == null
+        ? null
+        : serializers.serialize(
+            object.serviceBack,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -73,7 +84,11 @@ class _$AdminResumeEmergencyStopDtoSerializer implements PrimitiveSerializer<Adm
     AdminResumeEmergencyStopDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -89,24 +104,30 @@ class _$AdminResumeEmergencyStopDtoSerializer implements PrimitiveSerializer<Adm
       final value = serializedList[i + 1];
       switch (key) {
         case r'cityId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.cityId = valueDes;
           break;
         case r'stopId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.stopId = valueDes;
           break;
         case r'serviceBack':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.serviceBack = valueDes;
           break;
@@ -138,5 +159,3 @@ class _$AdminResumeEmergencyStopDtoSerializer implements PrimitiveSerializer<Adm
     return result.build();
   }
 }
-
-

@@ -15,25 +15,34 @@ part 'merchant_pickup_dispute_dto.g.dart';
 /// Properties:
 /// * [receivedLines] - What the restaurant actually received, prefilled with the captain's lines.
 @BuiltValue()
-abstract class MerchantPickupDisputeDto implements Built<MerchantPickupDisputeDto, MerchantPickupDisputeDtoBuilder> {
+abstract class MerchantPickupDisputeDto
+    implements
+        Built<MerchantPickupDisputeDto, MerchantPickupDisputeDtoBuilder> {
   /// What the restaurant actually received, prefilled with the captain's lines.
   @BuiltValueField(wireName: r'receivedLines')
   BuiltList<MerchantPickupDisputeDtoReceivedLinesInner> get receivedLines;
 
   MerchantPickupDisputeDto._();
 
-  factory MerchantPickupDisputeDto([void updates(MerchantPickupDisputeDtoBuilder b)]) = _$MerchantPickupDisputeDto;
+  factory MerchantPickupDisputeDto([
+    void updates(MerchantPickupDisputeDtoBuilder b),
+  ]) = _$MerchantPickupDisputeDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantPickupDisputeDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantPickupDisputeDto> get serializer => _$MerchantPickupDisputeDtoSerializer();
+  static Serializer<MerchantPickupDisputeDto> get serializer =>
+      _$MerchantPickupDisputeDtoSerializer();
 }
 
-class _$MerchantPickupDisputeDtoSerializer implements PrimitiveSerializer<MerchantPickupDisputeDto> {
+class _$MerchantPickupDisputeDtoSerializer
+    implements PrimitiveSerializer<MerchantPickupDisputeDto> {
   @override
-  final Iterable<Type> types = const [MerchantPickupDisputeDto, _$MerchantPickupDisputeDto];
+  final Iterable<Type> types = const [
+    MerchantPickupDisputeDto,
+    _$MerchantPickupDisputeDto,
+  ];
 
   @override
   final String wireName = r'MerchantPickupDisputeDto';
@@ -46,7 +55,9 @@ class _$MerchantPickupDisputeDtoSerializer implements PrimitiveSerializer<Mercha
     yield r'receivedLines';
     yield serializers.serialize(
       object.receivedLines,
-      specifiedType: const FullType(BuiltList, [FullType(MerchantPickupDisputeDtoReceivedLinesInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(MerchantPickupDisputeDtoReceivedLinesInner),
+      ]),
     );
   }
 
@@ -56,7 +67,11 @@ class _$MerchantPickupDisputeDtoSerializer implements PrimitiveSerializer<Mercha
     MerchantPickupDisputeDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -72,10 +87,14 @@ class _$MerchantPickupDisputeDtoSerializer implements PrimitiveSerializer<Mercha
       final value = serializedList[i + 1];
       switch (key) {
         case r'receivedLines':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(MerchantPickupDisputeDtoReceivedLinesInner)]),
-          ) as BuiltList<MerchantPickupDisputeDtoReceivedLinesInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(MerchantPickupDisputeDtoReceivedLinesInner),
+                    ]),
+                  )
+                  as BuiltList<MerchantPickupDisputeDtoReceivedLinesInner>;
           result.receivedLines.replace(valueDes);
           break;
         default:
@@ -106,5 +125,3 @@ class _$MerchantPickupDisputeDtoSerializer implements PrimitiveSerializer<Mercha
     return result.build();
   }
 }
-
-

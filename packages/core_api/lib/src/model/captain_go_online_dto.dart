@@ -11,10 +11,11 @@ part 'captain_go_online_dto.g.dart';
 /// CaptainGoOnlineDto
 ///
 /// Properties:
-/// * [appVersion] 
+/// * [appVersion]
 /// * [simulatedLocation] - A mock-location app is active (Android) or isSimulatedBySoftware (iOS).
 @BuiltValue()
-abstract class CaptainGoOnlineDto implements Built<CaptainGoOnlineDto, CaptainGoOnlineDtoBuilder> {
+abstract class CaptainGoOnlineDto
+    implements Built<CaptainGoOnlineDto, CaptainGoOnlineDtoBuilder> {
   @BuiltValueField(wireName: r'appVersion')
   String get appVersion;
 
@@ -24,16 +25,19 @@ abstract class CaptainGoOnlineDto implements Built<CaptainGoOnlineDto, CaptainGo
 
   CaptainGoOnlineDto._();
 
-  factory CaptainGoOnlineDto([void updates(CaptainGoOnlineDtoBuilder b)]) = _$CaptainGoOnlineDto;
+  factory CaptainGoOnlineDto([void updates(CaptainGoOnlineDtoBuilder b)]) =
+      _$CaptainGoOnlineDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainGoOnlineDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainGoOnlineDto> get serializer => _$CaptainGoOnlineDtoSerializer();
+  static Serializer<CaptainGoOnlineDto> get serializer =>
+      _$CaptainGoOnlineDtoSerializer();
 }
 
-class _$CaptainGoOnlineDtoSerializer implements PrimitiveSerializer<CaptainGoOnlineDto> {
+class _$CaptainGoOnlineDtoSerializer
+    implements PrimitiveSerializer<CaptainGoOnlineDto> {
   @override
   final Iterable<Type> types = const [CaptainGoOnlineDto, _$CaptainGoOnlineDto];
 
@@ -63,7 +67,11 @@ class _$CaptainGoOnlineDtoSerializer implements PrimitiveSerializer<CaptainGoOnl
     CaptainGoOnlineDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -79,17 +87,21 @@ class _$CaptainGoOnlineDtoSerializer implements PrimitiveSerializer<CaptainGoOnl
       final value = serializedList[i + 1];
       switch (key) {
         case r'appVersion':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.appVersion = valueDes;
           break;
         case r'simulatedLocation':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.simulatedLocation = valueDes;
           break;
         default:
@@ -120,5 +132,3 @@ class _$CaptainGoOnlineDtoSerializer implements PrimitiveSerializer<CaptainGoOnl
     return result.build();
   }
 }
-
-

@@ -13,9 +13,11 @@ part 'customer_profile_dto_output.g.dart';
 ///
 /// Properties:
 /// * [completed] - false until «أكمل بياناتك» is sent (CU §5.3).
-/// * [profile] 
+/// * [profile]
 @BuiltValue()
-abstract class CustomerProfileDtoOutput implements Built<CustomerProfileDtoOutput, CustomerProfileDtoOutputBuilder> {
+abstract class CustomerProfileDtoOutput
+    implements
+        Built<CustomerProfileDtoOutput, CustomerProfileDtoOutputBuilder> {
   /// false until «أكمل بياناتك» is sent (CU §5.3).
   @BuiltValueField(wireName: r'completed')
   bool get completed;
@@ -25,18 +27,25 @@ abstract class CustomerProfileDtoOutput implements Built<CustomerProfileDtoOutpu
 
   CustomerProfileDtoOutput._();
 
-  factory CustomerProfileDtoOutput([void updates(CustomerProfileDtoOutputBuilder b)]) = _$CustomerProfileDtoOutput;
+  factory CustomerProfileDtoOutput([
+    void updates(CustomerProfileDtoOutputBuilder b),
+  ]) = _$CustomerProfileDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerProfileDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerProfileDtoOutput> get serializer => _$CustomerProfileDtoOutputSerializer();
+  static Serializer<CustomerProfileDtoOutput> get serializer =>
+      _$CustomerProfileDtoOutputSerializer();
 }
 
-class _$CustomerProfileDtoOutputSerializer implements PrimitiveSerializer<CustomerProfileDtoOutput> {
+class _$CustomerProfileDtoOutputSerializer
+    implements PrimitiveSerializer<CustomerProfileDtoOutput> {
   @override
-  final Iterable<Type> types = const [CustomerProfileDtoOutput, _$CustomerProfileDtoOutput];
+  final Iterable<Type> types = const [
+    CustomerProfileDtoOutput,
+    _$CustomerProfileDtoOutput,
+  ];
 
   @override
   final String wireName = r'CustomerProfileDtoOutput';
@@ -52,10 +61,14 @@ class _$CustomerProfileDtoOutputSerializer implements PrimitiveSerializer<Custom
       specifiedType: const FullType(bool),
     );
     yield r'profile';
-    yield object.profile == null ? null : serializers.serialize(
-      object.profile,
-      specifiedType: const FullType.nullable(CustomerProfileDtoOutputProfile),
-    );
+    yield object.profile == null
+        ? null
+        : serializers.serialize(
+            object.profile,
+            specifiedType: const FullType.nullable(
+              CustomerProfileDtoOutputProfile,
+            ),
+          );
   }
 
   @override
@@ -64,7 +77,11 @@ class _$CustomerProfileDtoOutputSerializer implements PrimitiveSerializer<Custom
     CustomerProfileDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -80,17 +97,23 @@ class _$CustomerProfileDtoOutputSerializer implements PrimitiveSerializer<Custom
       final value = serializedList[i + 1];
       switch (key) {
         case r'completed':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.completed = valueDes;
           break;
         case r'profile':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(CustomerProfileDtoOutputProfile),
-          ) as CustomerProfileDtoOutputProfile?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerProfileDtoOutputProfile,
+                    ),
+                  )
+                  as CustomerProfileDtoOutputProfile?;
           if (valueDes == null) continue;
           result.profile.replace(valueDes);
           break;
@@ -122,5 +145,3 @@ class _$CustomerProfileDtoOutputSerializer implements PrimitiveSerializer<Custom
     return result.build();
   }
 }
-
-

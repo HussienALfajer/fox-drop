@@ -12,11 +12,16 @@ part 'admin_order_dto_output_order_delivery_recorded_by.g.dart';
 /// AdminOrderDtoOutputOrderDeliveryRecordedBy
 ///
 /// Properties:
-/// * [type] 
-/// * [id] 
+/// * [type]
+/// * [id]
 /// * [reason] - Operations' reason.
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderDeliveryRecordedBy implements Built<AdminOrderDtoOutputOrderDeliveryRecordedBy, AdminOrderDtoOutputOrderDeliveryRecordedByBuilder> {
+abstract class AdminOrderDtoOutputOrderDeliveryRecordedBy
+    implements
+        Built<
+          AdminOrderDtoOutputOrderDeliveryRecordedBy,
+          AdminOrderDtoOutputOrderDeliveryRecordedByBuilder
+        > {
   @BuiltValueField(wireName: r'type')
   AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum get type;
   // enum typeEnum {  captain,  admin,  };
@@ -30,18 +35,26 @@ abstract class AdminOrderDtoOutputOrderDeliveryRecordedBy implements Built<Admin
 
   AdminOrderDtoOutputOrderDeliveryRecordedBy._();
 
-  factory AdminOrderDtoOutputOrderDeliveryRecordedBy([void updates(AdminOrderDtoOutputOrderDeliveryRecordedByBuilder b)]) = _$AdminOrderDtoOutputOrderDeliveryRecordedBy;
+  factory AdminOrderDtoOutputOrderDeliveryRecordedBy([
+    void updates(AdminOrderDtoOutputOrderDeliveryRecordedByBuilder b),
+  ]) = _$AdminOrderDtoOutputOrderDeliveryRecordedBy;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminOrderDtoOutputOrderDeliveryRecordedByBuilder b) => b;
+  static void _defaults(AdminOrderDtoOutputOrderDeliveryRecordedByBuilder b) =>
+      b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderDeliveryRecordedBy> get serializer => _$AdminOrderDtoOutputOrderDeliveryRecordedBySerializer();
+  static Serializer<AdminOrderDtoOutputOrderDeliveryRecordedBy>
+  get serializer => _$AdminOrderDtoOutputOrderDeliveryRecordedBySerializer();
 }
 
-class _$AdminOrderDtoOutputOrderDeliveryRecordedBySerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderDeliveryRecordedBy> {
+class _$AdminOrderDtoOutputOrderDeliveryRecordedBySerializer
+    implements PrimitiveSerializer<AdminOrderDtoOutputOrderDeliveryRecordedBy> {
   @override
-  final Iterable<Type> types = const [AdminOrderDtoOutputOrderDeliveryRecordedBy, _$AdminOrderDtoOutputOrderDeliveryRecordedBy];
+  final Iterable<Type> types = const [
+    AdminOrderDtoOutputOrderDeliveryRecordedBy,
+    _$AdminOrderDtoOutputOrderDeliveryRecordedBy,
+  ];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderDeliveryRecordedBy';
@@ -54,7 +67,9 @@ class _$AdminOrderDtoOutputOrderDeliveryRecordedBySerializer implements Primitiv
     yield r'type';
     yield serializers.serialize(
       object.type,
-      specifiedType: const FullType(AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum),
+      specifiedType: const FullType(
+        AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum,
+      ),
     );
     yield r'id';
     yield serializers.serialize(
@@ -62,10 +77,12 @@ class _$AdminOrderDtoOutputOrderDeliveryRecordedBySerializer implements Primitiv
       specifiedType: const FullType(String),
     );
     yield r'reason';
-    yield object.reason == null ? null : serializers.serialize(
-      object.reason,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.reason == null
+        ? null
+        : serializers.serialize(
+            object.reason,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -74,7 +91,11 @@ class _$AdminOrderDtoOutputOrderDeliveryRecordedBySerializer implements Primitiv
     AdminOrderDtoOutputOrderDeliveryRecordedBy object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -90,24 +111,32 @@ class _$AdminOrderDtoOutputOrderDeliveryRecordedBySerializer implements Primitiv
       final value = serializedList[i + 1];
       switch (key) {
         case r'type':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum),
-          ) as AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum;
           result.type = valueDes;
           break;
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.reason = valueDes;
           break;
@@ -140,19 +169,24 @@ class _$AdminOrderDtoOutputOrderDeliveryRecordedBySerializer implements Primitiv
   }
 }
 
-
 class AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'captain')
-  static const AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum captain = _$adminOrderDtoOutputOrderDeliveryRecordedByTypeEnum_captain;
+  static const AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum captain =
+      _$adminOrderDtoOutputOrderDeliveryRecordedByTypeEnum_captain;
   @BuiltValueEnumConst(wireName: r'admin')
-  static const AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum admin = _$adminOrderDtoOutputOrderDeliveryRecordedByTypeEnum_admin;
+  static const AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum admin =
+      _$adminOrderDtoOutputOrderDeliveryRecordedByTypeEnum_admin;
 
-  static Serializer<AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum> get serializer => _$adminOrderDtoOutputOrderDeliveryRecordedByTypeEnumSerializer;
+  static Serializer<AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum>
+  get serializer =>
+      _$adminOrderDtoOutputOrderDeliveryRecordedByTypeEnumSerializer;
 
-  const AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum._(String name): super(name);
+  const AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum._(String name)
+    : super(name);
 
-  static BuiltSet<AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum> get values => _$adminOrderDtoOutputOrderDeliveryRecordedByTypeEnumValues;
-  static AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum valueOf(String name) => _$adminOrderDtoOutputOrderDeliveryRecordedByTypeEnumValueOf(name);
+  static BuiltSet<AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum>
+  get values => _$adminOrderDtoOutputOrderDeliveryRecordedByTypeEnumValues;
+  static AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum valueOf(
+    String name,
+  ) => _$adminOrderDtoOutputOrderDeliveryRecordedByTypeEnumValueOf(name);
 }
-

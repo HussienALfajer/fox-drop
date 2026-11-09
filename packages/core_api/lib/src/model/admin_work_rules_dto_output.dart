@@ -11,26 +11,34 @@ part 'admin_work_rules_dto_output.g.dart';
 /// AdminWorkRulesDtoOutput
 ///
 /// Properties:
-/// * [workRules] 
+/// * [workRules]
 @BuiltValue()
-abstract class AdminWorkRulesDtoOutput implements Built<AdminWorkRulesDtoOutput, AdminWorkRulesDtoOutputBuilder> {
+abstract class AdminWorkRulesDtoOutput
+    implements Built<AdminWorkRulesDtoOutput, AdminWorkRulesDtoOutputBuilder> {
   @BuiltValueField(wireName: r'workRules')
   String get workRules;
 
   AdminWorkRulesDtoOutput._();
 
-  factory AdminWorkRulesDtoOutput([void updates(AdminWorkRulesDtoOutputBuilder b)]) = _$AdminWorkRulesDtoOutput;
+  factory AdminWorkRulesDtoOutput([
+    void updates(AdminWorkRulesDtoOutputBuilder b),
+  ]) = _$AdminWorkRulesDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminWorkRulesDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminWorkRulesDtoOutput> get serializer => _$AdminWorkRulesDtoOutputSerializer();
+  static Serializer<AdminWorkRulesDtoOutput> get serializer =>
+      _$AdminWorkRulesDtoOutputSerializer();
 }
 
-class _$AdminWorkRulesDtoOutputSerializer implements PrimitiveSerializer<AdminWorkRulesDtoOutput> {
+class _$AdminWorkRulesDtoOutputSerializer
+    implements PrimitiveSerializer<AdminWorkRulesDtoOutput> {
   @override
-  final Iterable<Type> types = const [AdminWorkRulesDtoOutput, _$AdminWorkRulesDtoOutput];
+  final Iterable<Type> types = const [
+    AdminWorkRulesDtoOutput,
+    _$AdminWorkRulesDtoOutput,
+  ];
 
   @override
   final String wireName = r'AdminWorkRulesDtoOutput';
@@ -53,7 +61,11 @@ class _$AdminWorkRulesDtoOutputSerializer implements PrimitiveSerializer<AdminWo
     AdminWorkRulesDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -69,10 +81,12 @@ class _$AdminWorkRulesDtoOutputSerializer implements PrimitiveSerializer<AdminWo
       final value = serializedList[i + 1];
       switch (key) {
         case r'workRules':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.workRules = valueDes;
           break;
         default:
@@ -103,5 +117,3 @@ class _$AdminWorkRulesDtoOutputSerializer implements PrimitiveSerializer<AdminWo
     return result.build();
   }
 }
-
-

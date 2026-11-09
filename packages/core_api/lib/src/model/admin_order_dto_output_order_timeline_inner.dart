@@ -13,16 +13,21 @@ part 'admin_order_dto_output_order_timeline_inner.g.dart';
 /// AdminOrderDtoOutputOrderTimelineInner
 ///
 /// Properties:
-/// * [version] 
-/// * [at] 
+/// * [version]
+/// * [at]
 /// * [type] - Such as order.accepted or order.offered.
-/// * [from] 
-/// * [to] 
-/// * [actor] 
+/// * [from]
+/// * [to]
+/// * [actor]
 /// * [captainId] - The offer's captain, or the one assigned.
-/// * [reason] 
+/// * [reason]
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderTimelineInner implements Built<AdminOrderDtoOutputOrderTimelineInner, AdminOrderDtoOutputOrderTimelineInnerBuilder> {
+abstract class AdminOrderDtoOutputOrderTimelineInner
+    implements
+        Built<
+          AdminOrderDtoOutputOrderTimelineInner,
+          AdminOrderDtoOutputOrderTimelineInnerBuilder
+        > {
   @BuiltValueField(wireName: r'version')
   int get version;
 
@@ -53,18 +58,25 @@ abstract class AdminOrderDtoOutputOrderTimelineInner implements Built<AdminOrder
 
   AdminOrderDtoOutputOrderTimelineInner._();
 
-  factory AdminOrderDtoOutputOrderTimelineInner([void updates(AdminOrderDtoOutputOrderTimelineInnerBuilder b)]) = _$AdminOrderDtoOutputOrderTimelineInner;
+  factory AdminOrderDtoOutputOrderTimelineInner([
+    void updates(AdminOrderDtoOutputOrderTimelineInnerBuilder b),
+  ]) = _$AdminOrderDtoOutputOrderTimelineInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderDtoOutputOrderTimelineInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderTimelineInner> get serializer => _$AdminOrderDtoOutputOrderTimelineInnerSerializer();
+  static Serializer<AdminOrderDtoOutputOrderTimelineInner> get serializer =>
+      _$AdminOrderDtoOutputOrderTimelineInnerSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderTimelineInnerSerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderTimelineInner> {
+class _$AdminOrderDtoOutputOrderTimelineInnerSerializer
+    implements PrimitiveSerializer<AdminOrderDtoOutputOrderTimelineInner> {
   @override
-  final Iterable<Type> types = const [AdminOrderDtoOutputOrderTimelineInner, _$AdminOrderDtoOutputOrderTimelineInner];
+  final Iterable<Type> types = const [
+    AdminOrderDtoOutputOrderTimelineInner,
+    _$AdminOrderDtoOutputOrderTimelineInner,
+  ];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderTimelineInner';
@@ -85,19 +97,27 @@ class _$AdminOrderDtoOutputOrderTimelineInnerSerializer implements PrimitiveSeri
       specifiedType: const FullType(DateTime),
     );
     yield r'type';
-    yield object.type == null ? null : serializers.serialize(
-      object.type,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.type == null
+        ? null
+        : serializers.serialize(
+            object.type,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'from';
-    yield object.from == null ? null : serializers.serialize(
-      object.from,
-      specifiedType: const FullType.nullable(AdminOrderDtoOutputOrderTimelineInnerFromEnum),
-    );
+    yield object.from == null
+        ? null
+        : serializers.serialize(
+            object.from,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderTimelineInnerFromEnum,
+            ),
+          );
     yield r'to';
     yield serializers.serialize(
       object.to,
-      specifiedType: const FullType(AdminOrderDtoOutputOrderTimelineInnerToEnum),
+      specifiedType: const FullType(
+        AdminOrderDtoOutputOrderTimelineInnerToEnum,
+      ),
     );
     yield r'actor';
     yield serializers.serialize(
@@ -105,15 +125,19 @@ class _$AdminOrderDtoOutputOrderTimelineInnerSerializer implements PrimitiveSeri
       specifiedType: const FullType(AdminOrderDtoOutputOrderTimelineInnerActor),
     );
     yield r'captainId';
-    yield object.captainId == null ? null : serializers.serialize(
-      object.captainId,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.captainId == null
+        ? null
+        : serializers.serialize(
+            object.captainId,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'reason';
-    yield object.reason == null ? null : serializers.serialize(
-      object.reason,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.reason == null
+        ? null
+        : serializers.serialize(
+            object.reason,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -122,7 +146,11 @@ class _$AdminOrderDtoOutputOrderTimelineInnerSerializer implements PrimitiveSeri
     AdminOrderDtoOutputOrderTimelineInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -138,62 +166,81 @@ class _$AdminOrderDtoOutputOrderTimelineInnerSerializer implements PrimitiveSeri
       final value = serializedList[i + 1];
       switch (key) {
         case r'version':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.version = valueDes;
           break;
         case r'at':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.at = valueDes;
           break;
         case r'type':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.type = valueDes;
           break;
         case r'from':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(AdminOrderDtoOutputOrderTimelineInnerFromEnum),
-          ) as AdminOrderDtoOutputOrderTimelineInnerFromEnum?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderTimelineInnerFromEnum,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderTimelineInnerFromEnum?;
           if (valueDes == null) continue;
           result.from = valueDes;
           break;
         case r'to':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdminOrderDtoOutputOrderTimelineInnerToEnum),
-          ) as AdminOrderDtoOutputOrderTimelineInnerToEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminOrderDtoOutputOrderTimelineInnerToEnum,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderTimelineInnerToEnum;
           result.to = valueDes;
           break;
         case r'actor':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdminOrderDtoOutputOrderTimelineInnerActor),
-          ) as AdminOrderDtoOutputOrderTimelineInnerActor;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminOrderDtoOutputOrderTimelineInnerActor,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderTimelineInnerActor;
           result.actor.replace(valueDes);
           break;
         case r'captainId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.captainId = valueDes;
           break;
         case r'reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.reason = valueDes;
           break;
@@ -226,62 +273,84 @@ class _$AdminOrderDtoOutputOrderTimelineInnerSerializer implements PrimitiveSeri
   }
 }
 
-
 class AdminOrderDtoOutputOrderTimelineInnerFromEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'placed')
-  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum placed = _$adminOrderDtoOutputOrderTimelineInnerFromEnum_placed;
+  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum placed =
+      _$adminOrderDtoOutputOrderTimelineInnerFromEnum_placed;
   @BuiltValueEnumConst(wireName: r'accepted')
-  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum accepted = _$adminOrderDtoOutputOrderTimelineInnerFromEnum_accepted;
+  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum accepted =
+      _$adminOrderDtoOutputOrderTimelineInnerFromEnum_accepted;
   @BuiltValueEnumConst(wireName: r'ready')
-  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum ready = _$adminOrderDtoOutputOrderTimelineInnerFromEnum_ready;
+  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum ready =
+      _$adminOrderDtoOutputOrderTimelineInnerFromEnum_ready;
   @BuiltValueEnumConst(wireName: r'picked_up')
-  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum pickedUp = _$adminOrderDtoOutputOrderTimelineInnerFromEnum_pickedUp;
+  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum pickedUp =
+      _$adminOrderDtoOutputOrderTimelineInnerFromEnum_pickedUp;
   @BuiltValueEnumConst(wireName: r'arrived')
-  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum arrived = _$adminOrderDtoOutputOrderTimelineInnerFromEnum_arrived;
+  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum arrived =
+      _$adminOrderDtoOutputOrderTimelineInnerFromEnum_arrived;
   @BuiltValueEnumConst(wireName: r'delivered')
-  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum delivered = _$adminOrderDtoOutputOrderTimelineInnerFromEnum_delivered;
+  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum delivered =
+      _$adminOrderDtoOutputOrderTimelineInnerFromEnum_delivered;
   @BuiltValueEnumConst(wireName: r'rejected')
-  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum rejected = _$adminOrderDtoOutputOrderTimelineInnerFromEnum_rejected;
+  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum rejected =
+      _$adminOrderDtoOutputOrderTimelineInnerFromEnum_rejected;
   @BuiltValueEnumConst(wireName: r'cancelled')
-  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum cancelled = _$adminOrderDtoOutputOrderTimelineInnerFromEnum_cancelled;
+  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum cancelled =
+      _$adminOrderDtoOutputOrderTimelineInnerFromEnum_cancelled;
   @BuiltValueEnumConst(wireName: r'failed')
-  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum failed = _$adminOrderDtoOutputOrderTimelineInnerFromEnum_failed;
+  static const AdminOrderDtoOutputOrderTimelineInnerFromEnum failed =
+      _$adminOrderDtoOutputOrderTimelineInnerFromEnum_failed;
 
-  static Serializer<AdminOrderDtoOutputOrderTimelineInnerFromEnum> get serializer => _$adminOrderDtoOutputOrderTimelineInnerFromEnumSerializer;
+  static Serializer<AdminOrderDtoOutputOrderTimelineInnerFromEnum>
+  get serializer => _$adminOrderDtoOutputOrderTimelineInnerFromEnumSerializer;
 
-  const AdminOrderDtoOutputOrderTimelineInnerFromEnum._(String name): super(name);
+  const AdminOrderDtoOutputOrderTimelineInnerFromEnum._(String name)
+    : super(name);
 
-  static BuiltSet<AdminOrderDtoOutputOrderTimelineInnerFromEnum> get values => _$adminOrderDtoOutputOrderTimelineInnerFromEnumValues;
-  static AdminOrderDtoOutputOrderTimelineInnerFromEnum valueOf(String name) => _$adminOrderDtoOutputOrderTimelineInnerFromEnumValueOf(name);
+  static BuiltSet<AdminOrderDtoOutputOrderTimelineInnerFromEnum> get values =>
+      _$adminOrderDtoOutputOrderTimelineInnerFromEnumValues;
+  static AdminOrderDtoOutputOrderTimelineInnerFromEnum valueOf(String name) =>
+      _$adminOrderDtoOutputOrderTimelineInnerFromEnumValueOf(name);
 }
 
 class AdminOrderDtoOutputOrderTimelineInnerToEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'placed')
-  static const AdminOrderDtoOutputOrderTimelineInnerToEnum placed = _$adminOrderDtoOutputOrderTimelineInnerToEnum_placed;
+  static const AdminOrderDtoOutputOrderTimelineInnerToEnum placed =
+      _$adminOrderDtoOutputOrderTimelineInnerToEnum_placed;
   @BuiltValueEnumConst(wireName: r'accepted')
-  static const AdminOrderDtoOutputOrderTimelineInnerToEnum accepted = _$adminOrderDtoOutputOrderTimelineInnerToEnum_accepted;
+  static const AdminOrderDtoOutputOrderTimelineInnerToEnum accepted =
+      _$adminOrderDtoOutputOrderTimelineInnerToEnum_accepted;
   @BuiltValueEnumConst(wireName: r'ready')
-  static const AdminOrderDtoOutputOrderTimelineInnerToEnum ready = _$adminOrderDtoOutputOrderTimelineInnerToEnum_ready;
+  static const AdminOrderDtoOutputOrderTimelineInnerToEnum ready =
+      _$adminOrderDtoOutputOrderTimelineInnerToEnum_ready;
   @BuiltValueEnumConst(wireName: r'picked_up')
-  static const AdminOrderDtoOutputOrderTimelineInnerToEnum pickedUp = _$adminOrderDtoOutputOrderTimelineInnerToEnum_pickedUp;
+  static const AdminOrderDtoOutputOrderTimelineInnerToEnum pickedUp =
+      _$adminOrderDtoOutputOrderTimelineInnerToEnum_pickedUp;
   @BuiltValueEnumConst(wireName: r'arrived')
-  static const AdminOrderDtoOutputOrderTimelineInnerToEnum arrived = _$adminOrderDtoOutputOrderTimelineInnerToEnum_arrived;
+  static const AdminOrderDtoOutputOrderTimelineInnerToEnum arrived =
+      _$adminOrderDtoOutputOrderTimelineInnerToEnum_arrived;
   @BuiltValueEnumConst(wireName: r'delivered')
-  static const AdminOrderDtoOutputOrderTimelineInnerToEnum delivered = _$adminOrderDtoOutputOrderTimelineInnerToEnum_delivered;
+  static const AdminOrderDtoOutputOrderTimelineInnerToEnum delivered =
+      _$adminOrderDtoOutputOrderTimelineInnerToEnum_delivered;
   @BuiltValueEnumConst(wireName: r'rejected')
-  static const AdminOrderDtoOutputOrderTimelineInnerToEnum rejected = _$adminOrderDtoOutputOrderTimelineInnerToEnum_rejected;
+  static const AdminOrderDtoOutputOrderTimelineInnerToEnum rejected =
+      _$adminOrderDtoOutputOrderTimelineInnerToEnum_rejected;
   @BuiltValueEnumConst(wireName: r'cancelled')
-  static const AdminOrderDtoOutputOrderTimelineInnerToEnum cancelled = _$adminOrderDtoOutputOrderTimelineInnerToEnum_cancelled;
+  static const AdminOrderDtoOutputOrderTimelineInnerToEnum cancelled =
+      _$adminOrderDtoOutputOrderTimelineInnerToEnum_cancelled;
   @BuiltValueEnumConst(wireName: r'failed')
-  static const AdminOrderDtoOutputOrderTimelineInnerToEnum failed = _$adminOrderDtoOutputOrderTimelineInnerToEnum_failed;
+  static const AdminOrderDtoOutputOrderTimelineInnerToEnum failed =
+      _$adminOrderDtoOutputOrderTimelineInnerToEnum_failed;
 
-  static Serializer<AdminOrderDtoOutputOrderTimelineInnerToEnum> get serializer => _$adminOrderDtoOutputOrderTimelineInnerToEnumSerializer;
+  static Serializer<AdminOrderDtoOutputOrderTimelineInnerToEnum>
+  get serializer => _$adminOrderDtoOutputOrderTimelineInnerToEnumSerializer;
 
-  const AdminOrderDtoOutputOrderTimelineInnerToEnum._(String name): super(name);
+  const AdminOrderDtoOutputOrderTimelineInnerToEnum._(String name)
+    : super(name);
 
-  static BuiltSet<AdminOrderDtoOutputOrderTimelineInnerToEnum> get values => _$adminOrderDtoOutputOrderTimelineInnerToEnumValues;
-  static AdminOrderDtoOutputOrderTimelineInnerToEnum valueOf(String name) => _$adminOrderDtoOutputOrderTimelineInnerToEnumValueOf(name);
+  static BuiltSet<AdminOrderDtoOutputOrderTimelineInnerToEnum> get values =>
+      _$adminOrderDtoOutputOrderTimelineInnerToEnumValues;
+  static AdminOrderDtoOutputOrderTimelineInnerToEnum valueOf(String name) =>
+      _$adminOrderDtoOutputOrderTimelineInnerToEnumValueOf(name);
 }
-

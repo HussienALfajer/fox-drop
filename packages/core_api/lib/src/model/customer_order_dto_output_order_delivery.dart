@@ -17,7 +17,12 @@ part 'customer_order_dto_output_order_delivery.g.dart';
 /// * [received] - «استلم الكابتن: {المبالغ}» (CU §11.8, Q23).
 /// * [change] - «أعاد لك: {المبالغ}».
 @BuiltValue()
-abstract class CustomerOrderDtoOutputOrderDelivery implements Built<CustomerOrderDtoOutputOrderDelivery, CustomerOrderDtoOutputOrderDeliveryBuilder> {
+abstract class CustomerOrderDtoOutputOrderDelivery
+    implements
+        Built<
+          CustomerOrderDtoOutputOrderDelivery,
+          CustomerOrderDtoOutputOrderDeliveryBuilder
+        > {
   /// «تم التسليم».
   @BuiltValueField(wireName: r'at')
   DateTime get at;
@@ -32,18 +37,25 @@ abstract class CustomerOrderDtoOutputOrderDelivery implements Built<CustomerOrde
 
   CustomerOrderDtoOutputOrderDelivery._();
 
-  factory CustomerOrderDtoOutputOrderDelivery([void updates(CustomerOrderDtoOutputOrderDeliveryBuilder b)]) = _$CustomerOrderDtoOutputOrderDelivery;
+  factory CustomerOrderDtoOutputOrderDelivery([
+    void updates(CustomerOrderDtoOutputOrderDeliveryBuilder b),
+  ]) = _$CustomerOrderDtoOutputOrderDelivery;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerOrderDtoOutputOrderDeliveryBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerOrderDtoOutputOrderDelivery> get serializer => _$CustomerOrderDtoOutputOrderDeliverySerializer();
+  static Serializer<CustomerOrderDtoOutputOrderDelivery> get serializer =>
+      _$CustomerOrderDtoOutputOrderDeliverySerializer();
 }
 
-class _$CustomerOrderDtoOutputOrderDeliverySerializer implements PrimitiveSerializer<CustomerOrderDtoOutputOrderDelivery> {
+class _$CustomerOrderDtoOutputOrderDeliverySerializer
+    implements PrimitiveSerializer<CustomerOrderDtoOutputOrderDelivery> {
   @override
-  final Iterable<Type> types = const [CustomerOrderDtoOutputOrderDelivery, _$CustomerOrderDtoOutputOrderDelivery];
+  final Iterable<Type> types = const [
+    CustomerOrderDtoOutputOrderDelivery,
+    _$CustomerOrderDtoOutputOrderDelivery,
+  ];
 
   @override
   final String wireName = r'CustomerOrderDtoOutputOrderDelivery';
@@ -61,12 +73,16 @@ class _$CustomerOrderDtoOutputOrderDeliverySerializer implements PrimitiveSerial
     yield r'received';
     yield serializers.serialize(
       object.received,
-      specifiedType: const FullType(BuiltList, [FullType(CaptainAvailabilityDtoOutputCustodyLimit)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+      ]),
     );
     yield r'change';
     yield serializers.serialize(
       object.change,
-      specifiedType: const FullType(BuiltList, [FullType(CaptainAvailabilityDtoOutputCustodyLimit)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+      ]),
     );
   }
 
@@ -76,7 +92,11 @@ class _$CustomerOrderDtoOutputOrderDeliverySerializer implements PrimitiveSerial
     CustomerOrderDtoOutputOrderDelivery object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -92,24 +112,34 @@ class _$CustomerOrderDtoOutputOrderDeliverySerializer implements PrimitiveSerial
       final value = serializedList[i + 1];
       switch (key) {
         case r'at':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.at = valueDes;
           break;
         case r'received':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CaptainAvailabilityDtoOutputCustodyLimit)]),
-          ) as BuiltList<CaptainAvailabilityDtoOutputCustodyLimit>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+                    ]),
+                  )
+                  as BuiltList<CaptainAvailabilityDtoOutputCustodyLimit>;
           result.received.replace(valueDes);
           break;
         case r'change':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CaptainAvailabilityDtoOutputCustodyLimit)]),
-          ) as BuiltList<CaptainAvailabilityDtoOutputCustodyLimit>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+                    ]),
+                  )
+                  as BuiltList<CaptainAvailabilityDtoOutputCustodyLimit>;
           result.change.replace(valueDes);
           break;
         default:
@@ -140,5 +170,3 @@ class _$CustomerOrderDtoOutputOrderDeliverySerializer implements PrimitiveSerial
     return result.build();
   }
 }
-
-

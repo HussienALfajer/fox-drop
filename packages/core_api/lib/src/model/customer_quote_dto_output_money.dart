@@ -18,7 +18,9 @@ part 'customer_quote_dto_output_money.g.dart';
 /// * [rounding] - «تقريب», shown only when not 0.
 /// * [total] - «المجموع».
 @BuiltValue()
-abstract class CustomerQuoteDtoOutputMoney implements Built<CustomerQuoteDtoOutputMoney, CustomerQuoteDtoOutputMoneyBuilder> {
+abstract class CustomerQuoteDtoOutputMoney
+    implements
+        Built<CustomerQuoteDtoOutputMoney, CustomerQuoteDtoOutputMoneyBuilder> {
   /// «قيمة الأصناف».
   @BuiltValueField(wireName: r'itemsValue')
   String get itemsValue;
@@ -45,18 +47,25 @@ abstract class CustomerQuoteDtoOutputMoney implements Built<CustomerQuoteDtoOutp
 
   CustomerQuoteDtoOutputMoney._();
 
-  factory CustomerQuoteDtoOutputMoney([void updates(CustomerQuoteDtoOutputMoneyBuilder b)]) = _$CustomerQuoteDtoOutputMoney;
+  factory CustomerQuoteDtoOutputMoney([
+    void updates(CustomerQuoteDtoOutputMoneyBuilder b),
+  ]) = _$CustomerQuoteDtoOutputMoney;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerQuoteDtoOutputMoneyBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerQuoteDtoOutputMoney> get serializer => _$CustomerQuoteDtoOutputMoneySerializer();
+  static Serializer<CustomerQuoteDtoOutputMoney> get serializer =>
+      _$CustomerQuoteDtoOutputMoneySerializer();
 }
 
-class _$CustomerQuoteDtoOutputMoneySerializer implements PrimitiveSerializer<CustomerQuoteDtoOutputMoney> {
+class _$CustomerQuoteDtoOutputMoneySerializer
+    implements PrimitiveSerializer<CustomerQuoteDtoOutputMoney> {
   @override
-  final Iterable<Type> types = const [CustomerQuoteDtoOutputMoney, _$CustomerQuoteDtoOutputMoney];
+  final Iterable<Type> types = const [
+    CustomerQuoteDtoOutputMoney,
+    _$CustomerQuoteDtoOutputMoney,
+  ];
 
   @override
   final String wireName = r'CustomerQuoteDtoOutputMoney';
@@ -104,7 +113,11 @@ class _$CustomerQuoteDtoOutputMoneySerializer implements PrimitiveSerializer<Cus
     CustomerQuoteDtoOutputMoney object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -120,45 +133,57 @@ class _$CustomerQuoteDtoOutputMoneySerializer implements PrimitiveSerializer<Cus
       final value = serializedList[i + 1];
       switch (key) {
         case r'itemsValue':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.itemsValue = valueDes;
           break;
         case r'deliveryFee':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.deliveryFee = valueDes;
           break;
         case r'deliveryFree':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.deliveryFree = valueDes;
           break;
         case r'discount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.discount = valueDes;
           break;
         case r'rounding':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.rounding = valueDes;
           break;
         case r'total':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.total = valueDes;
           break;
         default:
@@ -189,5 +214,3 @@ class _$CustomerQuoteDtoOutputMoneySerializer implements PrimitiveSerializer<Cus
     return result.build();
   }
 }
-
-

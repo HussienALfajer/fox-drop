@@ -11,10 +11,15 @@ part 'merchant_emergency_stop_dto_output.g.dart';
 /// MerchantEmergencyStopDtoOutput
 ///
 /// Properties:
-/// * [active] 
-/// * [startedAt] 
+/// * [active]
+/// * [startedAt]
 @BuiltValue()
-abstract class MerchantEmergencyStopDtoOutput implements Built<MerchantEmergencyStopDtoOutput, MerchantEmergencyStopDtoOutputBuilder> {
+abstract class MerchantEmergencyStopDtoOutput
+    implements
+        Built<
+          MerchantEmergencyStopDtoOutput,
+          MerchantEmergencyStopDtoOutputBuilder
+        > {
   @BuiltValueField(wireName: r'active')
   bool get active;
 
@@ -23,18 +28,25 @@ abstract class MerchantEmergencyStopDtoOutput implements Built<MerchantEmergency
 
   MerchantEmergencyStopDtoOutput._();
 
-  factory MerchantEmergencyStopDtoOutput([void updates(MerchantEmergencyStopDtoOutputBuilder b)]) = _$MerchantEmergencyStopDtoOutput;
+  factory MerchantEmergencyStopDtoOutput([
+    void updates(MerchantEmergencyStopDtoOutputBuilder b),
+  ]) = _$MerchantEmergencyStopDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantEmergencyStopDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantEmergencyStopDtoOutput> get serializer => _$MerchantEmergencyStopDtoOutputSerializer();
+  static Serializer<MerchantEmergencyStopDtoOutput> get serializer =>
+      _$MerchantEmergencyStopDtoOutputSerializer();
 }
 
-class _$MerchantEmergencyStopDtoOutputSerializer implements PrimitiveSerializer<MerchantEmergencyStopDtoOutput> {
+class _$MerchantEmergencyStopDtoOutputSerializer
+    implements PrimitiveSerializer<MerchantEmergencyStopDtoOutput> {
   @override
-  final Iterable<Type> types = const [MerchantEmergencyStopDtoOutput, _$MerchantEmergencyStopDtoOutput];
+  final Iterable<Type> types = const [
+    MerchantEmergencyStopDtoOutput,
+    _$MerchantEmergencyStopDtoOutput,
+  ];
 
   @override
   final String wireName = r'MerchantEmergencyStopDtoOutput';
@@ -50,10 +62,12 @@ class _$MerchantEmergencyStopDtoOutputSerializer implements PrimitiveSerializer<
       specifiedType: const FullType(bool),
     );
     yield r'startedAt';
-    yield object.startedAt == null ? null : serializers.serialize(
-      object.startedAt,
-      specifiedType: const FullType.nullable(DateTime),
-    );
+    yield object.startedAt == null
+        ? null
+        : serializers.serialize(
+            object.startedAt,
+            specifiedType: const FullType.nullable(DateTime),
+          );
   }
 
   @override
@@ -62,7 +76,11 @@ class _$MerchantEmergencyStopDtoOutputSerializer implements PrimitiveSerializer<
     MerchantEmergencyStopDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -78,17 +96,21 @@ class _$MerchantEmergencyStopDtoOutputSerializer implements PrimitiveSerializer<
       final value = serializedList[i + 1];
       switch (key) {
         case r'active':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.active = valueDes;
           break;
         case r'startedAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(DateTime),
-          ) as DateTime?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
           if (valueDes == null) continue;
           result.startedAt = valueDes;
           break;
@@ -120,5 +142,3 @@ class _$MerchantEmergencyStopDtoOutputSerializer implements PrimitiveSerializer<
     return result.build();
   }
 }
-
-

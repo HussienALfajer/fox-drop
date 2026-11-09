@@ -13,10 +13,11 @@ part 'admin_new_upload_dto.g.dart';
 ///
 /// Properties:
 /// * [purpose] - The record the file is for (architecture §5.8).
-/// * [contentType] 
-/// * [sizeBytes] 
+/// * [contentType]
+/// * [sizeBytes]
 @BuiltValue()
-abstract class AdminNewUploadDto implements Built<AdminNewUploadDto, AdminNewUploadDtoBuilder> {
+abstract class AdminNewUploadDto
+    implements Built<AdminNewUploadDto, AdminNewUploadDtoBuilder> {
   /// The record the file is for (architecture §5.8).
   @BuiltValueField(wireName: r'purpose')
   AdminNewUploadDtoPurposeEnum get purpose;
@@ -31,16 +32,19 @@ abstract class AdminNewUploadDto implements Built<AdminNewUploadDto, AdminNewUpl
 
   AdminNewUploadDto._();
 
-  factory AdminNewUploadDto([void updates(AdminNewUploadDtoBuilder b)]) = _$AdminNewUploadDto;
+  factory AdminNewUploadDto([void updates(AdminNewUploadDtoBuilder b)]) =
+      _$AdminNewUploadDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminNewUploadDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminNewUploadDto> get serializer => _$AdminNewUploadDtoSerializer();
+  static Serializer<AdminNewUploadDto> get serializer =>
+      _$AdminNewUploadDtoSerializer();
 }
 
-class _$AdminNewUploadDtoSerializer implements PrimitiveSerializer<AdminNewUploadDto> {
+class _$AdminNewUploadDtoSerializer
+    implements PrimitiveSerializer<AdminNewUploadDto> {
   @override
   final Iterable<Type> types = const [AdminNewUploadDto, _$AdminNewUploadDto];
 
@@ -75,7 +79,11 @@ class _$AdminNewUploadDtoSerializer implements PrimitiveSerializer<AdminNewUploa
     AdminNewUploadDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -91,24 +99,29 @@ class _$AdminNewUploadDtoSerializer implements PrimitiveSerializer<AdminNewUploa
       final value = serializedList[i + 1];
       switch (key) {
         case r'purpose':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdminNewUploadDtoPurposeEnum),
-          ) as AdminNewUploadDtoPurposeEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(AdminNewUploadDtoPurposeEnum),
+                  )
+                  as AdminNewUploadDtoPurposeEnum;
           result.purpose = valueDes;
           break;
         case r'contentType':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdminNewUploadDtoContentTypeEnum),
-          ) as AdminNewUploadDtoContentTypeEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminNewUploadDtoContentTypeEnum,
+                    ),
+                  )
+                  as AdminNewUploadDtoContentTypeEnum;
           result.contentType = valueDes;
           break;
         case r'sizeBytes':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.sizeBytes = valueDes;
           break;
         default:
@@ -140,39 +153,47 @@ class _$AdminNewUploadDtoSerializer implements PrimitiveSerializer<AdminNewUploa
   }
 }
 
-
 /// The record the file is for (architecture §5.8).
 class AdminNewUploadDtoPurposeEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'restaurant_logo')
-  static const AdminNewUploadDtoPurposeEnum restaurantLogo = _$adminNewUploadDtoPurposeEnum_restaurantLogo;
+  static const AdminNewUploadDtoPurposeEnum restaurantLogo =
+      _$adminNewUploadDtoPurposeEnum_restaurantLogo;
   @BuiltValueEnumConst(wireName: r'restaurant_cover')
-  static const AdminNewUploadDtoPurposeEnum restaurantCover = _$adminNewUploadDtoPurposeEnum_restaurantCover;
+  static const AdminNewUploadDtoPurposeEnum restaurantCover =
+      _$adminNewUploadDtoPurposeEnum_restaurantCover;
   @BuiltValueEnumConst(wireName: r'item_photo')
-  static const AdminNewUploadDtoPurposeEnum itemPhoto = _$adminNewUploadDtoPurposeEnum_itemPhoto;
+  static const AdminNewUploadDtoPurposeEnum itemPhoto =
+      _$adminNewUploadDtoPurposeEnum_itemPhoto;
 
-  static Serializer<AdminNewUploadDtoPurposeEnum> get serializer => _$adminNewUploadDtoPurposeEnumSerializer;
+  static Serializer<AdminNewUploadDtoPurposeEnum> get serializer =>
+      _$adminNewUploadDtoPurposeEnumSerializer;
 
-  const AdminNewUploadDtoPurposeEnum._(String name): super(name);
+  const AdminNewUploadDtoPurposeEnum._(String name) : super(name);
 
-  static BuiltSet<AdminNewUploadDtoPurposeEnum> get values => _$adminNewUploadDtoPurposeEnumValues;
-  static AdminNewUploadDtoPurposeEnum valueOf(String name) => _$adminNewUploadDtoPurposeEnumValueOf(name);
+  static BuiltSet<AdminNewUploadDtoPurposeEnum> get values =>
+      _$adminNewUploadDtoPurposeEnumValues;
+  static AdminNewUploadDtoPurposeEnum valueOf(String name) =>
+      _$adminNewUploadDtoPurposeEnumValueOf(name);
 }
 
 class AdminNewUploadDtoContentTypeEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'image/jpeg')
-  static const AdminNewUploadDtoContentTypeEnum imageSlashJpeg = _$adminNewUploadDtoContentTypeEnum_imageSlashJpeg;
+  static const AdminNewUploadDtoContentTypeEnum imageSlashJpeg =
+      _$adminNewUploadDtoContentTypeEnum_imageSlashJpeg;
   @BuiltValueEnumConst(wireName: r'image/png')
-  static const AdminNewUploadDtoContentTypeEnum imageSlashPng = _$adminNewUploadDtoContentTypeEnum_imageSlashPng;
+  static const AdminNewUploadDtoContentTypeEnum imageSlashPng =
+      _$adminNewUploadDtoContentTypeEnum_imageSlashPng;
   @BuiltValueEnumConst(wireName: r'image/webp')
-  static const AdminNewUploadDtoContentTypeEnum imageSlashWebp = _$adminNewUploadDtoContentTypeEnum_imageSlashWebp;
+  static const AdminNewUploadDtoContentTypeEnum imageSlashWebp =
+      _$adminNewUploadDtoContentTypeEnum_imageSlashWebp;
 
-  static Serializer<AdminNewUploadDtoContentTypeEnum> get serializer => _$adminNewUploadDtoContentTypeEnumSerializer;
+  static Serializer<AdminNewUploadDtoContentTypeEnum> get serializer =>
+      _$adminNewUploadDtoContentTypeEnumSerializer;
 
-  const AdminNewUploadDtoContentTypeEnum._(String name): super(name);
+  const AdminNewUploadDtoContentTypeEnum._(String name) : super(name);
 
-  static BuiltSet<AdminNewUploadDtoContentTypeEnum> get values => _$adminNewUploadDtoContentTypeEnumValues;
-  static AdminNewUploadDtoContentTypeEnum valueOf(String name) => _$adminNewUploadDtoContentTypeEnumValueOf(name);
+  static BuiltSet<AdminNewUploadDtoContentTypeEnum> get values =>
+      _$adminNewUploadDtoContentTypeEnumValues;
+  static AdminNewUploadDtoContentTypeEnum valueOf(String name) =>
+      _$adminNewUploadDtoContentTypeEnumValueOf(name);
 }
-

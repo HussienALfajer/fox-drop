@@ -11,10 +11,15 @@ part 'admin_order_dto_output_order_lines_inner_options_inner.g.dart';
 /// AdminOrderDtoOutputOrderLinesInnerOptionsInner
 ///
 /// Properties:
-/// * [name] 
+/// * [name]
 /// * [priceDelta] - Integer minor units (AP §8.6).
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderLinesInnerOptionsInner implements Built<AdminOrderDtoOutputOrderLinesInnerOptionsInner, AdminOrderDtoOutputOrderLinesInnerOptionsInnerBuilder> {
+abstract class AdminOrderDtoOutputOrderLinesInnerOptionsInner
+    implements
+        Built<
+          AdminOrderDtoOutputOrderLinesInnerOptionsInner,
+          AdminOrderDtoOutputOrderLinesInnerOptionsInnerBuilder
+        > {
   @BuiltValueField(wireName: r'name')
   String get name;
 
@@ -24,18 +29,29 @@ abstract class AdminOrderDtoOutputOrderLinesInnerOptionsInner implements Built<A
 
   AdminOrderDtoOutputOrderLinesInnerOptionsInner._();
 
-  factory AdminOrderDtoOutputOrderLinesInnerOptionsInner([void updates(AdminOrderDtoOutputOrderLinesInnerOptionsInnerBuilder b)]) = _$AdminOrderDtoOutputOrderLinesInnerOptionsInner;
+  factory AdminOrderDtoOutputOrderLinesInnerOptionsInner([
+    void updates(AdminOrderDtoOutputOrderLinesInnerOptionsInnerBuilder b),
+  ]) = _$AdminOrderDtoOutputOrderLinesInnerOptionsInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminOrderDtoOutputOrderLinesInnerOptionsInnerBuilder b) => b;
+  static void _defaults(
+    AdminOrderDtoOutputOrderLinesInnerOptionsInnerBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderLinesInnerOptionsInner> get serializer => _$AdminOrderDtoOutputOrderLinesInnerOptionsInnerSerializer();
+  static Serializer<AdminOrderDtoOutputOrderLinesInnerOptionsInner>
+  get serializer =>
+      _$AdminOrderDtoOutputOrderLinesInnerOptionsInnerSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderLinesInnerOptionsInnerSerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderLinesInnerOptionsInner> {
+class _$AdminOrderDtoOutputOrderLinesInnerOptionsInnerSerializer
+    implements
+        PrimitiveSerializer<AdminOrderDtoOutputOrderLinesInnerOptionsInner> {
   @override
-  final Iterable<Type> types = const [AdminOrderDtoOutputOrderLinesInnerOptionsInner, _$AdminOrderDtoOutputOrderLinesInnerOptionsInner];
+  final Iterable<Type> types = const [
+    AdminOrderDtoOutputOrderLinesInnerOptionsInner,
+    _$AdminOrderDtoOutputOrderLinesInnerOptionsInner,
+  ];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderLinesInnerOptionsInner';
@@ -63,7 +79,11 @@ class _$AdminOrderDtoOutputOrderLinesInnerOptionsInnerSerializer implements Prim
     AdminOrderDtoOutputOrderLinesInnerOptionsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -79,17 +99,21 @@ class _$AdminOrderDtoOutputOrderLinesInnerOptionsInnerSerializer implements Prim
       final value = serializedList[i + 1];
       switch (key) {
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'priceDelta':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.priceDelta = valueDes;
           break;
         default:
@@ -120,5 +144,3 @@ class _$AdminOrderDtoOutputOrderLinesInnerOptionsInnerSerializer implements Prim
     return result.build();
   }
 }
-
-

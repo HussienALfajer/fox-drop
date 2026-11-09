@@ -14,10 +14,11 @@ part 'sender_pool_dto_output.g.dart';
 /// SenderPoolDtoOutput
 ///
 /// Properties:
-/// * [numbers] 
+/// * [numbers]
 /// * [alerts] - The alerts of architecture §8.3.3 item 14 (AP §9.1.3).
 @BuiltValue()
-abstract class SenderPoolDtoOutput implements Built<SenderPoolDtoOutput, SenderPoolDtoOutputBuilder> {
+abstract class SenderPoolDtoOutput
+    implements Built<SenderPoolDtoOutput, SenderPoolDtoOutputBuilder> {
   @BuiltValueField(wireName: r'numbers')
   BuiltList<SenderPoolDtoOutputNumbersInner> get numbers;
 
@@ -27,18 +28,24 @@ abstract class SenderPoolDtoOutput implements Built<SenderPoolDtoOutput, SenderP
 
   SenderPoolDtoOutput._();
 
-  factory SenderPoolDtoOutput([void updates(SenderPoolDtoOutputBuilder b)]) = _$SenderPoolDtoOutput;
+  factory SenderPoolDtoOutput([void updates(SenderPoolDtoOutputBuilder b)]) =
+      _$SenderPoolDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SenderPoolDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SenderPoolDtoOutput> get serializer => _$SenderPoolDtoOutputSerializer();
+  static Serializer<SenderPoolDtoOutput> get serializer =>
+      _$SenderPoolDtoOutputSerializer();
 }
 
-class _$SenderPoolDtoOutputSerializer implements PrimitiveSerializer<SenderPoolDtoOutput> {
+class _$SenderPoolDtoOutputSerializer
+    implements PrimitiveSerializer<SenderPoolDtoOutput> {
   @override
-  final Iterable<Type> types = const [SenderPoolDtoOutput, _$SenderPoolDtoOutput];
+  final Iterable<Type> types = const [
+    SenderPoolDtoOutput,
+    _$SenderPoolDtoOutput,
+  ];
 
   @override
   final String wireName = r'SenderPoolDtoOutput';
@@ -51,12 +58,16 @@ class _$SenderPoolDtoOutputSerializer implements PrimitiveSerializer<SenderPoolD
     yield r'numbers';
     yield serializers.serialize(
       object.numbers,
-      specifiedType: const FullType(BuiltList, [FullType(SenderPoolDtoOutputNumbersInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(SenderPoolDtoOutputNumbersInner),
+      ]),
     );
     yield r'alerts';
     yield serializers.serialize(
       object.alerts,
-      specifiedType: const FullType(BuiltList, [FullType(SenderPoolDtoOutputAlertsInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(SenderPoolDtoOutputAlertsInner),
+      ]),
     );
   }
 
@@ -66,7 +77,11 @@ class _$SenderPoolDtoOutputSerializer implements PrimitiveSerializer<SenderPoolD
     SenderPoolDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -82,17 +97,25 @@ class _$SenderPoolDtoOutputSerializer implements PrimitiveSerializer<SenderPoolD
       final value = serializedList[i + 1];
       switch (key) {
         case r'numbers':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(SenderPoolDtoOutputNumbersInner)]),
-          ) as BuiltList<SenderPoolDtoOutputNumbersInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(SenderPoolDtoOutputNumbersInner),
+                    ]),
+                  )
+                  as BuiltList<SenderPoolDtoOutputNumbersInner>;
           result.numbers.replace(valueDes);
           break;
         case r'alerts':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(SenderPoolDtoOutputAlertsInner)]),
-          ) as BuiltList<SenderPoolDtoOutputAlertsInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(SenderPoolDtoOutputAlertsInner),
+                    ]),
+                  )
+                  as BuiltList<SenderPoolDtoOutputAlertsInner>;
           result.alerts.replace(valueDes);
           break;
         default:
@@ -123,5 +146,3 @@ class _$SenderPoolDtoOutputSerializer implements PrimitiveSerializer<SenderPoolD
     return result.build();
   }
 }
-
-

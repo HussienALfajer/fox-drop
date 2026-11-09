@@ -13,23 +13,27 @@ part 'admin_assign_dto.g.dart';
 /// Properties:
 /// * [captainId] - An eligible captain from the assignment picker.
 @BuiltValue()
-abstract class AdminAssignDto implements Built<AdminAssignDto, AdminAssignDtoBuilder> {
+abstract class AdminAssignDto
+    implements Built<AdminAssignDto, AdminAssignDtoBuilder> {
   /// An eligible captain from the assignment picker.
   @BuiltValueField(wireName: r'captainId')
   String get captainId;
 
   AdminAssignDto._();
 
-  factory AdminAssignDto([void updates(AdminAssignDtoBuilder b)]) = _$AdminAssignDto;
+  factory AdminAssignDto([void updates(AdminAssignDtoBuilder b)]) =
+      _$AdminAssignDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminAssignDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminAssignDto> get serializer => _$AdminAssignDtoSerializer();
+  static Serializer<AdminAssignDto> get serializer =>
+      _$AdminAssignDtoSerializer();
 }
 
-class _$AdminAssignDtoSerializer implements PrimitiveSerializer<AdminAssignDto> {
+class _$AdminAssignDtoSerializer
+    implements PrimitiveSerializer<AdminAssignDto> {
   @override
   final Iterable<Type> types = const [AdminAssignDto, _$AdminAssignDto];
 
@@ -54,7 +58,11 @@ class _$AdminAssignDtoSerializer implements PrimitiveSerializer<AdminAssignDto> 
     AdminAssignDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -70,10 +78,12 @@ class _$AdminAssignDtoSerializer implements PrimitiveSerializer<AdminAssignDto> 
       final value = serializedList[i + 1];
       switch (key) {
         case r'captainId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.captainId = valueDes;
           break;
         default:
@@ -104,5 +114,3 @@ class _$AdminAssignDtoSerializer implements PrimitiveSerializer<AdminAssignDto> 
     return result.build();
   }
 }
-
-

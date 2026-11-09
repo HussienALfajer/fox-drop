@@ -13,10 +13,11 @@ part 'terms_dto_output.g.dart';
 /// Properties:
 /// * [version] - Sent back with «أوافق» (CU §15, CA §15).
 /// * [body] - Plain text; a line per paragraph.
-/// * [publishedAt] 
+/// * [publishedAt]
 /// * [pending] - The signed-in account has not accepted this version; false for a guest and for a cashier (RA S13).
 @BuiltValue()
-abstract class TermsDtoOutput implements Built<TermsDtoOutput, TermsDtoOutputBuilder> {
+abstract class TermsDtoOutput
+    implements Built<TermsDtoOutput, TermsDtoOutputBuilder> {
   /// Sent back with «أوافق» (CU §15, CA §15).
   @BuiltValueField(wireName: r'version')
   int get version;
@@ -34,16 +35,19 @@ abstract class TermsDtoOutput implements Built<TermsDtoOutput, TermsDtoOutputBui
 
   TermsDtoOutput._();
 
-  factory TermsDtoOutput([void updates(TermsDtoOutputBuilder b)]) = _$TermsDtoOutput;
+  factory TermsDtoOutput([void updates(TermsDtoOutputBuilder b)]) =
+      _$TermsDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(TermsDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<TermsDtoOutput> get serializer => _$TermsDtoOutputSerializer();
+  static Serializer<TermsDtoOutput> get serializer =>
+      _$TermsDtoOutputSerializer();
 }
 
-class _$TermsDtoOutputSerializer implements PrimitiveSerializer<TermsDtoOutput> {
+class _$TermsDtoOutputSerializer
+    implements PrimitiveSerializer<TermsDtoOutput> {
   @override
   final Iterable<Type> types = const [TermsDtoOutput, _$TermsDtoOutput];
 
@@ -83,7 +87,11 @@ class _$TermsDtoOutputSerializer implements PrimitiveSerializer<TermsDtoOutput> 
     TermsDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -99,31 +107,36 @@ class _$TermsDtoOutputSerializer implements PrimitiveSerializer<TermsDtoOutput> 
       final value = serializedList[i + 1];
       switch (key) {
         case r'version':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.version = valueDes;
           break;
         case r'body':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.body = valueDes;
           break;
         case r'publishedAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.publishedAt = valueDes;
           break;
         case r'pending':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.pending = valueDes;
           break;
         default:
@@ -154,5 +167,3 @@ class _$TermsDtoOutputSerializer implements PrimitiveSerializer<TermsDtoOutput> 
     return result.build();
   }
 }
-
-

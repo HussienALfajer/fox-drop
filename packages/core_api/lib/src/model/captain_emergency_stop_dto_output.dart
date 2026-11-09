@@ -11,10 +11,15 @@ part 'captain_emergency_stop_dto_output.g.dart';
 /// CaptainEmergencyStopDtoOutput
 ///
 /// Properties:
-/// * [active] 
-/// * [startedAt] 
+/// * [active]
+/// * [startedAt]
 @BuiltValue()
-abstract class CaptainEmergencyStopDtoOutput implements Built<CaptainEmergencyStopDtoOutput, CaptainEmergencyStopDtoOutputBuilder> {
+abstract class CaptainEmergencyStopDtoOutput
+    implements
+        Built<
+          CaptainEmergencyStopDtoOutput,
+          CaptainEmergencyStopDtoOutputBuilder
+        > {
   @BuiltValueField(wireName: r'active')
   bool get active;
 
@@ -23,18 +28,25 @@ abstract class CaptainEmergencyStopDtoOutput implements Built<CaptainEmergencySt
 
   CaptainEmergencyStopDtoOutput._();
 
-  factory CaptainEmergencyStopDtoOutput([void updates(CaptainEmergencyStopDtoOutputBuilder b)]) = _$CaptainEmergencyStopDtoOutput;
+  factory CaptainEmergencyStopDtoOutput([
+    void updates(CaptainEmergencyStopDtoOutputBuilder b),
+  ]) = _$CaptainEmergencyStopDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainEmergencyStopDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainEmergencyStopDtoOutput> get serializer => _$CaptainEmergencyStopDtoOutputSerializer();
+  static Serializer<CaptainEmergencyStopDtoOutput> get serializer =>
+      _$CaptainEmergencyStopDtoOutputSerializer();
 }
 
-class _$CaptainEmergencyStopDtoOutputSerializer implements PrimitiveSerializer<CaptainEmergencyStopDtoOutput> {
+class _$CaptainEmergencyStopDtoOutputSerializer
+    implements PrimitiveSerializer<CaptainEmergencyStopDtoOutput> {
   @override
-  final Iterable<Type> types = const [CaptainEmergencyStopDtoOutput, _$CaptainEmergencyStopDtoOutput];
+  final Iterable<Type> types = const [
+    CaptainEmergencyStopDtoOutput,
+    _$CaptainEmergencyStopDtoOutput,
+  ];
 
   @override
   final String wireName = r'CaptainEmergencyStopDtoOutput';
@@ -50,10 +62,12 @@ class _$CaptainEmergencyStopDtoOutputSerializer implements PrimitiveSerializer<C
       specifiedType: const FullType(bool),
     );
     yield r'startedAt';
-    yield object.startedAt == null ? null : serializers.serialize(
-      object.startedAt,
-      specifiedType: const FullType.nullable(DateTime),
-    );
+    yield object.startedAt == null
+        ? null
+        : serializers.serialize(
+            object.startedAt,
+            specifiedType: const FullType.nullable(DateTime),
+          );
   }
 
   @override
@@ -62,7 +76,11 @@ class _$CaptainEmergencyStopDtoOutputSerializer implements PrimitiveSerializer<C
     CaptainEmergencyStopDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -78,17 +96,21 @@ class _$CaptainEmergencyStopDtoOutputSerializer implements PrimitiveSerializer<C
       final value = serializedList[i + 1];
       switch (key) {
         case r'active':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.active = valueDes;
           break;
         case r'startedAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(DateTime),
-          ) as DateTime?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
           if (valueDes == null) continue;
           result.startedAt = valueDes;
           break;
@@ -120,5 +142,3 @@ class _$CaptainEmergencyStopDtoOutputSerializer implements PrimitiveSerializer<C
     return result.build();
   }
 }
-
-

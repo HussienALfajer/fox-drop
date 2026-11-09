@@ -14,13 +14,18 @@ part 'captain_delivery_summary_dto_output_summary.g.dart';
 /// The order summary (CA §9.8); the captain is free for the next offer.
 ///
 /// Properties:
-/// * [orderId] 
-/// * [number] 
-/// * [pay] 
-/// * [custodyChange] 
-/// * [handInToday] 
+/// * [orderId]
+/// * [number]
+/// * [pay]
+/// * [custodyChange]
+/// * [handInToday]
 @BuiltValue()
-abstract class CaptainDeliverySummaryDtoOutputSummary implements Built<CaptainDeliverySummaryDtoOutputSummary, CaptainDeliverySummaryDtoOutputSummaryBuilder> {
+abstract class CaptainDeliverySummaryDtoOutputSummary
+    implements
+        Built<
+          CaptainDeliverySummaryDtoOutputSummary,
+          CaptainDeliverySummaryDtoOutputSummaryBuilder
+        > {
   @BuiltValueField(wireName: r'orderId')
   String get orderId;
 
@@ -38,18 +43,25 @@ abstract class CaptainDeliverySummaryDtoOutputSummary implements Built<CaptainDe
 
   CaptainDeliverySummaryDtoOutputSummary._();
 
-  factory CaptainDeliverySummaryDtoOutputSummary([void updates(CaptainDeliverySummaryDtoOutputSummaryBuilder b)]) = _$CaptainDeliverySummaryDtoOutputSummary;
+  factory CaptainDeliverySummaryDtoOutputSummary([
+    void updates(CaptainDeliverySummaryDtoOutputSummaryBuilder b),
+  ]) = _$CaptainDeliverySummaryDtoOutputSummary;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainDeliverySummaryDtoOutputSummaryBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainDeliverySummaryDtoOutputSummary> get serializer => _$CaptainDeliverySummaryDtoOutputSummarySerializer();
+  static Serializer<CaptainDeliverySummaryDtoOutputSummary> get serializer =>
+      _$CaptainDeliverySummaryDtoOutputSummarySerializer();
 }
 
-class _$CaptainDeliverySummaryDtoOutputSummarySerializer implements PrimitiveSerializer<CaptainDeliverySummaryDtoOutputSummary> {
+class _$CaptainDeliverySummaryDtoOutputSummarySerializer
+    implements PrimitiveSerializer<CaptainDeliverySummaryDtoOutputSummary> {
   @override
-  final Iterable<Type> types = const [CaptainDeliverySummaryDtoOutputSummary, _$CaptainDeliverySummaryDtoOutputSummary];
+  final Iterable<Type> types = const [
+    CaptainDeliverySummaryDtoOutputSummary,
+    _$CaptainDeliverySummaryDtoOutputSummary,
+  ];
 
   @override
   final String wireName = r'CaptainDeliverySummaryDtoOutputSummary';
@@ -77,12 +89,16 @@ class _$CaptainDeliverySummaryDtoOutputSummarySerializer implements PrimitiveSer
     yield r'custodyChange';
     yield serializers.serialize(
       object.custodyChange,
-      specifiedType: const FullType(CaptainDeliverySummaryDtoOutputSummaryCustodyChange),
+      specifiedType: const FullType(
+        CaptainDeliverySummaryDtoOutputSummaryCustodyChange,
+      ),
     );
     yield r'handInToday';
     yield serializers.serialize(
       object.handInToday,
-      specifiedType: const FullType(CaptainDeliverySummaryDtoOutputSummaryHandInToday),
+      specifiedType: const FullType(
+        CaptainDeliverySummaryDtoOutputSummaryHandInToday,
+      ),
     );
   }
 
@@ -92,7 +108,11 @@ class _$CaptainDeliverySummaryDtoOutputSummarySerializer implements PrimitiveSer
     CaptainDeliverySummaryDtoOutputSummary object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -108,38 +128,54 @@ class _$CaptainDeliverySummaryDtoOutputSummarySerializer implements PrimitiveSer
       final value = serializedList[i + 1];
       switch (key) {
         case r'orderId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.orderId = valueDes;
           break;
         case r'number':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.number = valueDes;
           break;
         case r'pay':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainDeliverySummaryDtoOutputSummaryPay),
-          ) as CaptainDeliverySummaryDtoOutputSummaryPay;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainDeliverySummaryDtoOutputSummaryPay,
+                    ),
+                  )
+                  as CaptainDeliverySummaryDtoOutputSummaryPay;
           result.pay.replace(valueDes);
           break;
         case r'custodyChange':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainDeliverySummaryDtoOutputSummaryCustodyChange),
-          ) as CaptainDeliverySummaryDtoOutputSummaryCustodyChange;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainDeliverySummaryDtoOutputSummaryCustodyChange,
+                    ),
+                  )
+                  as CaptainDeliverySummaryDtoOutputSummaryCustodyChange;
           result.custodyChange.replace(valueDes);
           break;
         case r'handInToday':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainDeliverySummaryDtoOutputSummaryHandInToday),
-          ) as CaptainDeliverySummaryDtoOutputSummaryHandInToday;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainDeliverySummaryDtoOutputSummaryHandInToday,
+                    ),
+                  )
+                  as CaptainDeliverySummaryDtoOutputSummaryHandInToday;
           result.handInToday.replace(valueDes);
           break;
         default:
@@ -170,5 +206,3 @@ class _$CaptainDeliverySummaryDtoOutputSummarySerializer implements PrimitiveSer
     return result.build();
   }
 }
-
-

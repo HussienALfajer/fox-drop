@@ -11,10 +11,12 @@ part 'admin_texts_dto_output_contact.g.dart';
 /// The support phone and WhatsApp numbers in E.164, when set (AP §9.13).
 ///
 /// Properties:
-/// * [phone] 
-/// * [whatsapp] 
+/// * [phone]
+/// * [whatsapp]
 @BuiltValue()
-abstract class AdminTextsDtoOutputContact implements Built<AdminTextsDtoOutputContact, AdminTextsDtoOutputContactBuilder> {
+abstract class AdminTextsDtoOutputContact
+    implements
+        Built<AdminTextsDtoOutputContact, AdminTextsDtoOutputContactBuilder> {
   @BuiltValueField(wireName: r'phone')
   String? get phone;
 
@@ -23,18 +25,25 @@ abstract class AdminTextsDtoOutputContact implements Built<AdminTextsDtoOutputCo
 
   AdminTextsDtoOutputContact._();
 
-  factory AdminTextsDtoOutputContact([void updates(AdminTextsDtoOutputContactBuilder b)]) = _$AdminTextsDtoOutputContact;
+  factory AdminTextsDtoOutputContact([
+    void updates(AdminTextsDtoOutputContactBuilder b),
+  ]) = _$AdminTextsDtoOutputContact;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminTextsDtoOutputContactBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminTextsDtoOutputContact> get serializer => _$AdminTextsDtoOutputContactSerializer();
+  static Serializer<AdminTextsDtoOutputContact> get serializer =>
+      _$AdminTextsDtoOutputContactSerializer();
 }
 
-class _$AdminTextsDtoOutputContactSerializer implements PrimitiveSerializer<AdminTextsDtoOutputContact> {
+class _$AdminTextsDtoOutputContactSerializer
+    implements PrimitiveSerializer<AdminTextsDtoOutputContact> {
   @override
-  final Iterable<Type> types = const [AdminTextsDtoOutputContact, _$AdminTextsDtoOutputContact];
+  final Iterable<Type> types = const [
+    AdminTextsDtoOutputContact,
+    _$AdminTextsDtoOutputContact,
+  ];
 
   @override
   final String wireName = r'AdminTextsDtoOutputContact';
@@ -66,7 +75,11 @@ class _$AdminTextsDtoOutputContactSerializer implements PrimitiveSerializer<Admi
     AdminTextsDtoOutputContact object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -82,18 +95,22 @@ class _$AdminTextsDtoOutputContactSerializer implements PrimitiveSerializer<Admi
       final value = serializedList[i + 1];
       switch (key) {
         case r'phone':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.phone = valueDes;
           break;
         case r'whatsapp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.whatsapp = valueDes;
           break;
@@ -125,5 +142,3 @@ class _$AdminTextsDtoOutputContactSerializer implements PrimitiveSerializer<Admi
     return result.build();
   }
 }
-
-

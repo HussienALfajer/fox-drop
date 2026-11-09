@@ -11,13 +11,18 @@ part 'captain_locations_dto_points_inner.g.dart';
 /// CaptainLocationsDtoPointsInner
 ///
 /// Properties:
-/// * [latitude] 
-/// * [longitude] 
-/// * [accuracyMetres] 
+/// * [latitude]
+/// * [longitude]
+/// * [accuracyMetres]
 /// * [recordedAt] - On the server clock (CA §4.6).
-/// * [simulated] 
+/// * [simulated]
 @BuiltValue()
-abstract class CaptainLocationsDtoPointsInner implements Built<CaptainLocationsDtoPointsInner, CaptainLocationsDtoPointsInnerBuilder> {
+abstract class CaptainLocationsDtoPointsInner
+    implements
+        Built<
+          CaptainLocationsDtoPointsInner,
+          CaptainLocationsDtoPointsInnerBuilder
+        > {
   @BuiltValueField(wireName: r'latitude')
   num get latitude;
 
@@ -36,18 +41,25 @@ abstract class CaptainLocationsDtoPointsInner implements Built<CaptainLocationsD
 
   CaptainLocationsDtoPointsInner._();
 
-  factory CaptainLocationsDtoPointsInner([void updates(CaptainLocationsDtoPointsInnerBuilder b)]) = _$CaptainLocationsDtoPointsInner;
+  factory CaptainLocationsDtoPointsInner([
+    void updates(CaptainLocationsDtoPointsInnerBuilder b),
+  ]) = _$CaptainLocationsDtoPointsInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainLocationsDtoPointsInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainLocationsDtoPointsInner> get serializer => _$CaptainLocationsDtoPointsInnerSerializer();
+  static Serializer<CaptainLocationsDtoPointsInner> get serializer =>
+      _$CaptainLocationsDtoPointsInnerSerializer();
 }
 
-class _$CaptainLocationsDtoPointsInnerSerializer implements PrimitiveSerializer<CaptainLocationsDtoPointsInner> {
+class _$CaptainLocationsDtoPointsInnerSerializer
+    implements PrimitiveSerializer<CaptainLocationsDtoPointsInner> {
   @override
-  final Iterable<Type> types = const [CaptainLocationsDtoPointsInner, _$CaptainLocationsDtoPointsInner];
+  final Iterable<Type> types = const [
+    CaptainLocationsDtoPointsInner,
+    _$CaptainLocationsDtoPointsInner,
+  ];
 
   @override
   final String wireName = r'CaptainLocationsDtoPointsInner';
@@ -90,7 +102,11 @@ class _$CaptainLocationsDtoPointsInnerSerializer implements PrimitiveSerializer<
     CaptainLocationsDtoPointsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -106,38 +122,39 @@ class _$CaptainLocationsDtoPointsInnerSerializer implements PrimitiveSerializer<
       final value = serializedList[i + 1];
       switch (key) {
         case r'latitude':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(num),
-          ) as num;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(num))
+                  as num;
           result.latitude = valueDes;
           break;
         case r'longitude':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(num),
-          ) as num;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(num))
+                  as num;
           result.longitude = valueDes;
           break;
         case r'accuracyMetres':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(num),
-          ) as num;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(num))
+                  as num;
           result.accuracyMetres = valueDes;
           break;
         case r'recordedAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.recordedAt = valueDes;
           break;
         case r'simulated':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.simulated = valueDes;
           break;
         default:
@@ -168,5 +185,3 @@ class _$CaptainLocationsDtoPointsInnerSerializer implements PrimitiveSerializer<
     return result.build();
   }
 }
-
-

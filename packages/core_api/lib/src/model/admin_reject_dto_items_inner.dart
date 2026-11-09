@@ -12,10 +12,12 @@ part 'admin_reject_dto_items_inner.g.dart';
 /// AdminRejectDtoItemsInner
 ///
 /// Properties:
-/// * [itemId] 
+/// * [itemId]
 /// * [until] - «حتى الغد» or «حتى أعيده».
 @BuiltValue()
-abstract class AdminRejectDtoItemsInner implements Built<AdminRejectDtoItemsInner, AdminRejectDtoItemsInnerBuilder> {
+abstract class AdminRejectDtoItemsInner
+    implements
+        Built<AdminRejectDtoItemsInner, AdminRejectDtoItemsInnerBuilder> {
   @BuiltValueField(wireName: r'itemId')
   String get itemId;
 
@@ -26,18 +28,25 @@ abstract class AdminRejectDtoItemsInner implements Built<AdminRejectDtoItemsInne
 
   AdminRejectDtoItemsInner._();
 
-  factory AdminRejectDtoItemsInner([void updates(AdminRejectDtoItemsInnerBuilder b)]) = _$AdminRejectDtoItemsInner;
+  factory AdminRejectDtoItemsInner([
+    void updates(AdminRejectDtoItemsInnerBuilder b),
+  ]) = _$AdminRejectDtoItemsInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminRejectDtoItemsInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRejectDtoItemsInner> get serializer => _$AdminRejectDtoItemsInnerSerializer();
+  static Serializer<AdminRejectDtoItemsInner> get serializer =>
+      _$AdminRejectDtoItemsInnerSerializer();
 }
 
-class _$AdminRejectDtoItemsInnerSerializer implements PrimitiveSerializer<AdminRejectDtoItemsInner> {
+class _$AdminRejectDtoItemsInnerSerializer
+    implements PrimitiveSerializer<AdminRejectDtoItemsInner> {
   @override
-  final Iterable<Type> types = const [AdminRejectDtoItemsInner, _$AdminRejectDtoItemsInner];
+  final Iterable<Type> types = const [
+    AdminRejectDtoItemsInner,
+    _$AdminRejectDtoItemsInner,
+  ];
 
   @override
   final String wireName = r'AdminRejectDtoItemsInner';
@@ -65,7 +74,11 @@ class _$AdminRejectDtoItemsInnerSerializer implements PrimitiveSerializer<AdminR
     AdminRejectDtoItemsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -81,17 +94,23 @@ class _$AdminRejectDtoItemsInnerSerializer implements PrimitiveSerializer<AdminR
       final value = serializedList[i + 1];
       switch (key) {
         case r'itemId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.itemId = valueDes;
           break;
         case r'until':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdminRejectDtoItemsInnerUntilEnum),
-          ) as AdminRejectDtoItemsInnerUntilEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminRejectDtoItemsInnerUntilEnum,
+                    ),
+                  )
+                  as AdminRejectDtoItemsInnerUntilEnum;
           result.until = valueDes;
           break;
         default:
@@ -123,20 +142,22 @@ class _$AdminRejectDtoItemsInnerSerializer implements PrimitiveSerializer<AdminR
   }
 }
 
-
 /// «حتى الغد» or «حتى أعيده».
 class AdminRejectDtoItemsInnerUntilEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'tomorrow')
-  static const AdminRejectDtoItemsInnerUntilEnum tomorrow = _$adminRejectDtoItemsInnerUntilEnum_tomorrow;
+  static const AdminRejectDtoItemsInnerUntilEnum tomorrow =
+      _$adminRejectDtoItemsInnerUntilEnum_tomorrow;
   @BuiltValueEnumConst(wireName: r'turned_back_on')
-  static const AdminRejectDtoItemsInnerUntilEnum turnedBackOn = _$adminRejectDtoItemsInnerUntilEnum_turnedBackOn;
+  static const AdminRejectDtoItemsInnerUntilEnum turnedBackOn =
+      _$adminRejectDtoItemsInnerUntilEnum_turnedBackOn;
 
-  static Serializer<AdminRejectDtoItemsInnerUntilEnum> get serializer => _$adminRejectDtoItemsInnerUntilEnumSerializer;
+  static Serializer<AdminRejectDtoItemsInnerUntilEnum> get serializer =>
+      _$adminRejectDtoItemsInnerUntilEnumSerializer;
 
-  const AdminRejectDtoItemsInnerUntilEnum._(String name): super(name);
+  const AdminRejectDtoItemsInnerUntilEnum._(String name) : super(name);
 
-  static BuiltSet<AdminRejectDtoItemsInnerUntilEnum> get values => _$adminRejectDtoItemsInnerUntilEnumValues;
-  static AdminRejectDtoItemsInnerUntilEnum valueOf(String name) => _$adminRejectDtoItemsInnerUntilEnumValueOf(name);
+  static BuiltSet<AdminRejectDtoItemsInnerUntilEnum> get values =>
+      _$adminRejectDtoItemsInnerUntilEnumValues;
+  static AdminRejectDtoItemsInnerUntilEnum valueOf(String name) =>
+      _$adminRejectDtoItemsInnerUntilEnumValueOf(name);
 }
-

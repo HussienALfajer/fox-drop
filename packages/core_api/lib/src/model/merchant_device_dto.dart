@@ -13,10 +13,11 @@ part 'merchant_device_dto.g.dart';
 ///
 /// Properties:
 /// * [name] - Such as «كاشير 1» or «تابلت المطبخ».
-/// * [platform] 
-/// * [appVersion] 
+/// * [platform]
+/// * [appVersion]
 @BuiltValue()
-abstract class MerchantDeviceDto implements Built<MerchantDeviceDto, MerchantDeviceDtoBuilder> {
+abstract class MerchantDeviceDto
+    implements Built<MerchantDeviceDto, MerchantDeviceDtoBuilder> {
   /// Such as «كاشير 1» or «تابلت المطبخ».
   @BuiltValueField(wireName: r'name')
   String get name;
@@ -30,16 +31,19 @@ abstract class MerchantDeviceDto implements Built<MerchantDeviceDto, MerchantDev
 
   MerchantDeviceDto._();
 
-  factory MerchantDeviceDto([void updates(MerchantDeviceDtoBuilder b)]) = _$MerchantDeviceDto;
+  factory MerchantDeviceDto([void updates(MerchantDeviceDtoBuilder b)]) =
+      _$MerchantDeviceDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantDeviceDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantDeviceDto> get serializer => _$MerchantDeviceDtoSerializer();
+  static Serializer<MerchantDeviceDto> get serializer =>
+      _$MerchantDeviceDtoSerializer();
 }
 
-class _$MerchantDeviceDtoSerializer implements PrimitiveSerializer<MerchantDeviceDto> {
+class _$MerchantDeviceDtoSerializer
+    implements PrimitiveSerializer<MerchantDeviceDto> {
   @override
   final Iterable<Type> types = const [MerchantDeviceDto, _$MerchantDeviceDto];
 
@@ -74,7 +78,11 @@ class _$MerchantDeviceDtoSerializer implements PrimitiveSerializer<MerchantDevic
     MerchantDeviceDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -90,24 +98,32 @@ class _$MerchantDeviceDtoSerializer implements PrimitiveSerializer<MerchantDevic
       final value = serializedList[i + 1];
       switch (key) {
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'platform':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(MerchantDeviceDtoPlatformEnum),
-          ) as MerchantDeviceDtoPlatformEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      MerchantDeviceDtoPlatformEnum,
+                    ),
+                  )
+                  as MerchantDeviceDtoPlatformEnum;
           result.platform = valueDes;
           break;
         case r'appVersion':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.appVersion = valueDes;
           break;
         default:
@@ -139,21 +155,24 @@ class _$MerchantDeviceDtoSerializer implements PrimitiveSerializer<MerchantDevic
   }
 }
 
-
 class MerchantDeviceDtoPlatformEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'android')
-  static const MerchantDeviceDtoPlatformEnum android = _$merchantDeviceDtoPlatformEnum_android;
+  static const MerchantDeviceDtoPlatformEnum android =
+      _$merchantDeviceDtoPlatformEnum_android;
   @BuiltValueEnumConst(wireName: r'ios')
-  static const MerchantDeviceDtoPlatformEnum ios = _$merchantDeviceDtoPlatformEnum_ios;
+  static const MerchantDeviceDtoPlatformEnum ios =
+      _$merchantDeviceDtoPlatformEnum_ios;
   @BuiltValueEnumConst(wireName: r'windows')
-  static const MerchantDeviceDtoPlatformEnum windows = _$merchantDeviceDtoPlatformEnum_windows;
+  static const MerchantDeviceDtoPlatformEnum windows =
+      _$merchantDeviceDtoPlatformEnum_windows;
 
-  static Serializer<MerchantDeviceDtoPlatformEnum> get serializer => _$merchantDeviceDtoPlatformEnumSerializer;
+  static Serializer<MerchantDeviceDtoPlatformEnum> get serializer =>
+      _$merchantDeviceDtoPlatformEnumSerializer;
 
-  const MerchantDeviceDtoPlatformEnum._(String name): super(name);
+  const MerchantDeviceDtoPlatformEnum._(String name) : super(name);
 
-  static BuiltSet<MerchantDeviceDtoPlatformEnum> get values => _$merchantDeviceDtoPlatformEnumValues;
-  static MerchantDeviceDtoPlatformEnum valueOf(String name) => _$merchantDeviceDtoPlatformEnumValueOf(name);
+  static BuiltSet<MerchantDeviceDtoPlatformEnum> get values =>
+      _$merchantDeviceDtoPlatformEnumValues;
+  static MerchantDeviceDtoPlatformEnum valueOf(String name) =>
+      _$merchantDeviceDtoPlatformEnumValueOf(name);
 }
-

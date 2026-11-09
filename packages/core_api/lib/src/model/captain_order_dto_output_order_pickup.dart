@@ -15,11 +15,16 @@ part 'captain_order_dto_output_order_pickup.g.dart';
 ///
 /// Properties:
 /// * [proposedLines] - «ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): the whole amount in the base currency in Phase 1.
-/// * [request] 
-/// * [pickedUpAt] 
+/// * [request]
+/// * [pickedUpAt]
 /// * [disputedAt] - «فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات».
 @BuiltValue()
-abstract class CaptainOrderDtoOutputOrderPickup implements Built<CaptainOrderDtoOutputOrderPickup, CaptainOrderDtoOutputOrderPickupBuilder> {
+abstract class CaptainOrderDtoOutputOrderPickup
+    implements
+        Built<
+          CaptainOrderDtoOutputOrderPickup,
+          CaptainOrderDtoOutputOrderPickupBuilder
+        > {
   /// «ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): the whole amount in the base currency in Phase 1.
   @BuiltValueField(wireName: r'proposedLines')
   BuiltList<CaptainAvailabilityDtoOutputCustodyLimit> get proposedLines;
@@ -36,18 +41,25 @@ abstract class CaptainOrderDtoOutputOrderPickup implements Built<CaptainOrderDto
 
   CaptainOrderDtoOutputOrderPickup._();
 
-  factory CaptainOrderDtoOutputOrderPickup([void updates(CaptainOrderDtoOutputOrderPickupBuilder b)]) = _$CaptainOrderDtoOutputOrderPickup;
+  factory CaptainOrderDtoOutputOrderPickup([
+    void updates(CaptainOrderDtoOutputOrderPickupBuilder b),
+  ]) = _$CaptainOrderDtoOutputOrderPickup;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainOrderDtoOutputOrderPickupBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainOrderDtoOutputOrderPickup> get serializer => _$CaptainOrderDtoOutputOrderPickupSerializer();
+  static Serializer<CaptainOrderDtoOutputOrderPickup> get serializer =>
+      _$CaptainOrderDtoOutputOrderPickupSerializer();
 }
 
-class _$CaptainOrderDtoOutputOrderPickupSerializer implements PrimitiveSerializer<CaptainOrderDtoOutputOrderPickup> {
+class _$CaptainOrderDtoOutputOrderPickupSerializer
+    implements PrimitiveSerializer<CaptainOrderDtoOutputOrderPickup> {
   @override
-  final Iterable<Type> types = const [CaptainOrderDtoOutputOrderPickup, _$CaptainOrderDtoOutputOrderPickup];
+  final Iterable<Type> types = const [
+    CaptainOrderDtoOutputOrderPickup,
+    _$CaptainOrderDtoOutputOrderPickup,
+  ];
 
   @override
   final String wireName = r'CaptainOrderDtoOutputOrderPickup';
@@ -60,23 +72,33 @@ class _$CaptainOrderDtoOutputOrderPickupSerializer implements PrimitiveSerialize
     yield r'proposedLines';
     yield serializers.serialize(
       object.proposedLines,
-      specifiedType: const FullType(BuiltList, [FullType(CaptainAvailabilityDtoOutputCustodyLimit)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+      ]),
     );
     yield r'request';
-    yield object.request == null ? null : serializers.serialize(
-      object.request,
-      specifiedType: const FullType.nullable(CaptainOrderDtoOutputOrderPickupRequest),
-    );
+    yield object.request == null
+        ? null
+        : serializers.serialize(
+            object.request,
+            specifiedType: const FullType.nullable(
+              CaptainOrderDtoOutputOrderPickupRequest,
+            ),
+          );
     yield r'pickedUpAt';
-    yield object.pickedUpAt == null ? null : serializers.serialize(
-      object.pickedUpAt,
-      specifiedType: const FullType.nullable(DateTime),
-    );
+    yield object.pickedUpAt == null
+        ? null
+        : serializers.serialize(
+            object.pickedUpAt,
+            specifiedType: const FullType.nullable(DateTime),
+          );
     yield r'disputedAt';
-    yield object.disputedAt == null ? null : serializers.serialize(
-      object.disputedAt,
-      specifiedType: const FullType.nullable(DateTime),
-    );
+    yield object.disputedAt == null
+        ? null
+        : serializers.serialize(
+            object.disputedAt,
+            specifiedType: const FullType.nullable(DateTime),
+          );
   }
 
   @override
@@ -85,7 +107,11 @@ class _$CaptainOrderDtoOutputOrderPickupSerializer implements PrimitiveSerialize
     CaptainOrderDtoOutputOrderPickup object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -101,33 +127,45 @@ class _$CaptainOrderDtoOutputOrderPickupSerializer implements PrimitiveSerialize
       final value = serializedList[i + 1];
       switch (key) {
         case r'proposedLines':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CaptainAvailabilityDtoOutputCustodyLimit)]),
-          ) as BuiltList<CaptainAvailabilityDtoOutputCustodyLimit>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+                    ]),
+                  )
+                  as BuiltList<CaptainAvailabilityDtoOutputCustodyLimit>;
           result.proposedLines.replace(valueDes);
           break;
         case r'request':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(CaptainOrderDtoOutputOrderPickupRequest),
-          ) as CaptainOrderDtoOutputOrderPickupRequest?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainOrderDtoOutputOrderPickupRequest,
+                    ),
+                  )
+                  as CaptainOrderDtoOutputOrderPickupRequest?;
           if (valueDes == null) continue;
           result.request.replace(valueDes);
           break;
         case r'pickedUpAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(DateTime),
-          ) as DateTime?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
           if (valueDes == null) continue;
           result.pickedUpAt = valueDes;
           break;
         case r'disputedAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(DateTime),
-          ) as DateTime?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
           if (valueDes == null) continue;
           result.disputedAt = valueDes;
           break;
@@ -159,5 +197,3 @@ class _$CaptainOrderDtoOutputOrderPickupSerializer implements PrimitiveSerialize
     return result.build();
   }
 }
-
-

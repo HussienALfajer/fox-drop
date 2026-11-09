@@ -15,9 +15,10 @@ part 'captain_pickup_request_dto.g.dart';
 ///
 /// Properties:
 /// * [lines] - The currency lines paid, the proposed ones or the own split.
-/// * [location] 
+/// * [location]
 @BuiltValue()
-abstract class CaptainPickupRequestDto implements Built<CaptainPickupRequestDto, CaptainPickupRequestDtoBuilder> {
+abstract class CaptainPickupRequestDto
+    implements Built<CaptainPickupRequestDto, CaptainPickupRequestDtoBuilder> {
   /// The currency lines paid, the proposed ones or the own split.
   @BuiltValueField(wireName: r'lines')
   BuiltList<MerchantPickupDisputeDtoReceivedLinesInner> get lines;
@@ -27,18 +28,25 @@ abstract class CaptainPickupRequestDto implements Built<CaptainPickupRequestDto,
 
   CaptainPickupRequestDto._();
 
-  factory CaptainPickupRequestDto([void updates(CaptainPickupRequestDtoBuilder b)]) = _$CaptainPickupRequestDto;
+  factory CaptainPickupRequestDto([
+    void updates(CaptainPickupRequestDtoBuilder b),
+  ]) = _$CaptainPickupRequestDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainPickupRequestDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainPickupRequestDto> get serializer => _$CaptainPickupRequestDtoSerializer();
+  static Serializer<CaptainPickupRequestDto> get serializer =>
+      _$CaptainPickupRequestDtoSerializer();
 }
 
-class _$CaptainPickupRequestDtoSerializer implements PrimitiveSerializer<CaptainPickupRequestDto> {
+class _$CaptainPickupRequestDtoSerializer
+    implements PrimitiveSerializer<CaptainPickupRequestDto> {
   @override
-  final Iterable<Type> types = const [CaptainPickupRequestDto, _$CaptainPickupRequestDto];
+  final Iterable<Type> types = const [
+    CaptainPickupRequestDto,
+    _$CaptainPickupRequestDto,
+  ];
 
   @override
   final String wireName = r'CaptainPickupRequestDto';
@@ -51,7 +59,9 @@ class _$CaptainPickupRequestDtoSerializer implements PrimitiveSerializer<Captain
     yield r'lines';
     yield serializers.serialize(
       object.lines,
-      specifiedType: const FullType(BuiltList, [FullType(MerchantPickupDisputeDtoReceivedLinesInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(MerchantPickupDisputeDtoReceivedLinesInner),
+      ]),
     );
     yield r'location';
     yield serializers.serialize(
@@ -66,7 +76,11 @@ class _$CaptainPickupRequestDtoSerializer implements PrimitiveSerializer<Captain
     CaptainPickupRequestDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -82,17 +96,23 @@ class _$CaptainPickupRequestDtoSerializer implements PrimitiveSerializer<Captain
       final value = serializedList[i + 1];
       switch (key) {
         case r'lines':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(MerchantPickupDisputeDtoReceivedLinesInner)]),
-          ) as BuiltList<MerchantPickupDisputeDtoReceivedLinesInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(MerchantPickupDisputeDtoReceivedLinesInner),
+                    ]),
+                  )
+                  as BuiltList<MerchantPickupDisputeDtoReceivedLinesInner>;
           result.lines.replace(valueDes);
           break;
         case r'location':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainArriveDtoLocation),
-          ) as CaptainArriveDtoLocation;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(CaptainArriveDtoLocation),
+                  )
+                  as CaptainArriveDtoLocation;
           result.location.replace(valueDes);
           break;
         default:
@@ -123,5 +143,3 @@ class _$CaptainPickupRequestDtoSerializer implements PrimitiveSerializer<Captain
     return result.build();
   }
 }
-
-

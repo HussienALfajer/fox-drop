@@ -12,26 +12,35 @@ part 'captain_active_order_dto_output.g.dart';
 /// CaptainActiveOrderDtoOutput
 ///
 /// Properties:
-/// * [order] 
+/// * [order]
 @BuiltValue()
-abstract class CaptainActiveOrderDtoOutput implements Built<CaptainActiveOrderDtoOutput, CaptainActiveOrderDtoOutputBuilder> {
+abstract class CaptainActiveOrderDtoOutput
+    implements
+        Built<CaptainActiveOrderDtoOutput, CaptainActiveOrderDtoOutputBuilder> {
   @BuiltValueField(wireName: r'order')
   CaptainActiveOrderDtoOutputOrder? get order;
 
   CaptainActiveOrderDtoOutput._();
 
-  factory CaptainActiveOrderDtoOutput([void updates(CaptainActiveOrderDtoOutputBuilder b)]) = _$CaptainActiveOrderDtoOutput;
+  factory CaptainActiveOrderDtoOutput([
+    void updates(CaptainActiveOrderDtoOutputBuilder b),
+  ]) = _$CaptainActiveOrderDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainActiveOrderDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainActiveOrderDtoOutput> get serializer => _$CaptainActiveOrderDtoOutputSerializer();
+  static Serializer<CaptainActiveOrderDtoOutput> get serializer =>
+      _$CaptainActiveOrderDtoOutputSerializer();
 }
 
-class _$CaptainActiveOrderDtoOutputSerializer implements PrimitiveSerializer<CaptainActiveOrderDtoOutput> {
+class _$CaptainActiveOrderDtoOutputSerializer
+    implements PrimitiveSerializer<CaptainActiveOrderDtoOutput> {
   @override
-  final Iterable<Type> types = const [CaptainActiveOrderDtoOutput, _$CaptainActiveOrderDtoOutput];
+  final Iterable<Type> types = const [
+    CaptainActiveOrderDtoOutput,
+    _$CaptainActiveOrderDtoOutput,
+  ];
 
   @override
   final String wireName = r'CaptainActiveOrderDtoOutput';
@@ -42,10 +51,14 @@ class _$CaptainActiveOrderDtoOutputSerializer implements PrimitiveSerializer<Cap
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'order';
-    yield object.order == null ? null : serializers.serialize(
-      object.order,
-      specifiedType: const FullType.nullable(CaptainActiveOrderDtoOutputOrder),
-    );
+    yield object.order == null
+        ? null
+        : serializers.serialize(
+            object.order,
+            specifiedType: const FullType.nullable(
+              CaptainActiveOrderDtoOutputOrder,
+            ),
+          );
   }
 
   @override
@@ -54,7 +67,11 @@ class _$CaptainActiveOrderDtoOutputSerializer implements PrimitiveSerializer<Cap
     CaptainActiveOrderDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -70,10 +87,14 @@ class _$CaptainActiveOrderDtoOutputSerializer implements PrimitiveSerializer<Cap
       final value = serializedList[i + 1];
       switch (key) {
         case r'order':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(CaptainActiveOrderDtoOutputOrder),
-          ) as CaptainActiveOrderDtoOutputOrder?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainActiveOrderDtoOutputOrder,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrder?;
           if (valueDes == null) continue;
           result.order.replace(valueDes);
           break;
@@ -105,5 +126,3 @@ class _$CaptainActiveOrderDtoOutputSerializer implements PrimitiveSerializer<Cap
     return result.build();
   }
 }
-
-

@@ -14,10 +14,12 @@ part 'merchant_content_dto_output.g.dart';
 /// MerchantContentDtoOutput
 ///
 /// Properties:
-/// * [reasons] 
-/// * [faq] 
+/// * [reasons]
+/// * [faq]
 @BuiltValue()
-abstract class MerchantContentDtoOutput implements Built<MerchantContentDtoOutput, MerchantContentDtoOutputBuilder> {
+abstract class MerchantContentDtoOutput
+    implements
+        Built<MerchantContentDtoOutput, MerchantContentDtoOutputBuilder> {
   @BuiltValueField(wireName: r'reasons')
   MerchantContentDtoOutputReasons get reasons;
 
@@ -26,18 +28,25 @@ abstract class MerchantContentDtoOutput implements Built<MerchantContentDtoOutpu
 
   MerchantContentDtoOutput._();
 
-  factory MerchantContentDtoOutput([void updates(MerchantContentDtoOutputBuilder b)]) = _$MerchantContentDtoOutput;
+  factory MerchantContentDtoOutput([
+    void updates(MerchantContentDtoOutputBuilder b),
+  ]) = _$MerchantContentDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantContentDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantContentDtoOutput> get serializer => _$MerchantContentDtoOutputSerializer();
+  static Serializer<MerchantContentDtoOutput> get serializer =>
+      _$MerchantContentDtoOutputSerializer();
 }
 
-class _$MerchantContentDtoOutputSerializer implements PrimitiveSerializer<MerchantContentDtoOutput> {
+class _$MerchantContentDtoOutputSerializer
+    implements PrimitiveSerializer<MerchantContentDtoOutput> {
   @override
-  final Iterable<Type> types = const [MerchantContentDtoOutput, _$MerchantContentDtoOutput];
+  final Iterable<Type> types = const [
+    MerchantContentDtoOutput,
+    _$MerchantContentDtoOutput,
+  ];
 
   @override
   final String wireName = r'MerchantContentDtoOutput';
@@ -55,7 +64,9 @@ class _$MerchantContentDtoOutputSerializer implements PrimitiveSerializer<Mercha
     yield r'faq';
     yield serializers.serialize(
       object.faq,
-      specifiedType: const FullType(BuiltList, [FullType(MerchantContentDtoOutputFaqInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(MerchantContentDtoOutputFaqInner),
+      ]),
     );
   }
 
@@ -65,7 +76,11 @@ class _$MerchantContentDtoOutputSerializer implements PrimitiveSerializer<Mercha
     MerchantContentDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -81,17 +96,25 @@ class _$MerchantContentDtoOutputSerializer implements PrimitiveSerializer<Mercha
       final value = serializedList[i + 1];
       switch (key) {
         case r'reasons':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(MerchantContentDtoOutputReasons),
-          ) as MerchantContentDtoOutputReasons;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      MerchantContentDtoOutputReasons,
+                    ),
+                  )
+                  as MerchantContentDtoOutputReasons;
           result.reasons.replace(valueDes);
           break;
         case r'faq':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(MerchantContentDtoOutputFaqInner)]),
-          ) as BuiltList<MerchantContentDtoOutputFaqInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(MerchantContentDtoOutputFaqInner),
+                    ]),
+                  )
+                  as BuiltList<MerchantContentDtoOutputFaqInner>;
           result.faq.replace(valueDes);
           break;
         default:
@@ -122,5 +145,3 @@ class _$MerchantContentDtoOutputSerializer implements PrimitiveSerializer<Mercha
     return result.build();
   }
 }
-
-

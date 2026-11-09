@@ -13,7 +13,7 @@ part 'admin_notification_text_dto_output.g.dart';
 ///
 /// Properties:
 /// * [key] - The template, such as customer.accepted.
-/// * [audience] 
+/// * [audience]
 /// * [row] - The spec row it comes from, such as «CU §14 #1».
 /// * [variables] - The placeholders it takes, without braces.
 /// * [level] - The app's sound level; not editable.
@@ -21,7 +21,12 @@ part 'admin_notification_text_dto_output.g.dart';
 /// * [text] - The default text.
 /// * [current] - The text in use: the admin's edit, else the default.
 @BuiltValue()
-abstract class AdminNotificationTextDtoOutput implements Built<AdminNotificationTextDtoOutput, AdminNotificationTextDtoOutputBuilder> {
+abstract class AdminNotificationTextDtoOutput
+    implements
+        Built<
+          AdminNotificationTextDtoOutput,
+          AdminNotificationTextDtoOutputBuilder
+        > {
   /// The template, such as customer.accepted.
   @BuiltValueField(wireName: r'key')
   String get key;
@@ -58,18 +63,25 @@ abstract class AdminNotificationTextDtoOutput implements Built<AdminNotification
 
   AdminNotificationTextDtoOutput._();
 
-  factory AdminNotificationTextDtoOutput([void updates(AdminNotificationTextDtoOutputBuilder b)]) = _$AdminNotificationTextDtoOutput;
+  factory AdminNotificationTextDtoOutput([
+    void updates(AdminNotificationTextDtoOutputBuilder b),
+  ]) = _$AdminNotificationTextDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminNotificationTextDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminNotificationTextDtoOutput> get serializer => _$AdminNotificationTextDtoOutputSerializer();
+  static Serializer<AdminNotificationTextDtoOutput> get serializer =>
+      _$AdminNotificationTextDtoOutputSerializer();
 }
 
-class _$AdminNotificationTextDtoOutputSerializer implements PrimitiveSerializer<AdminNotificationTextDtoOutput> {
+class _$AdminNotificationTextDtoOutputSerializer
+    implements PrimitiveSerializer<AdminNotificationTextDtoOutput> {
   @override
-  final Iterable<Type> types = const [AdminNotificationTextDtoOutput, _$AdminNotificationTextDtoOutput];
+  final Iterable<Type> types = const [
+    AdminNotificationTextDtoOutput,
+    _$AdminNotificationTextDtoOutput,
+  ];
 
   @override
   final String wireName = r'AdminNotificationTextDtoOutput';
@@ -127,7 +139,11 @@ class _$AdminNotificationTextDtoOutputSerializer implements PrimitiveSerializer<
     AdminNotificationTextDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -143,59 +159,83 @@ class _$AdminNotificationTextDtoOutputSerializer implements PrimitiveSerializer<
       final value = serializedList[i + 1];
       switch (key) {
         case r'key':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.key = valueDes;
           break;
         case r'audience':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdminNotificationTextDtoOutputAudienceEnum),
-          ) as AdminNotificationTextDtoOutputAudienceEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminNotificationTextDtoOutputAudienceEnum,
+                    ),
+                  )
+                  as AdminNotificationTextDtoOutputAudienceEnum;
           result.audience = valueDes;
           break;
         case r'row':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.row = valueDes;
           break;
         case r'variables':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.variables.replace(valueDes);
           break;
         case r'level':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdminNotificationTextDtoOutputLevelEnum),
-          ) as AdminNotificationTextDtoOutputLevelEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminNotificationTextDtoOutputLevelEnum,
+                    ),
+                  )
+                  as AdminNotificationTextDtoOutputLevelEnum;
           result.level = valueDes;
           break;
         case r'priority':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdminNotificationTextDtoOutputPriorityEnum),
-          ) as AdminNotificationTextDtoOutputPriorityEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminNotificationTextDtoOutputPriorityEnum,
+                    ),
+                  )
+                  as AdminNotificationTextDtoOutputPriorityEnum;
           result.priority = valueDes;
           break;
         case r'text':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.text = valueDes;
           break;
         case r'current':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.current = valueDes;
           break;
         default:
@@ -227,61 +267,76 @@ class _$AdminNotificationTextDtoOutputSerializer implements PrimitiveSerializer<
   }
 }
 
-
 class AdminNotificationTextDtoOutputAudienceEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'customer')
-  static const AdminNotificationTextDtoOutputAudienceEnum customer = _$adminNotificationTextDtoOutputAudienceEnum_customer;
+  static const AdminNotificationTextDtoOutputAudienceEnum customer =
+      _$adminNotificationTextDtoOutputAudienceEnum_customer;
   @BuiltValueEnumConst(wireName: r'merchant')
-  static const AdminNotificationTextDtoOutputAudienceEnum merchant = _$adminNotificationTextDtoOutputAudienceEnum_merchant;
+  static const AdminNotificationTextDtoOutputAudienceEnum merchant =
+      _$adminNotificationTextDtoOutputAudienceEnum_merchant;
   @BuiltValueEnumConst(wireName: r'captain')
-  static const AdminNotificationTextDtoOutputAudienceEnum captain = _$adminNotificationTextDtoOutputAudienceEnum_captain;
+  static const AdminNotificationTextDtoOutputAudienceEnum captain =
+      _$adminNotificationTextDtoOutputAudienceEnum_captain;
 
-  static Serializer<AdminNotificationTextDtoOutputAudienceEnum> get serializer => _$adminNotificationTextDtoOutputAudienceEnumSerializer;
+  static Serializer<AdminNotificationTextDtoOutputAudienceEnum>
+  get serializer => _$adminNotificationTextDtoOutputAudienceEnumSerializer;
 
-  const AdminNotificationTextDtoOutputAudienceEnum._(String name): super(name);
+  const AdminNotificationTextDtoOutputAudienceEnum._(String name) : super(name);
 
-  static BuiltSet<AdminNotificationTextDtoOutputAudienceEnum> get values => _$adminNotificationTextDtoOutputAudienceEnumValues;
-  static AdminNotificationTextDtoOutputAudienceEnum valueOf(String name) => _$adminNotificationTextDtoOutputAudienceEnumValueOf(name);
+  static BuiltSet<AdminNotificationTextDtoOutputAudienceEnum> get values =>
+      _$adminNotificationTextDtoOutputAudienceEnumValues;
+  static AdminNotificationTextDtoOutputAudienceEnum valueOf(String name) =>
+      _$adminNotificationTextDtoOutputAudienceEnumValueOf(name);
 }
 
 /// The app's sound level; not editable.
 class AdminNotificationTextDtoOutputLevelEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'default')
-  static const AdminNotificationTextDtoOutputLevelEnum default_ = _$adminNotificationTextDtoOutputLevelEnum_default_;
+  static const AdminNotificationTextDtoOutputLevelEnum default_ =
+      _$adminNotificationTextDtoOutputLevelEnum_default_;
   @BuiltValueEnumConst(wireName: r'ring')
-  static const AdminNotificationTextDtoOutputLevelEnum ring = _$adminNotificationTextDtoOutputLevelEnum_ring;
+  static const AdminNotificationTextDtoOutputLevelEnum ring =
+      _$adminNotificationTextDtoOutputLevelEnum_ring;
   @BuiltValueEnumConst(wireName: r'chime')
-  static const AdminNotificationTextDtoOutputLevelEnum chime = _$adminNotificationTextDtoOutputLevelEnum_chime;
+  static const AdminNotificationTextDtoOutputLevelEnum chime =
+      _$adminNotificationTextDtoOutputLevelEnum_chime;
   @BuiltValueEnumConst(wireName: r'offer')
-  static const AdminNotificationTextDtoOutputLevelEnum offer = _$adminNotificationTextDtoOutputLevelEnum_offer;
+  static const AdminNotificationTextDtoOutputLevelEnum offer =
+      _$adminNotificationTextDtoOutputLevelEnum_offer;
   @BuiltValueEnumConst(wireName: r'cancellation')
-  static const AdminNotificationTextDtoOutputLevelEnum cancellation = _$adminNotificationTextDtoOutputLevelEnum_cancellation;
+  static const AdminNotificationTextDtoOutputLevelEnum cancellation =
+      _$adminNotificationTextDtoOutputLevelEnum_cancellation;
   @BuiltValueEnumConst(wireName: r'silent')
-  static const AdminNotificationTextDtoOutputLevelEnum silent = _$adminNotificationTextDtoOutputLevelEnum_silent;
+  static const AdminNotificationTextDtoOutputLevelEnum silent =
+      _$adminNotificationTextDtoOutputLevelEnum_silent;
 
-  static Serializer<AdminNotificationTextDtoOutputLevelEnum> get serializer => _$adminNotificationTextDtoOutputLevelEnumSerializer;
+  static Serializer<AdminNotificationTextDtoOutputLevelEnum> get serializer =>
+      _$adminNotificationTextDtoOutputLevelEnumSerializer;
 
-  const AdminNotificationTextDtoOutputLevelEnum._(String name): super(name);
+  const AdminNotificationTextDtoOutputLevelEnum._(String name) : super(name);
 
-  static BuiltSet<AdminNotificationTextDtoOutputLevelEnum> get values => _$adminNotificationTextDtoOutputLevelEnumValues;
-  static AdminNotificationTextDtoOutputLevelEnum valueOf(String name) => _$adminNotificationTextDtoOutputLevelEnumValueOf(name);
+  static BuiltSet<AdminNotificationTextDtoOutputLevelEnum> get values =>
+      _$adminNotificationTextDtoOutputLevelEnumValues;
+  static AdminNotificationTextDtoOutputLevelEnum valueOf(String name) =>
+      _$adminNotificationTextDtoOutputLevelEnumValueOf(name);
 }
 
 /// Not editable.
 class AdminNotificationTextDtoOutputPriorityEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'high')
-  static const AdminNotificationTextDtoOutputPriorityEnum high = _$adminNotificationTextDtoOutputPriorityEnum_high;
+  static const AdminNotificationTextDtoOutputPriorityEnum high =
+      _$adminNotificationTextDtoOutputPriorityEnum_high;
   @BuiltValueEnumConst(wireName: r'normal')
-  static const AdminNotificationTextDtoOutputPriorityEnum normal = _$adminNotificationTextDtoOutputPriorityEnum_normal;
+  static const AdminNotificationTextDtoOutputPriorityEnum normal =
+      _$adminNotificationTextDtoOutputPriorityEnum_normal;
 
-  static Serializer<AdminNotificationTextDtoOutputPriorityEnum> get serializer => _$adminNotificationTextDtoOutputPriorityEnumSerializer;
+  static Serializer<AdminNotificationTextDtoOutputPriorityEnum>
+  get serializer => _$adminNotificationTextDtoOutputPriorityEnumSerializer;
 
-  const AdminNotificationTextDtoOutputPriorityEnum._(String name): super(name);
+  const AdminNotificationTextDtoOutputPriorityEnum._(String name) : super(name);
 
-  static BuiltSet<AdminNotificationTextDtoOutputPriorityEnum> get values => _$adminNotificationTextDtoOutputPriorityEnumValues;
-  static AdminNotificationTextDtoOutputPriorityEnum valueOf(String name) => _$adminNotificationTextDtoOutputPriorityEnumValueOf(name);
+  static BuiltSet<AdminNotificationTextDtoOutputPriorityEnum> get values =>
+      _$adminNotificationTextDtoOutputPriorityEnumValues;
+  static AdminNotificationTextDtoOutputPriorityEnum valueOf(String name) =>
+      _$adminNotificationTextDtoOutputPriorityEnumValueOf(name);
 }
-

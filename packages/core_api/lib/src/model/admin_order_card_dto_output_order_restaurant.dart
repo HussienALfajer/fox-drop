@@ -11,10 +11,15 @@ part 'admin_order_card_dto_output_order_restaurant.g.dart';
 /// AdminOrderCardDtoOutputOrderRestaurant
 ///
 /// Properties:
-/// * [id] 
-/// * [name] 
+/// * [id]
+/// * [name]
 @BuiltValue()
-abstract class AdminOrderCardDtoOutputOrderRestaurant implements Built<AdminOrderCardDtoOutputOrderRestaurant, AdminOrderCardDtoOutputOrderRestaurantBuilder> {
+abstract class AdminOrderCardDtoOutputOrderRestaurant
+    implements
+        Built<
+          AdminOrderCardDtoOutputOrderRestaurant,
+          AdminOrderCardDtoOutputOrderRestaurantBuilder
+        > {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -23,18 +28,25 @@ abstract class AdminOrderCardDtoOutputOrderRestaurant implements Built<AdminOrde
 
   AdminOrderCardDtoOutputOrderRestaurant._();
 
-  factory AdminOrderCardDtoOutputOrderRestaurant([void updates(AdminOrderCardDtoOutputOrderRestaurantBuilder b)]) = _$AdminOrderCardDtoOutputOrderRestaurant;
+  factory AdminOrderCardDtoOutputOrderRestaurant([
+    void updates(AdminOrderCardDtoOutputOrderRestaurantBuilder b),
+  ]) = _$AdminOrderCardDtoOutputOrderRestaurant;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderCardDtoOutputOrderRestaurantBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderCardDtoOutputOrderRestaurant> get serializer => _$AdminOrderCardDtoOutputOrderRestaurantSerializer();
+  static Serializer<AdminOrderCardDtoOutputOrderRestaurant> get serializer =>
+      _$AdminOrderCardDtoOutputOrderRestaurantSerializer();
 }
 
-class _$AdminOrderCardDtoOutputOrderRestaurantSerializer implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderRestaurant> {
+class _$AdminOrderCardDtoOutputOrderRestaurantSerializer
+    implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderRestaurant> {
   @override
-  final Iterable<Type> types = const [AdminOrderCardDtoOutputOrderRestaurant, _$AdminOrderCardDtoOutputOrderRestaurant];
+  final Iterable<Type> types = const [
+    AdminOrderCardDtoOutputOrderRestaurant,
+    _$AdminOrderCardDtoOutputOrderRestaurant,
+  ];
 
   @override
   final String wireName = r'AdminOrderCardDtoOutputOrderRestaurant';
@@ -62,7 +74,11 @@ class _$AdminOrderCardDtoOutputOrderRestaurantSerializer implements PrimitiveSer
     AdminOrderCardDtoOutputOrderRestaurant object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -78,17 +94,21 @@ class _$AdminOrderCardDtoOutputOrderRestaurantSerializer implements PrimitiveSer
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         default:
@@ -119,5 +139,3 @@ class _$AdminOrderCardDtoOutputOrderRestaurantSerializer implements PrimitiveSer
     return result.build();
   }
 }
-
-

@@ -13,9 +13,10 @@ part 'customer_sign_in_dto.g.dart';
 /// Properties:
 /// * [phone] - The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
 /// * [deviceId] - The app installation, generated once by the app and kept until it is removed.
-/// * [code] 
+/// * [code]
 @BuiltValue()
-abstract class CustomerSignInDto implements Built<CustomerSignInDto, CustomerSignInDtoBuilder> {
+abstract class CustomerSignInDto
+    implements Built<CustomerSignInDto, CustomerSignInDtoBuilder> {
   /// The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
   @BuiltValueField(wireName: r'phone')
   String get phone;
@@ -29,16 +30,19 @@ abstract class CustomerSignInDto implements Built<CustomerSignInDto, CustomerSig
 
   CustomerSignInDto._();
 
-  factory CustomerSignInDto([void updates(CustomerSignInDtoBuilder b)]) = _$CustomerSignInDto;
+  factory CustomerSignInDto([void updates(CustomerSignInDtoBuilder b)]) =
+      _$CustomerSignInDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerSignInDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerSignInDto> get serializer => _$CustomerSignInDtoSerializer();
+  static Serializer<CustomerSignInDto> get serializer =>
+      _$CustomerSignInDtoSerializer();
 }
 
-class _$CustomerSignInDtoSerializer implements PrimitiveSerializer<CustomerSignInDto> {
+class _$CustomerSignInDtoSerializer
+    implements PrimitiveSerializer<CustomerSignInDto> {
   @override
   final Iterable<Type> types = const [CustomerSignInDto, _$CustomerSignInDto];
 
@@ -73,7 +77,11 @@ class _$CustomerSignInDtoSerializer implements PrimitiveSerializer<CustomerSignI
     CustomerSignInDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -89,24 +97,30 @@ class _$CustomerSignInDtoSerializer implements PrimitiveSerializer<CustomerSignI
       final value = serializedList[i + 1];
       switch (key) {
         case r'phone':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.phone = valueDes;
           break;
         case r'deviceId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.deviceId = valueDes;
           break;
         case r'code':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.code = valueDes;
           break;
         default:
@@ -137,5 +151,3 @@ class _$CustomerSignInDtoSerializer implements PrimitiveSerializer<CustomerSignI
     return result.build();
   }
 }
-
-

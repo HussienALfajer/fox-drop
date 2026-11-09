@@ -14,16 +14,17 @@ part 'customer_place_order_dto.g.dart';
 /// CustomerPlaceOrderDto
 ///
 /// Properties:
-/// * [restaurantId] 
-/// * [lines] 
+/// * [restaurantId]
+/// * [lines]
 /// * [payIn] - «سأدفع بـ»: an accepted currency, or null for «لم أحدد» (CU §10.5); one no longer accepted gives payIn null.
-/// * [appVersion] 
+/// * [appVersion]
 /// * [quoteVersion] - The version of the quote the customer confirmed (CU §10.7).
 /// * [addressId] - A saved address (CU §7.3), or null.
-/// * [unsavedAddress] 
+/// * [unsavedAddress]
 /// * [note] - To the restaurant and the captain, up to 200 characters; no phone number.
 @BuiltValue()
-abstract class CustomerPlaceOrderDto implements Built<CustomerPlaceOrderDto, CustomerPlaceOrderDtoBuilder> {
+abstract class CustomerPlaceOrderDto
+    implements Built<CustomerPlaceOrderDto, CustomerPlaceOrderDtoBuilder> {
   @BuiltValueField(wireName: r'restaurantId')
   String get restaurantId;
 
@@ -54,18 +55,25 @@ abstract class CustomerPlaceOrderDto implements Built<CustomerPlaceOrderDto, Cus
 
   CustomerPlaceOrderDto._();
 
-  factory CustomerPlaceOrderDto([void updates(CustomerPlaceOrderDtoBuilder b)]) = _$CustomerPlaceOrderDto;
+  factory CustomerPlaceOrderDto([
+    void updates(CustomerPlaceOrderDtoBuilder b),
+  ]) = _$CustomerPlaceOrderDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerPlaceOrderDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerPlaceOrderDto> get serializer => _$CustomerPlaceOrderDtoSerializer();
+  static Serializer<CustomerPlaceOrderDto> get serializer =>
+      _$CustomerPlaceOrderDtoSerializer();
 }
 
-class _$CustomerPlaceOrderDtoSerializer implements PrimitiveSerializer<CustomerPlaceOrderDto> {
+class _$CustomerPlaceOrderDtoSerializer
+    implements PrimitiveSerializer<CustomerPlaceOrderDto> {
   @override
-  final Iterable<Type> types = const [CustomerPlaceOrderDto, _$CustomerPlaceOrderDto];
+  final Iterable<Type> types = const [
+    CustomerPlaceOrderDto,
+    _$CustomerPlaceOrderDto,
+  ];
 
   @override
   final String wireName = r'CustomerPlaceOrderDto';
@@ -83,13 +91,17 @@ class _$CustomerPlaceOrderDtoSerializer implements PrimitiveSerializer<CustomerP
     yield r'lines';
     yield serializers.serialize(
       object.lines,
-      specifiedType: const FullType(BuiltList, [FullType(CustomerQuoteRequestDtoLinesInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(CustomerQuoteRequestDtoLinesInner),
+      ]),
     );
     yield r'payIn';
-    yield object.payIn == null ? null : serializers.serialize(
-      object.payIn,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.payIn == null
+        ? null
+        : serializers.serialize(
+            object.payIn,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'appVersion';
     yield serializers.serialize(
       object.appVersion,
@@ -101,20 +113,28 @@ class _$CustomerPlaceOrderDtoSerializer implements PrimitiveSerializer<CustomerP
       specifiedType: const FullType(String),
     );
     yield r'addressId';
-    yield object.addressId == null ? null : serializers.serialize(
-      object.addressId,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.addressId == null
+        ? null
+        : serializers.serialize(
+            object.addressId,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'unsavedAddress';
-    yield object.unsavedAddress == null ? null : serializers.serialize(
-      object.unsavedAddress,
-      specifiedType: const FullType.nullable(CustomerPlaceOrderDtoUnsavedAddress),
-    );
+    yield object.unsavedAddress == null
+        ? null
+        : serializers.serialize(
+            object.unsavedAddress,
+            specifiedType: const FullType.nullable(
+              CustomerPlaceOrderDtoUnsavedAddress,
+            ),
+          );
     yield r'note';
-    yield object.note == null ? null : serializers.serialize(
-      object.note,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.note == null
+        ? null
+        : serializers.serialize(
+            object.note,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -123,7 +143,11 @@ class _$CustomerPlaceOrderDtoSerializer implements PrimitiveSerializer<CustomerP
     CustomerPlaceOrderDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -139,62 +163,82 @@ class _$CustomerPlaceOrderDtoSerializer implements PrimitiveSerializer<CustomerP
       final value = serializedList[i + 1];
       switch (key) {
         case r'restaurantId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.restaurantId = valueDes;
           break;
         case r'lines':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CustomerQuoteRequestDtoLinesInner)]),
-          ) as BuiltList<CustomerQuoteRequestDtoLinesInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CustomerQuoteRequestDtoLinesInner),
+                    ]),
+                  )
+                  as BuiltList<CustomerQuoteRequestDtoLinesInner>;
           result.lines.replace(valueDes);
           break;
         case r'payIn':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.payIn = valueDes;
           break;
         case r'appVersion':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.appVersion = valueDes;
           break;
         case r'quoteVersion':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.quoteVersion = valueDes;
           break;
         case r'addressId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.addressId = valueDes;
           break;
         case r'unsavedAddress':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(CustomerPlaceOrderDtoUnsavedAddress),
-          ) as CustomerPlaceOrderDtoUnsavedAddress?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerPlaceOrderDtoUnsavedAddress,
+                    ),
+                  )
+                  as CustomerPlaceOrderDtoUnsavedAddress?;
           if (valueDes == null) continue;
           result.unsavedAddress.replace(valueDes);
           break;
         case r'note':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.note = valueDes;
           break;
@@ -226,5 +270,3 @@ class _$CustomerPlaceOrderDtoSerializer implements PrimitiveSerializer<CustomerP
     return result.build();
   }
 }
-
-

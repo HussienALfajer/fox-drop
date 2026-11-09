@@ -11,10 +11,15 @@ part 'customer_quote_dto_output_rates_inner.g.dart';
 /// CustomerQuoteDtoOutputRatesInner
 ///
 /// Properties:
-/// * [currency] 
-/// * [rateVersionId] 
+/// * [currency]
+/// * [rateVersionId]
 @BuiltValue()
-abstract class CustomerQuoteDtoOutputRatesInner implements Built<CustomerQuoteDtoOutputRatesInner, CustomerQuoteDtoOutputRatesInnerBuilder> {
+abstract class CustomerQuoteDtoOutputRatesInner
+    implements
+        Built<
+          CustomerQuoteDtoOutputRatesInner,
+          CustomerQuoteDtoOutputRatesInnerBuilder
+        > {
   @BuiltValueField(wireName: r'currency')
   String get currency;
 
@@ -23,18 +28,25 @@ abstract class CustomerQuoteDtoOutputRatesInner implements Built<CustomerQuoteDt
 
   CustomerQuoteDtoOutputRatesInner._();
 
-  factory CustomerQuoteDtoOutputRatesInner([void updates(CustomerQuoteDtoOutputRatesInnerBuilder b)]) = _$CustomerQuoteDtoOutputRatesInner;
+  factory CustomerQuoteDtoOutputRatesInner([
+    void updates(CustomerQuoteDtoOutputRatesInnerBuilder b),
+  ]) = _$CustomerQuoteDtoOutputRatesInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerQuoteDtoOutputRatesInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerQuoteDtoOutputRatesInner> get serializer => _$CustomerQuoteDtoOutputRatesInnerSerializer();
+  static Serializer<CustomerQuoteDtoOutputRatesInner> get serializer =>
+      _$CustomerQuoteDtoOutputRatesInnerSerializer();
 }
 
-class _$CustomerQuoteDtoOutputRatesInnerSerializer implements PrimitiveSerializer<CustomerQuoteDtoOutputRatesInner> {
+class _$CustomerQuoteDtoOutputRatesInnerSerializer
+    implements PrimitiveSerializer<CustomerQuoteDtoOutputRatesInner> {
   @override
-  final Iterable<Type> types = const [CustomerQuoteDtoOutputRatesInner, _$CustomerQuoteDtoOutputRatesInner];
+  final Iterable<Type> types = const [
+    CustomerQuoteDtoOutputRatesInner,
+    _$CustomerQuoteDtoOutputRatesInner,
+  ];
 
   @override
   final String wireName = r'CustomerQuoteDtoOutputRatesInner';
@@ -50,10 +62,12 @@ class _$CustomerQuoteDtoOutputRatesInnerSerializer implements PrimitiveSerialize
       specifiedType: const FullType(String),
     );
     yield r'rateVersionId';
-    yield object.rateVersionId == null ? null : serializers.serialize(
-      object.rateVersionId,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.rateVersionId == null
+        ? null
+        : serializers.serialize(
+            object.rateVersionId,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -62,7 +76,11 @@ class _$CustomerQuoteDtoOutputRatesInnerSerializer implements PrimitiveSerialize
     CustomerQuoteDtoOutputRatesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -78,17 +96,21 @@ class _$CustomerQuoteDtoOutputRatesInnerSerializer implements PrimitiveSerialize
       final value = serializedList[i + 1];
       switch (key) {
         case r'currency':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.currency = valueDes;
           break;
         case r'rateVersionId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.rateVersionId = valueDes;
           break;
@@ -120,5 +142,3 @@ class _$CustomerQuoteDtoOutputRatesInnerSerializer implements PrimitiveSerialize
     return result.build();
   }
 }
-
-

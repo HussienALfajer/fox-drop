@@ -11,10 +11,12 @@ part 'customer_zone_vote_dto_location.g.dart';
 /// CustomerZoneVoteDtoLocation
 ///
 /// Properties:
-/// * [latitude] 
-/// * [longitude] 
+/// * [latitude]
+/// * [longitude]
 @BuiltValue()
-abstract class CustomerZoneVoteDtoLocation implements Built<CustomerZoneVoteDtoLocation, CustomerZoneVoteDtoLocationBuilder> {
+abstract class CustomerZoneVoteDtoLocation
+    implements
+        Built<CustomerZoneVoteDtoLocation, CustomerZoneVoteDtoLocationBuilder> {
   @BuiltValueField(wireName: r'latitude')
   num get latitude;
 
@@ -23,18 +25,25 @@ abstract class CustomerZoneVoteDtoLocation implements Built<CustomerZoneVoteDtoL
 
   CustomerZoneVoteDtoLocation._();
 
-  factory CustomerZoneVoteDtoLocation([void updates(CustomerZoneVoteDtoLocationBuilder b)]) = _$CustomerZoneVoteDtoLocation;
+  factory CustomerZoneVoteDtoLocation([
+    void updates(CustomerZoneVoteDtoLocationBuilder b),
+  ]) = _$CustomerZoneVoteDtoLocation;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerZoneVoteDtoLocationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerZoneVoteDtoLocation> get serializer => _$CustomerZoneVoteDtoLocationSerializer();
+  static Serializer<CustomerZoneVoteDtoLocation> get serializer =>
+      _$CustomerZoneVoteDtoLocationSerializer();
 }
 
-class _$CustomerZoneVoteDtoLocationSerializer implements PrimitiveSerializer<CustomerZoneVoteDtoLocation> {
+class _$CustomerZoneVoteDtoLocationSerializer
+    implements PrimitiveSerializer<CustomerZoneVoteDtoLocation> {
   @override
-  final Iterable<Type> types = const [CustomerZoneVoteDtoLocation, _$CustomerZoneVoteDtoLocation];
+  final Iterable<Type> types = const [
+    CustomerZoneVoteDtoLocation,
+    _$CustomerZoneVoteDtoLocation,
+  ];
 
   @override
   final String wireName = r'CustomerZoneVoteDtoLocation';
@@ -62,7 +71,11 @@ class _$CustomerZoneVoteDtoLocationSerializer implements PrimitiveSerializer<Cus
     CustomerZoneVoteDtoLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -78,17 +91,15 @@ class _$CustomerZoneVoteDtoLocationSerializer implements PrimitiveSerializer<Cus
       final value = serializedList[i + 1];
       switch (key) {
         case r'latitude':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(num),
-          ) as num;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(num))
+                  as num;
           result.latitude = valueDes;
           break;
         case r'longitude':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(num),
-          ) as num;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(num))
+                  as num;
           result.longitude = valueDes;
           break;
         default:
@@ -119,5 +130,3 @@ class _$CustomerZoneVoteDtoLocationSerializer implements PrimitiveSerializer<Cus
     return result.build();
   }
 }
-
-

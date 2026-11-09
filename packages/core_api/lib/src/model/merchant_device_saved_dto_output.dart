@@ -12,27 +12,39 @@ part 'merchant_device_saved_dto_output.g.dart';
 /// MerchantDeviceSavedDtoOutput
 ///
 /// Properties:
-/// * [status] 
+/// * [status]
 @BuiltValue()
-abstract class MerchantDeviceSavedDtoOutput implements Built<MerchantDeviceSavedDtoOutput, MerchantDeviceSavedDtoOutputBuilder> {
+abstract class MerchantDeviceSavedDtoOutput
+    implements
+        Built<
+          MerchantDeviceSavedDtoOutput,
+          MerchantDeviceSavedDtoOutputBuilder
+        > {
   @BuiltValueField(wireName: r'status')
   MerchantDeviceSavedDtoOutputStatusEnum get status;
   // enum statusEnum {  saved,  };
 
   MerchantDeviceSavedDtoOutput._();
 
-  factory MerchantDeviceSavedDtoOutput([void updates(MerchantDeviceSavedDtoOutputBuilder b)]) = _$MerchantDeviceSavedDtoOutput;
+  factory MerchantDeviceSavedDtoOutput([
+    void updates(MerchantDeviceSavedDtoOutputBuilder b),
+  ]) = _$MerchantDeviceSavedDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantDeviceSavedDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantDeviceSavedDtoOutput> get serializer => _$MerchantDeviceSavedDtoOutputSerializer();
+  static Serializer<MerchantDeviceSavedDtoOutput> get serializer =>
+      _$MerchantDeviceSavedDtoOutputSerializer();
 }
 
-class _$MerchantDeviceSavedDtoOutputSerializer implements PrimitiveSerializer<MerchantDeviceSavedDtoOutput> {
+class _$MerchantDeviceSavedDtoOutputSerializer
+    implements PrimitiveSerializer<MerchantDeviceSavedDtoOutput> {
   @override
-  final Iterable<Type> types = const [MerchantDeviceSavedDtoOutput, _$MerchantDeviceSavedDtoOutput];
+  final Iterable<Type> types = const [
+    MerchantDeviceSavedDtoOutput,
+    _$MerchantDeviceSavedDtoOutput,
+  ];
 
   @override
   final String wireName = r'MerchantDeviceSavedDtoOutput';
@@ -55,7 +67,11 @@ class _$MerchantDeviceSavedDtoOutputSerializer implements PrimitiveSerializer<Me
     MerchantDeviceSavedDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -71,10 +87,14 @@ class _$MerchantDeviceSavedDtoOutputSerializer implements PrimitiveSerializer<Me
       final value = serializedList[i + 1];
       switch (key) {
         case r'status':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(MerchantDeviceSavedDtoOutputStatusEnum),
-          ) as MerchantDeviceSavedDtoOutputStatusEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      MerchantDeviceSavedDtoOutputStatusEnum,
+                    ),
+                  )
+                  as MerchantDeviceSavedDtoOutputStatusEnum;
           result.status = valueDes;
           break;
         default:
@@ -106,17 +126,18 @@ class _$MerchantDeviceSavedDtoOutputSerializer implements PrimitiveSerializer<Me
   }
 }
 
-
 class MerchantDeviceSavedDtoOutputStatusEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'saved')
-  static const MerchantDeviceSavedDtoOutputStatusEnum saved = _$merchantDeviceSavedDtoOutputStatusEnum_saved;
+  static const MerchantDeviceSavedDtoOutputStatusEnum saved =
+      _$merchantDeviceSavedDtoOutputStatusEnum_saved;
 
-  static Serializer<MerchantDeviceSavedDtoOutputStatusEnum> get serializer => _$merchantDeviceSavedDtoOutputStatusEnumSerializer;
+  static Serializer<MerchantDeviceSavedDtoOutputStatusEnum> get serializer =>
+      _$merchantDeviceSavedDtoOutputStatusEnumSerializer;
 
-  const MerchantDeviceSavedDtoOutputStatusEnum._(String name): super(name);
+  const MerchantDeviceSavedDtoOutputStatusEnum._(String name) : super(name);
 
-  static BuiltSet<MerchantDeviceSavedDtoOutputStatusEnum> get values => _$merchantDeviceSavedDtoOutputStatusEnumValues;
-  static MerchantDeviceSavedDtoOutputStatusEnum valueOf(String name) => _$merchantDeviceSavedDtoOutputStatusEnumValueOf(name);
+  static BuiltSet<MerchantDeviceSavedDtoOutputStatusEnum> get values =>
+      _$merchantDeviceSavedDtoOutputStatusEnumValues;
+  static MerchantDeviceSavedDtoOutputStatusEnum valueOf(String name) =>
+      _$merchantDeviceSavedDtoOutputStatusEnumValueOf(name);
 }
-

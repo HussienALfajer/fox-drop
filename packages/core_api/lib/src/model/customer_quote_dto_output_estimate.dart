@@ -11,10 +11,15 @@ part 'customer_quote_dto_output_estimate.g.dart';
 /// «يصل خلال {fromMin}–{toMin} د».
 ///
 /// Properties:
-/// * [fromMin] 
-/// * [toMin] 
+/// * [fromMin]
+/// * [toMin]
 @BuiltValue()
-abstract class CustomerQuoteDtoOutputEstimate implements Built<CustomerQuoteDtoOutputEstimate, CustomerQuoteDtoOutputEstimateBuilder> {
+abstract class CustomerQuoteDtoOutputEstimate
+    implements
+        Built<
+          CustomerQuoteDtoOutputEstimate,
+          CustomerQuoteDtoOutputEstimateBuilder
+        > {
   @BuiltValueField(wireName: r'fromMin')
   int get fromMin;
 
@@ -23,18 +28,25 @@ abstract class CustomerQuoteDtoOutputEstimate implements Built<CustomerQuoteDtoO
 
   CustomerQuoteDtoOutputEstimate._();
 
-  factory CustomerQuoteDtoOutputEstimate([void updates(CustomerQuoteDtoOutputEstimateBuilder b)]) = _$CustomerQuoteDtoOutputEstimate;
+  factory CustomerQuoteDtoOutputEstimate([
+    void updates(CustomerQuoteDtoOutputEstimateBuilder b),
+  ]) = _$CustomerQuoteDtoOutputEstimate;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerQuoteDtoOutputEstimateBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerQuoteDtoOutputEstimate> get serializer => _$CustomerQuoteDtoOutputEstimateSerializer();
+  static Serializer<CustomerQuoteDtoOutputEstimate> get serializer =>
+      _$CustomerQuoteDtoOutputEstimateSerializer();
 }
 
-class _$CustomerQuoteDtoOutputEstimateSerializer implements PrimitiveSerializer<CustomerQuoteDtoOutputEstimate> {
+class _$CustomerQuoteDtoOutputEstimateSerializer
+    implements PrimitiveSerializer<CustomerQuoteDtoOutputEstimate> {
   @override
-  final Iterable<Type> types = const [CustomerQuoteDtoOutputEstimate, _$CustomerQuoteDtoOutputEstimate];
+  final Iterable<Type> types = const [
+    CustomerQuoteDtoOutputEstimate,
+    _$CustomerQuoteDtoOutputEstimate,
+  ];
 
   @override
   final String wireName = r'CustomerQuoteDtoOutputEstimate';
@@ -62,7 +74,11 @@ class _$CustomerQuoteDtoOutputEstimateSerializer implements PrimitiveSerializer<
     CustomerQuoteDtoOutputEstimate object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -78,17 +94,15 @@ class _$CustomerQuoteDtoOutputEstimateSerializer implements PrimitiveSerializer<
       final value = serializedList[i + 1];
       switch (key) {
         case r'fromMin':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.fromMin = valueDes;
           break;
         case r'toMin':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.toMin = valueDes;
           break;
         default:
@@ -119,5 +133,3 @@ class _$CustomerQuoteDtoOutputEstimateSerializer implements PrimitiveSerializer<
     return result.build();
   }
 }
-
-

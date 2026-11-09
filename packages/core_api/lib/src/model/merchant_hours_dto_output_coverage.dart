@@ -12,11 +12,16 @@ part 'merchant_hours_dto_output_coverage.g.dart';
 /// MerchantHoursDtoOutputCoverage
 ///
 /// Properties:
-/// * [kind] 
-/// * [radiusMetres] 
-/// * [zoneCount] 
+/// * [kind]
+/// * [radiusMetres]
+/// * [zoneCount]
 @BuiltValue()
-abstract class MerchantHoursDtoOutputCoverage implements Built<MerchantHoursDtoOutputCoverage, MerchantHoursDtoOutputCoverageBuilder> {
+abstract class MerchantHoursDtoOutputCoverage
+    implements
+        Built<
+          MerchantHoursDtoOutputCoverage,
+          MerchantHoursDtoOutputCoverageBuilder
+        > {
   @BuiltValueField(wireName: r'kind')
   MerchantHoursDtoOutputCoverageKindEnum get kind;
   // enum kindEnum {  radius,  zones,  };
@@ -29,18 +34,25 @@ abstract class MerchantHoursDtoOutputCoverage implements Built<MerchantHoursDtoO
 
   MerchantHoursDtoOutputCoverage._();
 
-  factory MerchantHoursDtoOutputCoverage([void updates(MerchantHoursDtoOutputCoverageBuilder b)]) = _$MerchantHoursDtoOutputCoverage;
+  factory MerchantHoursDtoOutputCoverage([
+    void updates(MerchantHoursDtoOutputCoverageBuilder b),
+  ]) = _$MerchantHoursDtoOutputCoverage;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantHoursDtoOutputCoverageBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantHoursDtoOutputCoverage> get serializer => _$MerchantHoursDtoOutputCoverageSerializer();
+  static Serializer<MerchantHoursDtoOutputCoverage> get serializer =>
+      _$MerchantHoursDtoOutputCoverageSerializer();
 }
 
-class _$MerchantHoursDtoOutputCoverageSerializer implements PrimitiveSerializer<MerchantHoursDtoOutputCoverage> {
+class _$MerchantHoursDtoOutputCoverageSerializer
+    implements PrimitiveSerializer<MerchantHoursDtoOutputCoverage> {
   @override
-  final Iterable<Type> types = const [MerchantHoursDtoOutputCoverage, _$MerchantHoursDtoOutputCoverage];
+  final Iterable<Type> types = const [
+    MerchantHoursDtoOutputCoverage,
+    _$MerchantHoursDtoOutputCoverage,
+  ];
 
   @override
   final String wireName = r'MerchantHoursDtoOutputCoverage';
@@ -56,15 +68,19 @@ class _$MerchantHoursDtoOutputCoverageSerializer implements PrimitiveSerializer<
       specifiedType: const FullType(MerchantHoursDtoOutputCoverageKindEnum),
     );
     yield r'radiusMetres';
-    yield object.radiusMetres == null ? null : serializers.serialize(
-      object.radiusMetres,
-      specifiedType: const FullType.nullable(int),
-    );
+    yield object.radiusMetres == null
+        ? null
+        : serializers.serialize(
+            object.radiusMetres,
+            specifiedType: const FullType.nullable(int),
+          );
     yield r'zoneCount';
-    yield object.zoneCount == null ? null : serializers.serialize(
-      object.zoneCount,
-      specifiedType: const FullType.nullable(int),
-    );
+    yield object.zoneCount == null
+        ? null
+        : serializers.serialize(
+            object.zoneCount,
+            specifiedType: const FullType.nullable(int),
+          );
   }
 
   @override
@@ -73,7 +89,11 @@ class _$MerchantHoursDtoOutputCoverageSerializer implements PrimitiveSerializer<
     MerchantHoursDtoOutputCoverage object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -89,25 +109,33 @@ class _$MerchantHoursDtoOutputCoverageSerializer implements PrimitiveSerializer<
       final value = serializedList[i + 1];
       switch (key) {
         case r'kind':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(MerchantHoursDtoOutputCoverageKindEnum),
-          ) as MerchantHoursDtoOutputCoverageKindEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      MerchantHoursDtoOutputCoverageKindEnum,
+                    ),
+                  )
+                  as MerchantHoursDtoOutputCoverageKindEnum;
           result.kind = valueDes;
           break;
         case r'radiusMetres':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(int),
-          ) as int?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(int),
+                  )
+                  as int?;
           if (valueDes == null) continue;
           result.radiusMetres = valueDes;
           break;
         case r'zoneCount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(int),
-          ) as int?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(int),
+                  )
+                  as int?;
           if (valueDes == null) continue;
           result.zoneCount = valueDes;
           break;
@@ -140,19 +168,21 @@ class _$MerchantHoursDtoOutputCoverageSerializer implements PrimitiveSerializer<
   }
 }
 
-
 class MerchantHoursDtoOutputCoverageKindEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'radius')
-  static const MerchantHoursDtoOutputCoverageKindEnum radius = _$merchantHoursDtoOutputCoverageKindEnum_radius;
+  static const MerchantHoursDtoOutputCoverageKindEnum radius =
+      _$merchantHoursDtoOutputCoverageKindEnum_radius;
   @BuiltValueEnumConst(wireName: r'zones')
-  static const MerchantHoursDtoOutputCoverageKindEnum zones = _$merchantHoursDtoOutputCoverageKindEnum_zones;
+  static const MerchantHoursDtoOutputCoverageKindEnum zones =
+      _$merchantHoursDtoOutputCoverageKindEnum_zones;
 
-  static Serializer<MerchantHoursDtoOutputCoverageKindEnum> get serializer => _$merchantHoursDtoOutputCoverageKindEnumSerializer;
+  static Serializer<MerchantHoursDtoOutputCoverageKindEnum> get serializer =>
+      _$merchantHoursDtoOutputCoverageKindEnumSerializer;
 
-  const MerchantHoursDtoOutputCoverageKindEnum._(String name): super(name);
+  const MerchantHoursDtoOutputCoverageKindEnum._(String name) : super(name);
 
-  static BuiltSet<MerchantHoursDtoOutputCoverageKindEnum> get values => _$merchantHoursDtoOutputCoverageKindEnumValues;
-  static MerchantHoursDtoOutputCoverageKindEnum valueOf(String name) => _$merchantHoursDtoOutputCoverageKindEnumValueOf(name);
+  static BuiltSet<MerchantHoursDtoOutputCoverageKindEnum> get values =>
+      _$merchantHoursDtoOutputCoverageKindEnumValues;
+  static MerchantHoursDtoOutputCoverageKindEnum valueOf(String name) =>
+      _$merchantHoursDtoOutputCoverageKindEnumValueOf(name);
 }
-

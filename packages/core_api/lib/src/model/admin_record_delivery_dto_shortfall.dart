@@ -14,7 +14,12 @@ part 'admin_record_delivery_dto_shortfall.g.dart';
 /// * [reason] - The reason's code in its Content list.
 /// * [note] - The text of a reason that needs one («أخرى»), and only of it.
 @BuiltValue()
-abstract class AdminRecordDeliveryDtoShortfall implements Built<AdminRecordDeliveryDtoShortfall, AdminRecordDeliveryDtoShortfallBuilder> {
+abstract class AdminRecordDeliveryDtoShortfall
+    implements
+        Built<
+          AdminRecordDeliveryDtoShortfall,
+          AdminRecordDeliveryDtoShortfallBuilder
+        > {
   /// The reason's code in its Content list.
   @BuiltValueField(wireName: r'reason')
   String get reason;
@@ -25,18 +30,25 @@ abstract class AdminRecordDeliveryDtoShortfall implements Built<AdminRecordDeliv
 
   AdminRecordDeliveryDtoShortfall._();
 
-  factory AdminRecordDeliveryDtoShortfall([void updates(AdminRecordDeliveryDtoShortfallBuilder b)]) = _$AdminRecordDeliveryDtoShortfall;
+  factory AdminRecordDeliveryDtoShortfall([
+    void updates(AdminRecordDeliveryDtoShortfallBuilder b),
+  ]) = _$AdminRecordDeliveryDtoShortfall;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminRecordDeliveryDtoShortfallBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRecordDeliveryDtoShortfall> get serializer => _$AdminRecordDeliveryDtoShortfallSerializer();
+  static Serializer<AdminRecordDeliveryDtoShortfall> get serializer =>
+      _$AdminRecordDeliveryDtoShortfallSerializer();
 }
 
-class _$AdminRecordDeliveryDtoShortfallSerializer implements PrimitiveSerializer<AdminRecordDeliveryDtoShortfall> {
+class _$AdminRecordDeliveryDtoShortfallSerializer
+    implements PrimitiveSerializer<AdminRecordDeliveryDtoShortfall> {
   @override
-  final Iterable<Type> types = const [AdminRecordDeliveryDtoShortfall, _$AdminRecordDeliveryDtoShortfall];
+  final Iterable<Type> types = const [
+    AdminRecordDeliveryDtoShortfall,
+    _$AdminRecordDeliveryDtoShortfall,
+  ];
 
   @override
   final String wireName = r'AdminRecordDeliveryDtoShortfall';
@@ -52,10 +64,12 @@ class _$AdminRecordDeliveryDtoShortfallSerializer implements PrimitiveSerializer
       specifiedType: const FullType(String),
     );
     yield r'note';
-    yield object.note == null ? null : serializers.serialize(
-      object.note,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.note == null
+        ? null
+        : serializers.serialize(
+            object.note,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -64,7 +78,11 @@ class _$AdminRecordDeliveryDtoShortfallSerializer implements PrimitiveSerializer
     AdminRecordDeliveryDtoShortfall object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -80,17 +98,21 @@ class _$AdminRecordDeliveryDtoShortfallSerializer implements PrimitiveSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.reason = valueDes;
           break;
         case r'note':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.note = valueDes;
           break;
@@ -122,5 +144,3 @@ class _$AdminRecordDeliveryDtoShortfallSerializer implements PrimitiveSerializer
     return result.build();
   }
 }
-
-

@@ -18,7 +18,12 @@ part 'customer_profile_dto_output_profile.g.dart';
 /// * [gender] - «ذكر» male or «أنثى» female.
 /// * [birthday] - «تاريخ الميلاد», optional, a past date.
 @BuiltValue()
-abstract class CustomerProfileDtoOutputProfile implements Built<CustomerProfileDtoOutputProfile, CustomerProfileDtoOutputProfileBuilder> {
+abstract class CustomerProfileDtoOutputProfile
+    implements
+        Built<
+          CustomerProfileDtoOutputProfile,
+          CustomerProfileDtoOutputProfileBuilder
+        > {
   /// «الاسم»: 2 to 30 Arabic or Latin letters, spaces and «-».
   @BuiltValueField(wireName: r'firstName')
   String get firstName;
@@ -38,18 +43,25 @@ abstract class CustomerProfileDtoOutputProfile implements Built<CustomerProfileD
 
   CustomerProfileDtoOutputProfile._();
 
-  factory CustomerProfileDtoOutputProfile([void updates(CustomerProfileDtoOutputProfileBuilder b)]) = _$CustomerProfileDtoOutputProfile;
+  factory CustomerProfileDtoOutputProfile([
+    void updates(CustomerProfileDtoOutputProfileBuilder b),
+  ]) = _$CustomerProfileDtoOutputProfile;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerProfileDtoOutputProfileBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerProfileDtoOutputProfile> get serializer => _$CustomerProfileDtoOutputProfileSerializer();
+  static Serializer<CustomerProfileDtoOutputProfile> get serializer =>
+      _$CustomerProfileDtoOutputProfileSerializer();
 }
 
-class _$CustomerProfileDtoOutputProfileSerializer implements PrimitiveSerializer<CustomerProfileDtoOutputProfile> {
+class _$CustomerProfileDtoOutputProfileSerializer
+    implements PrimitiveSerializer<CustomerProfileDtoOutputProfile> {
   @override
-  final Iterable<Type> types = const [CustomerProfileDtoOutputProfile, _$CustomerProfileDtoOutputProfile];
+  final Iterable<Type> types = const [
+    CustomerProfileDtoOutputProfile,
+    _$CustomerProfileDtoOutputProfile,
+  ];
 
   @override
   final String wireName = r'CustomerProfileDtoOutputProfile';
@@ -65,20 +77,24 @@ class _$CustomerProfileDtoOutputProfileSerializer implements PrimitiveSerializer
       specifiedType: const FullType(String),
     );
     yield r'lastName';
-    yield object.lastName == null ? null : serializers.serialize(
-      object.lastName,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.lastName == null
+        ? null
+        : serializers.serialize(
+            object.lastName,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'gender';
     yield serializers.serialize(
       object.gender,
       specifiedType: const FullType(CustomerProfileDtoOutputProfileGenderEnum),
     );
     yield r'birthday';
-    yield object.birthday == null ? null : serializers.serialize(
-      object.birthday,
-      specifiedType: const FullType.nullable(Date),
-    );
+    yield object.birthday == null
+        ? null
+        : serializers.serialize(
+            object.birthday,
+            specifiedType: const FullType.nullable(Date),
+          );
   }
 
   @override
@@ -87,7 +103,11 @@ class _$CustomerProfileDtoOutputProfileSerializer implements PrimitiveSerializer
     CustomerProfileDtoOutputProfile object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -103,32 +123,42 @@ class _$CustomerProfileDtoOutputProfileSerializer implements PrimitiveSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'firstName':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.firstName = valueDes;
           break;
         case r'lastName':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.lastName = valueDes;
           break;
         case r'gender':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CustomerProfileDtoOutputProfileGenderEnum),
-          ) as CustomerProfileDtoOutputProfileGenderEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CustomerProfileDtoOutputProfileGenderEnum,
+                    ),
+                  )
+                  as CustomerProfileDtoOutputProfileGenderEnum;
           result.gender = valueDes;
           break;
         case r'birthday':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(Date),
-          ) as Date?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(Date),
+                  )
+                  as Date?;
           if (valueDes == null) continue;
           result.birthday = valueDes;
           break;
@@ -161,20 +191,22 @@ class _$CustomerProfileDtoOutputProfileSerializer implements PrimitiveSerializer
   }
 }
 
-
 /// «ذكر» male or «أنثى» female.
 class CustomerProfileDtoOutputProfileGenderEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'male')
-  static const CustomerProfileDtoOutputProfileGenderEnum male = _$customerProfileDtoOutputProfileGenderEnum_male;
+  static const CustomerProfileDtoOutputProfileGenderEnum male =
+      _$customerProfileDtoOutputProfileGenderEnum_male;
   @BuiltValueEnumConst(wireName: r'female')
-  static const CustomerProfileDtoOutputProfileGenderEnum female = _$customerProfileDtoOutputProfileGenderEnum_female;
+  static const CustomerProfileDtoOutputProfileGenderEnum female =
+      _$customerProfileDtoOutputProfileGenderEnum_female;
 
-  static Serializer<CustomerProfileDtoOutputProfileGenderEnum> get serializer => _$customerProfileDtoOutputProfileGenderEnumSerializer;
+  static Serializer<CustomerProfileDtoOutputProfileGenderEnum> get serializer =>
+      _$customerProfileDtoOutputProfileGenderEnumSerializer;
 
-  const CustomerProfileDtoOutputProfileGenderEnum._(String name): super(name);
+  const CustomerProfileDtoOutputProfileGenderEnum._(String name) : super(name);
 
-  static BuiltSet<CustomerProfileDtoOutputProfileGenderEnum> get values => _$customerProfileDtoOutputProfileGenderEnumValues;
-  static CustomerProfileDtoOutputProfileGenderEnum valueOf(String name) => _$customerProfileDtoOutputProfileGenderEnumValueOf(name);
+  static BuiltSet<CustomerProfileDtoOutputProfileGenderEnum> get values =>
+      _$customerProfileDtoOutputProfileGenderEnumValues;
+  static CustomerProfileDtoOutputProfileGenderEnum valueOf(String name) =>
+      _$customerProfileDtoOutputProfileGenderEnumValueOf(name);
 }
-

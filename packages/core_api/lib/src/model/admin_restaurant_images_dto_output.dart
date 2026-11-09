@@ -15,9 +15,14 @@ part 'admin_restaurant_images_dto_output.g.dart';
 /// Properties:
 /// * [logoKey] - Its key in public-media, shown through /media/ (architecture §5.8); null without one.
 /// * [coverKey] - Its key in public-media, shown through /media/ (architecture §5.8); null without one.
-/// * [categories] 
+/// * [categories]
 @BuiltValue()
-abstract class AdminRestaurantImagesDtoOutput implements Built<AdminRestaurantImagesDtoOutput, AdminRestaurantImagesDtoOutputBuilder> {
+abstract class AdminRestaurantImagesDtoOutput
+    implements
+        Built<
+          AdminRestaurantImagesDtoOutput,
+          AdminRestaurantImagesDtoOutputBuilder
+        > {
   /// Its key in public-media, shown through /media/ (architecture §5.8); null without one.
   @BuiltValueField(wireName: r'logoKey')
   String? get logoKey;
@@ -31,18 +36,25 @@ abstract class AdminRestaurantImagesDtoOutput implements Built<AdminRestaurantIm
 
   AdminRestaurantImagesDtoOutput._();
 
-  factory AdminRestaurantImagesDtoOutput([void updates(AdminRestaurantImagesDtoOutputBuilder b)]) = _$AdminRestaurantImagesDtoOutput;
+  factory AdminRestaurantImagesDtoOutput([
+    void updates(AdminRestaurantImagesDtoOutputBuilder b),
+  ]) = _$AdminRestaurantImagesDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminRestaurantImagesDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRestaurantImagesDtoOutput> get serializer => _$AdminRestaurantImagesDtoOutputSerializer();
+  static Serializer<AdminRestaurantImagesDtoOutput> get serializer =>
+      _$AdminRestaurantImagesDtoOutputSerializer();
 }
 
-class _$AdminRestaurantImagesDtoOutputSerializer implements PrimitiveSerializer<AdminRestaurantImagesDtoOutput> {
+class _$AdminRestaurantImagesDtoOutputSerializer
+    implements PrimitiveSerializer<AdminRestaurantImagesDtoOutput> {
   @override
-  final Iterable<Type> types = const [AdminRestaurantImagesDtoOutput, _$AdminRestaurantImagesDtoOutput];
+  final Iterable<Type> types = const [
+    AdminRestaurantImagesDtoOutput,
+    _$AdminRestaurantImagesDtoOutput,
+  ];
 
   @override
   final String wireName = r'AdminRestaurantImagesDtoOutput';
@@ -53,19 +65,25 @@ class _$AdminRestaurantImagesDtoOutputSerializer implements PrimitiveSerializer<
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'logoKey';
-    yield object.logoKey == null ? null : serializers.serialize(
-      object.logoKey,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.logoKey == null
+        ? null
+        : serializers.serialize(
+            object.logoKey,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'coverKey';
-    yield object.coverKey == null ? null : serializers.serialize(
-      object.coverKey,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.coverKey == null
+        ? null
+        : serializers.serialize(
+            object.coverKey,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'categories';
     yield serializers.serialize(
       object.categories,
-      specifiedType: const FullType(BuiltList, [FullType(AdminRestaurantImagesDtoOutputCategoriesInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminRestaurantImagesDtoOutputCategoriesInner),
+      ]),
     );
   }
 
@@ -75,7 +93,11 @@ class _$AdminRestaurantImagesDtoOutputSerializer implements PrimitiveSerializer<
     AdminRestaurantImagesDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -91,26 +113,34 @@ class _$AdminRestaurantImagesDtoOutputSerializer implements PrimitiveSerializer<
       final value = serializedList[i + 1];
       switch (key) {
         case r'logoKey':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.logoKey = valueDes;
           break;
         case r'coverKey':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.coverKey = valueDes;
           break;
         case r'categories':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(AdminRestaurantImagesDtoOutputCategoriesInner)]),
-          ) as BuiltList<AdminRestaurantImagesDtoOutputCategoriesInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminRestaurantImagesDtoOutputCategoriesInner),
+                    ]),
+                  )
+                  as BuiltList<AdminRestaurantImagesDtoOutputCategoriesInner>;
           result.categories.replace(valueDes);
           break;
         default:
@@ -141,5 +171,3 @@ class _$AdminRestaurantImagesDtoOutputSerializer implements PrimitiveSerializer<
     return result.build();
   }
 }
-
-

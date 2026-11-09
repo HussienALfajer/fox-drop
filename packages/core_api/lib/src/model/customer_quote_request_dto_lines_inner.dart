@@ -12,13 +12,18 @@ part 'customer_quote_request_dto_lines_inner.g.dart';
 /// CustomerQuoteRequestDtoLinesInner
 ///
 /// Properties:
-/// * [itemId] 
-/// * [optionIds] 
+/// * [itemId]
+/// * [optionIds]
 /// * [quantity] - 1 to 20 per line (fixed).
 /// * [note] - «مثلاً: بدون بصل», up to 100 characters; no phone number.
 /// * [knownUnitPrice] - The unit price the customer last saw, with the options; a change is price_changed.
 @BuiltValue()
-abstract class CustomerQuoteRequestDtoLinesInner implements Built<CustomerQuoteRequestDtoLinesInner, CustomerQuoteRequestDtoLinesInnerBuilder> {
+abstract class CustomerQuoteRequestDtoLinesInner
+    implements
+        Built<
+          CustomerQuoteRequestDtoLinesInner,
+          CustomerQuoteRequestDtoLinesInnerBuilder
+        > {
   @BuiltValueField(wireName: r'itemId')
   String get itemId;
 
@@ -39,18 +44,25 @@ abstract class CustomerQuoteRequestDtoLinesInner implements Built<CustomerQuoteR
 
   CustomerQuoteRequestDtoLinesInner._();
 
-  factory CustomerQuoteRequestDtoLinesInner([void updates(CustomerQuoteRequestDtoLinesInnerBuilder b)]) = _$CustomerQuoteRequestDtoLinesInner;
+  factory CustomerQuoteRequestDtoLinesInner([
+    void updates(CustomerQuoteRequestDtoLinesInnerBuilder b),
+  ]) = _$CustomerQuoteRequestDtoLinesInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerQuoteRequestDtoLinesInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerQuoteRequestDtoLinesInner> get serializer => _$CustomerQuoteRequestDtoLinesInnerSerializer();
+  static Serializer<CustomerQuoteRequestDtoLinesInner> get serializer =>
+      _$CustomerQuoteRequestDtoLinesInnerSerializer();
 }
 
-class _$CustomerQuoteRequestDtoLinesInnerSerializer implements PrimitiveSerializer<CustomerQuoteRequestDtoLinesInner> {
+class _$CustomerQuoteRequestDtoLinesInnerSerializer
+    implements PrimitiveSerializer<CustomerQuoteRequestDtoLinesInner> {
   @override
-  final Iterable<Type> types = const [CustomerQuoteRequestDtoLinesInner, _$CustomerQuoteRequestDtoLinesInner];
+  final Iterable<Type> types = const [
+    CustomerQuoteRequestDtoLinesInner,
+    _$CustomerQuoteRequestDtoLinesInner,
+  ];
 
   @override
   final String wireName = r'CustomerQuoteRequestDtoLinesInner';
@@ -76,10 +88,12 @@ class _$CustomerQuoteRequestDtoLinesInnerSerializer implements PrimitiveSerializ
       specifiedType: const FullType(int),
     );
     yield r'note';
-    yield object.note == null ? null : serializers.serialize(
-      object.note,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.note == null
+        ? null
+        : serializers.serialize(
+            object.note,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'knownUnitPrice';
     yield serializers.serialize(
       object.knownUnitPrice,
@@ -93,7 +107,11 @@ class _$CustomerQuoteRequestDtoLinesInnerSerializer implements PrimitiveSerializ
     CustomerQuoteRequestDtoLinesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -109,39 +127,48 @@ class _$CustomerQuoteRequestDtoLinesInnerSerializer implements PrimitiveSerializ
       final value = serializedList[i + 1];
       switch (key) {
         case r'itemId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.itemId = valueDes;
           break;
         case r'optionIds':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.optionIds.replace(valueDes);
           break;
         case r'quantity':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.quantity = valueDes;
           break;
         case r'note':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.note = valueDes;
           break;
         case r'knownUnitPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.knownUnitPrice = valueDes;
           break;
         default:
@@ -172,5 +199,3 @@ class _$CustomerQuoteRequestDtoLinesInnerSerializer implements PrimitiveSerializ
     return result.build();
   }
 }
-
-

@@ -12,26 +12,35 @@ part 'admin_emergency_stop_dto_output.g.dart';
 /// AdminEmergencyStopDtoOutput
 ///
 /// Properties:
-/// * [stop] 
+/// * [stop]
 @BuiltValue()
-abstract class AdminEmergencyStopDtoOutput implements Built<AdminEmergencyStopDtoOutput, AdminEmergencyStopDtoOutputBuilder> {
+abstract class AdminEmergencyStopDtoOutput
+    implements
+        Built<AdminEmergencyStopDtoOutput, AdminEmergencyStopDtoOutputBuilder> {
   @BuiltValueField(wireName: r'stop')
   AdminEmergencyStopDtoOutputStop get stop;
 
   AdminEmergencyStopDtoOutput._();
 
-  factory AdminEmergencyStopDtoOutput([void updates(AdminEmergencyStopDtoOutputBuilder b)]) = _$AdminEmergencyStopDtoOutput;
+  factory AdminEmergencyStopDtoOutput([
+    void updates(AdminEmergencyStopDtoOutputBuilder b),
+  ]) = _$AdminEmergencyStopDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminEmergencyStopDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminEmergencyStopDtoOutput> get serializer => _$AdminEmergencyStopDtoOutputSerializer();
+  static Serializer<AdminEmergencyStopDtoOutput> get serializer =>
+      _$AdminEmergencyStopDtoOutputSerializer();
 }
 
-class _$AdminEmergencyStopDtoOutputSerializer implements PrimitiveSerializer<AdminEmergencyStopDtoOutput> {
+class _$AdminEmergencyStopDtoOutputSerializer
+    implements PrimitiveSerializer<AdminEmergencyStopDtoOutput> {
   @override
-  final Iterable<Type> types = const [AdminEmergencyStopDtoOutput, _$AdminEmergencyStopDtoOutput];
+  final Iterable<Type> types = const [
+    AdminEmergencyStopDtoOutput,
+    _$AdminEmergencyStopDtoOutput,
+  ];
 
   @override
   final String wireName = r'AdminEmergencyStopDtoOutput';
@@ -54,7 +63,11 @@ class _$AdminEmergencyStopDtoOutputSerializer implements PrimitiveSerializer<Adm
     AdminEmergencyStopDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -70,10 +83,14 @@ class _$AdminEmergencyStopDtoOutputSerializer implements PrimitiveSerializer<Adm
       final value = serializedList[i + 1];
       switch (key) {
         case r'stop':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdminEmergencyStopDtoOutputStop),
-          ) as AdminEmergencyStopDtoOutputStop;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminEmergencyStopDtoOutputStop,
+                    ),
+                  )
+                  as AdminEmergencyStopDtoOutputStop;
           result.stop.replace(valueDes);
           break;
         default:
@@ -104,5 +121,3 @@ class _$AdminEmergencyStopDtoOutputSerializer implements PrimitiveSerializer<Adm
     return result.build();
   }
 }
-
-

@@ -13,26 +13,34 @@ part 'merchant_menu_dto_output.g.dart';
 /// MerchantMenuDtoOutput
 ///
 /// Properties:
-/// * [categories] 
+/// * [categories]
 @BuiltValue()
-abstract class MerchantMenuDtoOutput implements Built<MerchantMenuDtoOutput, MerchantMenuDtoOutputBuilder> {
+abstract class MerchantMenuDtoOutput
+    implements Built<MerchantMenuDtoOutput, MerchantMenuDtoOutputBuilder> {
   @BuiltValueField(wireName: r'categories')
   BuiltList<MerchantMenuDtoOutputCategoriesInner> get categories;
 
   MerchantMenuDtoOutput._();
 
-  factory MerchantMenuDtoOutput([void updates(MerchantMenuDtoOutputBuilder b)]) = _$MerchantMenuDtoOutput;
+  factory MerchantMenuDtoOutput([
+    void updates(MerchantMenuDtoOutputBuilder b),
+  ]) = _$MerchantMenuDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantMenuDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantMenuDtoOutput> get serializer => _$MerchantMenuDtoOutputSerializer();
+  static Serializer<MerchantMenuDtoOutput> get serializer =>
+      _$MerchantMenuDtoOutputSerializer();
 }
 
-class _$MerchantMenuDtoOutputSerializer implements PrimitiveSerializer<MerchantMenuDtoOutput> {
+class _$MerchantMenuDtoOutputSerializer
+    implements PrimitiveSerializer<MerchantMenuDtoOutput> {
   @override
-  final Iterable<Type> types = const [MerchantMenuDtoOutput, _$MerchantMenuDtoOutput];
+  final Iterable<Type> types = const [
+    MerchantMenuDtoOutput,
+    _$MerchantMenuDtoOutput,
+  ];
 
   @override
   final String wireName = r'MerchantMenuDtoOutput';
@@ -45,7 +53,9 @@ class _$MerchantMenuDtoOutputSerializer implements PrimitiveSerializer<MerchantM
     yield r'categories';
     yield serializers.serialize(
       object.categories,
-      specifiedType: const FullType(BuiltList, [FullType(MerchantMenuDtoOutputCategoriesInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(MerchantMenuDtoOutputCategoriesInner),
+      ]),
     );
   }
 
@@ -55,7 +65,11 @@ class _$MerchantMenuDtoOutputSerializer implements PrimitiveSerializer<MerchantM
     MerchantMenuDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -71,10 +85,14 @@ class _$MerchantMenuDtoOutputSerializer implements PrimitiveSerializer<MerchantM
       final value = serializedList[i + 1];
       switch (key) {
         case r'categories':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(MerchantMenuDtoOutputCategoriesInner)]),
-          ) as BuiltList<MerchantMenuDtoOutputCategoriesInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(MerchantMenuDtoOutputCategoriesInner),
+                    ]),
+                  )
+                  as BuiltList<MerchantMenuDtoOutputCategoriesInner>;
           result.categories.replace(valueDes);
           break;
         default:
@@ -105,5 +123,3 @@ class _$MerchantMenuDtoOutputSerializer implements PrimitiveSerializer<MerchantM
     return result.build();
   }
 }
-
-

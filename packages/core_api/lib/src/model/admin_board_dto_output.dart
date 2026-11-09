@@ -15,25 +15,32 @@ part 'admin_board_dto_output.g.dart';
 /// Properties:
 /// * [orders] - Every live order, oldest first.
 @BuiltValue()
-abstract class AdminBoardDtoOutput implements Built<AdminBoardDtoOutput, AdminBoardDtoOutputBuilder> {
+abstract class AdminBoardDtoOutput
+    implements Built<AdminBoardDtoOutput, AdminBoardDtoOutputBuilder> {
   /// Every live order, oldest first.
   @BuiltValueField(wireName: r'orders')
   BuiltList<AdminOrderCardDtoOutputOrder> get orders;
 
   AdminBoardDtoOutput._();
 
-  factory AdminBoardDtoOutput([void updates(AdminBoardDtoOutputBuilder b)]) = _$AdminBoardDtoOutput;
+  factory AdminBoardDtoOutput([void updates(AdminBoardDtoOutputBuilder b)]) =
+      _$AdminBoardDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminBoardDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminBoardDtoOutput> get serializer => _$AdminBoardDtoOutputSerializer();
+  static Serializer<AdminBoardDtoOutput> get serializer =>
+      _$AdminBoardDtoOutputSerializer();
 }
 
-class _$AdminBoardDtoOutputSerializer implements PrimitiveSerializer<AdminBoardDtoOutput> {
+class _$AdminBoardDtoOutputSerializer
+    implements PrimitiveSerializer<AdminBoardDtoOutput> {
   @override
-  final Iterable<Type> types = const [AdminBoardDtoOutput, _$AdminBoardDtoOutput];
+  final Iterable<Type> types = const [
+    AdminBoardDtoOutput,
+    _$AdminBoardDtoOutput,
+  ];
 
   @override
   final String wireName = r'AdminBoardDtoOutput';
@@ -46,7 +53,9 @@ class _$AdminBoardDtoOutputSerializer implements PrimitiveSerializer<AdminBoardD
     yield r'orders';
     yield serializers.serialize(
       object.orders,
-      specifiedType: const FullType(BuiltList, [FullType(AdminOrderCardDtoOutputOrder)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminOrderCardDtoOutputOrder),
+      ]),
     );
   }
 
@@ -56,7 +65,11 @@ class _$AdminBoardDtoOutputSerializer implements PrimitiveSerializer<AdminBoardD
     AdminBoardDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -72,10 +85,14 @@ class _$AdminBoardDtoOutputSerializer implements PrimitiveSerializer<AdminBoardD
       final value = serializedList[i + 1];
       switch (key) {
         case r'orders':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(AdminOrderCardDtoOutputOrder)]),
-          ) as BuiltList<AdminOrderCardDtoOutputOrder>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminOrderCardDtoOutputOrder),
+                    ]),
+                  )
+                  as BuiltList<AdminOrderCardDtoOutputOrder>;
           result.orders.replace(valueDes);
           break;
         default:
@@ -106,5 +123,3 @@ class _$AdminBoardDtoOutputSerializer implements PrimitiveSerializer<AdminBoardD
     return result.build();
   }
 }
-
-

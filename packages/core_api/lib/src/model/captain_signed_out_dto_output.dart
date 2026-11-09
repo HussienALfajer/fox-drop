@@ -12,27 +12,36 @@ part 'captain_signed_out_dto_output.g.dart';
 /// CaptainSignedOutDtoOutput
 ///
 /// Properties:
-/// * [status] 
+/// * [status]
 @BuiltValue()
-abstract class CaptainSignedOutDtoOutput implements Built<CaptainSignedOutDtoOutput, CaptainSignedOutDtoOutputBuilder> {
+abstract class CaptainSignedOutDtoOutput
+    implements
+        Built<CaptainSignedOutDtoOutput, CaptainSignedOutDtoOutputBuilder> {
   @BuiltValueField(wireName: r'status')
   CaptainSignedOutDtoOutputStatusEnum get status;
   // enum statusEnum {  signed_out,  };
 
   CaptainSignedOutDtoOutput._();
 
-  factory CaptainSignedOutDtoOutput([void updates(CaptainSignedOutDtoOutputBuilder b)]) = _$CaptainSignedOutDtoOutput;
+  factory CaptainSignedOutDtoOutput([
+    void updates(CaptainSignedOutDtoOutputBuilder b),
+  ]) = _$CaptainSignedOutDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainSignedOutDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainSignedOutDtoOutput> get serializer => _$CaptainSignedOutDtoOutputSerializer();
+  static Serializer<CaptainSignedOutDtoOutput> get serializer =>
+      _$CaptainSignedOutDtoOutputSerializer();
 }
 
-class _$CaptainSignedOutDtoOutputSerializer implements PrimitiveSerializer<CaptainSignedOutDtoOutput> {
+class _$CaptainSignedOutDtoOutputSerializer
+    implements PrimitiveSerializer<CaptainSignedOutDtoOutput> {
   @override
-  final Iterable<Type> types = const [CaptainSignedOutDtoOutput, _$CaptainSignedOutDtoOutput];
+  final Iterable<Type> types = const [
+    CaptainSignedOutDtoOutput,
+    _$CaptainSignedOutDtoOutput,
+  ];
 
   @override
   final String wireName = r'CaptainSignedOutDtoOutput';
@@ -55,7 +64,11 @@ class _$CaptainSignedOutDtoOutputSerializer implements PrimitiveSerializer<Capta
     CaptainSignedOutDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -71,10 +84,14 @@ class _$CaptainSignedOutDtoOutputSerializer implements PrimitiveSerializer<Capta
       final value = serializedList[i + 1];
       switch (key) {
         case r'status':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainSignedOutDtoOutputStatusEnum),
-          ) as CaptainSignedOutDtoOutputStatusEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainSignedOutDtoOutputStatusEnum,
+                    ),
+                  )
+                  as CaptainSignedOutDtoOutputStatusEnum;
           result.status = valueDes;
           break;
         default:
@@ -106,17 +123,18 @@ class _$CaptainSignedOutDtoOutputSerializer implements PrimitiveSerializer<Capta
   }
 }
 
-
 class CaptainSignedOutDtoOutputStatusEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'signed_out')
-  static const CaptainSignedOutDtoOutputStatusEnum signedOut = _$captainSignedOutDtoOutputStatusEnum_signedOut;
+  static const CaptainSignedOutDtoOutputStatusEnum signedOut =
+      _$captainSignedOutDtoOutputStatusEnum_signedOut;
 
-  static Serializer<CaptainSignedOutDtoOutputStatusEnum> get serializer => _$captainSignedOutDtoOutputStatusEnumSerializer;
+  static Serializer<CaptainSignedOutDtoOutputStatusEnum> get serializer =>
+      _$captainSignedOutDtoOutputStatusEnumSerializer;
 
-  const CaptainSignedOutDtoOutputStatusEnum._(String name): super(name);
+  const CaptainSignedOutDtoOutputStatusEnum._(String name) : super(name);
 
-  static BuiltSet<CaptainSignedOutDtoOutputStatusEnum> get values => _$captainSignedOutDtoOutputStatusEnumValues;
-  static CaptainSignedOutDtoOutputStatusEnum valueOf(String name) => _$captainSignedOutDtoOutputStatusEnumValueOf(name);
+  static BuiltSet<CaptainSignedOutDtoOutputStatusEnum> get values =>
+      _$captainSignedOutDtoOutputStatusEnumValues;
+  static CaptainSignedOutDtoOutputStatusEnum valueOf(String name) =>
+      _$captainSignedOutDtoOutputStatusEnumValueOf(name);
 }
-

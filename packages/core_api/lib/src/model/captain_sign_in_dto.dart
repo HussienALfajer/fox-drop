@@ -13,9 +13,10 @@ part 'captain_sign_in_dto.g.dart';
 /// Properties:
 /// * [phone] - The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
 /// * [deviceId] - The app installation, generated once by the app and kept until it is removed.
-/// * [code] 
+/// * [code]
 @BuiltValue()
-abstract class CaptainSignInDto implements Built<CaptainSignInDto, CaptainSignInDtoBuilder> {
+abstract class CaptainSignInDto
+    implements Built<CaptainSignInDto, CaptainSignInDtoBuilder> {
   /// The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
   @BuiltValueField(wireName: r'phone')
   String get phone;
@@ -29,16 +30,19 @@ abstract class CaptainSignInDto implements Built<CaptainSignInDto, CaptainSignIn
 
   CaptainSignInDto._();
 
-  factory CaptainSignInDto([void updates(CaptainSignInDtoBuilder b)]) = _$CaptainSignInDto;
+  factory CaptainSignInDto([void updates(CaptainSignInDtoBuilder b)]) =
+      _$CaptainSignInDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainSignInDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainSignInDto> get serializer => _$CaptainSignInDtoSerializer();
+  static Serializer<CaptainSignInDto> get serializer =>
+      _$CaptainSignInDtoSerializer();
 }
 
-class _$CaptainSignInDtoSerializer implements PrimitiveSerializer<CaptainSignInDto> {
+class _$CaptainSignInDtoSerializer
+    implements PrimitiveSerializer<CaptainSignInDto> {
   @override
   final Iterable<Type> types = const [CaptainSignInDto, _$CaptainSignInDto];
 
@@ -73,7 +77,11 @@ class _$CaptainSignInDtoSerializer implements PrimitiveSerializer<CaptainSignInD
     CaptainSignInDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -89,24 +97,30 @@ class _$CaptainSignInDtoSerializer implements PrimitiveSerializer<CaptainSignInD
       final value = serializedList[i + 1];
       switch (key) {
         case r'phone':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.phone = valueDes;
           break;
         case r'deviceId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.deviceId = valueDes;
           break;
         case r'code':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.code = valueDes;
           break;
         default:
@@ -137,5 +151,3 @@ class _$CaptainSignInDtoSerializer implements PrimitiveSerializer<CaptainSignInD
     return result.build();
   }
 }
-
-

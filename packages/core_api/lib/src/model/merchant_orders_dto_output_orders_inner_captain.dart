@@ -12,10 +12,15 @@ part 'merchant_orders_dto_output_orders_inner_captain.g.dart';
 /// From assignment (RA §8.9); the photo and the ETA come with their slices.
 ///
 /// Properties:
-/// * [firstName] 
-/// * [vehicle] 
+/// * [firstName]
+/// * [vehicle]
 @BuiltValue()
-abstract class MerchantOrdersDtoOutputOrdersInnerCaptain implements Built<MerchantOrdersDtoOutputOrdersInnerCaptain, MerchantOrdersDtoOutputOrdersInnerCaptainBuilder> {
+abstract class MerchantOrdersDtoOutputOrdersInnerCaptain
+    implements
+        Built<
+          MerchantOrdersDtoOutputOrdersInnerCaptain,
+          MerchantOrdersDtoOutputOrdersInnerCaptainBuilder
+        > {
   @BuiltValueField(wireName: r'firstName')
   String get firstName;
 
@@ -25,18 +30,26 @@ abstract class MerchantOrdersDtoOutputOrdersInnerCaptain implements Built<Mercha
 
   MerchantOrdersDtoOutputOrdersInnerCaptain._();
 
-  factory MerchantOrdersDtoOutputOrdersInnerCaptain([void updates(MerchantOrdersDtoOutputOrdersInnerCaptainBuilder b)]) = _$MerchantOrdersDtoOutputOrdersInnerCaptain;
+  factory MerchantOrdersDtoOutputOrdersInnerCaptain([
+    void updates(MerchantOrdersDtoOutputOrdersInnerCaptainBuilder b),
+  ]) = _$MerchantOrdersDtoOutputOrdersInnerCaptain;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(MerchantOrdersDtoOutputOrdersInnerCaptainBuilder b) => b;
+  static void _defaults(MerchantOrdersDtoOutputOrdersInnerCaptainBuilder b) =>
+      b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantOrdersDtoOutputOrdersInnerCaptain> get serializer => _$MerchantOrdersDtoOutputOrdersInnerCaptainSerializer();
+  static Serializer<MerchantOrdersDtoOutputOrdersInnerCaptain> get serializer =>
+      _$MerchantOrdersDtoOutputOrdersInnerCaptainSerializer();
 }
 
-class _$MerchantOrdersDtoOutputOrdersInnerCaptainSerializer implements PrimitiveSerializer<MerchantOrdersDtoOutputOrdersInnerCaptain> {
+class _$MerchantOrdersDtoOutputOrdersInnerCaptainSerializer
+    implements PrimitiveSerializer<MerchantOrdersDtoOutputOrdersInnerCaptain> {
   @override
-  final Iterable<Type> types = const [MerchantOrdersDtoOutputOrdersInnerCaptain, _$MerchantOrdersDtoOutputOrdersInnerCaptain];
+  final Iterable<Type> types = const [
+    MerchantOrdersDtoOutputOrdersInnerCaptain,
+    _$MerchantOrdersDtoOutputOrdersInnerCaptain,
+  ];
 
   @override
   final String wireName = r'MerchantOrdersDtoOutputOrdersInnerCaptain';
@@ -54,7 +67,9 @@ class _$MerchantOrdersDtoOutputOrdersInnerCaptainSerializer implements Primitive
     yield r'vehicle';
     yield serializers.serialize(
       object.vehicle,
-      specifiedType: const FullType(MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum),
+      specifiedType: const FullType(
+        MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum,
+      ),
     );
   }
 
@@ -64,7 +79,11 @@ class _$MerchantOrdersDtoOutputOrdersInnerCaptainSerializer implements Primitive
     MerchantOrdersDtoOutputOrdersInnerCaptain object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -80,17 +99,23 @@ class _$MerchantOrdersDtoOutputOrdersInnerCaptainSerializer implements Primitive
       final value = serializedList[i + 1];
       switch (key) {
         case r'firstName':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.firstName = valueDes;
           break;
         case r'vehicle':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum),
-          ) as MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum,
+                    ),
+                  )
+                  as MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum;
           result.vehicle = valueDes;
           break;
         default:
@@ -122,23 +147,30 @@ class _$MerchantOrdersDtoOutputOrdersInnerCaptainSerializer implements Primitive
   }
 }
 
-
 class MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'walking')
-  static const MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum walking = _$merchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum_walking;
+  static const MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum walking =
+      _$merchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum_walking;
   @BuiltValueEnumConst(wireName: r'bicycle')
-  static const MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum bicycle = _$merchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum_bicycle;
+  static const MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum bicycle =
+      _$merchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum_bicycle;
   @BuiltValueEnumConst(wireName: r'motorbike')
-  static const MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum motorbike = _$merchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum_motorbike;
+  static const MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum motorbike =
+      _$merchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum_motorbike;
   @BuiltValueEnumConst(wireName: r'car')
-  static const MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum car = _$merchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum_car;
+  static const MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum car =
+      _$merchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum_car;
 
-  static Serializer<MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum> get serializer => _$merchantOrdersDtoOutputOrdersInnerCaptainVehicleEnumSerializer;
+  static Serializer<MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum>
+  get serializer =>
+      _$merchantOrdersDtoOutputOrdersInnerCaptainVehicleEnumSerializer;
 
-  const MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum._(String name): super(name);
+  const MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum._(String name)
+    : super(name);
 
-  static BuiltSet<MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum> get values => _$merchantOrdersDtoOutputOrdersInnerCaptainVehicleEnumValues;
-  static MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum valueOf(String name) => _$merchantOrdersDtoOutputOrdersInnerCaptainVehicleEnumValueOf(name);
+  static BuiltSet<MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum>
+  get values => _$merchantOrdersDtoOutputOrdersInnerCaptainVehicleEnumValues;
+  static MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum valueOf(
+    String name,
+  ) => _$merchantOrdersDtoOutputOrdersInnerCaptainVehicleEnumValueOf(name);
 }
-

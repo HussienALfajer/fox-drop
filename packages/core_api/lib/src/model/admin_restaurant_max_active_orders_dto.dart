@@ -13,25 +13,37 @@ part 'admin_restaurant_max_active_orders_dto.g.dart';
 /// Properties:
 /// * [maxActiveOrders] - Off (null) or 1 to 50 (RA §7.4).
 @BuiltValue()
-abstract class AdminRestaurantMaxActiveOrdersDto implements Built<AdminRestaurantMaxActiveOrdersDto, AdminRestaurantMaxActiveOrdersDtoBuilder> {
+abstract class AdminRestaurantMaxActiveOrdersDto
+    implements
+        Built<
+          AdminRestaurantMaxActiveOrdersDto,
+          AdminRestaurantMaxActiveOrdersDtoBuilder
+        > {
   /// Off (null) or 1 to 50 (RA §7.4).
   @BuiltValueField(wireName: r'maxActiveOrders')
   int? get maxActiveOrders;
 
   AdminRestaurantMaxActiveOrdersDto._();
 
-  factory AdminRestaurantMaxActiveOrdersDto([void updates(AdminRestaurantMaxActiveOrdersDtoBuilder b)]) = _$AdminRestaurantMaxActiveOrdersDto;
+  factory AdminRestaurantMaxActiveOrdersDto([
+    void updates(AdminRestaurantMaxActiveOrdersDtoBuilder b),
+  ]) = _$AdminRestaurantMaxActiveOrdersDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminRestaurantMaxActiveOrdersDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRestaurantMaxActiveOrdersDto> get serializer => _$AdminRestaurantMaxActiveOrdersDtoSerializer();
+  static Serializer<AdminRestaurantMaxActiveOrdersDto> get serializer =>
+      _$AdminRestaurantMaxActiveOrdersDtoSerializer();
 }
 
-class _$AdminRestaurantMaxActiveOrdersDtoSerializer implements PrimitiveSerializer<AdminRestaurantMaxActiveOrdersDto> {
+class _$AdminRestaurantMaxActiveOrdersDtoSerializer
+    implements PrimitiveSerializer<AdminRestaurantMaxActiveOrdersDto> {
   @override
-  final Iterable<Type> types = const [AdminRestaurantMaxActiveOrdersDto, _$AdminRestaurantMaxActiveOrdersDto];
+  final Iterable<Type> types = const [
+    AdminRestaurantMaxActiveOrdersDto,
+    _$AdminRestaurantMaxActiveOrdersDto,
+  ];
 
   @override
   final String wireName = r'AdminRestaurantMaxActiveOrdersDto';
@@ -42,10 +54,12 @@ class _$AdminRestaurantMaxActiveOrdersDtoSerializer implements PrimitiveSerializ
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'maxActiveOrders';
-    yield object.maxActiveOrders == null ? null : serializers.serialize(
-      object.maxActiveOrders,
-      specifiedType: const FullType.nullable(int),
-    );
+    yield object.maxActiveOrders == null
+        ? null
+        : serializers.serialize(
+            object.maxActiveOrders,
+            specifiedType: const FullType.nullable(int),
+          );
   }
 
   @override
@@ -54,7 +68,11 @@ class _$AdminRestaurantMaxActiveOrdersDtoSerializer implements PrimitiveSerializ
     AdminRestaurantMaxActiveOrdersDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -70,10 +88,12 @@ class _$AdminRestaurantMaxActiveOrdersDtoSerializer implements PrimitiveSerializ
       final value = serializedList[i + 1];
       switch (key) {
         case r'maxActiveOrders':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(int),
-          ) as int?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(int),
+                  )
+                  as int?;
           if (valueDes == null) continue;
           result.maxActiveOrders = valueDes;
           break;
@@ -105,5 +125,3 @@ class _$AdminRestaurantMaxActiveOrdersDtoSerializer implements PrimitiveSerializ
     return result.build();
   }
 }
-
-

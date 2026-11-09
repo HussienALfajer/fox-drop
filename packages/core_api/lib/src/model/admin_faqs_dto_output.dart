@@ -13,11 +13,12 @@ part 'admin_faqs_dto_output.g.dart';
 /// AdminFaqsDtoOutput
 ///
 /// Properties:
-/// * [customer] 
-/// * [captain] 
-/// * [merchant] 
+/// * [customer]
+/// * [captain]
+/// * [merchant]
 @BuiltValue()
-abstract class AdminFaqsDtoOutput implements Built<AdminFaqsDtoOutput, AdminFaqsDtoOutputBuilder> {
+abstract class AdminFaqsDtoOutput
+    implements Built<AdminFaqsDtoOutput, AdminFaqsDtoOutputBuilder> {
   @BuiltValueField(wireName: r'customer')
   BuiltList<AdminFaqsDtoOutputCustomerInner> get customer;
 
@@ -29,16 +30,19 @@ abstract class AdminFaqsDtoOutput implements Built<AdminFaqsDtoOutput, AdminFaqs
 
   AdminFaqsDtoOutput._();
 
-  factory AdminFaqsDtoOutput([void updates(AdminFaqsDtoOutputBuilder b)]) = _$AdminFaqsDtoOutput;
+  factory AdminFaqsDtoOutput([void updates(AdminFaqsDtoOutputBuilder b)]) =
+      _$AdminFaqsDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminFaqsDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminFaqsDtoOutput> get serializer => _$AdminFaqsDtoOutputSerializer();
+  static Serializer<AdminFaqsDtoOutput> get serializer =>
+      _$AdminFaqsDtoOutputSerializer();
 }
 
-class _$AdminFaqsDtoOutputSerializer implements PrimitiveSerializer<AdminFaqsDtoOutput> {
+class _$AdminFaqsDtoOutputSerializer
+    implements PrimitiveSerializer<AdminFaqsDtoOutput> {
   @override
   final Iterable<Type> types = const [AdminFaqsDtoOutput, _$AdminFaqsDtoOutput];
 
@@ -53,17 +57,23 @@ class _$AdminFaqsDtoOutputSerializer implements PrimitiveSerializer<AdminFaqsDto
     yield r'customer';
     yield serializers.serialize(
       object.customer,
-      specifiedType: const FullType(BuiltList, [FullType(AdminFaqsDtoOutputCustomerInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminFaqsDtoOutputCustomerInner),
+      ]),
     );
     yield r'captain';
     yield serializers.serialize(
       object.captain,
-      specifiedType: const FullType(BuiltList, [FullType(AdminFaqsDtoOutputCustomerInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminFaqsDtoOutputCustomerInner),
+      ]),
     );
     yield r'merchant';
     yield serializers.serialize(
       object.merchant,
-      specifiedType: const FullType(BuiltList, [FullType(AdminFaqsDtoOutputCustomerInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminFaqsDtoOutputCustomerInner),
+      ]),
     );
   }
 
@@ -73,7 +83,11 @@ class _$AdminFaqsDtoOutputSerializer implements PrimitiveSerializer<AdminFaqsDto
     AdminFaqsDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -89,24 +103,36 @@ class _$AdminFaqsDtoOutputSerializer implements PrimitiveSerializer<AdminFaqsDto
       final value = serializedList[i + 1];
       switch (key) {
         case r'customer':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(AdminFaqsDtoOutputCustomerInner)]),
-          ) as BuiltList<AdminFaqsDtoOutputCustomerInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminFaqsDtoOutputCustomerInner),
+                    ]),
+                  )
+                  as BuiltList<AdminFaqsDtoOutputCustomerInner>;
           result.customer.replace(valueDes);
           break;
         case r'captain':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(AdminFaqsDtoOutputCustomerInner)]),
-          ) as BuiltList<AdminFaqsDtoOutputCustomerInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminFaqsDtoOutputCustomerInner),
+                    ]),
+                  )
+                  as BuiltList<AdminFaqsDtoOutputCustomerInner>;
           result.captain.replace(valueDes);
           break;
         case r'merchant':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(AdminFaqsDtoOutputCustomerInner)]),
-          ) as BuiltList<AdminFaqsDtoOutputCustomerInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminFaqsDtoOutputCustomerInner),
+                    ]),
+                  )
+                  as BuiltList<AdminFaqsDtoOutputCustomerInner>;
           result.merchant.replace(valueDes);
           break;
         default:
@@ -137,5 +163,3 @@ class _$AdminFaqsDtoOutputSerializer implements PrimitiveSerializer<AdminFaqsDto
     return result.build();
   }
 }
-
-

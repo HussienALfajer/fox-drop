@@ -22,19 +22,20 @@ part 'customer_quote_dto_output.g.dart';
 ///
 /// Properties:
 /// * [version] - Changes only with a money line, an equivalent, the rates or a blocking problem; the order command carries it.
-/// * [restaurant] 
-/// * [lines] 
+/// * [restaurant]
+/// * [lines]
 /// * [currency] - The base currency of every money line.
-/// * [money] 
+/// * [money]
 /// * [equivalents] - «أو {المبلغ} $ · {المبلغ} ل.س»: each other accepted currency, by its rounding.
-/// * [payIn] 
-/// * [estimate] 
-/// * [minimumOrder] 
-/// * [freeDelivery] 
+/// * [payIn]
+/// * [estimate]
+/// * [minimumOrder]
+/// * [freeDelivery]
 /// * [rates] - The exchange-rate version: null for the base currency.
 /// * [problems] - CU §10.6: every one blocks ordering; the texts are in Appendix C.
 @BuiltValue()
-abstract class CustomerQuoteDtoOutput implements Built<CustomerQuoteDtoOutput, CustomerQuoteDtoOutputBuilder> {
+abstract class CustomerQuoteDtoOutput
+    implements Built<CustomerQuoteDtoOutput, CustomerQuoteDtoOutputBuilder> {
   /// Changes only with a money line, an equivalent, the rates or a blocking problem; the order command carries it.
   @BuiltValueField(wireName: r'version')
   String get version;
@@ -78,18 +79,25 @@ abstract class CustomerQuoteDtoOutput implements Built<CustomerQuoteDtoOutput, C
 
   CustomerQuoteDtoOutput._();
 
-  factory CustomerQuoteDtoOutput([void updates(CustomerQuoteDtoOutputBuilder b)]) = _$CustomerQuoteDtoOutput;
+  factory CustomerQuoteDtoOutput([
+    void updates(CustomerQuoteDtoOutputBuilder b),
+  ]) = _$CustomerQuoteDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerQuoteDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerQuoteDtoOutput> get serializer => _$CustomerQuoteDtoOutputSerializer();
+  static Serializer<CustomerQuoteDtoOutput> get serializer =>
+      _$CustomerQuoteDtoOutputSerializer();
 }
 
-class _$CustomerQuoteDtoOutputSerializer implements PrimitiveSerializer<CustomerQuoteDtoOutput> {
+class _$CustomerQuoteDtoOutputSerializer
+    implements PrimitiveSerializer<CustomerQuoteDtoOutput> {
   @override
-  final Iterable<Type> types = const [CustomerQuoteDtoOutput, _$CustomerQuoteDtoOutput];
+  final Iterable<Type> types = const [
+    CustomerQuoteDtoOutput,
+    _$CustomerQuoteDtoOutput,
+  ];
 
   @override
   final String wireName = r'CustomerQuoteDtoOutput';
@@ -112,7 +120,9 @@ class _$CustomerQuoteDtoOutputSerializer implements PrimitiveSerializer<Customer
     yield r'lines';
     yield serializers.serialize(
       object.lines,
-      specifiedType: const FullType(BuiltList, [FullType(CustomerQuoteDtoOutputLinesInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(CustomerQuoteDtoOutputLinesInner),
+      ]),
     );
     yield r'currency';
     yield serializers.serialize(
@@ -127,13 +137,19 @@ class _$CustomerQuoteDtoOutputSerializer implements PrimitiveSerializer<Customer
     yield r'equivalents';
     yield serializers.serialize(
       object.equivalents,
-      specifiedType: const FullType(BuiltList, [FullType.nullable(CaptainWentOfflineDtoOutputHandIn)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+      ]),
     );
     yield r'payIn';
-    yield object.payIn == null ? null : serializers.serialize(
-      object.payIn,
-      specifiedType: const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
-    );
+    yield object.payIn == null
+        ? null
+        : serializers.serialize(
+            object.payIn,
+            specifiedType: const FullType.nullable(
+              CaptainWentOfflineDtoOutputHandIn,
+            ),
+          );
     yield r'estimate';
     yield serializers.serialize(
       object.estimate,
@@ -145,19 +161,27 @@ class _$CustomerQuoteDtoOutputSerializer implements PrimitiveSerializer<Customer
       specifiedType: const FullType(CustomerQuoteDtoOutputMinimumOrder),
     );
     yield r'freeDelivery';
-    yield object.freeDelivery == null ? null : serializers.serialize(
-      object.freeDelivery,
-      specifiedType: const FullType.nullable(CustomerQuoteDtoOutputFreeDelivery),
-    );
+    yield object.freeDelivery == null
+        ? null
+        : serializers.serialize(
+            object.freeDelivery,
+            specifiedType: const FullType.nullable(
+              CustomerQuoteDtoOutputFreeDelivery,
+            ),
+          );
     yield r'rates';
     yield serializers.serialize(
       object.rates,
-      specifiedType: const FullType(BuiltList, [FullType(CustomerQuoteDtoOutputRatesInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(CustomerQuoteDtoOutputRatesInner),
+      ]),
     );
     yield r'problems';
     yield serializers.serialize(
       object.problems,
-      specifiedType: const FullType(BuiltList, [FullType(CustomerQuoteDtoOutputProblemsInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(CustomerQuoteDtoOutputProblemsInner),
+      ]),
     );
   }
 
@@ -167,7 +191,11 @@ class _$CustomerQuoteDtoOutputSerializer implements PrimitiveSerializer<Customer
     CustomerQuoteDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -183,89 +211,131 @@ class _$CustomerQuoteDtoOutputSerializer implements PrimitiveSerializer<Customer
       final value = serializedList[i + 1];
       switch (key) {
         case r'version':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.version = valueDes;
           break;
         case r'restaurant':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CustomerQuoteDtoOutputRestaurant),
-          ) as CustomerQuoteDtoOutputRestaurant;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CustomerQuoteDtoOutputRestaurant,
+                    ),
+                  )
+                  as CustomerQuoteDtoOutputRestaurant;
           result.restaurant.replace(valueDes);
           break;
         case r'lines':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CustomerQuoteDtoOutputLinesInner)]),
-          ) as BuiltList<CustomerQuoteDtoOutputLinesInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CustomerQuoteDtoOutputLinesInner),
+                    ]),
+                  )
+                  as BuiltList<CustomerQuoteDtoOutputLinesInner>;
           result.lines.replace(valueDes);
           break;
         case r'currency':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.currency = valueDes;
           break;
         case r'money':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CustomerQuoteDtoOutputMoney),
-          ) as CustomerQuoteDtoOutputMoney;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(CustomerQuoteDtoOutputMoney),
+                  )
+                  as CustomerQuoteDtoOutputMoney;
           result.money.replace(valueDes);
           break;
         case r'equivalents':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType.nullable(CaptainWentOfflineDtoOutputHandIn)]),
-          ) as BuiltList<CaptainWentOfflineDtoOutputHandIn?>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+                    ]),
+                  )
+                  as BuiltList<CaptainWentOfflineDtoOutputHandIn?>;
           result.equivalents.replace(valueDes);
           break;
         case r'payIn':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
-          ) as CaptainWentOfflineDtoOutputHandIn?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainWentOfflineDtoOutputHandIn,
+                    ),
+                  )
+                  as CaptainWentOfflineDtoOutputHandIn?;
           if (valueDes == null) continue;
           result.payIn.replace(valueDes);
           break;
         case r'estimate':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CustomerQuoteDtoOutputEstimate),
-          ) as CustomerQuoteDtoOutputEstimate;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CustomerQuoteDtoOutputEstimate,
+                    ),
+                  )
+                  as CustomerQuoteDtoOutputEstimate;
           result.estimate.replace(valueDes);
           break;
         case r'minimumOrder':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CustomerQuoteDtoOutputMinimumOrder),
-          ) as CustomerQuoteDtoOutputMinimumOrder;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CustomerQuoteDtoOutputMinimumOrder,
+                    ),
+                  )
+                  as CustomerQuoteDtoOutputMinimumOrder;
           result.minimumOrder.replace(valueDes);
           break;
         case r'freeDelivery':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(CustomerQuoteDtoOutputFreeDelivery),
-          ) as CustomerQuoteDtoOutputFreeDelivery?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerQuoteDtoOutputFreeDelivery,
+                    ),
+                  )
+                  as CustomerQuoteDtoOutputFreeDelivery?;
           if (valueDes == null) continue;
           result.freeDelivery.replace(valueDes);
           break;
         case r'rates':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CustomerQuoteDtoOutputRatesInner)]),
-          ) as BuiltList<CustomerQuoteDtoOutputRatesInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CustomerQuoteDtoOutputRatesInner),
+                    ]),
+                  )
+                  as BuiltList<CustomerQuoteDtoOutputRatesInner>;
           result.rates.replace(valueDes);
           break;
         case r'problems':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CustomerQuoteDtoOutputProblemsInner)]),
-          ) as BuiltList<CustomerQuoteDtoOutputProblemsInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CustomerQuoteDtoOutputProblemsInner),
+                    ]),
+                  )
+                  as BuiltList<CustomerQuoteDtoOutputProblemsInner>;
           result.problems.replace(valueDes);
           break;
         default:
@@ -296,5 +366,3 @@ class _$CustomerQuoteDtoOutputSerializer implements PrimitiveSerializer<Customer
     return result.build();
   }
 }
-
-

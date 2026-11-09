@@ -11,10 +11,15 @@ part 'customer_restaurant_page_dto_output_menu_inner_window.g.dart';
 /// Minutes after midnight on the city clock; «متوفر من {الساعة}» outside it.
 ///
 /// Properties:
-/// * [startsAt] 
-/// * [endsAt] 
+/// * [startsAt]
+/// * [endsAt]
 @BuiltValue()
-abstract class CustomerRestaurantPageDtoOutputMenuInnerWindow implements Built<CustomerRestaurantPageDtoOutputMenuInnerWindow, CustomerRestaurantPageDtoOutputMenuInnerWindowBuilder> {
+abstract class CustomerRestaurantPageDtoOutputMenuInnerWindow
+    implements
+        Built<
+          CustomerRestaurantPageDtoOutputMenuInnerWindow,
+          CustomerRestaurantPageDtoOutputMenuInnerWindowBuilder
+        > {
   @BuiltValueField(wireName: r'startsAt')
   int get startsAt;
 
@@ -23,18 +28,29 @@ abstract class CustomerRestaurantPageDtoOutputMenuInnerWindow implements Built<C
 
   CustomerRestaurantPageDtoOutputMenuInnerWindow._();
 
-  factory CustomerRestaurantPageDtoOutputMenuInnerWindow([void updates(CustomerRestaurantPageDtoOutputMenuInnerWindowBuilder b)]) = _$CustomerRestaurantPageDtoOutputMenuInnerWindow;
+  factory CustomerRestaurantPageDtoOutputMenuInnerWindow([
+    void updates(CustomerRestaurantPageDtoOutputMenuInnerWindowBuilder b),
+  ]) = _$CustomerRestaurantPageDtoOutputMenuInnerWindow;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerRestaurantPageDtoOutputMenuInnerWindowBuilder b) => b;
+  static void _defaults(
+    CustomerRestaurantPageDtoOutputMenuInnerWindowBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerRestaurantPageDtoOutputMenuInnerWindow> get serializer => _$CustomerRestaurantPageDtoOutputMenuInnerWindowSerializer();
+  static Serializer<CustomerRestaurantPageDtoOutputMenuInnerWindow>
+  get serializer =>
+      _$CustomerRestaurantPageDtoOutputMenuInnerWindowSerializer();
 }
 
-class _$CustomerRestaurantPageDtoOutputMenuInnerWindowSerializer implements PrimitiveSerializer<CustomerRestaurantPageDtoOutputMenuInnerWindow> {
+class _$CustomerRestaurantPageDtoOutputMenuInnerWindowSerializer
+    implements
+        PrimitiveSerializer<CustomerRestaurantPageDtoOutputMenuInnerWindow> {
   @override
-  final Iterable<Type> types = const [CustomerRestaurantPageDtoOutputMenuInnerWindow, _$CustomerRestaurantPageDtoOutputMenuInnerWindow];
+  final Iterable<Type> types = const [
+    CustomerRestaurantPageDtoOutputMenuInnerWindow,
+    _$CustomerRestaurantPageDtoOutputMenuInnerWindow,
+  ];
 
   @override
   final String wireName = r'CustomerRestaurantPageDtoOutputMenuInnerWindow';
@@ -62,7 +78,11 @@ class _$CustomerRestaurantPageDtoOutputMenuInnerWindowSerializer implements Prim
     CustomerRestaurantPageDtoOutputMenuInnerWindow object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -78,17 +98,15 @@ class _$CustomerRestaurantPageDtoOutputMenuInnerWindowSerializer implements Prim
       final value = serializedList[i + 1];
       switch (key) {
         case r'startsAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.startsAt = valueDes;
           break;
         case r'endsAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.endsAt = valueDes;
           break;
         default:
@@ -119,5 +137,3 @@ class _$CustomerRestaurantPageDtoOutputMenuInnerWindowSerializer implements Prim
     return result.build();
   }
 }
-
-

@@ -15,7 +15,12 @@ part 'merchant_hours_dto_output_periods_inner.g.dart';
 /// * [opensAt] - Minutes after midnight on the city clock.
 /// * [closesAt] - Minutes after midnight; not after opensAt crosses midnight (18:00–02:00).
 @BuiltValue()
-abstract class MerchantHoursDtoOutputPeriodsInner implements Built<MerchantHoursDtoOutputPeriodsInner, MerchantHoursDtoOutputPeriodsInnerBuilder> {
+abstract class MerchantHoursDtoOutputPeriodsInner
+    implements
+        Built<
+          MerchantHoursDtoOutputPeriodsInner,
+          MerchantHoursDtoOutputPeriodsInnerBuilder
+        > {
   /// 0 Sunday to 6 Saturday.
   @BuiltValueField(wireName: r'weekday')
   int get weekday;
@@ -30,18 +35,25 @@ abstract class MerchantHoursDtoOutputPeriodsInner implements Built<MerchantHours
 
   MerchantHoursDtoOutputPeriodsInner._();
 
-  factory MerchantHoursDtoOutputPeriodsInner([void updates(MerchantHoursDtoOutputPeriodsInnerBuilder b)]) = _$MerchantHoursDtoOutputPeriodsInner;
+  factory MerchantHoursDtoOutputPeriodsInner([
+    void updates(MerchantHoursDtoOutputPeriodsInnerBuilder b),
+  ]) = _$MerchantHoursDtoOutputPeriodsInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantHoursDtoOutputPeriodsInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantHoursDtoOutputPeriodsInner> get serializer => _$MerchantHoursDtoOutputPeriodsInnerSerializer();
+  static Serializer<MerchantHoursDtoOutputPeriodsInner> get serializer =>
+      _$MerchantHoursDtoOutputPeriodsInnerSerializer();
 }
 
-class _$MerchantHoursDtoOutputPeriodsInnerSerializer implements PrimitiveSerializer<MerchantHoursDtoOutputPeriodsInner> {
+class _$MerchantHoursDtoOutputPeriodsInnerSerializer
+    implements PrimitiveSerializer<MerchantHoursDtoOutputPeriodsInner> {
   @override
-  final Iterable<Type> types = const [MerchantHoursDtoOutputPeriodsInner, _$MerchantHoursDtoOutputPeriodsInner];
+  final Iterable<Type> types = const [
+    MerchantHoursDtoOutputPeriodsInner,
+    _$MerchantHoursDtoOutputPeriodsInner,
+  ];
 
   @override
   final String wireName = r'MerchantHoursDtoOutputPeriodsInner';
@@ -74,7 +86,11 @@ class _$MerchantHoursDtoOutputPeriodsInnerSerializer implements PrimitiveSeriali
     MerchantHoursDtoOutputPeriodsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -90,24 +106,21 @@ class _$MerchantHoursDtoOutputPeriodsInnerSerializer implements PrimitiveSeriali
       final value = serializedList[i + 1];
       switch (key) {
         case r'weekday':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.weekday = valueDes;
           break;
         case r'opensAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.opensAt = valueDes;
           break;
         case r'closesAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.closesAt = valueDes;
           break;
         default:
@@ -138,5 +151,3 @@ class _$MerchantHoursDtoOutputPeriodsInnerSerializer implements PrimitiveSeriali
     return result.build();
   }
 }
-
-

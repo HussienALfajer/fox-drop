@@ -12,26 +12,38 @@ part 'merchant_availability_saved_dto_output.g.dart';
 /// MerchantAvailabilitySavedDtoOutput
 ///
 /// Properties:
-/// * [switchedOff] 
+/// * [switchedOff]
 @BuiltValue()
-abstract class MerchantAvailabilitySavedDtoOutput implements Built<MerchantAvailabilitySavedDtoOutput, MerchantAvailabilitySavedDtoOutputBuilder> {
+abstract class MerchantAvailabilitySavedDtoOutput
+    implements
+        Built<
+          MerchantAvailabilitySavedDtoOutput,
+          MerchantAvailabilitySavedDtoOutputBuilder
+        > {
   @BuiltValueField(wireName: r'switchedOff')
   MerchantMenuDtoOutputCategoriesInnerSwitchedOff? get switchedOff;
 
   MerchantAvailabilitySavedDtoOutput._();
 
-  factory MerchantAvailabilitySavedDtoOutput([void updates(MerchantAvailabilitySavedDtoOutputBuilder b)]) = _$MerchantAvailabilitySavedDtoOutput;
+  factory MerchantAvailabilitySavedDtoOutput([
+    void updates(MerchantAvailabilitySavedDtoOutputBuilder b),
+  ]) = _$MerchantAvailabilitySavedDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantAvailabilitySavedDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantAvailabilitySavedDtoOutput> get serializer => _$MerchantAvailabilitySavedDtoOutputSerializer();
+  static Serializer<MerchantAvailabilitySavedDtoOutput> get serializer =>
+      _$MerchantAvailabilitySavedDtoOutputSerializer();
 }
 
-class _$MerchantAvailabilitySavedDtoOutputSerializer implements PrimitiveSerializer<MerchantAvailabilitySavedDtoOutput> {
+class _$MerchantAvailabilitySavedDtoOutputSerializer
+    implements PrimitiveSerializer<MerchantAvailabilitySavedDtoOutput> {
   @override
-  final Iterable<Type> types = const [MerchantAvailabilitySavedDtoOutput, _$MerchantAvailabilitySavedDtoOutput];
+  final Iterable<Type> types = const [
+    MerchantAvailabilitySavedDtoOutput,
+    _$MerchantAvailabilitySavedDtoOutput,
+  ];
 
   @override
   final String wireName = r'MerchantAvailabilitySavedDtoOutput';
@@ -42,10 +54,14 @@ class _$MerchantAvailabilitySavedDtoOutputSerializer implements PrimitiveSeriali
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'switchedOff';
-    yield object.switchedOff == null ? null : serializers.serialize(
-      object.switchedOff,
-      specifiedType: const FullType.nullable(MerchantMenuDtoOutputCategoriesInnerSwitchedOff),
-    );
+    yield object.switchedOff == null
+        ? null
+        : serializers.serialize(
+            object.switchedOff,
+            specifiedType: const FullType.nullable(
+              MerchantMenuDtoOutputCategoriesInnerSwitchedOff,
+            ),
+          );
   }
 
   @override
@@ -54,7 +70,11 @@ class _$MerchantAvailabilitySavedDtoOutputSerializer implements PrimitiveSeriali
     MerchantAvailabilitySavedDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -70,10 +90,14 @@ class _$MerchantAvailabilitySavedDtoOutputSerializer implements PrimitiveSeriali
       final value = serializedList[i + 1];
       switch (key) {
         case r'switchedOff':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(MerchantMenuDtoOutputCategoriesInnerSwitchedOff),
-          ) as MerchantMenuDtoOutputCategoriesInnerSwitchedOff?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      MerchantMenuDtoOutputCategoriesInnerSwitchedOff,
+                    ),
+                  )
+                  as MerchantMenuDtoOutputCategoriesInnerSwitchedOff?;
           if (valueDes == null) continue;
           result.switchedOff.replace(valueDes);
           break;
@@ -105,5 +129,3 @@ class _$MerchantAvailabilitySavedDtoOutputSerializer implements PrimitiveSeriali
     return result.build();
   }
 }
-
-

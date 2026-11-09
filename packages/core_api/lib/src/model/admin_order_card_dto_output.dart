@@ -12,26 +12,34 @@ part 'admin_order_card_dto_output.g.dart';
 /// AdminOrderCardDtoOutput
 ///
 /// Properties:
-/// * [order] 
+/// * [order]
 @BuiltValue()
-abstract class AdminOrderCardDtoOutput implements Built<AdminOrderCardDtoOutput, AdminOrderCardDtoOutputBuilder> {
+abstract class AdminOrderCardDtoOutput
+    implements Built<AdminOrderCardDtoOutput, AdminOrderCardDtoOutputBuilder> {
   @BuiltValueField(wireName: r'order')
   AdminOrderCardDtoOutputOrder get order;
 
   AdminOrderCardDtoOutput._();
 
-  factory AdminOrderCardDtoOutput([void updates(AdminOrderCardDtoOutputBuilder b)]) = _$AdminOrderCardDtoOutput;
+  factory AdminOrderCardDtoOutput([
+    void updates(AdminOrderCardDtoOutputBuilder b),
+  ]) = _$AdminOrderCardDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderCardDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderCardDtoOutput> get serializer => _$AdminOrderCardDtoOutputSerializer();
+  static Serializer<AdminOrderCardDtoOutput> get serializer =>
+      _$AdminOrderCardDtoOutputSerializer();
 }
 
-class _$AdminOrderCardDtoOutputSerializer implements PrimitiveSerializer<AdminOrderCardDtoOutput> {
+class _$AdminOrderCardDtoOutputSerializer
+    implements PrimitiveSerializer<AdminOrderCardDtoOutput> {
   @override
-  final Iterable<Type> types = const [AdminOrderCardDtoOutput, _$AdminOrderCardDtoOutput];
+  final Iterable<Type> types = const [
+    AdminOrderCardDtoOutput,
+    _$AdminOrderCardDtoOutput,
+  ];
 
   @override
   final String wireName = r'AdminOrderCardDtoOutput';
@@ -54,7 +62,11 @@ class _$AdminOrderCardDtoOutputSerializer implements PrimitiveSerializer<AdminOr
     AdminOrderCardDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -70,10 +82,12 @@ class _$AdminOrderCardDtoOutputSerializer implements PrimitiveSerializer<AdminOr
       final value = serializedList[i + 1];
       switch (key) {
         case r'order':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdminOrderCardDtoOutputOrder),
-          ) as AdminOrderCardDtoOutputOrder;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(AdminOrderCardDtoOutputOrder),
+                  )
+                  as AdminOrderCardDtoOutputOrder;
           result.order.replace(valueDes);
           break;
         default:
@@ -104,5 +118,3 @@ class _$AdminOrderCardDtoOutputSerializer implements PrimitiveSerializer<AdminOr
     return result.build();
   }
 }
-
-

@@ -11,24 +11,28 @@ part 'customer_refresh_dto.g.dart';
 /// CustomerRefreshDto
 ///
 /// Properties:
-/// * [refreshToken] 
+/// * [refreshToken]
 @BuiltValue()
-abstract class CustomerRefreshDto implements Built<CustomerRefreshDto, CustomerRefreshDtoBuilder> {
+abstract class CustomerRefreshDto
+    implements Built<CustomerRefreshDto, CustomerRefreshDtoBuilder> {
   @BuiltValueField(wireName: r'refreshToken')
   String get refreshToken;
 
   CustomerRefreshDto._();
 
-  factory CustomerRefreshDto([void updates(CustomerRefreshDtoBuilder b)]) = _$CustomerRefreshDto;
+  factory CustomerRefreshDto([void updates(CustomerRefreshDtoBuilder b)]) =
+      _$CustomerRefreshDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerRefreshDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerRefreshDto> get serializer => _$CustomerRefreshDtoSerializer();
+  static Serializer<CustomerRefreshDto> get serializer =>
+      _$CustomerRefreshDtoSerializer();
 }
 
-class _$CustomerRefreshDtoSerializer implements PrimitiveSerializer<CustomerRefreshDto> {
+class _$CustomerRefreshDtoSerializer
+    implements PrimitiveSerializer<CustomerRefreshDto> {
   @override
   final Iterable<Type> types = const [CustomerRefreshDto, _$CustomerRefreshDto];
 
@@ -53,7 +57,11 @@ class _$CustomerRefreshDtoSerializer implements PrimitiveSerializer<CustomerRefr
     CustomerRefreshDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -69,10 +77,12 @@ class _$CustomerRefreshDtoSerializer implements PrimitiveSerializer<CustomerRefr
       final value = serializedList[i + 1];
       switch (key) {
         case r'refreshToken':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.refreshToken = valueDes;
           break;
         default:
@@ -103,5 +113,3 @@ class _$CustomerRefreshDtoSerializer implements PrimitiveSerializer<CustomerRefr
     return result.build();
   }
 }
-
-

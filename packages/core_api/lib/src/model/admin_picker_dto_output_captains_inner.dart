@@ -13,18 +13,23 @@ part 'admin_picker_dto_output_captains_inner.g.dart';
 /// AdminPickerDtoOutputCaptainsInner
 ///
 /// Properties:
-/// * [captainId] 
-/// * [name] 
-/// * [vehicle] 
-/// * [eligible] 
+/// * [captainId]
+/// * [name]
+/// * [vehicle]
+/// * [eligible]
 /// * [reasons] - Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed.
 /// * [distanceMetres] - To the restaurant: by road within the search radius, else the straight line.
 /// * [etaMin] - To the restaurant; null beyond the search radius.
-/// * [ordersToday] 
-/// * [custody] 
+/// * [ordersToday]
+/// * [custody]
 /// * [acceptanceRate] - A percentage over the last offers answered (CA §11.1); null without one.
 @BuiltValue()
-abstract class AdminPickerDtoOutputCaptainsInner implements Built<AdminPickerDtoOutputCaptainsInner, AdminPickerDtoOutputCaptainsInnerBuilder> {
+abstract class AdminPickerDtoOutputCaptainsInner
+    implements
+        Built<
+          AdminPickerDtoOutputCaptainsInner,
+          AdminPickerDtoOutputCaptainsInnerBuilder
+        > {
   @BuiltValueField(wireName: r'captainId')
   String get captainId;
 
@@ -63,18 +68,25 @@ abstract class AdminPickerDtoOutputCaptainsInner implements Built<AdminPickerDto
 
   AdminPickerDtoOutputCaptainsInner._();
 
-  factory AdminPickerDtoOutputCaptainsInner([void updates(AdminPickerDtoOutputCaptainsInnerBuilder b)]) = _$AdminPickerDtoOutputCaptainsInner;
+  factory AdminPickerDtoOutputCaptainsInner([
+    void updates(AdminPickerDtoOutputCaptainsInnerBuilder b),
+  ]) = _$AdminPickerDtoOutputCaptainsInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminPickerDtoOutputCaptainsInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminPickerDtoOutputCaptainsInner> get serializer => _$AdminPickerDtoOutputCaptainsInnerSerializer();
+  static Serializer<AdminPickerDtoOutputCaptainsInner> get serializer =>
+      _$AdminPickerDtoOutputCaptainsInnerSerializer();
 }
 
-class _$AdminPickerDtoOutputCaptainsInnerSerializer implements PrimitiveSerializer<AdminPickerDtoOutputCaptainsInner> {
+class _$AdminPickerDtoOutputCaptainsInnerSerializer
+    implements PrimitiveSerializer<AdminPickerDtoOutputCaptainsInner> {
   @override
-  final Iterable<Type> types = const [AdminPickerDtoOutputCaptainsInner, _$AdminPickerDtoOutputCaptainsInner];
+  final Iterable<Type> types = const [
+    AdminPickerDtoOutputCaptainsInner,
+    _$AdminPickerDtoOutputCaptainsInner,
+  ];
 
   @override
   final String wireName = r'AdminPickerDtoOutputCaptainsInner';
@@ -97,7 +109,9 @@ class _$AdminPickerDtoOutputCaptainsInnerSerializer implements PrimitiveSerializ
     yield r'vehicle';
     yield serializers.serialize(
       object.vehicle,
-      specifiedType: const FullType(AdminPickerDtoOutputCaptainsInnerVehicleEnum),
+      specifiedType: const FullType(
+        AdminPickerDtoOutputCaptainsInnerVehicleEnum,
+      ),
     );
     yield r'eligible';
     yield serializers.serialize(
@@ -107,7 +121,9 @@ class _$AdminPickerDtoOutputCaptainsInnerSerializer implements PrimitiveSerializ
     yield r'reasons';
     yield serializers.serialize(
       object.reasons,
-      specifiedType: const FullType(BuiltList, [FullType(AdminPickerDtoOutputCaptainsInnerReasonsEnum)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminPickerDtoOutputCaptainsInnerReasonsEnum),
+      ]),
     );
     yield r'distanceMetres';
     yield serializers.serialize(
@@ -115,10 +131,12 @@ class _$AdminPickerDtoOutputCaptainsInnerSerializer implements PrimitiveSerializ
       specifiedType: const FullType(int),
     );
     yield r'etaMin';
-    yield object.etaMin == null ? null : serializers.serialize(
-      object.etaMin,
-      specifiedType: const FullType.nullable(int),
-    );
+    yield object.etaMin == null
+        ? null
+        : serializers.serialize(
+            object.etaMin,
+            specifiedType: const FullType.nullable(int),
+          );
     yield r'ordersToday';
     yield serializers.serialize(
       object.ordersToday,
@@ -130,10 +148,12 @@ class _$AdminPickerDtoOutputCaptainsInnerSerializer implements PrimitiveSerializ
       specifiedType: const FullType(AdminPickerDtoOutputCaptainsInnerCustody),
     );
     yield r'acceptanceRate';
-    yield object.acceptanceRate == null ? null : serializers.serialize(
-      object.acceptanceRate,
-      specifiedType: const FullType.nullable(int),
-    );
+    yield object.acceptanceRate == null
+        ? null
+        : serializers.serialize(
+            object.acceptanceRate,
+            specifiedType: const FullType.nullable(int),
+          );
   }
 
   @override
@@ -142,7 +162,11 @@ class _$AdminPickerDtoOutputCaptainsInnerSerializer implements PrimitiveSerializ
     AdminPickerDtoOutputCaptainsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -158,74 +182,94 @@ class _$AdminPickerDtoOutputCaptainsInnerSerializer implements PrimitiveSerializ
       final value = serializedList[i + 1];
       switch (key) {
         case r'captainId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.captainId = valueDes;
           break;
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'vehicle':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdminPickerDtoOutputCaptainsInnerVehicleEnum),
-          ) as AdminPickerDtoOutputCaptainsInnerVehicleEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminPickerDtoOutputCaptainsInnerVehicleEnum,
+                    ),
+                  )
+                  as AdminPickerDtoOutputCaptainsInnerVehicleEnum;
           result.vehicle = valueDes;
           break;
         case r'eligible':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.eligible = valueDes;
           break;
         case r'reasons':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(AdminPickerDtoOutputCaptainsInnerReasonsEnum)]),
-          ) as BuiltList<AdminPickerDtoOutputCaptainsInnerReasonsEnum>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminPickerDtoOutputCaptainsInnerReasonsEnum),
+                    ]),
+                  )
+                  as BuiltList<AdminPickerDtoOutputCaptainsInnerReasonsEnum>;
           result.reasons.replace(valueDes);
           break;
         case r'distanceMetres':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.distanceMetres = valueDes;
           break;
         case r'etaMin':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(int),
-          ) as int?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(int),
+                  )
+                  as int?;
           if (valueDes == null) continue;
           result.etaMin = valueDes;
           break;
         case r'ordersToday':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.ordersToday = valueDes;
           break;
         case r'custody':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdminPickerDtoOutputCaptainsInnerCustody),
-          ) as AdminPickerDtoOutputCaptainsInnerCustody;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminPickerDtoOutputCaptainsInnerCustody,
+                    ),
+                  )
+                  as AdminPickerDtoOutputCaptainsInnerCustody;
           result.custody.replace(valueDes);
           break;
         case r'acceptanceRate':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(int),
-          ) as int?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(int),
+                  )
+                  as int?;
           if (valueDes == null) continue;
           result.acceptanceRate = valueDes;
           break;
@@ -258,46 +302,60 @@ class _$AdminPickerDtoOutputCaptainsInnerSerializer implements PrimitiveSerializ
   }
 }
 
-
 class AdminPickerDtoOutputCaptainsInnerVehicleEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'walking')
-  static const AdminPickerDtoOutputCaptainsInnerVehicleEnum walking = _$adminPickerDtoOutputCaptainsInnerVehicleEnum_walking;
+  static const AdminPickerDtoOutputCaptainsInnerVehicleEnum walking =
+      _$adminPickerDtoOutputCaptainsInnerVehicleEnum_walking;
   @BuiltValueEnumConst(wireName: r'bicycle')
-  static const AdminPickerDtoOutputCaptainsInnerVehicleEnum bicycle = _$adminPickerDtoOutputCaptainsInnerVehicleEnum_bicycle;
+  static const AdminPickerDtoOutputCaptainsInnerVehicleEnum bicycle =
+      _$adminPickerDtoOutputCaptainsInnerVehicleEnum_bicycle;
   @BuiltValueEnumConst(wireName: r'motorbike')
-  static const AdminPickerDtoOutputCaptainsInnerVehicleEnum motorbike = _$adminPickerDtoOutputCaptainsInnerVehicleEnum_motorbike;
+  static const AdminPickerDtoOutputCaptainsInnerVehicleEnum motorbike =
+      _$adminPickerDtoOutputCaptainsInnerVehicleEnum_motorbike;
   @BuiltValueEnumConst(wireName: r'car')
-  static const AdminPickerDtoOutputCaptainsInnerVehicleEnum car = _$adminPickerDtoOutputCaptainsInnerVehicleEnum_car;
+  static const AdminPickerDtoOutputCaptainsInnerVehicleEnum car =
+      _$adminPickerDtoOutputCaptainsInnerVehicleEnum_car;
 
-  static Serializer<AdminPickerDtoOutputCaptainsInnerVehicleEnum> get serializer => _$adminPickerDtoOutputCaptainsInnerVehicleEnumSerializer;
+  static Serializer<AdminPickerDtoOutputCaptainsInnerVehicleEnum>
+  get serializer => _$adminPickerDtoOutputCaptainsInnerVehicleEnumSerializer;
 
-  const AdminPickerDtoOutputCaptainsInnerVehicleEnum._(String name): super(name);
+  const AdminPickerDtoOutputCaptainsInnerVehicleEnum._(String name)
+    : super(name);
 
-  static BuiltSet<AdminPickerDtoOutputCaptainsInnerVehicleEnum> get values => _$adminPickerDtoOutputCaptainsInnerVehicleEnumValues;
-  static AdminPickerDtoOutputCaptainsInnerVehicleEnum valueOf(String name) => _$adminPickerDtoOutputCaptainsInnerVehicleEnumValueOf(name);
+  static BuiltSet<AdminPickerDtoOutputCaptainsInnerVehicleEnum> get values =>
+      _$adminPickerDtoOutputCaptainsInnerVehicleEnumValues;
+  static AdminPickerDtoOutputCaptainsInnerVehicleEnum valueOf(String name) =>
+      _$adminPickerDtoOutputCaptainsInnerVehicleEnumValueOf(name);
 }
 
 class AdminPickerDtoOutputCaptainsInnerReasonsEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'busy')
-  static const AdminPickerDtoOutputCaptainsInnerReasonsEnum busy = _$adminPickerDtoOutputCaptainsInnerReasonsEnum_busy;
+  static const AdminPickerDtoOutputCaptainsInnerReasonsEnum busy =
+      _$adminPickerDtoOutputCaptainsInnerReasonsEnum_busy;
   @BuiltValueEnumConst(wireName: r'cash_limit')
-  static const AdminPickerDtoOutputCaptainsInnerReasonsEnum cashLimit = _$adminPickerDtoOutputCaptainsInnerReasonsEnum_cashLimit;
+  static const AdminPickerDtoOutputCaptainsInnerReasonsEnum cashLimit =
+      _$adminPickerDtoOutputCaptainsInnerReasonsEnum_cashLimit;
   @BuiltValueEnumConst(wireName: r'closed_due')
-  static const AdminPickerDtoOutputCaptainsInnerReasonsEnum closedDue = _$adminPickerDtoOutputCaptainsInnerReasonsEnum_closedDue;
+  static const AdminPickerDtoOutputCaptainsInnerReasonsEnum closedDue =
+      _$adminPickerDtoOutputCaptainsInnerReasonsEnum_closedDue;
   @BuiltValueEnumConst(wireName: r'simulated_location')
-  static const AdminPickerDtoOutputCaptainsInnerReasonsEnum simulatedLocation = _$adminPickerDtoOutputCaptainsInnerReasonsEnum_simulatedLocation;
+  static const AdminPickerDtoOutputCaptainsInnerReasonsEnum simulatedLocation =
+      _$adminPickerDtoOutputCaptainsInnerReasonsEnum_simulatedLocation;
   @BuiltValueEnumConst(wireName: r'out_of_range')
-  static const AdminPickerDtoOutputCaptainsInnerReasonsEnum outOfRange = _$adminPickerDtoOutputCaptainsInnerReasonsEnum_outOfRange;
+  static const AdminPickerDtoOutputCaptainsInnerReasonsEnum outOfRange =
+      _$adminPickerDtoOutputCaptainsInnerReasonsEnum_outOfRange;
   @BuiltValueEnumConst(wireName: r'vehicle_not_allowed')
-  static const AdminPickerDtoOutputCaptainsInnerReasonsEnum vehicleNotAllowed = _$adminPickerDtoOutputCaptainsInnerReasonsEnum_vehicleNotAllowed;
+  static const AdminPickerDtoOutputCaptainsInnerReasonsEnum vehicleNotAllowed =
+      _$adminPickerDtoOutputCaptainsInnerReasonsEnum_vehicleNotAllowed;
 
-  static Serializer<AdminPickerDtoOutputCaptainsInnerReasonsEnum> get serializer => _$adminPickerDtoOutputCaptainsInnerReasonsEnumSerializer;
+  static Serializer<AdminPickerDtoOutputCaptainsInnerReasonsEnum>
+  get serializer => _$adminPickerDtoOutputCaptainsInnerReasonsEnumSerializer;
 
-  const AdminPickerDtoOutputCaptainsInnerReasonsEnum._(String name): super(name);
+  const AdminPickerDtoOutputCaptainsInnerReasonsEnum._(String name)
+    : super(name);
 
-  static BuiltSet<AdminPickerDtoOutputCaptainsInnerReasonsEnum> get values => _$adminPickerDtoOutputCaptainsInnerReasonsEnumValues;
-  static AdminPickerDtoOutputCaptainsInnerReasonsEnum valueOf(String name) => _$adminPickerDtoOutputCaptainsInnerReasonsEnumValueOf(name);
+  static BuiltSet<AdminPickerDtoOutputCaptainsInnerReasonsEnum> get values =>
+      _$adminPickerDtoOutputCaptainsInnerReasonsEnumValues;
+  static AdminPickerDtoOutputCaptainsInnerReasonsEnum valueOf(String name) =>
+      _$adminPickerDtoOutputCaptainsInnerReasonsEnumValueOf(name);
 }
-

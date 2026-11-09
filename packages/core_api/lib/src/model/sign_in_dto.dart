@@ -12,7 +12,7 @@ part 'sign_in_dto.g.dart';
 ///
 /// Properties:
 /// * [login] - The email, or the phone in international form.
-/// * [password] 
+/// * [password]
 /// * [code] - A 6-digit TOTP code or a backup code.
 @BuiltValue()
 abstract class SignInDto implements Built<SignInDto, SignInDtoBuilder> {
@@ -73,7 +73,11 @@ class _$SignInDtoSerializer implements PrimitiveSerializer<SignInDto> {
     SignInDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -89,24 +93,30 @@ class _$SignInDtoSerializer implements PrimitiveSerializer<SignInDto> {
       final value = serializedList[i + 1];
       switch (key) {
         case r'login':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.login = valueDes;
           break;
         case r'password':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.password = valueDes;
           break;
         case r'code':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.code = valueDes;
           break;
         default:
@@ -137,5 +147,3 @@ class _$SignInDtoSerializer implements PrimitiveSerializer<SignInDto> {
     return result.build();
   }
 }
-
-

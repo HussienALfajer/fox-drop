@@ -11,11 +11,16 @@ part 'admin_dispatch_state_dto_output_order_offer.g.dart';
 /// The open offer, while the captain decides (CA §8.4).
 ///
 /// Properties:
-/// * [id] 
-/// * [captainId] 
-/// * [expiresAt] 
+/// * [id]
+/// * [captainId]
+/// * [expiresAt]
 @BuiltValue()
-abstract class AdminDispatchStateDtoOutputOrderOffer implements Built<AdminDispatchStateDtoOutputOrderOffer, AdminDispatchStateDtoOutputOrderOfferBuilder> {
+abstract class AdminDispatchStateDtoOutputOrderOffer
+    implements
+        Built<
+          AdminDispatchStateDtoOutputOrderOffer,
+          AdminDispatchStateDtoOutputOrderOfferBuilder
+        > {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -27,18 +32,25 @@ abstract class AdminDispatchStateDtoOutputOrderOffer implements Built<AdminDispa
 
   AdminDispatchStateDtoOutputOrderOffer._();
 
-  factory AdminDispatchStateDtoOutputOrderOffer([void updates(AdminDispatchStateDtoOutputOrderOfferBuilder b)]) = _$AdminDispatchStateDtoOutputOrderOffer;
+  factory AdminDispatchStateDtoOutputOrderOffer([
+    void updates(AdminDispatchStateDtoOutputOrderOfferBuilder b),
+  ]) = _$AdminDispatchStateDtoOutputOrderOffer;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminDispatchStateDtoOutputOrderOfferBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminDispatchStateDtoOutputOrderOffer> get serializer => _$AdminDispatchStateDtoOutputOrderOfferSerializer();
+  static Serializer<AdminDispatchStateDtoOutputOrderOffer> get serializer =>
+      _$AdminDispatchStateDtoOutputOrderOfferSerializer();
 }
 
-class _$AdminDispatchStateDtoOutputOrderOfferSerializer implements PrimitiveSerializer<AdminDispatchStateDtoOutputOrderOffer> {
+class _$AdminDispatchStateDtoOutputOrderOfferSerializer
+    implements PrimitiveSerializer<AdminDispatchStateDtoOutputOrderOffer> {
   @override
-  final Iterable<Type> types = const [AdminDispatchStateDtoOutputOrderOffer, _$AdminDispatchStateDtoOutputOrderOffer];
+  final Iterable<Type> types = const [
+    AdminDispatchStateDtoOutputOrderOffer,
+    _$AdminDispatchStateDtoOutputOrderOffer,
+  ];
 
   @override
   final String wireName = r'AdminDispatchStateDtoOutputOrderOffer';
@@ -71,7 +83,11 @@ class _$AdminDispatchStateDtoOutputOrderOfferSerializer implements PrimitiveSeri
     AdminDispatchStateDtoOutputOrderOffer object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -87,24 +103,30 @@ class _$AdminDispatchStateDtoOutputOrderOfferSerializer implements PrimitiveSeri
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'captainId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.captainId = valueDes;
           break;
         case r'expiresAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.expiresAt = valueDes;
           break;
         default:
@@ -135,5 +157,3 @@ class _$AdminDispatchStateDtoOutputOrderOfferSerializer implements PrimitiveSeri
     return result.build();
   }
 }
-
-

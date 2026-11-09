@@ -12,26 +12,35 @@ part 'captain_went_offline_dto_output.g.dart';
 /// CaptainWentOfflineDtoOutput
 ///
 /// Properties:
-/// * [handIn] 
+/// * [handIn]
 @BuiltValue()
-abstract class CaptainWentOfflineDtoOutput implements Built<CaptainWentOfflineDtoOutput, CaptainWentOfflineDtoOutputBuilder> {
+abstract class CaptainWentOfflineDtoOutput
+    implements
+        Built<CaptainWentOfflineDtoOutput, CaptainWentOfflineDtoOutputBuilder> {
   @BuiltValueField(wireName: r'handIn')
   CaptainWentOfflineDtoOutputHandIn? get handIn;
 
   CaptainWentOfflineDtoOutput._();
 
-  factory CaptainWentOfflineDtoOutput([void updates(CaptainWentOfflineDtoOutputBuilder b)]) = _$CaptainWentOfflineDtoOutput;
+  factory CaptainWentOfflineDtoOutput([
+    void updates(CaptainWentOfflineDtoOutputBuilder b),
+  ]) = _$CaptainWentOfflineDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainWentOfflineDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainWentOfflineDtoOutput> get serializer => _$CaptainWentOfflineDtoOutputSerializer();
+  static Serializer<CaptainWentOfflineDtoOutput> get serializer =>
+      _$CaptainWentOfflineDtoOutputSerializer();
 }
 
-class _$CaptainWentOfflineDtoOutputSerializer implements PrimitiveSerializer<CaptainWentOfflineDtoOutput> {
+class _$CaptainWentOfflineDtoOutputSerializer
+    implements PrimitiveSerializer<CaptainWentOfflineDtoOutput> {
   @override
-  final Iterable<Type> types = const [CaptainWentOfflineDtoOutput, _$CaptainWentOfflineDtoOutput];
+  final Iterable<Type> types = const [
+    CaptainWentOfflineDtoOutput,
+    _$CaptainWentOfflineDtoOutput,
+  ];
 
   @override
   final String wireName = r'CaptainWentOfflineDtoOutput';
@@ -42,10 +51,14 @@ class _$CaptainWentOfflineDtoOutputSerializer implements PrimitiveSerializer<Cap
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'handIn';
-    yield object.handIn == null ? null : serializers.serialize(
-      object.handIn,
-      specifiedType: const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
-    );
+    yield object.handIn == null
+        ? null
+        : serializers.serialize(
+            object.handIn,
+            specifiedType: const FullType.nullable(
+              CaptainWentOfflineDtoOutputHandIn,
+            ),
+          );
   }
 
   @override
@@ -54,7 +67,11 @@ class _$CaptainWentOfflineDtoOutputSerializer implements PrimitiveSerializer<Cap
     CaptainWentOfflineDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -70,10 +87,14 @@ class _$CaptainWentOfflineDtoOutputSerializer implements PrimitiveSerializer<Cap
       final value = serializedList[i + 1];
       switch (key) {
         case r'handIn':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
-          ) as CaptainWentOfflineDtoOutputHandIn?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainWentOfflineDtoOutputHandIn,
+                    ),
+                  )
+                  as CaptainWentOfflineDtoOutputHandIn?;
           if (valueDes == null) continue;
           result.handIn.replace(valueDes);
           break;
@@ -105,5 +126,3 @@ class _$CaptainWentOfflineDtoOutputSerializer implements PrimitiveSerializer<Cap
     return result.build();
   }
 }
-
-

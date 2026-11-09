@@ -16,7 +16,12 @@ part 'emergency_sign_in_code_request_dto.g.dart';
 /// * [phone] - The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
 /// * [reason] - Why, kept in the audit log (owner decision 2026-11-07).
 @BuiltValue()
-abstract class EmergencySignInCodeRequestDto implements Built<EmergencySignInCodeRequestDto, EmergencySignInCodeRequestDtoBuilder> {
+abstract class EmergencySignInCodeRequestDto
+    implements
+        Built<
+          EmergencySignInCodeRequestDto,
+          EmergencySignInCodeRequestDtoBuilder
+        > {
   /// The captain app or the restaurant app; customers are not covered.
   @BuiltValueField(wireName: r'party')
   EmergencySignInCodeRequestDtoPartyEnum get party;
@@ -32,18 +37,25 @@ abstract class EmergencySignInCodeRequestDto implements Built<EmergencySignInCod
 
   EmergencySignInCodeRequestDto._();
 
-  factory EmergencySignInCodeRequestDto([void updates(EmergencySignInCodeRequestDtoBuilder b)]) = _$EmergencySignInCodeRequestDto;
+  factory EmergencySignInCodeRequestDto([
+    void updates(EmergencySignInCodeRequestDtoBuilder b),
+  ]) = _$EmergencySignInCodeRequestDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(EmergencySignInCodeRequestDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<EmergencySignInCodeRequestDto> get serializer => _$EmergencySignInCodeRequestDtoSerializer();
+  static Serializer<EmergencySignInCodeRequestDto> get serializer =>
+      _$EmergencySignInCodeRequestDtoSerializer();
 }
 
-class _$EmergencySignInCodeRequestDtoSerializer implements PrimitiveSerializer<EmergencySignInCodeRequestDto> {
+class _$EmergencySignInCodeRequestDtoSerializer
+    implements PrimitiveSerializer<EmergencySignInCodeRequestDto> {
   @override
-  final Iterable<Type> types = const [EmergencySignInCodeRequestDto, _$EmergencySignInCodeRequestDto];
+  final Iterable<Type> types = const [
+    EmergencySignInCodeRequestDto,
+    _$EmergencySignInCodeRequestDto,
+  ];
 
   @override
   final String wireName = r'EmergencySignInCodeRequestDto';
@@ -76,7 +88,11 @@ class _$EmergencySignInCodeRequestDtoSerializer implements PrimitiveSerializer<E
     EmergencySignInCodeRequestDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -92,24 +108,32 @@ class _$EmergencySignInCodeRequestDtoSerializer implements PrimitiveSerializer<E
       final value = serializedList[i + 1];
       switch (key) {
         case r'party':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(EmergencySignInCodeRequestDtoPartyEnum),
-          ) as EmergencySignInCodeRequestDtoPartyEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      EmergencySignInCodeRequestDtoPartyEnum,
+                    ),
+                  )
+                  as EmergencySignInCodeRequestDtoPartyEnum;
           result.party = valueDes;
           break;
         case r'phone':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.phone = valueDes;
           break;
         case r'reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.reason = valueDes;
           break;
         default:
@@ -141,20 +165,22 @@ class _$EmergencySignInCodeRequestDtoSerializer implements PrimitiveSerializer<E
   }
 }
 
-
 /// The captain app or the restaurant app; customers are not covered.
 class EmergencySignInCodeRequestDtoPartyEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'captain')
-  static const EmergencySignInCodeRequestDtoPartyEnum captain = _$emergencySignInCodeRequestDtoPartyEnum_captain;
+  static const EmergencySignInCodeRequestDtoPartyEnum captain =
+      _$emergencySignInCodeRequestDtoPartyEnum_captain;
   @BuiltValueEnumConst(wireName: r'merchant')
-  static const EmergencySignInCodeRequestDtoPartyEnum merchant = _$emergencySignInCodeRequestDtoPartyEnum_merchant;
+  static const EmergencySignInCodeRequestDtoPartyEnum merchant =
+      _$emergencySignInCodeRequestDtoPartyEnum_merchant;
 
-  static Serializer<EmergencySignInCodeRequestDtoPartyEnum> get serializer => _$emergencySignInCodeRequestDtoPartyEnumSerializer;
+  static Serializer<EmergencySignInCodeRequestDtoPartyEnum> get serializer =>
+      _$emergencySignInCodeRequestDtoPartyEnumSerializer;
 
-  const EmergencySignInCodeRequestDtoPartyEnum._(String name): super(name);
+  const EmergencySignInCodeRequestDtoPartyEnum._(String name) : super(name);
 
-  static BuiltSet<EmergencySignInCodeRequestDtoPartyEnum> get values => _$emergencySignInCodeRequestDtoPartyEnumValues;
-  static EmergencySignInCodeRequestDtoPartyEnum valueOf(String name) => _$emergencySignInCodeRequestDtoPartyEnumValueOf(name);
+  static BuiltSet<EmergencySignInCodeRequestDtoPartyEnum> get values =>
+      _$emergencySignInCodeRequestDtoPartyEnumValues;
+  static EmergencySignInCodeRequestDtoPartyEnum valueOf(String name) =>
+      _$emergencySignInCodeRequestDtoPartyEnumValueOf(name);
 }
-

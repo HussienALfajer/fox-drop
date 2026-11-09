@@ -14,14 +14,15 @@ part 'customer_quote_request_dto.g.dart';
 /// CustomerQuoteRequestDto
 ///
 /// Properties:
-/// * [restaurantId] 
-/// * [location] 
-/// * [lines] 
+/// * [restaurantId]
+/// * [location]
+/// * [lines]
 /// * [payIn] - «سأدفع بـ»: an accepted currency, or null for «لم أحدد» (CU §10.5); one no longer accepted gives payIn null.
-/// * [appVersion] 
+/// * [appVersion]
 /// * [openedCheckout] - True on the quote asked on opening checkout: a signed-in customer then counts once per emergency stop (AP §9.1.6).
 @BuiltValue()
-abstract class CustomerQuoteRequestDto implements Built<CustomerQuoteRequestDto, CustomerQuoteRequestDtoBuilder> {
+abstract class CustomerQuoteRequestDto
+    implements Built<CustomerQuoteRequestDto, CustomerQuoteRequestDtoBuilder> {
   @BuiltValueField(wireName: r'restaurantId')
   String get restaurantId;
 
@@ -44,19 +45,26 @@ abstract class CustomerQuoteRequestDto implements Built<CustomerQuoteRequestDto,
 
   CustomerQuoteRequestDto._();
 
-  factory CustomerQuoteRequestDto([void updates(CustomerQuoteRequestDtoBuilder b)]) = _$CustomerQuoteRequestDto;
+  factory CustomerQuoteRequestDto([
+    void updates(CustomerQuoteRequestDtoBuilder b),
+  ]) = _$CustomerQuoteRequestDto;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerQuoteRequestDtoBuilder b) => b
-      ..openedCheckout = false;
+  static void _defaults(CustomerQuoteRequestDtoBuilder b) =>
+      b..openedCheckout = false;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerQuoteRequestDto> get serializer => _$CustomerQuoteRequestDtoSerializer();
+  static Serializer<CustomerQuoteRequestDto> get serializer =>
+      _$CustomerQuoteRequestDtoSerializer();
 }
 
-class _$CustomerQuoteRequestDtoSerializer implements PrimitiveSerializer<CustomerQuoteRequestDto> {
+class _$CustomerQuoteRequestDtoSerializer
+    implements PrimitiveSerializer<CustomerQuoteRequestDto> {
   @override
-  final Iterable<Type> types = const [CustomerQuoteRequestDto, _$CustomerQuoteRequestDto];
+  final Iterable<Type> types = const [
+    CustomerQuoteRequestDto,
+    _$CustomerQuoteRequestDto,
+  ];
 
   @override
   final String wireName = r'CustomerQuoteRequestDto';
@@ -79,13 +87,17 @@ class _$CustomerQuoteRequestDtoSerializer implements PrimitiveSerializer<Custome
     yield r'lines';
     yield serializers.serialize(
       object.lines,
-      specifiedType: const FullType(BuiltList, [FullType(CustomerQuoteRequestDtoLinesInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(CustomerQuoteRequestDtoLinesInner),
+      ]),
     );
     yield r'payIn';
-    yield object.payIn == null ? null : serializers.serialize(
-      object.payIn,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.payIn == null
+        ? null
+        : serializers.serialize(
+            object.payIn,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'appVersion';
     yield serializers.serialize(
       object.appVersion,
@@ -106,7 +118,11 @@ class _$CustomerQuoteRequestDtoSerializer implements PrimitiveSerializer<Custome
     CustomerQuoteRequestDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -122,46 +138,62 @@ class _$CustomerQuoteRequestDtoSerializer implements PrimitiveSerializer<Custome
       final value = serializedList[i + 1];
       switch (key) {
         case r'restaurantId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.restaurantId = valueDes;
           break;
         case r'location':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CustomerQuoteRequestDtoLocation),
-          ) as CustomerQuoteRequestDtoLocation;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CustomerQuoteRequestDtoLocation,
+                    ),
+                  )
+                  as CustomerQuoteRequestDtoLocation;
           result.location.replace(valueDes);
           break;
         case r'lines':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CustomerQuoteRequestDtoLinesInner)]),
-          ) as BuiltList<CustomerQuoteRequestDtoLinesInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CustomerQuoteRequestDtoLinesInner),
+                    ]),
+                  )
+                  as BuiltList<CustomerQuoteRequestDtoLinesInner>;
           result.lines.replace(valueDes);
           break;
         case r'payIn':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.payIn = valueDes;
           break;
         case r'appVersion':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.appVersion = valueDes;
           break;
         case r'openedCheckout':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(bool),
-          ) as bool?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(bool),
+                  )
+                  as bool?;
           if (valueDes == null) continue;
           result.openedCheckout = valueDes;
           break;
@@ -193,5 +225,3 @@ class _$CustomerQuoteRequestDtoSerializer implements PrimitiveSerializer<Custome
     return result.build();
   }
 }
-
-

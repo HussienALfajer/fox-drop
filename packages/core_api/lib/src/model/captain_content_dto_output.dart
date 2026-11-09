@@ -14,11 +14,12 @@ part 'captain_content_dto_output.g.dart';
 /// CaptainContentDtoOutput
 ///
 /// Properties:
-/// * [reasons] 
-/// * [faq] 
+/// * [reasons]
+/// * [faq]
 /// * [workRules] - CA §11.4, plain text with one rule per line.
 @BuiltValue()
-abstract class CaptainContentDtoOutput implements Built<CaptainContentDtoOutput, CaptainContentDtoOutputBuilder> {
+abstract class CaptainContentDtoOutput
+    implements Built<CaptainContentDtoOutput, CaptainContentDtoOutputBuilder> {
   @BuiltValueField(wireName: r'reasons')
   CaptainContentDtoOutputReasons get reasons;
 
@@ -31,18 +32,25 @@ abstract class CaptainContentDtoOutput implements Built<CaptainContentDtoOutput,
 
   CaptainContentDtoOutput._();
 
-  factory CaptainContentDtoOutput([void updates(CaptainContentDtoOutputBuilder b)]) = _$CaptainContentDtoOutput;
+  factory CaptainContentDtoOutput([
+    void updates(CaptainContentDtoOutputBuilder b),
+  ]) = _$CaptainContentDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainContentDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainContentDtoOutput> get serializer => _$CaptainContentDtoOutputSerializer();
+  static Serializer<CaptainContentDtoOutput> get serializer =>
+      _$CaptainContentDtoOutputSerializer();
 }
 
-class _$CaptainContentDtoOutputSerializer implements PrimitiveSerializer<CaptainContentDtoOutput> {
+class _$CaptainContentDtoOutputSerializer
+    implements PrimitiveSerializer<CaptainContentDtoOutput> {
   @override
-  final Iterable<Type> types = const [CaptainContentDtoOutput, _$CaptainContentDtoOutput];
+  final Iterable<Type> types = const [
+    CaptainContentDtoOutput,
+    _$CaptainContentDtoOutput,
+  ];
 
   @override
   final String wireName = r'CaptainContentDtoOutput';
@@ -60,7 +68,9 @@ class _$CaptainContentDtoOutputSerializer implements PrimitiveSerializer<Captain
     yield r'faq';
     yield serializers.serialize(
       object.faq,
-      specifiedType: const FullType(BuiltList, [FullType(MerchantContentDtoOutputFaqInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(MerchantContentDtoOutputFaqInner),
+      ]),
     );
     yield r'workRules';
     yield serializers.serialize(
@@ -75,7 +85,11 @@ class _$CaptainContentDtoOutputSerializer implements PrimitiveSerializer<Captain
     CaptainContentDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -91,24 +105,34 @@ class _$CaptainContentDtoOutputSerializer implements PrimitiveSerializer<Captain
       final value = serializedList[i + 1];
       switch (key) {
         case r'reasons':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainContentDtoOutputReasons),
-          ) as CaptainContentDtoOutputReasons;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainContentDtoOutputReasons,
+                    ),
+                  )
+                  as CaptainContentDtoOutputReasons;
           result.reasons.replace(valueDes);
           break;
         case r'faq':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(MerchantContentDtoOutputFaqInner)]),
-          ) as BuiltList<MerchantContentDtoOutputFaqInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(MerchantContentDtoOutputFaqInner),
+                    ]),
+                  )
+                  as BuiltList<MerchantContentDtoOutputFaqInner>;
           result.faq.replace(valueDes);
           break;
         case r'workRules':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.workRules = valueDes;
           break;
         default:
@@ -139,5 +163,3 @@ class _$CaptainContentDtoOutputSerializer implements PrimitiveSerializer<Captain
     return result.build();
   }
 }
-
-

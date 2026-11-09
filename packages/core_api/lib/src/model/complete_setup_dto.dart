@@ -11,11 +11,12 @@ part 'complete_setup_dto.g.dart';
 /// CompleteSetupDto
 ///
 /// Properties:
-/// * [token] 
-/// * [password] 
+/// * [token]
+/// * [password]
 /// * [code] - A TOTP code from the secret just enrolled.
 @BuiltValue()
-abstract class CompleteSetupDto implements Built<CompleteSetupDto, CompleteSetupDtoBuilder> {
+abstract class CompleteSetupDto
+    implements Built<CompleteSetupDto, CompleteSetupDtoBuilder> {
   @BuiltValueField(wireName: r'token')
   String get token;
 
@@ -28,16 +29,19 @@ abstract class CompleteSetupDto implements Built<CompleteSetupDto, CompleteSetup
 
   CompleteSetupDto._();
 
-  factory CompleteSetupDto([void updates(CompleteSetupDtoBuilder b)]) = _$CompleteSetupDto;
+  factory CompleteSetupDto([void updates(CompleteSetupDtoBuilder b)]) =
+      _$CompleteSetupDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CompleteSetupDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CompleteSetupDto> get serializer => _$CompleteSetupDtoSerializer();
+  static Serializer<CompleteSetupDto> get serializer =>
+      _$CompleteSetupDtoSerializer();
 }
 
-class _$CompleteSetupDtoSerializer implements PrimitiveSerializer<CompleteSetupDto> {
+class _$CompleteSetupDtoSerializer
+    implements PrimitiveSerializer<CompleteSetupDto> {
   @override
   final Iterable<Type> types = const [CompleteSetupDto, _$CompleteSetupDto];
 
@@ -72,7 +76,11 @@ class _$CompleteSetupDtoSerializer implements PrimitiveSerializer<CompleteSetupD
     CompleteSetupDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +96,30 @@ class _$CompleteSetupDtoSerializer implements PrimitiveSerializer<CompleteSetupD
       final value = serializedList[i + 1];
       switch (key) {
         case r'token':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.token = valueDes;
           break;
         case r'password':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.password = valueDes;
           break;
         case r'code':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.code = valueDes;
           break;
         default:
@@ -136,5 +150,3 @@ class _$CompleteSetupDtoSerializer implements PrimitiveSerializer<CompleteSetupD
     return result.build();
   }
 }
-
-

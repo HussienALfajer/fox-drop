@@ -12,12 +12,17 @@ part 'customer_notifications_dto_output_notifications_inner.g.dart';
 /// CustomerNotificationsDtoOutputNotificationsInner
 ///
 /// Properties:
-/// * [id] 
-/// * [at] 
-/// * [body] 
+/// * [id]
+/// * [at]
+/// * [body]
 /// * [data] - What a tap opens: `target` (order, codes, account) and its ids.
 @BuiltValue()
-abstract class CustomerNotificationsDtoOutputNotificationsInner implements Built<CustomerNotificationsDtoOutputNotificationsInner, CustomerNotificationsDtoOutputNotificationsInnerBuilder> {
+abstract class CustomerNotificationsDtoOutputNotificationsInner
+    implements
+        Built<
+          CustomerNotificationsDtoOutputNotificationsInner,
+          CustomerNotificationsDtoOutputNotificationsInnerBuilder
+        > {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -33,18 +38,29 @@ abstract class CustomerNotificationsDtoOutputNotificationsInner implements Built
 
   CustomerNotificationsDtoOutputNotificationsInner._();
 
-  factory CustomerNotificationsDtoOutputNotificationsInner([void updates(CustomerNotificationsDtoOutputNotificationsInnerBuilder b)]) = _$CustomerNotificationsDtoOutputNotificationsInner;
+  factory CustomerNotificationsDtoOutputNotificationsInner([
+    void updates(CustomerNotificationsDtoOutputNotificationsInnerBuilder b),
+  ]) = _$CustomerNotificationsDtoOutputNotificationsInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerNotificationsDtoOutputNotificationsInnerBuilder b) => b;
+  static void _defaults(
+    CustomerNotificationsDtoOutputNotificationsInnerBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerNotificationsDtoOutputNotificationsInner> get serializer => _$CustomerNotificationsDtoOutputNotificationsInnerSerializer();
+  static Serializer<CustomerNotificationsDtoOutputNotificationsInner>
+  get serializer =>
+      _$CustomerNotificationsDtoOutputNotificationsInnerSerializer();
 }
 
-class _$CustomerNotificationsDtoOutputNotificationsInnerSerializer implements PrimitiveSerializer<CustomerNotificationsDtoOutputNotificationsInner> {
+class _$CustomerNotificationsDtoOutputNotificationsInnerSerializer
+    implements
+        PrimitiveSerializer<CustomerNotificationsDtoOutputNotificationsInner> {
   @override
-  final Iterable<Type> types = const [CustomerNotificationsDtoOutputNotificationsInner, _$CustomerNotificationsDtoOutputNotificationsInner];
+  final Iterable<Type> types = const [
+    CustomerNotificationsDtoOutputNotificationsInner,
+    _$CustomerNotificationsDtoOutputNotificationsInner,
+  ];
 
   @override
   final String wireName = r'CustomerNotificationsDtoOutputNotificationsInner';
@@ -72,7 +88,10 @@ class _$CustomerNotificationsDtoOutputNotificationsInnerSerializer implements Pr
     yield r'data';
     yield serializers.serialize(
       object.data,
-      specifiedType: const FullType(BuiltMap, [FullType(String), FullType(String)]),
+      specifiedType: const FullType(BuiltMap, [
+        FullType(String),
+        FullType(String),
+      ]),
     );
   }
 
@@ -82,7 +101,11 @@ class _$CustomerNotificationsDtoOutputNotificationsInnerSerializer implements Pr
     CustomerNotificationsDtoOutputNotificationsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -98,31 +121,42 @@ class _$CustomerNotificationsDtoOutputNotificationsInnerSerializer implements Pr
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'at':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.at = valueDes;
           break;
         case r'body':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.body = valueDes;
           break;
         case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltMap, [FullType(String), FullType(String)]),
-          ) as BuiltMap<String, String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltMap, [
+                      FullType(String),
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltMap<String, String>;
           result.data.replace(valueDes);
           break;
         default:
@@ -153,5 +187,3 @@ class _$CustomerNotificationsDtoOutputNotificationsInnerSerializer implements Pr
     return result.build();
   }
 }
-
-

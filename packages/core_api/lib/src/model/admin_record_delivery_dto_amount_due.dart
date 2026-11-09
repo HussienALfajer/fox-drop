@@ -12,9 +12,14 @@ part 'admin_record_delivery_dto_amount_due.g.dart';
 ///
 /// Properties:
 /// * [amount] - Integer minor units (AP §8.6).
-/// * [currency] 
+/// * [currency]
 @BuiltValue()
-abstract class AdminRecordDeliveryDtoAmountDue implements Built<AdminRecordDeliveryDtoAmountDue, AdminRecordDeliveryDtoAmountDueBuilder> {
+abstract class AdminRecordDeliveryDtoAmountDue
+    implements
+        Built<
+          AdminRecordDeliveryDtoAmountDue,
+          AdminRecordDeliveryDtoAmountDueBuilder
+        > {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -24,18 +29,25 @@ abstract class AdminRecordDeliveryDtoAmountDue implements Built<AdminRecordDeliv
 
   AdminRecordDeliveryDtoAmountDue._();
 
-  factory AdminRecordDeliveryDtoAmountDue([void updates(AdminRecordDeliveryDtoAmountDueBuilder b)]) = _$AdminRecordDeliveryDtoAmountDue;
+  factory AdminRecordDeliveryDtoAmountDue([
+    void updates(AdminRecordDeliveryDtoAmountDueBuilder b),
+  ]) = _$AdminRecordDeliveryDtoAmountDue;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminRecordDeliveryDtoAmountDueBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRecordDeliveryDtoAmountDue> get serializer => _$AdminRecordDeliveryDtoAmountDueSerializer();
+  static Serializer<AdminRecordDeliveryDtoAmountDue> get serializer =>
+      _$AdminRecordDeliveryDtoAmountDueSerializer();
 }
 
-class _$AdminRecordDeliveryDtoAmountDueSerializer implements PrimitiveSerializer<AdminRecordDeliveryDtoAmountDue> {
+class _$AdminRecordDeliveryDtoAmountDueSerializer
+    implements PrimitiveSerializer<AdminRecordDeliveryDtoAmountDue> {
   @override
-  final Iterable<Type> types = const [AdminRecordDeliveryDtoAmountDue, _$AdminRecordDeliveryDtoAmountDue];
+  final Iterable<Type> types = const [
+    AdminRecordDeliveryDtoAmountDue,
+    _$AdminRecordDeliveryDtoAmountDue,
+  ];
 
   @override
   final String wireName = r'AdminRecordDeliveryDtoAmountDue';
@@ -63,7 +75,11 @@ class _$AdminRecordDeliveryDtoAmountDueSerializer implements PrimitiveSerializer
     AdminRecordDeliveryDtoAmountDue object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -79,17 +95,21 @@ class _$AdminRecordDeliveryDtoAmountDueSerializer implements PrimitiveSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.currency = valueDes;
           break;
         default:
@@ -120,5 +140,3 @@ class _$AdminRecordDeliveryDtoAmountDueSerializer implements PrimitiveSerializer
     return result.build();
   }
 }
-
-

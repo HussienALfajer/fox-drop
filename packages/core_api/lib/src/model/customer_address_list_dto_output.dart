@@ -13,26 +13,38 @@ part 'customer_address_list_dto_output.g.dart';
 /// CustomerAddressListDtoOutput
 ///
 /// Properties:
-/// * [addresses] 
+/// * [addresses]
 @BuiltValue()
-abstract class CustomerAddressListDtoOutput implements Built<CustomerAddressListDtoOutput, CustomerAddressListDtoOutputBuilder> {
+abstract class CustomerAddressListDtoOutput
+    implements
+        Built<
+          CustomerAddressListDtoOutput,
+          CustomerAddressListDtoOutputBuilder
+        > {
   @BuiltValueField(wireName: r'addresses')
   BuiltList<CustomerAddressListDtoOutputAddressesInner> get addresses;
 
   CustomerAddressListDtoOutput._();
 
-  factory CustomerAddressListDtoOutput([void updates(CustomerAddressListDtoOutputBuilder b)]) = _$CustomerAddressListDtoOutput;
+  factory CustomerAddressListDtoOutput([
+    void updates(CustomerAddressListDtoOutputBuilder b),
+  ]) = _$CustomerAddressListDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerAddressListDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerAddressListDtoOutput> get serializer => _$CustomerAddressListDtoOutputSerializer();
+  static Serializer<CustomerAddressListDtoOutput> get serializer =>
+      _$CustomerAddressListDtoOutputSerializer();
 }
 
-class _$CustomerAddressListDtoOutputSerializer implements PrimitiveSerializer<CustomerAddressListDtoOutput> {
+class _$CustomerAddressListDtoOutputSerializer
+    implements PrimitiveSerializer<CustomerAddressListDtoOutput> {
   @override
-  final Iterable<Type> types = const [CustomerAddressListDtoOutput, _$CustomerAddressListDtoOutput];
+  final Iterable<Type> types = const [
+    CustomerAddressListDtoOutput,
+    _$CustomerAddressListDtoOutput,
+  ];
 
   @override
   final String wireName = r'CustomerAddressListDtoOutput';
@@ -45,7 +57,9 @@ class _$CustomerAddressListDtoOutputSerializer implements PrimitiveSerializer<Cu
     yield r'addresses';
     yield serializers.serialize(
       object.addresses,
-      specifiedType: const FullType(BuiltList, [FullType(CustomerAddressListDtoOutputAddressesInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(CustomerAddressListDtoOutputAddressesInner),
+      ]),
     );
   }
 
@@ -55,7 +69,11 @@ class _$CustomerAddressListDtoOutputSerializer implements PrimitiveSerializer<Cu
     CustomerAddressListDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -71,10 +89,14 @@ class _$CustomerAddressListDtoOutputSerializer implements PrimitiveSerializer<Cu
       final value = serializedList[i + 1];
       switch (key) {
         case r'addresses':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CustomerAddressListDtoOutputAddressesInner)]),
-          ) as BuiltList<CustomerAddressListDtoOutputAddressesInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CustomerAddressListDtoOutputAddressesInner),
+                    ]),
+                  )
+                  as BuiltList<CustomerAddressListDtoOutputAddressesInner>;
           result.addresses.replace(valueDes);
           break;
         default:
@@ -105,5 +127,3 @@ class _$CustomerAddressListDtoOutputSerializer implements PrimitiveSerializer<Cu
     return result.build();
   }
 }
-
-

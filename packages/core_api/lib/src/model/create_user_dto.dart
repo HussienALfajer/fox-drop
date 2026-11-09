@@ -12,12 +12,13 @@ part 'create_user_dto.g.dart';
 /// CreateUserDto
 ///
 /// Properties:
-/// * [name] 
-/// * [email] 
+/// * [name]
+/// * [email]
 /// * [phone] - In international form, such as +963944000000.
 /// * [roles] - One or more roles (AP §6.1).
 @BuiltValue()
-abstract class CreateUserDto implements Built<CreateUserDto, CreateUserDtoBuilder> {
+abstract class CreateUserDto
+    implements Built<CreateUserDto, CreateUserDtoBuilder> {
   @BuiltValueField(wireName: r'name')
   String get name;
 
@@ -35,13 +36,15 @@ abstract class CreateUserDto implements Built<CreateUserDto, CreateUserDtoBuilde
 
   CreateUserDto._();
 
-  factory CreateUserDto([void updates(CreateUserDtoBuilder b)]) = _$CreateUserDto;
+  factory CreateUserDto([void updates(CreateUserDtoBuilder b)]) =
+      _$CreateUserDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CreateUserDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateUserDto> get serializer => _$CreateUserDtoSerializer();
+  static Serializer<CreateUserDto> get serializer =>
+      _$CreateUserDtoSerializer();
 }
 
 class _$CreateUserDtoSerializer implements PrimitiveSerializer<CreateUserDto> {
@@ -78,7 +81,9 @@ class _$CreateUserDtoSerializer implements PrimitiveSerializer<CreateUserDto> {
     yield r'roles';
     yield serializers.serialize(
       object.roles,
-      specifiedType: const FullType(BuiltList, [FullType(CreateUserDtoRolesEnum)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(CreateUserDtoRolesEnum),
+      ]),
     );
   }
 
@@ -88,7 +93,11 @@ class _$CreateUserDtoSerializer implements PrimitiveSerializer<CreateUserDto> {
     CreateUserDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -104,33 +113,43 @@ class _$CreateUserDtoSerializer implements PrimitiveSerializer<CreateUserDto> {
       final value = serializedList[i + 1];
       switch (key) {
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'email':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.email = valueDes;
           break;
         case r'phone':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.phone = valueDes;
           break;
         case r'roles':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CreateUserDtoRolesEnum)]),
-          ) as BuiltList<CreateUserDtoRolesEnum>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CreateUserDtoRolesEnum),
+                    ]),
+                  )
+                  as BuiltList<CreateUserDtoRolesEnum>;
           result.roles.replace(valueDes);
           break;
         default:
@@ -162,9 +181,7 @@ class _$CreateUserDtoSerializer implements PrimitiveSerializer<CreateUserDto> {
   }
 }
 
-
 class CreateUserDtoRolesEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'OWN')
   static const CreateUserDtoRolesEnum OWN = _$createUserDtoRolesEnum_OWN;
   @BuiltValueEnumConst(wireName: r'OPS')
@@ -176,11 +193,13 @@ class CreateUserDtoRolesEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'DATA')
   static const CreateUserDtoRolesEnum DATA = _$createUserDtoRolesEnum_DATA;
 
-  static Serializer<CreateUserDtoRolesEnum> get serializer => _$createUserDtoRolesEnumSerializer;
+  static Serializer<CreateUserDtoRolesEnum> get serializer =>
+      _$createUserDtoRolesEnumSerializer;
 
-  const CreateUserDtoRolesEnum._(String name): super(name);
+  const CreateUserDtoRolesEnum._(String name) : super(name);
 
-  static BuiltSet<CreateUserDtoRolesEnum> get values => _$createUserDtoRolesEnumValues;
-  static CreateUserDtoRolesEnum valueOf(String name) => _$createUserDtoRolesEnumValueOf(name);
+  static BuiltSet<CreateUserDtoRolesEnum> get values =>
+      _$createUserDtoRolesEnumValues;
+  static CreateUserDtoRolesEnum valueOf(String name) =>
+      _$createUserDtoRolesEnumValueOf(name);
 }
-

@@ -13,9 +13,10 @@ part 'admin_upload_dto_output.g.dart';
 /// Properties:
 /// * [uploadId] - Links the file once uploaded (the record’s own route).
 /// * [url] - A PUT of the exact bytes, with the same Content-Type, on the panel’s own origin.
-/// * [expiresAt] 
+/// * [expiresAt]
 @BuiltValue()
-abstract class AdminUploadDtoOutput implements Built<AdminUploadDtoOutput, AdminUploadDtoOutputBuilder> {
+abstract class AdminUploadDtoOutput
+    implements Built<AdminUploadDtoOutput, AdminUploadDtoOutputBuilder> {
   /// Links the file once uploaded (the record’s own route).
   @BuiltValueField(wireName: r'uploadId')
   String get uploadId;
@@ -29,18 +30,24 @@ abstract class AdminUploadDtoOutput implements Built<AdminUploadDtoOutput, Admin
 
   AdminUploadDtoOutput._();
 
-  factory AdminUploadDtoOutput([void updates(AdminUploadDtoOutputBuilder b)]) = _$AdminUploadDtoOutput;
+  factory AdminUploadDtoOutput([void updates(AdminUploadDtoOutputBuilder b)]) =
+      _$AdminUploadDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminUploadDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminUploadDtoOutput> get serializer => _$AdminUploadDtoOutputSerializer();
+  static Serializer<AdminUploadDtoOutput> get serializer =>
+      _$AdminUploadDtoOutputSerializer();
 }
 
-class _$AdminUploadDtoOutputSerializer implements PrimitiveSerializer<AdminUploadDtoOutput> {
+class _$AdminUploadDtoOutputSerializer
+    implements PrimitiveSerializer<AdminUploadDtoOutput> {
   @override
-  final Iterable<Type> types = const [AdminUploadDtoOutput, _$AdminUploadDtoOutput];
+  final Iterable<Type> types = const [
+    AdminUploadDtoOutput,
+    _$AdminUploadDtoOutput,
+  ];
 
   @override
   final String wireName = r'AdminUploadDtoOutput';
@@ -73,7 +80,11 @@ class _$AdminUploadDtoOutputSerializer implements PrimitiveSerializer<AdminUploa
     AdminUploadDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -89,24 +100,30 @@ class _$AdminUploadDtoOutputSerializer implements PrimitiveSerializer<AdminUploa
       final value = serializedList[i + 1];
       switch (key) {
         case r'uploadId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.uploadId = valueDes;
           break;
         case r'url':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.url = valueDes;
           break;
         case r'expiresAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.expiresAt = valueDes;
           break;
         default:
@@ -137,5 +154,3 @@ class _$AdminUploadDtoOutputSerializer implements PrimitiveSerializer<AdminUploa
     return result.build();
   }
 }
-
-

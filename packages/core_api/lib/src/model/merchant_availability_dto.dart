@@ -12,12 +12,13 @@ part 'merchant_availability_dto.g.dart';
 /// MerchantAvailabilityDto
 ///
 /// Properties:
-/// * [type] 
-/// * [id] 
-/// * [available] 
+/// * [type]
+/// * [id]
+/// * [available]
 /// * [until] - Needed to switch off: «حتى الغد» (the default in the app) or «حتى أعيده» (RA §9.3).
 @BuiltValue()
-abstract class MerchantAvailabilityDto implements Built<MerchantAvailabilityDto, MerchantAvailabilityDtoBuilder> {
+abstract class MerchantAvailabilityDto
+    implements Built<MerchantAvailabilityDto, MerchantAvailabilityDtoBuilder> {
   @BuiltValueField(wireName: r'type')
   MerchantAvailabilityDtoTypeEnum get type;
   // enum typeEnum {  category,  item,  option,  };
@@ -35,18 +36,25 @@ abstract class MerchantAvailabilityDto implements Built<MerchantAvailabilityDto,
 
   MerchantAvailabilityDto._();
 
-  factory MerchantAvailabilityDto([void updates(MerchantAvailabilityDtoBuilder b)]) = _$MerchantAvailabilityDto;
+  factory MerchantAvailabilityDto([
+    void updates(MerchantAvailabilityDtoBuilder b),
+  ]) = _$MerchantAvailabilityDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantAvailabilityDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantAvailabilityDto> get serializer => _$MerchantAvailabilityDtoSerializer();
+  static Serializer<MerchantAvailabilityDto> get serializer =>
+      _$MerchantAvailabilityDtoSerializer();
 }
 
-class _$MerchantAvailabilityDtoSerializer implements PrimitiveSerializer<MerchantAvailabilityDto> {
+class _$MerchantAvailabilityDtoSerializer
+    implements PrimitiveSerializer<MerchantAvailabilityDto> {
   @override
-  final Iterable<Type> types = const [MerchantAvailabilityDto, _$MerchantAvailabilityDto];
+  final Iterable<Type> types = const [
+    MerchantAvailabilityDto,
+    _$MerchantAvailabilityDto,
+  ];
 
   @override
   final String wireName = r'MerchantAvailabilityDto';
@@ -86,7 +94,11 @@ class _$MerchantAvailabilityDtoSerializer implements PrimitiveSerializer<Merchan
     MerchantAvailabilityDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -102,31 +114,43 @@ class _$MerchantAvailabilityDtoSerializer implements PrimitiveSerializer<Merchan
       final value = serializedList[i + 1];
       switch (key) {
         case r'type':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(MerchantAvailabilityDtoTypeEnum),
-          ) as MerchantAvailabilityDtoTypeEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      MerchantAvailabilityDtoTypeEnum,
+                    ),
+                  )
+                  as MerchantAvailabilityDtoTypeEnum;
           result.type = valueDes;
           break;
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'available':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.available = valueDes;
           break;
         case r'until':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(MerchantAvailabilityDtoUntilEnum),
-          ) as MerchantAvailabilityDtoUntilEnum?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      MerchantAvailabilityDtoUntilEnum,
+                    ),
+                  )
+                  as MerchantAvailabilityDtoUntilEnum?;
           if (valueDes == null) continue;
           result.until = valueDes;
           break;
@@ -159,37 +183,44 @@ class _$MerchantAvailabilityDtoSerializer implements PrimitiveSerializer<Merchan
   }
 }
 
-
 class MerchantAvailabilityDtoTypeEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'category')
-  static const MerchantAvailabilityDtoTypeEnum category = _$merchantAvailabilityDtoTypeEnum_category;
+  static const MerchantAvailabilityDtoTypeEnum category =
+      _$merchantAvailabilityDtoTypeEnum_category;
   @BuiltValueEnumConst(wireName: r'item')
-  static const MerchantAvailabilityDtoTypeEnum item = _$merchantAvailabilityDtoTypeEnum_item;
+  static const MerchantAvailabilityDtoTypeEnum item =
+      _$merchantAvailabilityDtoTypeEnum_item;
   @BuiltValueEnumConst(wireName: r'option')
-  static const MerchantAvailabilityDtoTypeEnum option = _$merchantAvailabilityDtoTypeEnum_option;
+  static const MerchantAvailabilityDtoTypeEnum option =
+      _$merchantAvailabilityDtoTypeEnum_option;
 
-  static Serializer<MerchantAvailabilityDtoTypeEnum> get serializer => _$merchantAvailabilityDtoTypeEnumSerializer;
+  static Serializer<MerchantAvailabilityDtoTypeEnum> get serializer =>
+      _$merchantAvailabilityDtoTypeEnumSerializer;
 
-  const MerchantAvailabilityDtoTypeEnum._(String name): super(name);
+  const MerchantAvailabilityDtoTypeEnum._(String name) : super(name);
 
-  static BuiltSet<MerchantAvailabilityDtoTypeEnum> get values => _$merchantAvailabilityDtoTypeEnumValues;
-  static MerchantAvailabilityDtoTypeEnum valueOf(String name) => _$merchantAvailabilityDtoTypeEnumValueOf(name);
+  static BuiltSet<MerchantAvailabilityDtoTypeEnum> get values =>
+      _$merchantAvailabilityDtoTypeEnumValues;
+  static MerchantAvailabilityDtoTypeEnum valueOf(String name) =>
+      _$merchantAvailabilityDtoTypeEnumValueOf(name);
 }
 
 /// Needed to switch off: «حتى الغد» (the default in the app) or «حتى أعيده» (RA §9.3).
 class MerchantAvailabilityDtoUntilEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'tomorrow')
-  static const MerchantAvailabilityDtoUntilEnum tomorrow = _$merchantAvailabilityDtoUntilEnum_tomorrow;
+  static const MerchantAvailabilityDtoUntilEnum tomorrow =
+      _$merchantAvailabilityDtoUntilEnum_tomorrow;
   @BuiltValueEnumConst(wireName: r'turned_back_on')
-  static const MerchantAvailabilityDtoUntilEnum turnedBackOn = _$merchantAvailabilityDtoUntilEnum_turnedBackOn;
+  static const MerchantAvailabilityDtoUntilEnum turnedBackOn =
+      _$merchantAvailabilityDtoUntilEnum_turnedBackOn;
 
-  static Serializer<MerchantAvailabilityDtoUntilEnum> get serializer => _$merchantAvailabilityDtoUntilEnumSerializer;
+  static Serializer<MerchantAvailabilityDtoUntilEnum> get serializer =>
+      _$merchantAvailabilityDtoUntilEnumSerializer;
 
-  const MerchantAvailabilityDtoUntilEnum._(String name): super(name);
+  const MerchantAvailabilityDtoUntilEnum._(String name) : super(name);
 
-  static BuiltSet<MerchantAvailabilityDtoUntilEnum> get values => _$merchantAvailabilityDtoUntilEnumValues;
-  static MerchantAvailabilityDtoUntilEnum valueOf(String name) => _$merchantAvailabilityDtoUntilEnumValueOf(name);
+  static BuiltSet<MerchantAvailabilityDtoUntilEnum> get values =>
+      _$merchantAvailabilityDtoUntilEnumValues;
+  static MerchantAvailabilityDtoUntilEnum valueOf(String name) =>
+      _$merchantAvailabilityDtoUntilEnumValueOf(name);
 }
-

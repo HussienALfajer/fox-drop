@@ -11,10 +11,15 @@ part 'admin_order_dto_output_order_timeline_inner_actor.g.dart';
 /// AdminOrderDtoOutputOrderTimelineInnerActor
 ///
 /// Properties:
-/// * [type] 
-/// * [id] 
+/// * [type]
+/// * [id]
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderTimelineInnerActor implements Built<AdminOrderDtoOutputOrderTimelineInnerActor, AdminOrderDtoOutputOrderTimelineInnerActorBuilder> {
+abstract class AdminOrderDtoOutputOrderTimelineInnerActor
+    implements
+        Built<
+          AdminOrderDtoOutputOrderTimelineInnerActor,
+          AdminOrderDtoOutputOrderTimelineInnerActorBuilder
+        > {
   @BuiltValueField(wireName: r'type')
   String get type;
 
@@ -23,18 +28,26 @@ abstract class AdminOrderDtoOutputOrderTimelineInnerActor implements Built<Admin
 
   AdminOrderDtoOutputOrderTimelineInnerActor._();
 
-  factory AdminOrderDtoOutputOrderTimelineInnerActor([void updates(AdminOrderDtoOutputOrderTimelineInnerActorBuilder b)]) = _$AdminOrderDtoOutputOrderTimelineInnerActor;
+  factory AdminOrderDtoOutputOrderTimelineInnerActor([
+    void updates(AdminOrderDtoOutputOrderTimelineInnerActorBuilder b),
+  ]) = _$AdminOrderDtoOutputOrderTimelineInnerActor;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminOrderDtoOutputOrderTimelineInnerActorBuilder b) => b;
+  static void _defaults(AdminOrderDtoOutputOrderTimelineInnerActorBuilder b) =>
+      b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderTimelineInnerActor> get serializer => _$AdminOrderDtoOutputOrderTimelineInnerActorSerializer();
+  static Serializer<AdminOrderDtoOutputOrderTimelineInnerActor>
+  get serializer => _$AdminOrderDtoOutputOrderTimelineInnerActorSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderTimelineInnerActorSerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderTimelineInnerActor> {
+class _$AdminOrderDtoOutputOrderTimelineInnerActorSerializer
+    implements PrimitiveSerializer<AdminOrderDtoOutputOrderTimelineInnerActor> {
   @override
-  final Iterable<Type> types = const [AdminOrderDtoOutputOrderTimelineInnerActor, _$AdminOrderDtoOutputOrderTimelineInnerActor];
+  final Iterable<Type> types = const [
+    AdminOrderDtoOutputOrderTimelineInnerActor,
+    _$AdminOrderDtoOutputOrderTimelineInnerActor,
+  ];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderTimelineInnerActor';
@@ -50,10 +63,12 @@ class _$AdminOrderDtoOutputOrderTimelineInnerActorSerializer implements Primitiv
       specifiedType: const FullType(String),
     );
     yield r'id';
-    yield object.id == null ? null : serializers.serialize(
-      object.id,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.id == null
+        ? null
+        : serializers.serialize(
+            object.id,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -62,7 +77,11 @@ class _$AdminOrderDtoOutputOrderTimelineInnerActorSerializer implements Primitiv
     AdminOrderDtoOutputOrderTimelineInnerActor object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -78,17 +97,21 @@ class _$AdminOrderDtoOutputOrderTimelineInnerActorSerializer implements Primitiv
       final value = serializedList[i + 1];
       switch (key) {
         case r'type':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.type = valueDes;
           break;
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.id = valueDes;
           break;
@@ -120,5 +143,3 @@ class _$AdminOrderDtoOutputOrderTimelineInnerActorSerializer implements Primitiv
     return result.build();
   }
 }
-
-

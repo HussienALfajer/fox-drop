@@ -12,9 +12,14 @@ part 'captain_active_order_dto_output_order_collect.g.dart';
 ///
 /// Properties:
 /// * [amount] - Integer minor units (AP §8.6).
-/// * [currency] 
+/// * [currency]
 @BuiltValue()
-abstract class CaptainActiveOrderDtoOutputOrderCollect implements Built<CaptainActiveOrderDtoOutputOrderCollect, CaptainActiveOrderDtoOutputOrderCollectBuilder> {
+abstract class CaptainActiveOrderDtoOutputOrderCollect
+    implements
+        Built<
+          CaptainActiveOrderDtoOutputOrderCollect,
+          CaptainActiveOrderDtoOutputOrderCollectBuilder
+        > {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -24,18 +29,25 @@ abstract class CaptainActiveOrderDtoOutputOrderCollect implements Built<CaptainA
 
   CaptainActiveOrderDtoOutputOrderCollect._();
 
-  factory CaptainActiveOrderDtoOutputOrderCollect([void updates(CaptainActiveOrderDtoOutputOrderCollectBuilder b)]) = _$CaptainActiveOrderDtoOutputOrderCollect;
+  factory CaptainActiveOrderDtoOutputOrderCollect([
+    void updates(CaptainActiveOrderDtoOutputOrderCollectBuilder b),
+  ]) = _$CaptainActiveOrderDtoOutputOrderCollect;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainActiveOrderDtoOutputOrderCollectBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainActiveOrderDtoOutputOrderCollect> get serializer => _$CaptainActiveOrderDtoOutputOrderCollectSerializer();
+  static Serializer<CaptainActiveOrderDtoOutputOrderCollect> get serializer =>
+      _$CaptainActiveOrderDtoOutputOrderCollectSerializer();
 }
 
-class _$CaptainActiveOrderDtoOutputOrderCollectSerializer implements PrimitiveSerializer<CaptainActiveOrderDtoOutputOrderCollect> {
+class _$CaptainActiveOrderDtoOutputOrderCollectSerializer
+    implements PrimitiveSerializer<CaptainActiveOrderDtoOutputOrderCollect> {
   @override
-  final Iterable<Type> types = const [CaptainActiveOrderDtoOutputOrderCollect, _$CaptainActiveOrderDtoOutputOrderCollect];
+  final Iterable<Type> types = const [
+    CaptainActiveOrderDtoOutputOrderCollect,
+    _$CaptainActiveOrderDtoOutputOrderCollect,
+  ];
 
   @override
   final String wireName = r'CaptainActiveOrderDtoOutputOrderCollect';
@@ -63,7 +75,11 @@ class _$CaptainActiveOrderDtoOutputOrderCollectSerializer implements PrimitiveSe
     CaptainActiveOrderDtoOutputOrderCollect object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -79,17 +95,21 @@ class _$CaptainActiveOrderDtoOutputOrderCollectSerializer implements PrimitiveSe
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.currency = valueDes;
           break;
         default:
@@ -120,5 +140,3 @@ class _$CaptainActiveOrderDtoOutputOrderCollectSerializer implements PrimitiveSe
     return result.build();
   }
 }
-
-

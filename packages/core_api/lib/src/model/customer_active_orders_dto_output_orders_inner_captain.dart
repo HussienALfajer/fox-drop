@@ -12,11 +12,16 @@ part 'customer_active_orders_dto_output_orders_inner_captain.g.dart';
 /// The captain card from assignment (CU §11.3, Q14): «الكابتن {الاسم} في طريقه إلى المطعم»; never the phone number or the captain track (CU §11.2). The photo comes with the object storage.
 ///
 /// Properties:
-/// * [firstName] 
+/// * [firstName]
 /// * [vehicle] - «سيراً على الأقدام», «دراجة», «دراجة نارية» or «سيارة» (CU §11.3).
 /// * [atRestaurant] - Before the pickup: «الكابتن {الاسم} وصل إلى المطعم», or «الكابتن يستلم طلبك الآن» once ready (CU §11.2).
 @BuiltValue()
-abstract class CustomerActiveOrdersDtoOutputOrdersInnerCaptain implements Built<CustomerActiveOrdersDtoOutputOrdersInnerCaptain, CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder> {
+abstract class CustomerActiveOrdersDtoOutputOrdersInnerCaptain
+    implements
+        Built<
+          CustomerActiveOrdersDtoOutputOrdersInnerCaptain,
+          CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder
+        > {
   @BuiltValueField(wireName: r'firstName')
   String get firstName;
 
@@ -31,18 +36,29 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerCaptain implements Built<
 
   CustomerActiveOrdersDtoOutputOrdersInnerCaptain._();
 
-  factory CustomerActiveOrdersDtoOutputOrdersInnerCaptain([void updates(CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder b)]) = _$CustomerActiveOrdersDtoOutputOrdersInnerCaptain;
+  factory CustomerActiveOrdersDtoOutputOrdersInnerCaptain([
+    void updates(CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder b),
+  ]) = _$CustomerActiveOrdersDtoOutputOrdersInnerCaptain;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder b) => b;
+  static void _defaults(
+    CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerCaptain> get serializer => _$CustomerActiveOrdersDtoOutputOrdersInnerCaptainSerializer();
+  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerCaptain>
+  get serializer =>
+      _$CustomerActiveOrdersDtoOutputOrdersInnerCaptainSerializer();
 }
 
-class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptainSerializer implements PrimitiveSerializer<CustomerActiveOrdersDtoOutputOrdersInnerCaptain> {
+class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptainSerializer
+    implements
+        PrimitiveSerializer<CustomerActiveOrdersDtoOutputOrdersInnerCaptain> {
   @override
-  final Iterable<Type> types = const [CustomerActiveOrdersDtoOutputOrdersInnerCaptain, _$CustomerActiveOrdersDtoOutputOrdersInnerCaptain];
+  final Iterable<Type> types = const [
+    CustomerActiveOrdersDtoOutputOrdersInnerCaptain,
+    _$CustomerActiveOrdersDtoOutputOrdersInnerCaptain,
+  ];
 
   @override
   final String wireName = r'CustomerActiveOrdersDtoOutputOrdersInnerCaptain';
@@ -60,7 +76,9 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptainSerializer implements Pri
     yield r'vehicle';
     yield serializers.serialize(
       object.vehicle,
-      specifiedType: const FullType(CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum),
+      specifiedType: const FullType(
+        CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum,
+      ),
     );
     yield r'atRestaurant';
     yield serializers.serialize(
@@ -75,7 +93,11 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptainSerializer implements Pri
     CustomerActiveOrdersDtoOutputOrdersInnerCaptain object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -91,24 +113,32 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptainSerializer implements Pri
       final value = serializedList[i + 1];
       switch (key) {
         case r'firstName':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.firstName = valueDes;
           break;
         case r'vehicle':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum),
-          ) as CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum,
+                    ),
+                  )
+                  as CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum;
           result.vehicle = valueDes;
           break;
         case r'atRestaurant':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.atRestaurant = valueDes;
           break;
         default:
@@ -140,24 +170,38 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptainSerializer implements Pri
   }
 }
 
-
 /// «سيراً على الأقدام», «دراجة», «دراجة نارية» or «سيارة» (CU §11.3).
-class CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum extends EnumClass {
-
+class CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum
+    extends EnumClass {
   @BuiltValueEnumConst(wireName: r'walking')
-  static const CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum walking = _$customerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum_walking;
+  static const CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum
+  walking =
+      _$customerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum_walking;
   @BuiltValueEnumConst(wireName: r'bicycle')
-  static const CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum bicycle = _$customerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum_bicycle;
+  static const CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum
+  bicycle =
+      _$customerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum_bicycle;
   @BuiltValueEnumConst(wireName: r'motorbike')
-  static const CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum motorbike = _$customerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum_motorbike;
+  static const CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum
+  motorbike =
+      _$customerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum_motorbike;
   @BuiltValueEnumConst(wireName: r'car')
-  static const CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum car = _$customerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum_car;
+  static const CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum car =
+      _$customerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum_car;
 
-  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum> get serializer => _$customerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnumSerializer;
+  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum>
+  get serializer =>
+      _$customerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnumSerializer;
 
-  const CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum._(String name): super(name);
+  const CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum._(
+    String name,
+  ) : super(name);
 
-  static BuiltSet<CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum> get values => _$customerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnumValues;
-  static CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum valueOf(String name) => _$customerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnumValueOf(name);
+  static BuiltSet<CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum>
+  get values =>
+      _$customerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnumValues;
+  static CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum valueOf(
+    String name,
+  ) =>
+      _$customerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnumValueOf(name);
 }
-

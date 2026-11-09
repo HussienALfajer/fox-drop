@@ -11,13 +11,15 @@ part 'captain_signed_in_dto_output.g.dart';
 /// CaptainSignedInDtoOutput
 ///
 /// Properties:
-/// * [accountId] 
-/// * [captainId] 
+/// * [accountId]
+/// * [captainId]
 /// * [accessToken] - A JWT for the Authorization header, valid 15 minutes.
-/// * [accessTokenExpiresAt] 
+/// * [accessTokenExpiresAt]
 /// * [refreshToken] - Used once at /refresh for a new pair; using it twice signs the device out.
 @BuiltValue()
-abstract class CaptainSignedInDtoOutput implements Built<CaptainSignedInDtoOutput, CaptainSignedInDtoOutputBuilder> {
+abstract class CaptainSignedInDtoOutput
+    implements
+        Built<CaptainSignedInDtoOutput, CaptainSignedInDtoOutputBuilder> {
   @BuiltValueField(wireName: r'accountId')
   String get accountId;
 
@@ -37,18 +39,25 @@ abstract class CaptainSignedInDtoOutput implements Built<CaptainSignedInDtoOutpu
 
   CaptainSignedInDtoOutput._();
 
-  factory CaptainSignedInDtoOutput([void updates(CaptainSignedInDtoOutputBuilder b)]) = _$CaptainSignedInDtoOutput;
+  factory CaptainSignedInDtoOutput([
+    void updates(CaptainSignedInDtoOutputBuilder b),
+  ]) = _$CaptainSignedInDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainSignedInDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainSignedInDtoOutput> get serializer => _$CaptainSignedInDtoOutputSerializer();
+  static Serializer<CaptainSignedInDtoOutput> get serializer =>
+      _$CaptainSignedInDtoOutputSerializer();
 }
 
-class _$CaptainSignedInDtoOutputSerializer implements PrimitiveSerializer<CaptainSignedInDtoOutput> {
+class _$CaptainSignedInDtoOutputSerializer
+    implements PrimitiveSerializer<CaptainSignedInDtoOutput> {
   @override
-  final Iterable<Type> types = const [CaptainSignedInDtoOutput, _$CaptainSignedInDtoOutput];
+  final Iterable<Type> types = const [
+    CaptainSignedInDtoOutput,
+    _$CaptainSignedInDtoOutput,
+  ];
 
   @override
   final String wireName = r'CaptainSignedInDtoOutput';
@@ -91,7 +100,11 @@ class _$CaptainSignedInDtoOutputSerializer implements PrimitiveSerializer<Captai
     CaptainSignedInDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -107,38 +120,48 @@ class _$CaptainSignedInDtoOutputSerializer implements PrimitiveSerializer<Captai
       final value = serializedList[i + 1];
       switch (key) {
         case r'accountId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.accountId = valueDes;
           break;
         case r'captainId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.captainId = valueDes;
           break;
         case r'accessToken':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.accessToken = valueDes;
           break;
         case r'accessTokenExpiresAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.accessTokenExpiresAt = valueDes;
           break;
         case r'refreshToken':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.refreshToken = valueDes;
           break;
         default:
@@ -169,5 +192,3 @@ class _$CaptainSignedInDtoOutputSerializer implements PrimitiveSerializer<Captai
     return result.build();
   }
 }
-
-

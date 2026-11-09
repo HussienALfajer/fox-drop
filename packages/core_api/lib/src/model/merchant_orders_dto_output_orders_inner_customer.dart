@@ -12,9 +12,14 @@ part 'merchant_orders_dto_output_orders_inner_customer.g.dart';
 ///
 /// Properties:
 /// * [firstName] - Null while the customer has not completed the account (CU §5.3).
-/// * [neighbourhood] 
+/// * [neighbourhood]
 @BuiltValue()
-abstract class MerchantOrdersDtoOutputOrdersInnerCustomer implements Built<MerchantOrdersDtoOutputOrdersInnerCustomer, MerchantOrdersDtoOutputOrdersInnerCustomerBuilder> {
+abstract class MerchantOrdersDtoOutputOrdersInnerCustomer
+    implements
+        Built<
+          MerchantOrdersDtoOutputOrdersInnerCustomer,
+          MerchantOrdersDtoOutputOrdersInnerCustomerBuilder
+        > {
   /// Null while the customer has not completed the account (CU §5.3).
   @BuiltValueField(wireName: r'firstName')
   String? get firstName;
@@ -24,18 +29,26 @@ abstract class MerchantOrdersDtoOutputOrdersInnerCustomer implements Built<Merch
 
   MerchantOrdersDtoOutputOrdersInnerCustomer._();
 
-  factory MerchantOrdersDtoOutputOrdersInnerCustomer([void updates(MerchantOrdersDtoOutputOrdersInnerCustomerBuilder b)]) = _$MerchantOrdersDtoOutputOrdersInnerCustomer;
+  factory MerchantOrdersDtoOutputOrdersInnerCustomer([
+    void updates(MerchantOrdersDtoOutputOrdersInnerCustomerBuilder b),
+  ]) = _$MerchantOrdersDtoOutputOrdersInnerCustomer;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(MerchantOrdersDtoOutputOrdersInnerCustomerBuilder b) => b;
+  static void _defaults(MerchantOrdersDtoOutputOrdersInnerCustomerBuilder b) =>
+      b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantOrdersDtoOutputOrdersInnerCustomer> get serializer => _$MerchantOrdersDtoOutputOrdersInnerCustomerSerializer();
+  static Serializer<MerchantOrdersDtoOutputOrdersInnerCustomer>
+  get serializer => _$MerchantOrdersDtoOutputOrdersInnerCustomerSerializer();
 }
 
-class _$MerchantOrdersDtoOutputOrdersInnerCustomerSerializer implements PrimitiveSerializer<MerchantOrdersDtoOutputOrdersInnerCustomer> {
+class _$MerchantOrdersDtoOutputOrdersInnerCustomerSerializer
+    implements PrimitiveSerializer<MerchantOrdersDtoOutputOrdersInnerCustomer> {
   @override
-  final Iterable<Type> types = const [MerchantOrdersDtoOutputOrdersInnerCustomer, _$MerchantOrdersDtoOutputOrdersInnerCustomer];
+  final Iterable<Type> types = const [
+    MerchantOrdersDtoOutputOrdersInnerCustomer,
+    _$MerchantOrdersDtoOutputOrdersInnerCustomer,
+  ];
 
   @override
   final String wireName = r'MerchantOrdersDtoOutputOrdersInnerCustomer';
@@ -46,10 +59,12 @@ class _$MerchantOrdersDtoOutputOrdersInnerCustomerSerializer implements Primitiv
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'firstName';
-    yield object.firstName == null ? null : serializers.serialize(
-      object.firstName,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.firstName == null
+        ? null
+        : serializers.serialize(
+            object.firstName,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'neighbourhood';
     yield serializers.serialize(
       object.neighbourhood,
@@ -63,7 +78,11 @@ class _$MerchantOrdersDtoOutputOrdersInnerCustomerSerializer implements Primitiv
     MerchantOrdersDtoOutputOrdersInnerCustomer object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -79,18 +98,22 @@ class _$MerchantOrdersDtoOutputOrdersInnerCustomerSerializer implements Primitiv
       final value = serializedList[i + 1];
       switch (key) {
         case r'firstName':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.firstName = valueDes;
           break;
         case r'neighbourhood':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.neighbourhood = valueDes;
           break;
         default:
@@ -121,5 +144,3 @@ class _$MerchantOrdersDtoOutputOrdersInnerCustomerSerializer implements Primitiv
     return result.build();
   }
 }
-
-

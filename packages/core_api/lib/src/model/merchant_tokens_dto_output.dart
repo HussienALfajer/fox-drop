@@ -12,10 +12,11 @@ part 'merchant_tokens_dto_output.g.dart';
 ///
 /// Properties:
 /// * [accessToken] - A JWT for the Authorization header, valid 15 minutes.
-/// * [accessTokenExpiresAt] 
+/// * [accessTokenExpiresAt]
 /// * [refreshToken] - Used once at /refresh for a new pair; using it twice signs the device out.
 @BuiltValue()
-abstract class MerchantTokensDtoOutput implements Built<MerchantTokensDtoOutput, MerchantTokensDtoOutputBuilder> {
+abstract class MerchantTokensDtoOutput
+    implements Built<MerchantTokensDtoOutput, MerchantTokensDtoOutputBuilder> {
   /// A JWT for the Authorization header, valid 15 minutes.
   @BuiltValueField(wireName: r'accessToken')
   String get accessToken;
@@ -29,18 +30,25 @@ abstract class MerchantTokensDtoOutput implements Built<MerchantTokensDtoOutput,
 
   MerchantTokensDtoOutput._();
 
-  factory MerchantTokensDtoOutput([void updates(MerchantTokensDtoOutputBuilder b)]) = _$MerchantTokensDtoOutput;
+  factory MerchantTokensDtoOutput([
+    void updates(MerchantTokensDtoOutputBuilder b),
+  ]) = _$MerchantTokensDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantTokensDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantTokensDtoOutput> get serializer => _$MerchantTokensDtoOutputSerializer();
+  static Serializer<MerchantTokensDtoOutput> get serializer =>
+      _$MerchantTokensDtoOutputSerializer();
 }
 
-class _$MerchantTokensDtoOutputSerializer implements PrimitiveSerializer<MerchantTokensDtoOutput> {
+class _$MerchantTokensDtoOutputSerializer
+    implements PrimitiveSerializer<MerchantTokensDtoOutput> {
   @override
-  final Iterable<Type> types = const [MerchantTokensDtoOutput, _$MerchantTokensDtoOutput];
+  final Iterable<Type> types = const [
+    MerchantTokensDtoOutput,
+    _$MerchantTokensDtoOutput,
+  ];
 
   @override
   final String wireName = r'MerchantTokensDtoOutput';
@@ -73,7 +81,11 @@ class _$MerchantTokensDtoOutputSerializer implements PrimitiveSerializer<Merchan
     MerchantTokensDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -89,24 +101,30 @@ class _$MerchantTokensDtoOutputSerializer implements PrimitiveSerializer<Merchan
       final value = serializedList[i + 1];
       switch (key) {
         case r'accessToken':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.accessToken = valueDes;
           break;
         case r'accessTokenExpiresAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.accessTokenExpiresAt = valueDes;
           break;
         case r'refreshToken':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.refreshToken = valueDes;
           break;
         default:
@@ -137,5 +155,3 @@ class _$MerchantTokensDtoOutputSerializer implements PrimitiveSerializer<Merchan
     return result.build();
   }
 }
-
-

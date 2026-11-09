@@ -11,11 +11,12 @@ part 'setup_link_dto_output.g.dart';
 /// SetupLinkDtoOutput
 ///
 /// Properties:
-/// * [accountId] 
+/// * [accountId]
 /// * [setupToken] - Shown this once. The panel puts it in its setup link, after /setup#token=, for the owner to share.
-/// * [setupExpiresAt] 
+/// * [setupExpiresAt]
 @BuiltValue()
-abstract class SetupLinkDtoOutput implements Built<SetupLinkDtoOutput, SetupLinkDtoOutputBuilder> {
+abstract class SetupLinkDtoOutput
+    implements Built<SetupLinkDtoOutput, SetupLinkDtoOutputBuilder> {
   @BuiltValueField(wireName: r'accountId')
   String get accountId;
 
@@ -28,16 +29,19 @@ abstract class SetupLinkDtoOutput implements Built<SetupLinkDtoOutput, SetupLink
 
   SetupLinkDtoOutput._();
 
-  factory SetupLinkDtoOutput([void updates(SetupLinkDtoOutputBuilder b)]) = _$SetupLinkDtoOutput;
+  factory SetupLinkDtoOutput([void updates(SetupLinkDtoOutputBuilder b)]) =
+      _$SetupLinkDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SetupLinkDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SetupLinkDtoOutput> get serializer => _$SetupLinkDtoOutputSerializer();
+  static Serializer<SetupLinkDtoOutput> get serializer =>
+      _$SetupLinkDtoOutputSerializer();
 }
 
-class _$SetupLinkDtoOutputSerializer implements PrimitiveSerializer<SetupLinkDtoOutput> {
+class _$SetupLinkDtoOutputSerializer
+    implements PrimitiveSerializer<SetupLinkDtoOutput> {
   @override
   final Iterable<Type> types = const [SetupLinkDtoOutput, _$SetupLinkDtoOutput];
 
@@ -72,7 +76,11 @@ class _$SetupLinkDtoOutputSerializer implements PrimitiveSerializer<SetupLinkDto
     SetupLinkDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +96,30 @@ class _$SetupLinkDtoOutputSerializer implements PrimitiveSerializer<SetupLinkDto
       final value = serializedList[i + 1];
       switch (key) {
         case r'accountId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.accountId = valueDes;
           break;
         case r'setupToken':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.setupToken = valueDes;
           break;
         case r'setupExpiresAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.setupExpiresAt = valueDes;
           break;
         default:
@@ -136,5 +150,3 @@ class _$SetupLinkDtoOutputSerializer implements PrimitiveSerializer<SetupLinkDto
     return result.build();
   }
 }
-
-

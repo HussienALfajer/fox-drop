@@ -17,7 +17,12 @@ part 'customer_active_orders_dto_output_orders_inner_delivery.g.dart';
 /// * [received] - «استلم الكابتن: {المبالغ}» (CU §11.8, Q23).
 /// * [change] - «أعاد لك: {المبالغ}».
 @BuiltValue()
-abstract class CustomerActiveOrdersDtoOutputOrdersInnerDelivery implements Built<CustomerActiveOrdersDtoOutputOrdersInnerDelivery, CustomerActiveOrdersDtoOutputOrdersInnerDeliveryBuilder> {
+abstract class CustomerActiveOrdersDtoOutputOrdersInnerDelivery
+    implements
+        Built<
+          CustomerActiveOrdersDtoOutputOrdersInnerDelivery,
+          CustomerActiveOrdersDtoOutputOrdersInnerDeliveryBuilder
+        > {
   /// «تم التسليم».
   @BuiltValueField(wireName: r'at')
   DateTime get at;
@@ -32,18 +37,29 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerDelivery implements Built
 
   CustomerActiveOrdersDtoOutputOrdersInnerDelivery._();
 
-  factory CustomerActiveOrdersDtoOutputOrdersInnerDelivery([void updates(CustomerActiveOrdersDtoOutputOrdersInnerDeliveryBuilder b)]) = _$CustomerActiveOrdersDtoOutputOrdersInnerDelivery;
+  factory CustomerActiveOrdersDtoOutputOrdersInnerDelivery([
+    void updates(CustomerActiveOrdersDtoOutputOrdersInnerDeliveryBuilder b),
+  ]) = _$CustomerActiveOrdersDtoOutputOrdersInnerDelivery;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerActiveOrdersDtoOutputOrdersInnerDeliveryBuilder b) => b;
+  static void _defaults(
+    CustomerActiveOrdersDtoOutputOrdersInnerDeliveryBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerDelivery> get serializer => _$CustomerActiveOrdersDtoOutputOrdersInnerDeliverySerializer();
+  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerDelivery>
+  get serializer =>
+      _$CustomerActiveOrdersDtoOutputOrdersInnerDeliverySerializer();
 }
 
-class _$CustomerActiveOrdersDtoOutputOrdersInnerDeliverySerializer implements PrimitiveSerializer<CustomerActiveOrdersDtoOutputOrdersInnerDelivery> {
+class _$CustomerActiveOrdersDtoOutputOrdersInnerDeliverySerializer
+    implements
+        PrimitiveSerializer<CustomerActiveOrdersDtoOutputOrdersInnerDelivery> {
   @override
-  final Iterable<Type> types = const [CustomerActiveOrdersDtoOutputOrdersInnerDelivery, _$CustomerActiveOrdersDtoOutputOrdersInnerDelivery];
+  final Iterable<Type> types = const [
+    CustomerActiveOrdersDtoOutputOrdersInnerDelivery,
+    _$CustomerActiveOrdersDtoOutputOrdersInnerDelivery,
+  ];
 
   @override
   final String wireName = r'CustomerActiveOrdersDtoOutputOrdersInnerDelivery';
@@ -61,12 +77,16 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerDeliverySerializer implements Pr
     yield r'received';
     yield serializers.serialize(
       object.received,
-      specifiedType: const FullType(BuiltList, [FullType.nullable(CaptainWentOfflineDtoOutputHandIn)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+      ]),
     );
     yield r'change';
     yield serializers.serialize(
       object.change,
-      specifiedType: const FullType(BuiltList, [FullType.nullable(CaptainWentOfflineDtoOutputHandIn)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+      ]),
     );
   }
 
@@ -76,7 +96,11 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerDeliverySerializer implements Pr
     CustomerActiveOrdersDtoOutputOrdersInnerDelivery object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -92,24 +116,34 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerDeliverySerializer implements Pr
       final value = serializedList[i + 1];
       switch (key) {
         case r'at':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.at = valueDes;
           break;
         case r'received':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType.nullable(CaptainWentOfflineDtoOutputHandIn)]),
-          ) as BuiltList<CaptainWentOfflineDtoOutputHandIn?>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+                    ]),
+                  )
+                  as BuiltList<CaptainWentOfflineDtoOutputHandIn?>;
           result.received.replace(valueDes);
           break;
         case r'change':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType.nullable(CaptainWentOfflineDtoOutputHandIn)]),
-          ) as BuiltList<CaptainWentOfflineDtoOutputHandIn?>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+                    ]),
+                  )
+                  as BuiltList<CaptainWentOfflineDtoOutputHandIn?>;
           result.change.replace(valueDes);
           break;
         default:
@@ -140,5 +174,3 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerDeliverySerializer implements Pr
     return result.build();
   }
 }
-
-

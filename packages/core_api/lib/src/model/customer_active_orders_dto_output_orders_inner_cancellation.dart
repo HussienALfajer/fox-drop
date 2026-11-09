@@ -11,11 +11,16 @@ part 'customer_active_orders_dto_output_orders_inner_cancellation.g.dart';
 /// While cancelled (CU §11.9).
 ///
 /// Properties:
-/// * [at] 
+/// * [at]
 /// * [reason] - The code, such as merchant_auto_cancel (CU §11.9).
 /// * [text] - What the customer sees (CU Appendix C), from Content as it was at the cancellation.
 @BuiltValue()
-abstract class CustomerActiveOrdersDtoOutputOrdersInnerCancellation implements Built<CustomerActiveOrdersDtoOutputOrdersInnerCancellation, CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder> {
+abstract class CustomerActiveOrdersDtoOutputOrdersInnerCancellation
+    implements
+        Built<
+          CustomerActiveOrdersDtoOutputOrdersInnerCancellation,
+          CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder
+        > {
   @BuiltValueField(wireName: r'at')
   DateTime get at;
 
@@ -29,21 +34,35 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerCancellation implements B
 
   CustomerActiveOrdersDtoOutputOrdersInnerCancellation._();
 
-  factory CustomerActiveOrdersDtoOutputOrdersInnerCancellation([void updates(CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder b)]) = _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation;
+  factory CustomerActiveOrdersDtoOutputOrdersInnerCancellation([
+    void updates(CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder b),
+  ]) = _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder b) => b;
+  static void _defaults(
+    CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerCancellation> get serializer => _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationSerializer();
+  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerCancellation>
+  get serializer =>
+      _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationSerializer();
 }
 
-class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationSerializer implements PrimitiveSerializer<CustomerActiveOrdersDtoOutputOrdersInnerCancellation> {
+class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationSerializer
+    implements
+        PrimitiveSerializer<
+          CustomerActiveOrdersDtoOutputOrdersInnerCancellation
+        > {
   @override
-  final Iterable<Type> types = const [CustomerActiveOrdersDtoOutputOrdersInnerCancellation, _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation];
+  final Iterable<Type> types = const [
+    CustomerActiveOrdersDtoOutputOrdersInnerCancellation,
+    _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation,
+  ];
 
   @override
-  final String wireName = r'CustomerActiveOrdersDtoOutputOrdersInnerCancellation';
+  final String wireName =
+      r'CustomerActiveOrdersDtoOutputOrdersInnerCancellation';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
@@ -73,7 +92,11 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationSerializer implement
     CustomerActiveOrdersDtoOutputOrdersInnerCancellation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -89,24 +112,30 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationSerializer implement
       final value = serializedList[i + 1];
       switch (key) {
         case r'at':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.at = valueDes;
           break;
         case r'reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.reason = valueDes;
           break;
         case r'text':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.text = valueDes;
           break;
         default:
@@ -123,7 +152,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationSerializer implement
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder();
+    final result =
+        CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
@@ -137,5 +167,3 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationSerializer implement
     return result.build();
   }
 }
-
-

@@ -14,9 +14,11 @@ part 'customer_location_dto_output.g.dart';
 ///
 /// Properties:
 /// * [state] - CU §7.1: the home screen; «لا توجد مطاعم توصل إلى موقعك حالياً»; «قريباً في منطقتك» with the vote.
-/// * [zone] 
+/// * [zone]
 @BuiltValue()
-abstract class CustomerLocationDtoOutput implements Built<CustomerLocationDtoOutput, CustomerLocationDtoOutputBuilder> {
+abstract class CustomerLocationDtoOutput
+    implements
+        Built<CustomerLocationDtoOutput, CustomerLocationDtoOutputBuilder> {
   /// CU §7.1: the home screen; «لا توجد مطاعم توصل إلى موقعك حالياً»; «قريباً في منطقتك» with the vote.
   @BuiltValueField(wireName: r'state')
   CustomerLocationDtoOutputStateEnum get state;
@@ -27,18 +29,25 @@ abstract class CustomerLocationDtoOutput implements Built<CustomerLocationDtoOut
 
   CustomerLocationDtoOutput._();
 
-  factory CustomerLocationDtoOutput([void updates(CustomerLocationDtoOutputBuilder b)]) = _$CustomerLocationDtoOutput;
+  factory CustomerLocationDtoOutput([
+    void updates(CustomerLocationDtoOutputBuilder b),
+  ]) = _$CustomerLocationDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerLocationDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerLocationDtoOutput> get serializer => _$CustomerLocationDtoOutputSerializer();
+  static Serializer<CustomerLocationDtoOutput> get serializer =>
+      _$CustomerLocationDtoOutputSerializer();
 }
 
-class _$CustomerLocationDtoOutputSerializer implements PrimitiveSerializer<CustomerLocationDtoOutput> {
+class _$CustomerLocationDtoOutputSerializer
+    implements PrimitiveSerializer<CustomerLocationDtoOutput> {
   @override
-  final Iterable<Type> types = const [CustomerLocationDtoOutput, _$CustomerLocationDtoOutput];
+  final Iterable<Type> types = const [
+    CustomerLocationDtoOutput,
+    _$CustomerLocationDtoOutput,
+  ];
 
   @override
   final String wireName = r'CustomerLocationDtoOutput';
@@ -54,10 +63,14 @@ class _$CustomerLocationDtoOutputSerializer implements PrimitiveSerializer<Custo
       specifiedType: const FullType(CustomerLocationDtoOutputStateEnum),
     );
     yield r'zone';
-    yield object.zone == null ? null : serializers.serialize(
-      object.zone,
-      specifiedType: const FullType.nullable(CustomerLocationDtoOutputZone),
-    );
+    yield object.zone == null
+        ? null
+        : serializers.serialize(
+            object.zone,
+            specifiedType: const FullType.nullable(
+              CustomerLocationDtoOutputZone,
+            ),
+          );
   }
 
   @override
@@ -66,7 +79,11 @@ class _$CustomerLocationDtoOutputSerializer implements PrimitiveSerializer<Custo
     CustomerLocationDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -82,17 +99,25 @@ class _$CustomerLocationDtoOutputSerializer implements PrimitiveSerializer<Custo
       final value = serializedList[i + 1];
       switch (key) {
         case r'state':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CustomerLocationDtoOutputStateEnum),
-          ) as CustomerLocationDtoOutputStateEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CustomerLocationDtoOutputStateEnum,
+                    ),
+                  )
+                  as CustomerLocationDtoOutputStateEnum;
           result.state = valueDes;
           break;
         case r'zone':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(CustomerLocationDtoOutputZone),
-          ) as CustomerLocationDtoOutputZone?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerLocationDtoOutputZone,
+                    ),
+                  )
+                  as CustomerLocationDtoOutputZone?;
           if (valueDes == null) continue;
           result.zone.replace(valueDes);
           break;
@@ -125,22 +150,25 @@ class _$CustomerLocationDtoOutputSerializer implements PrimitiveSerializer<Custo
   }
 }
 
-
 /// CU §7.1: the home screen; «لا توجد مطاعم توصل إلى موقعك حالياً»; «قريباً في منطقتك» with the vote.
 class CustomerLocationDtoOutputStateEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'served')
-  static const CustomerLocationDtoOutputStateEnum served = _$customerLocationDtoOutputStateEnum_served;
+  static const CustomerLocationDtoOutputStateEnum served =
+      _$customerLocationDtoOutputStateEnum_served;
   @BuiltValueEnumConst(wireName: r'no_restaurants')
-  static const CustomerLocationDtoOutputStateEnum noRestaurants = _$customerLocationDtoOutputStateEnum_noRestaurants;
+  static const CustomerLocationDtoOutputStateEnum noRestaurants =
+      _$customerLocationDtoOutputStateEnum_noRestaurants;
   @BuiltValueEnumConst(wireName: r'outside_zones')
-  static const CustomerLocationDtoOutputStateEnum outsideZones = _$customerLocationDtoOutputStateEnum_outsideZones;
+  static const CustomerLocationDtoOutputStateEnum outsideZones =
+      _$customerLocationDtoOutputStateEnum_outsideZones;
 
-  static Serializer<CustomerLocationDtoOutputStateEnum> get serializer => _$customerLocationDtoOutputStateEnumSerializer;
+  static Serializer<CustomerLocationDtoOutputStateEnum> get serializer =>
+      _$customerLocationDtoOutputStateEnumSerializer;
 
-  const CustomerLocationDtoOutputStateEnum._(String name): super(name);
+  const CustomerLocationDtoOutputStateEnum._(String name) : super(name);
 
-  static BuiltSet<CustomerLocationDtoOutputStateEnum> get values => _$customerLocationDtoOutputStateEnumValues;
-  static CustomerLocationDtoOutputStateEnum valueOf(String name) => _$customerLocationDtoOutputStateEnumValueOf(name);
+  static BuiltSet<CustomerLocationDtoOutputStateEnum> get values =>
+      _$customerLocationDtoOutputStateEnumValues;
+  static CustomerLocationDtoOutputStateEnum valueOf(String name) =>
+      _$customerLocationDtoOutputStateEnumValueOf(name);
 }
-

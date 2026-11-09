@@ -15,25 +15,32 @@ part 'admin_cities_dto_output.g.dart';
 /// Properties:
 /// * [cities] - The active cities, by name.
 @BuiltValue()
-abstract class AdminCitiesDtoOutput implements Built<AdminCitiesDtoOutput, AdminCitiesDtoOutputBuilder> {
+abstract class AdminCitiesDtoOutput
+    implements Built<AdminCitiesDtoOutput, AdminCitiesDtoOutputBuilder> {
   /// The active cities, by name.
   @BuiltValueField(wireName: r'cities')
   BuiltList<AdminCitiesDtoOutputCitiesInner> get cities;
 
   AdminCitiesDtoOutput._();
 
-  factory AdminCitiesDtoOutput([void updates(AdminCitiesDtoOutputBuilder b)]) = _$AdminCitiesDtoOutput;
+  factory AdminCitiesDtoOutput([void updates(AdminCitiesDtoOutputBuilder b)]) =
+      _$AdminCitiesDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminCitiesDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminCitiesDtoOutput> get serializer => _$AdminCitiesDtoOutputSerializer();
+  static Serializer<AdminCitiesDtoOutput> get serializer =>
+      _$AdminCitiesDtoOutputSerializer();
 }
 
-class _$AdminCitiesDtoOutputSerializer implements PrimitiveSerializer<AdminCitiesDtoOutput> {
+class _$AdminCitiesDtoOutputSerializer
+    implements PrimitiveSerializer<AdminCitiesDtoOutput> {
   @override
-  final Iterable<Type> types = const [AdminCitiesDtoOutput, _$AdminCitiesDtoOutput];
+  final Iterable<Type> types = const [
+    AdminCitiesDtoOutput,
+    _$AdminCitiesDtoOutput,
+  ];
 
   @override
   final String wireName = r'AdminCitiesDtoOutput';
@@ -46,7 +53,9 @@ class _$AdminCitiesDtoOutputSerializer implements PrimitiveSerializer<AdminCitie
     yield r'cities';
     yield serializers.serialize(
       object.cities,
-      specifiedType: const FullType(BuiltList, [FullType(AdminCitiesDtoOutputCitiesInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminCitiesDtoOutputCitiesInner),
+      ]),
     );
   }
 
@@ -56,7 +65,11 @@ class _$AdminCitiesDtoOutputSerializer implements PrimitiveSerializer<AdminCitie
     AdminCitiesDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -72,10 +85,14 @@ class _$AdminCitiesDtoOutputSerializer implements PrimitiveSerializer<AdminCitie
       final value = serializedList[i + 1];
       switch (key) {
         case r'cities':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(AdminCitiesDtoOutputCitiesInner)]),
-          ) as BuiltList<AdminCitiesDtoOutputCitiesInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminCitiesDtoOutputCitiesInner),
+                    ]),
+                  )
+                  as BuiltList<AdminCitiesDtoOutputCitiesInner>;
           result.cities.replace(valueDes);
           break;
         default:
@@ -106,5 +123,3 @@ class _$AdminCitiesDtoOutputSerializer implements PrimitiveSerializer<AdminCitie
     return result.build();
   }
 }
-
-

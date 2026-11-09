@@ -11,10 +11,15 @@ part 'merchant_status_dto_output_busy_mode.g.dart';
 /// Busy mode while on (RA §7.3), until the end of the opening period.
 ///
 /// Properties:
-/// * [extraMin] 
-/// * [until] 
+/// * [extraMin]
+/// * [until]
 @BuiltValue()
-abstract class MerchantStatusDtoOutputBusyMode implements Built<MerchantStatusDtoOutputBusyMode, MerchantStatusDtoOutputBusyModeBuilder> {
+abstract class MerchantStatusDtoOutputBusyMode
+    implements
+        Built<
+          MerchantStatusDtoOutputBusyMode,
+          MerchantStatusDtoOutputBusyModeBuilder
+        > {
   @BuiltValueField(wireName: r'extraMin')
   int get extraMin;
 
@@ -23,18 +28,25 @@ abstract class MerchantStatusDtoOutputBusyMode implements Built<MerchantStatusDt
 
   MerchantStatusDtoOutputBusyMode._();
 
-  factory MerchantStatusDtoOutputBusyMode([void updates(MerchantStatusDtoOutputBusyModeBuilder b)]) = _$MerchantStatusDtoOutputBusyMode;
+  factory MerchantStatusDtoOutputBusyMode([
+    void updates(MerchantStatusDtoOutputBusyModeBuilder b),
+  ]) = _$MerchantStatusDtoOutputBusyMode;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantStatusDtoOutputBusyModeBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantStatusDtoOutputBusyMode> get serializer => _$MerchantStatusDtoOutputBusyModeSerializer();
+  static Serializer<MerchantStatusDtoOutputBusyMode> get serializer =>
+      _$MerchantStatusDtoOutputBusyModeSerializer();
 }
 
-class _$MerchantStatusDtoOutputBusyModeSerializer implements PrimitiveSerializer<MerchantStatusDtoOutputBusyMode> {
+class _$MerchantStatusDtoOutputBusyModeSerializer
+    implements PrimitiveSerializer<MerchantStatusDtoOutputBusyMode> {
   @override
-  final Iterable<Type> types = const [MerchantStatusDtoOutputBusyMode, _$MerchantStatusDtoOutputBusyMode];
+  final Iterable<Type> types = const [
+    MerchantStatusDtoOutputBusyMode,
+    _$MerchantStatusDtoOutputBusyMode,
+  ];
 
   @override
   final String wireName = r'MerchantStatusDtoOutputBusyMode';
@@ -62,7 +74,11 @@ class _$MerchantStatusDtoOutputBusyModeSerializer implements PrimitiveSerializer
     MerchantStatusDtoOutputBusyMode object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -78,17 +94,18 @@ class _$MerchantStatusDtoOutputBusyModeSerializer implements PrimitiveSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'extraMin':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.extraMin = valueDes;
           break;
         case r'until':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.until = valueDes;
           break;
         default:
@@ -119,5 +136,3 @@ class _$MerchantStatusDtoOutputBusyModeSerializer implements PrimitiveSerializer
     return result.build();
   }
 }
-
-

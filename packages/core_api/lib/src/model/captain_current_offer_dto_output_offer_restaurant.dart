@@ -12,11 +12,16 @@ part 'captain_current_offer_dto_output_offer_restaurant.g.dart';
 /// CaptainCurrentOfferDtoOutputOfferRestaurant
 ///
 /// Properties:
-/// * [name] 
-/// * [location] 
+/// * [name]
+/// * [location]
 /// * [distanceMetres] - From the captain, by road, when the offer opened.
 @BuiltValue()
-abstract class CaptainCurrentOfferDtoOutputOfferRestaurant implements Built<CaptainCurrentOfferDtoOutputOfferRestaurant, CaptainCurrentOfferDtoOutputOfferRestaurantBuilder> {
+abstract class CaptainCurrentOfferDtoOutputOfferRestaurant
+    implements
+        Built<
+          CaptainCurrentOfferDtoOutputOfferRestaurant,
+          CaptainCurrentOfferDtoOutputOfferRestaurantBuilder
+        > {
   @BuiltValueField(wireName: r'name')
   String get name;
 
@@ -29,18 +34,27 @@ abstract class CaptainCurrentOfferDtoOutputOfferRestaurant implements Built<Capt
 
   CaptainCurrentOfferDtoOutputOfferRestaurant._();
 
-  factory CaptainCurrentOfferDtoOutputOfferRestaurant([void updates(CaptainCurrentOfferDtoOutputOfferRestaurantBuilder b)]) = _$CaptainCurrentOfferDtoOutputOfferRestaurant;
+  factory CaptainCurrentOfferDtoOutputOfferRestaurant([
+    void updates(CaptainCurrentOfferDtoOutputOfferRestaurantBuilder b),
+  ]) = _$CaptainCurrentOfferDtoOutputOfferRestaurant;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CaptainCurrentOfferDtoOutputOfferRestaurantBuilder b) => b;
+  static void _defaults(CaptainCurrentOfferDtoOutputOfferRestaurantBuilder b) =>
+      b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainCurrentOfferDtoOutputOfferRestaurant> get serializer => _$CaptainCurrentOfferDtoOutputOfferRestaurantSerializer();
+  static Serializer<CaptainCurrentOfferDtoOutputOfferRestaurant>
+  get serializer => _$CaptainCurrentOfferDtoOutputOfferRestaurantSerializer();
 }
 
-class _$CaptainCurrentOfferDtoOutputOfferRestaurantSerializer implements PrimitiveSerializer<CaptainCurrentOfferDtoOutputOfferRestaurant> {
+class _$CaptainCurrentOfferDtoOutputOfferRestaurantSerializer
+    implements
+        PrimitiveSerializer<CaptainCurrentOfferDtoOutputOfferRestaurant> {
   @override
-  final Iterable<Type> types = const [CaptainCurrentOfferDtoOutputOfferRestaurant, _$CaptainCurrentOfferDtoOutputOfferRestaurant];
+  final Iterable<Type> types = const [
+    CaptainCurrentOfferDtoOutputOfferRestaurant,
+    _$CaptainCurrentOfferDtoOutputOfferRestaurant,
+  ];
 
   @override
   final String wireName = r'CaptainCurrentOfferDtoOutputOfferRestaurant';
@@ -58,7 +72,9 @@ class _$CaptainCurrentOfferDtoOutputOfferRestaurantSerializer implements Primiti
     yield r'location';
     yield serializers.serialize(
       object.location,
-      specifiedType: const FullType(CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation),
+      specifiedType: const FullType(
+        CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
+      ),
     );
     yield r'distanceMetres';
     yield serializers.serialize(
@@ -73,7 +89,11 @@ class _$CaptainCurrentOfferDtoOutputOfferRestaurantSerializer implements Primiti
     CaptainCurrentOfferDtoOutputOfferRestaurant object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -89,24 +109,29 @@ class _$CaptainCurrentOfferDtoOutputOfferRestaurantSerializer implements Primiti
       final value = serializedList[i + 1];
       switch (key) {
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'location':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation),
-          ) as CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
+                    ),
+                  )
+                  as CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation;
           result.location.replace(valueDes);
           break;
         case r'distanceMetres':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.distanceMetres = valueDes;
           break;
         default:
@@ -137,5 +162,3 @@ class _$CaptainCurrentOfferDtoOutputOfferRestaurantSerializer implements Primiti
     return result.build();
   }
 }
-
-

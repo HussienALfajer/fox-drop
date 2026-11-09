@@ -11,10 +11,11 @@ part 'contact_dto_output.g.dart';
 /// The support phone and WhatsApp numbers in E.164, when set (AP §9.13).
 ///
 /// Properties:
-/// * [phone] 
-/// * [whatsapp] 
+/// * [phone]
+/// * [whatsapp]
 @BuiltValue()
-abstract class ContactDtoOutput implements Built<ContactDtoOutput, ContactDtoOutputBuilder> {
+abstract class ContactDtoOutput
+    implements Built<ContactDtoOutput, ContactDtoOutputBuilder> {
   @BuiltValueField(wireName: r'phone')
   String? get phone;
 
@@ -23,16 +24,19 @@ abstract class ContactDtoOutput implements Built<ContactDtoOutput, ContactDtoOut
 
   ContactDtoOutput._();
 
-  factory ContactDtoOutput([void updates(ContactDtoOutputBuilder b)]) = _$ContactDtoOutput;
+  factory ContactDtoOutput([void updates(ContactDtoOutputBuilder b)]) =
+      _$ContactDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ContactDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ContactDtoOutput> get serializer => _$ContactDtoOutputSerializer();
+  static Serializer<ContactDtoOutput> get serializer =>
+      _$ContactDtoOutputSerializer();
 }
 
-class _$ContactDtoOutputSerializer implements PrimitiveSerializer<ContactDtoOutput> {
+class _$ContactDtoOutputSerializer
+    implements PrimitiveSerializer<ContactDtoOutput> {
   @override
   final Iterable<Type> types = const [ContactDtoOutput, _$ContactDtoOutput];
 
@@ -66,7 +70,11 @@ class _$ContactDtoOutputSerializer implements PrimitiveSerializer<ContactDtoOutp
     ContactDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -82,18 +90,22 @@ class _$ContactDtoOutputSerializer implements PrimitiveSerializer<ContactDtoOutp
       final value = serializedList[i + 1];
       switch (key) {
         case r'phone':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.phone = valueDes;
           break;
         case r'whatsapp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.whatsapp = valueDes;
           break;
@@ -125,5 +137,3 @@ class _$ContactDtoOutputSerializer implements PrimitiveSerializer<ContactDtoOutp
     return result.build();
   }
 }
-
-

@@ -13,25 +13,37 @@ part 'captain_locations_saved_dto_output.g.dart';
 /// Properties:
 /// * [accepted] - The new points kept.
 @BuiltValue()
-abstract class CaptainLocationsSavedDtoOutput implements Built<CaptainLocationsSavedDtoOutput, CaptainLocationsSavedDtoOutputBuilder> {
+abstract class CaptainLocationsSavedDtoOutput
+    implements
+        Built<
+          CaptainLocationsSavedDtoOutput,
+          CaptainLocationsSavedDtoOutputBuilder
+        > {
   /// The new points kept.
   @BuiltValueField(wireName: r'accepted')
   int get accepted;
 
   CaptainLocationsSavedDtoOutput._();
 
-  factory CaptainLocationsSavedDtoOutput([void updates(CaptainLocationsSavedDtoOutputBuilder b)]) = _$CaptainLocationsSavedDtoOutput;
+  factory CaptainLocationsSavedDtoOutput([
+    void updates(CaptainLocationsSavedDtoOutputBuilder b),
+  ]) = _$CaptainLocationsSavedDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainLocationsSavedDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainLocationsSavedDtoOutput> get serializer => _$CaptainLocationsSavedDtoOutputSerializer();
+  static Serializer<CaptainLocationsSavedDtoOutput> get serializer =>
+      _$CaptainLocationsSavedDtoOutputSerializer();
 }
 
-class _$CaptainLocationsSavedDtoOutputSerializer implements PrimitiveSerializer<CaptainLocationsSavedDtoOutput> {
+class _$CaptainLocationsSavedDtoOutputSerializer
+    implements PrimitiveSerializer<CaptainLocationsSavedDtoOutput> {
   @override
-  final Iterable<Type> types = const [CaptainLocationsSavedDtoOutput, _$CaptainLocationsSavedDtoOutput];
+  final Iterable<Type> types = const [
+    CaptainLocationsSavedDtoOutput,
+    _$CaptainLocationsSavedDtoOutput,
+  ];
 
   @override
   final String wireName = r'CaptainLocationsSavedDtoOutput';
@@ -54,7 +66,11 @@ class _$CaptainLocationsSavedDtoOutputSerializer implements PrimitiveSerializer<
     CaptainLocationsSavedDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -70,10 +86,9 @@ class _$CaptainLocationsSavedDtoOutputSerializer implements PrimitiveSerializer<
       final value = serializedList[i + 1];
       switch (key) {
         case r'accepted':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.accepted = valueDes;
           break;
         default:
@@ -104,5 +119,3 @@ class _$CaptainLocationsSavedDtoOutputSerializer implements PrimitiveSerializer<
     return result.build();
   }
 }
-
-

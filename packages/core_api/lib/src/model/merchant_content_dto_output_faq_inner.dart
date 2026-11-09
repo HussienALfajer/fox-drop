@@ -11,10 +11,15 @@ part 'merchant_content_dto_output_faq_inner.g.dart';
 /// MerchantContentDtoOutputFaqInner
 ///
 /// Properties:
-/// * [question] 
-/// * [answer] 
+/// * [question]
+/// * [answer]
 @BuiltValue()
-abstract class MerchantContentDtoOutputFaqInner implements Built<MerchantContentDtoOutputFaqInner, MerchantContentDtoOutputFaqInnerBuilder> {
+abstract class MerchantContentDtoOutputFaqInner
+    implements
+        Built<
+          MerchantContentDtoOutputFaqInner,
+          MerchantContentDtoOutputFaqInnerBuilder
+        > {
   @BuiltValueField(wireName: r'question')
   String get question;
 
@@ -23,18 +28,25 @@ abstract class MerchantContentDtoOutputFaqInner implements Built<MerchantContent
 
   MerchantContentDtoOutputFaqInner._();
 
-  factory MerchantContentDtoOutputFaqInner([void updates(MerchantContentDtoOutputFaqInnerBuilder b)]) = _$MerchantContentDtoOutputFaqInner;
+  factory MerchantContentDtoOutputFaqInner([
+    void updates(MerchantContentDtoOutputFaqInnerBuilder b),
+  ]) = _$MerchantContentDtoOutputFaqInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantContentDtoOutputFaqInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantContentDtoOutputFaqInner> get serializer => _$MerchantContentDtoOutputFaqInnerSerializer();
+  static Serializer<MerchantContentDtoOutputFaqInner> get serializer =>
+      _$MerchantContentDtoOutputFaqInnerSerializer();
 }
 
-class _$MerchantContentDtoOutputFaqInnerSerializer implements PrimitiveSerializer<MerchantContentDtoOutputFaqInner> {
+class _$MerchantContentDtoOutputFaqInnerSerializer
+    implements PrimitiveSerializer<MerchantContentDtoOutputFaqInner> {
   @override
-  final Iterable<Type> types = const [MerchantContentDtoOutputFaqInner, _$MerchantContentDtoOutputFaqInner];
+  final Iterable<Type> types = const [
+    MerchantContentDtoOutputFaqInner,
+    _$MerchantContentDtoOutputFaqInner,
+  ];
 
   @override
   final String wireName = r'MerchantContentDtoOutputFaqInner';
@@ -62,7 +74,11 @@ class _$MerchantContentDtoOutputFaqInnerSerializer implements PrimitiveSerialize
     MerchantContentDtoOutputFaqInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -78,17 +94,21 @@ class _$MerchantContentDtoOutputFaqInnerSerializer implements PrimitiveSerialize
       final value = serializedList[i + 1];
       switch (key) {
         case r'question':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.question = valueDes;
           break;
         case r'answer':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.answer = valueDes;
           break;
         default:
@@ -119,5 +139,3 @@ class _$MerchantContentDtoOutputFaqInnerSerializer implements PrimitiveSerialize
     return result.build();
   }
 }
-
-

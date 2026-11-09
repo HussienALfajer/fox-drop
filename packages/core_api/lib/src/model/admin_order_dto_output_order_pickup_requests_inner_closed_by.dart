@@ -11,11 +11,16 @@ part 'admin_order_dto_output_order_pickup_requests_inner_closed_by.g.dart';
 /// AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy
 ///
 /// Properties:
-/// * [type] 
-/// * [id] 
+/// * [type]
+/// * [id]
 /// * [device] - The restaurant's app installation.
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy implements Built<AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy, AdminOrderDtoOutputOrderPickupRequestsInnerClosedByBuilder> {
+abstract class AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy
+    implements
+        Built<
+          AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy,
+          AdminOrderDtoOutputOrderPickupRequestsInnerClosedByBuilder
+        > {
   @BuiltValueField(wireName: r'type')
   String get type;
 
@@ -28,21 +33,35 @@ abstract class AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy implements Bu
 
   AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy._();
 
-  factory AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy([void updates(AdminOrderDtoOutputOrderPickupRequestsInnerClosedByBuilder b)]) = _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy;
+  factory AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy([
+    void updates(AdminOrderDtoOutputOrderPickupRequestsInnerClosedByBuilder b),
+  ]) = _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminOrderDtoOutputOrderPickupRequestsInnerClosedByBuilder b) => b;
+  static void _defaults(
+    AdminOrderDtoOutputOrderPickupRequestsInnerClosedByBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy> get serializer => _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBySerializer();
+  static Serializer<AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy>
+  get serializer =>
+      _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBySerializer();
 }
 
-class _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBySerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy> {
+class _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBySerializer
+    implements
+        PrimitiveSerializer<
+          AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy
+        > {
   @override
-  final Iterable<Type> types = const [AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy, _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy];
+  final Iterable<Type> types = const [
+    AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy,
+    _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy,
+  ];
 
   @override
-  final String wireName = r'AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy';
+  final String wireName =
+      r'AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
@@ -55,15 +74,19 @@ class _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBySerializer implements
       specifiedType: const FullType(String),
     );
     yield r'id';
-    yield object.id == null ? null : serializers.serialize(
-      object.id,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.id == null
+        ? null
+        : serializers.serialize(
+            object.id,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'device';
-    yield object.device == null ? null : serializers.serialize(
-      object.device,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.device == null
+        ? null
+        : serializers.serialize(
+            object.device,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -72,7 +95,11 @@ class _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBySerializer implements
     AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,25 +115,31 @@ class _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBySerializer implements
       final value = serializedList[i + 1];
       switch (key) {
         case r'type':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.type = valueDes;
           break;
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.id = valueDes;
           break;
         case r'device':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.device = valueDes;
           break;
@@ -138,5 +171,3 @@ class _$AdminOrderDtoOutputOrderPickupRequestsInnerClosedBySerializer implements
     return result.build();
   }
 }
-
-

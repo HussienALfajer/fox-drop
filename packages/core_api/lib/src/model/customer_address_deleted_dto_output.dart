@@ -12,27 +12,39 @@ part 'customer_address_deleted_dto_output.g.dart';
 /// CustomerAddressDeletedDtoOutput
 ///
 /// Properties:
-/// * [status] 
+/// * [status]
 @BuiltValue()
-abstract class CustomerAddressDeletedDtoOutput implements Built<CustomerAddressDeletedDtoOutput, CustomerAddressDeletedDtoOutputBuilder> {
+abstract class CustomerAddressDeletedDtoOutput
+    implements
+        Built<
+          CustomerAddressDeletedDtoOutput,
+          CustomerAddressDeletedDtoOutputBuilder
+        > {
   @BuiltValueField(wireName: r'status')
   CustomerAddressDeletedDtoOutputStatusEnum get status;
   // enum statusEnum {  deleted,  };
 
   CustomerAddressDeletedDtoOutput._();
 
-  factory CustomerAddressDeletedDtoOutput([void updates(CustomerAddressDeletedDtoOutputBuilder b)]) = _$CustomerAddressDeletedDtoOutput;
+  factory CustomerAddressDeletedDtoOutput([
+    void updates(CustomerAddressDeletedDtoOutputBuilder b),
+  ]) = _$CustomerAddressDeletedDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerAddressDeletedDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerAddressDeletedDtoOutput> get serializer => _$CustomerAddressDeletedDtoOutputSerializer();
+  static Serializer<CustomerAddressDeletedDtoOutput> get serializer =>
+      _$CustomerAddressDeletedDtoOutputSerializer();
 }
 
-class _$CustomerAddressDeletedDtoOutputSerializer implements PrimitiveSerializer<CustomerAddressDeletedDtoOutput> {
+class _$CustomerAddressDeletedDtoOutputSerializer
+    implements PrimitiveSerializer<CustomerAddressDeletedDtoOutput> {
   @override
-  final Iterable<Type> types = const [CustomerAddressDeletedDtoOutput, _$CustomerAddressDeletedDtoOutput];
+  final Iterable<Type> types = const [
+    CustomerAddressDeletedDtoOutput,
+    _$CustomerAddressDeletedDtoOutput,
+  ];
 
   @override
   final String wireName = r'CustomerAddressDeletedDtoOutput';
@@ -55,7 +67,11 @@ class _$CustomerAddressDeletedDtoOutputSerializer implements PrimitiveSerializer
     CustomerAddressDeletedDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -71,10 +87,14 @@ class _$CustomerAddressDeletedDtoOutputSerializer implements PrimitiveSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'status':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CustomerAddressDeletedDtoOutputStatusEnum),
-          ) as CustomerAddressDeletedDtoOutputStatusEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CustomerAddressDeletedDtoOutputStatusEnum,
+                    ),
+                  )
+                  as CustomerAddressDeletedDtoOutputStatusEnum;
           result.status = valueDes;
           break;
         default:
@@ -106,17 +126,18 @@ class _$CustomerAddressDeletedDtoOutputSerializer implements PrimitiveSerializer
   }
 }
 
-
 class CustomerAddressDeletedDtoOutputStatusEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'deleted')
-  static const CustomerAddressDeletedDtoOutputStatusEnum deleted = _$customerAddressDeletedDtoOutputStatusEnum_deleted;
+  static const CustomerAddressDeletedDtoOutputStatusEnum deleted =
+      _$customerAddressDeletedDtoOutputStatusEnum_deleted;
 
-  static Serializer<CustomerAddressDeletedDtoOutputStatusEnum> get serializer => _$customerAddressDeletedDtoOutputStatusEnumSerializer;
+  static Serializer<CustomerAddressDeletedDtoOutputStatusEnum> get serializer =>
+      _$customerAddressDeletedDtoOutputStatusEnumSerializer;
 
-  const CustomerAddressDeletedDtoOutputStatusEnum._(String name): super(name);
+  const CustomerAddressDeletedDtoOutputStatusEnum._(String name) : super(name);
 
-  static BuiltSet<CustomerAddressDeletedDtoOutputStatusEnum> get values => _$customerAddressDeletedDtoOutputStatusEnumValues;
-  static CustomerAddressDeletedDtoOutputStatusEnum valueOf(String name) => _$customerAddressDeletedDtoOutputStatusEnumValueOf(name);
+  static BuiltSet<CustomerAddressDeletedDtoOutputStatusEnum> get values =>
+      _$customerAddressDeletedDtoOutputStatusEnumValues;
+  static CustomerAddressDeletedDtoOutputStatusEnum valueOf(String name) =>
+      _$customerAddressDeletedDtoOutputStatusEnumValueOf(name);
 }
-

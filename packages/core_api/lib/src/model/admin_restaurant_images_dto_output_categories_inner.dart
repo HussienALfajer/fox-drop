@@ -13,11 +13,16 @@ part 'admin_restaurant_images_dto_output_categories_inner.g.dart';
 /// AdminRestaurantImagesDtoOutputCategoriesInner
 ///
 /// Properties:
-/// * [id] 
-/// * [name] 
-/// * [items] 
+/// * [id]
+/// * [name]
+/// * [items]
 @BuiltValue()
-abstract class AdminRestaurantImagesDtoOutputCategoriesInner implements Built<AdminRestaurantImagesDtoOutputCategoriesInner, AdminRestaurantImagesDtoOutputCategoriesInnerBuilder> {
+abstract class AdminRestaurantImagesDtoOutputCategoriesInner
+    implements
+        Built<
+          AdminRestaurantImagesDtoOutputCategoriesInner,
+          AdminRestaurantImagesDtoOutputCategoriesInnerBuilder
+        > {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -29,18 +34,28 @@ abstract class AdminRestaurantImagesDtoOutputCategoriesInner implements Built<Ad
 
   AdminRestaurantImagesDtoOutputCategoriesInner._();
 
-  factory AdminRestaurantImagesDtoOutputCategoriesInner([void updates(AdminRestaurantImagesDtoOutputCategoriesInnerBuilder b)]) = _$AdminRestaurantImagesDtoOutputCategoriesInner;
+  factory AdminRestaurantImagesDtoOutputCategoriesInner([
+    void updates(AdminRestaurantImagesDtoOutputCategoriesInnerBuilder b),
+  ]) = _$AdminRestaurantImagesDtoOutputCategoriesInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminRestaurantImagesDtoOutputCategoriesInnerBuilder b) => b;
+  static void _defaults(
+    AdminRestaurantImagesDtoOutputCategoriesInnerBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRestaurantImagesDtoOutputCategoriesInner> get serializer => _$AdminRestaurantImagesDtoOutputCategoriesInnerSerializer();
+  static Serializer<AdminRestaurantImagesDtoOutputCategoriesInner>
+  get serializer => _$AdminRestaurantImagesDtoOutputCategoriesInnerSerializer();
 }
 
-class _$AdminRestaurantImagesDtoOutputCategoriesInnerSerializer implements PrimitiveSerializer<AdminRestaurantImagesDtoOutputCategoriesInner> {
+class _$AdminRestaurantImagesDtoOutputCategoriesInnerSerializer
+    implements
+        PrimitiveSerializer<AdminRestaurantImagesDtoOutputCategoriesInner> {
   @override
-  final Iterable<Type> types = const [AdminRestaurantImagesDtoOutputCategoriesInner, _$AdminRestaurantImagesDtoOutputCategoriesInner];
+  final Iterable<Type> types = const [
+    AdminRestaurantImagesDtoOutputCategoriesInner,
+    _$AdminRestaurantImagesDtoOutputCategoriesInner,
+  ];
 
   @override
   final String wireName = r'AdminRestaurantImagesDtoOutputCategoriesInner';
@@ -63,7 +78,9 @@ class _$AdminRestaurantImagesDtoOutputCategoriesInnerSerializer implements Primi
     yield r'items';
     yield serializers.serialize(
       object.items,
-      specifiedType: const FullType(BuiltList, [FullType(AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner),
+      ]),
     );
   }
 
@@ -73,7 +90,11 @@ class _$AdminRestaurantImagesDtoOutputCategoriesInnerSerializer implements Primi
     AdminRestaurantImagesDtoOutputCategoriesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -89,24 +110,36 @@ class _$AdminRestaurantImagesDtoOutputCategoriesInnerSerializer implements Primi
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'items':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner)]),
-          ) as BuiltList<AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(
+                        AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner,
+                      ),
+                    ]),
+                  )
+                  as BuiltList<
+                    AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner
+                  >;
           result.items.replace(valueDes);
           break;
         default:
@@ -137,5 +170,3 @@ class _$AdminRestaurantImagesDtoOutputCategoriesInnerSerializer implements Primi
     return result.build();
   }
 }
-
-

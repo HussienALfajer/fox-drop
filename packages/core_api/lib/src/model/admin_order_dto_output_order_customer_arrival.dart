@@ -12,10 +12,15 @@ part 'admin_order_dto_output_order_customer_arrival.g.dart';
 /// The captain at the customer (CA §9.6).
 ///
 /// Properties:
-/// * [at] 
-/// * [away] 
+/// * [at]
+/// * [away]
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderCustomerArrival implements Built<AdminOrderDtoOutputOrderCustomerArrival, AdminOrderDtoOutputOrderCustomerArrivalBuilder> {
+abstract class AdminOrderDtoOutputOrderCustomerArrival
+    implements
+        Built<
+          AdminOrderDtoOutputOrderCustomerArrival,
+          AdminOrderDtoOutputOrderCustomerArrivalBuilder
+        > {
   @BuiltValueField(wireName: r'at')
   DateTime get at;
 
@@ -24,18 +29,25 @@ abstract class AdminOrderDtoOutputOrderCustomerArrival implements Built<AdminOrd
 
   AdminOrderDtoOutputOrderCustomerArrival._();
 
-  factory AdminOrderDtoOutputOrderCustomerArrival([void updates(AdminOrderDtoOutputOrderCustomerArrivalBuilder b)]) = _$AdminOrderDtoOutputOrderCustomerArrival;
+  factory AdminOrderDtoOutputOrderCustomerArrival([
+    void updates(AdminOrderDtoOutputOrderCustomerArrivalBuilder b),
+  ]) = _$AdminOrderDtoOutputOrderCustomerArrival;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderDtoOutputOrderCustomerArrivalBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderCustomerArrival> get serializer => _$AdminOrderDtoOutputOrderCustomerArrivalSerializer();
+  static Serializer<AdminOrderDtoOutputOrderCustomerArrival> get serializer =>
+      _$AdminOrderDtoOutputOrderCustomerArrivalSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderCustomerArrivalSerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderCustomerArrival> {
+class _$AdminOrderDtoOutputOrderCustomerArrivalSerializer
+    implements PrimitiveSerializer<AdminOrderDtoOutputOrderCustomerArrival> {
   @override
-  final Iterable<Type> types = const [AdminOrderDtoOutputOrderCustomerArrival, _$AdminOrderDtoOutputOrderCustomerArrival];
+  final Iterable<Type> types = const [
+    AdminOrderDtoOutputOrderCustomerArrival,
+    _$AdminOrderDtoOutputOrderCustomerArrival,
+  ];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderCustomerArrival';
@@ -51,10 +63,14 @@ class _$AdminOrderDtoOutputOrderCustomerArrivalSerializer implements PrimitiveSe
       specifiedType: const FullType(DateTime),
     );
     yield r'away';
-    yield object.away == null ? null : serializers.serialize(
-      object.away,
-      specifiedType: const FullType.nullable(AdminOrderDtoOutputOrderCustomerArrivalAway),
-    );
+    yield object.away == null
+        ? null
+        : serializers.serialize(
+            object.away,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderCustomerArrivalAway,
+            ),
+          );
   }
 
   @override
@@ -63,7 +79,11 @@ class _$AdminOrderDtoOutputOrderCustomerArrivalSerializer implements PrimitiveSe
     AdminOrderDtoOutputOrderCustomerArrival object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -79,17 +99,23 @@ class _$AdminOrderDtoOutputOrderCustomerArrivalSerializer implements PrimitiveSe
       final value = serializedList[i + 1];
       switch (key) {
         case r'at':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.at = valueDes;
           break;
         case r'away':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(AdminOrderDtoOutputOrderCustomerArrivalAway),
-          ) as AdminOrderDtoOutputOrderCustomerArrivalAway?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderCustomerArrivalAway,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderCustomerArrivalAway?;
           if (valueDes == null) continue;
           result.away.replace(valueDes);
           break;
@@ -121,5 +147,3 @@ class _$AdminOrderDtoOutputOrderCustomerArrivalSerializer implements PrimitiveSe
     return result.build();
   }
 }
-
-

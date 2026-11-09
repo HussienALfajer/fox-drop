@@ -12,9 +12,14 @@ part 'admin_record_delivery_dto_received_inner.g.dart';
 ///
 /// Properties:
 /// * [amount] - Integer minor units (AP §8.6).
-/// * [currency] 
+/// * [currency]
 @BuiltValue()
-abstract class AdminRecordDeliveryDtoReceivedInner implements Built<AdminRecordDeliveryDtoReceivedInner, AdminRecordDeliveryDtoReceivedInnerBuilder> {
+abstract class AdminRecordDeliveryDtoReceivedInner
+    implements
+        Built<
+          AdminRecordDeliveryDtoReceivedInner,
+          AdminRecordDeliveryDtoReceivedInnerBuilder
+        > {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -24,18 +29,25 @@ abstract class AdminRecordDeliveryDtoReceivedInner implements Built<AdminRecordD
 
   AdminRecordDeliveryDtoReceivedInner._();
 
-  factory AdminRecordDeliveryDtoReceivedInner([void updates(AdminRecordDeliveryDtoReceivedInnerBuilder b)]) = _$AdminRecordDeliveryDtoReceivedInner;
+  factory AdminRecordDeliveryDtoReceivedInner([
+    void updates(AdminRecordDeliveryDtoReceivedInnerBuilder b),
+  ]) = _$AdminRecordDeliveryDtoReceivedInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminRecordDeliveryDtoReceivedInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRecordDeliveryDtoReceivedInner> get serializer => _$AdminRecordDeliveryDtoReceivedInnerSerializer();
+  static Serializer<AdminRecordDeliveryDtoReceivedInner> get serializer =>
+      _$AdminRecordDeliveryDtoReceivedInnerSerializer();
 }
 
-class _$AdminRecordDeliveryDtoReceivedInnerSerializer implements PrimitiveSerializer<AdminRecordDeliveryDtoReceivedInner> {
+class _$AdminRecordDeliveryDtoReceivedInnerSerializer
+    implements PrimitiveSerializer<AdminRecordDeliveryDtoReceivedInner> {
   @override
-  final Iterable<Type> types = const [AdminRecordDeliveryDtoReceivedInner, _$AdminRecordDeliveryDtoReceivedInner];
+  final Iterable<Type> types = const [
+    AdminRecordDeliveryDtoReceivedInner,
+    _$AdminRecordDeliveryDtoReceivedInner,
+  ];
 
   @override
   final String wireName = r'AdminRecordDeliveryDtoReceivedInner';
@@ -63,7 +75,11 @@ class _$AdminRecordDeliveryDtoReceivedInnerSerializer implements PrimitiveSerial
     AdminRecordDeliveryDtoReceivedInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -79,17 +95,21 @@ class _$AdminRecordDeliveryDtoReceivedInnerSerializer implements PrimitiveSerial
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.currency = valueDes;
           break;
         default:
@@ -120,5 +140,3 @@ class _$AdminRecordDeliveryDtoReceivedInnerSerializer implements PrimitiveSerial
     return result.build();
   }
 }
-
-

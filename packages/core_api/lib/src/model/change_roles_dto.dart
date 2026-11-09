@@ -14,7 +14,8 @@ part 'change_roles_dto.g.dart';
 /// Properties:
 /// * [roles] - One or more roles (AP §6.1).
 @BuiltValue()
-abstract class ChangeRolesDto implements Built<ChangeRolesDto, ChangeRolesDtoBuilder> {
+abstract class ChangeRolesDto
+    implements Built<ChangeRolesDto, ChangeRolesDtoBuilder> {
   /// One or more roles (AP §6.1).
   @BuiltValueField(wireName: r'roles')
   BuiltList<ChangeRolesDtoRolesEnum> get roles;
@@ -22,16 +23,19 @@ abstract class ChangeRolesDto implements Built<ChangeRolesDto, ChangeRolesDtoBui
 
   ChangeRolesDto._();
 
-  factory ChangeRolesDto([void updates(ChangeRolesDtoBuilder b)]) = _$ChangeRolesDto;
+  factory ChangeRolesDto([void updates(ChangeRolesDtoBuilder b)]) =
+      _$ChangeRolesDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ChangeRolesDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ChangeRolesDto> get serializer => _$ChangeRolesDtoSerializer();
+  static Serializer<ChangeRolesDto> get serializer =>
+      _$ChangeRolesDtoSerializer();
 }
 
-class _$ChangeRolesDtoSerializer implements PrimitiveSerializer<ChangeRolesDto> {
+class _$ChangeRolesDtoSerializer
+    implements PrimitiveSerializer<ChangeRolesDto> {
   @override
   final Iterable<Type> types = const [ChangeRolesDto, _$ChangeRolesDto];
 
@@ -46,7 +50,9 @@ class _$ChangeRolesDtoSerializer implements PrimitiveSerializer<ChangeRolesDto> 
     yield r'roles';
     yield serializers.serialize(
       object.roles,
-      specifiedType: const FullType(BuiltList, [FullType(ChangeRolesDtoRolesEnum)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(ChangeRolesDtoRolesEnum),
+      ]),
     );
   }
 
@@ -56,7 +62,11 @@ class _$ChangeRolesDtoSerializer implements PrimitiveSerializer<ChangeRolesDto> 
     ChangeRolesDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -72,10 +82,14 @@ class _$ChangeRolesDtoSerializer implements PrimitiveSerializer<ChangeRolesDto> 
       final value = serializedList[i + 1];
       switch (key) {
         case r'roles':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(ChangeRolesDtoRolesEnum)]),
-          ) as BuiltList<ChangeRolesDtoRolesEnum>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(ChangeRolesDtoRolesEnum),
+                    ]),
+                  )
+                  as BuiltList<ChangeRolesDtoRolesEnum>;
           result.roles.replace(valueDes);
           break;
         default:
@@ -107,9 +121,7 @@ class _$ChangeRolesDtoSerializer implements PrimitiveSerializer<ChangeRolesDto> 
   }
 }
 
-
 class ChangeRolesDtoRolesEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'OWN')
   static const ChangeRolesDtoRolesEnum OWN = _$changeRolesDtoRolesEnum_OWN;
   @BuiltValueEnumConst(wireName: r'OPS')
@@ -121,11 +133,13 @@ class ChangeRolesDtoRolesEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'DATA')
   static const ChangeRolesDtoRolesEnum DATA = _$changeRolesDtoRolesEnum_DATA;
 
-  static Serializer<ChangeRolesDtoRolesEnum> get serializer => _$changeRolesDtoRolesEnumSerializer;
+  static Serializer<ChangeRolesDtoRolesEnum> get serializer =>
+      _$changeRolesDtoRolesEnumSerializer;
 
-  const ChangeRolesDtoRolesEnum._(String name): super(name);
+  const ChangeRolesDtoRolesEnum._(String name) : super(name);
 
-  static BuiltSet<ChangeRolesDtoRolesEnum> get values => _$changeRolesDtoRolesEnumValues;
-  static ChangeRolesDtoRolesEnum valueOf(String name) => _$changeRolesDtoRolesEnumValueOf(name);
+  static BuiltSet<ChangeRolesDtoRolesEnum> get values =>
+      _$changeRolesDtoRolesEnumValues;
+  static ChangeRolesDtoRolesEnum valueOf(String name) =>
+      _$changeRolesDtoRolesEnumValueOf(name);
 }
-

@@ -12,9 +12,14 @@ part 'admin_order_card_dto_output_order_total.g.dart';
 ///
 /// Properties:
 /// * [amount] - Integer minor units (AP §8.6).
-/// * [currency] 
+/// * [currency]
 @BuiltValue()
-abstract class AdminOrderCardDtoOutputOrderTotal implements Built<AdminOrderCardDtoOutputOrderTotal, AdminOrderCardDtoOutputOrderTotalBuilder> {
+abstract class AdminOrderCardDtoOutputOrderTotal
+    implements
+        Built<
+          AdminOrderCardDtoOutputOrderTotal,
+          AdminOrderCardDtoOutputOrderTotalBuilder
+        > {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -24,18 +29,25 @@ abstract class AdminOrderCardDtoOutputOrderTotal implements Built<AdminOrderCard
 
   AdminOrderCardDtoOutputOrderTotal._();
 
-  factory AdminOrderCardDtoOutputOrderTotal([void updates(AdminOrderCardDtoOutputOrderTotalBuilder b)]) = _$AdminOrderCardDtoOutputOrderTotal;
+  factory AdminOrderCardDtoOutputOrderTotal([
+    void updates(AdminOrderCardDtoOutputOrderTotalBuilder b),
+  ]) = _$AdminOrderCardDtoOutputOrderTotal;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderCardDtoOutputOrderTotalBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderCardDtoOutputOrderTotal> get serializer => _$AdminOrderCardDtoOutputOrderTotalSerializer();
+  static Serializer<AdminOrderCardDtoOutputOrderTotal> get serializer =>
+      _$AdminOrderCardDtoOutputOrderTotalSerializer();
 }
 
-class _$AdminOrderCardDtoOutputOrderTotalSerializer implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderTotal> {
+class _$AdminOrderCardDtoOutputOrderTotalSerializer
+    implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderTotal> {
   @override
-  final Iterable<Type> types = const [AdminOrderCardDtoOutputOrderTotal, _$AdminOrderCardDtoOutputOrderTotal];
+  final Iterable<Type> types = const [
+    AdminOrderCardDtoOutputOrderTotal,
+    _$AdminOrderCardDtoOutputOrderTotal,
+  ];
 
   @override
   final String wireName = r'AdminOrderCardDtoOutputOrderTotal';
@@ -63,7 +75,11 @@ class _$AdminOrderCardDtoOutputOrderTotalSerializer implements PrimitiveSerializ
     AdminOrderCardDtoOutputOrderTotal object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -79,17 +95,21 @@ class _$AdminOrderCardDtoOutputOrderTotalSerializer implements PrimitiveSerializ
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.currency = valueDes;
           break;
         default:
@@ -120,5 +140,3 @@ class _$AdminOrderCardDtoOutputOrderTotalSerializer implements PrimitiveSerializ
     return result.build();
   }
 }
-
-

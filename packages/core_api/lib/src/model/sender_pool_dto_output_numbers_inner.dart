@@ -14,18 +14,23 @@ part 'sender_pool_dto_output_numbers_inner.g.dart';
 /// SenderPoolDtoOutputNumbersInner
 ///
 /// Properties:
-/// * [id] 
+/// * [id]
 /// * [phone] - The sending number, E.164.
-/// * [status] 
+/// * [status]
 /// * [connected] - Whether its WhatsApp session is open now.
-/// * [pairedAt] 
+/// * [pairedAt]
 /// * [stoppedAt] - When WhatsApp disconnected or banned it.
-/// * [throttledUntil] 
-/// * [warmup] 
+/// * [throttledUntil]
+/// * [warmup]
 /// * [dailyCap] - Sends it may attempt today, failed ones included.
-/// * [today] 
+/// * [today]
 @BuiltValue()
-abstract class SenderPoolDtoOutputNumbersInner implements Built<SenderPoolDtoOutputNumbersInner, SenderPoolDtoOutputNumbersInnerBuilder> {
+abstract class SenderPoolDtoOutputNumbersInner
+    implements
+        Built<
+          SenderPoolDtoOutputNumbersInner,
+          SenderPoolDtoOutputNumbersInnerBuilder
+        > {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -63,18 +68,25 @@ abstract class SenderPoolDtoOutputNumbersInner implements Built<SenderPoolDtoOut
 
   SenderPoolDtoOutputNumbersInner._();
 
-  factory SenderPoolDtoOutputNumbersInner([void updates(SenderPoolDtoOutputNumbersInnerBuilder b)]) = _$SenderPoolDtoOutputNumbersInner;
+  factory SenderPoolDtoOutputNumbersInner([
+    void updates(SenderPoolDtoOutputNumbersInnerBuilder b),
+  ]) = _$SenderPoolDtoOutputNumbersInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SenderPoolDtoOutputNumbersInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SenderPoolDtoOutputNumbersInner> get serializer => _$SenderPoolDtoOutputNumbersInnerSerializer();
+  static Serializer<SenderPoolDtoOutputNumbersInner> get serializer =>
+      _$SenderPoolDtoOutputNumbersInnerSerializer();
 }
 
-class _$SenderPoolDtoOutputNumbersInnerSerializer implements PrimitiveSerializer<SenderPoolDtoOutputNumbersInner> {
+class _$SenderPoolDtoOutputNumbersInnerSerializer
+    implements PrimitiveSerializer<SenderPoolDtoOutputNumbersInner> {
   @override
-  final Iterable<Type> types = const [SenderPoolDtoOutputNumbersInner, _$SenderPoolDtoOutputNumbersInner];
+  final Iterable<Type> types = const [
+    SenderPoolDtoOutputNumbersInner,
+    _$SenderPoolDtoOutputNumbersInner,
+  ];
 
   @override
   final String wireName = r'SenderPoolDtoOutputNumbersInner';
@@ -110,20 +122,28 @@ class _$SenderPoolDtoOutputNumbersInnerSerializer implements PrimitiveSerializer
       specifiedType: const FullType(DateTime),
     );
     yield r'stoppedAt';
-    yield object.stoppedAt == null ? null : serializers.serialize(
-      object.stoppedAt,
-      specifiedType: const FullType.nullable(DateTime),
-    );
+    yield object.stoppedAt == null
+        ? null
+        : serializers.serialize(
+            object.stoppedAt,
+            specifiedType: const FullType.nullable(DateTime),
+          );
     yield r'throttledUntil';
-    yield object.throttledUntil == null ? null : serializers.serialize(
-      object.throttledUntil,
-      specifiedType: const FullType.nullable(DateTime),
-    );
+    yield object.throttledUntil == null
+        ? null
+        : serializers.serialize(
+            object.throttledUntil,
+            specifiedType: const FullType.nullable(DateTime),
+          );
     yield r'warmup';
-    yield object.warmup == null ? null : serializers.serialize(
-      object.warmup,
-      specifiedType: const FullType.nullable(SenderPoolDtoOutputNumbersInnerWarmup),
-    );
+    yield object.warmup == null
+        ? null
+        : serializers.serialize(
+            object.warmup,
+            specifiedType: const FullType.nullable(
+              SenderPoolDtoOutputNumbersInnerWarmup,
+            ),
+          );
     yield r'dailyCap';
     yield serializers.serialize(
       object.dailyCap,
@@ -142,7 +162,11 @@ class _$SenderPoolDtoOutputNumbersInnerSerializer implements PrimitiveSerializer
     SenderPoolDtoOutputNumbersInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -158,76 +182,99 @@ class _$SenderPoolDtoOutputNumbersInnerSerializer implements PrimitiveSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'phone':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.phone = valueDes;
           break;
         case r'status':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(SenderPoolDtoOutputNumbersInnerStatusEnum),
-          ) as SenderPoolDtoOutputNumbersInnerStatusEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      SenderPoolDtoOutputNumbersInnerStatusEnum,
+                    ),
+                  )
+                  as SenderPoolDtoOutputNumbersInnerStatusEnum;
           result.status = valueDes;
           break;
         case r'connected':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.connected = valueDes;
           break;
         case r'pairedAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.pairedAt = valueDes;
           break;
         case r'stoppedAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(DateTime),
-          ) as DateTime?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
           if (valueDes == null) continue;
           result.stoppedAt = valueDes;
           break;
         case r'throttledUntil':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(DateTime),
-          ) as DateTime?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
           if (valueDes == null) continue;
           result.throttledUntil = valueDes;
           break;
         case r'warmup':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(SenderPoolDtoOutputNumbersInnerWarmup),
-          ) as SenderPoolDtoOutputNumbersInnerWarmup?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      SenderPoolDtoOutputNumbersInnerWarmup,
+                    ),
+                  )
+                  as SenderPoolDtoOutputNumbersInnerWarmup?;
           if (valueDes == null) continue;
           result.warmup.replace(valueDes);
           break;
         case r'dailyCap':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.dailyCap = valueDes;
           break;
         case r'today':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(SenderPoolDtoOutputNumbersInnerToday),
-          ) as SenderPoolDtoOutputNumbersInnerToday;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      SenderPoolDtoOutputNumbersInnerToday,
+                    ),
+                  )
+                  as SenderPoolDtoOutputNumbersInnerToday;
           result.today.replace(valueDes);
           break;
         default:
@@ -259,27 +306,33 @@ class _$SenderPoolDtoOutputNumbersInnerSerializer implements PrimitiveSerializer
   }
 }
 
-
 class SenderPoolDtoOutputNumbersInnerStatusEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'warming')
-  static const SenderPoolDtoOutputNumbersInnerStatusEnum warming = _$senderPoolDtoOutputNumbersInnerStatusEnum_warming;
+  static const SenderPoolDtoOutputNumbersInnerStatusEnum warming =
+      _$senderPoolDtoOutputNumbersInnerStatusEnum_warming;
   @BuiltValueEnumConst(wireName: r'active')
-  static const SenderPoolDtoOutputNumbersInnerStatusEnum active = _$senderPoolDtoOutputNumbersInnerStatusEnum_active;
+  static const SenderPoolDtoOutputNumbersInnerStatusEnum active =
+      _$senderPoolDtoOutputNumbersInnerStatusEnum_active;
   @BuiltValueEnumConst(wireName: r'standby')
-  static const SenderPoolDtoOutputNumbersInnerStatusEnum standby = _$senderPoolDtoOutputNumbersInnerStatusEnum_standby;
+  static const SenderPoolDtoOutputNumbersInnerStatusEnum standby =
+      _$senderPoolDtoOutputNumbersInnerStatusEnum_standby;
   @BuiltValueEnumConst(wireName: r'throttled')
-  static const SenderPoolDtoOutputNumbersInnerStatusEnum throttled = _$senderPoolDtoOutputNumbersInnerStatusEnum_throttled;
+  static const SenderPoolDtoOutputNumbersInnerStatusEnum throttled =
+      _$senderPoolDtoOutputNumbersInnerStatusEnum_throttled;
   @BuiltValueEnumConst(wireName: r'disconnected')
-  static const SenderPoolDtoOutputNumbersInnerStatusEnum disconnected = _$senderPoolDtoOutputNumbersInnerStatusEnum_disconnected;
+  static const SenderPoolDtoOutputNumbersInnerStatusEnum disconnected =
+      _$senderPoolDtoOutputNumbersInnerStatusEnum_disconnected;
   @BuiltValueEnumConst(wireName: r'banned')
-  static const SenderPoolDtoOutputNumbersInnerStatusEnum banned = _$senderPoolDtoOutputNumbersInnerStatusEnum_banned;
+  static const SenderPoolDtoOutputNumbersInnerStatusEnum banned =
+      _$senderPoolDtoOutputNumbersInnerStatusEnum_banned;
 
-  static Serializer<SenderPoolDtoOutputNumbersInnerStatusEnum> get serializer => _$senderPoolDtoOutputNumbersInnerStatusEnumSerializer;
+  static Serializer<SenderPoolDtoOutputNumbersInnerStatusEnum> get serializer =>
+      _$senderPoolDtoOutputNumbersInnerStatusEnumSerializer;
 
-  const SenderPoolDtoOutputNumbersInnerStatusEnum._(String name): super(name);
+  const SenderPoolDtoOutputNumbersInnerStatusEnum._(String name) : super(name);
 
-  static BuiltSet<SenderPoolDtoOutputNumbersInnerStatusEnum> get values => _$senderPoolDtoOutputNumbersInnerStatusEnumValues;
-  static SenderPoolDtoOutputNumbersInnerStatusEnum valueOf(String name) => _$senderPoolDtoOutputNumbersInnerStatusEnumValueOf(name);
+  static BuiltSet<SenderPoolDtoOutputNumbersInnerStatusEnum> get values =>
+      _$senderPoolDtoOutputNumbersInnerStatusEnumValues;
+  static SenderPoolDtoOutputNumbersInnerStatusEnum valueOf(String name) =>
+      _$senderPoolDtoOutputNumbersInnerStatusEnumValueOf(name);
 }
-

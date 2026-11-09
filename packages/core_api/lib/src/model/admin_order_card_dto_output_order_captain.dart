@@ -11,11 +11,16 @@ part 'admin_order_card_dto_output_order_captain.g.dart';
 /// Null shows a red «بلا كابتن».
 ///
 /// Properties:
-/// * [id] 
-/// * [name] 
-/// * [vehicle] 
+/// * [id]
+/// * [name]
+/// * [vehicle]
 @BuiltValue()
-abstract class AdminOrderCardDtoOutputOrderCaptain implements Built<AdminOrderCardDtoOutputOrderCaptain, AdminOrderCardDtoOutputOrderCaptainBuilder> {
+abstract class AdminOrderCardDtoOutputOrderCaptain
+    implements
+        Built<
+          AdminOrderCardDtoOutputOrderCaptain,
+          AdminOrderCardDtoOutputOrderCaptainBuilder
+        > {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -27,18 +32,25 @@ abstract class AdminOrderCardDtoOutputOrderCaptain implements Built<AdminOrderCa
 
   AdminOrderCardDtoOutputOrderCaptain._();
 
-  factory AdminOrderCardDtoOutputOrderCaptain([void updates(AdminOrderCardDtoOutputOrderCaptainBuilder b)]) = _$AdminOrderCardDtoOutputOrderCaptain;
+  factory AdminOrderCardDtoOutputOrderCaptain([
+    void updates(AdminOrderCardDtoOutputOrderCaptainBuilder b),
+  ]) = _$AdminOrderCardDtoOutputOrderCaptain;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderCardDtoOutputOrderCaptainBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderCardDtoOutputOrderCaptain> get serializer => _$AdminOrderCardDtoOutputOrderCaptainSerializer();
+  static Serializer<AdminOrderCardDtoOutputOrderCaptain> get serializer =>
+      _$AdminOrderCardDtoOutputOrderCaptainSerializer();
 }
 
-class _$AdminOrderCardDtoOutputOrderCaptainSerializer implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderCaptain> {
+class _$AdminOrderCardDtoOutputOrderCaptainSerializer
+    implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderCaptain> {
   @override
-  final Iterable<Type> types = const [AdminOrderCardDtoOutputOrderCaptain, _$AdminOrderCardDtoOutputOrderCaptain];
+  final Iterable<Type> types = const [
+    AdminOrderCardDtoOutputOrderCaptain,
+    _$AdminOrderCardDtoOutputOrderCaptain,
+  ];
 
   @override
   final String wireName = r'AdminOrderCardDtoOutputOrderCaptain';
@@ -71,7 +83,11 @@ class _$AdminOrderCardDtoOutputOrderCaptainSerializer implements PrimitiveSerial
     AdminOrderCardDtoOutputOrderCaptain object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -87,24 +103,30 @@ class _$AdminOrderCardDtoOutputOrderCaptainSerializer implements PrimitiveSerial
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'vehicle':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.vehicle = valueDes;
           break;
         default:
@@ -135,5 +157,3 @@ class _$AdminOrderCardDtoOutputOrderCaptainSerializer implements PrimitiveSerial
     return result.build();
   }
 }
-
-

@@ -12,22 +12,25 @@ part 'done_dto_output.g.dart';
 /// DoneDtoOutput
 ///
 /// Properties:
-/// * [status] 
+/// * [status]
 @BuiltValue()
-abstract class DoneDtoOutput implements Built<DoneDtoOutput, DoneDtoOutputBuilder> {
+abstract class DoneDtoOutput
+    implements Built<DoneDtoOutput, DoneDtoOutputBuilder> {
   @BuiltValueField(wireName: r'status')
   DoneDtoOutputStatusEnum get status;
   // enum statusEnum {  done,  };
 
   DoneDtoOutput._();
 
-  factory DoneDtoOutput([void updates(DoneDtoOutputBuilder b)]) = _$DoneDtoOutput;
+  factory DoneDtoOutput([void updates(DoneDtoOutputBuilder b)]) =
+      _$DoneDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(DoneDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<DoneDtoOutput> get serializer => _$DoneDtoOutputSerializer();
+  static Serializer<DoneDtoOutput> get serializer =>
+      _$DoneDtoOutputSerializer();
 }
 
 class _$DoneDtoOutputSerializer implements PrimitiveSerializer<DoneDtoOutput> {
@@ -55,7 +58,11 @@ class _$DoneDtoOutputSerializer implements PrimitiveSerializer<DoneDtoOutput> {
     DoneDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -71,10 +78,12 @@ class _$DoneDtoOutputSerializer implements PrimitiveSerializer<DoneDtoOutput> {
       final value = serializedList[i + 1];
       switch (key) {
         case r'status':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DoneDtoOutputStatusEnum),
-          ) as DoneDtoOutputStatusEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DoneDtoOutputStatusEnum),
+                  )
+                  as DoneDtoOutputStatusEnum;
           result.status = valueDes;
           break;
         default:
@@ -106,17 +115,17 @@ class _$DoneDtoOutputSerializer implements PrimitiveSerializer<DoneDtoOutput> {
   }
 }
 
-
 class DoneDtoOutputStatusEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'done')
   static const DoneDtoOutputStatusEnum done = _$doneDtoOutputStatusEnum_done;
 
-  static Serializer<DoneDtoOutputStatusEnum> get serializer => _$doneDtoOutputStatusEnumSerializer;
+  static Serializer<DoneDtoOutputStatusEnum> get serializer =>
+      _$doneDtoOutputStatusEnumSerializer;
 
-  const DoneDtoOutputStatusEnum._(String name): super(name);
+  const DoneDtoOutputStatusEnum._(String name) : super(name);
 
-  static BuiltSet<DoneDtoOutputStatusEnum> get values => _$doneDtoOutputStatusEnumValues;
-  static DoneDtoOutputStatusEnum valueOf(String name) => _$doneDtoOutputStatusEnumValueOf(name);
+  static BuiltSet<DoneDtoOutputStatusEnum> get values =>
+      _$doneDtoOutputStatusEnumValues;
+  static DoneDtoOutputStatusEnum valueOf(String name) =>
+      _$doneDtoOutputStatusEnumValueOf(name);
 }
-

@@ -13,26 +13,35 @@ part 'admin_restaurants_dto_output.g.dart';
 /// AdminRestaurantsDtoOutput
 ///
 /// Properties:
-/// * [restaurants] 
+/// * [restaurants]
 @BuiltValue()
-abstract class AdminRestaurantsDtoOutput implements Built<AdminRestaurantsDtoOutput, AdminRestaurantsDtoOutputBuilder> {
+abstract class AdminRestaurantsDtoOutput
+    implements
+        Built<AdminRestaurantsDtoOutput, AdminRestaurantsDtoOutputBuilder> {
   @BuiltValueField(wireName: r'restaurants')
   BuiltList<AdminRestaurantsDtoOutputRestaurantsInner> get restaurants;
 
   AdminRestaurantsDtoOutput._();
 
-  factory AdminRestaurantsDtoOutput([void updates(AdminRestaurantsDtoOutputBuilder b)]) = _$AdminRestaurantsDtoOutput;
+  factory AdminRestaurantsDtoOutput([
+    void updates(AdminRestaurantsDtoOutputBuilder b),
+  ]) = _$AdminRestaurantsDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminRestaurantsDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRestaurantsDtoOutput> get serializer => _$AdminRestaurantsDtoOutputSerializer();
+  static Serializer<AdminRestaurantsDtoOutput> get serializer =>
+      _$AdminRestaurantsDtoOutputSerializer();
 }
 
-class _$AdminRestaurantsDtoOutputSerializer implements PrimitiveSerializer<AdminRestaurantsDtoOutput> {
+class _$AdminRestaurantsDtoOutputSerializer
+    implements PrimitiveSerializer<AdminRestaurantsDtoOutput> {
   @override
-  final Iterable<Type> types = const [AdminRestaurantsDtoOutput, _$AdminRestaurantsDtoOutput];
+  final Iterable<Type> types = const [
+    AdminRestaurantsDtoOutput,
+    _$AdminRestaurantsDtoOutput,
+  ];
 
   @override
   final String wireName = r'AdminRestaurantsDtoOutput';
@@ -45,7 +54,9 @@ class _$AdminRestaurantsDtoOutputSerializer implements PrimitiveSerializer<Admin
     yield r'restaurants';
     yield serializers.serialize(
       object.restaurants,
-      specifiedType: const FullType(BuiltList, [FullType(AdminRestaurantsDtoOutputRestaurantsInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminRestaurantsDtoOutputRestaurantsInner),
+      ]),
     );
   }
 
@@ -55,7 +66,11 @@ class _$AdminRestaurantsDtoOutputSerializer implements PrimitiveSerializer<Admin
     AdminRestaurantsDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -71,10 +86,14 @@ class _$AdminRestaurantsDtoOutputSerializer implements PrimitiveSerializer<Admin
       final value = serializedList[i + 1];
       switch (key) {
         case r'restaurants':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(AdminRestaurantsDtoOutputRestaurantsInner)]),
-          ) as BuiltList<AdminRestaurantsDtoOutputRestaurantsInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminRestaurantsDtoOutputRestaurantsInner),
+                    ]),
+                  )
+                  as BuiltList<AdminRestaurantsDtoOutputRestaurantsInner>;
           result.restaurants.replace(valueDes);
           break;
         default:
@@ -105,5 +124,3 @@ class _$AdminRestaurantsDtoOutputSerializer implements PrimitiveSerializer<Admin
     return result.build();
   }
 }
-
-

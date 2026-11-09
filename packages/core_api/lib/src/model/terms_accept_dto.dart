@@ -11,24 +11,28 @@ part 'terms_accept_dto.g.dart';
 /// TermsAcceptDto
 ///
 /// Properties:
-/// * [version] 
+/// * [version]
 @BuiltValue()
-abstract class TermsAcceptDto implements Built<TermsAcceptDto, TermsAcceptDtoBuilder> {
+abstract class TermsAcceptDto
+    implements Built<TermsAcceptDto, TermsAcceptDtoBuilder> {
   @BuiltValueField(wireName: r'version')
   int get version;
 
   TermsAcceptDto._();
 
-  factory TermsAcceptDto([void updates(TermsAcceptDtoBuilder b)]) = _$TermsAcceptDto;
+  factory TermsAcceptDto([void updates(TermsAcceptDtoBuilder b)]) =
+      _$TermsAcceptDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(TermsAcceptDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<TermsAcceptDto> get serializer => _$TermsAcceptDtoSerializer();
+  static Serializer<TermsAcceptDto> get serializer =>
+      _$TermsAcceptDtoSerializer();
 }
 
-class _$TermsAcceptDtoSerializer implements PrimitiveSerializer<TermsAcceptDto> {
+class _$TermsAcceptDtoSerializer
+    implements PrimitiveSerializer<TermsAcceptDto> {
   @override
   final Iterable<Type> types = const [TermsAcceptDto, _$TermsAcceptDto];
 
@@ -53,7 +57,11 @@ class _$TermsAcceptDtoSerializer implements PrimitiveSerializer<TermsAcceptDto> 
     TermsAcceptDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -69,10 +77,9 @@ class _$TermsAcceptDtoSerializer implements PrimitiveSerializer<TermsAcceptDto> 
       final value = serializedList[i + 1];
       switch (key) {
         case r'version':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.version = valueDes;
           break;
         default:
@@ -103,5 +110,3 @@ class _$TermsAcceptDtoSerializer implements PrimitiveSerializer<TermsAcceptDto> 
     return result.build();
   }
 }
-
-

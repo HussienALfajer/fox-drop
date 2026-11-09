@@ -12,12 +12,17 @@ part 'customer_active_orders_dto_output_orders_inner_rejection.g.dart';
 /// While rejected (CU §11.9).
 ///
 /// Properties:
-/// * [at] 
+/// * [at]
 /// * [reason] - The code: item_unavailable, restaurant_closed or too_busy (RA §8.6).
 /// * [text] - After «نعتذر، لم يقبل المطعم طلبك»: the reason's customer text (CU Appendix C) as it was at the rejection, with the items filled in.
 /// * [unavailableItemIds] - «اطلب بدون الأصناف غير المتوفرة» rebuilds the cart without these items (CU §11.9, Q22); empty for the other reasons.
 @BuiltValue()
-abstract class CustomerActiveOrdersDtoOutputOrdersInnerRejection implements Built<CustomerActiveOrdersDtoOutputOrdersInnerRejection, CustomerActiveOrdersDtoOutputOrdersInnerRejectionBuilder> {
+abstract class CustomerActiveOrdersDtoOutputOrdersInnerRejection
+    implements
+        Built<
+          CustomerActiveOrdersDtoOutputOrdersInnerRejection,
+          CustomerActiveOrdersDtoOutputOrdersInnerRejectionBuilder
+        > {
   @BuiltValueField(wireName: r'at')
   DateTime get at;
 
@@ -35,18 +40,29 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerRejection implements Buil
 
   CustomerActiveOrdersDtoOutputOrdersInnerRejection._();
 
-  factory CustomerActiveOrdersDtoOutputOrdersInnerRejection([void updates(CustomerActiveOrdersDtoOutputOrdersInnerRejectionBuilder b)]) = _$CustomerActiveOrdersDtoOutputOrdersInnerRejection;
+  factory CustomerActiveOrdersDtoOutputOrdersInnerRejection([
+    void updates(CustomerActiveOrdersDtoOutputOrdersInnerRejectionBuilder b),
+  ]) = _$CustomerActiveOrdersDtoOutputOrdersInnerRejection;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerActiveOrdersDtoOutputOrdersInnerRejectionBuilder b) => b;
+  static void _defaults(
+    CustomerActiveOrdersDtoOutputOrdersInnerRejectionBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerRejection> get serializer => _$CustomerActiveOrdersDtoOutputOrdersInnerRejectionSerializer();
+  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerRejection>
+  get serializer =>
+      _$CustomerActiveOrdersDtoOutputOrdersInnerRejectionSerializer();
 }
 
-class _$CustomerActiveOrdersDtoOutputOrdersInnerRejectionSerializer implements PrimitiveSerializer<CustomerActiveOrdersDtoOutputOrdersInnerRejection> {
+class _$CustomerActiveOrdersDtoOutputOrdersInnerRejectionSerializer
+    implements
+        PrimitiveSerializer<CustomerActiveOrdersDtoOutputOrdersInnerRejection> {
   @override
-  final Iterable<Type> types = const [CustomerActiveOrdersDtoOutputOrdersInnerRejection, _$CustomerActiveOrdersDtoOutputOrdersInnerRejection];
+  final Iterable<Type> types = const [
+    CustomerActiveOrdersDtoOutputOrdersInnerRejection,
+    _$CustomerActiveOrdersDtoOutputOrdersInnerRejection,
+  ];
 
   @override
   final String wireName = r'CustomerActiveOrdersDtoOutputOrdersInnerRejection';
@@ -84,7 +100,11 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerRejectionSerializer implements P
     CustomerActiveOrdersDtoOutputOrdersInnerRejection object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -100,31 +120,41 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerRejectionSerializer implements P
       final value = serializedList[i + 1];
       switch (key) {
         case r'at':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.at = valueDes;
           break;
         case r'reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.reason = valueDes;
           break;
         case r'text':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.text = valueDes;
           break;
         case r'unavailableItemIds':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.unavailableItemIds.replace(valueDes);
           break;
         default:
@@ -155,5 +185,3 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerRejectionSerializer implements P
     return result.build();
   }
 }
-
-

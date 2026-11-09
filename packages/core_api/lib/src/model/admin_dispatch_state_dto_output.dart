@@ -12,26 +12,35 @@ part 'admin_dispatch_state_dto_output.g.dart';
 /// AdminDispatchStateDtoOutput
 ///
 /// Properties:
-/// * [order] 
+/// * [order]
 @BuiltValue()
-abstract class AdminDispatchStateDtoOutput implements Built<AdminDispatchStateDtoOutput, AdminDispatchStateDtoOutputBuilder> {
+abstract class AdminDispatchStateDtoOutput
+    implements
+        Built<AdminDispatchStateDtoOutput, AdminDispatchStateDtoOutputBuilder> {
   @BuiltValueField(wireName: r'order')
   AdminDispatchStateDtoOutputOrder get order;
 
   AdminDispatchStateDtoOutput._();
 
-  factory AdminDispatchStateDtoOutput([void updates(AdminDispatchStateDtoOutputBuilder b)]) = _$AdminDispatchStateDtoOutput;
+  factory AdminDispatchStateDtoOutput([
+    void updates(AdminDispatchStateDtoOutputBuilder b),
+  ]) = _$AdminDispatchStateDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminDispatchStateDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminDispatchStateDtoOutput> get serializer => _$AdminDispatchStateDtoOutputSerializer();
+  static Serializer<AdminDispatchStateDtoOutput> get serializer =>
+      _$AdminDispatchStateDtoOutputSerializer();
 }
 
-class _$AdminDispatchStateDtoOutputSerializer implements PrimitiveSerializer<AdminDispatchStateDtoOutput> {
+class _$AdminDispatchStateDtoOutputSerializer
+    implements PrimitiveSerializer<AdminDispatchStateDtoOutput> {
   @override
-  final Iterable<Type> types = const [AdminDispatchStateDtoOutput, _$AdminDispatchStateDtoOutput];
+  final Iterable<Type> types = const [
+    AdminDispatchStateDtoOutput,
+    _$AdminDispatchStateDtoOutput,
+  ];
 
   @override
   final String wireName = r'AdminDispatchStateDtoOutput';
@@ -54,7 +63,11 @@ class _$AdminDispatchStateDtoOutputSerializer implements PrimitiveSerializer<Adm
     AdminDispatchStateDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -70,10 +83,14 @@ class _$AdminDispatchStateDtoOutputSerializer implements PrimitiveSerializer<Adm
       final value = serializedList[i + 1];
       switch (key) {
         case r'order':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdminDispatchStateDtoOutputOrder),
-          ) as AdminDispatchStateDtoOutputOrder;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminDispatchStateDtoOutputOrder,
+                    ),
+                  )
+                  as AdminDispatchStateDtoOutputOrder;
           result.order.replace(valueDes);
           break;
         default:
@@ -104,5 +121,3 @@ class _$AdminDispatchStateDtoOutputSerializer implements PrimitiveSerializer<Adm
     return result.build();
   }
 }
-
-

@@ -14,12 +14,17 @@ part 'admin_order_dto_output_order_customer.g.dart';
 ///
 /// Properties:
 /// * [name] - Null before «أكمل بياناتك» (CU §5.3).
-/// * [address] 
-/// * [recipientName] 
+/// * [address]
+/// * [recipientName]
 /// * [payIn] - «سأدفع بـ».
-/// * [arrival] 
+/// * [arrival]
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderCustomer implements Built<AdminOrderDtoOutputOrderCustomer, AdminOrderDtoOutputOrderCustomerBuilder> {
+abstract class AdminOrderDtoOutputOrderCustomer
+    implements
+        Built<
+          AdminOrderDtoOutputOrderCustomer,
+          AdminOrderDtoOutputOrderCustomerBuilder
+        > {
   /// Null before «أكمل بياناتك» (CU §5.3).
   @BuiltValueField(wireName: r'name')
   String? get name;
@@ -39,18 +44,25 @@ abstract class AdminOrderDtoOutputOrderCustomer implements Built<AdminOrderDtoOu
 
   AdminOrderDtoOutputOrderCustomer._();
 
-  factory AdminOrderDtoOutputOrderCustomer([void updates(AdminOrderDtoOutputOrderCustomerBuilder b)]) = _$AdminOrderDtoOutputOrderCustomer;
+  factory AdminOrderDtoOutputOrderCustomer([
+    void updates(AdminOrderDtoOutputOrderCustomerBuilder b),
+  ]) = _$AdminOrderDtoOutputOrderCustomer;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderDtoOutputOrderCustomerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderCustomer> get serializer => _$AdminOrderDtoOutputOrderCustomerSerializer();
+  static Serializer<AdminOrderDtoOutputOrderCustomer> get serializer =>
+      _$AdminOrderDtoOutputOrderCustomerSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderCustomerSerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderCustomer> {
+class _$AdminOrderDtoOutputOrderCustomerSerializer
+    implements PrimitiveSerializer<AdminOrderDtoOutputOrderCustomer> {
   @override
-  final Iterable<Type> types = const [AdminOrderDtoOutputOrderCustomer, _$AdminOrderDtoOutputOrderCustomer];
+  final Iterable<Type> types = const [
+    AdminOrderDtoOutputOrderCustomer,
+    _$AdminOrderDtoOutputOrderCustomer,
+  ];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderCustomer';
@@ -61,30 +73,40 @@ class _$AdminOrderDtoOutputOrderCustomerSerializer implements PrimitiveSerialize
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'name';
-    yield object.name == null ? null : serializers.serialize(
-      object.name,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.name == null
+        ? null
+        : serializers.serialize(
+            object.name,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'address';
     yield serializers.serialize(
       object.address,
       specifiedType: const FullType(AdminOrderDtoOutputOrderCustomerAddress),
     );
     yield r'recipientName';
-    yield object.recipientName == null ? null : serializers.serialize(
-      object.recipientName,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.recipientName == null
+        ? null
+        : serializers.serialize(
+            object.recipientName,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'payIn';
-    yield object.payIn == null ? null : serializers.serialize(
-      object.payIn,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.payIn == null
+        ? null
+        : serializers.serialize(
+            object.payIn,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'arrival';
-    yield object.arrival == null ? null : serializers.serialize(
-      object.arrival,
-      specifiedType: const FullType.nullable(AdminOrderDtoOutputOrderCustomerArrival),
-    );
+    yield object.arrival == null
+        ? null
+        : serializers.serialize(
+            object.arrival,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderCustomerArrival,
+            ),
+          );
   }
 
   @override
@@ -93,7 +115,11 @@ class _$AdminOrderDtoOutputOrderCustomerSerializer implements PrimitiveSerialize
     AdminOrderDtoOutputOrderCustomer object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -109,41 +135,55 @@ class _$AdminOrderDtoOutputOrderCustomerSerializer implements PrimitiveSerialize
       final value = serializedList[i + 1];
       switch (key) {
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.name = valueDes;
           break;
         case r'address':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdminOrderDtoOutputOrderCustomerAddress),
-          ) as AdminOrderDtoOutputOrderCustomerAddress;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminOrderDtoOutputOrderCustomerAddress,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderCustomerAddress;
           result.address.replace(valueDes);
           break;
         case r'recipientName':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.recipientName = valueDes;
           break;
         case r'payIn':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.payIn = valueDes;
           break;
         case r'arrival':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(AdminOrderDtoOutputOrderCustomerArrival),
-          ) as AdminOrderDtoOutputOrderCustomerArrival?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderCustomerArrival,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderCustomerArrival?;
           if (valueDes == null) continue;
           result.arrival.replace(valueDes);
           break;
@@ -175,5 +215,3 @@ class _$AdminOrderDtoOutputOrderCustomerSerializer implements PrimitiveSerialize
     return result.build();
   }
 }
-
-
