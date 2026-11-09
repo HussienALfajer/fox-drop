@@ -12,7 +12,8 @@ const api = {
   '/v1': 'http://localhost:3000',
   '/connection/websocket': { target: 'ws://localhost:8000', ws: true },
   '/media': 'http://localhost:8088',
-  '/public-media': 'http://localhost:3900',
+  // Vite's short form would rewrite the Host, which the signature covers.
+  '/public-media': { target: 'http://localhost:3900', changeOrigin: false },
 };
 
 export default defineConfig({
