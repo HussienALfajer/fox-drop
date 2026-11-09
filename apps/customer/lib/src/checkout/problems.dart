@@ -111,6 +111,10 @@ List<ProblemView> problemViews(
         views.add(
           ProblemView(l10n.customerTermsPending, ProblemAction.showTerms),
         );
+      case ProblemCode.reviewStop:
+        // docs/domain/08: late cancellations stopped ordering until support
+        // reviews the account; support lifts it, not the customer.
+        views.add(ProblemView(l10n.customerReviewStop, ProblemAction.none));
       case ProblemCode.priceChanged:
         final newPrice = quoteLine?.unitPrice;
         views.add(

@@ -609,6 +609,32 @@ void main() {
     await app.done(tester);
   });
 
+  // docs/domain/08, owner decision 2026-11-09: late cancellations stopped
+  // ordering until support reviews the account; nothing to do in the app.
+  testWidgets('a review stop refuses the order with no action', (tester) async {
+    final app = await _checkout(
+      tester,
+      quotes: [
+        FakeAnswer(
+          200,
+          _quote(
+            problems: [
+              {'code': 'review_stop', 'line': null, 'opensAt': null},
+            ],
+          ),
+        ),
+      ],
+    );
+    expect(find.text('حسابك موقوف حتى مراجعة فريق الدعم'), findsOneWidget);
+    expect(find.text('عرض الشروط'), findsNothing);
+    expect(find.text('إعادة المحاولة'), findsNothing);
+    final confirm = tester.widget<FilledButton>(
+      find.byKey(const Key('confirm-order')),
+    );
+    expect(confirm.onPressed, isNull);
+    await app.done(tester);
+  });
+
   testWidgets('a blocked order keeps the cart and shows the new quote', (
     tester,
   ) async {
