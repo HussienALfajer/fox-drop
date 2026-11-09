@@ -288,6 +288,13 @@
       "when": 1794193374420,
       "tag": "0040_notifications_restaurant_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1794194823281,
+      "tag": "0041_merchants_status_timers",
+      "breakpoints": true
     }
   ]
 }

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
@@ -70,6 +71,9 @@ export interface BusyReminderJob {
   restaurantId: string;
   // ISO time.
   startedAt: string;
+  // ISO time, the moment the reminder was set for; a job sent before it
+  // existed reminds at its run.
+  due?: string;
 }
 
 // RA §10: what «الحالة والأوقات» shows an owner.
@@ -300,16 +304,21 @@ export class RestaurantStatusService {
         throw new MerchantsRefusedError('restaurant_suspended', 'the restaurant is suspended');
       }
       const before = await this.endHolidays(tx, restaurantId, change, now);
+      const storedStart = startsAt.getTime() < now.getTime() ? now : startsAt;
       await tx.insert(holidayCloses).values({
         restaurantId,
-        startsAt: startsAt.getTime() < now.getTime() ? now : startsAt,
+        startsAt: storedStart,
         endsAt: close.endsAt,
         message,
         ...setBy(change),
       });
       await this.record(tx, change, row.cityId, restaurantId, 'restaurant.holiday_close', {
         before,
-        after: { startsAt: startsAt.toISOString(), endsAt: close.endsAt.toISOString(), message },
+        after: {
+          startsAt: storedStart.toISOString(),
+          endsAt: close.endsAt.toISOString(),
+          message,
+        },
       });
       await this.changed(tx, row.cityId, restaurantId, 'holiday_close', now);
     });
@@ -340,6 +349,7 @@ export class RestaurantStatusService {
     restaurantId: string,
     settings: { defaultPrepMin: number; maxActiveOrders: number | null },
     change: MerchantChange,
+    now = new Date(),
   ): Promise<void> {
     const { defaultPrepMin, maxActiveOrders } = settings;
     if (
@@ -372,6 +382,12 @@ export class RestaurantStatusService {
         .from(restaurants)
         .where(eq(restaurants.id, restaurantId));
       if (!current) return;
+      if (
+        current.defaultPrepMin === defaultPrepMin &&
+        current.maxActiveOrders === maxActiveOrders
+      ) {
+        return;
+      }
       if (current.defaultPrepMin !== defaultPrepMin) {
         await this.record(tx, change, row.cityId, restaurantId, 'restaurant.prep_time', {
           before: { defaultPrepMin: current.defaultPrepMin },
@@ -388,56 +404,79 @@ export class RestaurantStatusService {
         .update(restaurants)
         .set({ defaultPrepMin, maxActiveOrders, updatedAt: sql`now()` })
         .where(eq(restaurants.id, restaurantId));
-      await this.changed(tx, row.cityId, restaurantId, 'order_settings', new Date());
+      await this.changed(tx, row.cityId, restaurantId, 'order_settings', now);
     });
   }
 
   // RA §16 #24: a timed pause reached its end. Only the pause the job was
-  // set for, not ended early; the push says the restaurant takes orders only
-  // when it does (a pause that ended with the opening period leaves it
-  // closed). True when it recorded the end.
+  // set for, not ended early, and once (`end_told_at`); the push says the
+  // restaurant takes orders only when it does (a pause that ended with the
+  // opening period leaves it closed). pg-boss starts jobs by the database's
+  // clock, so the end is due by either clock; one early by both is sent again
+  // for its moment. True when it recorded the end.
   async pauseEnded(job: PauseEndJob, now = new Date()): Promise<boolean> {
     return this.database.db.transaction(async (tx) => {
-      const row = await this.lock(tx, job.restaurantId);
+      const row = await this.lockAny(tx, job.restaurantId);
+      if (row.accountStatus === 'terminated') return false;
       const [pause] = await tx
-        .select({ endsAt: pauses.endsAt, endedAt: pauses.endedAt })
+        .select({ endsAt: pauses.endsAt, endedAt: pauses.endedAt, toldAt: pauses.endToldAt })
         .from(pauses)
-        .where(and(eq(pauses.id, job.pauseId), eq(pauses.restaurantId, job.restaurantId)));
-      if (!pause || pause.endedAt !== null || pause.endsAt === null || pause.endsAt > now) {
+        .where(and(eq(pauses.id, job.pauseId), eq(pauses.restaurantId, job.restaurantId)))
+        .for('update');
+      if (!pause || pause.endedAt !== null || pause.toldAt !== null || pause.endsAt === null) {
         return false;
       }
-      const { state } = await this.merchants.storefrontState(job.restaurantId, now, tx);
+      const at = new Date(Math.max(now.getTime(), (await databaseNow(tx)).getTime()));
+      if (pause.endsAt > at) {
+        await this.jobs.send(QUEUES.pauseEnd, job, {
+          startAfter: pause.endsAt,
+          db: inTransaction(tx),
+        });
+        return false;
+      }
+      await tx.update(pauses).set({ endToldAt: at }).where(eq(pauses.id, job.pauseId));
+      const { state } = await this.merchants.storefrontState(job.restaurantId, at, tx);
       const takesOrders = state.state === 'open' || state.state === 'busy';
-      await this.changed(tx, row.cityId, job.restaurantId, 'pause_ended', now, {
+      await this.changed(tx, row.cityId, job.restaurantId, 'pause_ended', at, {
         push: takesOrders,
       });
       return true;
     });
   }
 
-  // RA §7.3, §16 #25: busy mode is still the one the job was set for, so its
-  // reminder goes out, and the next is set while busy mode lasts. True when
-  // it reminded.
+  // RA §7.3, §16 #25: busy mode is still the one the job was set for and this
+  // reminder's moment is newer than the last one sent (`busy_reminded_at`), so
+  // a repeated job sends nothing; the next is set while busy mode lasts, with
+  // an id derived from its moment, so a repeat never starts a second chain.
+  // True when it reminded.
   async busyReminder(job: BusyReminderJob, now = new Date()): Promise<boolean> {
     return this.database.db.transaction(async (tx) => {
-      const row = await this.lock(tx, job.restaurantId);
+      const row = await this.lockAny(tx, job.restaurantId);
+      if (row.accountStatus === 'terminated') return false;
       const [busy] = await tx
         .select({
           extraMin: restaurants.busyExtraMin,
           until: restaurants.busyUntil,
           startedAt: restaurants.busyStartedAt,
+          remindedAt: restaurants.busyRemindedAt,
         })
         .from(restaurants)
         .where(eq(restaurants.id, job.restaurantId));
+      const due = new Date(job.due ?? now.toISOString());
       if (
         !busy ||
         busy.extraMin === null ||
         busy.until === null ||
         busy.until <= now ||
-        busy.startedAt?.getTime() !== new Date(job.startedAt).getTime()
+        busy.startedAt?.getTime() !== new Date(job.startedAt).getTime() ||
+        (busy.remindedAt !== null && busy.remindedAt >= due)
       ) {
         return false;
       }
+      await tx
+        .update(restaurants)
+        .set({ busyRemindedAt: due })
+        .where(eq(restaurants.id, job.restaurantId));
       await this.changed(tx, row.cityId, job.restaurantId, 'busy_reminder', now, {
         extraMin: busy.extraMin,
       });
@@ -445,30 +484,35 @@ export class RestaurantStatusService {
         tx,
         row.cityId,
         { restaurantId: job.restaurantId, startedAt: new Date(job.startedAt) },
-        now,
+        due,
         busy.until,
       );
       return true;
     });
   }
 
-  // The next reminder, merchant.busy_mode_reminder_min from now, while busy
-  // mode lasts.
+  // The next reminder, merchant.busy_mode_reminder_min after [from], while
+  // busy mode lasts.
   private async remindBusyMode(
     tx: Tx,
     cityId: string,
     busy: { restaurantId: string; startedAt: Date },
-    now: Date,
+    from: Date,
     until?: Date,
   ): Promise<void> {
     const reminderMin = await this.settings.get('merchant.busy_mode_reminder_min', { cityId });
-    const at = new Date(now.getTime() + reminderMin * 60_000);
+    const at = new Date(from.getTime() + reminderMin * 60_000);
     if (until !== undefined && at >= until) return;
     const job: BusyReminderJob = {
       restaurantId: busy.restaurantId,
       startedAt: busy.startedAt.toISOString(),
+      due: at.toISOString(),
     };
-    await this.jobs.send(QUEUES.busyReminder, job, { startAfter: at, db: inTransaction(tx) });
+    await this.jobs.send(QUEUES.busyReminder, job, {
+      id: jobId(`${busy.restaurantId}:${job.startedAt}`, at),
+      startAfter: at,
+      db: inTransaction(tx),
+    });
   }
 
   private async changed(
@@ -489,12 +533,25 @@ export class RestaurantStatusService {
   }
 
   // RA §8.3, AP §9.6.5: the auto-pause after the business day's unanswered
-  // orders, written in the transaction of the cancellation that reached the
-  // count. It replaces a restaurant pause (one pause at a time), holds across
-  // opening periods until operations resume it, and is not added over an
-  // operations pause or an auto-pause already in force. True when it paused.
-  async autoPause(tx: Tx, restaurantId: string, count: number, now: Date): Promise<boolean> {
-    const row = await this.lock(tx, restaurantId);
+  // orders, written in the transaction of the automatic cancellation. It
+  // takes the restaurant's lock first and then reads the count (`unanswered`,
+  // read through the transaction), so two cancellations committing together
+  // never both miss the limit. It replaces a restaurant pause (one pause at a
+  // time), holds across opening periods until operations resume it, and is
+  // not added over an operations pause or an auto-pause already in force, nor
+  // for a terminated restaurant. True when it paused.
+  async autoPauseIfDue(
+    tx: Tx,
+    restaurantId: string,
+    unanswered: () => Promise<{ count: number; limit: number }>,
+    now: Date,
+  ): Promise<boolean> {
+    const row = await this.lockAny(tx, restaurantId);
+    if (row.accountStatus === 'terminated') return false;
+    const { count, limit } = await unanswered();
+    if (count < limit) return false;
+    const { state } = await this.merchants.storefrontState(restaurantId, now, tx);
+    if (state.state === 'paused' && state.source !== 'restaurant') return false;
     const [held] = await tx
       .select({ id: pauses.id })
       .from(pauses)
@@ -525,7 +582,7 @@ export class RestaurantStatusService {
       );
     await tx.insert(pauses).values({ restaurantId, source: 'auto', startsAt: now });
     await this.record(tx, system, row.cityId, restaurantId, 'restaurant.auto_pause', {
-      before: null,
+      before: { state: state.state },
       after: { unansweredOrders: count },
     });
     await this.changed(tx, row.cityId, restaurantId, 'auto_paused', now, { count });
@@ -641,15 +698,22 @@ export class RestaurantStatusService {
   }
 
   private async lock(tx: Tx, restaurantId: string) {
+    const row = await this.lockAny(tx, restaurantId);
+    if (row.accountStatus === 'terminated') {
+      throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
+    }
+    return row;
+  }
+
+  // The lock of the timers and the auto-pause, which leave a terminated
+  // restaurant alone rather than fail.
+  private async lockAny(tx: Tx, restaurantId: string) {
     const [row] = await tx
       .select({ cityId: restaurants.cityId, accountStatus: restaurants.accountStatus })
       .from(restaurants)
       .where(eq(restaurants.id, restaurantId))
       .for('update');
     if (!row) throw new MerchantsRefusedError('unknown_restaurant', 'no such restaurant');
-    if (row.accountStatus === 'terminated') {
-      throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
-    }
     return row;
   }
 
@@ -700,4 +764,19 @@ function refused(
     invalid_busy_extra: 'busy mode adds one of merchant.busy_extra_options_min',
   };
   return new MerchantsRefusedError(refusal, messages[refusal]);
+}
+
+async function databaseNow(tx: Tx): Promise<Date> {
+  const [row] = (await tx
+    .execute<{ now: Date }>(sql`SELECT now() AS now`)
+    .then((result) => result.rows)) as [{ now: Date }];
+  return new Date(row.now);
+}
+
+// A job id derived from its subject and moment (a UUID v5 shape), so the same
+// timer sent twice is one job.
+function jobId(subject: string, moment: Date): string {
+  const hex = createHash('sha1').update(`${subject}:${moment.toISOString()}`).digest('hex');
+  const variant = ((parseInt(hex.slice(16, 18), 16) & 0x3f) | 0x80).toString(16);
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-5${hex.slice(13, 16)}-${variant}${hex.slice(18, 20)}-${hex.slice(20, 32)}`;
 }

@@ -18,6 +18,7 @@ import {
 } from '../merchants/index.js';
 import { merchantChannel, opsChannel } from './channels.js';
 import { PushQueue } from './push-queue.js';
+import { requireRealtime } from './realtime-config.js';
 import { RealtimePublisher } from './realtime-publisher.js';
 
 // A run even without a change, so rows left by runs that gave up wait at most
@@ -85,7 +86,6 @@ export class RestaurantStateRelay {
           now,
         );
       }
-      if (!this.publisher.enabled) return;
       await this.publisher.broadcast(
         [merchantChannel(change.restaurantId), opsChannel(change.cityId)],
         {
@@ -115,9 +115,17 @@ export class RestaurantStateRelayWorker implements OnModuleInit, OnModuleDestroy
   constructor(
     private readonly jobs: Jobs,
     private readonly relay: RestaurantStateRelay,
+    private readonly publisher: RealtimePublisher,
   ) {}
 
   async onModuleInit(): Promise<void> {
+    requireRealtime('publishing');
+    if (!this.publisher.enabled) {
+      // As the orders' relay: the rows wait, with their pushes, until real
+      // time is configured.
+      this.logger.warn('real time is not configured (CENTRIFUGO_*): state changes wait');
+      return;
+    }
     await this.jobs.work(
       QUEUES.restaurantStateRelay,
       async () => {

@@ -80,6 +80,8 @@ export const restaurants = merchants.table(
     // When busy mode was last turned on: its hourly reminder (RA §7.3) acts
     // only for the busy mode it was set for.
     busyStartedAt: timestamp('busy_started_at', { withTimezone: true }),
+    // The moment of the latest reminder sent, so a repeated job sends none.
+    busyRemindedAt: timestamp('busy_reminded_at', { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -217,10 +219,17 @@ export const pauses = merchants.table(
     endedAt: timestamp('ended_at', { withTimezone: true }),
     endedByType: text('ended_by_type', { enum: changedByTypes }),
     endedById: uuid('ended_by_id'),
+    // RA §16 #24: when its natural end was told, so a repeated timer tells
+    // nothing.
+    endToldAt: timestamp('end_told_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
   (table) => [
     index('pauses_restaurant').on(table.restaurantId, table.startsAt.desc()),
+    // The alerts sweep's auto-pauses in force (AP §9.1.3).
+    index('pauses_auto_open')
+      .on(table.restaurantId)
+      .where(sql`${table.source} = 'auto' AND ${table.endedAt} IS NULL`),
     check('pauses_source_values', sql`${table.source} IN ('restaurant', 'ops', 'auto')`),
     check('pauses_period', sql`${table.endsAt} > ${table.startsAt}`),
     check(

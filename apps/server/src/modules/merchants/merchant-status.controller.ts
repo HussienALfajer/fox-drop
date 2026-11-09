@@ -205,7 +205,8 @@ export class MerchantStatusController {
   @AppSignedIn()
   @ZodResponse({ status: 200, type: MerchantStatusDto })
   async read(@CurrentAppSession() session: AppSession) {
-    return statusBody(await this.status.status(merchantOf(session).restaurantId));
+    const { restaurantId } = await this.notTerminated(merchantOf(session));
+    return statusBody(await this.status.status(restaurantId));
   }
 
   @Post('restaurant/status/pause')
@@ -252,7 +253,8 @@ export class MerchantStatusController {
   @AppSignedIn()
   @ZodResponse({ status: 200, type: MerchantHoursDto })
   async hours(@CurrentAppSession() session: AppSession) {
-    return hoursBody(await this.status.hours(ownerOf(session).restaurantId));
+    const { restaurantId } = await this.notTerminated(ownerOf(session));
+    return hoursBody(await this.status.hours(restaurantId));
   }
 
   @Put('restaurant/hours')
@@ -263,7 +265,7 @@ export class MerchantStatusController {
     @Body() body: MerchantScheduleDto,
     @Req() request: FastifyRequest,
   ) {
-    const { restaurantId } = ownerOf(session);
+    const { restaurantId } = await this.notTerminated(ownerOf(session));
     await answer(() =>
       this.merchants.setWeeklySchedule(restaurantId, body.periods, changeOf(session, request)),
     );
@@ -315,6 +317,17 @@ export class MerchantStatusController {
     const { restaurantId } = ownerOf(session);
     await answer(() => this.status.endHolidayClose(restaurantId, changeOf(session, request)));
     return statusBody(await this.status.status(restaurantId));
+  }
+
+  // RA §5.5: a terminated restaurant's owners keep only the money section.
+  private async notTerminated(account: MerchantAccount): Promise<MerchantAccount> {
+    if ((await this.merchants.accountStatus(account.restaurantId)) === 'terminated') {
+      throw new ForbiddenException({
+        statusCode: HttpStatus.FORBIDDEN,
+        error: 'restaurant_terminated',
+      });
+    }
+    return account;
   }
 }
 

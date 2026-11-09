@@ -94,15 +94,18 @@ export class OrderTimers {
       });
       const timeZone = await this.geo.cityTimeZone(order.cityId);
       if (timeZone !== null) {
-        const unanswered = await unansweredInBusinessDay(tx, this.settings, {
-          restaurantId: order.restaurantId,
-          cityId: order.cityId,
-          moment: now,
-          timeZone,
-        });
-        if (unanswered.count >= unanswered.limit) {
-          await this.status.autoPause(tx, order.restaurantId, unanswered.count, now);
-        }
+        await this.status.autoPauseIfDue(
+          tx,
+          order.restaurantId,
+          () =>
+            unansweredInBusinessDay(tx, this.settings, {
+              restaurantId: order.restaurantId,
+              cityId: order.cityId,
+              moment: now,
+              timeZone,
+            }),
+          now,
+        );
       }
       return true;
     });

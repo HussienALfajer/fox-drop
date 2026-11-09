@@ -366,6 +366,24 @@ describe('status and hours, the owners’ (RA §10)', () => {
   });
 });
 
+describe('a terminated restaurant (RA §5.5)', () => {
+  it('answers its owners 403 on the status and hours routes (cashiers are signed out)', async () => {
+    const { id } = await restaurant();
+    const owner = await signedIn(id, 'owner');
+    await merchants.setAccountStatus(id, 'terminated', change);
+    for (const [headers, method, url, payload] of [
+      [owner.headers, 'GET', 'status', undefined],
+      [owner.headers, 'GET', 'hours', undefined],
+      [owner.headers, 'PUT', 'hours', { periods: [] }],
+      [owner.headers, 'POST', 'status/pause', { minutes: 15 }],
+    ] as const) {
+      const refused = await call(method, url, headers, payload);
+      expect(refused.statusCode).toBe(403);
+      expect(refused.json().error).toBe('restaurant_terminated');
+    }
+  });
+});
+
 describe('state events and timers (RA §16 #24, #25, §18)', () => {
   const kinds = async (id: string) =>
     (
@@ -409,10 +427,13 @@ describe('state events and timers (RA §16 #24, #25, §18)', () => {
     const { id, cashier } = await restaurant();
     await call('POST', 'status/pause', cashier.headers, { minutes: 15 });
     const [{ data }] = await jobsOf('merchants-pause-end', id);
-    // Too early: nothing.
+    // Too early by both clocks: nothing, and the job is sent again.
     expect(await service.pauseEnded(data)).toBe(false);
+    expect(await jobsOf('merchants-pause-end', id)).toHaveLength(2);
     const later = new Date(Date.now() + 16 * 60_000);
     expect(await service.pauseEnded(data, later)).toBe(true);
+    // A repeated job tells nothing more.
+    expect(await service.pauseEnded(data, later)).toBe(false);
     expect((await kinds(id)).at(-1)).toEqual({
       kind: 'pause_ended',
       payload: { schema: 1, values: { push: true } },
@@ -437,6 +458,9 @@ describe('state events and timers (RA §16 #24, #25, §18)', () => {
       kind: 'busy_reminder',
       payload: { schema: 1, values: { extraMin: 20 } },
     });
+    // A repeated job reminds once, and sets one next reminder.
+    expect(await service.busyReminder(data)).toBe(false);
+    expect(await jobsOf('merchants-busy-reminder', id)).toHaveLength(2);
     // Off, then on again: the old job is without effect.
     await call('PUT', 'status/busy-mode', cashier.headers, { extraMin: null });
     await call('PUT', 'status/busy-mode', cashier.headers, { extraMin: 10 });
