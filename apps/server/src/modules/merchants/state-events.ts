@@ -21,6 +21,11 @@ export const stateKinds = [
   'busy_reminder',
   // RA §16 #3, AP §9.6.5: paused after the unanswered orders of a day.
   'auto_paused',
+  // RA §16 #23, AP §9.6.5: operations paused (with the reason), resumed, or
+  // ended busy mode. `endedAuto` says an auto-pause ended with it.
+  'paused_by_operations',
+  'resumed_by_operations',
+  'busy_ended_by_operations',
 ] as const;
 export type StateKind = (typeof stateKinds)[number];
 

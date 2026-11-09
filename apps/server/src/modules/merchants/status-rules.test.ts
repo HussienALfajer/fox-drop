@@ -3,6 +3,7 @@ import type { OperatingState } from './operating-state.js';
 import {
   busyModeEnd,
   checkHolidayClose,
+  checkOperationsPause,
   restaurantPauseEnd,
   restaurantResume,
 } from './status-rules.js';
@@ -140,5 +141,37 @@ describe('checkHolidayClose', () => {
     expect(
       checkHolidayClose({ startsAt: now, endsAt: minutes(60), message: 'ع'.repeat(101) }, now),
     ).not.toBe(null);
+  });
+});
+
+describe('checkOperationsPause (AP §9.6.5)', () => {
+  const pause = (choice: { minutes?: number | null; until?: Date | null }, more = {}) =>
+    checkOperationsPause(
+      { minutes: null, until: null, message: null, reason: 'لا يرد', ...choice, ...more },
+      now,
+    );
+
+  it('pauses for 15, 30 or 60 minutes, until a later time, or until resumed', () => {
+    for (const choice of [15, 30, 60]) {
+      expect(pause({ minutes: choice })).toEqual({ endsAt: minutes(choice) });
+    }
+    expect(pause({ until: minutes(600) })).toEqual({ endsAt: minutes(600) });
+    expect(pause({})).toEqual({ endsAt: null });
+  });
+
+  it('refuses another length, a time not ahead, and both a length and a time', () => {
+    for (const choice of [{ minutes: 20 }, { until: now }, { minutes: 15, until: minutes(30) }]) {
+      expect(pause(choice)).toEqual({ refusal: 'invalid_pause' });
+    }
+  });
+
+  it('needs a reason, and keeps the customers’ message to 100 characters', () => {
+    expect(pause({ minutes: 15 }, { reason: '  ' })).toEqual({ refusal: 'reason_required' });
+    expect(pause({ minutes: 15 }, { message: 'م'.repeat(101) })).toEqual({
+      refusal: 'invalid_pause',
+    });
+    expect(pause({ minutes: 15 }, { message: 'م'.repeat(100) })).toEqual({
+      endsAt: minutes(15),
+    });
   });
 });

@@ -7,6 +7,7 @@ import { FxModule } from '../fx/index.js';
 import { GeoModule } from '../geo/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminRestaurantImagesController } from './admin-restaurant-images.controller.js';
+import { AdminRestaurantStatusController } from './admin-restaurant-status.controller.js';
 import { MerchantMenuController } from './merchant-menu.controller.js';
 import { MerchantsService } from './merchants.service.js';
 import { RestaurantStatusService } from './restaurant-status.service.js';
@@ -26,7 +27,12 @@ import { MerchantStatusController } from './merchant-status.controller.js';
     AuditModule,
     FilesModule,
   ],
-  controllers: [MerchantMenuController, MerchantStatusController, AdminRestaurantImagesController],
+  controllers: [
+    MerchantMenuController,
+    MerchantStatusController,
+    AdminRestaurantImagesController,
+    AdminRestaurantStatusController,
+  ],
   providers: [MerchantsService, RestaurantStatusService],
   exports: [MerchantsService, RestaurantStatusService],
 })

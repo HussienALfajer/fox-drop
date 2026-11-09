@@ -16,6 +16,7 @@ import {
   RestaurantStatusService,
   type StateKind,
 } from '../merchants/index.js';
+import { AlertsService } from './alerts.service.js';
 import { merchantChannel, opsChannel } from './channels.js';
 import { PushQueue } from './push-queue.js';
 import { requireRealtime } from './realtime-config.js';
@@ -41,6 +42,17 @@ export function restaurantStatePush(
     // #25: «وضع الضغط ما زال مفعّلاً (+{د} د)»
     case 'busy_reminder':
       return { templateKey: 'merchant.busy_reminder', values: { د: String(values.extraMin) } };
+    // #23: «أوقفت العمليات مطعمك مؤقتاً: {السبب}», «أعادت العمليات تشغيل
+    // مطعمك», «أنهت العمليات وضع الضغط».
+    case 'paused_by_operations':
+      return {
+        templateKey: 'merchant.paused_by_operations',
+        values: { السبب: String(values.reason) },
+      };
+    case 'resumed_by_operations':
+      return { templateKey: 'merchant.resumed_by_operations', values: {} };
+    case 'busy_ended_by_operations':
+      return { templateKey: 'merchant.busy_ended_by_operations', values: {} };
     default:
       return null;
   }
@@ -60,6 +72,7 @@ export class RestaurantStateRelay {
     private readonly publisher: RealtimePublisher,
     private readonly queue: PushQueue,
     private readonly texts: NotificationTexts,
+    private readonly alerts: AlertsService,
   ) {}
 
   async drain(now: Date): Promise<number> {
@@ -84,6 +97,23 @@ export class RestaurantStateRelay {
             },
           ],
           now,
+        );
+      }
+      // AP §9.1.3: «مطعم أوقف تلقائياً» resolves as soon as operations end
+      // the auto-pause, not at the next sweep, unless a newer auto-pause holds
+      // the restaurant by now (this row may be relayed late, or again).
+      if (
+        change.values.endedAuto === true &&
+        !(await this.status.isAutoPaused(change.restaurantId, now))
+      ) {
+        await this.database.db.transaction((tx) =>
+          this.alerts.sync(
+            tx,
+            { type: 'restaurant', id: change.restaurantId, cityId: change.cityId },
+            ['restaurant_auto_paused'],
+            [],
+            now,
+          ),
         );
       }
       await this.publisher.broadcast(

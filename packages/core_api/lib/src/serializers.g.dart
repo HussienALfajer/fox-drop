@@ -135,11 +135,19 @@ Serializers _$serializers =
           ..add(AdminRecordDeliveryDtoShortfall.serializer)
           ..add(AdminResendNotificationDto.serializer)
           ..add(AdminResendNotificationDtoToEnum.serializer)
+          ..add(AdminRestaurantHolidayCloseDto.serializer)
           ..add(AdminRestaurantImagesDtoOutput.serializer)
           ..add(AdminRestaurantImagesDtoOutputCategoriesInner.serializer)
           ..add(
             AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner.serializer,
           )
+          ..add(AdminRestaurantMaxActiveOrdersDto.serializer)
+          ..add(AdminRestaurantPauseDto.serializer)
+          ..add(AdminRestaurantStatusDtoOutput.serializer)
+          ..add(AdminRestaurantStatusDtoOutputAccountStatusEnum.serializer)
+          ..add(AdminRestaurantStatusDtoOutputHeldPauseSourceEnum.serializer)
+          ..add(AdminRestaurantStatusDtoOutputPauseSourceEnum.serializer)
+          ..add(AdminRestaurantStatusDtoOutputStateEnum.serializer)
           ..add(AdminRestaurantsDtoOutput.serializer)
           ..add(AdminRestaurantsDtoOutputRestaurantsInner.serializer)
           ..add(AdminResumeEmergencyStopDto.serializer)
@@ -1346,6 +1354,10 @@ Serializers _$serializers =
               const FullType(TeamUsersDtoOutputUsersInner),
             ]),
             () => ListBuilder<TeamUsersDtoOutputUsersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(int)]),
+            () => ListBuilder<int>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(int)]),

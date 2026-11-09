@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
@@ -15,12 +15,13 @@ import {
   MerchantsRefusedError,
   MerchantsService,
 } from './merchants.service.js';
-import type { OperatingState } from './operating-state.js';
+import type { OperatingState, PauseSource } from './operating-state.js';
 import { holidayCloses, pauses, restaurants, stateOutbox } from './schema.js';
 import { recordStateChange, type StateKind } from './state-events.js';
 import {
   busyModeEnd,
   checkHolidayClose,
+  checkOperationsPause,
   PAUSE_CHOICES_MIN,
   restaurantPauseEnd,
   restaurantResume,
@@ -42,6 +43,15 @@ export interface RestaurantStatus {
   maxActiveOrders: number | null;
   // The holiday close in force or the next one set (RA §10).
   holiday: { startsAt: Date; endsAt: Date; message: string | null } | null;
+  // The pause in force, whatever the state (one closed by the schedule or a
+  // holiday still holds an operations or auto pause), with an operations
+  // pause's message to customers and reason, for the panel (AP §9.6.5).
+  pause: {
+    source: PauseSource;
+    endsAt: Date | null;
+    message: string | null;
+    reason: string | null;
+  } | null;
   pauseChoicesMin: readonly number[];
   busyExtraOptionsMin: number[];
   busyReminderMin: number;
@@ -59,6 +69,10 @@ export interface RelayedStateChange {
 
 // Rows taken per transaction, which holds their locks while it relays.
 const RELAY_BATCH = 20;
+
+// How long the same operations pause of a length again is a repeat, not a
+// new pause from now.
+const REPEAT_WINDOW_MS = 60_000;
 
 // RA §16 #24: the pause a timer was set for.
 export interface PauseEndJob {
@@ -133,6 +147,26 @@ export class RestaurantStatusService {
       )
       .orderBy(asc(holidayCloses.startsAt))
       .limit(1);
+    // In force whatever the state: an operations or auto pause holds while
+    // closed too, and only operations end it (AP §9.6.5).
+    const [pause] = await db
+      .select({
+        source: pauses.source,
+        endsAt: pauses.endsAt,
+        message: pauses.message,
+        reason: pauses.reason,
+      })
+      .from(pauses)
+      .where(
+        and(
+          eq(pauses.restaurantId, restaurantId),
+          isNull(pauses.endedAt),
+          sql`${pauses.startsAt} <= ${now.toISOString()}`,
+          sql`(${pauses.endsAt} IS NULL OR ${pauses.endsAt} > ${now.toISOString()})`,
+        ),
+      )
+      .orderBy(desc(pauses.startsAt))
+      .limit(1);
     const scope = { cityId: row.cityId };
     const [busyExtraOptionsMin, busyReminderMin] = await Promise.all([
       this.settings.get('merchant.busy_extra_options_min', scope),
@@ -150,6 +184,7 @@ export class RestaurantStatusService {
         row.maxActiveOrders === null ? null : await this.merchants.activeOrderCount(restaurantId),
       maxActiveOrders: row.maxActiveOrders,
       holiday: holiday ?? null,
+      pause: pause ?? null,
       pauseChoicesMin: PAUSE_CHOICES_MIN,
       busyExtraOptionsMin,
       busyReminderMin,
@@ -234,7 +269,135 @@ export class RestaurantStatusService {
     });
   }
 
-  // RA §7.3: busy mode on with +10 or +20 minutes, or off (null).
+  // AP §9.6.5 «إيقاف مؤقت» by operations (OWN, OPS): 15, 30 or 60 minutes,
+  // until a time, or until resumed (both null), with a required reason and
+  // an optional message to customers (CU §9.2). It replaces any pause in
+  // force, the auto-pause included (one pause at a time), in any state: like
+  // the auto-pause, it holds across opening periods until it ends or
+  // operations resume it. A timed one ends on its own (`QUEUES.pauseEnd`).
+  async operationsPause(
+    restaurantId: string,
+    pause: { minutes: number | null; until: Date | null; message: string | null; reason: string },
+    change: MerchantChange,
+    now = new Date(),
+  ): Promise<void> {
+    const message = pause.message?.trim() || null;
+    const reason = pause.reason.trim();
+    const outcome = checkOperationsPause({ ...pause, message, reason }, now);
+    if ('refusal' in outcome) throw refused(outcome.refusal);
+    const { endsAt } = outcome;
+    const by = { ...change, reason };
+    await this.database.db.transaction(async (tx) => {
+      const row = await this.lock(tx, restaurantId);
+      const { state } = await this.merchants.storefrontState(restaurantId, now, tx);
+      // A repeat (a retry after a lost answer, a second press) changes
+      // nothing: the same operations pause is in force, set less than
+      // REPEAT_WINDOW_MS ago for a length, so its end and push stay.
+      const [held] = await tx
+        .select({
+          startsAt: pauses.startsAt,
+          endsAt: pauses.endsAt,
+          message: pauses.message,
+          reason: pauses.reason,
+        })
+        .from(pauses)
+        .where(
+          and(
+            eq(pauses.restaurantId, restaurantId),
+            eq(pauses.source, 'ops'),
+            isNull(pauses.endedAt),
+            sql`(${pauses.endsAt} IS NULL OR ${pauses.endsAt} > ${now.toISOString()})`,
+          ),
+        )
+        .orderBy(desc(pauses.startsAt))
+        .limit(1);
+      if (held && held.message === message && held.reason === reason) {
+        const sameEnd =
+          pause.minutes === null
+            ? (held.endsAt?.getTime() ?? null) === (endsAt?.getTime() ?? null)
+            : held.endsAt !== null &&
+              held.endsAt.getTime() - held.startsAt.getTime() === pause.minutes * 60_000 &&
+              now.getTime() - held.startsAt.getTime() < REPEAT_WINDOW_MS;
+        if (sameEnd) return;
+      }
+      const ended = await this.endPauses(tx, restaurantId, ['restaurant', 'ops', 'auto'], by, now);
+      const [inserted] = await tx
+        .insert(pauses)
+        .values({
+          restaurantId,
+          source: 'ops',
+          startsAt: now,
+          endsAt,
+          message,
+          reason,
+          setById: change.actor.id,
+        })
+        .returning({ id: pauses.id });
+      if (endsAt !== null) {
+        const job: PauseEndJob = { pauseId: inserted!.id, restaurantId };
+        await this.jobs.send(QUEUES.pauseEnd, job, { startAfter: endsAt, db: inTransaction(tx) });
+      }
+      await this.record(tx, by, row.cityId, restaurantId, 'restaurant.pause', {
+        before: { state: state.state, endedPauses: ended },
+        after: {
+          source: 'ops',
+          minutes: pause.minutes,
+          until: endsAt?.toISOString() ?? null,
+          message,
+        },
+      });
+      await this.changed(tx, row.cityId, restaurantId, 'paused_by_operations', now, {
+        reason,
+        ...(ended.includes('auto') ? { endedAuto: true } : {}),
+      });
+    });
+  }
+
+  // AP §9.6.5 «استئناف» by operations: ends any pause in force, the
+  // restaurant's, operations' or the auto-pause (AP §9.1.3, whose alert then
+  // resolves). With no pause there is nothing to do.
+  async operationsResume(
+    restaurantId: string,
+    change: MerchantChange,
+    now = new Date(),
+  ): Promise<void> {
+    await this.database.db.transaction(async (tx) => {
+      const row = await this.lock(tx, restaurantId);
+      const { state } = await this.merchants.storefrontState(restaurantId, now, tx);
+      const ended = await this.endPauses(
+        tx,
+        restaurantId,
+        ['restaurant', 'ops', 'auto'],
+        change,
+        now,
+      );
+      if (ended.length === 0) return;
+      await this.record(tx, change, row.cityId, restaurantId, 'restaurant.resume', {
+        before: { state: state.state, endedPauses: ended },
+        after: null,
+      });
+      await this.changed(
+        tx,
+        row.cityId,
+        restaurantId,
+        'resumed_by_operations',
+        now,
+        ended.includes('auto') ? { endedAuto: true } : undefined,
+      );
+    });
+  }
+
+  // AP §9.6.5 «إنهاء وضع الضغط».
+  async operationsEndBusyMode(
+    restaurantId: string,
+    change: MerchantChange,
+    now = new Date(),
+  ): Promise<void> {
+    await this.setBusyMode(restaurantId, null, change, now);
+  }
+
+  // RA §7.3: busy mode on with +10 or +20 minutes, or off (null); off by an
+  // admin is AP §9.6.5 «إنهاء وضع الضغط», told to the restaurant (RA §16 #23).
   async setBusyMode(
     restaurantId: string,
     extraMin: number | null,
@@ -280,7 +443,11 @@ export class RestaurantStatusService {
         before,
         after: extraMin === null ? null : { extraMin },
       });
-      await this.changed(tx, row.cityId, restaurantId, 'busy_mode', now);
+      const kind =
+        extraMin === null && change.actor.type === 'admin'
+          ? 'busy_ended_by_operations'
+          : 'busy_mode';
+      await this.changed(tx, row.cityId, restaurantId, kind, now);
     });
   }
 
@@ -297,6 +464,11 @@ export class RestaurantStatusService {
     const startsAt = close.startsAt ?? now;
     const problem = checkHolidayClose({ startsAt, endsAt: close.endsAt, message }, now);
     if (problem !== null) throw new MerchantsRefusedError('invalid_holiday_close', problem);
+    // AP §9.6.5: operations give a reason.
+    const reason = change.reason?.trim() || null;
+    if (change.actor.type === 'admin' && reason === null) {
+      throw new MerchantsRefusedError('reason_required', 'a holiday close needs a reason');
+    }
     await this.database.db.transaction(async (tx) => {
       const row = await this.lock(tx, restaurantId);
       // RA §18 «Holiday close / end»: not while suspended.
@@ -310,6 +482,7 @@ export class RestaurantStatusService {
         startsAt: storedStart,
         endsAt: close.endsAt,
         message,
+        reason,
         ...setBy(change),
       });
       await this.record(tx, change, row.cityId, restaurantId, 'restaurant.holiday_close', {
@@ -344,14 +517,16 @@ export class RestaurantStatusService {
 
   // RA §10: the default prep time preselected on the accept prompt (§8.5),
   // within the chooser's limits, and the maximum active orders (off, or 1 to
-  // 50, §7.4). Each applies at once.
+  // 50, §7.4). Each applies at once. Operations change only the maximum, on
+  // the restaurant's request (AP §9.6.4, §9.6.5): without a prep time, it
+  // stays as it is.
   async setOrderSettings(
     restaurantId: string,
-    settings: { defaultPrepMin: number; maxActiveOrders: number | null },
+    settings: { defaultPrepMin?: number; maxActiveOrders: number | null },
     change: MerchantChange,
     now = new Date(),
   ): Promise<void> {
-    const { defaultPrepMin, maxActiveOrders } = settings;
+    const { maxActiveOrders } = settings;
     if (
       maxActiveOrders !== null &&
       (!Number.isInteger(maxActiveOrders) || maxActiveOrders < 1 || maxActiveOrders > 50)
@@ -363,17 +538,6 @@ export class RestaurantStatusService {
     }
     await this.database.db.transaction(async (tx) => {
       const row = await this.lock(tx, restaurantId);
-      const scope = { cityId: row.cityId };
-      const [floor, ceiling] = await Promise.all([
-        this.settings.get('merchant.prep_time_floor_min', scope),
-        this.settings.get('merchant.prep_time_ceiling_min', scope),
-      ]);
-      if (!Number.isInteger(defaultPrepMin) || defaultPrepMin < floor || defaultPrepMin > ceiling) {
-        throw new MerchantsRefusedError(
-          'invalid_prep_time',
-          `the default prep time is ${floor} to ${ceiling} minutes`,
-        );
-      }
       const [current] = await tx
         .select({
           defaultPrepMin: restaurants.defaultPrepMin,
@@ -382,6 +546,24 @@ export class RestaurantStatusService {
         .from(restaurants)
         .where(eq(restaurants.id, restaurantId));
       if (!current) return;
+      const defaultPrepMin = settings.defaultPrepMin ?? current.defaultPrepMin;
+      if (settings.defaultPrepMin !== undefined) {
+        const scope = { cityId: row.cityId };
+        const [floor, ceiling] = await Promise.all([
+          this.settings.get('merchant.prep_time_floor_min', scope),
+          this.settings.get('merchant.prep_time_ceiling_min', scope),
+        ]);
+        if (
+          !Number.isInteger(defaultPrepMin) ||
+          defaultPrepMin < floor ||
+          defaultPrepMin > ceiling
+        ) {
+          throw new MerchantsRefusedError(
+            'invalid_prep_time',
+            `the default prep time is ${floor} to ${ceiling} minutes`,
+          );
+        }
+      }
       if (
         current.defaultPrepMin === defaultPrepMin &&
         current.maxActiveOrders === maxActiveOrders
@@ -606,6 +788,24 @@ export class RestaurantStatusService {
       );
   }
 
+  // Whether an auto-pause holds the restaurant now (AP §9.1.3), so a relayed
+  // resume never closes the alert of a newer auto-pause.
+  async isAutoPaused(restaurantId: string, now = new Date()): Promise<boolean> {
+    const [row] = await this.database.db
+      .select({ id: pauses.id })
+      .from(pauses)
+      .where(
+        and(
+          eq(pauses.restaurantId, restaurantId),
+          eq(pauses.source, 'auto'),
+          isNull(pauses.endedAt),
+          sql`${pauses.startsAt} <= ${now.toISOString()}`,
+        ),
+      )
+      .limit(1);
+    return row !== undefined;
+  }
+
   // E4: hands the committed state changes, in id order, to the relay (the
   // notifications module publishes and pushes them; this module cannot import
   // it), and marks each relayed once it returns. Rows another run holds are
@@ -684,17 +884,30 @@ export class RestaurantStatusService {
     change: MerchantChange,
     now: Date,
   ): Promise<void> {
-    await tx
+    await this.endPauses(tx, restaurantId, ['restaurant'], change, now);
+  }
+
+  // Ends the pauses in force of these sources; answers the sources ended.
+  private async endPauses(
+    tx: Tx,
+    restaurantId: string,
+    sources: PauseSource[],
+    change: MerchantChange,
+    now: Date,
+  ): Promise<PauseSource[]> {
+    const ended = await tx
       .update(pauses)
-      .set({ endedAt: now, endedByType: 'merchant', endedById: change.actor.id })
+      .set({ endedAt: now, ...endedBy(change) })
       .where(
         and(
           eq(pauses.restaurantId, restaurantId),
-          eq(pauses.source, 'restaurant'),
+          inArray(pauses.source, sources),
           isNull(pauses.endedAt),
-          sql`${pauses.endsAt} > ${now.toISOString()}`,
+          sql`(${pauses.endsAt} IS NULL OR ${pauses.endsAt} > ${now.toISOString()})`,
         ),
-      );
+      )
+      .returning({ source: pauses.source });
+    return ended.map((row) => row.source);
   }
 
   private async lock(tx: Tx, restaurantId: string) {
@@ -755,12 +968,19 @@ function endedBy(change: MerchantChange) {
 }
 
 function refused(
-  refusal: 'restaurant_closed' | 'paused_by_operations' | 'invalid_pause' | 'invalid_busy_extra',
+  refusal:
+    | 'restaurant_closed'
+    | 'paused_by_operations'
+    | 'invalid_pause'
+    | 'invalid_busy_extra'
+    | 'reason_required',
 ) {
   const messages = {
+    reason_required: 'an operations pause needs a reason',
     restaurant_closed: 'the restaurant is not open',
     paused_by_operations: 'operations or the auto-pause paused the restaurant',
-    invalid_pause: 'a pause lasts 15, 30 or 60 minutes, or until reopening',
+    invalid_pause:
+      'a pause lasts 15, 30 or 60 minutes, until a later time or until resumed, with a message of up to 100 characters',
     invalid_busy_extra: 'busy mode adds one of merchant.busy_extra_options_min',
   };
   return new MerchantsRefusedError(refusal, messages[refusal]);

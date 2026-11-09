@@ -112,6 +112,7 @@ export class AlertsWorkerModule {}
   providers: [
     RealtimePublisher,
     PushQueue,
+    AlertsService,
     PlatformRelay,
     PlatformRelayWorker,
     RestaurantStateRelay,

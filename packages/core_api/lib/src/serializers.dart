@@ -90,9 +90,13 @@ import 'package:core_api/src/model/admin_record_delivery_dto_amount_due.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_received_inner.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_shortfall.dart';
 import 'package:core_api/src/model/admin_resend_notification_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_holiday_close_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output_categories_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output_categories_inner_items_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_max_active_orders_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_pause_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_status_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurants_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurants_dto_output_restaurants_inner.dart';
 import 'package:core_api/src/model/admin_resume_emergency_stop_dto.dart';
@@ -424,9 +428,13 @@ part 'serializers.g.dart';
   AdminRecordDeliveryDtoReceivedInner,
   AdminRecordDeliveryDtoShortfall,
   AdminResendNotificationDto,
+  AdminRestaurantHolidayCloseDto,
   AdminRestaurantImagesDtoOutput,
   AdminRestaurantImagesDtoOutputCategoriesInner,
   AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner,
+  AdminRestaurantMaxActiveOrdersDto,
+  AdminRestaurantPauseDto,
+  AdminRestaurantStatusDtoOutput,
   AdminRestaurantsDtoOutput,
   AdminRestaurantsDtoOutputRestaurantsInner,
   AdminResumeEmergencyStopDto,

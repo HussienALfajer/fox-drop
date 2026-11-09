@@ -4,7 +4,8 @@ import type { OperatingState } from './operating-state.js';
 // minutes; «حتى أعيد الفتح» is the fourth, without minutes.
 export const PAUSE_CHOICES_MIN = [15, 30, 60] as const;
 
-// RA §10, fixed: the longest holiday close message.
+// RA §10, fixed: the longest message to customers, a holiday close's or an
+// operations pause's.
 export const HOLIDAY_MESSAGE_MAX = 100;
 
 export type StatusRefusal =
@@ -78,4 +79,30 @@ export function checkHolidayClose(
     return `the message has ${HOLIDAY_MESSAGE_MAX} characters or fewer`;
   }
   return null;
+}
+
+// AP §9.6.5 «إيقاف مؤقت» by operations: 15, 30 or 60 minutes, until a later
+// time, or until resumed (both null), with a required reason and an optional
+// message to customers. It applies in any state (the auto-pause, too, holds
+// across opening periods) and replaces any pause in force (one at a time).
+export function checkOperationsPause(
+  pause: { minutes: number | null; until: Date | null; message: string | null; reason: string },
+  now: Date,
+): { endsAt: Date | null } | { refusal: 'invalid_pause' | 'reason_required' } {
+  if (pause.reason.trim() === '') return { refusal: 'reason_required' };
+  if (pause.message !== null && [...pause.message].length > HOLIDAY_MESSAGE_MAX) {
+    return { refusal: 'invalid_pause' };
+  }
+  if (pause.minutes !== null) {
+    if (pause.until !== null || !(PAUSE_CHOICES_MIN as readonly number[]).includes(pause.minutes)) {
+      return { refusal: 'invalid_pause' };
+    }
+    return { endsAt: new Date(now.getTime() + pause.minutes * 60_000) };
+  }
+  if (pause.until !== null) {
+    return pause.until.getTime() > now.getTime()
+      ? { endsAt: pause.until }
+      : { refusal: 'invalid_pause' };
+  }
+  return { endsAt: null };
 }
