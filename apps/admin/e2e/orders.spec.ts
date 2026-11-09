@@ -566,3 +566,46 @@ test('shows a cancellation by operations in the detail and its timeline', async 
   await expect(cancelled).toContainText('انقطاع الكهرباء');
   await expect(panel.getByRole('form', { name: 'إلغاء الطلب' })).toHaveCount(0);
 });
+
+// AP §9.3.2: the captain's vehicle has no rate, so «تعويض الكابتن» is
+// refused; the box stays to untick, and the dialog goes on without it.
+test('lets the operator untick «تعويض الكابتن» after captain_pay_unset', async ({ page }) => {
+  await fakeSession(page, ['operations.read', 'operations.manage']);
+  await fakeOperations(page);
+  await page.route(`**/v1/admin/orders/${orderId}`, (route) =>
+    route.fulfill({
+      json: {
+        order: {
+          ...detail,
+          cancelChoices: { reasons: [{ code: 'emergency', label: 'ظرف طارئ' }] },
+        },
+      },
+    }),
+  );
+  await page.route(`**/v1/admin/orders/${orderId}/cancel-preview`, (route) =>
+    route.request().postDataJSON().compensateCaptain
+      ? route.fulfill({ status: 409, json: { statusCode: 409, error: 'captain_pay_unset' } })
+      : route.fulfill({
+          json: {
+            entries: [],
+            cashAsked: false,
+            compensationAllowed: true,
+            cashLines: null,
+            strike: false,
+          },
+        }),
+  );
+  await page.goto(`/orders/${orderId}`);
+  const cancel = page.getByRole('form', { name: 'إلغاء الطلب' });
+  await cancel.getByRole('radio', { name: 'ظرف طارئ' }).check();
+  await cancel.getByRole('radio', { name: 'المنصة' }).check();
+  const compensate = cancel.getByRole('checkbox', { name: 'تعويض الكابتن' });
+  await compensate.check();
+  await expect(cancel.getByRole('alert')).toHaveText(
+    'لا أجر لمركبة الكابتن في جدول أجور الطلب، فلا يمكن تعويضه',
+  );
+  await compensate.uncheck();
+  await expect(cancel.getByText('لا قيود مالية لهذا الإلغاء.')).toBeVisible();
+  await cancel.getByRole('textbox', { name: 'السبب (للسجل الداخلي)' }).fill('ملاحظة');
+  await expect(cancel.getByRole('button', { name: 'تأكيد الإلغاء' })).toBeEnabled();
+});

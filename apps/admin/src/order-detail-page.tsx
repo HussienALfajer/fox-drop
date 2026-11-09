@@ -190,6 +190,7 @@ export function OrderDetailPage() {
           key={orderId}
           orderId={orderId}
           status={detail.status}
+          version={detail.version}
           choices={detail.cancelChoices}
         />
       )}

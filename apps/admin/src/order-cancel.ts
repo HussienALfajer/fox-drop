@@ -119,10 +119,13 @@ export type PreviewResult =
   { status: 'preview'; preview: CancelPreview } | { status: 'refused'; refusal: CancelRefusal };
 
 // docs/domain/09: the entries the choices would post, asked again on each
-// choice; the previous answer stays shown while the next one loads.
-export function cancelPreviewQuery(orderId: string, body: PreviewBody | null) {
+// choice and on each new version of the order (another pickup request, the
+// restaurant's received lines), so the confirm never follows entries the
+// operator did not see; the previous answer stays shown, with the confirm
+// off, while the next one loads.
+export function cancelPreviewQuery(orderId: string, version: number, body: PreviewBody | null) {
   return queryOptions({
-    queryKey: ['cancel-preview', orderId, body],
+    queryKey: ['cancel-preview', orderId, version, body],
     enabled: body !== null,
     placeholderData: keepPreviousData,
     queryFn: async (): Promise<PreviewResult> => {
@@ -196,16 +199,14 @@ export type PreviewLine =
   // A journal type the panel cannot name: the dialog refuses to confirm.
   | { key: 'unknown' };
 
-const positive = (money: Money): Money => ({
-  ...money,
-  amount: money.amount.replace(/^-/, ''),
-});
-
 // docs/domain/09: every entry the cancellation posts, with its amount,
-// account and party, one sentence per journal. The order clearing account
-// («طلبات قيد التسليم») only carries each journal through and nets to zero,
-// so it is not repeated. A journal type the panel does not know is `unknown`:
-// the preview must be whole before anyone confirms.
+// account and party, one sentence per journal. Each sentence states a
+// direction, so an entry is named only when its sign is the one the
+// sentence says (from the platform's side: + a debit, − a credit) and its
+// journal posts it once; anything else, a journal type the panel does not
+// know included, is `unknown`, since the preview must be whole and right
+// before anyone confirms. The order clearing account («طلبات قيد التسليم»)
+// only carries each journal through and nets to zero, so it is not repeated.
 export function previewLines(preview: CancelPreview): PreviewLine[] {
   const journals = new Map<string, CancelPreview['entries']>();
   for (const entry of preview.entries) {
@@ -213,42 +214,65 @@ export function previewLines(preview: CancelPreview): PreviewLine[] {
   }
   const lines: PreviewLine[] = [];
   for (const [type, entries] of journals) {
-    const on = (account: string) => entries.find((entry) => entry.account === account);
-    const merchant = on('merchant.account');
-    if (type === 'merchant.credit' && merchant) {
-      lines.push({
-        key: 'merchantCredit',
-        name: merchant.party.name,
-        amount: positive(merchant.amount),
-      });
-    } else if (type === 'platform.operating_cost' && on('platform.operating_cost')) {
-      lines.push({ key: 'platformCost', amount: positive(on('platform.operating_cost')!.amount) });
-    } else if (type === 'earn.order_pay' && on('captain.earnings')) {
-      const earnings = on('captain.earnings')!;
-      lines.push({
-        key: 'captainPay',
-        name: earnings.party.name,
-        amount: positive(earnings.amount),
-        testCost: on('platform.test_cost') !== undefined,
-      });
-    } else if (type === 'custody.pay_merchant' && on('captain.custody')) {
-      const custody = entries.filter((entry) => entry.account === 'captain.custody');
-      lines.push({
-        key: 'captainCustody',
-        name: custody[0]!.party.name,
-        amounts: custody.map((entry) => positive(entry.amount)),
-      });
-    } else if (type === 'merchant.debit' && merchant) {
-      lines.push({
-        key: 'merchantDebit',
-        name: merchant.party.name,
-        amount: positive(merchant.amount),
-      });
-    } else {
-      lines.push({ key: 'unknown' });
-    }
+    lines.push(journalLine(type, entries) ?? { key: 'unknown' });
   }
   if (preview.strike) lines.push({ key: 'strike' });
   if (lines.length === 0) lines.push({ key: 'nothing' });
   return lines;
+}
+
+type Entry = CancelPreview['entries'][number];
+
+const credit = (entry: Entry) => entry.amount.amount.startsWith('-');
+const size = (entry: Entry): Money => ({
+  ...entry.amount,
+  amount: entry.amount.amount.replace(/^-/, ''),
+});
+
+function journalLine(type: string, entries: Entry[]): PreviewLine | null {
+  const on = (account: string) => entries.filter((entry) => entry.account === account);
+  // The one entry of an account, with the expected direction.
+  const one = (account: string, isCredit: boolean) => {
+    const found = on(account);
+    return found.length === 1 && credit(found[0]!) === isCredit ? found[0]! : null;
+  };
+  switch (type) {
+    case 'merchant.credit': {
+      const merchant = one('merchant.account', true);
+      return (
+        merchant && { key: 'merchantCredit', name: merchant.party.name, amount: size(merchant) }
+      );
+    }
+    case 'platform.operating_cost': {
+      const cost = one('platform.operating_cost', false);
+      return cost && { key: 'platformCost', amount: size(cost) };
+    }
+    case 'earn.order_pay': {
+      const earnings = one('captain.earnings', true);
+      const operating = one('platform.operating_cost', false);
+      const test = one('platform.test_cost', false);
+      return (
+        earnings &&
+        (operating ?? test) && {
+          key: 'captainPay',
+          name: earnings.party.name,
+          amount: size(earnings),
+          testCost: test !== null,
+        }
+      );
+    }
+    case 'custody.pay_merchant': {
+      const custody = on('captain.custody');
+      if (custody.length === 0 || !custody.every(credit)) return null;
+      return { key: 'captainCustody', name: custody[0]!.party.name, amounts: custody.map(size) };
+    }
+    case 'merchant.debit': {
+      const merchant = one('merchant.account', false);
+      return (
+        merchant && { key: 'merchantDebit', name: merchant.party.name, amount: size(merchant) }
+      );
+    }
+    default:
+      return null;
+  }
 }

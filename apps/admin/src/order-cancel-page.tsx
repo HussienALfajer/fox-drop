@@ -33,10 +33,12 @@ const empty: CancelForm = {
 export function CancelOrder({
   orderId,
   status,
+  version,
   choices,
 }: {
   orderId: string;
   status: string;
+  version: number;
   choices: CancelChoices;
 }) {
   const { t } = useTranslation();
@@ -45,7 +47,7 @@ export function CancelOrder({
   const placed = status === 'placed';
   const set = (change: Partial<CancelForm>) => setForm({ ...form, ...change });
   const asked = previewBody(form, placed);
-  const preview = useQuery(cancelPreviewQuery(orderId, asked));
+  const preview = useQuery(cancelPreviewQuery(orderId, version, asked));
   const shown = preview.data?.status === 'preview' ? preview.data.preview : undefined;
   const lines = shown && previewLines(shown);
   const cancel = useCancelOrder(orderId);
@@ -97,7 +99,8 @@ export function CancelOrder({
           {t('order.cancel.foodPrepared')}
         </label>
       )}
-      {!placed && shown?.compensationAllowed && (
+      {/* Kept while ticked, so a refusal (captain_pay_unset) can be undone. */}
+      {!placed && (form.compensateCaptain || shown?.compensationAllowed) && (
         <label>
           <input
             type="checkbox"

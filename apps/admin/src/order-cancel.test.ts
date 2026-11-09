@@ -176,4 +176,43 @@ describe('previewLines', () => {
       }),
     ).toEqual([{ key: 'unknown' }]);
   });
+
+  it('flags an entry posted the other way, or a journal posted twice', () => {
+    const none = {
+      cashAsked: false,
+      compensationAllowed: false,
+      cashLines: null,
+      strike: false,
+    };
+    const reversed = {
+      ...none,
+      entries: [
+        {
+          type: 'merchant.credit',
+          account: 'merchant.account',
+          party: merchant,
+          amount: try_('500'),
+        },
+      ],
+    };
+    expect(previewLines(reversed)).toEqual([{ key: 'unknown' }]);
+    const twice = {
+      ...none,
+      entries: [
+        {
+          type: 'merchant.debit',
+          account: 'merchant.account',
+          party: merchant,
+          amount: try_('500'),
+        },
+        {
+          type: 'merchant.debit',
+          account: 'merchant.account',
+          party: merchant,
+          amount: try_('700'),
+        },
+      ],
+    };
+    expect(previewLines(twice)).toEqual([{ key: 'unknown' }]);
+  });
 });
