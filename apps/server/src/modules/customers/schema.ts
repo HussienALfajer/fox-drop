@@ -90,3 +90,52 @@ export const addresses = customers.table(
     ),
   ],
 );
+
+// docs/domain/08 (slice 2.8b): a late cancellation counted against the
+// customer: operations cancelled an order after acceptance with the customer
+// responsible (owner decision 2026-11-09). One per order; never changed.
+export const lateCancelStrikes = customers.table(
+  'late_cancel_strikes',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    // The identity module's customer_accounts row.
+    customerAccountId: uuid('customer_account_id').notNull(),
+    // The ordering module's order, and the order's city, whose settings
+    // count the strikes.
+    orderId: uuid('order_id').notNull(),
+    cityId: uuid('city_id').notNull(),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    uniqueIndex('late_cancel_strikes_order').on(table.orderId),
+    index('late_cancel_strikes_account_at').on(table.customerAccountId, table.at),
+  ],
+);
+
+// docs/domain/08: customer.late_cancel_strikes within
+// customer.late_cancel_window_days stop the account's ordering «موقوف حتى
+// مراجعة الدعم» until support ends the stop (slice 2.25). One open per
+// account; the application role may change only the end columns.
+export const reviewStops = customers.table(
+  'review_stops',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    customerAccountId: uuid('customer_account_id').notNull(),
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
+    // The order whose strike reached the threshold.
+    orderId: uuid('order_id').notNull(),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+    // The admin account that ended it.
+    endedBy: uuid('ended_by'),
+  },
+  (table) => [
+    uniqueIndex('review_stops_one_open')
+      .on(table.customerAccountId)
+      .where(sql`${table.endedAt} IS NULL`),
+    check('review_stops_end', sql`(${table.endedAt} IS NULL) = (${table.endedBy} IS NULL)`),
+  ],
+);

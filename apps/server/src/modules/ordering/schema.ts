@@ -55,6 +55,11 @@ export const captainTracks = [
 
 export const addressLabels = ['home', 'work', 'other'] as const;
 
+// docs/domain/09, AP §8.1 (slice 2.8b): operations' cancellation's
+// responsible party and the cash question's answer.
+export const responsibleParties = ['restaurant', 'captain', 'customer', 'platform'] as const;
+export const cashAnswers = ['returned', 'not_returned', 'not_paid'] as const;
+
 // AP §8.9: every order that ends after pickup gets one.
 export const orderOutcomes = [
   'normal',
@@ -205,6 +210,24 @@ export const orders = ordering.table(
     // when the order is cancelled.
     cancelCustomerText: text('cancel_customer_text'),
     foodPrepared: boolean('food_prepared'),
+    // AP §9.3.2 «إلغاء الطلب», docs/domain/09 (slice 2.8b): operations'
+    // cancellation keeps the ops_cancel reason's label as chosen (the
+    // restaurant's and the captain's «{السبب}», owner decision 2026-11-09),
+    // the responsible party, the answer to «هل أعاد المطعم المبلغ للكابتن؟»,
+    // and the food credit and the captain's compensation booked, in the base
+    // currency's minor units. Only operations' path sets the label.
+    cancelReasonLabel: text('cancel_reason_label'),
+    cancelResponsible: text('cancel_responsible', { enum: responsibleParties }),
+    cancelCash: text('cancel_cash', { enum: cashAnswers }),
+    cancelMerchantCredit: bigint('cancel_merchant_credit', { mode: 'bigint' }),
+    cancelCaptainCompensation: bigint('cancel_captain_compensation', { mode: 'bigint' }),
+    // RA §8.14, §18: «حسناً» on a restaurant device (the user's app account
+    // and the app installation) stops the ring on every device.
+    cancelAcknowledgedAt: timestamp('cancel_acknowledged_at', { withTimezone: true }),
+    cancelAcknowledgedBy: uuid('cancel_acknowledged_by'),
+    cancelAcknowledgedDevice: text('cancel_acknowledged_device'),
+    // CA §9.10: the captain's «حسناً» on the cancellation card.
+    cancelCaptainSeenAt: timestamp('cancel_captain_seen_at', { withTimezone: true }),
     // RA §8.6, AP §9.3.2: a rejected order keeps when and why (the code of
     // Content's merchant_rejection list and its label as chosen), the text
     // the customer sees, filled with the items for «صنف غير متوفر» (CU
@@ -221,6 +244,10 @@ export const orders = ordering.table(
     check(
       'orders_cancellation',
       sql`(${table.status} = 'cancelled') = (${table.cancelledAt} IS NOT NULL AND ${table.cancelReason} IS NOT NULL AND ${table.foodPrepared} IS NOT NULL)`,
+    ),
+    check(
+      'orders_ops_cancellation',
+      sql`(${table.status} = 'cancelled' OR (${table.cancelReasonLabel} IS NULL AND ${table.cancelResponsible} IS NULL AND ${table.cancelCash} IS NULL AND ${table.cancelMerchantCredit} IS NULL AND ${table.cancelCaptainCompensation} IS NULL AND ${table.cancelAcknowledgedAt} IS NULL AND ${table.cancelCaptainSeenAt} IS NULL)) AND (${table.cancelResponsible} IS NULL OR ${table.cancelResponsible} IN ('restaurant', 'captain', 'customer', 'platform')) AND (${table.cancelCash} IS NULL OR ${table.cancelCash} IN ('returned', 'not_returned', 'not_paid')) AND (${table.cancelAcknowledgedAt} IS NULL) = (${table.cancelAcknowledgedBy} IS NULL) AND (${table.cancelAcknowledgedAt} IS NOT NULL OR ${table.cancelAcknowledgedDevice} IS NULL) AND ${table.cancelMerchantCredit} > 0 AND ${table.cancelCaptainCompensation} > 0`,
     ),
     check(
       'orders_rejection',

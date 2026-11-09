@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/captain_active_order_dto_output_order.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_cancelled.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -13,12 +14,16 @@ part 'captain_active_order_dto_output.g.dart';
 ///
 /// Properties:
 /// * [order]
+/// * [cancelled]
 @BuiltValue()
 abstract class CaptainActiveOrderDtoOutput
     implements
         Built<CaptainActiveOrderDtoOutput, CaptainActiveOrderDtoOutputBuilder> {
   @BuiltValueField(wireName: r'order')
   CaptainActiveOrderDtoOutputOrder? get order;
+
+  @BuiltValueField(wireName: r'cancelled')
+  CaptainActiveOrderDtoOutputCancelled? get cancelled;
 
   CaptainActiveOrderDtoOutput._();
 
@@ -59,6 +64,15 @@ class _$CaptainActiveOrderDtoOutputSerializer
               CaptainActiveOrderDtoOutputOrder,
             ),
           );
+    yield r'cancelled';
+    yield object.cancelled == null
+        ? null
+        : serializers.serialize(
+            object.cancelled,
+            specifiedType: const FullType.nullable(
+              CaptainActiveOrderDtoOutputCancelled,
+            ),
+          );
   }
 
   @override
@@ -97,6 +111,18 @@ class _$CaptainActiveOrderDtoOutputSerializer
                   as CaptainActiveOrderDtoOutputOrder?;
           if (valueDes == null) continue;
           result.order.replace(valueDes);
+          break;
+        case r'cancelled':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainActiveOrderDtoOutputCancelled,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputCancelled?;
+          if (valueDes == null) continue;
+          result.cancelled.replace(valueDes);
           break;
         default:
           unhandled.add(key);

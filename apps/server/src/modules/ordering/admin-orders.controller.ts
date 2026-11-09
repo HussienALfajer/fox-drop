@@ -30,12 +30,23 @@ import {
   paymentLines,
 } from './captain-orders.controller.js';
 import { ORDER_ALERT_CODES } from './order-alerts.js';
-import { OrderCommandRefusedError, OrderCommands, type Rejection } from './order-commands.js';
+import {
+  type CancellationPreview,
+  OrderCommandRefusedError,
+  OrderCommands,
+  type Rejection,
+} from './order-commands.js';
 import { PickupCommands } from './pickup-commands.js';
 import { ResendNotification, ResendRefusedError } from './resend-notification.js';
 import { minor } from './customer-quote.controller.js';
 import { type OperationsOrder, OperationsViews } from './operations-views.js';
-import { captainTracks, orderOutcomes, orderStatuses } from './schema.js';
+import {
+  captainTracks,
+  cashAnswers,
+  orderOutcomes,
+  orderStatuses,
+  responsibleParties,
+} from './schema.js';
 
 const money = z.object({ amount: minor, currency: z.string().length(3) });
 const alerts = z
@@ -191,6 +202,86 @@ class AdminRejectDto extends createZodDto(
       .min(1)
       .max(500)
       .describe('Required (AP §9.3.2): the internal note, never shown to the apps.'),
+  }),
+) {}
+
+// AP §9.3.2 «إلغاء الطلب» (slice 2.8b): operations' choices.
+const cancellationChoices = {
+  responsible: z
+    .enum(responsibleParties)
+    .describe('The responsible party (docs/domain/09): «المطعم», «الكابتن», «الزبون», «المنصة».'),
+  foodPrepared: z
+    .boolean()
+    .describe(
+      '«تم تحضير الطعام؟». From accepted or ready with the restaurant not responsible, the merchant net is credited on platform.operating_cost; true on a placed order is 400 invalid_cancellation.',
+    ),
+  compensateCaptain: z
+    .boolean()
+    .describe(
+      "«تعويض الكابتن»: the pay table's base pay for the captain's vehicle; only once the assigned captain reached the restaurant (409 compensation_not_allowed; 409 captain_pay_unset without a rate).",
+    ),
+  cash: z
+    .enum(cashAnswers)
+    .nullable()
+    .describe(
+      "«هل أعاد المطعم المبلغ للكابتن؟», required exactly when the captain reached the restaurant (409 cash_answer_required, cash_answer_not_allowed): returned «نعم», not_returned «لا» (the payment on the captain's custody and a merchant.debit), not_paid «لم يدفع الكابتن بعد».",
+    ),
+};
+
+class AdminCancelDto extends createZodDto(
+  z.object({
+    cancellation: z
+      .string()
+      .max(50)
+      .describe(
+        "A code of Content's ops_cancel list (AP Appendix B); 400 unknown_reason otherwise.",
+      ),
+    ...cancellationChoices,
+    reason: z
+      .string()
+      .trim()
+      .min(1)
+      .max(500)
+      .describe('Required (AP §9.3.2): the internal note, never shown to the apps.'),
+  }),
+) {}
+
+class AdminCancelPreviewDto extends createZodDto(
+  z.object({
+    cancellation: z
+      .string()
+      .max(50)
+      .nullable()
+      .optional()
+      .describe('Checked when given (400 unknown_reason).'),
+    ...cancellationChoices,
+  }),
+) {}
+
+class AdminCancelPreviewAnswerDto extends createZodDto(
+  z.object({
+    entries: z
+      .array(
+        z.object({
+          type: z.string().describe('The journal type, such as merchant.credit.'),
+          account: z.string().describe('The account purpose, such as merchant.account.'),
+          party: z.object({
+            kind: z.enum(['merchant', 'captain', 'platform']),
+            id: z.uuid().nullable(),
+            name: z.string().nullable(),
+          }),
+          amount: money.describe("From the platform's side: + a debit, − a credit."),
+        }),
+      )
+      .describe('Every entry the cancellation would post (docs/domain/09).'),
+    cashAsked: z.boolean().describe('The captain reached the restaurant: ask the cash question.'),
+    compensationAllowed: z.boolean().describe('«تعويض الكابتن» may be chosen.'),
+    cashLines: z
+      .array(money)
+      .nullable()
+      .describe(
+        "While asked: what the captain paid (the last pickup request's lines, or the items value).",
+      ),
   }),
 ) {}
 
@@ -579,6 +670,83 @@ export class AdminOrdersController {
     );
   }
 
+  // AP §9.3.2 «إلغاء الطلب» (slice 2.8b): a placed, accepted or ready order
+  // cancelled with an ops_cancel reason, the responsible party, «تم تحضير
+  // الطعام؟», «تعويض الكابتن», the cash answer and the internal note; the
+  // entries, the strike and the audit in one transaction. 400
+  // unknown_reason, invalid_cancellation; 409 compensation_not_allowed,
+  // captain_pay_unset, cash_answer_required, cash_answer_not_allowed,
+  // order_state_changed, each with the order as it is now; 404
+  // unknown_order; 422 idempotency_key_reused.
+  @Post(':orderId/cancel')
+  @RequirePermission('operations.manage')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOrderCardDto })
+  async cancel(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminCancelDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.onBehalf(params.orderId, () =>
+      this.commands.cancelFor(
+        {
+          orderId: params.orderId,
+          admin: { accountId: session.accountId, roles: session.roles },
+          context: requestContext(request),
+          idempotencyKey,
+          code: body.cancellation,
+          responsible: body.responsible,
+          foodPrepared: body.foodPrepared,
+          compensateCaptain: body.compensateCaptain,
+          cash: body.cash,
+          reason: body.reason,
+        },
+        new Date(),
+      ),
+    );
+  }
+
+  // docs/domain/09: the preview of every entry the dialog's choices would
+  // post; it writes nothing, so it takes no key. It answers before every
+  // question is answered (no cash_answer_required, compensation_not_allowed
+  // or cash_answer_not_allowed): cashAsked and compensationAllowed say which
+  // questions the dialog asks.
+  @Post(':orderId/cancel-preview')
+  @RequirePermission('operations.manage')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminCancelPreviewAnswerDto })
+  async cancelPreview(@Param() params: AdminOrderParamsDto, @Body() body: AdminCancelPreviewDto) {
+    let preview: CancellationPreview | undefined;
+    await this.onBehalf(params.orderId, async () => {
+      preview = await this.commands.previewCancel(
+        params.orderId,
+        {
+          code: body.cancellation ?? null,
+          responsible: body.responsible,
+          foodPrepared: body.foodPrepared,
+          compensateCaptain: body.compensateCaptain,
+          cash: body.cash,
+        },
+        new Date(),
+      );
+    });
+    const { entries, cashAsked, compensationAllowed, cashLines } = preview!;
+    return {
+      entries: entries.map((entry) => ({
+        type: entry.type,
+        account: entry.account,
+        party: entry.party,
+        amount: { amount: entry.amount.toString(), currency: entry.currency },
+      })),
+      cashAsked,
+      compensationAllowed,
+      cashLines: cashLines && linesBody(cashLines),
+    };
+  }
+
   // Runs a command on the restaurant's behalf and answers the card, or its
   // refusal.
   private async onBehalf(orderId: string, run: () => Promise<unknown>) {
@@ -599,7 +767,8 @@ export class AdminOrdersController {
       if (
         refusal === 'invalid_prep_time' ||
         refusal === 'unknown_reason' ||
-        refusal === 'invalid_rejection'
+        refusal === 'invalid_rejection' ||
+        refusal === 'invalid_cancellation'
       ) {
         throw new BadRequestException({
           statusCode: HttpStatus.BAD_REQUEST,

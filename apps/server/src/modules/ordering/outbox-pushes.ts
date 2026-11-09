@@ -242,6 +242,8 @@ export class OutboxPushes {
       cancelText:
         order.status === 'cancelled' ? (order.cancelCustomerText ?? GENERIC_CUSTOMER_TEXT) : null,
       cancelReason: order.cancelReason,
+      cancelLabel: order.status === 'cancelled' ? order.cancelReasonLabel : null,
+      accepted: order.acceptedAt !== null,
       rejectText: order.status === 'rejected' ? order.rejectCustomerText : null,
       rejectLabel: order.status === 'rejected' ? order.rejectReasonLabel : null,
       prepMin: order.prepMin,

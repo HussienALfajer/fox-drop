@@ -57,6 +57,9 @@ const CustomerQuoteDtoOutputProblemsInnerCodeEnum
 _$customerQuoteDtoOutputProblemsInnerCodeEnum_emergencyStop =
     const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('emergencyStop');
 const CustomerQuoteDtoOutputProblemsInnerCodeEnum
+_$customerQuoteDtoOutputProblemsInnerCodeEnum_reviewStop =
+    const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('reviewStop');
+const CustomerQuoteDtoOutputProblemsInnerCodeEnum
 _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound =
     const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('itemNotFound');
 const CustomerQuoteDtoOutputProblemsInnerCodeEnum
@@ -115,6 +118,8 @@ _$customerQuoteDtoOutputProblemsInnerCodeEnumValueOf(String name) {
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_termsPending;
     case 'emergencyStop':
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_emergencyStop;
+    case 'reviewStop':
+      return _$customerQuoteDtoOutputProblemsInnerCodeEnum_reviewStop;
     case 'itemNotFound':
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound;
     case 'itemUnavailable':
@@ -154,6 +159,7 @@ _$customerQuoteDtoOutputProblemsInnerCodeEnumValues =
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_noCaptainNearby,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_termsPending,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_emergencyStop,
+        _$customerQuoteDtoOutputProblemsInnerCodeEnum_reviewStop,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemUnavailable,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_optionNotFound,
@@ -188,6 +194,7 @@ class _$CustomerQuoteDtoOutputProblemsInnerCodeEnumSerializer
     'noCaptainNearby': 'no_captain_nearby',
     'termsPending': 'terms_pending',
     'emergencyStop': 'emergency_stop',
+    'reviewStop': 'review_stop',
     'itemNotFound': 'item_not_found',
     'itemUnavailable': 'item_unavailable',
     'optionNotFound': 'option_not_found',
@@ -213,6 +220,7 @@ class _$CustomerQuoteDtoOutputProblemsInnerCodeEnumSerializer
     'no_captain_nearby': 'noCaptainNearby',
     'terms_pending': 'termsPending',
     'emergency_stop': 'emergencyStop',
+    'review_stop': 'reviewStop',
     'item_not_found': 'itemNotFound',
     'item_unavailable': 'itemUnavailable',
     'option_not_found': 'optionNotFound',

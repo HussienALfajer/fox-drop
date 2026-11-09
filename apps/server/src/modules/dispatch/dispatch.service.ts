@@ -151,6 +151,19 @@ export class DispatchService implements OnModuleInit {
 
   onModuleInit(): void {
     this.captains.onWentOffline((captainId, now) => this.withdraw(captainId, now));
+    // AP §9.3.2 «إلغاء الطلب» (slice 2.8b): the order's open offer is
+    // withdrawn in the cancellation's transaction, before it; the captain
+    // hears nothing (the app shows «لم يعد العرض متاحاً»).
+    this.assignments.onCancel(async (tx, order, actor, now) => {
+      if (order.captainTrack !== 'offered') return;
+      const [open] = await tx
+        .select()
+        .from(offers)
+        .where(and(eq(offers.orderId, order.id), eq(offers.status, 'open')))
+        .for('update');
+      if (!open) return;
+      await this.close(tx, order, open, 'withdrawn', now, actor);
+    });
   }
 
   // AP §9.3.2 «تعيين كابتن»: with dispatch.manual_assign_requires_accept the

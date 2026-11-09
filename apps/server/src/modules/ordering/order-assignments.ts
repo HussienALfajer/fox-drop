@@ -62,6 +62,14 @@ export type AssignmentChange =
   | { type: 'order.offer_closed'; captainId: string; reason: 'declined' | 'expired' | 'withdrawn' }
   | { type: 'order.assigned'; captainId: string };
 
+// Dispatch's part of a cancellation, in its transaction on the locked order.
+export type CancelListener = (
+  tx: Tx,
+  order: DispatchOrder,
+  actor: AssignmentActor,
+  now: Date,
+) => Promise<void>;
+
 export interface AssignmentActor {
   type: 'captain' | 'admin' | 'system';
   id: string | null;
@@ -87,6 +95,33 @@ export class OrderAssignments implements OnModuleInit {
     this.captains.useActiveOrders((captainIds, executor) =>
       captainsWithActiveOrders(executor, captainIds),
     );
+  }
+
+  // AP §9.3.2 «إلغاء الطلب», CA §9.10 (slice 2.8b): dispatch owns the offers,
+  // and ordering cannot import it, so dispatch registers what a cancellation
+  // does to them: in the cancellation's transaction, before its own
+  // transition, the order's open offer is withdrawn (order.offer_closed).
+  private readonly cancelListeners: CancelListener[] = [];
+
+  onCancel(listener: CancelListener): void {
+    this.cancelListeners.push(listener);
+  }
+
+  // The locked order is about to be cancelled. An offered order with no
+  // listener would leave its offer open, so it fails.
+  async beforeCancel(
+    tx: Tx,
+    orderId: string,
+    placedAt: Date,
+    actor: AssignmentActor,
+    now: Date,
+  ): Promise<void> {
+    const order = await this.lock(tx, orderId, placedAt);
+    if (order === null) throw new Error(`order ${orderId} not found`);
+    if (order.captainTrack === 'offered' && this.cancelListeners.length === 0) {
+      throw new Error('an offered order is cancelled without dispatch to withdraw its offer');
+    }
+    for (const listener of this.cancelListeners) await listener(tx, order, actor, now);
   }
 
   // The order without a lock, by its id alone; null when unknown.

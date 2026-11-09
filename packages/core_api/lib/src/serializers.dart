@@ -22,6 +22,12 @@ import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_acknowledged.dart';
 import 'package:core_api/src/model/admin_assign_dto.dart';
 import 'package:core_api/src/model/admin_board_dto_output.dart';
+import 'package:core_api/src/model/admin_cancel_dto.dart';
+import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output.dart';
+import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner.dart';
+import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner_amount.dart';
+import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner_party.dart';
+import 'package:core_api/src/model/admin_cancel_preview_dto.dart';
 import 'package:core_api/src/model/admin_cities_dto_output.dart';
 import 'package:core_api/src/model/admin_cities_dto_output_cities_inner.dart';
 import 'package:core_api/src/model/admin_confirm_pickup_dto.dart';
@@ -124,6 +130,7 @@ import 'package:core_api/src/model/admin_work_rules_dto.dart';
 import 'package:core_api/src/model/admin_work_rules_dto_output.dart';
 import 'package:core_api/src/model/backup_codes_dto_output.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_cancelled.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
@@ -301,6 +308,7 @@ import 'package:core_api/src/model/merchant_order_settings_dto.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_acceptance.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_cancellation.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain_arrival.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
@@ -371,6 +379,12 @@ part 'serializers.g.dart';
   AdminAlertsDtoOutputAlertsInnerAcknowledged,
   AdminAssignDto,
   AdminBoardDtoOutput,
+  AdminCancelDto,
+  AdminCancelPreviewAnswerDtoOutput,
+  AdminCancelPreviewAnswerDtoOutputEntriesInner,
+  AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount,
+  AdminCancelPreviewAnswerDtoOutputEntriesInnerParty,
+  AdminCancelPreviewDto,
   AdminCitiesDtoOutput,
   AdminCitiesDtoOutputCitiesInner,
   AdminConfirmPickupDto,
@@ -473,6 +487,7 @@ part 'serializers.g.dart';
   AdminWorkRulesDtoOutput,
   BackupCodesDtoOutput,
   CaptainActiveOrderDtoOutput,
+  CaptainActiveOrderDtoOutputCancelled,
   CaptainActiveOrderDtoOutputOrder,
   CaptainActiveOrderDtoOutputOrderArrival,
   CaptainActiveOrderDtoOutputOrderCollect,
@@ -650,6 +665,7 @@ part 'serializers.g.dart';
   MerchantOrdersDtoOutput,
   MerchantOrdersDtoOutputOrdersInner,
   MerchantOrdersDtoOutputOrdersInnerAcceptance,
+  MerchantOrdersDtoOutputOrdersInnerCancellation,
   MerchantOrdersDtoOutputOrdersInnerCaptain,
   MerchantOrdersDtoOutputOrdersInnerCaptainArrival,
   MerchantOrdersDtoOutputOrdersInnerCustomer,
@@ -744,6 +760,12 @@ Serializers serializers =
               FullType(CaptainLocationsDtoPointsInner),
             ]),
             () => ListBuilder<CaptainLocationsDtoPointsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCancelPreviewAnswerDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminCancelPreviewAnswerDtoOutputEntriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

@@ -788,6 +788,7 @@ describe("the order's reads, for the screens and the polling fallback (CU §4.3,
       captainTrack: null,
       captain: null,
       captainArrival: null,
+      cancellation: null,
       pickup: {
         request: null,
         pickedUpAt: null,

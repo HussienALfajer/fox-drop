@@ -4473,6 +4473,53 @@
         ]
       }
     },
+    "/v1/merchant/orders/{orderId}/acknowledge-cancellation": {
+      "post": {
+        "operationId": "merchantOrdersAcknowledgeCancellation",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
     "/v1/admin/orders/{orderId}/resend-notification": {
       "post": {
         "operationId": "adminOrdersResendNotification",
@@ -4676,6 +4723,110 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminOrderCardDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/orders/{orderId}/cancel": {
+      "post": {
+        "operationId": "adminOrdersCancel",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCancelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderCardDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/orders/{orderId}/cancel-preview": {
+      "post": {
+        "operationId": "adminOrdersCancelPreview",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCancelPreviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCancelPreviewAnswerDto_Output"
                 }
               }
             },
@@ -4920,6 +5071,43 @@
       "get": {
         "operationId": "captainOrdersActive",
         "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainActiveOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/captain/orders/{orderId}/acknowledge-cancellation": {
+      "post": {
+        "operationId": "captainOrdersAcknowledgeCancellation",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -13158,6 +13346,7 @@
                     "no_captain_nearby",
                     "terms_pending",
                     "emergency_stop",
+                    "review_stop",
                     "item_not_found",
                     "item_unavailable",
                     "option_not_found",
@@ -14924,7 +15113,44 @@
                       "type": "null"
                     }
                   ],
-                  "description": "While the captain waits at the restaurant (RA §8.9), else null."
+                  "description": "While the captain waits at the restaurant for an accepted or ready order (RA §8.9), else null."
+                },
+                "cancellation": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "reason": {
+                          "type": "string",
+                          "description": "The code of Content's ops_cancel list."
+                        },
+                        "label": {
+                          "type": "string",
+                          "description": "{السبب} of «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}»."
+                        },
+                        "byOperations": {
+                          "type": "boolean",
+                          "description": "Always true: only operations cancel after acceptance."
+                        }
+                      },
+                      "required": [
+                        "at",
+                        "reason",
+                        "label",
+                        "byOperations"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "RA §8.14: operations cancelled the accepted order; every device rings with «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» until «حسناً» on any of them (POST …/acknowledge-cancellation), then the board drops the order. Null otherwise, and once acknowledged."
                 },
                 "pickup": {
                   "type": "object",
@@ -15142,6 +15368,7 @@
                 "captainTrack",
                 "captain",
                 "captainArrival",
+                "cancellation",
                 "pickup"
               ],
               "additionalProperties": false
@@ -15517,7 +15744,44 @@
                     "type": "null"
                   }
                 ],
-                "description": "While the captain waits at the restaurant (RA §8.9), else null."
+                "description": "While the captain waits at the restaurant for an accepted or ready order (RA §8.9), else null."
+              },
+              "cancellation": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "reason": {
+                        "type": "string",
+                        "description": "The code of Content's ops_cancel list."
+                      },
+                      "label": {
+                        "type": "string",
+                        "description": "{السبب} of «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}»."
+                      },
+                      "byOperations": {
+                        "type": "boolean",
+                        "description": "Always true: only operations cancel after acceptance."
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "reason",
+                      "label",
+                      "byOperations"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "RA §8.14: operations cancelled the accepted order; every device rings with «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» until «حسناً» on any of them (POST …/acknowledge-cancellation), then the board drops the order. Null otherwise, and once acknowledged."
               },
               "pickup": {
                 "type": "object",
@@ -15735,6 +15999,7 @@
               "captainTrack",
               "captain",
               "captainArrival",
+              "cancellation",
               "pickup"
             ],
             "additionalProperties": false
@@ -16340,6 +16605,254 @@
           "pauseMin",
           "reason"
         ]
+      },
+      "AdminCancelDto": {
+        "type": "object",
+        "properties": {
+          "cancellation": {
+            "type": "string",
+            "maxLength": 50,
+            "description": "A code of Content's ops_cancel list (AP Appendix B); 400 unknown_reason otherwise."
+          },
+          "responsible": {
+            "type": "string",
+            "enum": [
+              "restaurant",
+              "captain",
+              "customer",
+              "platform"
+            ],
+            "description": "The responsible party (docs/domain/09): «المطعم», «الكابتن», «الزبون», «المنصة»."
+          },
+          "foodPrepared": {
+            "type": "boolean",
+            "description": "«تم تحضير الطعام؟». From accepted or ready with the restaurant not responsible, the merchant net is credited on platform.operating_cost; true on a placed order is 400 invalid_cancellation."
+          },
+          "compensateCaptain": {
+            "type": "boolean",
+            "description": "«تعويض الكابتن»: the pay table's base pay for the captain's vehicle; only once the assigned captain reached the restaurant (409 compensation_not_allowed; 409 captain_pay_unset without a rate)."
+          },
+          "cash": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "returned",
+                  "not_returned",
+                  "not_paid"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«هل أعاد المطعم المبلغ للكابتن؟», required exactly when the captain reached the restaurant (409 cash_answer_required, cash_answer_not_allowed): returned «نعم», not_returned «لا» (the payment on the captain's custody and a merchant.debit), not_paid «لم يدفع الكابتن بعد»."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Required (AP §9.3.2): the internal note, never shown to the apps."
+          }
+        },
+        "required": [
+          "cancellation",
+          "responsible",
+          "foodPrepared",
+          "compensateCaptain",
+          "cash",
+          "reason"
+        ]
+      },
+      "AdminCancelPreviewDto": {
+        "type": "object",
+        "properties": {
+          "cancellation": {
+            "description": "Checked when given (400 unknown_reason).",
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "responsible": {
+            "type": "string",
+            "enum": [
+              "restaurant",
+              "captain",
+              "customer",
+              "platform"
+            ],
+            "description": "The responsible party (docs/domain/09): «المطعم», «الكابتن», «الزبون», «المنصة»."
+          },
+          "foodPrepared": {
+            "type": "boolean",
+            "description": "«تم تحضير الطعام؟». From accepted or ready with the restaurant not responsible, the merchant net is credited on platform.operating_cost; true on a placed order is 400 invalid_cancellation."
+          },
+          "compensateCaptain": {
+            "type": "boolean",
+            "description": "«تعويض الكابتن»: the pay table's base pay for the captain's vehicle; only once the assigned captain reached the restaurant (409 compensation_not_allowed; 409 captain_pay_unset without a rate)."
+          },
+          "cash": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "returned",
+                  "not_returned",
+                  "not_paid"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«هل أعاد المطعم المبلغ للكابتن؟», required exactly when the captain reached the restaurant (409 cash_answer_required, cash_answer_not_allowed): returned «نعم», not_returned «لا» (the payment on the captain's custody and a merchant.debit), not_paid «لم يدفع الكابتن بعد»."
+          }
+        },
+        "required": [
+          "responsible",
+          "foodPrepared",
+          "compensateCaptain",
+          "cash"
+        ]
+      },
+      "AdminCancelPreviewAnswerDto_Output": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "The journal type, such as merchant.credit."
+                },
+                "account": {
+                  "type": "string",
+                  "description": "The account purpose, such as merchant.account."
+                },
+                "party": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "merchant",
+                        "captain",
+                        "platform"
+                      ]
+                    },
+                    "id": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "id",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "amount": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false,
+                  "description": "From the platform's side: + a debit, − a credit."
+                }
+              },
+              "required": [
+                "type",
+                "account",
+                "party",
+                "amount"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Every entry the cancellation would post (docs/domain/09)."
+          },
+          "cashAsked": {
+            "type": "boolean",
+            "description": "The captain reached the restaurant: ask the cash question."
+          },
+          "compensationAllowed": {
+            "type": "boolean",
+            "description": "«تعويض الكابتن» may be chosen."
+          },
+          "cashLines": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "While asked: what the captain paid (the last pickup request's lines, or the items value)."
+          }
+        },
+        "required": [
+          "entries",
+          "cashAsked",
+          "compensationAllowed",
+          "cashLines"
+        ],
+        "additionalProperties": false
       },
       "AdminRecordArrivalDto": {
         "type": "object",
@@ -19043,10 +19556,95 @@
               }
             ],
             "description": "Null without an active order."
+          },
+          "cancelled": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "number": {
+                    "type": "string",
+                    "description": "Shown as #10423 (AP §4.8)."
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "{السبب} of «أُلغيت المهمة: {السبب}»: the reason as operations chose it."
+                  },
+                  "cash": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "returned",
+                          "not_returned",
+                          "not_paid"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "returned «استرجع المبلغ من المطعم»; not_returned «لا تسترجع المبلغ، يُخصم من المطعم في التسوية»; not_paid or null: no cash line."
+                  },
+                  "compensation": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "string",
+                            "pattern": "^-?\\d+$",
+                            "description": "Integer minor units (AP §8.6)."
+                          },
+                          "currency": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3
+                          }
+                        },
+                        "required": [
+                          "amount",
+                          "currency"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«تعويض: {المبلغ}» when operations compensated the captain."
+                  },
+                  "at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "number",
+                  "reason",
+                  "cash",
+                  "compensation",
+                  "at"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The latest order operations cancelled within 12 hours that the captain has not acknowledged (POST …/acknowledge-cancellation); the app plays the cancellation sound when one appears."
           }
         },
         "required": [
-          "order"
+          "order",
+          "cancelled"
         ],
         "additionalProperties": false
       },

@@ -15,6 +15,8 @@ const facts: OrderPushFacts = {
   total: '160 ₺',
   cancelText: null,
   cancelReason: null,
+  cancelLabel: null,
+  accepted: false,
   rejectText: null,
   rejectLabel: null,
   prepMin: 20,
@@ -84,6 +86,29 @@ describe('the pushes of an order event', () => {
         cancelReason: 'changed_mind',
       }),
     ).toEqual([[restaurant, 'merchant.customer_cancelled', { رقم: '10002' }]]);
+  });
+
+  it('rings the restaurant and tells the captain when operations cancel after acceptance (RA §16 #18, CA §14 #11)', () => {
+    const byOperations = {
+      actor: 'admin',
+      cancelReason: 'emergency',
+      cancelText: 'ظرف طارئ منعنا من إكمال طلبك',
+      cancelLabel: 'ظرف طارئ',
+      accepted: true,
+    };
+    expect(sent('order.cancelled', 'emergency', byOperations)).toEqual([
+      [customer, 'customer.cancelled', { السبب: 'ظرف طارئ منعنا من إكمال طلبك' }],
+      [restaurant, 'merchant.cancelled_after_acceptance', { رقم: '10002', السبب: 'ظرف طارئ' }],
+      [captain, 'captain.cancelled', { رقم: '10002', السبب: 'ظرف طارئ' }],
+    ]);
+    // Placed, no captain: the customer only; the restaurant's board chimes.
+    expect(
+      sent('order.cancelled', 'emergency', { ...byOperations, accepted: false, captainId: null }),
+    ).toEqual([[customer, 'customer.cancelled', { السبب: 'ظرف طارئ منعنا من إكمال طلبك' }]]);
+  });
+
+  it('acknowledging a cancellation is silent (RA §8.14)', () => {
+    expect(sent('order.cancellation_acknowledged', null, { cancelLabel: 'ظرف طارئ' })).toEqual([]);
   });
 
   it('apologises for a rejection, and tells the restaurant only when operations acted (CU §14 #7, RA §16 #5, #6)', () => {
