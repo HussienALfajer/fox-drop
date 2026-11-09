@@ -12,16 +12,14 @@ part 'merchant_session_dto_output.g.dart';
 /// MerchantSessionDtoOutput
 ///
 /// Properties:
-/// * [accountId]
-/// * [restaurantId]
+/// * [accountId] 
+/// * [restaurantId] 
 /// * [role] - RA §5.4: what the app shows and the server allows.
-/// * [name]
+/// * [name] 
 /// * [deviceNamed] - False on the first sign-in of this device: the app asks for its name (RA §5.2).
-/// * [sessionId]
+/// * [sessionId] 
 @BuiltValue()
-abstract class MerchantSessionDtoOutput
-    implements
-        Built<MerchantSessionDtoOutput, MerchantSessionDtoOutputBuilder> {
+abstract class MerchantSessionDtoOutput implements Built<MerchantSessionDtoOutput, MerchantSessionDtoOutputBuilder> {
   @BuiltValueField(wireName: r'accountId')
   String get accountId;
 
@@ -45,25 +43,18 @@ abstract class MerchantSessionDtoOutput
 
   MerchantSessionDtoOutput._();
 
-  factory MerchantSessionDtoOutput([
-    void updates(MerchantSessionDtoOutputBuilder b),
-  ]) = _$MerchantSessionDtoOutput;
+  factory MerchantSessionDtoOutput([void updates(MerchantSessionDtoOutputBuilder b)]) = _$MerchantSessionDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantSessionDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantSessionDtoOutput> get serializer =>
-      _$MerchantSessionDtoOutputSerializer();
+  static Serializer<MerchantSessionDtoOutput> get serializer => _$MerchantSessionDtoOutputSerializer();
 }
 
-class _$MerchantSessionDtoOutputSerializer
-    implements PrimitiveSerializer<MerchantSessionDtoOutput> {
+class _$MerchantSessionDtoOutputSerializer implements PrimitiveSerializer<MerchantSessionDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    MerchantSessionDtoOutput,
-    _$MerchantSessionDtoOutput,
-  ];
+  final Iterable<Type> types = const [MerchantSessionDtoOutput, _$MerchantSessionDtoOutput];
 
   @override
   final String wireName = r'MerchantSessionDtoOutput';
@@ -111,11 +102,7 @@ class _$MerchantSessionDtoOutputSerializer
     MerchantSessionDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -131,59 +118,45 @@ class _$MerchantSessionDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'accountId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.accountId = valueDes;
           break;
         case r'restaurantId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.restaurantId = valueDes;
           break;
         case r'role':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      MerchantSessionDtoOutputRoleEnum,
-                    ),
-                  )
-                  as MerchantSessionDtoOutputRoleEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(MerchantSessionDtoOutputRoleEnum),
+          ) as MerchantSessionDtoOutputRoleEnum;
           result.role = valueDes;
           break;
         case r'name':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.name = valueDes;
           break;
         case r'deviceNamed':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.deviceNamed = valueDes;
           break;
         case r'sessionId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.sessionId = valueDes;
           break;
         default:
@@ -215,22 +188,20 @@ class _$MerchantSessionDtoOutputSerializer
   }
 }
 
+
 /// RA §5.4: what the app shows and the server allows.
 class MerchantSessionDtoOutputRoleEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'owner')
-  static const MerchantSessionDtoOutputRoleEnum owner =
-      _$merchantSessionDtoOutputRoleEnum_owner;
+  static const MerchantSessionDtoOutputRoleEnum owner = _$merchantSessionDtoOutputRoleEnum_owner;
   @BuiltValueEnumConst(wireName: r'cashier')
-  static const MerchantSessionDtoOutputRoleEnum cashier =
-      _$merchantSessionDtoOutputRoleEnum_cashier;
+  static const MerchantSessionDtoOutputRoleEnum cashier = _$merchantSessionDtoOutputRoleEnum_cashier;
 
-  static Serializer<MerchantSessionDtoOutputRoleEnum> get serializer =>
-      _$merchantSessionDtoOutputRoleEnumSerializer;
+  static Serializer<MerchantSessionDtoOutputRoleEnum> get serializer => _$merchantSessionDtoOutputRoleEnumSerializer;
 
-  const MerchantSessionDtoOutputRoleEnum._(String name) : super(name);
+  const MerchantSessionDtoOutputRoleEnum._(String name): super(name);
 
-  static BuiltSet<MerchantSessionDtoOutputRoleEnum> get values =>
-      _$merchantSessionDtoOutputRoleEnumValues;
-  static MerchantSessionDtoOutputRoleEnum valueOf(String name) =>
-      _$merchantSessionDtoOutputRoleEnumValueOf(name);
+  static BuiltSet<MerchantSessionDtoOutputRoleEnum> get values => _$merchantSessionDtoOutputRoleEnumValues;
+  static MerchantSessionDtoOutputRoleEnum valueOf(String name) => _$merchantSessionDtoOutputRoleEnumValueOf(name);
 }
+

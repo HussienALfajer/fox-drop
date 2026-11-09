@@ -12,19 +12,14 @@ part 'admin_order_dto_output_order_customer_address.g.dart';
 /// AdminOrderDtoOutputOrderCustomerAddress
 ///
 /// Properties:
-/// * [location]
-/// * [neighbourhood]
-/// * [street]
-/// * [floor]
-/// * [landmark]
-/// * [directions]
+/// * [location] 
+/// * [neighbourhood] 
+/// * [street] 
+/// * [floor] 
+/// * [landmark] 
+/// * [directions] 
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderCustomerAddress
-    implements
-        Built<
-          AdminOrderDtoOutputOrderCustomerAddress,
-          AdminOrderDtoOutputOrderCustomerAddressBuilder
-        > {
+abstract class AdminOrderDtoOutputOrderCustomerAddress implements Built<AdminOrderDtoOutputOrderCustomerAddress, AdminOrderDtoOutputOrderCustomerAddressBuilder> {
   @BuiltValueField(wireName: r'location')
   CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation get location;
 
@@ -45,25 +40,18 @@ abstract class AdminOrderDtoOutputOrderCustomerAddress
 
   AdminOrderDtoOutputOrderCustomerAddress._();
 
-  factory AdminOrderDtoOutputOrderCustomerAddress([
-    void updates(AdminOrderDtoOutputOrderCustomerAddressBuilder b),
-  ]) = _$AdminOrderDtoOutputOrderCustomerAddress;
+  factory AdminOrderDtoOutputOrderCustomerAddress([void updates(AdminOrderDtoOutputOrderCustomerAddressBuilder b)]) = _$AdminOrderDtoOutputOrderCustomerAddress;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderDtoOutputOrderCustomerAddressBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderCustomerAddress> get serializer =>
-      _$AdminOrderDtoOutputOrderCustomerAddressSerializer();
+  static Serializer<AdminOrderDtoOutputOrderCustomerAddress> get serializer => _$AdminOrderDtoOutputOrderCustomerAddressSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderCustomerAddressSerializer
-    implements PrimitiveSerializer<AdminOrderDtoOutputOrderCustomerAddress> {
+class _$AdminOrderDtoOutputOrderCustomerAddressSerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderCustomerAddress> {
   @override
-  final Iterable<Type> types = const [
-    AdminOrderDtoOutputOrderCustomerAddress,
-    _$AdminOrderDtoOutputOrderCustomerAddress,
-  ];
+  final Iterable<Type> types = const [AdminOrderDtoOutputOrderCustomerAddress, _$AdminOrderDtoOutputOrderCustomerAddress];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderCustomerAddress';
@@ -76,9 +64,7 @@ class _$AdminOrderDtoOutputOrderCustomerAddressSerializer
     yield r'location';
     yield serializers.serialize(
       object.location,
-      specifiedType: const FullType(
-        CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
-      ),
+      specifiedType: const FullType(CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation),
     );
     yield r'neighbourhood';
     yield serializers.serialize(
@@ -91,24 +77,20 @@ class _$AdminOrderDtoOutputOrderCustomerAddressSerializer
       specifiedType: const FullType(String),
     );
     yield r'floor';
-    yield object.floor == null
-        ? null
-        : serializers.serialize(
-            object.floor,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.floor == null ? null : serializers.serialize(
+      object.floor,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'landmark';
     yield serializers.serialize(
       object.landmark,
       specifiedType: const FullType(String),
     );
     yield r'directions';
-    yield object.directions == null
-        ? null
-        : serializers.serialize(
-            object.directions,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.directions == null ? null : serializers.serialize(
+      object.directions,
+      specifiedType: const FullType.nullable(String),
+    );
   }
 
   @override
@@ -117,11 +99,7 @@ class _$AdminOrderDtoOutputOrderCustomerAddressSerializer
     AdminOrderDtoOutputOrderCustomerAddress object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -137,60 +115,46 @@ class _$AdminOrderDtoOutputOrderCustomerAddressSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'location':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
-                    ),
-                  )
-                  as CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation),
+          ) as CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation;
           result.location.replace(valueDes);
           break;
         case r'neighbourhood':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.neighbourhood = valueDes;
           break;
         case r'street':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.street = valueDes;
           break;
         case r'floor':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.floor = valueDes;
           break;
         case r'landmark':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.landmark = valueDes;
           break;
         case r'directions':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.directions = valueDes;
           break;
@@ -222,3 +186,5 @@ class _$AdminOrderDtoOutputOrderCustomerAddressSerializer
     return result.build();
   }
 }
+
+

@@ -13,27 +13,23 @@ part 'admin_set_image_dto.g.dart';
 /// Properties:
 /// * [uploadId] - From POST /v1/admin/uploads, once the PUT is done.
 @BuiltValue()
-abstract class AdminSetImageDto
-    implements Built<AdminSetImageDto, AdminSetImageDtoBuilder> {
+abstract class AdminSetImageDto implements Built<AdminSetImageDto, AdminSetImageDtoBuilder> {
   /// From POST /v1/admin/uploads, once the PUT is done.
   @BuiltValueField(wireName: r'uploadId')
   String get uploadId;
 
   AdminSetImageDto._();
 
-  factory AdminSetImageDto([void updates(AdminSetImageDtoBuilder b)]) =
-      _$AdminSetImageDto;
+  factory AdminSetImageDto([void updates(AdminSetImageDtoBuilder b)]) = _$AdminSetImageDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminSetImageDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminSetImageDto> get serializer =>
-      _$AdminSetImageDtoSerializer();
+  static Serializer<AdminSetImageDto> get serializer => _$AdminSetImageDtoSerializer();
 }
 
-class _$AdminSetImageDtoSerializer
-    implements PrimitiveSerializer<AdminSetImageDto> {
+class _$AdminSetImageDtoSerializer implements PrimitiveSerializer<AdminSetImageDto> {
   @override
   final Iterable<Type> types = const [AdminSetImageDto, _$AdminSetImageDto];
 
@@ -58,11 +54,7 @@ class _$AdminSetImageDtoSerializer
     AdminSetImageDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -78,12 +70,10 @@ class _$AdminSetImageDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'uploadId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.uploadId = valueDes;
           break;
         default:
@@ -114,3 +104,5 @@ class _$AdminSetImageDtoSerializer
     return result.build();
   }
 }
+
+

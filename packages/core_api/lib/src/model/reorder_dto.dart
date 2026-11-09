@@ -55,11 +55,7 @@ class _$ReorderDtoSerializer implements PrimitiveSerializer<ReorderDto> {
     ReorderDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -75,14 +71,10 @@ class _$ReorderDtoSerializer implements PrimitiveSerializer<ReorderDto> {
       final value = serializedList[i + 1];
       switch (key) {
         case r'codes':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(String),
-                    ]),
-                  )
-                  as BuiltList<String>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(String)]),
+          ) as BuiltList<String>;
           result.codes.replace(valueDes);
           break;
         default:
@@ -113,3 +105,5 @@ class _$ReorderDtoSerializer implements PrimitiveSerializer<ReorderDto> {
     return result.build();
   }
 }
+
+

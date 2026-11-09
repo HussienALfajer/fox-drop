@@ -12,15 +12,10 @@ part 'customer_restaurant_list_dto_output_restaurants_inner_delivery_fee.g.dart'
 /// To the point; null while the city has no fee rule in its base currency.
 ///
 /// Properties:
-/// * [fee]
+/// * [fee] 
 /// * [free] - «توصيل مجاني».
 @BuiltValue()
-abstract class CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee
-    implements
-        Built<
-          CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee,
-          CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeBuilder
-        > {
+abstract class CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee implements Built<CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee, CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeBuilder> {
   @BuiltValueField(wireName: r'fee')
   CaptainWentOfflineDtoOutputHandIn? get fee;
 
@@ -30,37 +25,21 @@ abstract class CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee
 
   CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee._();
 
-  factory CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee([
-    void updates(
-      CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeBuilder b,
-    ),
-  ]) = _$CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee;
+  factory CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee([void updates(CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeBuilder b)]) = _$CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeBuilder b,
-  ) => b;
+  static void _defaults(CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee>
-  get serializer =>
-      _$CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeSerializer();
+  static Serializer<CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee> get serializer => _$CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeSerializer();
 }
 
-class _$CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeSerializer
-    implements
-        PrimitiveSerializer<
-          CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee
-        > {
+class _$CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeSerializer implements PrimitiveSerializer<CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee> {
   @override
-  final Iterable<Type> types = const [
-    CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee,
-    _$CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee,
-  ];
+  final Iterable<Type> types = const [CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee, _$CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee];
 
   @override
-  final String wireName =
-      r'CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee';
+  final String wireName = r'CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
@@ -68,14 +47,10 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeSerializer
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'fee';
-    yield object.fee == null
-        ? null
-        : serializers.serialize(
-            object.fee,
-            specifiedType: const FullType.nullable(
-              CaptainWentOfflineDtoOutputHandIn,
-            ),
-          );
+    yield object.fee == null ? null : serializers.serialize(
+      object.fee,
+      specifiedType: const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+    );
     yield r'free';
     yield serializers.serialize(
       object.free,
@@ -89,11 +64,7 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeSerializer
     CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -101,8 +72,7 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeBuilder
-    result,
+    required CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -110,24 +80,18 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'fee':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      CaptainWentOfflineDtoOutputHandIn,
-                    ),
-                  )
-                  as CaptainWentOfflineDtoOutputHandIn?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+          ) as CaptainWentOfflineDtoOutputHandIn?;
           if (valueDes == null) continue;
           result.fee.replace(valueDes);
           break;
         case r'free':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.free = valueDes;
           break;
         default:
@@ -144,8 +108,7 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result =
-        CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeBuilder();
+    final result = CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
@@ -159,3 +122,5 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFeeSerializer
     return result.build();
   }
 }
+
+

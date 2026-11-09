@@ -14,8 +14,7 @@ part 'totp_enrolment_dto_output.g.dart';
 /// * [secret] - The TOTP secret in base32, for typing it in by hand.
 /// * [otpauthUri] - The otpauth:// URI the panel shows as a QR code.
 @BuiltValue()
-abstract class TotpEnrolmentDtoOutput
-    implements Built<TotpEnrolmentDtoOutput, TotpEnrolmentDtoOutputBuilder> {
+abstract class TotpEnrolmentDtoOutput implements Built<TotpEnrolmentDtoOutput, TotpEnrolmentDtoOutputBuilder> {
   /// The TOTP secret in base32, for typing it in by hand.
   @BuiltValueField(wireName: r'secret')
   String get secret;
@@ -26,25 +25,18 @@ abstract class TotpEnrolmentDtoOutput
 
   TotpEnrolmentDtoOutput._();
 
-  factory TotpEnrolmentDtoOutput([
-    void updates(TotpEnrolmentDtoOutputBuilder b),
-  ]) = _$TotpEnrolmentDtoOutput;
+  factory TotpEnrolmentDtoOutput([void updates(TotpEnrolmentDtoOutputBuilder b)]) = _$TotpEnrolmentDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(TotpEnrolmentDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<TotpEnrolmentDtoOutput> get serializer =>
-      _$TotpEnrolmentDtoOutputSerializer();
+  static Serializer<TotpEnrolmentDtoOutput> get serializer => _$TotpEnrolmentDtoOutputSerializer();
 }
 
-class _$TotpEnrolmentDtoOutputSerializer
-    implements PrimitiveSerializer<TotpEnrolmentDtoOutput> {
+class _$TotpEnrolmentDtoOutputSerializer implements PrimitiveSerializer<TotpEnrolmentDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    TotpEnrolmentDtoOutput,
-    _$TotpEnrolmentDtoOutput,
-  ];
+  final Iterable<Type> types = const [TotpEnrolmentDtoOutput, _$TotpEnrolmentDtoOutput];
 
   @override
   final String wireName = r'TotpEnrolmentDtoOutput';
@@ -72,11 +64,7 @@ class _$TotpEnrolmentDtoOutputSerializer
     TotpEnrolmentDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -92,21 +80,17 @@ class _$TotpEnrolmentDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'secret':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.secret = valueDes;
           break;
         case r'otpauthUri':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.otpauthUri = valueDes;
           break;
         default:
@@ -137,3 +121,5 @@ class _$TotpEnrolmentDtoOutputSerializer
     return result.build();
   }
 }
+
+

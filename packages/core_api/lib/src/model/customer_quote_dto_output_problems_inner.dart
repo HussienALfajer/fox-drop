@@ -12,17 +12,12 @@ part 'customer_quote_dto_output_problems_inner.g.dart';
 /// CustomerQuoteDtoOutputProblemsInner
 ///
 /// Properties:
-/// * [code]
+/// * [code] 
 /// * [line] - The cart line, for a line problem.
 /// * [opensAt] - platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}».
 /// * [message] - emergency_stop: the browsing message (AP §9.1.6).
 @BuiltValue()
-abstract class CustomerQuoteDtoOutputProblemsInner
-    implements
-        Built<
-          CustomerQuoteDtoOutputProblemsInner,
-          CustomerQuoteDtoOutputProblemsInnerBuilder
-        > {
+abstract class CustomerQuoteDtoOutputProblemsInner implements Built<CustomerQuoteDtoOutputProblemsInner, CustomerQuoteDtoOutputProblemsInnerBuilder> {
   @BuiltValueField(wireName: r'code')
   CustomerQuoteDtoOutputProblemsInnerCodeEnum get code;
   // enum codeEnum {  update_required,  maintenance,  platform_closed,  outside_zones,  not_covered,  restaurant_closed,  below_minimum_order,  minimum_not_in_base_currency,  delivery_unpriced,  rates_unavailable,  captain_pay_unset,  one_order_at_a_time,  active_order_limit,  no_captain_nearby,  terms_pending,  emergency_stop,  item_not_found,  item_unavailable,  option_not_found,  option_unavailable,  options_invalid,  price_not_in_base_currency,  price_changed,  };
@@ -41,25 +36,18 @@ abstract class CustomerQuoteDtoOutputProblemsInner
 
   CustomerQuoteDtoOutputProblemsInner._();
 
-  factory CustomerQuoteDtoOutputProblemsInner([
-    void updates(CustomerQuoteDtoOutputProblemsInnerBuilder b),
-  ]) = _$CustomerQuoteDtoOutputProblemsInner;
+  factory CustomerQuoteDtoOutputProblemsInner([void updates(CustomerQuoteDtoOutputProblemsInnerBuilder b)]) = _$CustomerQuoteDtoOutputProblemsInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerQuoteDtoOutputProblemsInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerQuoteDtoOutputProblemsInner> get serializer =>
-      _$CustomerQuoteDtoOutputProblemsInnerSerializer();
+  static Serializer<CustomerQuoteDtoOutputProblemsInner> get serializer => _$CustomerQuoteDtoOutputProblemsInnerSerializer();
 }
 
-class _$CustomerQuoteDtoOutputProblemsInnerSerializer
-    implements PrimitiveSerializer<CustomerQuoteDtoOutputProblemsInner> {
+class _$CustomerQuoteDtoOutputProblemsInnerSerializer implements PrimitiveSerializer<CustomerQuoteDtoOutputProblemsInner> {
   @override
-  final Iterable<Type> types = const [
-    CustomerQuoteDtoOutputProblemsInner,
-    _$CustomerQuoteDtoOutputProblemsInner,
-  ];
+  final Iterable<Type> types = const [CustomerQuoteDtoOutputProblemsInner, _$CustomerQuoteDtoOutputProblemsInner];
 
   @override
   final String wireName = r'CustomerQuoteDtoOutputProblemsInner';
@@ -72,31 +60,23 @@ class _$CustomerQuoteDtoOutputProblemsInnerSerializer
     yield r'code';
     yield serializers.serialize(
       object.code,
-      specifiedType: const FullType(
-        CustomerQuoteDtoOutputProblemsInnerCodeEnum,
-      ),
+      specifiedType: const FullType(CustomerQuoteDtoOutputProblemsInnerCodeEnum),
     );
     yield r'line';
-    yield object.line == null
-        ? null
-        : serializers.serialize(
-            object.line,
-            specifiedType: const FullType.nullable(int),
-          );
+    yield object.line == null ? null : serializers.serialize(
+      object.line,
+      specifiedType: const FullType.nullable(int),
+    );
     yield r'opensAt';
-    yield object.opensAt == null
-        ? null
-        : serializers.serialize(
-            object.opensAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.opensAt == null ? null : serializers.serialize(
+      object.opensAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'message';
-    yield object.message == null
-        ? null
-        : serializers.serialize(
-            object.message,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.message == null ? null : serializers.serialize(
+      object.message,
+      specifiedType: const FullType.nullable(String),
+    );
   }
 
   @override
@@ -105,11 +85,7 @@ class _$CustomerQuoteDtoOutputProblemsInnerSerializer
     CustomerQuoteDtoOutputProblemsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -125,43 +101,33 @@ class _$CustomerQuoteDtoOutputProblemsInnerSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'code':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CustomerQuoteDtoOutputProblemsInnerCodeEnum,
-                    ),
-                  )
-                  as CustomerQuoteDtoOutputProblemsInnerCodeEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CustomerQuoteDtoOutputProblemsInnerCodeEnum),
+          ) as CustomerQuoteDtoOutputProblemsInnerCodeEnum;
           result.code = valueDes;
           break;
         case r'line':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(int),
-                  )
-                  as int?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
           if (valueDes == null) continue;
           result.line = valueDes;
           break;
         case r'opensAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.opensAt = valueDes;
           break;
         case r'message':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.message = valueDes;
           break;
@@ -194,87 +160,61 @@ class _$CustomerQuoteDtoOutputProblemsInnerSerializer
   }
 }
 
+
 class CustomerQuoteDtoOutputProblemsInnerCodeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'update_required')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum updateRequired =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_updateRequired;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum updateRequired = _$customerQuoteDtoOutputProblemsInnerCodeEnum_updateRequired;
   @BuiltValueEnumConst(wireName: r'maintenance')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum maintenance =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_maintenance;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum maintenance = _$customerQuoteDtoOutputProblemsInnerCodeEnum_maintenance;
   @BuiltValueEnumConst(wireName: r'platform_closed')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum platformClosed =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_platformClosed;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum platformClosed = _$customerQuoteDtoOutputProblemsInnerCodeEnum_platformClosed;
   @BuiltValueEnumConst(wireName: r'outside_zones')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum outsideZones =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_outsideZones;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum outsideZones = _$customerQuoteDtoOutputProblemsInnerCodeEnum_outsideZones;
   @BuiltValueEnumConst(wireName: r'not_covered')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum notCovered =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_notCovered;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum notCovered = _$customerQuoteDtoOutputProblemsInnerCodeEnum_notCovered;
   @BuiltValueEnumConst(wireName: r'restaurant_closed')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum restaurantClosed =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_restaurantClosed;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum restaurantClosed = _$customerQuoteDtoOutputProblemsInnerCodeEnum_restaurantClosed;
   @BuiltValueEnumConst(wireName: r'below_minimum_order')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum belowMinimumOrder =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_belowMinimumOrder;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum belowMinimumOrder = _$customerQuoteDtoOutputProblemsInnerCodeEnum_belowMinimumOrder;
   @BuiltValueEnumConst(wireName: r'minimum_not_in_base_currency')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum
-  minimumNotInBaseCurrency =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_minimumNotInBaseCurrency;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum minimumNotInBaseCurrency = _$customerQuoteDtoOutputProblemsInnerCodeEnum_minimumNotInBaseCurrency;
   @BuiltValueEnumConst(wireName: r'delivery_unpriced')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum deliveryUnpriced =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_deliveryUnpriced;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum deliveryUnpriced = _$customerQuoteDtoOutputProblemsInnerCodeEnum_deliveryUnpriced;
   @BuiltValueEnumConst(wireName: r'rates_unavailable')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum ratesUnavailable =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_ratesUnavailable;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum ratesUnavailable = _$customerQuoteDtoOutputProblemsInnerCodeEnum_ratesUnavailable;
   @BuiltValueEnumConst(wireName: r'captain_pay_unset')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum captainPayUnset =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_captainPayUnset;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum captainPayUnset = _$customerQuoteDtoOutputProblemsInnerCodeEnum_captainPayUnset;
   @BuiltValueEnumConst(wireName: r'one_order_at_a_time')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum oneOrderAtATime =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_oneOrderAtATime;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum oneOrderAtATime = _$customerQuoteDtoOutputProblemsInnerCodeEnum_oneOrderAtATime;
   @BuiltValueEnumConst(wireName: r'active_order_limit')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum activeOrderLimit =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_activeOrderLimit;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum activeOrderLimit = _$customerQuoteDtoOutputProblemsInnerCodeEnum_activeOrderLimit;
   @BuiltValueEnumConst(wireName: r'no_captain_nearby')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum noCaptainNearby =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_noCaptainNearby;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum noCaptainNearby = _$customerQuoteDtoOutputProblemsInnerCodeEnum_noCaptainNearby;
   @BuiltValueEnumConst(wireName: r'terms_pending')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum termsPending =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_termsPending;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum termsPending = _$customerQuoteDtoOutputProblemsInnerCodeEnum_termsPending;
   @BuiltValueEnumConst(wireName: r'emergency_stop')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum emergencyStop =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_emergencyStop;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum emergencyStop = _$customerQuoteDtoOutputProblemsInnerCodeEnum_emergencyStop;
   @BuiltValueEnumConst(wireName: r'item_not_found')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum itemNotFound =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum itemNotFound = _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound;
   @BuiltValueEnumConst(wireName: r'item_unavailable')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum itemUnavailable =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemUnavailable;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum itemUnavailable = _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemUnavailable;
   @BuiltValueEnumConst(wireName: r'option_not_found')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum optionNotFound =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_optionNotFound;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum optionNotFound = _$customerQuoteDtoOutputProblemsInnerCodeEnum_optionNotFound;
   @BuiltValueEnumConst(wireName: r'option_unavailable')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum optionUnavailable =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_optionUnavailable;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum optionUnavailable = _$customerQuoteDtoOutputProblemsInnerCodeEnum_optionUnavailable;
   @BuiltValueEnumConst(wireName: r'options_invalid')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum optionsInvalid =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_optionsInvalid;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum optionsInvalid = _$customerQuoteDtoOutputProblemsInnerCodeEnum_optionsInvalid;
   @BuiltValueEnumConst(wireName: r'price_not_in_base_currency')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum
-  priceNotInBaseCurrency =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_priceNotInBaseCurrency;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum priceNotInBaseCurrency = _$customerQuoteDtoOutputProblemsInnerCodeEnum_priceNotInBaseCurrency;
   @BuiltValueEnumConst(wireName: r'price_changed')
-  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum priceChanged =
-      _$customerQuoteDtoOutputProblemsInnerCodeEnum_priceChanged;
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum priceChanged = _$customerQuoteDtoOutputProblemsInnerCodeEnum_priceChanged;
 
-  static Serializer<CustomerQuoteDtoOutputProblemsInnerCodeEnum>
-  get serializer => _$customerQuoteDtoOutputProblemsInnerCodeEnumSerializer;
+  static Serializer<CustomerQuoteDtoOutputProblemsInnerCodeEnum> get serializer => _$customerQuoteDtoOutputProblemsInnerCodeEnumSerializer;
 
-  const CustomerQuoteDtoOutputProblemsInnerCodeEnum._(String name)
-    : super(name);
+  const CustomerQuoteDtoOutputProblemsInnerCodeEnum._(String name): super(name);
 
-  static BuiltSet<CustomerQuoteDtoOutputProblemsInnerCodeEnum> get values =>
-      _$customerQuoteDtoOutputProblemsInnerCodeEnumValues;
-  static CustomerQuoteDtoOutputProblemsInnerCodeEnum valueOf(String name) =>
-      _$customerQuoteDtoOutputProblemsInnerCodeEnumValueOf(name);
+  static BuiltSet<CustomerQuoteDtoOutputProblemsInnerCodeEnum> get values => _$customerQuoteDtoOutputProblemsInnerCodeEnumValues;
+  static CustomerQuoteDtoOutputProblemsInnerCodeEnum valueOf(String name) => _$customerQuoteDtoOutputProblemsInnerCodeEnumValueOf(name);
 }
+

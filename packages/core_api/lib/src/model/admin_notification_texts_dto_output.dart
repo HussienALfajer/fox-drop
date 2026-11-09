@@ -13,38 +13,26 @@ part 'admin_notification_texts_dto_output.g.dart';
 /// AdminNotificationTextsDtoOutput
 ///
 /// Properties:
-/// * [templates]
+/// * [templates] 
 @BuiltValue()
-abstract class AdminNotificationTextsDtoOutput
-    implements
-        Built<
-          AdminNotificationTextsDtoOutput,
-          AdminNotificationTextsDtoOutputBuilder
-        > {
+abstract class AdminNotificationTextsDtoOutput implements Built<AdminNotificationTextsDtoOutput, AdminNotificationTextsDtoOutputBuilder> {
   @BuiltValueField(wireName: r'templates')
   BuiltList<AdminNotificationTextsDtoOutputTemplatesInner> get templates;
 
   AdminNotificationTextsDtoOutput._();
 
-  factory AdminNotificationTextsDtoOutput([
-    void updates(AdminNotificationTextsDtoOutputBuilder b),
-  ]) = _$AdminNotificationTextsDtoOutput;
+  factory AdminNotificationTextsDtoOutput([void updates(AdminNotificationTextsDtoOutputBuilder b)]) = _$AdminNotificationTextsDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminNotificationTextsDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminNotificationTextsDtoOutput> get serializer =>
-      _$AdminNotificationTextsDtoOutputSerializer();
+  static Serializer<AdminNotificationTextsDtoOutput> get serializer => _$AdminNotificationTextsDtoOutputSerializer();
 }
 
-class _$AdminNotificationTextsDtoOutputSerializer
-    implements PrimitiveSerializer<AdminNotificationTextsDtoOutput> {
+class _$AdminNotificationTextsDtoOutputSerializer implements PrimitiveSerializer<AdminNotificationTextsDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    AdminNotificationTextsDtoOutput,
-    _$AdminNotificationTextsDtoOutput,
-  ];
+  final Iterable<Type> types = const [AdminNotificationTextsDtoOutput, _$AdminNotificationTextsDtoOutput];
 
   @override
   final String wireName = r'AdminNotificationTextsDtoOutput';
@@ -57,9 +45,7 @@ class _$AdminNotificationTextsDtoOutputSerializer
     yield r'templates';
     yield serializers.serialize(
       object.templates,
-      specifiedType: const FullType(BuiltList, [
-        FullType(AdminNotificationTextsDtoOutputTemplatesInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(AdminNotificationTextsDtoOutputTemplatesInner)]),
     );
   }
 
@@ -69,11 +55,7 @@ class _$AdminNotificationTextsDtoOutputSerializer
     AdminNotificationTextsDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -89,14 +71,10 @@ class _$AdminNotificationTextsDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'templates':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(AdminNotificationTextsDtoOutputTemplatesInner),
-                    ]),
-                  )
-                  as BuiltList<AdminNotificationTextsDtoOutputTemplatesInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(AdminNotificationTextsDtoOutputTemplatesInner)]),
+          ) as BuiltList<AdminNotificationTextsDtoOutputTemplatesInner>;
           result.templates.replace(valueDes);
           break;
         default:
@@ -127,3 +105,5 @@ class _$AdminNotificationTextsDtoOutputSerializer
     return result.build();
   }
 }
+
+

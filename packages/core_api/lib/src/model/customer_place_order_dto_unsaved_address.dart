@@ -12,7 +12,7 @@ part 'customer_place_order_dto_unsaved_address.g.dart';
 /// «التوصيل إلى موقعي الحالي»: an address for this order only (CU §7.4), or null.
 ///
 /// Properties:
-/// * [location]
+/// * [location] 
 /// * [street] - «الشارع والبناء».
 /// * [floor] - «الطابق والشقة», optional.
 /// * [landmark] - «بالقرب من».
@@ -20,12 +20,7 @@ part 'customer_place_order_dto_unsaved_address.g.dart';
 /// * [recipientName] - «اسم المستلم», needed with another contact number (Q5).
 /// * [directions] - «توجيهات للكابتن», optional.
 @BuiltValue()
-abstract class CustomerPlaceOrderDtoUnsavedAddress
-    implements
-        Built<
-          CustomerPlaceOrderDtoUnsavedAddress,
-          CustomerPlaceOrderDtoUnsavedAddressBuilder
-        > {
+abstract class CustomerPlaceOrderDtoUnsavedAddress implements Built<CustomerPlaceOrderDtoUnsavedAddress, CustomerPlaceOrderDtoUnsavedAddressBuilder> {
   @BuiltValueField(wireName: r'location')
   CustomerNewAddressDtoLocation get location;
 
@@ -55,25 +50,18 @@ abstract class CustomerPlaceOrderDtoUnsavedAddress
 
   CustomerPlaceOrderDtoUnsavedAddress._();
 
-  factory CustomerPlaceOrderDtoUnsavedAddress([
-    void updates(CustomerPlaceOrderDtoUnsavedAddressBuilder b),
-  ]) = _$CustomerPlaceOrderDtoUnsavedAddress;
+  factory CustomerPlaceOrderDtoUnsavedAddress([void updates(CustomerPlaceOrderDtoUnsavedAddressBuilder b)]) = _$CustomerPlaceOrderDtoUnsavedAddress;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerPlaceOrderDtoUnsavedAddressBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerPlaceOrderDtoUnsavedAddress> get serializer =>
-      _$CustomerPlaceOrderDtoUnsavedAddressSerializer();
+  static Serializer<CustomerPlaceOrderDtoUnsavedAddress> get serializer => _$CustomerPlaceOrderDtoUnsavedAddressSerializer();
 }
 
-class _$CustomerPlaceOrderDtoUnsavedAddressSerializer
-    implements PrimitiveSerializer<CustomerPlaceOrderDtoUnsavedAddress> {
+class _$CustomerPlaceOrderDtoUnsavedAddressSerializer implements PrimitiveSerializer<CustomerPlaceOrderDtoUnsavedAddress> {
   @override
-  final Iterable<Type> types = const [
-    CustomerPlaceOrderDtoUnsavedAddress,
-    _$CustomerPlaceOrderDtoUnsavedAddress,
-  ];
+  final Iterable<Type> types = const [CustomerPlaceOrderDtoUnsavedAddress, _$CustomerPlaceOrderDtoUnsavedAddress];
 
   @override
   final String wireName = r'CustomerPlaceOrderDtoUnsavedAddress';
@@ -94,38 +82,30 @@ class _$CustomerPlaceOrderDtoUnsavedAddressSerializer
       specifiedType: const FullType(String),
     );
     yield r'floor';
-    yield object.floor == null
-        ? null
-        : serializers.serialize(
-            object.floor,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.floor == null ? null : serializers.serialize(
+      object.floor,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'landmark';
     yield serializers.serialize(
       object.landmark,
       specifiedType: const FullType(String),
     );
     yield r'contactPhone';
-    yield object.contactPhone == null
-        ? null
-        : serializers.serialize(
-            object.contactPhone,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.contactPhone == null ? null : serializers.serialize(
+      object.contactPhone,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'recipientName';
-    yield object.recipientName == null
-        ? null
-        : serializers.serialize(
-            object.recipientName,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.recipientName == null ? null : serializers.serialize(
+      object.recipientName,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'directions';
-    yield object.directions == null
-        ? null
-        : serializers.serialize(
-            object.directions,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.directions == null ? null : serializers.serialize(
+      object.directions,
+      specifiedType: const FullType.nullable(String),
+    );
   }
 
   @override
@@ -134,11 +114,7 @@ class _$CustomerPlaceOrderDtoUnsavedAddressSerializer
     CustomerPlaceOrderDtoUnsavedAddress object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -154,71 +130,55 @@ class _$CustomerPlaceOrderDtoUnsavedAddressSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'location':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CustomerNewAddressDtoLocation,
-                    ),
-                  )
-                  as CustomerNewAddressDtoLocation;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CustomerNewAddressDtoLocation),
+          ) as CustomerNewAddressDtoLocation;
           result.location.replace(valueDes);
           break;
         case r'street':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.street = valueDes;
           break;
         case r'floor':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.floor = valueDes;
           break;
         case r'landmark':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.landmark = valueDes;
           break;
         case r'contactPhone':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.contactPhone = valueDes;
           break;
         case r'recipientName':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.recipientName = valueDes;
           break;
         case r'directions':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.directions = valueDes;
           break;
@@ -250,3 +210,5 @@ class _$CustomerPlaceOrderDtoUnsavedAddressSerializer
     return result.build();
   }
 }
+
+

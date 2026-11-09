@@ -14,8 +14,7 @@ part 'customer_code_request_dto.g.dart';
 /// * [phone] - The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
 /// * [deviceId] - The app installation, generated once by the app and kept until it is removed.
 @BuiltValue()
-abstract class CustomerCodeRequestDto
-    implements Built<CustomerCodeRequestDto, CustomerCodeRequestDtoBuilder> {
+abstract class CustomerCodeRequestDto implements Built<CustomerCodeRequestDto, CustomerCodeRequestDtoBuilder> {
   /// The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
   @BuiltValueField(wireName: r'phone')
   String get phone;
@@ -26,25 +25,18 @@ abstract class CustomerCodeRequestDto
 
   CustomerCodeRequestDto._();
 
-  factory CustomerCodeRequestDto([
-    void updates(CustomerCodeRequestDtoBuilder b),
-  ]) = _$CustomerCodeRequestDto;
+  factory CustomerCodeRequestDto([void updates(CustomerCodeRequestDtoBuilder b)]) = _$CustomerCodeRequestDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerCodeRequestDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerCodeRequestDto> get serializer =>
-      _$CustomerCodeRequestDtoSerializer();
+  static Serializer<CustomerCodeRequestDto> get serializer => _$CustomerCodeRequestDtoSerializer();
 }
 
-class _$CustomerCodeRequestDtoSerializer
-    implements PrimitiveSerializer<CustomerCodeRequestDto> {
+class _$CustomerCodeRequestDtoSerializer implements PrimitiveSerializer<CustomerCodeRequestDto> {
   @override
-  final Iterable<Type> types = const [
-    CustomerCodeRequestDto,
-    _$CustomerCodeRequestDto,
-  ];
+  final Iterable<Type> types = const [CustomerCodeRequestDto, _$CustomerCodeRequestDto];
 
   @override
   final String wireName = r'CustomerCodeRequestDto';
@@ -72,11 +64,7 @@ class _$CustomerCodeRequestDtoSerializer
     CustomerCodeRequestDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -92,21 +80,17 @@ class _$CustomerCodeRequestDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'phone':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.phone = valueDes;
           break;
         case r'deviceId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.deviceId = valueDes;
           break;
         default:
@@ -137,3 +121,5 @@ class _$CustomerCodeRequestDtoSerializer
     return result.build();
   }
 }
+
+

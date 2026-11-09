@@ -13,33 +13,26 @@ part 'merchant_schedule_dto.g.dart';
 /// MerchantScheduleDto
 ///
 /// Properties:
-/// * [periods]
+/// * [periods] 
 @BuiltValue()
-abstract class MerchantScheduleDto
-    implements Built<MerchantScheduleDto, MerchantScheduleDtoBuilder> {
+abstract class MerchantScheduleDto implements Built<MerchantScheduleDto, MerchantScheduleDtoBuilder> {
   @BuiltValueField(wireName: r'periods')
   BuiltList<MerchantScheduleDtoPeriodsInner> get periods;
 
   MerchantScheduleDto._();
 
-  factory MerchantScheduleDto([void updates(MerchantScheduleDtoBuilder b)]) =
-      _$MerchantScheduleDto;
+  factory MerchantScheduleDto([void updates(MerchantScheduleDtoBuilder b)]) = _$MerchantScheduleDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantScheduleDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantScheduleDto> get serializer =>
-      _$MerchantScheduleDtoSerializer();
+  static Serializer<MerchantScheduleDto> get serializer => _$MerchantScheduleDtoSerializer();
 }
 
-class _$MerchantScheduleDtoSerializer
-    implements PrimitiveSerializer<MerchantScheduleDto> {
+class _$MerchantScheduleDtoSerializer implements PrimitiveSerializer<MerchantScheduleDto> {
   @override
-  final Iterable<Type> types = const [
-    MerchantScheduleDto,
-    _$MerchantScheduleDto,
-  ];
+  final Iterable<Type> types = const [MerchantScheduleDto, _$MerchantScheduleDto];
 
   @override
   final String wireName = r'MerchantScheduleDto';
@@ -52,9 +45,7 @@ class _$MerchantScheduleDtoSerializer
     yield r'periods';
     yield serializers.serialize(
       object.periods,
-      specifiedType: const FullType(BuiltList, [
-        FullType(MerchantScheduleDtoPeriodsInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(MerchantScheduleDtoPeriodsInner)]),
     );
   }
 
@@ -64,11 +55,7 @@ class _$MerchantScheduleDtoSerializer
     MerchantScheduleDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -84,14 +71,10 @@ class _$MerchantScheduleDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'periods':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(MerchantScheduleDtoPeriodsInner),
-                    ]),
-                  )
-                  as BuiltList<MerchantScheduleDtoPeriodsInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(MerchantScheduleDtoPeriodsInner)]),
+          ) as BuiltList<MerchantScheduleDtoPeriodsInner>;
           result.periods.replace(valueDes);
           break;
         default:
@@ -122,3 +105,5 @@ class _$MerchantScheduleDtoSerializer
     return result.build();
   }
 }
+
+

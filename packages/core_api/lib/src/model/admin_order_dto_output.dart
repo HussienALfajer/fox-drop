@@ -12,33 +12,26 @@ part 'admin_order_dto_output.g.dart';
 /// AdminOrderDtoOutput
 ///
 /// Properties:
-/// * [order]
+/// * [order] 
 @BuiltValue()
-abstract class AdminOrderDtoOutput
-    implements Built<AdminOrderDtoOutput, AdminOrderDtoOutputBuilder> {
+abstract class AdminOrderDtoOutput implements Built<AdminOrderDtoOutput, AdminOrderDtoOutputBuilder> {
   @BuiltValueField(wireName: r'order')
   AdminOrderDtoOutputOrder get order;
 
   AdminOrderDtoOutput._();
 
-  factory AdminOrderDtoOutput([void updates(AdminOrderDtoOutputBuilder b)]) =
-      _$AdminOrderDtoOutput;
+  factory AdminOrderDtoOutput([void updates(AdminOrderDtoOutputBuilder b)]) = _$AdminOrderDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutput> get serializer =>
-      _$AdminOrderDtoOutputSerializer();
+  static Serializer<AdminOrderDtoOutput> get serializer => _$AdminOrderDtoOutputSerializer();
 }
 
-class _$AdminOrderDtoOutputSerializer
-    implements PrimitiveSerializer<AdminOrderDtoOutput> {
+class _$AdminOrderDtoOutputSerializer implements PrimitiveSerializer<AdminOrderDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    AdminOrderDtoOutput,
-    _$AdminOrderDtoOutput,
-  ];
+  final Iterable<Type> types = const [AdminOrderDtoOutput, _$AdminOrderDtoOutput];
 
   @override
   final String wireName = r'AdminOrderDtoOutput';
@@ -61,11 +54,7 @@ class _$AdminOrderDtoOutputSerializer
     AdminOrderDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -81,12 +70,10 @@ class _$AdminOrderDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'order':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(AdminOrderDtoOutputOrder),
-                  )
-                  as AdminOrderDtoOutputOrder;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(AdminOrderDtoOutputOrder),
+          ) as AdminOrderDtoOutputOrder;
           result.order.replace(valueDes);
           break;
         default:
@@ -117,3 +104,5 @@ class _$AdminOrderDtoOutputSerializer
     return result.build();
   }
 }
+
+

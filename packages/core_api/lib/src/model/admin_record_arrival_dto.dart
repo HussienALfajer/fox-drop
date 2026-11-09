@@ -13,33 +13,25 @@ part 'admin_record_arrival_dto.g.dart';
 /// Properties:
 /// * [reason] - Required (AP §9.3.2).
 @BuiltValue()
-abstract class AdminRecordArrivalDto
-    implements Built<AdminRecordArrivalDto, AdminRecordArrivalDtoBuilder> {
+abstract class AdminRecordArrivalDto implements Built<AdminRecordArrivalDto, AdminRecordArrivalDtoBuilder> {
   /// Required (AP §9.3.2).
   @BuiltValueField(wireName: r'reason')
   String get reason;
 
   AdminRecordArrivalDto._();
 
-  factory AdminRecordArrivalDto([
-    void updates(AdminRecordArrivalDtoBuilder b),
-  ]) = _$AdminRecordArrivalDto;
+  factory AdminRecordArrivalDto([void updates(AdminRecordArrivalDtoBuilder b)]) = _$AdminRecordArrivalDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminRecordArrivalDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRecordArrivalDto> get serializer =>
-      _$AdminRecordArrivalDtoSerializer();
+  static Serializer<AdminRecordArrivalDto> get serializer => _$AdminRecordArrivalDtoSerializer();
 }
 
-class _$AdminRecordArrivalDtoSerializer
-    implements PrimitiveSerializer<AdminRecordArrivalDto> {
+class _$AdminRecordArrivalDtoSerializer implements PrimitiveSerializer<AdminRecordArrivalDto> {
   @override
-  final Iterable<Type> types = const [
-    AdminRecordArrivalDto,
-    _$AdminRecordArrivalDto,
-  ];
+  final Iterable<Type> types = const [AdminRecordArrivalDto, _$AdminRecordArrivalDto];
 
   @override
   final String wireName = r'AdminRecordArrivalDto';
@@ -62,11 +54,7 @@ class _$AdminRecordArrivalDtoSerializer
     AdminRecordArrivalDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -82,12 +70,10 @@ class _$AdminRecordArrivalDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'reason':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.reason = valueDes;
           break;
         default:
@@ -118,3 +104,5 @@ class _$AdminRecordArrivalDtoSerializer
     return result.build();
   }
 }
+
+

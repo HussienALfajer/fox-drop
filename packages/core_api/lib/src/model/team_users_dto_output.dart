@@ -13,28 +13,24 @@ part 'team_users_dto_output.g.dart';
 /// TeamUsersDtoOutput
 ///
 /// Properties:
-/// * [users]
+/// * [users] 
 @BuiltValue()
-abstract class TeamUsersDtoOutput
-    implements Built<TeamUsersDtoOutput, TeamUsersDtoOutputBuilder> {
+abstract class TeamUsersDtoOutput implements Built<TeamUsersDtoOutput, TeamUsersDtoOutputBuilder> {
   @BuiltValueField(wireName: r'users')
   BuiltList<TeamUsersDtoOutputUsersInner> get users;
 
   TeamUsersDtoOutput._();
 
-  factory TeamUsersDtoOutput([void updates(TeamUsersDtoOutputBuilder b)]) =
-      _$TeamUsersDtoOutput;
+  factory TeamUsersDtoOutput([void updates(TeamUsersDtoOutputBuilder b)]) = _$TeamUsersDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(TeamUsersDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<TeamUsersDtoOutput> get serializer =>
-      _$TeamUsersDtoOutputSerializer();
+  static Serializer<TeamUsersDtoOutput> get serializer => _$TeamUsersDtoOutputSerializer();
 }
 
-class _$TeamUsersDtoOutputSerializer
-    implements PrimitiveSerializer<TeamUsersDtoOutput> {
+class _$TeamUsersDtoOutputSerializer implements PrimitiveSerializer<TeamUsersDtoOutput> {
   @override
   final Iterable<Type> types = const [TeamUsersDtoOutput, _$TeamUsersDtoOutput];
 
@@ -49,9 +45,7 @@ class _$TeamUsersDtoOutputSerializer
     yield r'users';
     yield serializers.serialize(
       object.users,
-      specifiedType: const FullType(BuiltList, [
-        FullType(TeamUsersDtoOutputUsersInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(TeamUsersDtoOutputUsersInner)]),
     );
   }
 
@@ -61,11 +55,7 @@ class _$TeamUsersDtoOutputSerializer
     TeamUsersDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -81,14 +71,10 @@ class _$TeamUsersDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'users':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(TeamUsersDtoOutputUsersInner),
-                    ]),
-                  )
-                  as BuiltList<TeamUsersDtoOutputUsersInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(TeamUsersDtoOutputUsersInner)]),
+          ) as BuiltList<TeamUsersDtoOutputUsersInner>;
           result.users.replace(valueDes);
           break;
         default:
@@ -119,3 +105,5 @@ class _$TeamUsersDtoOutputSerializer
     return result.build();
   }
 }
+
+

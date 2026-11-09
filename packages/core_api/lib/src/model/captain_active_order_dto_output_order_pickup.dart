@@ -15,16 +15,11 @@ part 'captain_active_order_dto_output_order_pickup.g.dart';
 ///
 /// Properties:
 /// * [proposedLines] - «ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): the whole amount in the base currency in Phase 1.
-/// * [request]
-/// * [pickedUpAt]
+/// * [request] 
+/// * [pickedUpAt] 
 /// * [disputedAt] - «فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات».
 @BuiltValue()
-abstract class CaptainActiveOrderDtoOutputOrderPickup
-    implements
-        Built<
-          CaptainActiveOrderDtoOutputOrderPickup,
-          CaptainActiveOrderDtoOutputOrderPickupBuilder
-        > {
+abstract class CaptainActiveOrderDtoOutputOrderPickup implements Built<CaptainActiveOrderDtoOutputOrderPickup, CaptainActiveOrderDtoOutputOrderPickupBuilder> {
   /// «ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): the whole amount in the base currency in Phase 1.
   @BuiltValueField(wireName: r'proposedLines')
   BuiltList<CaptainWentOfflineDtoOutputHandIn?> get proposedLines;
@@ -41,25 +36,18 @@ abstract class CaptainActiveOrderDtoOutputOrderPickup
 
   CaptainActiveOrderDtoOutputOrderPickup._();
 
-  factory CaptainActiveOrderDtoOutputOrderPickup([
-    void updates(CaptainActiveOrderDtoOutputOrderPickupBuilder b),
-  ]) = _$CaptainActiveOrderDtoOutputOrderPickup;
+  factory CaptainActiveOrderDtoOutputOrderPickup([void updates(CaptainActiveOrderDtoOutputOrderPickupBuilder b)]) = _$CaptainActiveOrderDtoOutputOrderPickup;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainActiveOrderDtoOutputOrderPickupBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainActiveOrderDtoOutputOrderPickup> get serializer =>
-      _$CaptainActiveOrderDtoOutputOrderPickupSerializer();
+  static Serializer<CaptainActiveOrderDtoOutputOrderPickup> get serializer => _$CaptainActiveOrderDtoOutputOrderPickupSerializer();
 }
 
-class _$CaptainActiveOrderDtoOutputOrderPickupSerializer
-    implements PrimitiveSerializer<CaptainActiveOrderDtoOutputOrderPickup> {
+class _$CaptainActiveOrderDtoOutputOrderPickupSerializer implements PrimitiveSerializer<CaptainActiveOrderDtoOutputOrderPickup> {
   @override
-  final Iterable<Type> types = const [
-    CaptainActiveOrderDtoOutputOrderPickup,
-    _$CaptainActiveOrderDtoOutputOrderPickup,
-  ];
+  final Iterable<Type> types = const [CaptainActiveOrderDtoOutputOrderPickup, _$CaptainActiveOrderDtoOutputOrderPickup];
 
   @override
   final String wireName = r'CaptainActiveOrderDtoOutputOrderPickup';
@@ -72,33 +60,23 @@ class _$CaptainActiveOrderDtoOutputOrderPickupSerializer
     yield r'proposedLines';
     yield serializers.serialize(
       object.proposedLines,
-      specifiedType: const FullType(BuiltList, [
-        FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType.nullable(CaptainWentOfflineDtoOutputHandIn)]),
     );
     yield r'request';
-    yield object.request == null
-        ? null
-        : serializers.serialize(
-            object.request,
-            specifiedType: const FullType.nullable(
-              CaptainActiveOrderDtoOutputOrderPickupRequest,
-            ),
-          );
+    yield object.request == null ? null : serializers.serialize(
+      object.request,
+      specifiedType: const FullType.nullable(CaptainActiveOrderDtoOutputOrderPickupRequest),
+    );
     yield r'pickedUpAt';
-    yield object.pickedUpAt == null
-        ? null
-        : serializers.serialize(
-            object.pickedUpAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.pickedUpAt == null ? null : serializers.serialize(
+      object.pickedUpAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'disputedAt';
-    yield object.disputedAt == null
-        ? null
-        : serializers.serialize(
-            object.disputedAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.disputedAt == null ? null : serializers.serialize(
+      object.disputedAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
   }
 
   @override
@@ -107,11 +85,7 @@ class _$CaptainActiveOrderDtoOutputOrderPickupSerializer
     CaptainActiveOrderDtoOutputOrderPickup object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -127,45 +101,33 @@ class _$CaptainActiveOrderDtoOutputOrderPickupSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'proposedLines':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
-                    ]),
-                  )
-                  as BuiltList<CaptainWentOfflineDtoOutputHandIn?>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType.nullable(CaptainWentOfflineDtoOutputHandIn)]),
+          ) as BuiltList<CaptainWentOfflineDtoOutputHandIn?>;
           result.proposedLines.replace(valueDes);
           break;
         case r'request':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      CaptainActiveOrderDtoOutputOrderPickupRequest,
-                    ),
-                  )
-                  as CaptainActiveOrderDtoOutputOrderPickupRequest?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(CaptainActiveOrderDtoOutputOrderPickupRequest),
+          ) as CaptainActiveOrderDtoOutputOrderPickupRequest?;
           if (valueDes == null) continue;
           result.request.replace(valueDes);
           break;
         case r'pickedUpAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.pickedUpAt = valueDes;
           break;
         case r'disputedAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.disputedAt = valueDes;
           break;
@@ -197,3 +159,5 @@ class _$CaptainActiveOrderDtoOutputOrderPickupSerializer
     return result.build();
   }
 }
+
+

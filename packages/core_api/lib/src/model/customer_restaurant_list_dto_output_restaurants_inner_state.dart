@@ -18,12 +18,7 @@ part 'customer_restaurant_list_dto_output_restaurants_inner_state.g.dart';
 /// * [opensAt] - While closed by the schedule: its next opening.
 /// * [message] - A holiday close's message, or an operations pause's.
 @BuiltValue()
-abstract class CustomerRestaurantListDtoOutputRestaurantsInnerState
-    implements
-        Built<
-          CustomerRestaurantListDtoOutputRestaurantsInnerState,
-          CustomerRestaurantListDtoOutputRestaurantsInnerStateBuilder
-        > {
+abstract class CustomerRestaurantListDtoOutputRestaurantsInnerState implements Built<CustomerRestaurantListDtoOutputRestaurantsInnerState, CustomerRestaurantListDtoOutputRestaurantsInnerStateBuilder> {
   /// CU §9.2: open; «المطعم مشغول حالياً، جرّب بعد قليل»; «المطعم متوقف مؤقتاً…»; «مغلق — يفتح…»; «مغلق حتى {التاريخ}».
   @BuiltValueField(wireName: r'state')
   CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum get state;
@@ -47,35 +42,21 @@ abstract class CustomerRestaurantListDtoOutputRestaurantsInnerState
 
   CustomerRestaurantListDtoOutputRestaurantsInnerState._();
 
-  factory CustomerRestaurantListDtoOutputRestaurantsInnerState([
-    void updates(CustomerRestaurantListDtoOutputRestaurantsInnerStateBuilder b),
-  ]) = _$CustomerRestaurantListDtoOutputRestaurantsInnerState;
+  factory CustomerRestaurantListDtoOutputRestaurantsInnerState([void updates(CustomerRestaurantListDtoOutputRestaurantsInnerStateBuilder b)]) = _$CustomerRestaurantListDtoOutputRestaurantsInnerState;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    CustomerRestaurantListDtoOutputRestaurantsInnerStateBuilder b,
-  ) => b;
+  static void _defaults(CustomerRestaurantListDtoOutputRestaurantsInnerStateBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerRestaurantListDtoOutputRestaurantsInnerState>
-  get serializer =>
-      _$CustomerRestaurantListDtoOutputRestaurantsInnerStateSerializer();
+  static Serializer<CustomerRestaurantListDtoOutputRestaurantsInnerState> get serializer => _$CustomerRestaurantListDtoOutputRestaurantsInnerStateSerializer();
 }
 
-class _$CustomerRestaurantListDtoOutputRestaurantsInnerStateSerializer
-    implements
-        PrimitiveSerializer<
-          CustomerRestaurantListDtoOutputRestaurantsInnerState
-        > {
+class _$CustomerRestaurantListDtoOutputRestaurantsInnerStateSerializer implements PrimitiveSerializer<CustomerRestaurantListDtoOutputRestaurantsInnerState> {
   @override
-  final Iterable<Type> types = const [
-    CustomerRestaurantListDtoOutputRestaurantsInnerState,
-    _$CustomerRestaurantListDtoOutputRestaurantsInnerState,
-  ];
+  final Iterable<Type> types = const [CustomerRestaurantListDtoOutputRestaurantsInnerState, _$CustomerRestaurantListDtoOutputRestaurantsInnerState];
 
   @override
-  final String wireName =
-      r'CustomerRestaurantListDtoOutputRestaurantsInnerState';
+  final String wireName = r'CustomerRestaurantListDtoOutputRestaurantsInnerState';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
@@ -85,9 +66,7 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInnerStateSerializer
     yield r'state';
     yield serializers.serialize(
       object.state,
-      specifiedType: const FullType(
-        CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum,
-      ),
+      specifiedType: const FullType(CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum),
     );
     yield r'busyMode';
     yield serializers.serialize(
@@ -95,26 +74,20 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInnerStateSerializer
       specifiedType: const FullType(bool),
     );
     yield r'until';
-    yield object.until == null
-        ? null
-        : serializers.serialize(
-            object.until,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.until == null ? null : serializers.serialize(
+      object.until,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'opensAt';
-    yield object.opensAt == null
-        ? null
-        : serializers.serialize(
-            object.opensAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.opensAt == null ? null : serializers.serialize(
+      object.opensAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'message';
-    yield object.message == null
-        ? null
-        : serializers.serialize(
-            object.message,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.message == null ? null : serializers.serialize(
+      object.message,
+      specifiedType: const FullType.nullable(String),
+    );
   }
 
   @override
@@ -123,11 +96,7 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInnerStateSerializer
     CustomerRestaurantListDtoOutputRestaurantsInnerState object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -143,52 +112,40 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInnerStateSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'state':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum,
-                    ),
-                  )
-                  as CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum),
+          ) as CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum;
           result.state = valueDes;
           break;
         case r'busyMode':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.busyMode = valueDes;
           break;
         case r'until':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.until = valueDes;
           break;
         case r'opensAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.opensAt = valueDes;
           break;
         case r'message':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.message = valueDes;
           break;
@@ -206,8 +163,7 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInnerStateSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result =
-        CustomerRestaurantListDtoOutputRestaurantsInnerStateBuilder();
+    final result = CustomerRestaurantListDtoOutputRestaurantsInnerStateBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
@@ -222,44 +178,26 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInnerStateSerializer
   }
 }
 
+
 /// CU §9.2: open; «المطعم مشغول حالياً، جرّب بعد قليل»; «المطعم متوقف مؤقتاً…»; «مغلق — يفتح…»; «مغلق حتى {التاريخ}».
-class CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum
-    extends EnumClass {
+class CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'open')
-  static const CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum
-  open = _$customerRestaurantListDtoOutputRestaurantsInnerStateStateEnum_open;
+  static const CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum open = _$customerRestaurantListDtoOutputRestaurantsInnerStateStateEnum_open;
   @BuiltValueEnumConst(wireName: r'busy')
-  static const CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum
-  busy = _$customerRestaurantListDtoOutputRestaurantsInnerStateStateEnum_busy;
+  static const CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum busy = _$customerRestaurantListDtoOutputRestaurantsInnerStateStateEnum_busy;
   @BuiltValueEnumConst(wireName: r'paused')
-  static const CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum
-  paused =
-      _$customerRestaurantListDtoOutputRestaurantsInnerStateStateEnum_paused;
+  static const CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum paused = _$customerRestaurantListDtoOutputRestaurantsInnerStateStateEnum_paused;
   @BuiltValueEnumConst(wireName: r'closed')
-  static const CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum
-  closed =
-      _$customerRestaurantListDtoOutputRestaurantsInnerStateStateEnum_closed;
+  static const CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum closed = _$customerRestaurantListDtoOutputRestaurantsInnerStateStateEnum_closed;
   @BuiltValueEnumConst(wireName: r'holiday')
-  static const CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum
-  holiday =
-      _$customerRestaurantListDtoOutputRestaurantsInnerStateStateEnum_holiday;
+  static const CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum holiday = _$customerRestaurantListDtoOutputRestaurantsInnerStateStateEnum_holiday;
 
-  static Serializer<
-    CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum
-  >
-  get serializer =>
-      _$customerRestaurantListDtoOutputRestaurantsInnerStateStateEnumSerializer;
+  static Serializer<CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum> get serializer => _$customerRestaurantListDtoOutputRestaurantsInnerStateStateEnumSerializer;
 
-  const CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum._(
-    String name,
-  ) : super(name);
+  const CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum._(String name): super(name);
 
-  static BuiltSet<CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum>
-  get values =>
-      _$customerRestaurantListDtoOutputRestaurantsInnerStateStateEnumValues;
-  static CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum valueOf(
-    String name,
-  ) => _$customerRestaurantListDtoOutputRestaurantsInnerStateStateEnumValueOf(
-    name,
-  );
+  static BuiltSet<CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum> get values => _$customerRestaurantListDtoOutputRestaurantsInnerStateStateEnumValues;
+  static CustomerRestaurantListDtoOutputRestaurantsInnerStateStateEnum valueOf(String name) => _$customerRestaurantListDtoOutputRestaurantsInnerStateStateEnumValueOf(name);
 }
+

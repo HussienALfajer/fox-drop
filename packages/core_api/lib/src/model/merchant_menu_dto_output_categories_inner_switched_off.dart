@@ -13,41 +13,25 @@ part 'merchant_menu_dto_output_categories_inner_switched_off.g.dart';
 /// Properties:
 /// * [until] - «حتى الغد»: on again at this time; null: «حتى أعيده».
 @BuiltValue()
-abstract class MerchantMenuDtoOutputCategoriesInnerSwitchedOff
-    implements
-        Built<
-          MerchantMenuDtoOutputCategoriesInnerSwitchedOff,
-          MerchantMenuDtoOutputCategoriesInnerSwitchedOffBuilder
-        > {
+abstract class MerchantMenuDtoOutputCategoriesInnerSwitchedOff implements Built<MerchantMenuDtoOutputCategoriesInnerSwitchedOff, MerchantMenuDtoOutputCategoriesInnerSwitchedOffBuilder> {
   /// «حتى الغد»: on again at this time; null: «حتى أعيده».
   @BuiltValueField(wireName: r'until')
   DateTime? get until;
 
   MerchantMenuDtoOutputCategoriesInnerSwitchedOff._();
 
-  factory MerchantMenuDtoOutputCategoriesInnerSwitchedOff([
-    void updates(MerchantMenuDtoOutputCategoriesInnerSwitchedOffBuilder b),
-  ]) = _$MerchantMenuDtoOutputCategoriesInnerSwitchedOff;
+  factory MerchantMenuDtoOutputCategoriesInnerSwitchedOff([void updates(MerchantMenuDtoOutputCategoriesInnerSwitchedOffBuilder b)]) = _$MerchantMenuDtoOutputCategoriesInnerSwitchedOff;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    MerchantMenuDtoOutputCategoriesInnerSwitchedOffBuilder b,
-  ) => b;
+  static void _defaults(MerchantMenuDtoOutputCategoriesInnerSwitchedOffBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantMenuDtoOutputCategoriesInnerSwitchedOff>
-  get serializer =>
-      _$MerchantMenuDtoOutputCategoriesInnerSwitchedOffSerializer();
+  static Serializer<MerchantMenuDtoOutputCategoriesInnerSwitchedOff> get serializer => _$MerchantMenuDtoOutputCategoriesInnerSwitchedOffSerializer();
 }
 
-class _$MerchantMenuDtoOutputCategoriesInnerSwitchedOffSerializer
-    implements
-        PrimitiveSerializer<MerchantMenuDtoOutputCategoriesInnerSwitchedOff> {
+class _$MerchantMenuDtoOutputCategoriesInnerSwitchedOffSerializer implements PrimitiveSerializer<MerchantMenuDtoOutputCategoriesInnerSwitchedOff> {
   @override
-  final Iterable<Type> types = const [
-    MerchantMenuDtoOutputCategoriesInnerSwitchedOff,
-    _$MerchantMenuDtoOutputCategoriesInnerSwitchedOff,
-  ];
+  final Iterable<Type> types = const [MerchantMenuDtoOutputCategoriesInnerSwitchedOff, _$MerchantMenuDtoOutputCategoriesInnerSwitchedOff];
 
   @override
   final String wireName = r'MerchantMenuDtoOutputCategoriesInnerSwitchedOff';
@@ -58,12 +42,10 @@ class _$MerchantMenuDtoOutputCategoriesInnerSwitchedOffSerializer
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'until';
-    yield object.until == null
-        ? null
-        : serializers.serialize(
-            object.until,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.until == null ? null : serializers.serialize(
+      object.until,
+      specifiedType: const FullType.nullable(DateTime),
+    );
   }
 
   @override
@@ -72,11 +54,7 @@ class _$MerchantMenuDtoOutputCategoriesInnerSwitchedOffSerializer
     MerchantMenuDtoOutputCategoriesInnerSwitchedOff object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -92,12 +70,10 @@ class _$MerchantMenuDtoOutputCategoriesInnerSwitchedOffSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'until':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.until = valueDes;
           break;
@@ -129,3 +105,5 @@ class _$MerchantMenuDtoOutputCategoriesInnerSwitchedOffSerializer
     return result.build();
   }
 }
+
+

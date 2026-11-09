@@ -14,8 +14,7 @@ part 'admin_accept_dto.g.dart';
 /// * [prepMin] - Whole minutes from merchant.prep_time_floor_min to merchant.prep_time_ceiling_min (RA §8.5); 400 invalid_prep_time otherwise.
 /// * [reason] - Required (AP §9.3.2).
 @BuiltValue()
-abstract class AdminAcceptDto
-    implements Built<AdminAcceptDto, AdminAcceptDtoBuilder> {
+abstract class AdminAcceptDto implements Built<AdminAcceptDto, AdminAcceptDtoBuilder> {
   /// Whole minutes from merchant.prep_time_floor_min to merchant.prep_time_ceiling_min (RA §8.5); 400 invalid_prep_time otherwise.
   @BuiltValueField(wireName: r'prepMin')
   int get prepMin;
@@ -26,19 +25,16 @@ abstract class AdminAcceptDto
 
   AdminAcceptDto._();
 
-  factory AdminAcceptDto([void updates(AdminAcceptDtoBuilder b)]) =
-      _$AdminAcceptDto;
+  factory AdminAcceptDto([void updates(AdminAcceptDtoBuilder b)]) = _$AdminAcceptDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminAcceptDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminAcceptDto> get serializer =>
-      _$AdminAcceptDtoSerializer();
+  static Serializer<AdminAcceptDto> get serializer => _$AdminAcceptDtoSerializer();
 }
 
-class _$AdminAcceptDtoSerializer
-    implements PrimitiveSerializer<AdminAcceptDto> {
+class _$AdminAcceptDtoSerializer implements PrimitiveSerializer<AdminAcceptDto> {
   @override
   final Iterable<Type> types = const [AdminAcceptDto, _$AdminAcceptDto];
 
@@ -68,11 +64,7 @@ class _$AdminAcceptDtoSerializer
     AdminAcceptDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -88,18 +80,17 @@ class _$AdminAcceptDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'prepMin':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.prepMin = valueDes;
           break;
         case r'reason':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.reason = valueDes;
           break;
         default:
@@ -130,3 +121,5 @@ class _$AdminAcceptDtoSerializer
     return result.build();
   }
 }
+
+

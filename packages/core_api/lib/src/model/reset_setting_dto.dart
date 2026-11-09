@@ -14,8 +14,7 @@ part 'reset_setting_dto.g.dart';
 /// * [cityId] - The city of a city setting; none for a global one.
 /// * [reason] - Required for the settings with money impact (reasonRequired).
 @BuiltValue()
-abstract class ResetSettingDto
-    implements Built<ResetSettingDto, ResetSettingDtoBuilder> {
+abstract class ResetSettingDto implements Built<ResetSettingDto, ResetSettingDtoBuilder> {
   /// The city of a city setting; none for a global one.
   @BuiltValueField(wireName: r'cityId')
   String? get cityId;
@@ -26,19 +25,16 @@ abstract class ResetSettingDto
 
   ResetSettingDto._();
 
-  factory ResetSettingDto([void updates(ResetSettingDtoBuilder b)]) =
-      _$ResetSettingDto;
+  factory ResetSettingDto([void updates(ResetSettingDtoBuilder b)]) = _$ResetSettingDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ResetSettingDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ResetSettingDto> get serializer =>
-      _$ResetSettingDtoSerializer();
+  static Serializer<ResetSettingDto> get serializer => _$ResetSettingDtoSerializer();
 }
 
-class _$ResetSettingDtoSerializer
-    implements PrimitiveSerializer<ResetSettingDto> {
+class _$ResetSettingDtoSerializer implements PrimitiveSerializer<ResetSettingDto> {
   @override
   final Iterable<Type> types = const [ResetSettingDto, _$ResetSettingDto];
 
@@ -72,11 +68,7 @@ class _$ResetSettingDtoSerializer
     ResetSettingDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -92,22 +84,18 @@ class _$ResetSettingDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'cityId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.cityId = valueDes;
           break;
         case r'reason':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.reason = valueDes;
           break;
@@ -139,3 +127,5 @@ class _$ResetSettingDtoSerializer
     return result.build();
   }
 }
+
+

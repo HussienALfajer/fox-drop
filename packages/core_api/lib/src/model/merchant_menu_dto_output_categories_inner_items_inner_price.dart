@@ -12,14 +12,9 @@ part 'merchant_menu_dto_output_categories_inner_items_inner_price.g.dart';
 ///
 /// Properties:
 /// * [amount] - Integer minor units (AP §8.6).
-/// * [currency]
+/// * [currency] 
 @BuiltValue()
-abstract class MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice
-    implements
-        Built<
-          MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice,
-          MerchantMenuDtoOutputCategoriesInnerItemsInnerPriceBuilder
-        > {
+abstract class MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice implements Built<MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice, MerchantMenuDtoOutputCategoriesInnerItemsInnerPriceBuilder> {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -29,35 +24,21 @@ abstract class MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice
 
   MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice._();
 
-  factory MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice([
-    void updates(MerchantMenuDtoOutputCategoriesInnerItemsInnerPriceBuilder b),
-  ]) = _$MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice;
+  factory MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice([void updates(MerchantMenuDtoOutputCategoriesInnerItemsInnerPriceBuilder b)]) = _$MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    MerchantMenuDtoOutputCategoriesInnerItemsInnerPriceBuilder b,
-  ) => b;
+  static void _defaults(MerchantMenuDtoOutputCategoriesInnerItemsInnerPriceBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice>
-  get serializer =>
-      _$MerchantMenuDtoOutputCategoriesInnerItemsInnerPriceSerializer();
+  static Serializer<MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice> get serializer => _$MerchantMenuDtoOutputCategoriesInnerItemsInnerPriceSerializer();
 }
 
-class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerPriceSerializer
-    implements
-        PrimitiveSerializer<
-          MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice
-        > {
+class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerPriceSerializer implements PrimitiveSerializer<MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice> {
   @override
-  final Iterable<Type> types = const [
-    MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice,
-    _$MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice,
-  ];
+  final Iterable<Type> types = const [MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice, _$MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice];
 
   @override
-  final String wireName =
-      r'MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice';
+  final String wireName = r'MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
@@ -82,11 +63,7 @@ class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerPriceSerializer
     MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -102,21 +79,17 @@ class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerPriceSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.currency = valueDes;
           break;
         default:
@@ -147,3 +120,5 @@ class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerPriceSerializer
     return result.build();
   }
 }
+
+

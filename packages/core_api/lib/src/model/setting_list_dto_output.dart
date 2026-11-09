@@ -13,33 +13,26 @@ part 'setting_list_dto_output.g.dart';
 /// SettingListDtoOutput
 ///
 /// Properties:
-/// * [settings]
+/// * [settings] 
 @BuiltValue()
-abstract class SettingListDtoOutput
-    implements Built<SettingListDtoOutput, SettingListDtoOutputBuilder> {
+abstract class SettingListDtoOutput implements Built<SettingListDtoOutput, SettingListDtoOutputBuilder> {
   @BuiltValueField(wireName: r'settings')
   BuiltList<SettingListDtoOutputSettingsInner> get settings;
 
   SettingListDtoOutput._();
 
-  factory SettingListDtoOutput([void updates(SettingListDtoOutputBuilder b)]) =
-      _$SettingListDtoOutput;
+  factory SettingListDtoOutput([void updates(SettingListDtoOutputBuilder b)]) = _$SettingListDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SettingListDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SettingListDtoOutput> get serializer =>
-      _$SettingListDtoOutputSerializer();
+  static Serializer<SettingListDtoOutput> get serializer => _$SettingListDtoOutputSerializer();
 }
 
-class _$SettingListDtoOutputSerializer
-    implements PrimitiveSerializer<SettingListDtoOutput> {
+class _$SettingListDtoOutputSerializer implements PrimitiveSerializer<SettingListDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    SettingListDtoOutput,
-    _$SettingListDtoOutput,
-  ];
+  final Iterable<Type> types = const [SettingListDtoOutput, _$SettingListDtoOutput];
 
   @override
   final String wireName = r'SettingListDtoOutput';
@@ -52,9 +45,7 @@ class _$SettingListDtoOutputSerializer
     yield r'settings';
     yield serializers.serialize(
       object.settings,
-      specifiedType: const FullType(BuiltList, [
-        FullType(SettingListDtoOutputSettingsInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(SettingListDtoOutputSettingsInner)]),
     );
   }
 
@@ -64,11 +55,7 @@ class _$SettingListDtoOutputSerializer
     SettingListDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -84,14 +71,10 @@ class _$SettingListDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'settings':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(SettingListDtoOutputSettingsInner),
-                    ]),
-                  )
-                  as BuiltList<SettingListDtoOutputSettingsInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(SettingListDtoOutputSettingsInner)]),
+          ) as BuiltList<SettingListDtoOutputSettingsInner>;
           result.settings.replace(valueDes);
           break;
         default:
@@ -122,3 +105,5 @@ class _$SettingListDtoOutputSerializer
     return result.build();
   }
 }
+
+

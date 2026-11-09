@@ -11,22 +11,17 @@ part 'admin_emergency_stop_state_dto_output_stop.g.dart';
 /// The open stop: the red bar (AP §7); null while running.
 ///
 /// Properties:
-/// * [id]
-/// * [startedAt]
+/// * [id] 
+/// * [startedAt] 
 /// * [startedBy] - For OWN and OPS only (emergency_stop.toggle).
 /// * [internalReason] - For OWN and OPS only (emergency_stop.toggle).
-/// * [browseMessage]
+/// * [browseMessage] 
 /// * [delayNotice] - With its {السبب} placeholder.
-/// * [customerReason]
+/// * [customerReason] 
 /// * [resumeAt] - The automatic resume, if set.
 /// * [attempts] - Customers who opened checkout during the stop, each once (AP §9.1.6 item 4).
 @BuiltValue()
-abstract class AdminEmergencyStopStateDtoOutputStop
-    implements
-        Built<
-          AdminEmergencyStopStateDtoOutputStop,
-          AdminEmergencyStopStateDtoOutputStopBuilder
-        > {
+abstract class AdminEmergencyStopStateDtoOutputStop implements Built<AdminEmergencyStopStateDtoOutputStop, AdminEmergencyStopStateDtoOutputStopBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -61,25 +56,18 @@ abstract class AdminEmergencyStopStateDtoOutputStop
 
   AdminEmergencyStopStateDtoOutputStop._();
 
-  factory AdminEmergencyStopStateDtoOutputStop([
-    void updates(AdminEmergencyStopStateDtoOutputStopBuilder b),
-  ]) = _$AdminEmergencyStopStateDtoOutputStop;
+  factory AdminEmergencyStopStateDtoOutputStop([void updates(AdminEmergencyStopStateDtoOutputStopBuilder b)]) = _$AdminEmergencyStopStateDtoOutputStop;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminEmergencyStopStateDtoOutputStopBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminEmergencyStopStateDtoOutputStop> get serializer =>
-      _$AdminEmergencyStopStateDtoOutputStopSerializer();
+  static Serializer<AdminEmergencyStopStateDtoOutputStop> get serializer => _$AdminEmergencyStopStateDtoOutputStopSerializer();
 }
 
-class _$AdminEmergencyStopStateDtoOutputStopSerializer
-    implements PrimitiveSerializer<AdminEmergencyStopStateDtoOutputStop> {
+class _$AdminEmergencyStopStateDtoOutputStopSerializer implements PrimitiveSerializer<AdminEmergencyStopStateDtoOutputStop> {
   @override
-  final Iterable<Type> types = const [
-    AdminEmergencyStopStateDtoOutputStop,
-    _$AdminEmergencyStopStateDtoOutputStop,
-  ];
+  final Iterable<Type> types = const [AdminEmergencyStopStateDtoOutputStop, _$AdminEmergencyStopStateDtoOutputStop];
 
   @override
   final String wireName = r'AdminEmergencyStopStateDtoOutputStop';
@@ -100,19 +88,15 @@ class _$AdminEmergencyStopStateDtoOutputStopSerializer
       specifiedType: const FullType(DateTime),
     );
     yield r'startedBy';
-    yield object.startedBy == null
-        ? null
-        : serializers.serialize(
-            object.startedBy,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.startedBy == null ? null : serializers.serialize(
+      object.startedBy,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'internalReason';
-    yield object.internalReason == null
-        ? null
-        : serializers.serialize(
-            object.internalReason,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.internalReason == null ? null : serializers.serialize(
+      object.internalReason,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'browseMessage';
     yield serializers.serialize(
       object.browseMessage,
@@ -129,12 +113,10 @@ class _$AdminEmergencyStopStateDtoOutputStopSerializer
       specifiedType: const FullType(String),
     );
     yield r'resumeAt';
-    yield object.resumeAt == null
-        ? null
-        : serializers.serialize(
-            object.resumeAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.resumeAt == null ? null : serializers.serialize(
+      object.resumeAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'attempts';
     yield serializers.serialize(
       object.attempts,
@@ -148,11 +130,7 @@ class _$AdminEmergencyStopStateDtoOutputStopSerializer
     AdminEmergencyStopStateDtoOutputStop object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -168,84 +146,69 @@ class _$AdminEmergencyStopStateDtoOutputStopSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.id = valueDes;
           break;
         case r'startedAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.startedAt = valueDes;
           break;
         case r'startedBy':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.startedBy = valueDes;
           break;
         case r'internalReason':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.internalReason = valueDes;
           break;
         case r'browseMessage':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.browseMessage = valueDes;
           break;
         case r'delayNotice':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.delayNotice = valueDes;
           break;
         case r'customerReason':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.customerReason = valueDes;
           break;
         case r'resumeAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.resumeAt = valueDes;
           break;
         case r'attempts':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.attempts = valueDes;
           break;
         default:
@@ -276,3 +239,5 @@ class _$AdminEmergencyStopStateDtoOutputStopSerializer
     return result.build();
   }
 }
+
+

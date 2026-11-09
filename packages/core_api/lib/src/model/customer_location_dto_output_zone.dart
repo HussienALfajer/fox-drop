@@ -11,15 +11,10 @@ part 'customer_location_dto_output_zone.g.dart';
 /// The zone the point is in, the neighbourhood of an unsaved point.
 ///
 /// Properties:
-/// * [id]
-/// * [name]
+/// * [id] 
+/// * [name] 
 @BuiltValue()
-abstract class CustomerLocationDtoOutputZone
-    implements
-        Built<
-          CustomerLocationDtoOutputZone,
-          CustomerLocationDtoOutputZoneBuilder
-        > {
+abstract class CustomerLocationDtoOutputZone implements Built<CustomerLocationDtoOutputZone, CustomerLocationDtoOutputZoneBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -28,25 +23,18 @@ abstract class CustomerLocationDtoOutputZone
 
   CustomerLocationDtoOutputZone._();
 
-  factory CustomerLocationDtoOutputZone([
-    void updates(CustomerLocationDtoOutputZoneBuilder b),
-  ]) = _$CustomerLocationDtoOutputZone;
+  factory CustomerLocationDtoOutputZone([void updates(CustomerLocationDtoOutputZoneBuilder b)]) = _$CustomerLocationDtoOutputZone;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerLocationDtoOutputZoneBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerLocationDtoOutputZone> get serializer =>
-      _$CustomerLocationDtoOutputZoneSerializer();
+  static Serializer<CustomerLocationDtoOutputZone> get serializer => _$CustomerLocationDtoOutputZoneSerializer();
 }
 
-class _$CustomerLocationDtoOutputZoneSerializer
-    implements PrimitiveSerializer<CustomerLocationDtoOutputZone> {
+class _$CustomerLocationDtoOutputZoneSerializer implements PrimitiveSerializer<CustomerLocationDtoOutputZone> {
   @override
-  final Iterable<Type> types = const [
-    CustomerLocationDtoOutputZone,
-    _$CustomerLocationDtoOutputZone,
-  ];
+  final Iterable<Type> types = const [CustomerLocationDtoOutputZone, _$CustomerLocationDtoOutputZone];
 
   @override
   final String wireName = r'CustomerLocationDtoOutputZone';
@@ -74,11 +62,7 @@ class _$CustomerLocationDtoOutputZoneSerializer
     CustomerLocationDtoOutputZone object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -94,21 +78,17 @@ class _$CustomerLocationDtoOutputZoneSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.id = valueDes;
           break;
         case r'name':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.name = valueDes;
           break;
         default:
@@ -139,3 +119,5 @@ class _$CustomerLocationDtoOutputZoneSerializer
     return result.build();
   }
 }
+
+

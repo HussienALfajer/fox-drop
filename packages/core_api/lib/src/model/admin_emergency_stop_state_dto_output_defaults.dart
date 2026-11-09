@@ -11,15 +11,10 @@ part 'admin_emergency_stop_state_dto_output_defaults.g.dart';
 /// The dialog prefills (AP Appendix A), for OWN and OPS only.
 ///
 /// Properties:
-/// * [browseMessage]
-/// * [delayNotice]
+/// * [browseMessage] 
+/// * [delayNotice] 
 @BuiltValue()
-abstract class AdminEmergencyStopStateDtoOutputDefaults
-    implements
-        Built<
-          AdminEmergencyStopStateDtoOutputDefaults,
-          AdminEmergencyStopStateDtoOutputDefaultsBuilder
-        > {
+abstract class AdminEmergencyStopStateDtoOutputDefaults implements Built<AdminEmergencyStopStateDtoOutputDefaults, AdminEmergencyStopStateDtoOutputDefaultsBuilder> {
   @BuiltValueField(wireName: r'browseMessage')
   String get browseMessage;
 
@@ -28,25 +23,18 @@ abstract class AdminEmergencyStopStateDtoOutputDefaults
 
   AdminEmergencyStopStateDtoOutputDefaults._();
 
-  factory AdminEmergencyStopStateDtoOutputDefaults([
-    void updates(AdminEmergencyStopStateDtoOutputDefaultsBuilder b),
-  ]) = _$AdminEmergencyStopStateDtoOutputDefaults;
+  factory AdminEmergencyStopStateDtoOutputDefaults([void updates(AdminEmergencyStopStateDtoOutputDefaultsBuilder b)]) = _$AdminEmergencyStopStateDtoOutputDefaults;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminEmergencyStopStateDtoOutputDefaultsBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminEmergencyStopStateDtoOutputDefaults> get serializer =>
-      _$AdminEmergencyStopStateDtoOutputDefaultsSerializer();
+  static Serializer<AdminEmergencyStopStateDtoOutputDefaults> get serializer => _$AdminEmergencyStopStateDtoOutputDefaultsSerializer();
 }
 
-class _$AdminEmergencyStopStateDtoOutputDefaultsSerializer
-    implements PrimitiveSerializer<AdminEmergencyStopStateDtoOutputDefaults> {
+class _$AdminEmergencyStopStateDtoOutputDefaultsSerializer implements PrimitiveSerializer<AdminEmergencyStopStateDtoOutputDefaults> {
   @override
-  final Iterable<Type> types = const [
-    AdminEmergencyStopStateDtoOutputDefaults,
-    _$AdminEmergencyStopStateDtoOutputDefaults,
-  ];
+  final Iterable<Type> types = const [AdminEmergencyStopStateDtoOutputDefaults, _$AdminEmergencyStopStateDtoOutputDefaults];
 
   @override
   final String wireName = r'AdminEmergencyStopStateDtoOutputDefaults';
@@ -74,11 +62,7 @@ class _$AdminEmergencyStopStateDtoOutputDefaultsSerializer
     AdminEmergencyStopStateDtoOutputDefaults object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -94,21 +78,17 @@ class _$AdminEmergencyStopStateDtoOutputDefaultsSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'browseMessage':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.browseMessage = valueDes;
           break;
         case r'delayNotice':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.delayNotice = valueDes;
           break;
         default:
@@ -139,3 +119,5 @@ class _$AdminEmergencyStopStateDtoOutputDefaultsSerializer
     return result.build();
   }
 }
+
+

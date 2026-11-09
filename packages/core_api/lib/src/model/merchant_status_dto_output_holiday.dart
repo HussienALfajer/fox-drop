@@ -11,16 +11,11 @@ part 'merchant_status_dto_output_holiday.g.dart';
 /// The holiday close in force, or the next one set (RA §10).
 ///
 /// Properties:
-/// * [startsAt]
-/// * [endsAt]
-/// * [message]
+/// * [startsAt] 
+/// * [endsAt] 
+/// * [message] 
 @BuiltValue()
-abstract class MerchantStatusDtoOutputHoliday
-    implements
-        Built<
-          MerchantStatusDtoOutputHoliday,
-          MerchantStatusDtoOutputHolidayBuilder
-        > {
+abstract class MerchantStatusDtoOutputHoliday implements Built<MerchantStatusDtoOutputHoliday, MerchantStatusDtoOutputHolidayBuilder> {
   @BuiltValueField(wireName: r'startsAt')
   DateTime get startsAt;
 
@@ -32,25 +27,18 @@ abstract class MerchantStatusDtoOutputHoliday
 
   MerchantStatusDtoOutputHoliday._();
 
-  factory MerchantStatusDtoOutputHoliday([
-    void updates(MerchantStatusDtoOutputHolidayBuilder b),
-  ]) = _$MerchantStatusDtoOutputHoliday;
+  factory MerchantStatusDtoOutputHoliday([void updates(MerchantStatusDtoOutputHolidayBuilder b)]) = _$MerchantStatusDtoOutputHoliday;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantStatusDtoOutputHolidayBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantStatusDtoOutputHoliday> get serializer =>
-      _$MerchantStatusDtoOutputHolidaySerializer();
+  static Serializer<MerchantStatusDtoOutputHoliday> get serializer => _$MerchantStatusDtoOutputHolidaySerializer();
 }
 
-class _$MerchantStatusDtoOutputHolidaySerializer
-    implements PrimitiveSerializer<MerchantStatusDtoOutputHoliday> {
+class _$MerchantStatusDtoOutputHolidaySerializer implements PrimitiveSerializer<MerchantStatusDtoOutputHoliday> {
   @override
-  final Iterable<Type> types = const [
-    MerchantStatusDtoOutputHoliday,
-    _$MerchantStatusDtoOutputHoliday,
-  ];
+  final Iterable<Type> types = const [MerchantStatusDtoOutputHoliday, _$MerchantStatusDtoOutputHoliday];
 
   @override
   final String wireName = r'MerchantStatusDtoOutputHoliday';
@@ -71,12 +59,10 @@ class _$MerchantStatusDtoOutputHolidaySerializer
       specifiedType: const FullType(DateTime),
     );
     yield r'message';
-    yield object.message == null
-        ? null
-        : serializers.serialize(
-            object.message,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.message == null ? null : serializers.serialize(
+      object.message,
+      specifiedType: const FullType.nullable(String),
+    );
   }
 
   @override
@@ -85,11 +71,7 @@ class _$MerchantStatusDtoOutputHolidaySerializer
     MerchantStatusDtoOutputHoliday object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -105,30 +87,24 @@ class _$MerchantStatusDtoOutputHolidaySerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'startsAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.startsAt = valueDes;
           break;
         case r'endsAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.endsAt = valueDes;
           break;
         case r'message':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.message = valueDes;
           break;
@@ -160,3 +136,5 @@ class _$MerchantStatusDtoOutputHolidaySerializer
     return result.build();
   }
 }
+
+

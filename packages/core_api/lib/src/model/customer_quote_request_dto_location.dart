@@ -11,15 +11,10 @@ part 'customer_quote_request_dto_location.g.dart';
 /// The delivery point: the address pin or the selected point.
 ///
 /// Properties:
-/// * [latitude]
-/// * [longitude]
+/// * [latitude] 
+/// * [longitude] 
 @BuiltValue()
-abstract class CustomerQuoteRequestDtoLocation
-    implements
-        Built<
-          CustomerQuoteRequestDtoLocation,
-          CustomerQuoteRequestDtoLocationBuilder
-        > {
+abstract class CustomerQuoteRequestDtoLocation implements Built<CustomerQuoteRequestDtoLocation, CustomerQuoteRequestDtoLocationBuilder> {
   @BuiltValueField(wireName: r'latitude')
   num get latitude;
 
@@ -28,25 +23,18 @@ abstract class CustomerQuoteRequestDtoLocation
 
   CustomerQuoteRequestDtoLocation._();
 
-  factory CustomerQuoteRequestDtoLocation([
-    void updates(CustomerQuoteRequestDtoLocationBuilder b),
-  ]) = _$CustomerQuoteRequestDtoLocation;
+  factory CustomerQuoteRequestDtoLocation([void updates(CustomerQuoteRequestDtoLocationBuilder b)]) = _$CustomerQuoteRequestDtoLocation;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerQuoteRequestDtoLocationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerQuoteRequestDtoLocation> get serializer =>
-      _$CustomerQuoteRequestDtoLocationSerializer();
+  static Serializer<CustomerQuoteRequestDtoLocation> get serializer => _$CustomerQuoteRequestDtoLocationSerializer();
 }
 
-class _$CustomerQuoteRequestDtoLocationSerializer
-    implements PrimitiveSerializer<CustomerQuoteRequestDtoLocation> {
+class _$CustomerQuoteRequestDtoLocationSerializer implements PrimitiveSerializer<CustomerQuoteRequestDtoLocation> {
   @override
-  final Iterable<Type> types = const [
-    CustomerQuoteRequestDtoLocation,
-    _$CustomerQuoteRequestDtoLocation,
-  ];
+  final Iterable<Type> types = const [CustomerQuoteRequestDtoLocation, _$CustomerQuoteRequestDtoLocation];
 
   @override
   final String wireName = r'CustomerQuoteRequestDtoLocation';
@@ -74,11 +62,7 @@ class _$CustomerQuoteRequestDtoLocationSerializer
     CustomerQuoteRequestDtoLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -94,15 +78,17 @@ class _$CustomerQuoteRequestDtoLocationSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'latitude':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(num))
-                  as num;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
           result.latitude = valueDes;
           break;
         case r'longitude':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(num))
-                  as num;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
           result.longitude = valueDes;
           break;
         default:
@@ -133,3 +119,5 @@ class _$CustomerQuoteRequestDtoLocationSerializer
     return result.build();
   }
 }
+
+

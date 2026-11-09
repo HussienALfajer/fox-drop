@@ -22,29 +22,27 @@ part 'customer_order_dto_output_order.g.dart';
 /// CustomerOrderDtoOutputOrder
 ///
 /// Properties:
-/// * [id]
+/// * [id] 
 /// * [number] - Shown as #10423 (AP §4.8).
 /// * [status] - AP §8.1.
 /// * [version] - Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3).
-/// * [placedAt]
+/// * [placedAt] 
 /// * [promisedAt] - «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows.
-/// * [cancellation]
-/// * [rejection]
-/// * [delivery]
-/// * [restaurant]
-/// * [captain]
-/// * [currency]
-/// * [money]
+/// * [cancellation] 
+/// * [rejection] 
+/// * [delivery] 
+/// * [restaurant] 
+/// * [captain] 
+/// * [currency] 
+/// * [money] 
 /// * [equivalents] - The total in the city's other currencies, by the order's own rates (CU §11.1).
-/// * [lines]
+/// * [lines] 
 /// * [payIn] - «سأدفع بـ»; null for «لم أحدد».
-/// * [note]
-/// * [estimate]
-/// * [address]
+/// * [note] 
+/// * [estimate] 
+/// * [address] 
 @BuiltValue()
-abstract class CustomerOrderDtoOutputOrder
-    implements
-        Built<CustomerOrderDtoOutputOrder, CustomerOrderDtoOutputOrderBuilder> {
+abstract class CustomerOrderDtoOutputOrder implements Built<CustomerOrderDtoOutputOrder, CustomerOrderDtoOutputOrderBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -111,25 +109,18 @@ abstract class CustomerOrderDtoOutputOrder
 
   CustomerOrderDtoOutputOrder._();
 
-  factory CustomerOrderDtoOutputOrder([
-    void updates(CustomerOrderDtoOutputOrderBuilder b),
-  ]) = _$CustomerOrderDtoOutputOrder;
+  factory CustomerOrderDtoOutputOrder([void updates(CustomerOrderDtoOutputOrderBuilder b)]) = _$CustomerOrderDtoOutputOrder;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerOrderDtoOutputOrderBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerOrderDtoOutputOrder> get serializer =>
-      _$CustomerOrderDtoOutputOrderSerializer();
+  static Serializer<CustomerOrderDtoOutputOrder> get serializer => _$CustomerOrderDtoOutputOrderSerializer();
 }
 
-class _$CustomerOrderDtoOutputOrderSerializer
-    implements PrimitiveSerializer<CustomerOrderDtoOutputOrder> {
+class _$CustomerOrderDtoOutputOrderSerializer implements PrimitiveSerializer<CustomerOrderDtoOutputOrder> {
   @override
-  final Iterable<Type> types = const [
-    CustomerOrderDtoOutputOrder,
-    _$CustomerOrderDtoOutputOrder,
-  ];
+  final Iterable<Type> types = const [CustomerOrderDtoOutputOrder, _$CustomerOrderDtoOutputOrder];
 
   @override
   final String wireName = r'CustomerOrderDtoOutputOrder';
@@ -165,55 +156,35 @@ class _$CustomerOrderDtoOutputOrderSerializer
       specifiedType: const FullType(DateTime),
     );
     yield r'promisedAt';
-    yield object.promisedAt == null
-        ? null
-        : serializers.serialize(
-            object.promisedAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.promisedAt == null ? null : serializers.serialize(
+      object.promisedAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'cancellation';
-    yield object.cancellation == null
-        ? null
-        : serializers.serialize(
-            object.cancellation,
-            specifiedType: const FullType.nullable(
-              CustomerActiveOrdersDtoOutputOrdersInnerCancellation,
-            ),
-          );
+    yield object.cancellation == null ? null : serializers.serialize(
+      object.cancellation,
+      specifiedType: const FullType.nullable(CustomerActiveOrdersDtoOutputOrdersInnerCancellation),
+    );
     yield r'rejection';
-    yield object.rejection == null
-        ? null
-        : serializers.serialize(
-            object.rejection,
-            specifiedType: const FullType.nullable(
-              CustomerActiveOrdersDtoOutputOrdersInnerRejection,
-            ),
-          );
+    yield object.rejection == null ? null : serializers.serialize(
+      object.rejection,
+      specifiedType: const FullType.nullable(CustomerActiveOrdersDtoOutputOrdersInnerRejection),
+    );
     yield r'delivery';
-    yield object.delivery == null
-        ? null
-        : serializers.serialize(
-            object.delivery,
-            specifiedType: const FullType.nullable(
-              CustomerOrderDtoOutputOrderDelivery,
-            ),
-          );
+    yield object.delivery == null ? null : serializers.serialize(
+      object.delivery,
+      specifiedType: const FullType.nullable(CustomerOrderDtoOutputOrderDelivery),
+    );
     yield r'restaurant';
     yield serializers.serialize(
       object.restaurant,
-      specifiedType: const FullType(
-        CustomerActiveOrdersDtoOutputOrdersInnerRestaurant,
-      ),
+      specifiedType: const FullType(CustomerActiveOrdersDtoOutputOrdersInnerRestaurant),
     );
     yield r'captain';
-    yield object.captain == null
-        ? null
-        : serializers.serialize(
-            object.captain,
-            specifiedType: const FullType.nullable(
-              CustomerActiveOrdersDtoOutputOrdersInnerCaptain,
-            ),
-          );
+    yield object.captain == null ? null : serializers.serialize(
+      object.captain,
+      specifiedType: const FullType.nullable(CustomerActiveOrdersDtoOutputOrdersInnerCaptain),
+    );
     yield r'currency';
     yield serializers.serialize(
       object.currency,
@@ -222,51 +193,37 @@ class _$CustomerOrderDtoOutputOrderSerializer
     yield r'money';
     yield serializers.serialize(
       object.money,
-      specifiedType: const FullType(
-        CustomerActiveOrdersDtoOutputOrdersInnerMoney,
-      ),
+      specifiedType: const FullType(CustomerActiveOrdersDtoOutputOrdersInnerMoney),
     );
     yield r'equivalents';
     yield serializers.serialize(
       object.equivalents,
-      specifiedType: const FullType(BuiltList, [
-        FullType(CaptainAvailabilityDtoOutputCustodyLimit),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(CaptainAvailabilityDtoOutputCustodyLimit)]),
     );
     yield r'lines';
     yield serializers.serialize(
       object.lines,
-      specifiedType: const FullType(BuiltList, [
-        FullType(CustomerActiveOrdersDtoOutputOrdersInnerLinesInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(CustomerActiveOrdersDtoOutputOrdersInnerLinesInner)]),
     );
     yield r'payIn';
-    yield object.payIn == null
-        ? null
-        : serializers.serialize(
-            object.payIn,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.payIn == null ? null : serializers.serialize(
+      object.payIn,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'note';
-    yield object.note == null
-        ? null
-        : serializers.serialize(
-            object.note,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.note == null ? null : serializers.serialize(
+      object.note,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'estimate';
     yield serializers.serialize(
       object.estimate,
-      specifiedType: const FullType(
-        CustomerActiveOrdersDtoOutputOrdersInnerEstimate,
-      ),
+      specifiedType: const FullType(CustomerActiveOrdersDtoOutputOrdersInnerEstimate),
     );
     yield r'address';
     yield serializers.serialize(
       object.address,
-      specifiedType: const FullType(
-        CustomerActiveOrdersDtoOutputOrdersInnerAddress,
-      ),
+      specifiedType: const FullType(CustomerActiveOrdersDtoOutputOrdersInnerAddress),
     );
   }
 
@@ -276,11 +233,7 @@ class _$CustomerOrderDtoOutputOrderSerializer
     CustomerOrderDtoOutputOrder object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -296,204 +249,143 @@ class _$CustomerOrderDtoOutputOrderSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.id = valueDes;
           break;
         case r'number':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.number = valueDes;
           break;
         case r'status':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CustomerOrderDtoOutputOrderStatusEnum,
-                    ),
-                  )
-                  as CustomerOrderDtoOutputOrderStatusEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CustomerOrderDtoOutputOrderStatusEnum),
+          ) as CustomerOrderDtoOutputOrderStatusEnum;
           result.status = valueDes;
           break;
         case r'version':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.version = valueDes;
           break;
         case r'placedAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.placedAt = valueDes;
           break;
         case r'promisedAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.promisedAt = valueDes;
           break;
         case r'cancellation':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      CustomerActiveOrdersDtoOutputOrdersInnerCancellation,
-                    ),
-                  )
-                  as CustomerActiveOrdersDtoOutputOrdersInnerCancellation?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(CustomerActiveOrdersDtoOutputOrdersInnerCancellation),
+          ) as CustomerActiveOrdersDtoOutputOrdersInnerCancellation?;
           if (valueDes == null) continue;
           result.cancellation.replace(valueDes);
           break;
         case r'rejection':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      CustomerActiveOrdersDtoOutputOrdersInnerRejection,
-                    ),
-                  )
-                  as CustomerActiveOrdersDtoOutputOrdersInnerRejection?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(CustomerActiveOrdersDtoOutputOrdersInnerRejection),
+          ) as CustomerActiveOrdersDtoOutputOrdersInnerRejection?;
           if (valueDes == null) continue;
           result.rejection.replace(valueDes);
           break;
         case r'delivery':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      CustomerOrderDtoOutputOrderDelivery,
-                    ),
-                  )
-                  as CustomerOrderDtoOutputOrderDelivery?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(CustomerOrderDtoOutputOrderDelivery),
+          ) as CustomerOrderDtoOutputOrderDelivery?;
           if (valueDes == null) continue;
           result.delivery.replace(valueDes);
           break;
         case r'restaurant':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CustomerActiveOrdersDtoOutputOrdersInnerRestaurant,
-                    ),
-                  )
-                  as CustomerActiveOrdersDtoOutputOrdersInnerRestaurant;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CustomerActiveOrdersDtoOutputOrdersInnerRestaurant),
+          ) as CustomerActiveOrdersDtoOutputOrdersInnerRestaurant;
           result.restaurant.replace(valueDes);
           break;
         case r'captain':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      CustomerActiveOrdersDtoOutputOrdersInnerCaptain,
-                    ),
-                  )
-                  as CustomerActiveOrdersDtoOutputOrdersInnerCaptain?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(CustomerActiveOrdersDtoOutputOrdersInnerCaptain),
+          ) as CustomerActiveOrdersDtoOutputOrdersInnerCaptain?;
           if (valueDes == null) continue;
           result.captain.replace(valueDes);
           break;
         case r'currency':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.currency = valueDes;
           break;
         case r'money':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CustomerActiveOrdersDtoOutputOrdersInnerMoney,
-                    ),
-                  )
-                  as CustomerActiveOrdersDtoOutputOrdersInnerMoney;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CustomerActiveOrdersDtoOutputOrdersInnerMoney),
+          ) as CustomerActiveOrdersDtoOutputOrdersInnerMoney;
           result.money.replace(valueDes);
           break;
         case r'equivalents':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(CaptainAvailabilityDtoOutputCustodyLimit),
-                    ]),
-                  )
-                  as BuiltList<CaptainAvailabilityDtoOutputCustodyLimit>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(CaptainAvailabilityDtoOutputCustodyLimit)]),
+          ) as BuiltList<CaptainAvailabilityDtoOutputCustodyLimit>;
           result.equivalents.replace(valueDes);
           break;
         case r'lines':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
-                      ),
-                    ]),
-                  )
-                  as BuiltList<
-                    CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
-                  >;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(CustomerActiveOrdersDtoOutputOrdersInnerLinesInner)]),
+          ) as BuiltList<CustomerActiveOrdersDtoOutputOrdersInnerLinesInner>;
           result.lines.replace(valueDes);
           break;
         case r'payIn':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.payIn = valueDes;
           break;
         case r'note':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.note = valueDes;
           break;
         case r'estimate':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CustomerActiveOrdersDtoOutputOrdersInnerEstimate,
-                    ),
-                  )
-                  as CustomerActiveOrdersDtoOutputOrdersInnerEstimate;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CustomerActiveOrdersDtoOutputOrdersInnerEstimate),
+          ) as CustomerActiveOrdersDtoOutputOrdersInnerEstimate;
           result.estimate.replace(valueDes);
           break;
         case r'address':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CustomerActiveOrdersDtoOutputOrdersInnerAddress,
-                    ),
-                  )
-                  as CustomerActiveOrdersDtoOutputOrdersInnerAddress;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CustomerActiveOrdersDtoOutputOrdersInnerAddress),
+          ) as CustomerActiveOrdersDtoOutputOrdersInnerAddress;
           result.address.replace(valueDes);
           break;
         default:
@@ -525,43 +417,34 @@ class _$CustomerOrderDtoOutputOrderSerializer
   }
 }
 
+
 /// AP §8.1.
 class CustomerOrderDtoOutputOrderStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'placed')
-  static const CustomerOrderDtoOutputOrderStatusEnum placed =
-      _$customerOrderDtoOutputOrderStatusEnum_placed;
+  static const CustomerOrderDtoOutputOrderStatusEnum placed = _$customerOrderDtoOutputOrderStatusEnum_placed;
   @BuiltValueEnumConst(wireName: r'accepted')
-  static const CustomerOrderDtoOutputOrderStatusEnum accepted =
-      _$customerOrderDtoOutputOrderStatusEnum_accepted;
+  static const CustomerOrderDtoOutputOrderStatusEnum accepted = _$customerOrderDtoOutputOrderStatusEnum_accepted;
   @BuiltValueEnumConst(wireName: r'ready')
-  static const CustomerOrderDtoOutputOrderStatusEnum ready =
-      _$customerOrderDtoOutputOrderStatusEnum_ready;
+  static const CustomerOrderDtoOutputOrderStatusEnum ready = _$customerOrderDtoOutputOrderStatusEnum_ready;
   @BuiltValueEnumConst(wireName: r'picked_up')
-  static const CustomerOrderDtoOutputOrderStatusEnum pickedUp =
-      _$customerOrderDtoOutputOrderStatusEnum_pickedUp;
+  static const CustomerOrderDtoOutputOrderStatusEnum pickedUp = _$customerOrderDtoOutputOrderStatusEnum_pickedUp;
   @BuiltValueEnumConst(wireName: r'arrived')
-  static const CustomerOrderDtoOutputOrderStatusEnum arrived =
-      _$customerOrderDtoOutputOrderStatusEnum_arrived;
+  static const CustomerOrderDtoOutputOrderStatusEnum arrived = _$customerOrderDtoOutputOrderStatusEnum_arrived;
   @BuiltValueEnumConst(wireName: r'delivered')
-  static const CustomerOrderDtoOutputOrderStatusEnum delivered =
-      _$customerOrderDtoOutputOrderStatusEnum_delivered;
+  static const CustomerOrderDtoOutputOrderStatusEnum delivered = _$customerOrderDtoOutputOrderStatusEnum_delivered;
   @BuiltValueEnumConst(wireName: r'rejected')
-  static const CustomerOrderDtoOutputOrderStatusEnum rejected =
-      _$customerOrderDtoOutputOrderStatusEnum_rejected;
+  static const CustomerOrderDtoOutputOrderStatusEnum rejected = _$customerOrderDtoOutputOrderStatusEnum_rejected;
   @BuiltValueEnumConst(wireName: r'cancelled')
-  static const CustomerOrderDtoOutputOrderStatusEnum cancelled =
-      _$customerOrderDtoOutputOrderStatusEnum_cancelled;
+  static const CustomerOrderDtoOutputOrderStatusEnum cancelled = _$customerOrderDtoOutputOrderStatusEnum_cancelled;
   @BuiltValueEnumConst(wireName: r'failed')
-  static const CustomerOrderDtoOutputOrderStatusEnum failed =
-      _$customerOrderDtoOutputOrderStatusEnum_failed;
+  static const CustomerOrderDtoOutputOrderStatusEnum failed = _$customerOrderDtoOutputOrderStatusEnum_failed;
 
-  static Serializer<CustomerOrderDtoOutputOrderStatusEnum> get serializer =>
-      _$customerOrderDtoOutputOrderStatusEnumSerializer;
+  static Serializer<CustomerOrderDtoOutputOrderStatusEnum> get serializer => _$customerOrderDtoOutputOrderStatusEnumSerializer;
 
-  const CustomerOrderDtoOutputOrderStatusEnum._(String name) : super(name);
+  const CustomerOrderDtoOutputOrderStatusEnum._(String name): super(name);
 
-  static BuiltSet<CustomerOrderDtoOutputOrderStatusEnum> get values =>
-      _$customerOrderDtoOutputOrderStatusEnumValues;
-  static CustomerOrderDtoOutputOrderStatusEnum valueOf(String name) =>
-      _$customerOrderDtoOutputOrderStatusEnumValueOf(name);
+  static BuiltSet<CustomerOrderDtoOutputOrderStatusEnum> get values => _$customerOrderDtoOutputOrderStatusEnumValues;
+  static CustomerOrderDtoOutputOrderStatusEnum valueOf(String name) => _$customerOrderDtoOutputOrderStatusEnumValueOf(name);
 }
+

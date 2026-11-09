@@ -13,20 +13,15 @@ part 'setting_history_dto_output_changes_inner.g.dart';
 /// SettingHistoryDtoOutputChangesInner
 ///
 /// Properties:
-/// * [action]
-/// * [before]
-/// * [after]
-/// * [editorId]
-/// * [editorRoles]
-/// * [reason]
-/// * [changedAt]
+/// * [action] 
+/// * [before] 
+/// * [after] 
+/// * [editorId] 
+/// * [editorRoles] 
+/// * [reason] 
+/// * [changedAt] 
 @BuiltValue()
-abstract class SettingHistoryDtoOutputChangesInner
-    implements
-        Built<
-          SettingHistoryDtoOutputChangesInner,
-          SettingHistoryDtoOutputChangesInnerBuilder
-        > {
+abstract class SettingHistoryDtoOutputChangesInner implements Built<SettingHistoryDtoOutputChangesInner, SettingHistoryDtoOutputChangesInnerBuilder> {
   @BuiltValueField(wireName: r'action')
   SettingHistoryDtoOutputChangesInnerActionEnum get action;
   // enum actionEnum {  update,  reset,  };
@@ -51,25 +46,18 @@ abstract class SettingHistoryDtoOutputChangesInner
 
   SettingHistoryDtoOutputChangesInner._();
 
-  factory SettingHistoryDtoOutputChangesInner([
-    void updates(SettingHistoryDtoOutputChangesInnerBuilder b),
-  ]) = _$SettingHistoryDtoOutputChangesInner;
+  factory SettingHistoryDtoOutputChangesInner([void updates(SettingHistoryDtoOutputChangesInnerBuilder b)]) = _$SettingHistoryDtoOutputChangesInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SettingHistoryDtoOutputChangesInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SettingHistoryDtoOutputChangesInner> get serializer =>
-      _$SettingHistoryDtoOutputChangesInnerSerializer();
+  static Serializer<SettingHistoryDtoOutputChangesInner> get serializer => _$SettingHistoryDtoOutputChangesInnerSerializer();
 }
 
-class _$SettingHistoryDtoOutputChangesInnerSerializer
-    implements PrimitiveSerializer<SettingHistoryDtoOutputChangesInner> {
+class _$SettingHistoryDtoOutputChangesInnerSerializer implements PrimitiveSerializer<SettingHistoryDtoOutputChangesInner> {
   @override
-  final Iterable<Type> types = const [
-    SettingHistoryDtoOutputChangesInner,
-    _$SettingHistoryDtoOutputChangesInner,
-  ];
+  final Iterable<Type> types = const [SettingHistoryDtoOutputChangesInner, _$SettingHistoryDtoOutputChangesInner];
 
   @override
   final String wireName = r'SettingHistoryDtoOutputChangesInner';
@@ -82,43 +70,33 @@ class _$SettingHistoryDtoOutputChangesInnerSerializer
     yield r'action';
     yield serializers.serialize(
       object.action,
-      specifiedType: const FullType(
-        SettingHistoryDtoOutputChangesInnerActionEnum,
-      ),
+      specifiedType: const FullType(SettingHistoryDtoOutputChangesInnerActionEnum),
     );
     yield r'before';
-    yield object.before == null
-        ? null
-        : serializers.serialize(
-            object.before,
-            specifiedType: const FullType.nullable(JsonObject),
-          );
+    yield object.before == null ? null : serializers.serialize(
+      object.before,
+      specifiedType: const FullType.nullable(JsonObject),
+    );
     yield r'after';
-    yield object.after == null
-        ? null
-        : serializers.serialize(
-            object.after,
-            specifiedType: const FullType.nullable(JsonObject),
-          );
+    yield object.after == null ? null : serializers.serialize(
+      object.after,
+      specifiedType: const FullType.nullable(JsonObject),
+    );
     yield r'editorId';
-    yield object.editorId == null
-        ? null
-        : serializers.serialize(
-            object.editorId,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.editorId == null ? null : serializers.serialize(
+      object.editorId,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'editorRoles';
     yield serializers.serialize(
       object.editorRoles,
       specifiedType: const FullType(BuiltList, [FullType(String)]),
     );
     yield r'reason';
-    yield object.reason == null
-        ? null
-        : serializers.serialize(
-            object.reason,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.reason == null ? null : serializers.serialize(
+      object.reason,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'changedAt';
     yield serializers.serialize(
       object.changedAt,
@@ -132,11 +110,7 @@ class _$SettingHistoryDtoOutputChangesInnerSerializer
     SettingHistoryDtoOutputChangesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -152,74 +126,56 @@ class _$SettingHistoryDtoOutputChangesInnerSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'action':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      SettingHistoryDtoOutputChangesInnerActionEnum,
-                    ),
-                  )
-                  as SettingHistoryDtoOutputChangesInnerActionEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(SettingHistoryDtoOutputChangesInnerActionEnum),
+          ) as SettingHistoryDtoOutputChangesInnerActionEnum;
           result.action = valueDes;
           break;
         case r'before':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(JsonObject),
-                  )
-                  as JsonObject?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(JsonObject),
+          ) as JsonObject?;
           if (valueDes == null) continue;
           result.before = valueDes;
           break;
         case r'after':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(JsonObject),
-                  )
-                  as JsonObject?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(JsonObject),
+          ) as JsonObject?;
           if (valueDes == null) continue;
           result.after = valueDes;
           break;
         case r'editorId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.editorId = valueDes;
           break;
         case r'editorRoles':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(String),
-                    ]),
-                  )
-                  as BuiltList<String>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(String)]),
+          ) as BuiltList<String>;
           result.editorRoles.replace(valueDes);
           break;
         case r'reason':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.reason = valueDes;
           break;
         case r'changedAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.changedAt = valueDes;
           break;
         default:
@@ -251,22 +207,19 @@ class _$SettingHistoryDtoOutputChangesInnerSerializer
   }
 }
 
+
 class SettingHistoryDtoOutputChangesInnerActionEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'update')
-  static const SettingHistoryDtoOutputChangesInnerActionEnum update =
-      _$settingHistoryDtoOutputChangesInnerActionEnum_update;
+  static const SettingHistoryDtoOutputChangesInnerActionEnum update = _$settingHistoryDtoOutputChangesInnerActionEnum_update;
   @BuiltValueEnumConst(wireName: r'reset')
-  static const SettingHistoryDtoOutputChangesInnerActionEnum reset =
-      _$settingHistoryDtoOutputChangesInnerActionEnum_reset;
+  static const SettingHistoryDtoOutputChangesInnerActionEnum reset = _$settingHistoryDtoOutputChangesInnerActionEnum_reset;
 
-  static Serializer<SettingHistoryDtoOutputChangesInnerActionEnum>
-  get serializer => _$settingHistoryDtoOutputChangesInnerActionEnumSerializer;
+  static Serializer<SettingHistoryDtoOutputChangesInnerActionEnum> get serializer => _$settingHistoryDtoOutputChangesInnerActionEnumSerializer;
 
-  const SettingHistoryDtoOutputChangesInnerActionEnum._(String name)
-    : super(name);
+  const SettingHistoryDtoOutputChangesInnerActionEnum._(String name): super(name);
 
-  static BuiltSet<SettingHistoryDtoOutputChangesInnerActionEnum> get values =>
-      _$settingHistoryDtoOutputChangesInnerActionEnumValues;
-  static SettingHistoryDtoOutputChangesInnerActionEnum valueOf(String name) =>
-      _$settingHistoryDtoOutputChangesInnerActionEnumValueOf(name);
+  static BuiltSet<SettingHistoryDtoOutputChangesInnerActionEnum> get values => _$settingHistoryDtoOutputChangesInnerActionEnumValues;
+  static SettingHistoryDtoOutputChangesInnerActionEnum valueOf(String name) => _$settingHistoryDtoOutputChangesInnerActionEnumValueOf(name);
 }
+

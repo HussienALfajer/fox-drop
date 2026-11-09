@@ -14,16 +14,11 @@ part 'merchant_orders_dto_output_prep_time.g.dart';
 /// Properties:
 /// * [options] - The chips (merchant.prep_time_options).
 /// * [stepMin] - The «−» and «+» step.
-/// * [floorMin]
-/// * [ceilingMin]
+/// * [floorMin] 
+/// * [ceilingMin] 
 /// * [defaultMin] - Preselected: the default prep time plus the busy-mode minutes while busy mode is on, «قبول — {د} د».
 @BuiltValue()
-abstract class MerchantOrdersDtoOutputPrepTime
-    implements
-        Built<
-          MerchantOrdersDtoOutputPrepTime,
-          MerchantOrdersDtoOutputPrepTimeBuilder
-        > {
+abstract class MerchantOrdersDtoOutputPrepTime implements Built<MerchantOrdersDtoOutputPrepTime, MerchantOrdersDtoOutputPrepTimeBuilder> {
   /// The chips (merchant.prep_time_options).
   @BuiltValueField(wireName: r'options')
   BuiltList<int> get options;
@@ -44,25 +39,18 @@ abstract class MerchantOrdersDtoOutputPrepTime
 
   MerchantOrdersDtoOutputPrepTime._();
 
-  factory MerchantOrdersDtoOutputPrepTime([
-    void updates(MerchantOrdersDtoOutputPrepTimeBuilder b),
-  ]) = _$MerchantOrdersDtoOutputPrepTime;
+  factory MerchantOrdersDtoOutputPrepTime([void updates(MerchantOrdersDtoOutputPrepTimeBuilder b)]) = _$MerchantOrdersDtoOutputPrepTime;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantOrdersDtoOutputPrepTimeBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantOrdersDtoOutputPrepTime> get serializer =>
-      _$MerchantOrdersDtoOutputPrepTimeSerializer();
+  static Serializer<MerchantOrdersDtoOutputPrepTime> get serializer => _$MerchantOrdersDtoOutputPrepTimeSerializer();
 }
 
-class _$MerchantOrdersDtoOutputPrepTimeSerializer
-    implements PrimitiveSerializer<MerchantOrdersDtoOutputPrepTime> {
+class _$MerchantOrdersDtoOutputPrepTimeSerializer implements PrimitiveSerializer<MerchantOrdersDtoOutputPrepTime> {
   @override
-  final Iterable<Type> types = const [
-    MerchantOrdersDtoOutputPrepTime,
-    _$MerchantOrdersDtoOutputPrepTime,
-  ];
+  final Iterable<Type> types = const [MerchantOrdersDtoOutputPrepTime, _$MerchantOrdersDtoOutputPrepTime];
 
   @override
   final String wireName = r'MerchantOrdersDtoOutputPrepTime';
@@ -105,11 +93,7 @@ class _$MerchantOrdersDtoOutputPrepTimeSerializer
     MerchantOrdersDtoOutputPrepTime object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -125,36 +109,38 @@ class _$MerchantOrdersDtoOutputPrepTimeSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'options':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [FullType(int)]),
-                  )
-                  as BuiltList<int>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(int)]),
+          ) as BuiltList<int>;
           result.options.replace(valueDes);
           break;
         case r'stepMin':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.stepMin = valueDes;
           break;
         case r'floorMin':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.floorMin = valueDes;
           break;
         case r'ceilingMin':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.ceilingMin = valueDes;
           break;
         case r'defaultMin':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.defaultMin = valueDes;
           break;
         default:
@@ -185,3 +171,5 @@ class _$MerchantOrdersDtoOutputPrepTimeSerializer
     return result.build();
   }
 }
+
+

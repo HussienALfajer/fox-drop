@@ -12,14 +12,9 @@ part 'captain_active_order_dto_output_order_pickup_payment.g.dart';
 ///
 /// Properties:
 /// * [amount] - Integer minor units (AP §8.6).
-/// * [currency]
+/// * [currency] 
 @BuiltValue()
-abstract class CaptainActiveOrderDtoOutputOrderPickupPayment
-    implements
-        Built<
-          CaptainActiveOrderDtoOutputOrderPickupPayment,
-          CaptainActiveOrderDtoOutputOrderPickupPaymentBuilder
-        > {
+abstract class CaptainActiveOrderDtoOutputOrderPickupPayment implements Built<CaptainActiveOrderDtoOutputOrderPickupPayment, CaptainActiveOrderDtoOutputOrderPickupPaymentBuilder> {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -29,28 +24,18 @@ abstract class CaptainActiveOrderDtoOutputOrderPickupPayment
 
   CaptainActiveOrderDtoOutputOrderPickupPayment._();
 
-  factory CaptainActiveOrderDtoOutputOrderPickupPayment([
-    void updates(CaptainActiveOrderDtoOutputOrderPickupPaymentBuilder b),
-  ]) = _$CaptainActiveOrderDtoOutputOrderPickupPayment;
+  factory CaptainActiveOrderDtoOutputOrderPickupPayment([void updates(CaptainActiveOrderDtoOutputOrderPickupPaymentBuilder b)]) = _$CaptainActiveOrderDtoOutputOrderPickupPayment;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    CaptainActiveOrderDtoOutputOrderPickupPaymentBuilder b,
-  ) => b;
+  static void _defaults(CaptainActiveOrderDtoOutputOrderPickupPaymentBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainActiveOrderDtoOutputOrderPickupPayment>
-  get serializer => _$CaptainActiveOrderDtoOutputOrderPickupPaymentSerializer();
+  static Serializer<CaptainActiveOrderDtoOutputOrderPickupPayment> get serializer => _$CaptainActiveOrderDtoOutputOrderPickupPaymentSerializer();
 }
 
-class _$CaptainActiveOrderDtoOutputOrderPickupPaymentSerializer
-    implements
-        PrimitiveSerializer<CaptainActiveOrderDtoOutputOrderPickupPayment> {
+class _$CaptainActiveOrderDtoOutputOrderPickupPaymentSerializer implements PrimitiveSerializer<CaptainActiveOrderDtoOutputOrderPickupPayment> {
   @override
-  final Iterable<Type> types = const [
-    CaptainActiveOrderDtoOutputOrderPickupPayment,
-    _$CaptainActiveOrderDtoOutputOrderPickupPayment,
-  ];
+  final Iterable<Type> types = const [CaptainActiveOrderDtoOutputOrderPickupPayment, _$CaptainActiveOrderDtoOutputOrderPickupPayment];
 
   @override
   final String wireName = r'CaptainActiveOrderDtoOutputOrderPickupPayment';
@@ -78,11 +63,7 @@ class _$CaptainActiveOrderDtoOutputOrderPickupPaymentSerializer
     CaptainActiveOrderDtoOutputOrderPickupPayment object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -98,21 +79,17 @@ class _$CaptainActiveOrderDtoOutputOrderPickupPaymentSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.currency = valueDes;
           break;
         default:
@@ -143,3 +120,5 @@ class _$CaptainActiveOrderDtoOutputOrderPickupPaymentSerializer
     return result.build();
   }
 }
+
+

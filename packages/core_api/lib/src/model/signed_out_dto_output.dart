@@ -12,29 +12,25 @@ part 'signed_out_dto_output.g.dart';
 /// SignedOutDtoOutput
 ///
 /// Properties:
-/// * [status]
+/// * [status] 
 @BuiltValue()
-abstract class SignedOutDtoOutput
-    implements Built<SignedOutDtoOutput, SignedOutDtoOutputBuilder> {
+abstract class SignedOutDtoOutput implements Built<SignedOutDtoOutput, SignedOutDtoOutputBuilder> {
   @BuiltValueField(wireName: r'status')
   SignedOutDtoOutputStatusEnum get status;
   // enum statusEnum {  signed_out,  };
 
   SignedOutDtoOutput._();
 
-  factory SignedOutDtoOutput([void updates(SignedOutDtoOutputBuilder b)]) =
-      _$SignedOutDtoOutput;
+  factory SignedOutDtoOutput([void updates(SignedOutDtoOutputBuilder b)]) = _$SignedOutDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SignedOutDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SignedOutDtoOutput> get serializer =>
-      _$SignedOutDtoOutputSerializer();
+  static Serializer<SignedOutDtoOutput> get serializer => _$SignedOutDtoOutputSerializer();
 }
 
-class _$SignedOutDtoOutputSerializer
-    implements PrimitiveSerializer<SignedOutDtoOutput> {
+class _$SignedOutDtoOutputSerializer implements PrimitiveSerializer<SignedOutDtoOutput> {
   @override
   final Iterable<Type> types = const [SignedOutDtoOutput, _$SignedOutDtoOutput];
 
@@ -59,11 +55,7 @@ class _$SignedOutDtoOutputSerializer
     SignedOutDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -79,12 +71,10 @@ class _$SignedOutDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'status':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(SignedOutDtoOutputStatusEnum),
-                  )
-                  as SignedOutDtoOutputStatusEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(SignedOutDtoOutputStatusEnum),
+          ) as SignedOutDtoOutputStatusEnum;
           result.status = valueDes;
           break;
         default:
@@ -116,18 +106,17 @@ class _$SignedOutDtoOutputSerializer
   }
 }
 
+
 class SignedOutDtoOutputStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'signed_out')
-  static const SignedOutDtoOutputStatusEnum signedOut =
-      _$signedOutDtoOutputStatusEnum_signedOut;
+  static const SignedOutDtoOutputStatusEnum signedOut = _$signedOutDtoOutputStatusEnum_signedOut;
 
-  static Serializer<SignedOutDtoOutputStatusEnum> get serializer =>
-      _$signedOutDtoOutputStatusEnumSerializer;
+  static Serializer<SignedOutDtoOutputStatusEnum> get serializer => _$signedOutDtoOutputStatusEnumSerializer;
 
-  const SignedOutDtoOutputStatusEnum._(String name) : super(name);
+  const SignedOutDtoOutputStatusEnum._(String name): super(name);
 
-  static BuiltSet<SignedOutDtoOutputStatusEnum> get values =>
-      _$signedOutDtoOutputStatusEnumValues;
-  static SignedOutDtoOutputStatusEnum valueOf(String name) =>
-      _$signedOutDtoOutputStatusEnumValueOf(name);
+  static BuiltSet<SignedOutDtoOutputStatusEnum> get values => _$signedOutDtoOutputStatusEnumValues;
+  static SignedOutDtoOutputStatusEnum valueOf(String name) => _$signedOutDtoOutputStatusEnumValueOf(name);
 }
+

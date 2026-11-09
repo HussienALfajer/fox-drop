@@ -11,17 +11,12 @@ part 'customer_emergency_stop_dto_output.g.dart';
 /// CustomerEmergencyStopDtoOutput
 ///
 /// Properties:
-/// * [active]
-/// * [startedAt]
+/// * [active] 
+/// * [startedAt] 
 /// * [browseMessage] - The banner while browsing (CU §4.7).
 /// * [delayNotice] - The banner on an active order (CU §11.6), its reason filled in.
 @BuiltValue()
-abstract class CustomerEmergencyStopDtoOutput
-    implements
-        Built<
-          CustomerEmergencyStopDtoOutput,
-          CustomerEmergencyStopDtoOutputBuilder
-        > {
+abstract class CustomerEmergencyStopDtoOutput implements Built<CustomerEmergencyStopDtoOutput, CustomerEmergencyStopDtoOutputBuilder> {
   @BuiltValueField(wireName: r'active')
   bool get active;
 
@@ -38,25 +33,18 @@ abstract class CustomerEmergencyStopDtoOutput
 
   CustomerEmergencyStopDtoOutput._();
 
-  factory CustomerEmergencyStopDtoOutput([
-    void updates(CustomerEmergencyStopDtoOutputBuilder b),
-  ]) = _$CustomerEmergencyStopDtoOutput;
+  factory CustomerEmergencyStopDtoOutput([void updates(CustomerEmergencyStopDtoOutputBuilder b)]) = _$CustomerEmergencyStopDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerEmergencyStopDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerEmergencyStopDtoOutput> get serializer =>
-      _$CustomerEmergencyStopDtoOutputSerializer();
+  static Serializer<CustomerEmergencyStopDtoOutput> get serializer => _$CustomerEmergencyStopDtoOutputSerializer();
 }
 
-class _$CustomerEmergencyStopDtoOutputSerializer
-    implements PrimitiveSerializer<CustomerEmergencyStopDtoOutput> {
+class _$CustomerEmergencyStopDtoOutputSerializer implements PrimitiveSerializer<CustomerEmergencyStopDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    CustomerEmergencyStopDtoOutput,
-    _$CustomerEmergencyStopDtoOutput,
-  ];
+  final Iterable<Type> types = const [CustomerEmergencyStopDtoOutput, _$CustomerEmergencyStopDtoOutput];
 
   @override
   final String wireName = r'CustomerEmergencyStopDtoOutput';
@@ -72,26 +60,20 @@ class _$CustomerEmergencyStopDtoOutputSerializer
       specifiedType: const FullType(bool),
     );
     yield r'startedAt';
-    yield object.startedAt == null
-        ? null
-        : serializers.serialize(
-            object.startedAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.startedAt == null ? null : serializers.serialize(
+      object.startedAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'browseMessage';
-    yield object.browseMessage == null
-        ? null
-        : serializers.serialize(
-            object.browseMessage,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.browseMessage == null ? null : serializers.serialize(
+      object.browseMessage,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'delayNotice';
-    yield object.delayNotice == null
-        ? null
-        : serializers.serialize(
-            object.delayNotice,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.delayNotice == null ? null : serializers.serialize(
+      object.delayNotice,
+      specifiedType: const FullType.nullable(String),
+    );
   }
 
   @override
@@ -100,11 +82,7 @@ class _$CustomerEmergencyStopDtoOutputSerializer
     CustomerEmergencyStopDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -120,41 +98,33 @@ class _$CustomerEmergencyStopDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'active':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.active = valueDes;
           break;
         case r'startedAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.startedAt = valueDes;
           break;
         case r'browseMessage':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.browseMessage = valueDes;
           break;
         case r'delayNotice':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.delayNotice = valueDes;
           break;
@@ -186,3 +156,5 @@ class _$CustomerEmergencyStopDtoOutputSerializer
     return result.build();
   }
 }
+
+

@@ -11,34 +11,26 @@ part 'admin_image_set_dto_output.g.dart';
 /// AdminImageSetDtoOutput
 ///
 /// Properties:
-/// * [key]
+/// * [key] 
 @BuiltValue()
-abstract class AdminImageSetDtoOutput
-    implements Built<AdminImageSetDtoOutput, AdminImageSetDtoOutputBuilder> {
+abstract class AdminImageSetDtoOutput implements Built<AdminImageSetDtoOutput, AdminImageSetDtoOutputBuilder> {
   @BuiltValueField(wireName: r'key')
   String get key;
 
   AdminImageSetDtoOutput._();
 
-  factory AdminImageSetDtoOutput([
-    void updates(AdminImageSetDtoOutputBuilder b),
-  ]) = _$AdminImageSetDtoOutput;
+  factory AdminImageSetDtoOutput([void updates(AdminImageSetDtoOutputBuilder b)]) = _$AdminImageSetDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminImageSetDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminImageSetDtoOutput> get serializer =>
-      _$AdminImageSetDtoOutputSerializer();
+  static Serializer<AdminImageSetDtoOutput> get serializer => _$AdminImageSetDtoOutputSerializer();
 }
 
-class _$AdminImageSetDtoOutputSerializer
-    implements PrimitiveSerializer<AdminImageSetDtoOutput> {
+class _$AdminImageSetDtoOutputSerializer implements PrimitiveSerializer<AdminImageSetDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    AdminImageSetDtoOutput,
-    _$AdminImageSetDtoOutput,
-  ];
+  final Iterable<Type> types = const [AdminImageSetDtoOutput, _$AdminImageSetDtoOutput];
 
   @override
   final String wireName = r'AdminImageSetDtoOutput';
@@ -61,11 +53,7 @@ class _$AdminImageSetDtoOutputSerializer
     AdminImageSetDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -81,12 +69,10 @@ class _$AdminImageSetDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'key':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.key = valueDes;
           break;
         default:
@@ -117,3 +103,5 @@ class _$AdminImageSetDtoOutputSerializer
     return result.build();
   }
 }
+
+

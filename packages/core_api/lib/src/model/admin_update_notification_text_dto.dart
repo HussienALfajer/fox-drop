@@ -13,37 +13,25 @@ part 'admin_update_notification_text_dto.g.dart';
 /// Properties:
 /// * [text] - Only the placeholders the template takes, as {name}.
 @BuiltValue()
-abstract class AdminUpdateNotificationTextDto
-    implements
-        Built<
-          AdminUpdateNotificationTextDto,
-          AdminUpdateNotificationTextDtoBuilder
-        > {
+abstract class AdminUpdateNotificationTextDto implements Built<AdminUpdateNotificationTextDto, AdminUpdateNotificationTextDtoBuilder> {
   /// Only the placeholders the template takes, as {name}.
   @BuiltValueField(wireName: r'text')
   String get text;
 
   AdminUpdateNotificationTextDto._();
 
-  factory AdminUpdateNotificationTextDto([
-    void updates(AdminUpdateNotificationTextDtoBuilder b),
-  ]) = _$AdminUpdateNotificationTextDto;
+  factory AdminUpdateNotificationTextDto([void updates(AdminUpdateNotificationTextDtoBuilder b)]) = _$AdminUpdateNotificationTextDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminUpdateNotificationTextDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminUpdateNotificationTextDto> get serializer =>
-      _$AdminUpdateNotificationTextDtoSerializer();
+  static Serializer<AdminUpdateNotificationTextDto> get serializer => _$AdminUpdateNotificationTextDtoSerializer();
 }
 
-class _$AdminUpdateNotificationTextDtoSerializer
-    implements PrimitiveSerializer<AdminUpdateNotificationTextDto> {
+class _$AdminUpdateNotificationTextDtoSerializer implements PrimitiveSerializer<AdminUpdateNotificationTextDto> {
   @override
-  final Iterable<Type> types = const [
-    AdminUpdateNotificationTextDto,
-    _$AdminUpdateNotificationTextDto,
-  ];
+  final Iterable<Type> types = const [AdminUpdateNotificationTextDto, _$AdminUpdateNotificationTextDto];
 
   @override
   final String wireName = r'AdminUpdateNotificationTextDto';
@@ -66,11 +54,7 @@ class _$AdminUpdateNotificationTextDtoSerializer
     AdminUpdateNotificationTextDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -86,12 +70,10 @@ class _$AdminUpdateNotificationTextDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'text':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.text = valueDes;
           break;
         default:
@@ -122,3 +104,5 @@ class _$AdminUpdateNotificationTextDtoSerializer
     return result.build();
   }
 }
+
+

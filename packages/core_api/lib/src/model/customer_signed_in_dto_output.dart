@@ -11,15 +11,13 @@ part 'customer_signed_in_dto_output.g.dart';
 /// CustomerSignedInDtoOutput
 ///
 /// Properties:
-/// * [accountId]
+/// * [accountId] 
 /// * [newAccount] - The app shows «أكمل بياناتك» (CU §5.3).
 /// * [accessToken] - A JWT for the Authorization header, valid 15 minutes.
-/// * [accessTokenExpiresAt]
+/// * [accessTokenExpiresAt] 
 /// * [refreshToken] - Used once at /refresh for a new pair; using it twice signs the device out.
 @BuiltValue()
-abstract class CustomerSignedInDtoOutput
-    implements
-        Built<CustomerSignedInDtoOutput, CustomerSignedInDtoOutputBuilder> {
+abstract class CustomerSignedInDtoOutput implements Built<CustomerSignedInDtoOutput, CustomerSignedInDtoOutputBuilder> {
   @BuiltValueField(wireName: r'accountId')
   String get accountId;
 
@@ -40,25 +38,18 @@ abstract class CustomerSignedInDtoOutput
 
   CustomerSignedInDtoOutput._();
 
-  factory CustomerSignedInDtoOutput([
-    void updates(CustomerSignedInDtoOutputBuilder b),
-  ]) = _$CustomerSignedInDtoOutput;
+  factory CustomerSignedInDtoOutput([void updates(CustomerSignedInDtoOutputBuilder b)]) = _$CustomerSignedInDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerSignedInDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerSignedInDtoOutput> get serializer =>
-      _$CustomerSignedInDtoOutputSerializer();
+  static Serializer<CustomerSignedInDtoOutput> get serializer => _$CustomerSignedInDtoOutputSerializer();
 }
 
-class _$CustomerSignedInDtoOutputSerializer
-    implements PrimitiveSerializer<CustomerSignedInDtoOutput> {
+class _$CustomerSignedInDtoOutputSerializer implements PrimitiveSerializer<CustomerSignedInDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    CustomerSignedInDtoOutput,
-    _$CustomerSignedInDtoOutput,
-  ];
+  final Iterable<Type> types = const [CustomerSignedInDtoOutput, _$CustomerSignedInDtoOutput];
 
   @override
   final String wireName = r'CustomerSignedInDtoOutput';
@@ -101,11 +92,7 @@ class _$CustomerSignedInDtoOutputSerializer
     CustomerSignedInDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -121,48 +108,38 @@ class _$CustomerSignedInDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'accountId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.accountId = valueDes;
           break;
         case r'newAccount':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.newAccount = valueDes;
           break;
         case r'accessToken':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.accessToken = valueDes;
           break;
         case r'accessTokenExpiresAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.accessTokenExpiresAt = valueDes;
           break;
         case r'refreshToken':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.refreshToken = valueDes;
           break;
         default:
@@ -193,3 +170,5 @@ class _$CustomerSignedInDtoOutputSerializer
     return result.build();
   }
 }
+
+

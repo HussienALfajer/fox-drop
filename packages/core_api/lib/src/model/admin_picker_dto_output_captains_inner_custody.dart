@@ -13,15 +13,10 @@ part 'admin_picker_dto_output_captains_inner_custody.g.dart';
 /// Cash-limit usage.
 ///
 /// Properties:
-/// * [usage]
-/// * [limit]
+/// * [usage] 
+/// * [limit] 
 @BuiltValue()
-abstract class AdminPickerDtoOutputCaptainsInnerCustody
-    implements
-        Built<
-          AdminPickerDtoOutputCaptainsInnerCustody,
-          AdminPickerDtoOutputCaptainsInnerCustodyBuilder
-        > {
+abstract class AdminPickerDtoOutputCaptainsInnerCustody implements Built<AdminPickerDtoOutputCaptainsInnerCustody, AdminPickerDtoOutputCaptainsInnerCustodyBuilder> {
   @BuiltValueField(wireName: r'usage')
   AdminPickerDtoOutputCaptainsInnerCustodyUsage get usage;
 
@@ -30,25 +25,18 @@ abstract class AdminPickerDtoOutputCaptainsInnerCustody
 
   AdminPickerDtoOutputCaptainsInnerCustody._();
 
-  factory AdminPickerDtoOutputCaptainsInnerCustody([
-    void updates(AdminPickerDtoOutputCaptainsInnerCustodyBuilder b),
-  ]) = _$AdminPickerDtoOutputCaptainsInnerCustody;
+  factory AdminPickerDtoOutputCaptainsInnerCustody([void updates(AdminPickerDtoOutputCaptainsInnerCustodyBuilder b)]) = _$AdminPickerDtoOutputCaptainsInnerCustody;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminPickerDtoOutputCaptainsInnerCustodyBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminPickerDtoOutputCaptainsInnerCustody> get serializer =>
-      _$AdminPickerDtoOutputCaptainsInnerCustodySerializer();
+  static Serializer<AdminPickerDtoOutputCaptainsInnerCustody> get serializer => _$AdminPickerDtoOutputCaptainsInnerCustodySerializer();
 }
 
-class _$AdminPickerDtoOutputCaptainsInnerCustodySerializer
-    implements PrimitiveSerializer<AdminPickerDtoOutputCaptainsInnerCustody> {
+class _$AdminPickerDtoOutputCaptainsInnerCustodySerializer implements PrimitiveSerializer<AdminPickerDtoOutputCaptainsInnerCustody> {
   @override
-  final Iterable<Type> types = const [
-    AdminPickerDtoOutputCaptainsInnerCustody,
-    _$AdminPickerDtoOutputCaptainsInnerCustody,
-  ];
+  final Iterable<Type> types = const [AdminPickerDtoOutputCaptainsInnerCustody, _$AdminPickerDtoOutputCaptainsInnerCustody];
 
   @override
   final String wireName = r'AdminPickerDtoOutputCaptainsInnerCustody';
@@ -61,19 +49,13 @@ class _$AdminPickerDtoOutputCaptainsInnerCustodySerializer
     yield r'usage';
     yield serializers.serialize(
       object.usage,
-      specifiedType: const FullType(
-        AdminPickerDtoOutputCaptainsInnerCustodyUsage,
-      ),
+      specifiedType: const FullType(AdminPickerDtoOutputCaptainsInnerCustodyUsage),
     );
     yield r'limit';
-    yield object.limit == null
-        ? null
-        : serializers.serialize(
-            object.limit,
-            specifiedType: const FullType.nullable(
-              AdminPickerDtoOutputCaptainsInnerCustodyLimit,
-            ),
-          );
+    yield object.limit == null ? null : serializers.serialize(
+      object.limit,
+      specifiedType: const FullType.nullable(AdminPickerDtoOutputCaptainsInnerCustodyLimit),
+    );
   }
 
   @override
@@ -82,11 +64,7 @@ class _$AdminPickerDtoOutputCaptainsInnerCustodySerializer
     AdminPickerDtoOutputCaptainsInnerCustody object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -102,25 +80,17 @@ class _$AdminPickerDtoOutputCaptainsInnerCustodySerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'usage':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      AdminPickerDtoOutputCaptainsInnerCustodyUsage,
-                    ),
-                  )
-                  as AdminPickerDtoOutputCaptainsInnerCustodyUsage;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(AdminPickerDtoOutputCaptainsInnerCustodyUsage),
+          ) as AdminPickerDtoOutputCaptainsInnerCustodyUsage;
           result.usage.replace(valueDes);
           break;
         case r'limit':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      AdminPickerDtoOutputCaptainsInnerCustodyLimit,
-                    ),
-                  )
-                  as AdminPickerDtoOutputCaptainsInnerCustodyLimit?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(AdminPickerDtoOutputCaptainsInnerCustodyLimit),
+          ) as AdminPickerDtoOutputCaptainsInnerCustodyLimit?;
           if (valueDes == null) continue;
           result.limit.replace(valueDes);
           break;
@@ -152,3 +122,5 @@ class _$AdminPickerDtoOutputCaptainsInnerCustodySerializer
     return result.build();
   }
 }
+
+

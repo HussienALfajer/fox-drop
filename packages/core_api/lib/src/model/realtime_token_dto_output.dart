@@ -12,10 +12,9 @@ part 'realtime_token_dto_output.g.dart';
 ///
 /// Properties:
 /// * [token] - Centrifugo's connection token, valid 15 minutes; ask again when it expires.
-/// * [expiresAt]
+/// * [expiresAt] 
 @BuiltValue()
-abstract class RealtimeTokenDtoOutput
-    implements Built<RealtimeTokenDtoOutput, RealtimeTokenDtoOutputBuilder> {
+abstract class RealtimeTokenDtoOutput implements Built<RealtimeTokenDtoOutput, RealtimeTokenDtoOutputBuilder> {
   /// Centrifugo's connection token, valid 15 minutes; ask again when it expires.
   @BuiltValueField(wireName: r'token')
   String get token;
@@ -25,25 +24,18 @@ abstract class RealtimeTokenDtoOutput
 
   RealtimeTokenDtoOutput._();
 
-  factory RealtimeTokenDtoOutput([
-    void updates(RealtimeTokenDtoOutputBuilder b),
-  ]) = _$RealtimeTokenDtoOutput;
+  factory RealtimeTokenDtoOutput([void updates(RealtimeTokenDtoOutputBuilder b)]) = _$RealtimeTokenDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RealtimeTokenDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimeTokenDtoOutput> get serializer =>
-      _$RealtimeTokenDtoOutputSerializer();
+  static Serializer<RealtimeTokenDtoOutput> get serializer => _$RealtimeTokenDtoOutputSerializer();
 }
 
-class _$RealtimeTokenDtoOutputSerializer
-    implements PrimitiveSerializer<RealtimeTokenDtoOutput> {
+class _$RealtimeTokenDtoOutputSerializer implements PrimitiveSerializer<RealtimeTokenDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    RealtimeTokenDtoOutput,
-    _$RealtimeTokenDtoOutput,
-  ];
+  final Iterable<Type> types = const [RealtimeTokenDtoOutput, _$RealtimeTokenDtoOutput];
 
   @override
   final String wireName = r'RealtimeTokenDtoOutput';
@@ -71,11 +63,7 @@ class _$RealtimeTokenDtoOutputSerializer
     RealtimeTokenDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -91,21 +79,17 @@ class _$RealtimeTokenDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'token':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.token = valueDes;
           break;
         case r'expiresAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.expiresAt = valueDes;
           break;
         default:
@@ -136,3 +120,5 @@ class _$RealtimeTokenDtoOutputSerializer
     return result.build();
   }
 }
+
+

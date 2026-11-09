@@ -14,23 +14,17 @@ part 'admin_order_dto_output_order_on_behalf.g.dart';
 /// While placed: the choices of AP §9.3.2's accept and reject on the restaurant's behalf.
 ///
 /// Properties:
-/// * [prepTime]
+/// * [prepTime] 
 /// * [rejectionReasons] - «رفض نيابة عن المطعم»: the restaurant's reasons (AP Appendix B), in order.
 /// * [busyExtraOptionsMin] - «ضغط طلبات»: busy mode with one of merchant.busy_extra_options_min.
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderOnBehalf
-    implements
-        Built<
-          AdminOrderDtoOutputOrderOnBehalf,
-          AdminOrderDtoOutputOrderOnBehalfBuilder
-        > {
+abstract class AdminOrderDtoOutputOrderOnBehalf implements Built<AdminOrderDtoOutputOrderOnBehalf, AdminOrderDtoOutputOrderOnBehalfBuilder> {
   @BuiltValueField(wireName: r'prepTime')
   AdminOrderDtoOutputOrderOnBehalfPrepTime get prepTime;
 
   /// «رفض نيابة عن المطعم»: the restaurant's reasons (AP Appendix B), in order.
   @BuiltValueField(wireName: r'rejectionReasons')
-  BuiltList<AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner>
-  get rejectionReasons;
+  BuiltList<AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner> get rejectionReasons;
 
   /// «ضغط طلبات»: busy mode with one of merchant.busy_extra_options_min.
   @BuiltValueField(wireName: r'busyExtraOptionsMin')
@@ -38,25 +32,18 @@ abstract class AdminOrderDtoOutputOrderOnBehalf
 
   AdminOrderDtoOutputOrderOnBehalf._();
 
-  factory AdminOrderDtoOutputOrderOnBehalf([
-    void updates(AdminOrderDtoOutputOrderOnBehalfBuilder b),
-  ]) = _$AdminOrderDtoOutputOrderOnBehalf;
+  factory AdminOrderDtoOutputOrderOnBehalf([void updates(AdminOrderDtoOutputOrderOnBehalfBuilder b)]) = _$AdminOrderDtoOutputOrderOnBehalf;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderDtoOutputOrderOnBehalfBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderOnBehalf> get serializer =>
-      _$AdminOrderDtoOutputOrderOnBehalfSerializer();
+  static Serializer<AdminOrderDtoOutputOrderOnBehalf> get serializer => _$AdminOrderDtoOutputOrderOnBehalfSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderOnBehalfSerializer
-    implements PrimitiveSerializer<AdminOrderDtoOutputOrderOnBehalf> {
+class _$AdminOrderDtoOutputOrderOnBehalfSerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderOnBehalf> {
   @override
-  final Iterable<Type> types = const [
-    AdminOrderDtoOutputOrderOnBehalf,
-    _$AdminOrderDtoOutputOrderOnBehalf,
-  ];
+  final Iterable<Type> types = const [AdminOrderDtoOutputOrderOnBehalf, _$AdminOrderDtoOutputOrderOnBehalf];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderOnBehalf';
@@ -74,9 +61,7 @@ class _$AdminOrderDtoOutputOrderOnBehalfSerializer
     yield r'rejectionReasons';
     yield serializers.serialize(
       object.rejectionReasons,
-      specifiedType: const FullType(BuiltList, [
-        FullType(AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner)]),
     );
     yield r'busyExtraOptionsMin';
     yield serializers.serialize(
@@ -91,11 +76,7 @@ class _$AdminOrderDtoOutputOrderOnBehalfSerializer
     AdminOrderDtoOutputOrderOnBehalf object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -111,38 +92,24 @@ class _$AdminOrderDtoOutputOrderOnBehalfSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'prepTime':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      AdminOrderDtoOutputOrderOnBehalfPrepTime,
-                    ),
-                  )
-                  as AdminOrderDtoOutputOrderOnBehalfPrepTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(AdminOrderDtoOutputOrderOnBehalfPrepTime),
+          ) as AdminOrderDtoOutputOrderOnBehalfPrepTime;
           result.prepTime.replace(valueDes);
           break;
         case r'rejectionReasons':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner,
-                      ),
-                    ]),
-                  )
-                  as BuiltList<
-                    AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner
-                  >;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner)]),
+          ) as BuiltList<AdminOrderDtoOutputOrderOnBehalfRejectionReasonsInner>;
           result.rejectionReasons.replace(valueDes);
           break;
         case r'busyExtraOptionsMin':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [FullType(int)]),
-                  )
-                  as BuiltList<int>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(int)]),
+          ) as BuiltList<int>;
           result.busyExtraOptionsMin.replace(valueDes);
           break;
         default:
@@ -173,3 +140,5 @@ class _$AdminOrderDtoOutputOrderOnBehalfSerializer
     return result.build();
   }
 }
+
+

@@ -13,10 +13,9 @@ part 'merchant_sign_in_dto.g.dart';
 /// Properties:
 /// * [phone] - The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
 /// * [deviceId] - The app installation, generated once by the app and kept until it is removed.
-/// * [code]
+/// * [code] 
 @BuiltValue()
-abstract class MerchantSignInDto
-    implements Built<MerchantSignInDto, MerchantSignInDtoBuilder> {
+abstract class MerchantSignInDto implements Built<MerchantSignInDto, MerchantSignInDtoBuilder> {
   /// The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
   @BuiltValueField(wireName: r'phone')
   String get phone;
@@ -30,19 +29,16 @@ abstract class MerchantSignInDto
 
   MerchantSignInDto._();
 
-  factory MerchantSignInDto([void updates(MerchantSignInDtoBuilder b)]) =
-      _$MerchantSignInDto;
+  factory MerchantSignInDto([void updates(MerchantSignInDtoBuilder b)]) = _$MerchantSignInDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantSignInDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantSignInDto> get serializer =>
-      _$MerchantSignInDtoSerializer();
+  static Serializer<MerchantSignInDto> get serializer => _$MerchantSignInDtoSerializer();
 }
 
-class _$MerchantSignInDtoSerializer
-    implements PrimitiveSerializer<MerchantSignInDto> {
+class _$MerchantSignInDtoSerializer implements PrimitiveSerializer<MerchantSignInDto> {
   @override
   final Iterable<Type> types = const [MerchantSignInDto, _$MerchantSignInDto];
 
@@ -77,11 +73,7 @@ class _$MerchantSignInDtoSerializer
     MerchantSignInDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -97,30 +89,24 @@ class _$MerchantSignInDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'phone':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.phone = valueDes;
           break;
         case r'deviceId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.deviceId = valueDes;
           break;
         case r'code':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.code = valueDes;
           break;
         default:
@@ -151,3 +137,5 @@ class _$MerchantSignInDtoSerializer
     return result.build();
   }
 }
+
+

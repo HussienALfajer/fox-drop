@@ -13,27 +13,22 @@ part 'setting_list_dto_output_settings_inner.g.dart';
 /// SettingListDtoOutputSettingsInner
 ///
 /// Properties:
-/// * [key]
+/// * [key] 
 /// * [template] - The Appendix A key, such as currency.<code>.rounding_unit.
-/// * [parameter]
-/// * [group]
-/// * [type]
-/// * [unit]
-/// * [scope]
-/// * [cityId]
-/// * [editRoles]
-/// * [reasonRequired]
+/// * [parameter] 
+/// * [group] 
+/// * [type] 
+/// * [unit] 
+/// * [scope] 
+/// * [cityId] 
+/// * [editRoles] 
+/// * [reasonRequired] 
 /// * [beforeLaunch] - No default: the owner enters the value before launch.
-/// * [default_]
+/// * [default_] 
 /// * [value] - The value in effect: the stored one, or the default.
-/// * [isDefault]
+/// * [isDefault] 
 @BuiltValue()
-abstract class SettingListDtoOutputSettingsInner
-    implements
-        Built<
-          SettingListDtoOutputSettingsInner,
-          SettingListDtoOutputSettingsInnerBuilder
-        > {
+abstract class SettingListDtoOutputSettingsInner implements Built<SettingListDtoOutputSettingsInner, SettingListDtoOutputSettingsInnerBuilder> {
   @BuiltValueField(wireName: r'key')
   String get key;
 
@@ -84,25 +79,18 @@ abstract class SettingListDtoOutputSettingsInner
 
   SettingListDtoOutputSettingsInner._();
 
-  factory SettingListDtoOutputSettingsInner([
-    void updates(SettingListDtoOutputSettingsInnerBuilder b),
-  ]) = _$SettingListDtoOutputSettingsInner;
+  factory SettingListDtoOutputSettingsInner([void updates(SettingListDtoOutputSettingsInnerBuilder b)]) = _$SettingListDtoOutputSettingsInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SettingListDtoOutputSettingsInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SettingListDtoOutputSettingsInner> get serializer =>
-      _$SettingListDtoOutputSettingsInnerSerializer();
+  static Serializer<SettingListDtoOutputSettingsInner> get serializer => _$SettingListDtoOutputSettingsInnerSerializer();
 }
 
-class _$SettingListDtoOutputSettingsInnerSerializer
-    implements PrimitiveSerializer<SettingListDtoOutputSettingsInner> {
+class _$SettingListDtoOutputSettingsInnerSerializer implements PrimitiveSerializer<SettingListDtoOutputSettingsInner> {
   @override
-  final Iterable<Type> types = const [
-    SettingListDtoOutputSettingsInner,
-    _$SettingListDtoOutputSettingsInner,
-  ];
+  final Iterable<Type> types = const [SettingListDtoOutputSettingsInner, _$SettingListDtoOutputSettingsInner];
 
   @override
   final String wireName = r'SettingListDtoOutputSettingsInner';
@@ -123,12 +111,10 @@ class _$SettingListDtoOutputSettingsInnerSerializer
       specifiedType: const FullType(String),
     );
     yield r'parameter';
-    yield object.parameter == null
-        ? null
-        : serializers.serialize(
-            object.parameter,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.parameter == null ? null : serializers.serialize(
+      object.parameter,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'group';
     yield serializers.serialize(
       object.group,
@@ -140,30 +126,24 @@ class _$SettingListDtoOutputSettingsInnerSerializer
       specifiedType: const FullType(String),
     );
     yield r'unit';
-    yield object.unit == null
-        ? null
-        : serializers.serialize(
-            object.unit,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.unit == null ? null : serializers.serialize(
+      object.unit,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'scope';
     yield serializers.serialize(
       object.scope,
       specifiedType: const FullType(SettingListDtoOutputSettingsInnerScopeEnum),
     );
     yield r'cityId';
-    yield object.cityId == null
-        ? null
-        : serializers.serialize(
-            object.cityId,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.cityId == null ? null : serializers.serialize(
+      object.cityId,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'editRoles';
     yield serializers.serialize(
       object.editRoles,
-      specifiedType: const FullType(BuiltList, [
-        FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(SettingListDtoOutputSettingsInnerEditRolesEnum)]),
     );
     yield r'reasonRequired';
     yield serializers.serialize(
@@ -176,19 +156,15 @@ class _$SettingListDtoOutputSettingsInnerSerializer
       specifiedType: const FullType(bool),
     );
     yield r'default';
-    yield object.default_ == null
-        ? null
-        : serializers.serialize(
-            object.default_,
-            specifiedType: const FullType.nullable(JsonObject),
-          );
+    yield object.default_ == null ? null : serializers.serialize(
+      object.default_,
+      specifiedType: const FullType.nullable(JsonObject),
+    );
     yield r'value';
-    yield object.value == null
-        ? null
-        : serializers.serialize(
-            object.value,
-            specifiedType: const FullType.nullable(JsonObject),
-          );
+    yield object.value == null ? null : serializers.serialize(
+      object.value,
+      specifiedType: const FullType.nullable(JsonObject),
+    );
     yield r'isDefault';
     yield serializers.serialize(
       object.isDefault,
@@ -202,11 +178,7 @@ class _$SettingListDtoOutputSettingsInnerSerializer
     SettingListDtoOutputSettingsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -222,140 +194,106 @@ class _$SettingListDtoOutputSettingsInnerSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'key':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.key = valueDes;
           break;
         case r'template':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.template = valueDes;
           break;
         case r'parameter':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.parameter = valueDes;
           break;
         case r'group':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      SettingListDtoOutputSettingsInnerGroupEnum,
-                    ),
-                  )
-                  as SettingListDtoOutputSettingsInnerGroupEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(SettingListDtoOutputSettingsInnerGroupEnum),
+          ) as SettingListDtoOutputSettingsInnerGroupEnum;
           result.group = valueDes;
           break;
         case r'type':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.type = valueDes;
           break;
         case r'unit':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.unit = valueDes;
           break;
         case r'scope':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      SettingListDtoOutputSettingsInnerScopeEnum,
-                    ),
-                  )
-                  as SettingListDtoOutputSettingsInnerScopeEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(SettingListDtoOutputSettingsInnerScopeEnum),
+          ) as SettingListDtoOutputSettingsInnerScopeEnum;
           result.scope = valueDes;
           break;
         case r'cityId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.cityId = valueDes;
           break;
         case r'editRoles':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
-                    ]),
-                  )
-                  as BuiltList<SettingListDtoOutputSettingsInnerEditRolesEnum>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(SettingListDtoOutputSettingsInnerEditRolesEnum)]),
+          ) as BuiltList<SettingListDtoOutputSettingsInnerEditRolesEnum>;
           result.editRoles.replace(valueDes);
           break;
         case r'reasonRequired':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.reasonRequired = valueDes;
           break;
         case r'beforeLaunch':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.beforeLaunch = valueDes;
           break;
         case r'default':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(JsonObject),
-                  )
-                  as JsonObject?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(JsonObject),
+          ) as JsonObject?;
           if (valueDes == null) continue;
           result.default_ = valueDes;
           break;
         case r'value':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(JsonObject),
-                  )
-                  as JsonObject?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(JsonObject),
+          ) as JsonObject?;
           if (valueDes == null) continue;
           result.value = valueDes;
           break;
         case r'isDefault':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.isDefault = valueDes;
           break;
         default:
@@ -387,90 +325,69 @@ class _$SettingListDtoOutputSettingsInnerSerializer
   }
 }
 
+
 class SettingListDtoOutputSettingsInnerGroupEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'timers_limits')
-  static const SettingListDtoOutputSettingsInnerGroupEnum timersLimits =
-      _$settingListDtoOutputSettingsInnerGroupEnum_timersLimits;
+  static const SettingListDtoOutputSettingsInnerGroupEnum timersLimits = _$settingListDtoOutputSettingsInnerGroupEnum_timersLimits;
   @BuiltValueEnumConst(wireName: r'dispatch')
-  static const SettingListDtoOutputSettingsInnerGroupEnum dispatch =
-      _$settingListDtoOutputSettingsInnerGroupEnum_dispatch;
+  static const SettingListDtoOutputSettingsInnerGroupEnum dispatch = _$settingListDtoOutputSettingsInnerGroupEnum_dispatch;
   @BuiltValueEnumConst(wireName: r'customers')
-  static const SettingListDtoOutputSettingsInnerGroupEnum customers =
-      _$settingListDtoOutputSettingsInnerGroupEnum_customers;
+  static const SettingListDtoOutputSettingsInnerGroupEnum customers = _$settingListDtoOutputSettingsInnerGroupEnum_customers;
   @BuiltValueEnumConst(wireName: r'captains')
-  static const SettingListDtoOutputSettingsInnerGroupEnum captains =
-      _$settingListDtoOutputSettingsInnerGroupEnum_captains;
+  static const SettingListDtoOutputSettingsInnerGroupEnum captains = _$settingListDtoOutputSettingsInnerGroupEnum_captains;
   @BuiltValueEnumConst(wireName: r'restaurants')
-  static const SettingListDtoOutputSettingsInnerGroupEnum restaurants =
-      _$settingListDtoOutputSettingsInnerGroupEnum_restaurants;
+  static const SettingListDtoOutputSettingsInnerGroupEnum restaurants = _$settingListDtoOutputSettingsInnerGroupEnum_restaurants;
   @BuiltValueEnumConst(wireName: r'support')
-  static const SettingListDtoOutputSettingsInnerGroupEnum support =
-      _$settingListDtoOutputSettingsInnerGroupEnum_support;
+  static const SettingListDtoOutputSettingsInnerGroupEnum support = _$settingListDtoOutputSettingsInnerGroupEnum_support;
   @BuiltValueEnumConst(wireName: r'finance')
-  static const SettingListDtoOutputSettingsInnerGroupEnum finance =
-      _$settingListDtoOutputSettingsInnerGroupEnum_finance;
+  static const SettingListDtoOutputSettingsInnerGroupEnum finance = _$settingListDtoOutputSettingsInnerGroupEnum_finance;
   @BuiltValueEnumConst(wireName: r'security')
-  static const SettingListDtoOutputSettingsInnerGroupEnum security =
-      _$settingListDtoOutputSettingsInnerGroupEnum_security;
+  static const SettingListDtoOutputSettingsInnerGroupEnum security = _$settingListDtoOutputSettingsInnerGroupEnum_security;
   @BuiltValueEnumConst(wireName: r'apps')
-  static const SettingListDtoOutputSettingsInnerGroupEnum apps =
-      _$settingListDtoOutputSettingsInnerGroupEnum_apps;
+  static const SettingListDtoOutputSettingsInnerGroupEnum apps = _$settingListDtoOutputSettingsInnerGroupEnum_apps;
 
-  static Serializer<SettingListDtoOutputSettingsInnerGroupEnum>
-  get serializer => _$settingListDtoOutputSettingsInnerGroupEnumSerializer;
+  static Serializer<SettingListDtoOutputSettingsInnerGroupEnum> get serializer => _$settingListDtoOutputSettingsInnerGroupEnumSerializer;
 
-  const SettingListDtoOutputSettingsInnerGroupEnum._(String name) : super(name);
+  const SettingListDtoOutputSettingsInnerGroupEnum._(String name): super(name);
 
-  static BuiltSet<SettingListDtoOutputSettingsInnerGroupEnum> get values =>
-      _$settingListDtoOutputSettingsInnerGroupEnumValues;
-  static SettingListDtoOutputSettingsInnerGroupEnum valueOf(String name) =>
-      _$settingListDtoOutputSettingsInnerGroupEnumValueOf(name);
+  static BuiltSet<SettingListDtoOutputSettingsInnerGroupEnum> get values => _$settingListDtoOutputSettingsInnerGroupEnumValues;
+  static SettingListDtoOutputSettingsInnerGroupEnum valueOf(String name) => _$settingListDtoOutputSettingsInnerGroupEnumValueOf(name);
 }
 
 class SettingListDtoOutputSettingsInnerScopeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'global')
-  static const SettingListDtoOutputSettingsInnerScopeEnum global =
-      _$settingListDtoOutputSettingsInnerScopeEnum_global;
+  static const SettingListDtoOutputSettingsInnerScopeEnum global = _$settingListDtoOutputSettingsInnerScopeEnum_global;
   @BuiltValueEnumConst(wireName: r'city')
-  static const SettingListDtoOutputSettingsInnerScopeEnum city =
-      _$settingListDtoOutputSettingsInnerScopeEnum_city;
+  static const SettingListDtoOutputSettingsInnerScopeEnum city = _$settingListDtoOutputSettingsInnerScopeEnum_city;
 
-  static Serializer<SettingListDtoOutputSettingsInnerScopeEnum>
-  get serializer => _$settingListDtoOutputSettingsInnerScopeEnumSerializer;
+  static Serializer<SettingListDtoOutputSettingsInnerScopeEnum> get serializer => _$settingListDtoOutputSettingsInnerScopeEnumSerializer;
 
-  const SettingListDtoOutputSettingsInnerScopeEnum._(String name) : super(name);
+  const SettingListDtoOutputSettingsInnerScopeEnum._(String name): super(name);
 
-  static BuiltSet<SettingListDtoOutputSettingsInnerScopeEnum> get values =>
-      _$settingListDtoOutputSettingsInnerScopeEnumValues;
-  static SettingListDtoOutputSettingsInnerScopeEnum valueOf(String name) =>
-      _$settingListDtoOutputSettingsInnerScopeEnumValueOf(name);
+  static BuiltSet<SettingListDtoOutputSettingsInnerScopeEnum> get values => _$settingListDtoOutputSettingsInnerScopeEnumValues;
+  static SettingListDtoOutputSettingsInnerScopeEnum valueOf(String name) => _$settingListDtoOutputSettingsInnerScopeEnumValueOf(name);
 }
 
 class SettingListDtoOutputSettingsInnerEditRolesEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'OWN')
-  static const SettingListDtoOutputSettingsInnerEditRolesEnum OWN =
-      _$settingListDtoOutputSettingsInnerEditRolesEnum_OWN;
+  static const SettingListDtoOutputSettingsInnerEditRolesEnum OWN = _$settingListDtoOutputSettingsInnerEditRolesEnum_OWN;
   @BuiltValueEnumConst(wireName: r'OPS')
-  static const SettingListDtoOutputSettingsInnerEditRolesEnum OPS =
-      _$settingListDtoOutputSettingsInnerEditRolesEnum_OPS;
+  static const SettingListDtoOutputSettingsInnerEditRolesEnum OPS = _$settingListDtoOutputSettingsInnerEditRolesEnum_OPS;
   @BuiltValueEnumConst(wireName: r'SUP')
-  static const SettingListDtoOutputSettingsInnerEditRolesEnum SUP =
-      _$settingListDtoOutputSettingsInnerEditRolesEnum_SUP;
+  static const SettingListDtoOutputSettingsInnerEditRolesEnum SUP = _$settingListDtoOutputSettingsInnerEditRolesEnum_SUP;
   @BuiltValueEnumConst(wireName: r'FIN')
-  static const SettingListDtoOutputSettingsInnerEditRolesEnum FIN =
-      _$settingListDtoOutputSettingsInnerEditRolesEnum_FIN;
+  static const SettingListDtoOutputSettingsInnerEditRolesEnum FIN = _$settingListDtoOutputSettingsInnerEditRolesEnum_FIN;
   @BuiltValueEnumConst(wireName: r'DATA')
-  static const SettingListDtoOutputSettingsInnerEditRolesEnum DATA =
-      _$settingListDtoOutputSettingsInnerEditRolesEnum_DATA;
+  static const SettingListDtoOutputSettingsInnerEditRolesEnum DATA = _$settingListDtoOutputSettingsInnerEditRolesEnum_DATA;
 
-  static Serializer<SettingListDtoOutputSettingsInnerEditRolesEnum>
-  get serializer => _$settingListDtoOutputSettingsInnerEditRolesEnumSerializer;
+  static Serializer<SettingListDtoOutputSettingsInnerEditRolesEnum> get serializer => _$settingListDtoOutputSettingsInnerEditRolesEnumSerializer;
 
-  const SettingListDtoOutputSettingsInnerEditRolesEnum._(String name)
-    : super(name);
+  const SettingListDtoOutputSettingsInnerEditRolesEnum._(String name): super(name);
 
-  static BuiltSet<SettingListDtoOutputSettingsInnerEditRolesEnum> get values =>
-      _$settingListDtoOutputSettingsInnerEditRolesEnumValues;
-  static SettingListDtoOutputSettingsInnerEditRolesEnum valueOf(String name) =>
-      _$settingListDtoOutputSettingsInnerEditRolesEnumValueOf(name);
+  static BuiltSet<SettingListDtoOutputSettingsInnerEditRolesEnum> get values => _$settingListDtoOutputSettingsInnerEditRolesEnumValues;
+  static SettingListDtoOutputSettingsInnerEditRolesEnum valueOf(String name) => _$settingListDtoOutputSettingsInnerEditRolesEnumValueOf(name);
 }
+

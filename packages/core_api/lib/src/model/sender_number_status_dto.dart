@@ -14,8 +14,7 @@ part 'sender_number_status_dto.g.dart';
 /// Properties:
 /// * [status] - «نشط» or «احتياطي» (architecture §8.3.3 item 13).
 @BuiltValue()
-abstract class SenderNumberStatusDto
-    implements Built<SenderNumberStatusDto, SenderNumberStatusDtoBuilder> {
+abstract class SenderNumberStatusDto implements Built<SenderNumberStatusDto, SenderNumberStatusDtoBuilder> {
   /// «نشط» or «احتياطي» (architecture §8.3.3 item 13).
   @BuiltValueField(wireName: r'status')
   SenderNumberStatusDtoStatusEnum get status;
@@ -23,25 +22,18 @@ abstract class SenderNumberStatusDto
 
   SenderNumberStatusDto._();
 
-  factory SenderNumberStatusDto([
-    void updates(SenderNumberStatusDtoBuilder b),
-  ]) = _$SenderNumberStatusDto;
+  factory SenderNumberStatusDto([void updates(SenderNumberStatusDtoBuilder b)]) = _$SenderNumberStatusDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SenderNumberStatusDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SenderNumberStatusDto> get serializer =>
-      _$SenderNumberStatusDtoSerializer();
+  static Serializer<SenderNumberStatusDto> get serializer => _$SenderNumberStatusDtoSerializer();
 }
 
-class _$SenderNumberStatusDtoSerializer
-    implements PrimitiveSerializer<SenderNumberStatusDto> {
+class _$SenderNumberStatusDtoSerializer implements PrimitiveSerializer<SenderNumberStatusDto> {
   @override
-  final Iterable<Type> types = const [
-    SenderNumberStatusDto,
-    _$SenderNumberStatusDto,
-  ];
+  final Iterable<Type> types = const [SenderNumberStatusDto, _$SenderNumberStatusDto];
 
   @override
   final String wireName = r'SenderNumberStatusDto';
@@ -64,11 +56,7 @@ class _$SenderNumberStatusDtoSerializer
     SenderNumberStatusDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -84,14 +72,10 @@ class _$SenderNumberStatusDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'status':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      SenderNumberStatusDtoStatusEnum,
-                    ),
-                  )
-                  as SenderNumberStatusDtoStatusEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(SenderNumberStatusDtoStatusEnum),
+          ) as SenderNumberStatusDtoStatusEnum;
           result.status = valueDes;
           break;
         default:
@@ -123,22 +107,20 @@ class _$SenderNumberStatusDtoSerializer
   }
 }
 
+
 /// «نشط» or «احتياطي» (architecture §8.3.3 item 13).
 class SenderNumberStatusDtoStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'active')
-  static const SenderNumberStatusDtoStatusEnum active =
-      _$senderNumberStatusDtoStatusEnum_active;
+  static const SenderNumberStatusDtoStatusEnum active = _$senderNumberStatusDtoStatusEnum_active;
   @BuiltValueEnumConst(wireName: r'standby')
-  static const SenderNumberStatusDtoStatusEnum standby =
-      _$senderNumberStatusDtoStatusEnum_standby;
+  static const SenderNumberStatusDtoStatusEnum standby = _$senderNumberStatusDtoStatusEnum_standby;
 
-  static Serializer<SenderNumberStatusDtoStatusEnum> get serializer =>
-      _$senderNumberStatusDtoStatusEnumSerializer;
+  static Serializer<SenderNumberStatusDtoStatusEnum> get serializer => _$senderNumberStatusDtoStatusEnumSerializer;
 
-  const SenderNumberStatusDtoStatusEnum._(String name) : super(name);
+  const SenderNumberStatusDtoStatusEnum._(String name): super(name);
 
-  static BuiltSet<SenderNumberStatusDtoStatusEnum> get values =>
-      _$senderNumberStatusDtoStatusEnumValues;
-  static SenderNumberStatusDtoStatusEnum valueOf(String name) =>
-      _$senderNumberStatusDtoStatusEnumValueOf(name);
+  static BuiltSet<SenderNumberStatusDtoStatusEnum> get values => _$senderNumberStatusDtoStatusEnumValues;
+  static SenderNumberStatusDtoStatusEnum valueOf(String name) => _$senderNumberStatusDtoStatusEnumValueOf(name);
 }
+

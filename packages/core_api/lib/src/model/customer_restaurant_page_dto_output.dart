@@ -18,30 +18,25 @@ part 'customer_restaurant_page_dto_output.g.dart';
 /// CustomerRestaurantPageDtoOutput
 ///
 /// Properties:
-/// * [id]
-/// * [nameAr]
-/// * [nameEn]
-/// * [category]
+/// * [id] 
+/// * [nameAr] 
+/// * [nameEn] 
+/// * [category] 
 /// * [logoKey] - Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
 /// * [coverKey] - Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
 /// * [rating] - The average rating; null is «جديد» (Q16). Ratings arrive with their slice.
 /// * [ratingCount] - The number of ratings on the page (CU §9.1).
-/// * [estimate]
-/// * [deliveryFee]
-/// * [state]
-/// * [description]
-/// * [minimumOrder]
-/// * [freeDeliveryFrom]
+/// * [estimate] 
+/// * [deliveryFee] 
+/// * [state] 
+/// * [description] 
+/// * [minimumOrder] 
+/// * [freeDeliveryFrom] 
 /// * [schedule] - «أوقات العمل» (RA §10).
 /// * [deliversHere] - Whether the restaurant covers the point; when false, the fee and estimate are no offer and nothing can be added.
-/// * [menu]
+/// * [menu] 
 @BuiltValue()
-abstract class CustomerRestaurantPageDtoOutput
-    implements
-        Built<
-          CustomerRestaurantPageDtoOutput,
-          CustomerRestaurantPageDtoOutputBuilder
-        > {
+abstract class CustomerRestaurantPageDtoOutput implements Built<CustomerRestaurantPageDtoOutput, CustomerRestaurantPageDtoOutputBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -101,25 +96,18 @@ abstract class CustomerRestaurantPageDtoOutput
 
   CustomerRestaurantPageDtoOutput._();
 
-  factory CustomerRestaurantPageDtoOutput([
-    void updates(CustomerRestaurantPageDtoOutputBuilder b),
-  ]) = _$CustomerRestaurantPageDtoOutput;
+  factory CustomerRestaurantPageDtoOutput([void updates(CustomerRestaurantPageDtoOutputBuilder b)]) = _$CustomerRestaurantPageDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerRestaurantPageDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerRestaurantPageDtoOutput> get serializer =>
-      _$CustomerRestaurantPageDtoOutputSerializer();
+  static Serializer<CustomerRestaurantPageDtoOutput> get serializer => _$CustomerRestaurantPageDtoOutputSerializer();
 }
 
-class _$CustomerRestaurantPageDtoOutputSerializer
-    implements PrimitiveSerializer<CustomerRestaurantPageDtoOutput> {
+class _$CustomerRestaurantPageDtoOutputSerializer implements PrimitiveSerializer<CustomerRestaurantPageDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    CustomerRestaurantPageDtoOutput,
-    _$CustomerRestaurantPageDtoOutput,
-  ];
+  final Iterable<Type> types = const [CustomerRestaurantPageDtoOutput, _$CustomerRestaurantPageDtoOutput];
 
   @override
   final String wireName = r'CustomerRestaurantPageDtoOutput';
@@ -140,101 +128,69 @@ class _$CustomerRestaurantPageDtoOutputSerializer
       specifiedType: const FullType(String),
     );
     yield r'nameEn';
-    yield object.nameEn == null
-        ? null
-        : serializers.serialize(
-            object.nameEn,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.nameEn == null ? null : serializers.serialize(
+      object.nameEn,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'category';
-    yield object.category == null
-        ? null
-        : serializers.serialize(
-            object.category,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.category == null ? null : serializers.serialize(
+      object.category,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'logoKey';
-    yield object.logoKey == null
-        ? null
-        : serializers.serialize(
-            object.logoKey,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.logoKey == null ? null : serializers.serialize(
+      object.logoKey,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'coverKey';
-    yield object.coverKey == null
-        ? null
-        : serializers.serialize(
-            object.coverKey,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.coverKey == null ? null : serializers.serialize(
+      object.coverKey,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'rating';
-    yield object.rating == null
-        ? null
-        : serializers.serialize(
-            object.rating,
-            specifiedType: const FullType.nullable(num),
-          );
+    yield object.rating == null ? null : serializers.serialize(
+      object.rating,
+      specifiedType: const FullType.nullable(num),
+    );
     yield r'ratingCount';
-    yield object.ratingCount == null
-        ? null
-        : serializers.serialize(
-            object.ratingCount,
-            specifiedType: const FullType.nullable(int),
-          );
+    yield object.ratingCount == null ? null : serializers.serialize(
+      object.ratingCount,
+      specifiedType: const FullType.nullable(int),
+    );
     yield r'estimate';
     yield serializers.serialize(
       object.estimate,
-      specifiedType: const FullType(
-        CustomerRestaurantListDtoOutputRestaurantsInnerEstimate,
-      ),
+      specifiedType: const FullType(CustomerRestaurantListDtoOutputRestaurantsInnerEstimate),
     );
     yield r'deliveryFee';
-    yield object.deliveryFee == null
-        ? null
-        : serializers.serialize(
-            object.deliveryFee,
-            specifiedType: const FullType.nullable(
-              CustomerRestaurantPageDtoOutputDeliveryFee,
-            ),
-          );
+    yield object.deliveryFee == null ? null : serializers.serialize(
+      object.deliveryFee,
+      specifiedType: const FullType.nullable(CustomerRestaurantPageDtoOutputDeliveryFee),
+    );
     yield r'state';
     yield serializers.serialize(
       object.state,
-      specifiedType: const FullType(
-        CustomerRestaurantListDtoOutputRestaurantsInnerState,
-      ),
+      specifiedType: const FullType(CustomerRestaurantListDtoOutputRestaurantsInnerState),
     );
     yield r'description';
-    yield object.description == null
-        ? null
-        : serializers.serialize(
-            object.description,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.description == null ? null : serializers.serialize(
+      object.description,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'minimumOrder';
-    yield object.minimumOrder == null
-        ? null
-        : serializers.serialize(
-            object.minimumOrder,
-            specifiedType: const FullType.nullable(
-              CaptainWentOfflineDtoOutputHandIn,
-            ),
-          );
+    yield object.minimumOrder == null ? null : serializers.serialize(
+      object.minimumOrder,
+      specifiedType: const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+    );
     yield r'freeDeliveryFrom';
-    yield object.freeDeliveryFrom == null
-        ? null
-        : serializers.serialize(
-            object.freeDeliveryFrom,
-            specifiedType: const FullType.nullable(
-              CaptainWentOfflineDtoOutputHandIn,
-            ),
-          );
+    yield object.freeDeliveryFrom == null ? null : serializers.serialize(
+      object.freeDeliveryFrom,
+      specifiedType: const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+    );
     yield r'schedule';
     yield serializers.serialize(
       object.schedule,
-      specifiedType: const FullType(BuiltList, [
-        FullType(CustomerRestaurantPageDtoOutputScheduleInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(CustomerRestaurantPageDtoOutputScheduleInner)]),
     );
     yield r'deliversHere';
     yield serializers.serialize(
@@ -244,9 +200,7 @@ class _$CustomerRestaurantPageDtoOutputSerializer
     yield r'menu';
     yield serializers.serialize(
       object.menu,
-      specifiedType: const FullType(BuiltList, [
-        FullType(CustomerRestaurantPageDtoOutputMenuInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(CustomerRestaurantPageDtoOutputMenuInner)]),
     );
   }
 
@@ -256,11 +210,7 @@ class _$CustomerRestaurantPageDtoOutputSerializer
     CustomerRestaurantPageDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -276,180 +226,132 @@ class _$CustomerRestaurantPageDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.id = valueDes;
           break;
         case r'nameAr':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.nameAr = valueDes;
           break;
         case r'nameEn':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.nameEn = valueDes;
           break;
         case r'category':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.category = valueDes;
           break;
         case r'logoKey':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.logoKey = valueDes;
           break;
         case r'coverKey':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.coverKey = valueDes;
           break;
         case r'rating':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(num),
-                  )
-                  as num?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(num),
+          ) as num?;
           if (valueDes == null) continue;
           result.rating = valueDes;
           break;
         case r'ratingCount':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(int),
-                  )
-                  as int?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
           if (valueDes == null) continue;
           result.ratingCount = valueDes;
           break;
         case r'estimate':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CustomerRestaurantListDtoOutputRestaurantsInnerEstimate,
-                    ),
-                  )
-                  as CustomerRestaurantListDtoOutputRestaurantsInnerEstimate;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CustomerRestaurantListDtoOutputRestaurantsInnerEstimate),
+          ) as CustomerRestaurantListDtoOutputRestaurantsInnerEstimate;
           result.estimate.replace(valueDes);
           break;
         case r'deliveryFee':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      CustomerRestaurantPageDtoOutputDeliveryFee,
-                    ),
-                  )
-                  as CustomerRestaurantPageDtoOutputDeliveryFee?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(CustomerRestaurantPageDtoOutputDeliveryFee),
+          ) as CustomerRestaurantPageDtoOutputDeliveryFee?;
           if (valueDes == null) continue;
           result.deliveryFee.replace(valueDes);
           break;
         case r'state':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CustomerRestaurantListDtoOutputRestaurantsInnerState,
-                    ),
-                  )
-                  as CustomerRestaurantListDtoOutputRestaurantsInnerState;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CustomerRestaurantListDtoOutputRestaurantsInnerState),
+          ) as CustomerRestaurantListDtoOutputRestaurantsInnerState;
           result.state.replace(valueDes);
           break;
         case r'description':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.description = valueDes;
           break;
         case r'minimumOrder':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      CaptainWentOfflineDtoOutputHandIn,
-                    ),
-                  )
-                  as CaptainWentOfflineDtoOutputHandIn?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+          ) as CaptainWentOfflineDtoOutputHandIn?;
           if (valueDes == null) continue;
           result.minimumOrder.replace(valueDes);
           break;
         case r'freeDeliveryFrom':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      CaptainWentOfflineDtoOutputHandIn,
-                    ),
-                  )
-                  as CaptainWentOfflineDtoOutputHandIn?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+          ) as CaptainWentOfflineDtoOutputHandIn?;
           if (valueDes == null) continue;
           result.freeDeliveryFrom.replace(valueDes);
           break;
         case r'schedule':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(CustomerRestaurantPageDtoOutputScheduleInner),
-                    ]),
-                  )
-                  as BuiltList<CustomerRestaurantPageDtoOutputScheduleInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(CustomerRestaurantPageDtoOutputScheduleInner)]),
+          ) as BuiltList<CustomerRestaurantPageDtoOutputScheduleInner>;
           result.schedule.replace(valueDes);
           break;
         case r'deliversHere':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.deliversHere = valueDes;
           break;
         case r'menu':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(CustomerRestaurantPageDtoOutputMenuInner),
-                    ]),
-                  )
-                  as BuiltList<CustomerRestaurantPageDtoOutputMenuInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(CustomerRestaurantPageDtoOutputMenuInner)]),
+          ) as BuiltList<CustomerRestaurantPageDtoOutputMenuInner>;
           result.menu.replace(valueDes);
           break;
         default:
@@ -480,3 +382,5 @@ class _$CustomerRestaurantPageDtoOutputSerializer
     return result.build();
   }
 }
+
+

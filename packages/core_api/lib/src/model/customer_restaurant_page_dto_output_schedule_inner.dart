@@ -15,12 +15,7 @@ part 'customer_restaurant_page_dto_output_schedule_inner.g.dart';
 /// * [opensAt] - Minutes after midnight on the city clock.
 /// * [closesAt] - Not after opensAt: crosses midnight.
 @BuiltValue()
-abstract class CustomerRestaurantPageDtoOutputScheduleInner
-    implements
-        Built<
-          CustomerRestaurantPageDtoOutputScheduleInner,
-          CustomerRestaurantPageDtoOutputScheduleInnerBuilder
-        > {
+abstract class CustomerRestaurantPageDtoOutputScheduleInner implements Built<CustomerRestaurantPageDtoOutputScheduleInner, CustomerRestaurantPageDtoOutputScheduleInnerBuilder> {
   /// 0 Sunday to 6 Saturday.
   @BuiltValueField(wireName: r'weekday')
   int get weekday;
@@ -35,28 +30,18 @@ abstract class CustomerRestaurantPageDtoOutputScheduleInner
 
   CustomerRestaurantPageDtoOutputScheduleInner._();
 
-  factory CustomerRestaurantPageDtoOutputScheduleInner([
-    void updates(CustomerRestaurantPageDtoOutputScheduleInnerBuilder b),
-  ]) = _$CustomerRestaurantPageDtoOutputScheduleInner;
+  factory CustomerRestaurantPageDtoOutputScheduleInner([void updates(CustomerRestaurantPageDtoOutputScheduleInnerBuilder b)]) = _$CustomerRestaurantPageDtoOutputScheduleInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    CustomerRestaurantPageDtoOutputScheduleInnerBuilder b,
-  ) => b;
+  static void _defaults(CustomerRestaurantPageDtoOutputScheduleInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerRestaurantPageDtoOutputScheduleInner>
-  get serializer => _$CustomerRestaurantPageDtoOutputScheduleInnerSerializer();
+  static Serializer<CustomerRestaurantPageDtoOutputScheduleInner> get serializer => _$CustomerRestaurantPageDtoOutputScheduleInnerSerializer();
 }
 
-class _$CustomerRestaurantPageDtoOutputScheduleInnerSerializer
-    implements
-        PrimitiveSerializer<CustomerRestaurantPageDtoOutputScheduleInner> {
+class _$CustomerRestaurantPageDtoOutputScheduleInnerSerializer implements PrimitiveSerializer<CustomerRestaurantPageDtoOutputScheduleInner> {
   @override
-  final Iterable<Type> types = const [
-    CustomerRestaurantPageDtoOutputScheduleInner,
-    _$CustomerRestaurantPageDtoOutputScheduleInner,
-  ];
+  final Iterable<Type> types = const [CustomerRestaurantPageDtoOutputScheduleInner, _$CustomerRestaurantPageDtoOutputScheduleInner];
 
   @override
   final String wireName = r'CustomerRestaurantPageDtoOutputScheduleInner';
@@ -89,11 +74,7 @@ class _$CustomerRestaurantPageDtoOutputScheduleInnerSerializer
     CustomerRestaurantPageDtoOutputScheduleInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -109,21 +90,24 @@ class _$CustomerRestaurantPageDtoOutputScheduleInnerSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'weekday':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.weekday = valueDes;
           break;
         case r'opensAt':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.opensAt = valueDes;
           break;
         case r'closesAt':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.closesAt = valueDes;
           break;
         default:
@@ -154,3 +138,5 @@ class _$CustomerRestaurantPageDtoOutputScheduleInnerSerializer
     return result.build();
   }
 }
+
+

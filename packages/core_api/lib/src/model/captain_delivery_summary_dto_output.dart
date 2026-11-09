@@ -12,38 +12,26 @@ part 'captain_delivery_summary_dto_output.g.dart';
 /// CaptainDeliverySummaryDtoOutput
 ///
 /// Properties:
-/// * [summary]
+/// * [summary] 
 @BuiltValue()
-abstract class CaptainDeliverySummaryDtoOutput
-    implements
-        Built<
-          CaptainDeliverySummaryDtoOutput,
-          CaptainDeliverySummaryDtoOutputBuilder
-        > {
+abstract class CaptainDeliverySummaryDtoOutput implements Built<CaptainDeliverySummaryDtoOutput, CaptainDeliverySummaryDtoOutputBuilder> {
   @BuiltValueField(wireName: r'summary')
   CaptainDeliverySummaryDtoOutputSummary get summary;
 
   CaptainDeliverySummaryDtoOutput._();
 
-  factory CaptainDeliverySummaryDtoOutput([
-    void updates(CaptainDeliverySummaryDtoOutputBuilder b),
-  ]) = _$CaptainDeliverySummaryDtoOutput;
+  factory CaptainDeliverySummaryDtoOutput([void updates(CaptainDeliverySummaryDtoOutputBuilder b)]) = _$CaptainDeliverySummaryDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainDeliverySummaryDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainDeliverySummaryDtoOutput> get serializer =>
-      _$CaptainDeliverySummaryDtoOutputSerializer();
+  static Serializer<CaptainDeliverySummaryDtoOutput> get serializer => _$CaptainDeliverySummaryDtoOutputSerializer();
 }
 
-class _$CaptainDeliverySummaryDtoOutputSerializer
-    implements PrimitiveSerializer<CaptainDeliverySummaryDtoOutput> {
+class _$CaptainDeliverySummaryDtoOutputSerializer implements PrimitiveSerializer<CaptainDeliverySummaryDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    CaptainDeliverySummaryDtoOutput,
-    _$CaptainDeliverySummaryDtoOutput,
-  ];
+  final Iterable<Type> types = const [CaptainDeliverySummaryDtoOutput, _$CaptainDeliverySummaryDtoOutput];
 
   @override
   final String wireName = r'CaptainDeliverySummaryDtoOutput';
@@ -66,11 +54,7 @@ class _$CaptainDeliverySummaryDtoOutputSerializer
     CaptainDeliverySummaryDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -86,14 +70,10 @@ class _$CaptainDeliverySummaryDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'summary':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CaptainDeliverySummaryDtoOutputSummary,
-                    ),
-                  )
-                  as CaptainDeliverySummaryDtoOutputSummary;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CaptainDeliverySummaryDtoOutputSummary),
+          ) as CaptainDeliverySummaryDtoOutputSummary;
           result.summary.replace(valueDes);
           break;
         default:
@@ -124,3 +104,5 @@ class _$CaptainDeliverySummaryDtoOutputSerializer
     return result.build();
   }
 }
+
+

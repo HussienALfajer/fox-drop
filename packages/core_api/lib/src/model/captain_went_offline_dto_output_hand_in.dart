@@ -12,14 +12,9 @@ part 'captain_went_offline_dto_output_hand_in.g.dart';
 ///
 /// Properties:
 /// * [amount] - Integer minor units (AP §8.6).
-/// * [currency]
+/// * [currency] 
 @BuiltValue()
-abstract class CaptainWentOfflineDtoOutputHandIn
-    implements
-        Built<
-          CaptainWentOfflineDtoOutputHandIn,
-          CaptainWentOfflineDtoOutputHandInBuilder
-        > {
+abstract class CaptainWentOfflineDtoOutputHandIn implements Built<CaptainWentOfflineDtoOutputHandIn, CaptainWentOfflineDtoOutputHandInBuilder> {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -29,25 +24,18 @@ abstract class CaptainWentOfflineDtoOutputHandIn
 
   CaptainWentOfflineDtoOutputHandIn._();
 
-  factory CaptainWentOfflineDtoOutputHandIn([
-    void updates(CaptainWentOfflineDtoOutputHandInBuilder b),
-  ]) = _$CaptainWentOfflineDtoOutputHandIn;
+  factory CaptainWentOfflineDtoOutputHandIn([void updates(CaptainWentOfflineDtoOutputHandInBuilder b)]) = _$CaptainWentOfflineDtoOutputHandIn;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainWentOfflineDtoOutputHandInBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainWentOfflineDtoOutputHandIn> get serializer =>
-      _$CaptainWentOfflineDtoOutputHandInSerializer();
+  static Serializer<CaptainWentOfflineDtoOutputHandIn> get serializer => _$CaptainWentOfflineDtoOutputHandInSerializer();
 }
 
-class _$CaptainWentOfflineDtoOutputHandInSerializer
-    implements PrimitiveSerializer<CaptainWentOfflineDtoOutputHandIn> {
+class _$CaptainWentOfflineDtoOutputHandInSerializer implements PrimitiveSerializer<CaptainWentOfflineDtoOutputHandIn> {
   @override
-  final Iterable<Type> types = const [
-    CaptainWentOfflineDtoOutputHandIn,
-    _$CaptainWentOfflineDtoOutputHandIn,
-  ];
+  final Iterable<Type> types = const [CaptainWentOfflineDtoOutputHandIn, _$CaptainWentOfflineDtoOutputHandIn];
 
   @override
   final String wireName = r'CaptainWentOfflineDtoOutputHandIn';
@@ -75,11 +63,7 @@ class _$CaptainWentOfflineDtoOutputHandInSerializer
     CaptainWentOfflineDtoOutputHandIn object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -95,21 +79,17 @@ class _$CaptainWentOfflineDtoOutputHandInSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.currency = valueDes;
           break;
         default:
@@ -140,3 +120,5 @@ class _$CaptainWentOfflineDtoOutputHandInSerializer
     return result.build();
   }
 }
+
+

@@ -14,12 +14,7 @@ part 'captain_current_offer_dto_output_offer_preparation.g.dart';
 /// * [ready] - «جاهز».
 /// * [readyAt] - «قيد التحضير — جاهز بعد {د} د تقريباً» counts to it while not ready.
 @BuiltValue()
-abstract class CaptainCurrentOfferDtoOutputOfferPreparation
-    implements
-        Built<
-          CaptainCurrentOfferDtoOutputOfferPreparation,
-          CaptainCurrentOfferDtoOutputOfferPreparationBuilder
-        > {
+abstract class CaptainCurrentOfferDtoOutputOfferPreparation implements Built<CaptainCurrentOfferDtoOutputOfferPreparation, CaptainCurrentOfferDtoOutputOfferPreparationBuilder> {
   /// «جاهز».
   @BuiltValueField(wireName: r'ready')
   bool get ready;
@@ -30,28 +25,18 @@ abstract class CaptainCurrentOfferDtoOutputOfferPreparation
 
   CaptainCurrentOfferDtoOutputOfferPreparation._();
 
-  factory CaptainCurrentOfferDtoOutputOfferPreparation([
-    void updates(CaptainCurrentOfferDtoOutputOfferPreparationBuilder b),
-  ]) = _$CaptainCurrentOfferDtoOutputOfferPreparation;
+  factory CaptainCurrentOfferDtoOutputOfferPreparation([void updates(CaptainCurrentOfferDtoOutputOfferPreparationBuilder b)]) = _$CaptainCurrentOfferDtoOutputOfferPreparation;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    CaptainCurrentOfferDtoOutputOfferPreparationBuilder b,
-  ) => b;
+  static void _defaults(CaptainCurrentOfferDtoOutputOfferPreparationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainCurrentOfferDtoOutputOfferPreparation>
-  get serializer => _$CaptainCurrentOfferDtoOutputOfferPreparationSerializer();
+  static Serializer<CaptainCurrentOfferDtoOutputOfferPreparation> get serializer => _$CaptainCurrentOfferDtoOutputOfferPreparationSerializer();
 }
 
-class _$CaptainCurrentOfferDtoOutputOfferPreparationSerializer
-    implements
-        PrimitiveSerializer<CaptainCurrentOfferDtoOutputOfferPreparation> {
+class _$CaptainCurrentOfferDtoOutputOfferPreparationSerializer implements PrimitiveSerializer<CaptainCurrentOfferDtoOutputOfferPreparation> {
   @override
-  final Iterable<Type> types = const [
-    CaptainCurrentOfferDtoOutputOfferPreparation,
-    _$CaptainCurrentOfferDtoOutputOfferPreparation,
-  ];
+  final Iterable<Type> types = const [CaptainCurrentOfferDtoOutputOfferPreparation, _$CaptainCurrentOfferDtoOutputOfferPreparation];
 
   @override
   final String wireName = r'CaptainCurrentOfferDtoOutputOfferPreparation';
@@ -67,12 +52,10 @@ class _$CaptainCurrentOfferDtoOutputOfferPreparationSerializer
       specifiedType: const FullType(bool),
     );
     yield r'readyAt';
-    yield object.readyAt == null
-        ? null
-        : serializers.serialize(
-            object.readyAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.readyAt == null ? null : serializers.serialize(
+      object.readyAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
   }
 
   @override
@@ -81,11 +64,7 @@ class _$CaptainCurrentOfferDtoOutputOfferPreparationSerializer
     CaptainCurrentOfferDtoOutputOfferPreparation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -101,21 +80,17 @@ class _$CaptainCurrentOfferDtoOutputOfferPreparationSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'ready':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.ready = valueDes;
           break;
         case r'readyAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.readyAt = valueDes;
           break;
@@ -147,3 +122,5 @@ class _$CaptainCurrentOfferDtoOutputOfferPreparationSerializer
     return result.build();
   }
 }
+
+

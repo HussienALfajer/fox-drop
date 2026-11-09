@@ -13,34 +13,26 @@ part 'setting_history_dto_output.g.dart';
 /// SettingHistoryDtoOutput
 ///
 /// Properties:
-/// * [changes]
+/// * [changes] 
 @BuiltValue()
-abstract class SettingHistoryDtoOutput
-    implements Built<SettingHistoryDtoOutput, SettingHistoryDtoOutputBuilder> {
+abstract class SettingHistoryDtoOutput implements Built<SettingHistoryDtoOutput, SettingHistoryDtoOutputBuilder> {
   @BuiltValueField(wireName: r'changes')
   BuiltList<SettingHistoryDtoOutputChangesInner> get changes;
 
   SettingHistoryDtoOutput._();
 
-  factory SettingHistoryDtoOutput([
-    void updates(SettingHistoryDtoOutputBuilder b),
-  ]) = _$SettingHistoryDtoOutput;
+  factory SettingHistoryDtoOutput([void updates(SettingHistoryDtoOutputBuilder b)]) = _$SettingHistoryDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SettingHistoryDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SettingHistoryDtoOutput> get serializer =>
-      _$SettingHistoryDtoOutputSerializer();
+  static Serializer<SettingHistoryDtoOutput> get serializer => _$SettingHistoryDtoOutputSerializer();
 }
 
-class _$SettingHistoryDtoOutputSerializer
-    implements PrimitiveSerializer<SettingHistoryDtoOutput> {
+class _$SettingHistoryDtoOutputSerializer implements PrimitiveSerializer<SettingHistoryDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    SettingHistoryDtoOutput,
-    _$SettingHistoryDtoOutput,
-  ];
+  final Iterable<Type> types = const [SettingHistoryDtoOutput, _$SettingHistoryDtoOutput];
 
   @override
   final String wireName = r'SettingHistoryDtoOutput';
@@ -53,9 +45,7 @@ class _$SettingHistoryDtoOutputSerializer
     yield r'changes';
     yield serializers.serialize(
       object.changes,
-      specifiedType: const FullType(BuiltList, [
-        FullType(SettingHistoryDtoOutputChangesInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(SettingHistoryDtoOutputChangesInner)]),
     );
   }
 
@@ -65,11 +55,7 @@ class _$SettingHistoryDtoOutputSerializer
     SettingHistoryDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -85,14 +71,10 @@ class _$SettingHistoryDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'changes':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(SettingHistoryDtoOutputChangesInner),
-                    ]),
-                  )
-                  as BuiltList<SettingHistoryDtoOutputChangesInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(SettingHistoryDtoOutputChangesInner)]),
+          ) as BuiltList<SettingHistoryDtoOutputChangesInner>;
           result.changes.replace(valueDes);
           break;
         default:
@@ -123,3 +105,5 @@ class _$SettingHistoryDtoOutputSerializer
     return result.build();
   }
 }
+
+

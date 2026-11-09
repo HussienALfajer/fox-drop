@@ -12,15 +12,14 @@ part 'admin_reason_dto_output.g.dart';
 /// AdminReasonDtoOutput
 ///
 /// Properties:
-/// * [code]
-/// * [label]
-/// * [customerText]
+/// * [code] 
+/// * [label] 
+/// * [customerText] 
 /// * [note] - Whether the choice takes a note: none, optional, required.
 /// * [fixed] - The code acts on it: it cannot be removed.
 /// * [active] - False once removed: hidden from new choices, kept on orders.
 @BuiltValue()
-abstract class AdminReasonDtoOutput
-    implements Built<AdminReasonDtoOutput, AdminReasonDtoOutputBuilder> {
+abstract class AdminReasonDtoOutput implements Built<AdminReasonDtoOutput, AdminReasonDtoOutputBuilder> {
   @BuiltValueField(wireName: r'code')
   String get code;
 
@@ -45,24 +44,18 @@ abstract class AdminReasonDtoOutput
 
   AdminReasonDtoOutput._();
 
-  factory AdminReasonDtoOutput([void updates(AdminReasonDtoOutputBuilder b)]) =
-      _$AdminReasonDtoOutput;
+  factory AdminReasonDtoOutput([void updates(AdminReasonDtoOutputBuilder b)]) = _$AdminReasonDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminReasonDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminReasonDtoOutput> get serializer =>
-      _$AdminReasonDtoOutputSerializer();
+  static Serializer<AdminReasonDtoOutput> get serializer => _$AdminReasonDtoOutputSerializer();
 }
 
-class _$AdminReasonDtoOutputSerializer
-    implements PrimitiveSerializer<AdminReasonDtoOutput> {
+class _$AdminReasonDtoOutputSerializer implements PrimitiveSerializer<AdminReasonDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    AdminReasonDtoOutput,
-    _$AdminReasonDtoOutput,
-  ];
+  final Iterable<Type> types = const [AdminReasonDtoOutput, _$AdminReasonDtoOutput];
 
   @override
   final String wireName = r'AdminReasonDtoOutput';
@@ -83,12 +76,10 @@ class _$AdminReasonDtoOutputSerializer
       specifiedType: const FullType(String),
     );
     yield r'customerText';
-    yield object.customerText == null
-        ? null
-        : serializers.serialize(
-            object.customerText,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.customerText == null ? null : serializers.serialize(
+      object.customerText,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'note';
     yield serializers.serialize(
       object.note,
@@ -112,11 +103,7 @@ class _$AdminReasonDtoOutputSerializer
     AdminReasonDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -132,58 +119,46 @@ class _$AdminReasonDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'code':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.code = valueDes;
           break;
         case r'label':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.label = valueDes;
           break;
         case r'customerText':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.customerText = valueDes;
           break;
         case r'note':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(AdminReasonDtoOutputNoteEnum),
-                  )
-                  as AdminReasonDtoOutputNoteEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(AdminReasonDtoOutputNoteEnum),
+          ) as AdminReasonDtoOutputNoteEnum;
           result.note = valueDes;
           break;
         case r'fixed':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.fixed = valueDes;
           break;
         case r'active':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.active = valueDes;
           break;
         default:
@@ -215,25 +190,22 @@ class _$AdminReasonDtoOutputSerializer
   }
 }
 
+
 /// Whether the choice takes a note: none, optional, required.
 class AdminReasonDtoOutputNoteEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'none')
-  static const AdminReasonDtoOutputNoteEnum none =
-      _$adminReasonDtoOutputNoteEnum_none;
+  static const AdminReasonDtoOutputNoteEnum none = _$adminReasonDtoOutputNoteEnum_none;
   @BuiltValueEnumConst(wireName: r'optional')
-  static const AdminReasonDtoOutputNoteEnum optional =
-      _$adminReasonDtoOutputNoteEnum_optional;
+  static const AdminReasonDtoOutputNoteEnum optional = _$adminReasonDtoOutputNoteEnum_optional;
   @BuiltValueEnumConst(wireName: r'required')
-  static const AdminReasonDtoOutputNoteEnum required_ =
-      _$adminReasonDtoOutputNoteEnum_required_;
+  static const AdminReasonDtoOutputNoteEnum required_ = _$adminReasonDtoOutputNoteEnum_required_;
 
-  static Serializer<AdminReasonDtoOutputNoteEnum> get serializer =>
-      _$adminReasonDtoOutputNoteEnumSerializer;
+  static Serializer<AdminReasonDtoOutputNoteEnum> get serializer => _$adminReasonDtoOutputNoteEnumSerializer;
 
-  const AdminReasonDtoOutputNoteEnum._(String name) : super(name);
+  const AdminReasonDtoOutputNoteEnum._(String name): super(name);
 
-  static BuiltSet<AdminReasonDtoOutputNoteEnum> get values =>
-      _$adminReasonDtoOutputNoteEnumValues;
-  static AdminReasonDtoOutputNoteEnum valueOf(String name) =>
-      _$adminReasonDtoOutputNoteEnumValueOf(name);
+  static BuiltSet<AdminReasonDtoOutputNoteEnum> get values => _$adminReasonDtoOutputNoteEnumValues;
+  static AdminReasonDtoOutputNoteEnum valueOf(String name) => _$adminReasonDtoOutputNoteEnumValueOf(name);
 }
+

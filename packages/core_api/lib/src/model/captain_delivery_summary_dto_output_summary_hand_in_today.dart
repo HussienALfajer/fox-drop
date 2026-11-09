@@ -12,14 +12,9 @@ part 'captain_delivery_summary_dto_output_summary_hand_in_today.g.dart';
 ///
 /// Properties:
 /// * [amount] - Integer minor units (AP §8.6).
-/// * [currency]
+/// * [currency] 
 @BuiltValue()
-abstract class CaptainDeliverySummaryDtoOutputSummaryHandInToday
-    implements
-        Built<
-          CaptainDeliverySummaryDtoOutputSummaryHandInToday,
-          CaptainDeliverySummaryDtoOutputSummaryHandInTodayBuilder
-        > {
+abstract class CaptainDeliverySummaryDtoOutputSummaryHandInToday implements Built<CaptainDeliverySummaryDtoOutputSummaryHandInToday, CaptainDeliverySummaryDtoOutputSummaryHandInTodayBuilder> {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -29,29 +24,18 @@ abstract class CaptainDeliverySummaryDtoOutputSummaryHandInToday
 
   CaptainDeliverySummaryDtoOutputSummaryHandInToday._();
 
-  factory CaptainDeliverySummaryDtoOutputSummaryHandInToday([
-    void updates(CaptainDeliverySummaryDtoOutputSummaryHandInTodayBuilder b),
-  ]) = _$CaptainDeliverySummaryDtoOutputSummaryHandInToday;
+  factory CaptainDeliverySummaryDtoOutputSummaryHandInToday([void updates(CaptainDeliverySummaryDtoOutputSummaryHandInTodayBuilder b)]) = _$CaptainDeliverySummaryDtoOutputSummaryHandInToday;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    CaptainDeliverySummaryDtoOutputSummaryHandInTodayBuilder b,
-  ) => b;
+  static void _defaults(CaptainDeliverySummaryDtoOutputSummaryHandInTodayBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainDeliverySummaryDtoOutputSummaryHandInToday>
-  get serializer =>
-      _$CaptainDeliverySummaryDtoOutputSummaryHandInTodaySerializer();
+  static Serializer<CaptainDeliverySummaryDtoOutputSummaryHandInToday> get serializer => _$CaptainDeliverySummaryDtoOutputSummaryHandInTodaySerializer();
 }
 
-class _$CaptainDeliverySummaryDtoOutputSummaryHandInTodaySerializer
-    implements
-        PrimitiveSerializer<CaptainDeliverySummaryDtoOutputSummaryHandInToday> {
+class _$CaptainDeliverySummaryDtoOutputSummaryHandInTodaySerializer implements PrimitiveSerializer<CaptainDeliverySummaryDtoOutputSummaryHandInToday> {
   @override
-  final Iterable<Type> types = const [
-    CaptainDeliverySummaryDtoOutputSummaryHandInToday,
-    _$CaptainDeliverySummaryDtoOutputSummaryHandInToday,
-  ];
+  final Iterable<Type> types = const [CaptainDeliverySummaryDtoOutputSummaryHandInToday, _$CaptainDeliverySummaryDtoOutputSummaryHandInToday];
 
   @override
   final String wireName = r'CaptainDeliverySummaryDtoOutputSummaryHandInToday';
@@ -79,11 +63,7 @@ class _$CaptainDeliverySummaryDtoOutputSummaryHandInTodaySerializer
     CaptainDeliverySummaryDtoOutputSummaryHandInToday object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -99,21 +79,17 @@ class _$CaptainDeliverySummaryDtoOutputSummaryHandInTodaySerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.currency = valueDes;
           break;
         default:
@@ -144,3 +120,5 @@ class _$CaptainDeliverySummaryDtoOutputSummaryHandInTodaySerializer
     return result.build();
   }
 }
+
+

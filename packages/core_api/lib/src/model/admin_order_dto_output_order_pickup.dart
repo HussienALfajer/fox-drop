@@ -14,17 +14,12 @@ part 'admin_order_dto_output_order_pickup.g.dart';
 /// AdminOrderDtoOutputOrderPickup
 ///
 /// Properties:
-/// * [at]
+/// * [at] 
 /// * [readyNotPressed] - «لم يُضغط جاهز».
 /// * [requests] - Newest first; the last one's lines prefill «تأكيد الاستلام نيابة عن المطعم».
-/// * [dispute]
+/// * [dispute] 
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderPickup
-    implements
-        Built<
-          AdminOrderDtoOutputOrderPickup,
-          AdminOrderDtoOutputOrderPickupBuilder
-        > {
+abstract class AdminOrderDtoOutputOrderPickup implements Built<AdminOrderDtoOutputOrderPickup, AdminOrderDtoOutputOrderPickupBuilder> {
   @BuiltValueField(wireName: r'at')
   DateTime? get at;
 
@@ -41,25 +36,18 @@ abstract class AdminOrderDtoOutputOrderPickup
 
   AdminOrderDtoOutputOrderPickup._();
 
-  factory AdminOrderDtoOutputOrderPickup([
-    void updates(AdminOrderDtoOutputOrderPickupBuilder b),
-  ]) = _$AdminOrderDtoOutputOrderPickup;
+  factory AdminOrderDtoOutputOrderPickup([void updates(AdminOrderDtoOutputOrderPickupBuilder b)]) = _$AdminOrderDtoOutputOrderPickup;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderDtoOutputOrderPickupBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderPickup> get serializer =>
-      _$AdminOrderDtoOutputOrderPickupSerializer();
+  static Serializer<AdminOrderDtoOutputOrderPickup> get serializer => _$AdminOrderDtoOutputOrderPickupSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderPickupSerializer
-    implements PrimitiveSerializer<AdminOrderDtoOutputOrderPickup> {
+class _$AdminOrderDtoOutputOrderPickupSerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderPickup> {
   @override
-  final Iterable<Type> types = const [
-    AdminOrderDtoOutputOrderPickup,
-    _$AdminOrderDtoOutputOrderPickup,
-  ];
+  final Iterable<Type> types = const [AdminOrderDtoOutputOrderPickup, _$AdminOrderDtoOutputOrderPickup];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderPickup';
@@ -70,12 +58,10 @@ class _$AdminOrderDtoOutputOrderPickupSerializer
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'at';
-    yield object.at == null
-        ? null
-        : serializers.serialize(
-            object.at,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.at == null ? null : serializers.serialize(
+      object.at,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'readyNotPressed';
     yield serializers.serialize(
       object.readyNotPressed,
@@ -84,19 +70,13 @@ class _$AdminOrderDtoOutputOrderPickupSerializer
     yield r'requests';
     yield serializers.serialize(
       object.requests,
-      specifiedType: const FullType(BuiltList, [
-        FullType(AdminOrderDtoOutputOrderPickupRequestsInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(AdminOrderDtoOutputOrderPickupRequestsInner)]),
     );
     yield r'dispute';
-    yield object.dispute == null
-        ? null
-        : serializers.serialize(
-            object.dispute,
-            specifiedType: const FullType.nullable(
-              AdminOrderDtoOutputOrderPickupDispute,
-            ),
-          );
+    yield object.dispute == null ? null : serializers.serialize(
+      object.dispute,
+      specifiedType: const FullType.nullable(AdminOrderDtoOutputOrderPickupDispute),
+    );
   }
 
   @override
@@ -105,11 +85,7 @@ class _$AdminOrderDtoOutputOrderPickupSerializer
     AdminOrderDtoOutputOrderPickup object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -125,44 +101,32 @@ class _$AdminOrderDtoOutputOrderPickupSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'at':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.at = valueDes;
           break;
         case r'readyNotPressed':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.readyNotPressed = valueDes;
           break;
         case r'requests':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(AdminOrderDtoOutputOrderPickupRequestsInner),
-                    ]),
-                  )
-                  as BuiltList<AdminOrderDtoOutputOrderPickupRequestsInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(AdminOrderDtoOutputOrderPickupRequestsInner)]),
+          ) as BuiltList<AdminOrderDtoOutputOrderPickupRequestsInner>;
           result.requests.replace(valueDes);
           break;
         case r'dispute':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      AdminOrderDtoOutputOrderPickupDispute,
-                    ),
-                  )
-                  as AdminOrderDtoOutputOrderPickupDispute?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(AdminOrderDtoOutputOrderPickupDispute),
+          ) as AdminOrderDtoOutputOrderPickupDispute?;
           if (valueDes == null) continue;
           result.dispute.replace(valueDes);
           break;
@@ -194,3 +158,5 @@ class _$AdminOrderDtoOutputOrderPickupSerializer
     return result.build();
   }
 }
+
+

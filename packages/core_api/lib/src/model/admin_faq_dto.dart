@@ -13,7 +13,7 @@ part 'admin_faq_dto.g.dart';
 /// AdminFaqDto
 ///
 /// Properties:
-/// * [items]
+/// * [items] 
 @BuiltValue()
 abstract class AdminFaqDto implements Built<AdminFaqDto, AdminFaqDtoBuilder> {
   @BuiltValueField(wireName: r'items')
@@ -45,9 +45,7 @@ class _$AdminFaqDtoSerializer implements PrimitiveSerializer<AdminFaqDto> {
     yield r'items';
     yield serializers.serialize(
       object.items,
-      specifiedType: const FullType(BuiltList, [
-        FullType(AdminFaqDtoItemsInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(AdminFaqDtoItemsInner)]),
     );
   }
 
@@ -57,11 +55,7 @@ class _$AdminFaqDtoSerializer implements PrimitiveSerializer<AdminFaqDto> {
     AdminFaqDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -77,14 +71,10 @@ class _$AdminFaqDtoSerializer implements PrimitiveSerializer<AdminFaqDto> {
       final value = serializedList[i + 1];
       switch (key) {
         case r'items':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(AdminFaqDtoItemsInner),
-                    ]),
-                  )
-                  as BuiltList<AdminFaqDtoItemsInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(AdminFaqDtoItemsInner)]),
+          ) as BuiltList<AdminFaqDtoItemsInner>;
           result.items.replace(valueDes);
           break;
         default:
@@ -115,3 +105,5 @@ class _$AdminFaqDtoSerializer implements PrimitiveSerializer<AdminFaqDto> {
     return result.build();
   }
 }
+
+

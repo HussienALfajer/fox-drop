@@ -14,12 +14,10 @@ part 'customer_content_dto_output.g.dart';
 /// CustomerContentDtoOutput
 ///
 /// Properties:
-/// * [reasons]
-/// * [faq]
+/// * [reasons] 
+/// * [faq] 
 @BuiltValue()
-abstract class CustomerContentDtoOutput
-    implements
-        Built<CustomerContentDtoOutput, CustomerContentDtoOutputBuilder> {
+abstract class CustomerContentDtoOutput implements Built<CustomerContentDtoOutput, CustomerContentDtoOutputBuilder> {
   @BuiltValueField(wireName: r'reasons')
   CustomerContentDtoOutputReasons get reasons;
 
@@ -28,25 +26,18 @@ abstract class CustomerContentDtoOutput
 
   CustomerContentDtoOutput._();
 
-  factory CustomerContentDtoOutput([
-    void updates(CustomerContentDtoOutputBuilder b),
-  ]) = _$CustomerContentDtoOutput;
+  factory CustomerContentDtoOutput([void updates(CustomerContentDtoOutputBuilder b)]) = _$CustomerContentDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerContentDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerContentDtoOutput> get serializer =>
-      _$CustomerContentDtoOutputSerializer();
+  static Serializer<CustomerContentDtoOutput> get serializer => _$CustomerContentDtoOutputSerializer();
 }
 
-class _$CustomerContentDtoOutputSerializer
-    implements PrimitiveSerializer<CustomerContentDtoOutput> {
+class _$CustomerContentDtoOutputSerializer implements PrimitiveSerializer<CustomerContentDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    CustomerContentDtoOutput,
-    _$CustomerContentDtoOutput,
-  ];
+  final Iterable<Type> types = const [CustomerContentDtoOutput, _$CustomerContentDtoOutput];
 
   @override
   final String wireName = r'CustomerContentDtoOutput';
@@ -64,9 +55,7 @@ class _$CustomerContentDtoOutputSerializer
     yield r'faq';
     yield serializers.serialize(
       object.faq,
-      specifiedType: const FullType(BuiltList, [
-        FullType(MerchantContentDtoOutputFaqInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(MerchantContentDtoOutputFaqInner)]),
     );
   }
 
@@ -76,11 +65,7 @@ class _$CustomerContentDtoOutputSerializer
     CustomerContentDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -96,25 +81,17 @@ class _$CustomerContentDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'reasons':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CustomerContentDtoOutputReasons,
-                    ),
-                  )
-                  as CustomerContentDtoOutputReasons;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CustomerContentDtoOutputReasons),
+          ) as CustomerContentDtoOutputReasons;
           result.reasons.replace(valueDes);
           break;
         case r'faq':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(MerchantContentDtoOutputFaqInner),
-                    ]),
-                  )
-                  as BuiltList<MerchantContentDtoOutputFaqInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(MerchantContentDtoOutputFaqInner)]),
+          ) as BuiltList<MerchantContentDtoOutputFaqInner>;
           result.faq.replace(valueDes);
           break;
         default:
@@ -145,3 +122,5 @@ class _$CustomerContentDtoOutputSerializer
     return result.build();
   }
 }
+
+

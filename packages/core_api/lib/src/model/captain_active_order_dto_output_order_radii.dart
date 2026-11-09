@@ -14,12 +14,7 @@ part 'captain_active_order_dto_output_order_radii.g.dart';
 /// * [restaurantMetres] - captain.merchant_arrival_radius_m: «وصلت إلى المطعم» within it (C6).
 /// * [customerMetres] - captain.customer_radius_m: «وصلت» and «تم التسليم» need no reason within it (K4, C9).
 @BuiltValue()
-abstract class CaptainActiveOrderDtoOutputOrderRadii
-    implements
-        Built<
-          CaptainActiveOrderDtoOutputOrderRadii,
-          CaptainActiveOrderDtoOutputOrderRadiiBuilder
-        > {
+abstract class CaptainActiveOrderDtoOutputOrderRadii implements Built<CaptainActiveOrderDtoOutputOrderRadii, CaptainActiveOrderDtoOutputOrderRadiiBuilder> {
   /// captain.merchant_arrival_radius_m: «وصلت إلى المطعم» within it (C6).
   @BuiltValueField(wireName: r'restaurantMetres')
   int get restaurantMetres;
@@ -30,25 +25,18 @@ abstract class CaptainActiveOrderDtoOutputOrderRadii
 
   CaptainActiveOrderDtoOutputOrderRadii._();
 
-  factory CaptainActiveOrderDtoOutputOrderRadii([
-    void updates(CaptainActiveOrderDtoOutputOrderRadiiBuilder b),
-  ]) = _$CaptainActiveOrderDtoOutputOrderRadii;
+  factory CaptainActiveOrderDtoOutputOrderRadii([void updates(CaptainActiveOrderDtoOutputOrderRadiiBuilder b)]) = _$CaptainActiveOrderDtoOutputOrderRadii;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainActiveOrderDtoOutputOrderRadiiBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainActiveOrderDtoOutputOrderRadii> get serializer =>
-      _$CaptainActiveOrderDtoOutputOrderRadiiSerializer();
+  static Serializer<CaptainActiveOrderDtoOutputOrderRadii> get serializer => _$CaptainActiveOrderDtoOutputOrderRadiiSerializer();
 }
 
-class _$CaptainActiveOrderDtoOutputOrderRadiiSerializer
-    implements PrimitiveSerializer<CaptainActiveOrderDtoOutputOrderRadii> {
+class _$CaptainActiveOrderDtoOutputOrderRadiiSerializer implements PrimitiveSerializer<CaptainActiveOrderDtoOutputOrderRadii> {
   @override
-  final Iterable<Type> types = const [
-    CaptainActiveOrderDtoOutputOrderRadii,
-    _$CaptainActiveOrderDtoOutputOrderRadii,
-  ];
+  final Iterable<Type> types = const [CaptainActiveOrderDtoOutputOrderRadii, _$CaptainActiveOrderDtoOutputOrderRadii];
 
   @override
   final String wireName = r'CaptainActiveOrderDtoOutputOrderRadii';
@@ -76,11 +64,7 @@ class _$CaptainActiveOrderDtoOutputOrderRadiiSerializer
     CaptainActiveOrderDtoOutputOrderRadii object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -96,15 +80,17 @@ class _$CaptainActiveOrderDtoOutputOrderRadiiSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'restaurantMetres':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.restaurantMetres = valueDes;
           break;
         case r'customerMetres':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.customerMetres = valueDes;
           break;
         default:
@@ -135,3 +121,5 @@ class _$CaptainActiveOrderDtoOutputOrderRadiiSerializer
     return result.build();
   }
 }
+
+

@@ -11,18 +11,13 @@ part 'merchant_orders_dto_output_orders_inner_acceptance.g.dart';
 /// Null until the order is accepted.
 ///
 /// Properties:
-/// * [at]
+/// * [at] 
 /// * [prepMin] - The prep time chosen (RA §8.5).
 /// * [prepDueAt] - While accepted, the prep countdown runs to it; past it the card turns red and counts up, «متأخر {د} د» (RA §8.7).
 /// * [deviceName] - «قُبل الطلب من جهاز {اسم الجهاز}» (RA §4.7); null when not accepted on a named device of the restaurant.
 /// * [byOperations] - Accepted by operations on the restaurant's behalf: the badge «قبلته العمليات», and every device chimes «قبلت العمليات الطلب #{رقم} نيابة عنكم — وقت التحضير {د} د» (RA §8.15, §16 #5).
 @BuiltValue()
-abstract class MerchantOrdersDtoOutputOrdersInnerAcceptance
-    implements
-        Built<
-          MerchantOrdersDtoOutputOrdersInnerAcceptance,
-          MerchantOrdersDtoOutputOrdersInnerAcceptanceBuilder
-        > {
+abstract class MerchantOrdersDtoOutputOrdersInnerAcceptance implements Built<MerchantOrdersDtoOutputOrdersInnerAcceptance, MerchantOrdersDtoOutputOrdersInnerAcceptanceBuilder> {
   @BuiltValueField(wireName: r'at')
   DateTime get at;
 
@@ -44,28 +39,18 @@ abstract class MerchantOrdersDtoOutputOrdersInnerAcceptance
 
   MerchantOrdersDtoOutputOrdersInnerAcceptance._();
 
-  factory MerchantOrdersDtoOutputOrdersInnerAcceptance([
-    void updates(MerchantOrdersDtoOutputOrdersInnerAcceptanceBuilder b),
-  ]) = _$MerchantOrdersDtoOutputOrdersInnerAcceptance;
+  factory MerchantOrdersDtoOutputOrdersInnerAcceptance([void updates(MerchantOrdersDtoOutputOrdersInnerAcceptanceBuilder b)]) = _$MerchantOrdersDtoOutputOrdersInnerAcceptance;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    MerchantOrdersDtoOutputOrdersInnerAcceptanceBuilder b,
-  ) => b;
+  static void _defaults(MerchantOrdersDtoOutputOrdersInnerAcceptanceBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantOrdersDtoOutputOrdersInnerAcceptance>
-  get serializer => _$MerchantOrdersDtoOutputOrdersInnerAcceptanceSerializer();
+  static Serializer<MerchantOrdersDtoOutputOrdersInnerAcceptance> get serializer => _$MerchantOrdersDtoOutputOrdersInnerAcceptanceSerializer();
 }
 
-class _$MerchantOrdersDtoOutputOrdersInnerAcceptanceSerializer
-    implements
-        PrimitiveSerializer<MerchantOrdersDtoOutputOrdersInnerAcceptance> {
+class _$MerchantOrdersDtoOutputOrdersInnerAcceptanceSerializer implements PrimitiveSerializer<MerchantOrdersDtoOutputOrdersInnerAcceptance> {
   @override
-  final Iterable<Type> types = const [
-    MerchantOrdersDtoOutputOrdersInnerAcceptance,
-    _$MerchantOrdersDtoOutputOrdersInnerAcceptance,
-  ];
+  final Iterable<Type> types = const [MerchantOrdersDtoOutputOrdersInnerAcceptance, _$MerchantOrdersDtoOutputOrdersInnerAcceptance];
 
   @override
   final String wireName = r'MerchantOrdersDtoOutputOrdersInnerAcceptance';
@@ -91,12 +76,10 @@ class _$MerchantOrdersDtoOutputOrdersInnerAcceptanceSerializer
       specifiedType: const FullType(DateTime),
     );
     yield r'deviceName';
-    yield object.deviceName == null
-        ? null
-        : serializers.serialize(
-            object.deviceName,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.deviceName == null ? null : serializers.serialize(
+      object.deviceName,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'byOperations';
     yield serializers.serialize(
       object.byOperations,
@@ -110,11 +93,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerAcceptanceSerializer
     MerchantOrdersDtoOutputOrdersInnerAcceptance object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -130,46 +109,39 @@ class _$MerchantOrdersDtoOutputOrdersInnerAcceptanceSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'at':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.at = valueDes;
           break;
         case r'prepMin':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.prepMin = valueDes;
           break;
         case r'prepDueAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.prepDueAt = valueDes;
           break;
         case r'deviceName':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.deviceName = valueDes;
           break;
         case r'byOperations':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.byOperations = valueDes;
           break;
         default:
@@ -200,3 +172,5 @@ class _$MerchantOrdersDtoOutputOrdersInnerAcceptanceSerializer
     return result.build();
   }
 }
+
+

@@ -15,10 +15,9 @@ part 'merchant_orders_dto_output.g.dart';
 ///
 /// Properties:
 /// * [orders] - Every order until it is delivered or ends, oldest first (RA §8.2).
-/// * [prepTime]
+/// * [prepTime] 
 @BuiltValue()
-abstract class MerchantOrdersDtoOutput
-    implements Built<MerchantOrdersDtoOutput, MerchantOrdersDtoOutputBuilder> {
+abstract class MerchantOrdersDtoOutput implements Built<MerchantOrdersDtoOutput, MerchantOrdersDtoOutputBuilder> {
   /// Every order until it is delivered or ends, oldest first (RA §8.2).
   @BuiltValueField(wireName: r'orders')
   BuiltList<MerchantOrdersDtoOutputOrdersInner> get orders;
@@ -28,25 +27,18 @@ abstract class MerchantOrdersDtoOutput
 
   MerchantOrdersDtoOutput._();
 
-  factory MerchantOrdersDtoOutput([
-    void updates(MerchantOrdersDtoOutputBuilder b),
-  ]) = _$MerchantOrdersDtoOutput;
+  factory MerchantOrdersDtoOutput([void updates(MerchantOrdersDtoOutputBuilder b)]) = _$MerchantOrdersDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantOrdersDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantOrdersDtoOutput> get serializer =>
-      _$MerchantOrdersDtoOutputSerializer();
+  static Serializer<MerchantOrdersDtoOutput> get serializer => _$MerchantOrdersDtoOutputSerializer();
 }
 
-class _$MerchantOrdersDtoOutputSerializer
-    implements PrimitiveSerializer<MerchantOrdersDtoOutput> {
+class _$MerchantOrdersDtoOutputSerializer implements PrimitiveSerializer<MerchantOrdersDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    MerchantOrdersDtoOutput,
-    _$MerchantOrdersDtoOutput,
-  ];
+  final Iterable<Type> types = const [MerchantOrdersDtoOutput, _$MerchantOrdersDtoOutput];
 
   @override
   final String wireName = r'MerchantOrdersDtoOutput';
@@ -59,9 +51,7 @@ class _$MerchantOrdersDtoOutputSerializer
     yield r'orders';
     yield serializers.serialize(
       object.orders,
-      specifiedType: const FullType(BuiltList, [
-        FullType(MerchantOrdersDtoOutputOrdersInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(MerchantOrdersDtoOutputOrdersInner)]),
     );
     yield r'prepTime';
     yield serializers.serialize(
@@ -76,11 +66,7 @@ class _$MerchantOrdersDtoOutputSerializer
     MerchantOrdersDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -96,25 +82,17 @@ class _$MerchantOrdersDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'orders':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(MerchantOrdersDtoOutputOrdersInner),
-                    ]),
-                  )
-                  as BuiltList<MerchantOrdersDtoOutputOrdersInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(MerchantOrdersDtoOutputOrdersInner)]),
+          ) as BuiltList<MerchantOrdersDtoOutputOrdersInner>;
           result.orders.replace(valueDes);
           break;
         case r'prepTime':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      MerchantOrdersDtoOutputPrepTime,
-                    ),
-                  )
-                  as MerchantOrdersDtoOutputPrepTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(MerchantOrdersDtoOutputPrepTime),
+          ) as MerchantOrdersDtoOutputPrepTime;
           result.prepTime.replace(valueDes);
           break;
         default:
@@ -145,3 +123,5 @@ class _$MerchantOrdersDtoOutputSerializer
     return result.build();
   }
 }
+
+

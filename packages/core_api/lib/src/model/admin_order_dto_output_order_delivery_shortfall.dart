@@ -12,17 +12,12 @@ part 'admin_order_dto_output_order_delivery_shortfall.g.dart';
 /// «نقص في التحصيل» (AP §8.6), open until operations resolve it.
 ///
 /// Properties:
-/// * [amount]
+/// * [amount] 
 /// * [reason] - The code in Content.
 /// * [label] - Its label as chosen.
-/// * [note]
+/// * [note] 
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderDeliveryShortfall
-    implements
-        Built<
-          AdminOrderDtoOutputOrderDeliveryShortfall,
-          AdminOrderDtoOutputOrderDeliveryShortfallBuilder
-        > {
+abstract class AdminOrderDtoOutputOrderDeliveryShortfall implements Built<AdminOrderDtoOutputOrderDeliveryShortfall, AdminOrderDtoOutputOrderDeliveryShortfallBuilder> {
   @BuiltValueField(wireName: r'amount')
   CaptainWentOfflineDtoOutputHandIn? get amount;
 
@@ -39,26 +34,18 @@ abstract class AdminOrderDtoOutputOrderDeliveryShortfall
 
   AdminOrderDtoOutputOrderDeliveryShortfall._();
 
-  factory AdminOrderDtoOutputOrderDeliveryShortfall([
-    void updates(AdminOrderDtoOutputOrderDeliveryShortfallBuilder b),
-  ]) = _$AdminOrderDtoOutputOrderDeliveryShortfall;
+  factory AdminOrderDtoOutputOrderDeliveryShortfall([void updates(AdminOrderDtoOutputOrderDeliveryShortfallBuilder b)]) = _$AdminOrderDtoOutputOrderDeliveryShortfall;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminOrderDtoOutputOrderDeliveryShortfallBuilder b) =>
-      b;
+  static void _defaults(AdminOrderDtoOutputOrderDeliveryShortfallBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderDeliveryShortfall> get serializer =>
-      _$AdminOrderDtoOutputOrderDeliveryShortfallSerializer();
+  static Serializer<AdminOrderDtoOutputOrderDeliveryShortfall> get serializer => _$AdminOrderDtoOutputOrderDeliveryShortfallSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderDeliveryShortfallSerializer
-    implements PrimitiveSerializer<AdminOrderDtoOutputOrderDeliveryShortfall> {
+class _$AdminOrderDtoOutputOrderDeliveryShortfallSerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderDeliveryShortfall> {
   @override
-  final Iterable<Type> types = const [
-    AdminOrderDtoOutputOrderDeliveryShortfall,
-    _$AdminOrderDtoOutputOrderDeliveryShortfall,
-  ];
+  final Iterable<Type> types = const [AdminOrderDtoOutputOrderDeliveryShortfall, _$AdminOrderDtoOutputOrderDeliveryShortfall];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderDeliveryShortfall';
@@ -69,14 +56,10 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfallSerializer
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'amount';
-    yield object.amount == null
-        ? null
-        : serializers.serialize(
-            object.amount,
-            specifiedType: const FullType.nullable(
-              CaptainWentOfflineDtoOutputHandIn,
-            ),
-          );
+    yield object.amount == null ? null : serializers.serialize(
+      object.amount,
+      specifiedType: const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+    );
     yield r'reason';
     yield serializers.serialize(
       object.reason,
@@ -88,12 +71,10 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfallSerializer
       specifiedType: const FullType(String),
     );
     yield r'note';
-    yield object.note == null
-        ? null
-        : serializers.serialize(
-            object.note,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.note == null ? null : serializers.serialize(
+      object.note,
+      specifiedType: const FullType.nullable(String),
+    );
   }
 
   @override
@@ -102,11 +83,7 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfallSerializer
     AdminOrderDtoOutputOrderDeliveryShortfall object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -122,42 +99,32 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfallSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      CaptainWentOfflineDtoOutputHandIn,
-                    ),
-                  )
-                  as CaptainWentOfflineDtoOutputHandIn?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+          ) as CaptainWentOfflineDtoOutputHandIn?;
           if (valueDes == null) continue;
           result.amount.replace(valueDes);
           break;
         case r'reason':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.reason = valueDes;
           break;
         case r'label':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.label = valueDes;
           break;
         case r'note':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.note = valueDes;
           break;
@@ -189,3 +156,5 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfallSerializer
     return result.build();
   }
 }
+
+

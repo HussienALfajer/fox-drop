@@ -13,35 +13,26 @@ part 'admin_reason_order_dto_output.g.dart';
 /// AdminReasonOrderDtoOutput
 ///
 /// Properties:
-/// * [reasons]
+/// * [reasons] 
 @BuiltValue()
-abstract class AdminReasonOrderDtoOutput
-    implements
-        Built<AdminReasonOrderDtoOutput, AdminReasonOrderDtoOutputBuilder> {
+abstract class AdminReasonOrderDtoOutput implements Built<AdminReasonOrderDtoOutput, AdminReasonOrderDtoOutputBuilder> {
   @BuiltValueField(wireName: r'reasons')
   BuiltList<AdminReasonListsDtoOutputListsInnerReasonsInner> get reasons;
 
   AdminReasonOrderDtoOutput._();
 
-  factory AdminReasonOrderDtoOutput([
-    void updates(AdminReasonOrderDtoOutputBuilder b),
-  ]) = _$AdminReasonOrderDtoOutput;
+  factory AdminReasonOrderDtoOutput([void updates(AdminReasonOrderDtoOutputBuilder b)]) = _$AdminReasonOrderDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminReasonOrderDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminReasonOrderDtoOutput> get serializer =>
-      _$AdminReasonOrderDtoOutputSerializer();
+  static Serializer<AdminReasonOrderDtoOutput> get serializer => _$AdminReasonOrderDtoOutputSerializer();
 }
 
-class _$AdminReasonOrderDtoOutputSerializer
-    implements PrimitiveSerializer<AdminReasonOrderDtoOutput> {
+class _$AdminReasonOrderDtoOutputSerializer implements PrimitiveSerializer<AdminReasonOrderDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    AdminReasonOrderDtoOutput,
-    _$AdminReasonOrderDtoOutput,
-  ];
+  final Iterable<Type> types = const [AdminReasonOrderDtoOutput, _$AdminReasonOrderDtoOutput];
 
   @override
   final String wireName = r'AdminReasonOrderDtoOutput';
@@ -54,9 +45,7 @@ class _$AdminReasonOrderDtoOutputSerializer
     yield r'reasons';
     yield serializers.serialize(
       object.reasons,
-      specifiedType: const FullType(BuiltList, [
-        FullType(AdminReasonListsDtoOutputListsInnerReasonsInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(AdminReasonListsDtoOutputListsInnerReasonsInner)]),
     );
   }
 
@@ -66,11 +55,7 @@ class _$AdminReasonOrderDtoOutputSerializer
     AdminReasonOrderDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -86,14 +71,10 @@ class _$AdminReasonOrderDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'reasons':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(AdminReasonListsDtoOutputListsInnerReasonsInner),
-                    ]),
-                  )
-                  as BuiltList<AdminReasonListsDtoOutputListsInnerReasonsInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(AdminReasonListsDtoOutputListsInnerReasonsInner)]),
+          ) as BuiltList<AdminReasonListsDtoOutputListsInnerReasonsInner>;
           result.reasons.replace(valueDes);
           break;
         default:
@@ -124,3 +105,5 @@ class _$AdminReasonOrderDtoOutputSerializer
     return result.build();
   }
 }
+
+

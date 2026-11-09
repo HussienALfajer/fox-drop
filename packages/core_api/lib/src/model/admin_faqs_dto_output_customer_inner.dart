@@ -11,15 +11,10 @@ part 'admin_faqs_dto_output_customer_inner.g.dart';
 /// AdminFaqsDtoOutputCustomerInner
 ///
 /// Properties:
-/// * [question]
-/// * [answer]
+/// * [question] 
+/// * [answer] 
 @BuiltValue()
-abstract class AdminFaqsDtoOutputCustomerInner
-    implements
-        Built<
-          AdminFaqsDtoOutputCustomerInner,
-          AdminFaqsDtoOutputCustomerInnerBuilder
-        > {
+abstract class AdminFaqsDtoOutputCustomerInner implements Built<AdminFaqsDtoOutputCustomerInner, AdminFaqsDtoOutputCustomerInnerBuilder> {
   @BuiltValueField(wireName: r'question')
   String get question;
 
@@ -28,25 +23,18 @@ abstract class AdminFaqsDtoOutputCustomerInner
 
   AdminFaqsDtoOutputCustomerInner._();
 
-  factory AdminFaqsDtoOutputCustomerInner([
-    void updates(AdminFaqsDtoOutputCustomerInnerBuilder b),
-  ]) = _$AdminFaqsDtoOutputCustomerInner;
+  factory AdminFaqsDtoOutputCustomerInner([void updates(AdminFaqsDtoOutputCustomerInnerBuilder b)]) = _$AdminFaqsDtoOutputCustomerInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminFaqsDtoOutputCustomerInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminFaqsDtoOutputCustomerInner> get serializer =>
-      _$AdminFaqsDtoOutputCustomerInnerSerializer();
+  static Serializer<AdminFaqsDtoOutputCustomerInner> get serializer => _$AdminFaqsDtoOutputCustomerInnerSerializer();
 }
 
-class _$AdminFaqsDtoOutputCustomerInnerSerializer
-    implements PrimitiveSerializer<AdminFaqsDtoOutputCustomerInner> {
+class _$AdminFaqsDtoOutputCustomerInnerSerializer implements PrimitiveSerializer<AdminFaqsDtoOutputCustomerInner> {
   @override
-  final Iterable<Type> types = const [
-    AdminFaqsDtoOutputCustomerInner,
-    _$AdminFaqsDtoOutputCustomerInner,
-  ];
+  final Iterable<Type> types = const [AdminFaqsDtoOutputCustomerInner, _$AdminFaqsDtoOutputCustomerInner];
 
   @override
   final String wireName = r'AdminFaqsDtoOutputCustomerInner';
@@ -74,11 +62,7 @@ class _$AdminFaqsDtoOutputCustomerInnerSerializer
     AdminFaqsDtoOutputCustomerInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -94,21 +78,17 @@ class _$AdminFaqsDtoOutputCustomerInnerSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'question':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.question = valueDes;
           break;
         case r'answer':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.answer = valueDes;
           break;
         default:
@@ -139,3 +119,5 @@ class _$AdminFaqsDtoOutputCustomerInnerSerializer
     return result.build();
   }
 }
+
+

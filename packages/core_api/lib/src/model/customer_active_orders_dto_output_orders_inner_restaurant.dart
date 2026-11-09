@@ -11,16 +11,11 @@ part 'customer_active_orders_dto_output_orders_inner_restaurant.g.dart';
 /// CustomerActiveOrdersDtoOutputOrdersInnerRestaurant
 ///
 /// Properties:
-/// * [id]
-/// * [nameAr]
-/// * [nameEn]
+/// * [id] 
+/// * [nameAr] 
+/// * [nameEn] 
 @BuiltValue()
-abstract class CustomerActiveOrdersDtoOutputOrdersInnerRestaurant
-    implements
-        Built<
-          CustomerActiveOrdersDtoOutputOrdersInnerRestaurant,
-          CustomerActiveOrdersDtoOutputOrdersInnerRestaurantBuilder
-        > {
+abstract class CustomerActiveOrdersDtoOutputOrdersInnerRestaurant implements Built<CustomerActiveOrdersDtoOutputOrdersInnerRestaurant, CustomerActiveOrdersDtoOutputOrdersInnerRestaurantBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -32,31 +27,18 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerRestaurant
 
   CustomerActiveOrdersDtoOutputOrdersInnerRestaurant._();
 
-  factory CustomerActiveOrdersDtoOutputOrdersInnerRestaurant([
-    void updates(CustomerActiveOrdersDtoOutputOrdersInnerRestaurantBuilder b),
-  ]) = _$CustomerActiveOrdersDtoOutputOrdersInnerRestaurant;
+  factory CustomerActiveOrdersDtoOutputOrdersInnerRestaurant([void updates(CustomerActiveOrdersDtoOutputOrdersInnerRestaurantBuilder b)]) = _$CustomerActiveOrdersDtoOutputOrdersInnerRestaurant;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    CustomerActiveOrdersDtoOutputOrdersInnerRestaurantBuilder b,
-  ) => b;
+  static void _defaults(CustomerActiveOrdersDtoOutputOrdersInnerRestaurantBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerRestaurant>
-  get serializer =>
-      _$CustomerActiveOrdersDtoOutputOrdersInnerRestaurantSerializer();
+  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerRestaurant> get serializer => _$CustomerActiveOrdersDtoOutputOrdersInnerRestaurantSerializer();
 }
 
-class _$CustomerActiveOrdersDtoOutputOrdersInnerRestaurantSerializer
-    implements
-        PrimitiveSerializer<
-          CustomerActiveOrdersDtoOutputOrdersInnerRestaurant
-        > {
+class _$CustomerActiveOrdersDtoOutputOrdersInnerRestaurantSerializer implements PrimitiveSerializer<CustomerActiveOrdersDtoOutputOrdersInnerRestaurant> {
   @override
-  final Iterable<Type> types = const [
-    CustomerActiveOrdersDtoOutputOrdersInnerRestaurant,
-    _$CustomerActiveOrdersDtoOutputOrdersInnerRestaurant,
-  ];
+  final Iterable<Type> types = const [CustomerActiveOrdersDtoOutputOrdersInnerRestaurant, _$CustomerActiveOrdersDtoOutputOrdersInnerRestaurant];
 
   @override
   final String wireName = r'CustomerActiveOrdersDtoOutputOrdersInnerRestaurant';
@@ -77,12 +59,10 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerRestaurantSerializer
       specifiedType: const FullType(String),
     );
     yield r'nameEn';
-    yield object.nameEn == null
-        ? null
-        : serializers.serialize(
-            object.nameEn,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.nameEn == null ? null : serializers.serialize(
+      object.nameEn,
+      specifiedType: const FullType.nullable(String),
+    );
   }
 
   @override
@@ -91,11 +71,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerRestaurantSerializer
     CustomerActiveOrdersDtoOutputOrdersInnerRestaurant object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -111,30 +87,24 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerRestaurantSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.id = valueDes;
           break;
         case r'nameAr':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.nameAr = valueDes;
           break;
         case r'nameEn':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.nameEn = valueDes;
           break;
@@ -166,3 +136,5 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerRestaurantSerializer
     return result.build();
   }
 }
+
+

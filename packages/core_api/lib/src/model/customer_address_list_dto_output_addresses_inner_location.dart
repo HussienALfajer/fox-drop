@@ -11,15 +11,10 @@ part 'customer_address_list_dto_output_addresses_inner_location.g.dart';
 /// The pin, inside an active zone (CU §7.1).
 ///
 /// Properties:
-/// * [latitude]
-/// * [longitude]
+/// * [latitude] 
+/// * [longitude] 
 @BuiltValue()
-abstract class CustomerAddressListDtoOutputAddressesInnerLocation
-    implements
-        Built<
-          CustomerAddressListDtoOutputAddressesInnerLocation,
-          CustomerAddressListDtoOutputAddressesInnerLocationBuilder
-        > {
+abstract class CustomerAddressListDtoOutputAddressesInnerLocation implements Built<CustomerAddressListDtoOutputAddressesInnerLocation, CustomerAddressListDtoOutputAddressesInnerLocationBuilder> {
   @BuiltValueField(wireName: r'latitude')
   num get latitude;
 
@@ -28,31 +23,18 @@ abstract class CustomerAddressListDtoOutputAddressesInnerLocation
 
   CustomerAddressListDtoOutputAddressesInnerLocation._();
 
-  factory CustomerAddressListDtoOutputAddressesInnerLocation([
-    void updates(CustomerAddressListDtoOutputAddressesInnerLocationBuilder b),
-  ]) = _$CustomerAddressListDtoOutputAddressesInnerLocation;
+  factory CustomerAddressListDtoOutputAddressesInnerLocation([void updates(CustomerAddressListDtoOutputAddressesInnerLocationBuilder b)]) = _$CustomerAddressListDtoOutputAddressesInnerLocation;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    CustomerAddressListDtoOutputAddressesInnerLocationBuilder b,
-  ) => b;
+  static void _defaults(CustomerAddressListDtoOutputAddressesInnerLocationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerAddressListDtoOutputAddressesInnerLocation>
-  get serializer =>
-      _$CustomerAddressListDtoOutputAddressesInnerLocationSerializer();
+  static Serializer<CustomerAddressListDtoOutputAddressesInnerLocation> get serializer => _$CustomerAddressListDtoOutputAddressesInnerLocationSerializer();
 }
 
-class _$CustomerAddressListDtoOutputAddressesInnerLocationSerializer
-    implements
-        PrimitiveSerializer<
-          CustomerAddressListDtoOutputAddressesInnerLocation
-        > {
+class _$CustomerAddressListDtoOutputAddressesInnerLocationSerializer implements PrimitiveSerializer<CustomerAddressListDtoOutputAddressesInnerLocation> {
   @override
-  final Iterable<Type> types = const [
-    CustomerAddressListDtoOutputAddressesInnerLocation,
-    _$CustomerAddressListDtoOutputAddressesInnerLocation,
-  ];
+  final Iterable<Type> types = const [CustomerAddressListDtoOutputAddressesInnerLocation, _$CustomerAddressListDtoOutputAddressesInnerLocation];
 
   @override
   final String wireName = r'CustomerAddressListDtoOutputAddressesInnerLocation';
@@ -80,11 +62,7 @@ class _$CustomerAddressListDtoOutputAddressesInnerLocationSerializer
     CustomerAddressListDtoOutputAddressesInnerLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -100,15 +78,17 @@ class _$CustomerAddressListDtoOutputAddressesInnerLocationSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'latitude':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(num))
-                  as num;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
           result.latitude = valueDes;
           break;
         case r'longitude':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(num))
-                  as num;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
           result.longitude = valueDes;
           break;
         default:
@@ -139,3 +119,5 @@ class _$CustomerAddressListDtoOutputAddressesInnerLocationSerializer
     return result.build();
   }
 }
+
+

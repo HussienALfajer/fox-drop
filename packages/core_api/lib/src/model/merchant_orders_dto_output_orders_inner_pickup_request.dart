@@ -13,23 +13,18 @@ part 'merchant_orders_dto_output_orders_inner_pickup_request.g.dart';
 /// The latest request; while open every device rings with the pickup prompt (RA §8.10 item 3).
 ///
 /// Properties:
-/// * [id]
-/// * [status]
+/// * [id] 
+/// * [status] 
 /// * [outcome] - automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام».
-/// * [amount]
+/// * [amount] 
 /// * [lines] - «400 ₺» or «5 $ + 195 ₺».
 /// * [baseEquivalent] - The lines in the base currency, by the order rates.
 /// * [confirmBy] - «يُؤكَّد تلقائياً خلال {ث} ث» counts down to it.
-/// * [closedAt]
+/// * [closedAt] 
 /// * [closedByUserName] - The other devices close the prompt with «أكّد {اسم المستخدم} الاستلام» or «أبلغ {اسم المستخدم} أن المبلغ غير صحيح» (RA §8.10).
-/// * [closedByDeviceName]
+/// * [closedByDeviceName] 
 @BuiltValue()
-abstract class MerchantOrdersDtoOutputOrdersInnerPickupRequest
-    implements
-        Built<
-          MerchantOrdersDtoOutputOrdersInnerPickupRequest,
-          MerchantOrdersDtoOutputOrdersInnerPickupRequestBuilder
-        > {
+abstract class MerchantOrdersDtoOutputOrdersInnerPickupRequest implements Built<MerchantOrdersDtoOutputOrdersInnerPickupRequest, MerchantOrdersDtoOutputOrdersInnerPickupRequestBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -69,29 +64,18 @@ abstract class MerchantOrdersDtoOutputOrdersInnerPickupRequest
 
   MerchantOrdersDtoOutputOrdersInnerPickupRequest._();
 
-  factory MerchantOrdersDtoOutputOrdersInnerPickupRequest([
-    void updates(MerchantOrdersDtoOutputOrdersInnerPickupRequestBuilder b),
-  ]) = _$MerchantOrdersDtoOutputOrdersInnerPickupRequest;
+  factory MerchantOrdersDtoOutputOrdersInnerPickupRequest([void updates(MerchantOrdersDtoOutputOrdersInnerPickupRequestBuilder b)]) = _$MerchantOrdersDtoOutputOrdersInnerPickupRequest;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    MerchantOrdersDtoOutputOrdersInnerPickupRequestBuilder b,
-  ) => b;
+  static void _defaults(MerchantOrdersDtoOutputOrdersInnerPickupRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantOrdersDtoOutputOrdersInnerPickupRequest>
-  get serializer =>
-      _$MerchantOrdersDtoOutputOrdersInnerPickupRequestSerializer();
+  static Serializer<MerchantOrdersDtoOutputOrdersInnerPickupRequest> get serializer => _$MerchantOrdersDtoOutputOrdersInnerPickupRequestSerializer();
 }
 
-class _$MerchantOrdersDtoOutputOrdersInnerPickupRequestSerializer
-    implements
-        PrimitiveSerializer<MerchantOrdersDtoOutputOrdersInnerPickupRequest> {
+class _$MerchantOrdersDtoOutputOrdersInnerPickupRequestSerializer implements PrimitiveSerializer<MerchantOrdersDtoOutputOrdersInnerPickupRequest> {
   @override
-  final Iterable<Type> types = const [
-    MerchantOrdersDtoOutputOrdersInnerPickupRequest,
-    _$MerchantOrdersDtoOutputOrdersInnerPickupRequest,
-  ];
+  final Iterable<Type> types = const [MerchantOrdersDtoOutputOrdersInnerPickupRequest, _$MerchantOrdersDtoOutputOrdersInnerPickupRequest];
 
   @override
   final String wireName = r'MerchantOrdersDtoOutputOrdersInnerPickupRequest';
@@ -109,34 +93,22 @@ class _$MerchantOrdersDtoOutputOrdersInnerPickupRequestSerializer
     yield r'status';
     yield serializers.serialize(
       object.status,
-      specifiedType: const FullType(
-        MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum,
-      ),
+      specifiedType: const FullType(MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum),
     );
     yield r'outcome';
-    yield object.outcome == null
-        ? null
-        : serializers.serialize(
-            object.outcome,
-            specifiedType: const FullType.nullable(
-              MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum,
-            ),
-          );
+    yield object.outcome == null ? null : serializers.serialize(
+      object.outcome,
+      specifiedType: const FullType.nullable(MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum),
+    );
     yield r'amount';
-    yield object.amount == null
-        ? null
-        : serializers.serialize(
-            object.amount,
-            specifiedType: const FullType.nullable(
-              CaptainWentOfflineDtoOutputHandIn,
-            ),
-          );
+    yield object.amount == null ? null : serializers.serialize(
+      object.amount,
+      specifiedType: const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+    );
     yield r'lines';
     yield serializers.serialize(
       object.lines,
-      specifiedType: const FullType(BuiltList, [
-        FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType.nullable(CaptainWentOfflineDtoOutputHandIn)]),
     );
     yield r'baseEquivalent';
     yield serializers.serialize(
@@ -149,26 +121,20 @@ class _$MerchantOrdersDtoOutputOrdersInnerPickupRequestSerializer
       specifiedType: const FullType(DateTime),
     );
     yield r'closedAt';
-    yield object.closedAt == null
-        ? null
-        : serializers.serialize(
-            object.closedAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.closedAt == null ? null : serializers.serialize(
+      object.closedAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'closedByUserName';
-    yield object.closedByUserName == null
-        ? null
-        : serializers.serialize(
-            object.closedByUserName,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.closedByUserName == null ? null : serializers.serialize(
+      object.closedByUserName,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'closedByDeviceName';
-    yield object.closedByDeviceName == null
-        ? null
-        : serializers.serialize(
-            object.closedByDeviceName,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.closedByDeviceName == null ? null : serializers.serialize(
+      object.closedByDeviceName,
+      specifiedType: const FullType.nullable(String),
+    );
   }
 
   @override
@@ -177,11 +143,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerPickupRequestSerializer
     MerchantOrdersDtoOutputOrdersInnerPickupRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -197,105 +159,77 @@ class _$MerchantOrdersDtoOutputOrdersInnerPickupRequestSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.id = valueDes;
           break;
         case r'status':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum,
-                    ),
-                  )
-                  as MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum),
+          ) as MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum;
           result.status = valueDes;
           break;
         case r'outcome':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum,
-                    ),
-                  )
-                  as MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum),
+          ) as MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum?;
           if (valueDes == null) continue;
           result.outcome = valueDes;
           break;
         case r'amount':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      CaptainWentOfflineDtoOutputHandIn,
-                    ),
-                  )
-                  as CaptainWentOfflineDtoOutputHandIn?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+          ) as CaptainWentOfflineDtoOutputHandIn?;
           if (valueDes == null) continue;
           result.amount.replace(valueDes);
           break;
         case r'lines':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
-                    ]),
-                  )
-                  as BuiltList<CaptainWentOfflineDtoOutputHandIn?>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType.nullable(CaptainWentOfflineDtoOutputHandIn)]),
+          ) as BuiltList<CaptainWentOfflineDtoOutputHandIn?>;
           result.lines.replace(valueDes);
           break;
         case r'baseEquivalent':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.baseEquivalent = valueDes;
           break;
         case r'confirmBy':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.confirmBy = valueDes;
           break;
         case r'closedAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.closedAt = valueDes;
           break;
         case r'closedByUserName':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.closedByUserName = valueDes;
           break;
         case r'closedByDeviceName':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.closedByDeviceName = valueDes;
           break;
@@ -328,79 +262,47 @@ class _$MerchantOrdersDtoOutputOrdersInnerPickupRequestSerializer
   }
 }
 
-class MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum
-    extends EnumClass {
+
+class MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'open')
-  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum open =
-      _$merchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum_open;
+  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum open = _$merchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum_open;
   @BuiltValueEnumConst(wireName: r'confirmed')
-  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum
-  confirmed =
-      _$merchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum_confirmed;
+  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum confirmed = _$merchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum_confirmed;
   @BuiltValueEnumConst(wireName: r'rejected')
-  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum
-  rejected =
-      _$merchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum_rejected;
+  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum rejected = _$merchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum_rejected;
   @BuiltValueEnumConst(wireName: r'voided')
-  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum
-  voided = _$merchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum_voided;
+  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum voided = _$merchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum_voided;
 
-  static Serializer<MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum>
-  get serializer =>
-      _$merchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnumSerializer;
+  static Serializer<MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum> get serializer => _$merchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnumSerializer;
 
-  const MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum._(String name)
-    : super(name);
+  const MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum._(String name): super(name);
 
-  static BuiltSet<MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum>
-  get values =>
-      _$merchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnumValues;
-  static MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum valueOf(
-    String name,
-  ) => _$merchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnumValueOf(name);
+  static BuiltSet<MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum> get values => _$merchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnumValues;
+  static MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum valueOf(String name) => _$merchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnumValueOf(name);
 }
 
 /// automatic is «تأكيد تلقائي»; operations «أكّدت العمليات الاستلام».
-class MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum
-    extends EnumClass {
+class MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'restaurant')
-  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum
-  restaurant =
-      _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum_restaurant;
+  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum restaurant = _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum_restaurant;
   @BuiltValueEnumConst(wireName: r'automatic')
-  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum
-  automatic =
-      _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum_automatic;
+  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum automatic = _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum_automatic;
   @BuiltValueEnumConst(wireName: r'operations')
-  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum
-  operations =
-      _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum_operations;
+  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum operations = _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum_operations;
   @BuiltValueEnumConst(wireName: r'amount_incorrect')
-  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum
-  amountIncorrect =
-      _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum_amountIncorrect;
+  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum amountIncorrect = _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum_amountIncorrect;
   @BuiltValueEnumConst(wireName: r'incomplete')
-  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum
-  incomplete =
-      _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum_incomplete;
+  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum incomplete = _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum_incomplete;
   @BuiltValueEnumConst(wireName: r'cancelled')
-  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum
-  cancelled =
-      _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum_cancelled;
+  static const MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum cancelled = _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum_cancelled;
 
-  static Serializer<MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum>
-  get serializer =>
-      _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnumSerializer;
+  static Serializer<MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum> get serializer => _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnumSerializer;
 
-  const MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum._(
-    String name,
-  ) : super(name);
+  const MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum._(String name): super(name);
 
-  static BuiltSet<MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum>
-  get values =>
-      _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnumValues;
-  static MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum valueOf(
-    String name,
-  ) =>
-      _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnumValueOf(name);
+  static BuiltSet<MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum> get values => _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnumValues;
+  static MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum valueOf(String name) => _$merchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnumValueOf(name);
 }
+

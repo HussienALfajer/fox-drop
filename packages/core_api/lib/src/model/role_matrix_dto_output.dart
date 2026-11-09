@@ -13,33 +13,26 @@ part 'role_matrix_dto_output.g.dart';
 /// RoleMatrixDtoOutput
 ///
 /// Properties:
-/// * [roles]
+/// * [roles] 
 @BuiltValue()
-abstract class RoleMatrixDtoOutput
-    implements Built<RoleMatrixDtoOutput, RoleMatrixDtoOutputBuilder> {
+abstract class RoleMatrixDtoOutput implements Built<RoleMatrixDtoOutput, RoleMatrixDtoOutputBuilder> {
   @BuiltValueField(wireName: r'roles')
   BuiltList<RoleMatrixDtoOutputRolesInner> get roles;
 
   RoleMatrixDtoOutput._();
 
-  factory RoleMatrixDtoOutput([void updates(RoleMatrixDtoOutputBuilder b)]) =
-      _$RoleMatrixDtoOutput;
+  factory RoleMatrixDtoOutput([void updates(RoleMatrixDtoOutputBuilder b)]) = _$RoleMatrixDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RoleMatrixDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RoleMatrixDtoOutput> get serializer =>
-      _$RoleMatrixDtoOutputSerializer();
+  static Serializer<RoleMatrixDtoOutput> get serializer => _$RoleMatrixDtoOutputSerializer();
 }
 
-class _$RoleMatrixDtoOutputSerializer
-    implements PrimitiveSerializer<RoleMatrixDtoOutput> {
+class _$RoleMatrixDtoOutputSerializer implements PrimitiveSerializer<RoleMatrixDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    RoleMatrixDtoOutput,
-    _$RoleMatrixDtoOutput,
-  ];
+  final Iterable<Type> types = const [RoleMatrixDtoOutput, _$RoleMatrixDtoOutput];
 
   @override
   final String wireName = r'RoleMatrixDtoOutput';
@@ -52,9 +45,7 @@ class _$RoleMatrixDtoOutputSerializer
     yield r'roles';
     yield serializers.serialize(
       object.roles,
-      specifiedType: const FullType(BuiltList, [
-        FullType(RoleMatrixDtoOutputRolesInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(RoleMatrixDtoOutputRolesInner)]),
     );
   }
 
@@ -64,11 +55,7 @@ class _$RoleMatrixDtoOutputSerializer
     RoleMatrixDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -84,14 +71,10 @@ class _$RoleMatrixDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'roles':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(RoleMatrixDtoOutputRolesInner),
-                    ]),
-                  )
-                  as BuiltList<RoleMatrixDtoOutputRolesInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(RoleMatrixDtoOutputRolesInner)]),
+          ) as BuiltList<RoleMatrixDtoOutputRolesInner>;
           result.roles.replace(valueDes);
           break;
         default:
@@ -122,3 +105,5 @@ class _$RoleMatrixDtoOutputSerializer
     return result.build();
   }
 }
+
+

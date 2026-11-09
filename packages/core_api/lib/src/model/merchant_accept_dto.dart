@@ -13,27 +13,23 @@ part 'merchant_accept_dto.g.dart';
 /// Properties:
 /// * [prepMin] - Whole minutes from merchant.prep_time_floor_min to merchant.prep_time_ceiling_min (RA §8.5); 400 invalid_prep_time otherwise.
 @BuiltValue()
-abstract class MerchantAcceptDto
-    implements Built<MerchantAcceptDto, MerchantAcceptDtoBuilder> {
+abstract class MerchantAcceptDto implements Built<MerchantAcceptDto, MerchantAcceptDtoBuilder> {
   /// Whole minutes from merchant.prep_time_floor_min to merchant.prep_time_ceiling_min (RA §8.5); 400 invalid_prep_time otherwise.
   @BuiltValueField(wireName: r'prepMin')
   int get prepMin;
 
   MerchantAcceptDto._();
 
-  factory MerchantAcceptDto([void updates(MerchantAcceptDtoBuilder b)]) =
-      _$MerchantAcceptDto;
+  factory MerchantAcceptDto([void updates(MerchantAcceptDtoBuilder b)]) = _$MerchantAcceptDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantAcceptDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantAcceptDto> get serializer =>
-      _$MerchantAcceptDtoSerializer();
+  static Serializer<MerchantAcceptDto> get serializer => _$MerchantAcceptDtoSerializer();
 }
 
-class _$MerchantAcceptDtoSerializer
-    implements PrimitiveSerializer<MerchantAcceptDto> {
+class _$MerchantAcceptDtoSerializer implements PrimitiveSerializer<MerchantAcceptDto> {
   @override
   final Iterable<Type> types = const [MerchantAcceptDto, _$MerchantAcceptDto];
 
@@ -58,11 +54,7 @@ class _$MerchantAcceptDtoSerializer
     MerchantAcceptDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -78,9 +70,10 @@ class _$MerchantAcceptDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'prepMin':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.prepMin = valueDes;
           break;
         default:
@@ -111,3 +104,5 @@ class _$MerchantAcceptDtoSerializer
     return result.build();
   }
 }
+
+

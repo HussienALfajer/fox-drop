@@ -13,54 +13,38 @@ part 'merchant_content_dto_output_reasons.g.dart';
 /// MerchantContentDtoOutputReasons
 ///
 /// Properties:
-/// * [merchantRejection]
-/// * [merchantProblem]
-/// * [itemUnavailableNote]
-/// * [merchantTicketType]
+/// * [merchantRejection] 
+/// * [merchantProblem] 
+/// * [itemUnavailableNote] 
+/// * [merchantTicketType] 
 @BuiltValue()
-abstract class MerchantContentDtoOutputReasons
-    implements
-        Built<
-          MerchantContentDtoOutputReasons,
-          MerchantContentDtoOutputReasonsBuilder
-        > {
+abstract class MerchantContentDtoOutputReasons implements Built<MerchantContentDtoOutputReasons, MerchantContentDtoOutputReasonsBuilder> {
   @BuiltValueField(wireName: r'merchant_rejection')
-  BuiltList<MerchantContentDtoOutputReasonsMerchantRejectionInner>
-  get merchantRejection;
+  BuiltList<MerchantContentDtoOutputReasonsMerchantRejectionInner> get merchantRejection;
 
   @BuiltValueField(wireName: r'merchant_problem')
-  BuiltList<MerchantContentDtoOutputReasonsMerchantRejectionInner>
-  get merchantProblem;
+  BuiltList<MerchantContentDtoOutputReasonsMerchantRejectionInner> get merchantProblem;
 
   @BuiltValueField(wireName: r'item_unavailable_note')
-  BuiltList<MerchantContentDtoOutputReasonsMerchantRejectionInner>
-  get itemUnavailableNote;
+  BuiltList<MerchantContentDtoOutputReasonsMerchantRejectionInner> get itemUnavailableNote;
 
   @BuiltValueField(wireName: r'merchant_ticket_type')
-  BuiltList<MerchantContentDtoOutputReasonsMerchantRejectionInner>
-  get merchantTicketType;
+  BuiltList<MerchantContentDtoOutputReasonsMerchantRejectionInner> get merchantTicketType;
 
   MerchantContentDtoOutputReasons._();
 
-  factory MerchantContentDtoOutputReasons([
-    void updates(MerchantContentDtoOutputReasonsBuilder b),
-  ]) = _$MerchantContentDtoOutputReasons;
+  factory MerchantContentDtoOutputReasons([void updates(MerchantContentDtoOutputReasonsBuilder b)]) = _$MerchantContentDtoOutputReasons;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantContentDtoOutputReasonsBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantContentDtoOutputReasons> get serializer =>
-      _$MerchantContentDtoOutputReasonsSerializer();
+  static Serializer<MerchantContentDtoOutputReasons> get serializer => _$MerchantContentDtoOutputReasonsSerializer();
 }
 
-class _$MerchantContentDtoOutputReasonsSerializer
-    implements PrimitiveSerializer<MerchantContentDtoOutputReasons> {
+class _$MerchantContentDtoOutputReasonsSerializer implements PrimitiveSerializer<MerchantContentDtoOutputReasons> {
   @override
-  final Iterable<Type> types = const [
-    MerchantContentDtoOutputReasons,
-    _$MerchantContentDtoOutputReasons,
-  ];
+  final Iterable<Type> types = const [MerchantContentDtoOutputReasons, _$MerchantContentDtoOutputReasons];
 
   @override
   final String wireName = r'MerchantContentDtoOutputReasons';
@@ -73,30 +57,22 @@ class _$MerchantContentDtoOutputReasonsSerializer
     yield r'merchant_rejection';
     yield serializers.serialize(
       object.merchantRejection,
-      specifiedType: const FullType(BuiltList, [
-        FullType(MerchantContentDtoOutputReasonsMerchantRejectionInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(MerchantContentDtoOutputReasonsMerchantRejectionInner)]),
     );
     yield r'merchant_problem';
     yield serializers.serialize(
       object.merchantProblem,
-      specifiedType: const FullType(BuiltList, [
-        FullType(MerchantContentDtoOutputReasonsMerchantRejectionInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(MerchantContentDtoOutputReasonsMerchantRejectionInner)]),
     );
     yield r'item_unavailable_note';
     yield serializers.serialize(
       object.itemUnavailableNote,
-      specifiedType: const FullType(BuiltList, [
-        FullType(MerchantContentDtoOutputReasonsMerchantRejectionInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(MerchantContentDtoOutputReasonsMerchantRejectionInner)]),
     );
     yield r'merchant_ticket_type';
     yield serializers.serialize(
       object.merchantTicketType,
-      specifiedType: const FullType(BuiltList, [
-        FullType(MerchantContentDtoOutputReasonsMerchantRejectionInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(MerchantContentDtoOutputReasonsMerchantRejectionInner)]),
     );
   }
 
@@ -106,11 +82,7 @@ class _$MerchantContentDtoOutputReasonsSerializer
     MerchantContentDtoOutputReasons object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -126,63 +98,31 @@ class _$MerchantContentDtoOutputReasonsSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'merchant_rejection':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        MerchantContentDtoOutputReasonsMerchantRejectionInner,
-                      ),
-                    ]),
-                  )
-                  as BuiltList<
-                    MerchantContentDtoOutputReasonsMerchantRejectionInner
-                  >;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(MerchantContentDtoOutputReasonsMerchantRejectionInner)]),
+          ) as BuiltList<MerchantContentDtoOutputReasonsMerchantRejectionInner>;
           result.merchantRejection.replace(valueDes);
           break;
         case r'merchant_problem':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        MerchantContentDtoOutputReasonsMerchantRejectionInner,
-                      ),
-                    ]),
-                  )
-                  as BuiltList<
-                    MerchantContentDtoOutputReasonsMerchantRejectionInner
-                  >;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(MerchantContentDtoOutputReasonsMerchantRejectionInner)]),
+          ) as BuiltList<MerchantContentDtoOutputReasonsMerchantRejectionInner>;
           result.merchantProblem.replace(valueDes);
           break;
         case r'item_unavailable_note':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        MerchantContentDtoOutputReasonsMerchantRejectionInner,
-                      ),
-                    ]),
-                  )
-                  as BuiltList<
-                    MerchantContentDtoOutputReasonsMerchantRejectionInner
-                  >;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(MerchantContentDtoOutputReasonsMerchantRejectionInner)]),
+          ) as BuiltList<MerchantContentDtoOutputReasonsMerchantRejectionInner>;
           result.itemUnavailableNote.replace(valueDes);
           break;
         case r'merchant_ticket_type':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        MerchantContentDtoOutputReasonsMerchantRejectionInner,
-                      ),
-                    ]),
-                  )
-                  as BuiltList<
-                    MerchantContentDtoOutputReasonsMerchantRejectionInner
-                  >;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(MerchantContentDtoOutputReasonsMerchantRejectionInner)]),
+          ) as BuiltList<MerchantContentDtoOutputReasonsMerchantRejectionInner>;
           result.merchantTicketType.replace(valueDes);
           break;
         default:
@@ -213,3 +153,5 @@ class _$MerchantContentDtoOutputReasonsSerializer
     return result.build();
   }
 }
+
+

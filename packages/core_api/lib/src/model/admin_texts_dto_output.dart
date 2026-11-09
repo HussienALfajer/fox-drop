@@ -13,10 +13,9 @@ part 'admin_texts_dto_output.g.dart';
 ///
 /// Properties:
 /// * [workRules] - CA §11.4, plain text with one rule per line.
-/// * [contact]
+/// * [contact] 
 @BuiltValue()
-abstract class AdminTextsDtoOutput
-    implements Built<AdminTextsDtoOutput, AdminTextsDtoOutputBuilder> {
+abstract class AdminTextsDtoOutput implements Built<AdminTextsDtoOutput, AdminTextsDtoOutputBuilder> {
   /// CA §11.4, plain text with one rule per line.
   @BuiltValueField(wireName: r'workRules')
   String get workRules;
@@ -26,24 +25,18 @@ abstract class AdminTextsDtoOutput
 
   AdminTextsDtoOutput._();
 
-  factory AdminTextsDtoOutput([void updates(AdminTextsDtoOutputBuilder b)]) =
-      _$AdminTextsDtoOutput;
+  factory AdminTextsDtoOutput([void updates(AdminTextsDtoOutputBuilder b)]) = _$AdminTextsDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminTextsDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminTextsDtoOutput> get serializer =>
-      _$AdminTextsDtoOutputSerializer();
+  static Serializer<AdminTextsDtoOutput> get serializer => _$AdminTextsDtoOutputSerializer();
 }
 
-class _$AdminTextsDtoOutputSerializer
-    implements PrimitiveSerializer<AdminTextsDtoOutput> {
+class _$AdminTextsDtoOutputSerializer implements PrimitiveSerializer<AdminTextsDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    AdminTextsDtoOutput,
-    _$AdminTextsDtoOutput,
-  ];
+  final Iterable<Type> types = const [AdminTextsDtoOutput, _$AdminTextsDtoOutput];
 
   @override
   final String wireName = r'AdminTextsDtoOutput';
@@ -71,11 +64,7 @@ class _$AdminTextsDtoOutputSerializer
     AdminTextsDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -91,21 +80,17 @@ class _$AdminTextsDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'workRules':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.workRules = valueDes;
           break;
         case r'contact':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(AdminTextsDtoOutputContact),
-                  )
-                  as AdminTextsDtoOutputContact;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(AdminTextsDtoOutputContact),
+          ) as AdminTextsDtoOutputContact;
           result.contact.replace(valueDes);
           break;
         default:
@@ -136,3 +121,5 @@ class _$AdminTextsDtoOutputSerializer
     return result.build();
   }
 }
+
+

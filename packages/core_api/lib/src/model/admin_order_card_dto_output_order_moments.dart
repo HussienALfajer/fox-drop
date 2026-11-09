@@ -11,20 +11,15 @@ part 'admin_order_card_dto_output_order_moments.g.dart';
 /// The alerts' moments, so the panel raises each when it passes.
 ///
 /// Properties:
-/// * [acceptAlertAt]
-/// * [prepLateAlertAt]
-/// * [searchStartedAt]
-/// * [searchAlertAt]
-/// * [noCaptainAlertAt]
+/// * [acceptAlertAt] 
+/// * [prepLateAlertAt] 
+/// * [searchStartedAt] 
+/// * [searchAlertAt] 
+/// * [noCaptainAlertAt] 
 /// * [captainArrivedAt] - «وصل الكابتن».
-/// * [captainWaitingAlertAt]
+/// * [captainWaitingAlertAt] 
 @BuiltValue()
-abstract class AdminOrderCardDtoOutputOrderMoments
-    implements
-        Built<
-          AdminOrderCardDtoOutputOrderMoments,
-          AdminOrderCardDtoOutputOrderMomentsBuilder
-        > {
+abstract class AdminOrderCardDtoOutputOrderMoments implements Built<AdminOrderCardDtoOutputOrderMoments, AdminOrderCardDtoOutputOrderMomentsBuilder> {
   @BuiltValueField(wireName: r'acceptAlertAt')
   DateTime? get acceptAlertAt;
 
@@ -49,25 +44,18 @@ abstract class AdminOrderCardDtoOutputOrderMoments
 
   AdminOrderCardDtoOutputOrderMoments._();
 
-  factory AdminOrderCardDtoOutputOrderMoments([
-    void updates(AdminOrderCardDtoOutputOrderMomentsBuilder b),
-  ]) = _$AdminOrderCardDtoOutputOrderMoments;
+  factory AdminOrderCardDtoOutputOrderMoments([void updates(AdminOrderCardDtoOutputOrderMomentsBuilder b)]) = _$AdminOrderCardDtoOutputOrderMoments;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderCardDtoOutputOrderMomentsBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderCardDtoOutputOrderMoments> get serializer =>
-      _$AdminOrderCardDtoOutputOrderMomentsSerializer();
+  static Serializer<AdminOrderCardDtoOutputOrderMoments> get serializer => _$AdminOrderCardDtoOutputOrderMomentsSerializer();
 }
 
-class _$AdminOrderCardDtoOutputOrderMomentsSerializer
-    implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderMoments> {
+class _$AdminOrderCardDtoOutputOrderMomentsSerializer implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderMoments> {
   @override
-  final Iterable<Type> types = const [
-    AdminOrderCardDtoOutputOrderMoments,
-    _$AdminOrderCardDtoOutputOrderMoments,
-  ];
+  final Iterable<Type> types = const [AdminOrderCardDtoOutputOrderMoments, _$AdminOrderCardDtoOutputOrderMoments];
 
   @override
   final String wireName = r'AdminOrderCardDtoOutputOrderMoments';
@@ -78,54 +66,40 @@ class _$AdminOrderCardDtoOutputOrderMomentsSerializer
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'acceptAlertAt';
-    yield object.acceptAlertAt == null
-        ? null
-        : serializers.serialize(
-            object.acceptAlertAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.acceptAlertAt == null ? null : serializers.serialize(
+      object.acceptAlertAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'prepLateAlertAt';
-    yield object.prepLateAlertAt == null
-        ? null
-        : serializers.serialize(
-            object.prepLateAlertAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.prepLateAlertAt == null ? null : serializers.serialize(
+      object.prepLateAlertAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'searchStartedAt';
-    yield object.searchStartedAt == null
-        ? null
-        : serializers.serialize(
-            object.searchStartedAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.searchStartedAt == null ? null : serializers.serialize(
+      object.searchStartedAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'searchAlertAt';
-    yield object.searchAlertAt == null
-        ? null
-        : serializers.serialize(
-            object.searchAlertAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.searchAlertAt == null ? null : serializers.serialize(
+      object.searchAlertAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'noCaptainAlertAt';
-    yield object.noCaptainAlertAt == null
-        ? null
-        : serializers.serialize(
-            object.noCaptainAlertAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.noCaptainAlertAt == null ? null : serializers.serialize(
+      object.noCaptainAlertAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'captainArrivedAt';
-    yield object.captainArrivedAt == null
-        ? null
-        : serializers.serialize(
-            object.captainArrivedAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.captainArrivedAt == null ? null : serializers.serialize(
+      object.captainArrivedAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'captainWaitingAlertAt';
-    yield object.captainWaitingAlertAt == null
-        ? null
-        : serializers.serialize(
-            object.captainWaitingAlertAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.captainWaitingAlertAt == null ? null : serializers.serialize(
+      object.captainWaitingAlertAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
   }
 
   @override
@@ -134,11 +108,7 @@ class _$AdminOrderCardDtoOutputOrderMomentsSerializer
     AdminOrderCardDtoOutputOrderMoments object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -154,72 +124,58 @@ class _$AdminOrderCardDtoOutputOrderMomentsSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'acceptAlertAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.acceptAlertAt = valueDes;
           break;
         case r'prepLateAlertAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.prepLateAlertAt = valueDes;
           break;
         case r'searchStartedAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.searchStartedAt = valueDes;
           break;
         case r'searchAlertAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.searchAlertAt = valueDes;
           break;
         case r'noCaptainAlertAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.noCaptainAlertAt = valueDes;
           break;
         case r'captainArrivedAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.captainArrivedAt = valueDes;
           break;
         case r'captainWaitingAlertAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.captainWaitingAlertAt = valueDes;
           break;
@@ -251,3 +207,5 @@ class _$AdminOrderCardDtoOutputOrderMomentsSerializer
     return result.build();
   }
 }
+
+

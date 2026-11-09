@@ -15,37 +15,25 @@ part 'customer_active_orders_dto_output.g.dart';
 /// Properties:
 /// * [orders] - Until each ends, newest first: the active-order bar (CU §6).
 @BuiltValue()
-abstract class CustomerActiveOrdersDtoOutput
-    implements
-        Built<
-          CustomerActiveOrdersDtoOutput,
-          CustomerActiveOrdersDtoOutputBuilder
-        > {
+abstract class CustomerActiveOrdersDtoOutput implements Built<CustomerActiveOrdersDtoOutput, CustomerActiveOrdersDtoOutputBuilder> {
   /// Until each ends, newest first: the active-order bar (CU §6).
   @BuiltValueField(wireName: r'orders')
   BuiltList<CustomerActiveOrdersDtoOutputOrdersInner> get orders;
 
   CustomerActiveOrdersDtoOutput._();
 
-  factory CustomerActiveOrdersDtoOutput([
-    void updates(CustomerActiveOrdersDtoOutputBuilder b),
-  ]) = _$CustomerActiveOrdersDtoOutput;
+  factory CustomerActiveOrdersDtoOutput([void updates(CustomerActiveOrdersDtoOutputBuilder b)]) = _$CustomerActiveOrdersDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerActiveOrdersDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerActiveOrdersDtoOutput> get serializer =>
-      _$CustomerActiveOrdersDtoOutputSerializer();
+  static Serializer<CustomerActiveOrdersDtoOutput> get serializer => _$CustomerActiveOrdersDtoOutputSerializer();
 }
 
-class _$CustomerActiveOrdersDtoOutputSerializer
-    implements PrimitiveSerializer<CustomerActiveOrdersDtoOutput> {
+class _$CustomerActiveOrdersDtoOutputSerializer implements PrimitiveSerializer<CustomerActiveOrdersDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    CustomerActiveOrdersDtoOutput,
-    _$CustomerActiveOrdersDtoOutput,
-  ];
+  final Iterable<Type> types = const [CustomerActiveOrdersDtoOutput, _$CustomerActiveOrdersDtoOutput];
 
   @override
   final String wireName = r'CustomerActiveOrdersDtoOutput';
@@ -58,9 +46,7 @@ class _$CustomerActiveOrdersDtoOutputSerializer
     yield r'orders';
     yield serializers.serialize(
       object.orders,
-      specifiedType: const FullType(BuiltList, [
-        FullType(CustomerActiveOrdersDtoOutputOrdersInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(CustomerActiveOrdersDtoOutputOrdersInner)]),
     );
   }
 
@@ -70,11 +56,7 @@ class _$CustomerActiveOrdersDtoOutputSerializer
     CustomerActiveOrdersDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -90,14 +72,10 @@ class _$CustomerActiveOrdersDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'orders':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(CustomerActiveOrdersDtoOutputOrdersInner),
-                    ]),
-                  )
-                  as BuiltList<CustomerActiveOrdersDtoOutputOrdersInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(CustomerActiveOrdersDtoOutputOrdersInner)]),
+          ) as BuiltList<CustomerActiveOrdersDtoOutputOrdersInner>;
           result.orders.replace(valueDes);
           break;
         default:
@@ -128,3 +106,5 @@ class _$CustomerActiveOrdersDtoOutputSerializer
     return result.build();
   }
 }
+
+

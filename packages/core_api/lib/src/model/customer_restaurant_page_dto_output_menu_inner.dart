@@ -14,17 +14,12 @@ part 'customer_restaurant_page_dto_output_menu_inner.g.dart';
 /// CustomerRestaurantPageDtoOutputMenuInner
 ///
 /// Properties:
-/// * [id]
-/// * [name]
-/// * [window]
-/// * [items]
+/// * [id] 
+/// * [name] 
+/// * [window] 
+/// * [items] 
 @BuiltValue()
-abstract class CustomerRestaurantPageDtoOutputMenuInner
-    implements
-        Built<
-          CustomerRestaurantPageDtoOutputMenuInner,
-          CustomerRestaurantPageDtoOutputMenuInnerBuilder
-        > {
+abstract class CustomerRestaurantPageDtoOutputMenuInner implements Built<CustomerRestaurantPageDtoOutputMenuInner, CustomerRestaurantPageDtoOutputMenuInnerBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -39,25 +34,18 @@ abstract class CustomerRestaurantPageDtoOutputMenuInner
 
   CustomerRestaurantPageDtoOutputMenuInner._();
 
-  factory CustomerRestaurantPageDtoOutputMenuInner([
-    void updates(CustomerRestaurantPageDtoOutputMenuInnerBuilder b),
-  ]) = _$CustomerRestaurantPageDtoOutputMenuInner;
+  factory CustomerRestaurantPageDtoOutputMenuInner([void updates(CustomerRestaurantPageDtoOutputMenuInnerBuilder b)]) = _$CustomerRestaurantPageDtoOutputMenuInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerRestaurantPageDtoOutputMenuInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerRestaurantPageDtoOutputMenuInner> get serializer =>
-      _$CustomerRestaurantPageDtoOutputMenuInnerSerializer();
+  static Serializer<CustomerRestaurantPageDtoOutputMenuInner> get serializer => _$CustomerRestaurantPageDtoOutputMenuInnerSerializer();
 }
 
-class _$CustomerRestaurantPageDtoOutputMenuInnerSerializer
-    implements PrimitiveSerializer<CustomerRestaurantPageDtoOutputMenuInner> {
+class _$CustomerRestaurantPageDtoOutputMenuInnerSerializer implements PrimitiveSerializer<CustomerRestaurantPageDtoOutputMenuInner> {
   @override
-  final Iterable<Type> types = const [
-    CustomerRestaurantPageDtoOutputMenuInner,
-    _$CustomerRestaurantPageDtoOutputMenuInner,
-  ];
+  final Iterable<Type> types = const [CustomerRestaurantPageDtoOutputMenuInner, _$CustomerRestaurantPageDtoOutputMenuInner];
 
   @override
   final String wireName = r'CustomerRestaurantPageDtoOutputMenuInner';
@@ -78,20 +66,14 @@ class _$CustomerRestaurantPageDtoOutputMenuInnerSerializer
       specifiedType: const FullType(String),
     );
     yield r'window';
-    yield object.window == null
-        ? null
-        : serializers.serialize(
-            object.window,
-            specifiedType: const FullType.nullable(
-              CustomerRestaurantPageDtoOutputMenuInnerWindow,
-            ),
-          );
+    yield object.window == null ? null : serializers.serialize(
+      object.window,
+      specifiedType: const FullType.nullable(CustomerRestaurantPageDtoOutputMenuInnerWindow),
+    );
     yield r'items';
     yield serializers.serialize(
       object.items,
-      specifiedType: const FullType(BuiltList, [
-        FullType(CustomerRestaurantPageDtoOutputMenuInnerItemsInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(CustomerRestaurantPageDtoOutputMenuInnerItemsInner)]),
     );
   }
 
@@ -101,11 +83,7 @@ class _$CustomerRestaurantPageDtoOutputMenuInnerSerializer
     CustomerRestaurantPageDtoOutputMenuInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -121,48 +99,32 @@ class _$CustomerRestaurantPageDtoOutputMenuInnerSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.id = valueDes;
           break;
         case r'name':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.name = valueDes;
           break;
         case r'window':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      CustomerRestaurantPageDtoOutputMenuInnerWindow,
-                    ),
-                  )
-                  as CustomerRestaurantPageDtoOutputMenuInnerWindow?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(CustomerRestaurantPageDtoOutputMenuInnerWindow),
+          ) as CustomerRestaurantPageDtoOutputMenuInnerWindow?;
           if (valueDes == null) continue;
           result.window.replace(valueDes);
           break;
         case r'items':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        CustomerRestaurantPageDtoOutputMenuInnerItemsInner,
-                      ),
-                    ]),
-                  )
-                  as BuiltList<
-                    CustomerRestaurantPageDtoOutputMenuInnerItemsInner
-                  >;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(CustomerRestaurantPageDtoOutputMenuInnerItemsInner)]),
+          ) as BuiltList<CustomerRestaurantPageDtoOutputMenuInnerItemsInner>;
           result.items.replace(valueDes);
           break;
         default:
@@ -193,3 +155,5 @@ class _$CustomerRestaurantPageDtoOutputMenuInnerSerializer
     return result.build();
   }
 }
+
+

@@ -12,11 +12,10 @@ part 'captain_tokens_dto_output.g.dart';
 ///
 /// Properties:
 /// * [accessToken] - A JWT for the Authorization header, valid 15 minutes.
-/// * [accessTokenExpiresAt]
+/// * [accessTokenExpiresAt] 
 /// * [refreshToken] - Used once at /refresh for a new pair; using it twice signs the device out.
 @BuiltValue()
-abstract class CaptainTokensDtoOutput
-    implements Built<CaptainTokensDtoOutput, CaptainTokensDtoOutputBuilder> {
+abstract class CaptainTokensDtoOutput implements Built<CaptainTokensDtoOutput, CaptainTokensDtoOutputBuilder> {
   /// A JWT for the Authorization header, valid 15 minutes.
   @BuiltValueField(wireName: r'accessToken')
   String get accessToken;
@@ -30,25 +29,18 @@ abstract class CaptainTokensDtoOutput
 
   CaptainTokensDtoOutput._();
 
-  factory CaptainTokensDtoOutput([
-    void updates(CaptainTokensDtoOutputBuilder b),
-  ]) = _$CaptainTokensDtoOutput;
+  factory CaptainTokensDtoOutput([void updates(CaptainTokensDtoOutputBuilder b)]) = _$CaptainTokensDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainTokensDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainTokensDtoOutput> get serializer =>
-      _$CaptainTokensDtoOutputSerializer();
+  static Serializer<CaptainTokensDtoOutput> get serializer => _$CaptainTokensDtoOutputSerializer();
 }
 
-class _$CaptainTokensDtoOutputSerializer
-    implements PrimitiveSerializer<CaptainTokensDtoOutput> {
+class _$CaptainTokensDtoOutputSerializer implements PrimitiveSerializer<CaptainTokensDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    CaptainTokensDtoOutput,
-    _$CaptainTokensDtoOutput,
-  ];
+  final Iterable<Type> types = const [CaptainTokensDtoOutput, _$CaptainTokensDtoOutput];
 
   @override
   final String wireName = r'CaptainTokensDtoOutput';
@@ -81,11 +73,7 @@ class _$CaptainTokensDtoOutputSerializer
     CaptainTokensDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -101,30 +89,24 @@ class _$CaptainTokensDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'accessToken':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.accessToken = valueDes;
           break;
         case r'accessTokenExpiresAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.accessTokenExpiresAt = valueDes;
           break;
         case r'refreshToken':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.refreshToken = valueDes;
           break;
         default:
@@ -155,3 +137,5 @@ class _$CaptainTokensDtoOutputSerializer
     return result.build();
   }
 }
+
+

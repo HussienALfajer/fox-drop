@@ -16,8 +16,7 @@ part 'update_setting_dto.g.dart';
 /// * [value] - The new value, in the shape of its setting; null where the setting allows it.
 /// * [reason] - Required for the settings with money impact (reasonRequired).
 @BuiltValue()
-abstract class UpdateSettingDto
-    implements Built<UpdateSettingDto, UpdateSettingDtoBuilder> {
+abstract class UpdateSettingDto implements Built<UpdateSettingDto, UpdateSettingDtoBuilder> {
   /// The city of a city setting; none for a global one.
   @BuiltValueField(wireName: r'cityId')
   String? get cityId;
@@ -32,19 +31,16 @@ abstract class UpdateSettingDto
 
   UpdateSettingDto._();
 
-  factory UpdateSettingDto([void updates(UpdateSettingDtoBuilder b)]) =
-      _$UpdateSettingDto;
+  factory UpdateSettingDto([void updates(UpdateSettingDtoBuilder b)]) = _$UpdateSettingDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(UpdateSettingDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<UpdateSettingDto> get serializer =>
-      _$UpdateSettingDtoSerializer();
+  static Serializer<UpdateSettingDto> get serializer => _$UpdateSettingDtoSerializer();
 }
 
-class _$UpdateSettingDtoSerializer
-    implements PrimitiveSerializer<UpdateSettingDto> {
+class _$UpdateSettingDtoSerializer implements PrimitiveSerializer<UpdateSettingDto> {
   @override
   final Iterable<Type> types = const [UpdateSettingDto, _$UpdateSettingDto];
 
@@ -64,12 +60,10 @@ class _$UpdateSettingDtoSerializer
       );
     }
     yield r'value';
-    yield object.value == null
-        ? null
-        : serializers.serialize(
-            object.value,
-            specifiedType: const FullType.nullable(JsonObject),
-          );
+    yield object.value == null ? null : serializers.serialize(
+      object.value,
+      specifiedType: const FullType.nullable(JsonObject),
+    );
     if (object.reason != null) {
       yield r'reason';
       yield serializers.serialize(
@@ -85,11 +79,7 @@ class _$UpdateSettingDtoSerializer
     UpdateSettingDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -105,32 +95,26 @@ class _$UpdateSettingDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'cityId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.cityId = valueDes;
           break;
         case r'value':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(JsonObject),
-                  )
-                  as JsonObject?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(JsonObject),
+          ) as JsonObject?;
           if (valueDes == null) continue;
           result.value = valueDes;
           break;
         case r'reason':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.reason = valueDes;
           break;
@@ -162,3 +146,5 @@ class _$UpdateSettingDtoSerializer
     return result.build();
   }
 }
+
+

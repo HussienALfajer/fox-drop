@@ -12,18 +12,16 @@ part 'merchant_signed_in_dto_output.g.dart';
 /// MerchantSignedInDtoOutput
 ///
 /// Properties:
-/// * [accountId]
-/// * [restaurantId]
+/// * [accountId] 
+/// * [restaurantId] 
 /// * [role] - RA §5.4: what the app shows and the server allows.
-/// * [name]
+/// * [name] 
 /// * [deviceNamed] - False on the first sign-in of this device: the app asks for its name (RA §5.2).
 /// * [accessToken] - A JWT for the Authorization header, valid 15 minutes.
-/// * [accessTokenExpiresAt]
+/// * [accessTokenExpiresAt] 
 /// * [refreshToken] - Used once at /refresh for a new pair; using it twice signs the device out.
 @BuiltValue()
-abstract class MerchantSignedInDtoOutput
-    implements
-        Built<MerchantSignedInDtoOutput, MerchantSignedInDtoOutputBuilder> {
+abstract class MerchantSignedInDtoOutput implements Built<MerchantSignedInDtoOutput, MerchantSignedInDtoOutputBuilder> {
   @BuiltValueField(wireName: r'accountId')
   String get accountId;
 
@@ -55,25 +53,18 @@ abstract class MerchantSignedInDtoOutput
 
   MerchantSignedInDtoOutput._();
 
-  factory MerchantSignedInDtoOutput([
-    void updates(MerchantSignedInDtoOutputBuilder b),
-  ]) = _$MerchantSignedInDtoOutput;
+  factory MerchantSignedInDtoOutput([void updates(MerchantSignedInDtoOutputBuilder b)]) = _$MerchantSignedInDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantSignedInDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantSignedInDtoOutput> get serializer =>
-      _$MerchantSignedInDtoOutputSerializer();
+  static Serializer<MerchantSignedInDtoOutput> get serializer => _$MerchantSignedInDtoOutputSerializer();
 }
 
-class _$MerchantSignedInDtoOutputSerializer
-    implements PrimitiveSerializer<MerchantSignedInDtoOutput> {
+class _$MerchantSignedInDtoOutputSerializer implements PrimitiveSerializer<MerchantSignedInDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    MerchantSignedInDtoOutput,
-    _$MerchantSignedInDtoOutput,
-  ];
+  final Iterable<Type> types = const [MerchantSignedInDtoOutput, _$MerchantSignedInDtoOutput];
 
   @override
   final String wireName = r'MerchantSignedInDtoOutput';
@@ -131,11 +122,7 @@ class _$MerchantSignedInDtoOutputSerializer
     MerchantSignedInDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -151,77 +138,59 @@ class _$MerchantSignedInDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'accountId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.accountId = valueDes;
           break;
         case r'restaurantId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.restaurantId = valueDes;
           break;
         case r'role':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      MerchantSignedInDtoOutputRoleEnum,
-                    ),
-                  )
-                  as MerchantSignedInDtoOutputRoleEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(MerchantSignedInDtoOutputRoleEnum),
+          ) as MerchantSignedInDtoOutputRoleEnum;
           result.role = valueDes;
           break;
         case r'name':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.name = valueDes;
           break;
         case r'deviceNamed':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.deviceNamed = valueDes;
           break;
         case r'accessToken':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.accessToken = valueDes;
           break;
         case r'accessTokenExpiresAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.accessTokenExpiresAt = valueDes;
           break;
         case r'refreshToken':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.refreshToken = valueDes;
           break;
         default:
@@ -253,22 +222,20 @@ class _$MerchantSignedInDtoOutputSerializer
   }
 }
 
+
 /// RA §5.4: what the app shows and the server allows.
 class MerchantSignedInDtoOutputRoleEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'owner')
-  static const MerchantSignedInDtoOutputRoleEnum owner =
-      _$merchantSignedInDtoOutputRoleEnum_owner;
+  static const MerchantSignedInDtoOutputRoleEnum owner = _$merchantSignedInDtoOutputRoleEnum_owner;
   @BuiltValueEnumConst(wireName: r'cashier')
-  static const MerchantSignedInDtoOutputRoleEnum cashier =
-      _$merchantSignedInDtoOutputRoleEnum_cashier;
+  static const MerchantSignedInDtoOutputRoleEnum cashier = _$merchantSignedInDtoOutputRoleEnum_cashier;
 
-  static Serializer<MerchantSignedInDtoOutputRoleEnum> get serializer =>
-      _$merchantSignedInDtoOutputRoleEnumSerializer;
+  static Serializer<MerchantSignedInDtoOutputRoleEnum> get serializer => _$merchantSignedInDtoOutputRoleEnumSerializer;
 
-  const MerchantSignedInDtoOutputRoleEnum._(String name) : super(name);
+  const MerchantSignedInDtoOutputRoleEnum._(String name): super(name);
 
-  static BuiltSet<MerchantSignedInDtoOutputRoleEnum> get values =>
-      _$merchantSignedInDtoOutputRoleEnumValues;
-  static MerchantSignedInDtoOutputRoleEnum valueOf(String name) =>
-      _$merchantSignedInDtoOutputRoleEnumValueOf(name);
+  static BuiltSet<MerchantSignedInDtoOutputRoleEnum> get values => _$merchantSignedInDtoOutputRoleEnumValues;
+  static MerchantSignedInDtoOutputRoleEnum valueOf(String name) => _$merchantSignedInDtoOutputRoleEnumValueOf(name);
 }
+

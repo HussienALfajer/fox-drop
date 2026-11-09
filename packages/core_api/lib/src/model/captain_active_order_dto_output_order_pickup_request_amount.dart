@@ -12,14 +12,9 @@ part 'captain_active_order_dto_output_order_pickup_request_amount.g.dart';
 ///
 /// Properties:
 /// * [amount] - Integer minor units (AP §8.6).
-/// * [currency]
+/// * [currency] 
 @BuiltValue()
-abstract class CaptainActiveOrderDtoOutputOrderPickupRequestAmount
-    implements
-        Built<
-          CaptainActiveOrderDtoOutputOrderPickupRequestAmount,
-          CaptainActiveOrderDtoOutputOrderPickupRequestAmountBuilder
-        > {
+abstract class CaptainActiveOrderDtoOutputOrderPickupRequestAmount implements Built<CaptainActiveOrderDtoOutputOrderPickupRequestAmount, CaptainActiveOrderDtoOutputOrderPickupRequestAmountBuilder> {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -29,35 +24,21 @@ abstract class CaptainActiveOrderDtoOutputOrderPickupRequestAmount
 
   CaptainActiveOrderDtoOutputOrderPickupRequestAmount._();
 
-  factory CaptainActiveOrderDtoOutputOrderPickupRequestAmount([
-    void updates(CaptainActiveOrderDtoOutputOrderPickupRequestAmountBuilder b),
-  ]) = _$CaptainActiveOrderDtoOutputOrderPickupRequestAmount;
+  factory CaptainActiveOrderDtoOutputOrderPickupRequestAmount([void updates(CaptainActiveOrderDtoOutputOrderPickupRequestAmountBuilder b)]) = _$CaptainActiveOrderDtoOutputOrderPickupRequestAmount;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    CaptainActiveOrderDtoOutputOrderPickupRequestAmountBuilder b,
-  ) => b;
+  static void _defaults(CaptainActiveOrderDtoOutputOrderPickupRequestAmountBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainActiveOrderDtoOutputOrderPickupRequestAmount>
-  get serializer =>
-      _$CaptainActiveOrderDtoOutputOrderPickupRequestAmountSerializer();
+  static Serializer<CaptainActiveOrderDtoOutputOrderPickupRequestAmount> get serializer => _$CaptainActiveOrderDtoOutputOrderPickupRequestAmountSerializer();
 }
 
-class _$CaptainActiveOrderDtoOutputOrderPickupRequestAmountSerializer
-    implements
-        PrimitiveSerializer<
-          CaptainActiveOrderDtoOutputOrderPickupRequestAmount
-        > {
+class _$CaptainActiveOrderDtoOutputOrderPickupRequestAmountSerializer implements PrimitiveSerializer<CaptainActiveOrderDtoOutputOrderPickupRequestAmount> {
   @override
-  final Iterable<Type> types = const [
-    CaptainActiveOrderDtoOutputOrderPickupRequestAmount,
-    _$CaptainActiveOrderDtoOutputOrderPickupRequestAmount,
-  ];
+  final Iterable<Type> types = const [CaptainActiveOrderDtoOutputOrderPickupRequestAmount, _$CaptainActiveOrderDtoOutputOrderPickupRequestAmount];
 
   @override
-  final String wireName =
-      r'CaptainActiveOrderDtoOutputOrderPickupRequestAmount';
+  final String wireName = r'CaptainActiveOrderDtoOutputOrderPickupRequestAmount';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
@@ -82,11 +63,7 @@ class _$CaptainActiveOrderDtoOutputOrderPickupRequestAmountSerializer
     CaptainActiveOrderDtoOutputOrderPickupRequestAmount object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -102,21 +79,17 @@ class _$CaptainActiveOrderDtoOutputOrderPickupRequestAmountSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.currency = valueDes;
           break;
         default:
@@ -147,3 +120,5 @@ class _$CaptainActiveOrderDtoOutputOrderPickupRequestAmountSerializer
     return result.build();
   }
 }
+
+

@@ -14,9 +14,7 @@ part 'admin_resend_notification_dto.g.dart';
 /// Properties:
 /// * [to] - The customer, the restaurant's devices or the assigned captain.
 @BuiltValue()
-abstract class AdminResendNotificationDto
-    implements
-        Built<AdminResendNotificationDto, AdminResendNotificationDtoBuilder> {
+abstract class AdminResendNotificationDto implements Built<AdminResendNotificationDto, AdminResendNotificationDtoBuilder> {
   /// The customer, the restaurant's devices or the assigned captain.
   @BuiltValueField(wireName: r'to')
   AdminResendNotificationDtoToEnum get to;
@@ -24,25 +22,18 @@ abstract class AdminResendNotificationDto
 
   AdminResendNotificationDto._();
 
-  factory AdminResendNotificationDto([
-    void updates(AdminResendNotificationDtoBuilder b),
-  ]) = _$AdminResendNotificationDto;
+  factory AdminResendNotificationDto([void updates(AdminResendNotificationDtoBuilder b)]) = _$AdminResendNotificationDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminResendNotificationDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminResendNotificationDto> get serializer =>
-      _$AdminResendNotificationDtoSerializer();
+  static Serializer<AdminResendNotificationDto> get serializer => _$AdminResendNotificationDtoSerializer();
 }
 
-class _$AdminResendNotificationDtoSerializer
-    implements PrimitiveSerializer<AdminResendNotificationDto> {
+class _$AdminResendNotificationDtoSerializer implements PrimitiveSerializer<AdminResendNotificationDto> {
   @override
-  final Iterable<Type> types = const [
-    AdminResendNotificationDto,
-    _$AdminResendNotificationDto,
-  ];
+  final Iterable<Type> types = const [AdminResendNotificationDto, _$AdminResendNotificationDto];
 
   @override
   final String wireName = r'AdminResendNotificationDto';
@@ -65,11 +56,7 @@ class _$AdminResendNotificationDtoSerializer
     AdminResendNotificationDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -85,14 +72,10 @@ class _$AdminResendNotificationDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'to':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      AdminResendNotificationDtoToEnum,
-                    ),
-                  )
-                  as AdminResendNotificationDtoToEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(AdminResendNotificationDtoToEnum),
+          ) as AdminResendNotificationDtoToEnum;
           result.to = valueDes;
           break;
         default:
@@ -124,25 +107,22 @@ class _$AdminResendNotificationDtoSerializer
   }
 }
 
+
 /// The customer, the restaurant's devices or the assigned captain.
 class AdminResendNotificationDtoToEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'customer')
-  static const AdminResendNotificationDtoToEnum customer =
-      _$adminResendNotificationDtoToEnum_customer;
+  static const AdminResendNotificationDtoToEnum customer = _$adminResendNotificationDtoToEnum_customer;
   @BuiltValueEnumConst(wireName: r'merchant')
-  static const AdminResendNotificationDtoToEnum merchant =
-      _$adminResendNotificationDtoToEnum_merchant;
+  static const AdminResendNotificationDtoToEnum merchant = _$adminResendNotificationDtoToEnum_merchant;
   @BuiltValueEnumConst(wireName: r'captain')
-  static const AdminResendNotificationDtoToEnum captain =
-      _$adminResendNotificationDtoToEnum_captain;
+  static const AdminResendNotificationDtoToEnum captain = _$adminResendNotificationDtoToEnum_captain;
 
-  static Serializer<AdminResendNotificationDtoToEnum> get serializer =>
-      _$adminResendNotificationDtoToEnumSerializer;
+  static Serializer<AdminResendNotificationDtoToEnum> get serializer => _$adminResendNotificationDtoToEnumSerializer;
 
-  const AdminResendNotificationDtoToEnum._(String name) : super(name);
+  const AdminResendNotificationDtoToEnum._(String name): super(name);
 
-  static BuiltSet<AdminResendNotificationDtoToEnum> get values =>
-      _$adminResendNotificationDtoToEnumValues;
-  static AdminResendNotificationDtoToEnum valueOf(String name) =>
-      _$adminResendNotificationDtoToEnumValueOf(name);
+  static BuiltSet<AdminResendNotificationDtoToEnum> get values => _$adminResendNotificationDtoToEnumValues;
+  static AdminResendNotificationDtoToEnum valueOf(String name) => _$adminResendNotificationDtoToEnumValueOf(name);
 }
+

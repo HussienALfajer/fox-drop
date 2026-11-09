@@ -11,16 +11,11 @@ part 'admin_order_dto_output_order_customer_arrival_away.g.dart';
 /// The reason given beyond captain.customer_radius_m (CA §9.6).
 ///
 /// Properties:
-/// * [reason]
-/// * [label]
-/// * [note]
+/// * [reason] 
+/// * [label] 
+/// * [note] 
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderCustomerArrivalAway
-    implements
-        Built<
-          AdminOrderDtoOutputOrderCustomerArrivalAway,
-          AdminOrderDtoOutputOrderCustomerArrivalAwayBuilder
-        > {
+abstract class AdminOrderDtoOutputOrderCustomerArrivalAway implements Built<AdminOrderDtoOutputOrderCustomerArrivalAway, AdminOrderDtoOutputOrderCustomerArrivalAwayBuilder> {
   @BuiltValueField(wireName: r'reason')
   String get reason;
 
@@ -32,27 +27,18 @@ abstract class AdminOrderDtoOutputOrderCustomerArrivalAway
 
   AdminOrderDtoOutputOrderCustomerArrivalAway._();
 
-  factory AdminOrderDtoOutputOrderCustomerArrivalAway([
-    void updates(AdminOrderDtoOutputOrderCustomerArrivalAwayBuilder b),
-  ]) = _$AdminOrderDtoOutputOrderCustomerArrivalAway;
+  factory AdminOrderDtoOutputOrderCustomerArrivalAway([void updates(AdminOrderDtoOutputOrderCustomerArrivalAwayBuilder b)]) = _$AdminOrderDtoOutputOrderCustomerArrivalAway;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminOrderDtoOutputOrderCustomerArrivalAwayBuilder b) =>
-      b;
+  static void _defaults(AdminOrderDtoOutputOrderCustomerArrivalAwayBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderCustomerArrivalAway>
-  get serializer => _$AdminOrderDtoOutputOrderCustomerArrivalAwaySerializer();
+  static Serializer<AdminOrderDtoOutputOrderCustomerArrivalAway> get serializer => _$AdminOrderDtoOutputOrderCustomerArrivalAwaySerializer();
 }
 
-class _$AdminOrderDtoOutputOrderCustomerArrivalAwaySerializer
-    implements
-        PrimitiveSerializer<AdminOrderDtoOutputOrderCustomerArrivalAway> {
+class _$AdminOrderDtoOutputOrderCustomerArrivalAwaySerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderCustomerArrivalAway> {
   @override
-  final Iterable<Type> types = const [
-    AdminOrderDtoOutputOrderCustomerArrivalAway,
-    _$AdminOrderDtoOutputOrderCustomerArrivalAway,
-  ];
+  final Iterable<Type> types = const [AdminOrderDtoOutputOrderCustomerArrivalAway, _$AdminOrderDtoOutputOrderCustomerArrivalAway];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderCustomerArrivalAway';
@@ -73,12 +59,10 @@ class _$AdminOrderDtoOutputOrderCustomerArrivalAwaySerializer
       specifiedType: const FullType(String),
     );
     yield r'note';
-    yield object.note == null
-        ? null
-        : serializers.serialize(
-            object.note,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.note == null ? null : serializers.serialize(
+      object.note,
+      specifiedType: const FullType.nullable(String),
+    );
   }
 
   @override
@@ -87,11 +71,7 @@ class _$AdminOrderDtoOutputOrderCustomerArrivalAwaySerializer
     AdminOrderDtoOutputOrderCustomerArrivalAway object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -107,30 +87,24 @@ class _$AdminOrderDtoOutputOrderCustomerArrivalAwaySerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'reason':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.reason = valueDes;
           break;
         case r'label':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.label = valueDes;
           break;
         case r'note':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.note = valueDes;
           break;
@@ -162,3 +136,5 @@ class _$AdminOrderDtoOutputOrderCustomerArrivalAwaySerializer
     return result.build();
   }
 }
+
+

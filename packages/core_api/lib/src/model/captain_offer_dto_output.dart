@@ -12,34 +12,26 @@ part 'captain_offer_dto_output.g.dart';
 /// CaptainOfferDtoOutput
 ///
 /// Properties:
-/// * [offer]
+/// * [offer] 
 @BuiltValue()
-abstract class CaptainOfferDtoOutput
-    implements Built<CaptainOfferDtoOutput, CaptainOfferDtoOutputBuilder> {
+abstract class CaptainOfferDtoOutput implements Built<CaptainOfferDtoOutput, CaptainOfferDtoOutputBuilder> {
   @BuiltValueField(wireName: r'offer')
   CaptainOfferDtoOutputOffer get offer;
 
   CaptainOfferDtoOutput._();
 
-  factory CaptainOfferDtoOutput([
-    void updates(CaptainOfferDtoOutputBuilder b),
-  ]) = _$CaptainOfferDtoOutput;
+  factory CaptainOfferDtoOutput([void updates(CaptainOfferDtoOutputBuilder b)]) = _$CaptainOfferDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainOfferDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainOfferDtoOutput> get serializer =>
-      _$CaptainOfferDtoOutputSerializer();
+  static Serializer<CaptainOfferDtoOutput> get serializer => _$CaptainOfferDtoOutputSerializer();
 }
 
-class _$CaptainOfferDtoOutputSerializer
-    implements PrimitiveSerializer<CaptainOfferDtoOutput> {
+class _$CaptainOfferDtoOutputSerializer implements PrimitiveSerializer<CaptainOfferDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    CaptainOfferDtoOutput,
-    _$CaptainOfferDtoOutput,
-  ];
+  final Iterable<Type> types = const [CaptainOfferDtoOutput, _$CaptainOfferDtoOutput];
 
   @override
   final String wireName = r'CaptainOfferDtoOutput';
@@ -62,11 +54,7 @@ class _$CaptainOfferDtoOutputSerializer
     CaptainOfferDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -82,12 +70,10 @@ class _$CaptainOfferDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'offer':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(CaptainOfferDtoOutputOffer),
-                  )
-                  as CaptainOfferDtoOutputOffer;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CaptainOfferDtoOutputOffer),
+          ) as CaptainOfferDtoOutputOffer;
           result.offer.replace(valueDes);
           break;
         default:
@@ -118,3 +104,5 @@ class _$CaptainOfferDtoOutputSerializer
     return result.build();
   }
 }
+
+

@@ -12,16 +12,11 @@ part 'customer_quote_dto_output_minimum_order.g.dart';
 ///
 /// Properties:
 /// * [amount] - Integer minor units (AP §8.6).
-/// * [currency]
-/// * [reached]
+/// * [currency] 
+/// * [reached] 
 /// * [missing] - «أضف {المبلغ} لتصل إلى الحد الأدنى ({الحد})».
 @BuiltValue()
-abstract class CustomerQuoteDtoOutputMinimumOrder
-    implements
-        Built<
-          CustomerQuoteDtoOutputMinimumOrder,
-          CustomerQuoteDtoOutputMinimumOrderBuilder
-        > {
+abstract class CustomerQuoteDtoOutputMinimumOrder implements Built<CustomerQuoteDtoOutputMinimumOrder, CustomerQuoteDtoOutputMinimumOrderBuilder> {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -38,25 +33,18 @@ abstract class CustomerQuoteDtoOutputMinimumOrder
 
   CustomerQuoteDtoOutputMinimumOrder._();
 
-  factory CustomerQuoteDtoOutputMinimumOrder([
-    void updates(CustomerQuoteDtoOutputMinimumOrderBuilder b),
-  ]) = _$CustomerQuoteDtoOutputMinimumOrder;
+  factory CustomerQuoteDtoOutputMinimumOrder([void updates(CustomerQuoteDtoOutputMinimumOrderBuilder b)]) = _$CustomerQuoteDtoOutputMinimumOrder;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerQuoteDtoOutputMinimumOrderBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerQuoteDtoOutputMinimumOrder> get serializer =>
-      _$CustomerQuoteDtoOutputMinimumOrderSerializer();
+  static Serializer<CustomerQuoteDtoOutputMinimumOrder> get serializer => _$CustomerQuoteDtoOutputMinimumOrderSerializer();
 }
 
-class _$CustomerQuoteDtoOutputMinimumOrderSerializer
-    implements PrimitiveSerializer<CustomerQuoteDtoOutputMinimumOrder> {
+class _$CustomerQuoteDtoOutputMinimumOrderSerializer implements PrimitiveSerializer<CustomerQuoteDtoOutputMinimumOrder> {
   @override
-  final Iterable<Type> types = const [
-    CustomerQuoteDtoOutputMinimumOrder,
-    _$CustomerQuoteDtoOutputMinimumOrder,
-  ];
+  final Iterable<Type> types = const [CustomerQuoteDtoOutputMinimumOrder, _$CustomerQuoteDtoOutputMinimumOrder];
 
   @override
   final String wireName = r'CustomerQuoteDtoOutputMinimumOrder';
@@ -94,11 +82,7 @@ class _$CustomerQuoteDtoOutputMinimumOrderSerializer
     CustomerQuoteDtoOutputMinimumOrder object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -114,39 +98,31 @@ class _$CustomerQuoteDtoOutputMinimumOrderSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.currency = valueDes;
           break;
         case r'reached':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.reached = valueDes;
           break;
         case r'missing':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.missing = valueDes;
           break;
         default:
@@ -177,3 +153,5 @@ class _$CustomerQuoteDtoOutputMinimumOrderSerializer
     return result.build();
   }
 }
+
+

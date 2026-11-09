@@ -11,15 +11,10 @@ part 'captain_active_order_dto_output_order_restaurant_location.g.dart';
 /// On the map, with the route and «ابدأ الملاحة».
 ///
 /// Properties:
-/// * [latitude]
-/// * [longitude]
+/// * [latitude] 
+/// * [longitude] 
 @BuiltValue()
-abstract class CaptainActiveOrderDtoOutputOrderRestaurantLocation
-    implements
-        Built<
-          CaptainActiveOrderDtoOutputOrderRestaurantLocation,
-          CaptainActiveOrderDtoOutputOrderRestaurantLocationBuilder
-        > {
+abstract class CaptainActiveOrderDtoOutputOrderRestaurantLocation implements Built<CaptainActiveOrderDtoOutputOrderRestaurantLocation, CaptainActiveOrderDtoOutputOrderRestaurantLocationBuilder> {
   @BuiltValueField(wireName: r'latitude')
   num get latitude;
 
@@ -28,31 +23,18 @@ abstract class CaptainActiveOrderDtoOutputOrderRestaurantLocation
 
   CaptainActiveOrderDtoOutputOrderRestaurantLocation._();
 
-  factory CaptainActiveOrderDtoOutputOrderRestaurantLocation([
-    void updates(CaptainActiveOrderDtoOutputOrderRestaurantLocationBuilder b),
-  ]) = _$CaptainActiveOrderDtoOutputOrderRestaurantLocation;
+  factory CaptainActiveOrderDtoOutputOrderRestaurantLocation([void updates(CaptainActiveOrderDtoOutputOrderRestaurantLocationBuilder b)]) = _$CaptainActiveOrderDtoOutputOrderRestaurantLocation;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    CaptainActiveOrderDtoOutputOrderRestaurantLocationBuilder b,
-  ) => b;
+  static void _defaults(CaptainActiveOrderDtoOutputOrderRestaurantLocationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainActiveOrderDtoOutputOrderRestaurantLocation>
-  get serializer =>
-      _$CaptainActiveOrderDtoOutputOrderRestaurantLocationSerializer();
+  static Serializer<CaptainActiveOrderDtoOutputOrderRestaurantLocation> get serializer => _$CaptainActiveOrderDtoOutputOrderRestaurantLocationSerializer();
 }
 
-class _$CaptainActiveOrderDtoOutputOrderRestaurantLocationSerializer
-    implements
-        PrimitiveSerializer<
-          CaptainActiveOrderDtoOutputOrderRestaurantLocation
-        > {
+class _$CaptainActiveOrderDtoOutputOrderRestaurantLocationSerializer implements PrimitiveSerializer<CaptainActiveOrderDtoOutputOrderRestaurantLocation> {
   @override
-  final Iterable<Type> types = const [
-    CaptainActiveOrderDtoOutputOrderRestaurantLocation,
-    _$CaptainActiveOrderDtoOutputOrderRestaurantLocation,
-  ];
+  final Iterable<Type> types = const [CaptainActiveOrderDtoOutputOrderRestaurantLocation, _$CaptainActiveOrderDtoOutputOrderRestaurantLocation];
 
   @override
   final String wireName = r'CaptainActiveOrderDtoOutputOrderRestaurantLocation';
@@ -80,11 +62,7 @@ class _$CaptainActiveOrderDtoOutputOrderRestaurantLocationSerializer
     CaptainActiveOrderDtoOutputOrderRestaurantLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -100,15 +78,17 @@ class _$CaptainActiveOrderDtoOutputOrderRestaurantLocationSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'latitude':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(num))
-                  as num;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
           result.latitude = valueDes;
           break;
         case r'longitude':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(num))
-                  as num;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
           result.longitude = valueDes;
           break;
         default:
@@ -139,3 +119,5 @@ class _$CaptainActiveOrderDtoOutputOrderRestaurantLocationSerializer
     return result.build();
   }
 }
+
+

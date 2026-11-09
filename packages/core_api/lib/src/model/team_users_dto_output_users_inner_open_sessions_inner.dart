@@ -11,18 +11,13 @@ part 'team_users_dto_output_users_inner_open_sessions_inner.g.dart';
 /// TeamUsersDtoOutputUsersInnerOpenSessionsInner
 ///
 /// Properties:
-/// * [id]
-/// * [userAgent]
-/// * [ipAddress]
-/// * [signedInAt]
-/// * [lastActivityAt]
+/// * [id] 
+/// * [userAgent] 
+/// * [ipAddress] 
+/// * [signedInAt] 
+/// * [lastActivityAt] 
 @BuiltValue()
-abstract class TeamUsersDtoOutputUsersInnerOpenSessionsInner
-    implements
-        Built<
-          TeamUsersDtoOutputUsersInnerOpenSessionsInner,
-          TeamUsersDtoOutputUsersInnerOpenSessionsInnerBuilder
-        > {
+abstract class TeamUsersDtoOutputUsersInnerOpenSessionsInner implements Built<TeamUsersDtoOutputUsersInnerOpenSessionsInner, TeamUsersDtoOutputUsersInnerOpenSessionsInnerBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -40,28 +35,18 @@ abstract class TeamUsersDtoOutputUsersInnerOpenSessionsInner
 
   TeamUsersDtoOutputUsersInnerOpenSessionsInner._();
 
-  factory TeamUsersDtoOutputUsersInnerOpenSessionsInner([
-    void updates(TeamUsersDtoOutputUsersInnerOpenSessionsInnerBuilder b),
-  ]) = _$TeamUsersDtoOutputUsersInnerOpenSessionsInner;
+  factory TeamUsersDtoOutputUsersInnerOpenSessionsInner([void updates(TeamUsersDtoOutputUsersInnerOpenSessionsInnerBuilder b)]) = _$TeamUsersDtoOutputUsersInnerOpenSessionsInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    TeamUsersDtoOutputUsersInnerOpenSessionsInnerBuilder b,
-  ) => b;
+  static void _defaults(TeamUsersDtoOutputUsersInnerOpenSessionsInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<TeamUsersDtoOutputUsersInnerOpenSessionsInner>
-  get serializer => _$TeamUsersDtoOutputUsersInnerOpenSessionsInnerSerializer();
+  static Serializer<TeamUsersDtoOutputUsersInnerOpenSessionsInner> get serializer => _$TeamUsersDtoOutputUsersInnerOpenSessionsInnerSerializer();
 }
 
-class _$TeamUsersDtoOutputUsersInnerOpenSessionsInnerSerializer
-    implements
-        PrimitiveSerializer<TeamUsersDtoOutputUsersInnerOpenSessionsInner> {
+class _$TeamUsersDtoOutputUsersInnerOpenSessionsInnerSerializer implements PrimitiveSerializer<TeamUsersDtoOutputUsersInnerOpenSessionsInner> {
   @override
-  final Iterable<Type> types = const [
-    TeamUsersDtoOutputUsersInnerOpenSessionsInner,
-    _$TeamUsersDtoOutputUsersInnerOpenSessionsInner,
-  ];
+  final Iterable<Type> types = const [TeamUsersDtoOutputUsersInnerOpenSessionsInner, _$TeamUsersDtoOutputUsersInnerOpenSessionsInner];
 
   @override
   final String wireName = r'TeamUsersDtoOutputUsersInnerOpenSessionsInner';
@@ -77,19 +62,15 @@ class _$TeamUsersDtoOutputUsersInnerOpenSessionsInnerSerializer
       specifiedType: const FullType(String),
     );
     yield r'userAgent';
-    yield object.userAgent == null
-        ? null
-        : serializers.serialize(
-            object.userAgent,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.userAgent == null ? null : serializers.serialize(
+      object.userAgent,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'ipAddress';
-    yield object.ipAddress == null
-        ? null
-        : serializers.serialize(
-            object.ipAddress,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.ipAddress == null ? null : serializers.serialize(
+      object.ipAddress,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'signedInAt';
     yield serializers.serialize(
       object.signedInAt,
@@ -108,11 +89,7 @@ class _$TeamUsersDtoOutputUsersInnerOpenSessionsInnerSerializer
     TeamUsersDtoOutputUsersInnerOpenSessionsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -128,50 +105,40 @@ class _$TeamUsersDtoOutputUsersInnerOpenSessionsInnerSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.id = valueDes;
           break;
         case r'userAgent':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.userAgent = valueDes;
           break;
         case r'ipAddress':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.ipAddress = valueDes;
           break;
         case r'signedInAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.signedInAt = valueDes;
           break;
         case r'lastActivityAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.lastActivityAt = valueDes;
           break;
         default:
@@ -202,3 +169,5 @@ class _$TeamUsersDtoOutputUsersInnerOpenSessionsInnerSerializer
     return result.build();
   }
 }
+
+

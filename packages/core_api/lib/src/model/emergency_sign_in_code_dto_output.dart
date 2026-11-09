@@ -12,15 +12,10 @@ part 'emergency_sign_in_code_dto_output.g.dart';
 ///
 /// Properties:
 /// * [code] - Shown once; read out to the person, who types it in the app.
-/// * [expiresAt]
+/// * [expiresAt] 
 /// * [accountId] - The captain or restaurant user account it signs in to.
 @BuiltValue()
-abstract class EmergencySignInCodeDtoOutput
-    implements
-        Built<
-          EmergencySignInCodeDtoOutput,
-          EmergencySignInCodeDtoOutputBuilder
-        > {
+abstract class EmergencySignInCodeDtoOutput implements Built<EmergencySignInCodeDtoOutput, EmergencySignInCodeDtoOutputBuilder> {
   /// Shown once; read out to the person, who types it in the app.
   @BuiltValueField(wireName: r'code')
   String get code;
@@ -34,25 +29,18 @@ abstract class EmergencySignInCodeDtoOutput
 
   EmergencySignInCodeDtoOutput._();
 
-  factory EmergencySignInCodeDtoOutput([
-    void updates(EmergencySignInCodeDtoOutputBuilder b),
-  ]) = _$EmergencySignInCodeDtoOutput;
+  factory EmergencySignInCodeDtoOutput([void updates(EmergencySignInCodeDtoOutputBuilder b)]) = _$EmergencySignInCodeDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(EmergencySignInCodeDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<EmergencySignInCodeDtoOutput> get serializer =>
-      _$EmergencySignInCodeDtoOutputSerializer();
+  static Serializer<EmergencySignInCodeDtoOutput> get serializer => _$EmergencySignInCodeDtoOutputSerializer();
 }
 
-class _$EmergencySignInCodeDtoOutputSerializer
-    implements PrimitiveSerializer<EmergencySignInCodeDtoOutput> {
+class _$EmergencySignInCodeDtoOutputSerializer implements PrimitiveSerializer<EmergencySignInCodeDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    EmergencySignInCodeDtoOutput,
-    _$EmergencySignInCodeDtoOutput,
-  ];
+  final Iterable<Type> types = const [EmergencySignInCodeDtoOutput, _$EmergencySignInCodeDtoOutput];
 
   @override
   final String wireName = r'EmergencySignInCodeDtoOutput';
@@ -85,11 +73,7 @@ class _$EmergencySignInCodeDtoOutputSerializer
     EmergencySignInCodeDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -105,30 +89,24 @@ class _$EmergencySignInCodeDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'code':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.code = valueDes;
           break;
         case r'expiresAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.expiresAt = valueDes;
           break;
         case r'accountId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.accountId = valueDes;
           break;
         default:
@@ -159,3 +137,5 @@ class _$EmergencySignInCodeDtoOutputSerializer
     return result.build();
   }
 }
+
+

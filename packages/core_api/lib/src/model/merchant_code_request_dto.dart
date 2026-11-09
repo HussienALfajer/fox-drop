@@ -16,8 +16,7 @@ part 'merchant_code_request_dto.g.dart';
 /// * [deviceId] - The app installation, generated once by the app and kept until it is removed.
 /// * [platform] - Windows sends no App Check token (owner decision 2026-11-07).
 @BuiltValue()
-abstract class MerchantCodeRequestDto
-    implements Built<MerchantCodeRequestDto, MerchantCodeRequestDtoBuilder> {
+abstract class MerchantCodeRequestDto implements Built<MerchantCodeRequestDto, MerchantCodeRequestDtoBuilder> {
   /// The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
   @BuiltValueField(wireName: r'phone')
   String get phone;
@@ -33,25 +32,18 @@ abstract class MerchantCodeRequestDto
 
   MerchantCodeRequestDto._();
 
-  factory MerchantCodeRequestDto([
-    void updates(MerchantCodeRequestDtoBuilder b),
-  ]) = _$MerchantCodeRequestDto;
+  factory MerchantCodeRequestDto([void updates(MerchantCodeRequestDtoBuilder b)]) = _$MerchantCodeRequestDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantCodeRequestDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantCodeRequestDto> get serializer =>
-      _$MerchantCodeRequestDtoSerializer();
+  static Serializer<MerchantCodeRequestDto> get serializer => _$MerchantCodeRequestDtoSerializer();
 }
 
-class _$MerchantCodeRequestDtoSerializer
-    implements PrimitiveSerializer<MerchantCodeRequestDto> {
+class _$MerchantCodeRequestDtoSerializer implements PrimitiveSerializer<MerchantCodeRequestDto> {
   @override
-  final Iterable<Type> types = const [
-    MerchantCodeRequestDto,
-    _$MerchantCodeRequestDto,
-  ];
+  final Iterable<Type> types = const [MerchantCodeRequestDto, _$MerchantCodeRequestDto];
 
   @override
   final String wireName = r'MerchantCodeRequestDto';
@@ -86,11 +78,7 @@ class _$MerchantCodeRequestDtoSerializer
     MerchantCodeRequestDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -106,32 +94,24 @@ class _$MerchantCodeRequestDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'phone':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.phone = valueDes;
           break;
         case r'deviceId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.deviceId = valueDes;
           break;
         case r'platform':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      MerchantCodeRequestDtoPlatformEnum,
-                    ),
-                  )
-                  as MerchantCodeRequestDtoPlatformEnum?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(MerchantCodeRequestDtoPlatformEnum),
+          ) as MerchantCodeRequestDtoPlatformEnum?;
           if (valueDes == null) continue;
           result.platform = valueDes;
           break;
@@ -164,25 +144,22 @@ class _$MerchantCodeRequestDtoSerializer
   }
 }
 
+
 /// Windows sends no App Check token (owner decision 2026-11-07).
 class MerchantCodeRequestDtoPlatformEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'android')
-  static const MerchantCodeRequestDtoPlatformEnum android =
-      _$merchantCodeRequestDtoPlatformEnum_android;
+  static const MerchantCodeRequestDtoPlatformEnum android = _$merchantCodeRequestDtoPlatformEnum_android;
   @BuiltValueEnumConst(wireName: r'ios')
-  static const MerchantCodeRequestDtoPlatformEnum ios =
-      _$merchantCodeRequestDtoPlatformEnum_ios;
+  static const MerchantCodeRequestDtoPlatformEnum ios = _$merchantCodeRequestDtoPlatformEnum_ios;
   @BuiltValueEnumConst(wireName: r'windows')
-  static const MerchantCodeRequestDtoPlatformEnum windows =
-      _$merchantCodeRequestDtoPlatformEnum_windows;
+  static const MerchantCodeRequestDtoPlatformEnum windows = _$merchantCodeRequestDtoPlatformEnum_windows;
 
-  static Serializer<MerchantCodeRequestDtoPlatformEnum> get serializer =>
-      _$merchantCodeRequestDtoPlatformEnumSerializer;
+  static Serializer<MerchantCodeRequestDtoPlatformEnum> get serializer => _$merchantCodeRequestDtoPlatformEnumSerializer;
 
-  const MerchantCodeRequestDtoPlatformEnum._(String name) : super(name);
+  const MerchantCodeRequestDtoPlatformEnum._(String name): super(name);
 
-  static BuiltSet<MerchantCodeRequestDtoPlatformEnum> get values =>
-      _$merchantCodeRequestDtoPlatformEnumValues;
-  static MerchantCodeRequestDtoPlatformEnum valueOf(String name) =>
-      _$merchantCodeRequestDtoPlatformEnumValueOf(name);
+  static BuiltSet<MerchantCodeRequestDtoPlatformEnum> get values => _$merchantCodeRequestDtoPlatformEnumValues;
+  static MerchantCodeRequestDtoPlatformEnum valueOf(String name) => _$merchantCodeRequestDtoPlatformEnumValueOf(name);
 }
+

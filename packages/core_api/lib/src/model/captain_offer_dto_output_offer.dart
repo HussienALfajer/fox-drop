@@ -18,23 +18,21 @@ part 'captain_offer_dto_output_offer.g.dart';
 /// An offer (CA §8.2).
 ///
 /// Properties:
-/// * [id]
-/// * [status]
-/// * [orderId]
-/// * [number]
+/// * [id] 
+/// * [status] 
+/// * [orderId] 
+/// * [number] 
 /// * [fromOperations] - «تعيين من العمليات» (CA §8.4).
-/// * [offeredAt]
+/// * [offeredAt] 
 /// * [expiresAt] - The countdown ring runs to it (CA §8.2).
-/// * [pay]
-/// * [restaurant]
-/// * [customer]
-/// * [pickupPayment]
-/// * [collect]
-/// * [preparation]
+/// * [pay] 
+/// * [restaurant] 
+/// * [customer] 
+/// * [pickupPayment] 
+/// * [collect] 
+/// * [preparation] 
 @BuiltValue()
-abstract class CaptainOfferDtoOutputOffer
-    implements
-        Built<CaptainOfferDtoOutputOffer, CaptainOfferDtoOutputOfferBuilder> {
+abstract class CaptainOfferDtoOutputOffer implements Built<CaptainOfferDtoOutputOffer, CaptainOfferDtoOutputOfferBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -79,25 +77,18 @@ abstract class CaptainOfferDtoOutputOffer
 
   CaptainOfferDtoOutputOffer._();
 
-  factory CaptainOfferDtoOutputOffer([
-    void updates(CaptainOfferDtoOutputOfferBuilder b),
-  ]) = _$CaptainOfferDtoOutputOffer;
+  factory CaptainOfferDtoOutputOffer([void updates(CaptainOfferDtoOutputOfferBuilder b)]) = _$CaptainOfferDtoOutputOffer;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainOfferDtoOutputOfferBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainOfferDtoOutputOffer> get serializer =>
-      _$CaptainOfferDtoOutputOfferSerializer();
+  static Serializer<CaptainOfferDtoOutputOffer> get serializer => _$CaptainOfferDtoOutputOfferSerializer();
 }
 
-class _$CaptainOfferDtoOutputOfferSerializer
-    implements PrimitiveSerializer<CaptainOfferDtoOutputOffer> {
+class _$CaptainOfferDtoOutputOfferSerializer implements PrimitiveSerializer<CaptainOfferDtoOutputOffer> {
   @override
-  final Iterable<Type> types = const [
-    CaptainOfferDtoOutputOffer,
-    _$CaptainOfferDtoOutputOffer,
-  ];
+  final Iterable<Type> types = const [CaptainOfferDtoOutputOffer, _$CaptainOfferDtoOutputOffer];
 
   @override
   final String wireName = r'CaptainOfferDtoOutputOffer';
@@ -143,20 +134,14 @@ class _$CaptainOfferDtoOutputOfferSerializer
       specifiedType: const FullType(DateTime),
     );
     yield r'pay';
-    yield object.pay == null
-        ? null
-        : serializers.serialize(
-            object.pay,
-            specifiedType: const FullType.nullable(
-              AdminPickerDtoOutputCaptainsInnerCustodyLimit,
-            ),
-          );
+    yield object.pay == null ? null : serializers.serialize(
+      object.pay,
+      specifiedType: const FullType.nullable(AdminPickerDtoOutputCaptainsInnerCustodyLimit),
+    );
     yield r'restaurant';
     yield serializers.serialize(
       object.restaurant,
-      specifiedType: const FullType(
-        CaptainCurrentOfferDtoOutputOfferRestaurant,
-      ),
+      specifiedType: const FullType(CaptainCurrentOfferDtoOutputOfferRestaurant),
     );
     yield r'customer';
     yield serializers.serialize(
@@ -166,9 +151,7 @@ class _$CaptainOfferDtoOutputOfferSerializer
     yield r'pickupPayment';
     yield serializers.serialize(
       object.pickupPayment,
-      specifiedType: const FullType(
-        CaptainCurrentOfferDtoOutputOfferPickupPayment,
-      ),
+      specifiedType: const FullType(CaptainCurrentOfferDtoOutputOfferPickupPayment),
     );
     yield r'collect';
     yield serializers.serialize(
@@ -178,9 +161,7 @@ class _$CaptainOfferDtoOutputOfferSerializer
     yield r'preparation';
     yield serializers.serialize(
       object.preparation,
-      specifiedType: const FullType(
-        CaptainCurrentOfferDtoOutputOfferPreparation,
-      ),
+      specifiedType: const FullType(CaptainCurrentOfferDtoOutputOfferPreparation),
     );
   }
 
@@ -190,11 +171,7 @@ class _$CaptainOfferDtoOutputOfferSerializer
     CaptainOfferDtoOutputOffer object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -210,135 +187,95 @@ class _$CaptainOfferDtoOutputOfferSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.id = valueDes;
           break;
         case r'status':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CaptainOfferDtoOutputOfferStatusEnum,
-                    ),
-                  )
-                  as CaptainOfferDtoOutputOfferStatusEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CaptainOfferDtoOutputOfferStatusEnum),
+          ) as CaptainOfferDtoOutputOfferStatusEnum;
           result.status = valueDes;
           break;
         case r'orderId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.orderId = valueDes;
           break;
         case r'number':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.number = valueDes;
           break;
         case r'fromOperations':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.fromOperations = valueDes;
           break;
         case r'offeredAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.offeredAt = valueDes;
           break;
         case r'expiresAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.expiresAt = valueDes;
           break;
         case r'pay':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      AdminPickerDtoOutputCaptainsInnerCustodyLimit,
-                    ),
-                  )
-                  as AdminPickerDtoOutputCaptainsInnerCustodyLimit?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(AdminPickerDtoOutputCaptainsInnerCustodyLimit),
+          ) as AdminPickerDtoOutputCaptainsInnerCustodyLimit?;
           if (valueDes == null) continue;
           result.pay.replace(valueDes);
           break;
         case r'restaurant':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CaptainCurrentOfferDtoOutputOfferRestaurant,
-                    ),
-                  )
-                  as CaptainCurrentOfferDtoOutputOfferRestaurant;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CaptainCurrentOfferDtoOutputOfferRestaurant),
+          ) as CaptainCurrentOfferDtoOutputOfferRestaurant;
           result.restaurant.replace(valueDes);
           break;
         case r'customer':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CaptainCurrentOfferDtoOutputOfferCustomer,
-                    ),
-                  )
-                  as CaptainCurrentOfferDtoOutputOfferCustomer;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CaptainCurrentOfferDtoOutputOfferCustomer),
+          ) as CaptainCurrentOfferDtoOutputOfferCustomer;
           result.customer.replace(valueDes);
           break;
         case r'pickupPayment':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CaptainCurrentOfferDtoOutputOfferPickupPayment,
-                    ),
-                  )
-                  as CaptainCurrentOfferDtoOutputOfferPickupPayment;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CaptainCurrentOfferDtoOutputOfferPickupPayment),
+          ) as CaptainCurrentOfferDtoOutputOfferPickupPayment;
           result.pickupPayment.replace(valueDes);
           break;
         case r'collect':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CaptainCurrentOfferDtoOutputOfferCollect,
-                    ),
-                  )
-                  as CaptainCurrentOfferDtoOutputOfferCollect;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CaptainCurrentOfferDtoOutputOfferCollect),
+          ) as CaptainCurrentOfferDtoOutputOfferCollect;
           result.collect.replace(valueDes);
           break;
         case r'preparation':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CaptainCurrentOfferDtoOutputOfferPreparation,
-                    ),
-                  )
-                  as CaptainCurrentOfferDtoOutputOfferPreparation;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CaptainCurrentOfferDtoOutputOfferPreparation),
+          ) as CaptainCurrentOfferDtoOutputOfferPreparation;
           result.preparation.replace(valueDes);
           break;
         default:
@@ -370,30 +307,25 @@ class _$CaptainOfferDtoOutputOfferSerializer
   }
 }
 
+
 class CaptainOfferDtoOutputOfferStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'open')
-  static const CaptainOfferDtoOutputOfferStatusEnum open =
-      _$captainOfferDtoOutputOfferStatusEnum_open;
+  static const CaptainOfferDtoOutputOfferStatusEnum open = _$captainOfferDtoOutputOfferStatusEnum_open;
   @BuiltValueEnumConst(wireName: r'accepted')
-  static const CaptainOfferDtoOutputOfferStatusEnum accepted =
-      _$captainOfferDtoOutputOfferStatusEnum_accepted;
+  static const CaptainOfferDtoOutputOfferStatusEnum accepted = _$captainOfferDtoOutputOfferStatusEnum_accepted;
   @BuiltValueEnumConst(wireName: r'declined')
-  static const CaptainOfferDtoOutputOfferStatusEnum declined =
-      _$captainOfferDtoOutputOfferStatusEnum_declined;
+  static const CaptainOfferDtoOutputOfferStatusEnum declined = _$captainOfferDtoOutputOfferStatusEnum_declined;
   @BuiltValueEnumConst(wireName: r'expired')
-  static const CaptainOfferDtoOutputOfferStatusEnum expired =
-      _$captainOfferDtoOutputOfferStatusEnum_expired;
+  static const CaptainOfferDtoOutputOfferStatusEnum expired = _$captainOfferDtoOutputOfferStatusEnum_expired;
   @BuiltValueEnumConst(wireName: r'withdrawn')
-  static const CaptainOfferDtoOutputOfferStatusEnum withdrawn =
-      _$captainOfferDtoOutputOfferStatusEnum_withdrawn;
+  static const CaptainOfferDtoOutputOfferStatusEnum withdrawn = _$captainOfferDtoOutputOfferStatusEnum_withdrawn;
 
-  static Serializer<CaptainOfferDtoOutputOfferStatusEnum> get serializer =>
-      _$captainOfferDtoOutputOfferStatusEnumSerializer;
+  static Serializer<CaptainOfferDtoOutputOfferStatusEnum> get serializer => _$captainOfferDtoOutputOfferStatusEnumSerializer;
 
-  const CaptainOfferDtoOutputOfferStatusEnum._(String name) : super(name);
+  const CaptainOfferDtoOutputOfferStatusEnum._(String name): super(name);
 
-  static BuiltSet<CaptainOfferDtoOutputOfferStatusEnum> get values =>
-      _$captainOfferDtoOutputOfferStatusEnumValues;
-  static CaptainOfferDtoOutputOfferStatusEnum valueOf(String name) =>
-      _$captainOfferDtoOutputOfferStatusEnumValueOf(name);
+  static BuiltSet<CaptainOfferDtoOutputOfferStatusEnum> get values => _$captainOfferDtoOutputOfferStatusEnumValues;
+  static CaptainOfferDtoOutputOfferStatusEnum valueOf(String name) => _$captainOfferDtoOutputOfferStatusEnumValueOf(name);
 }
+

@@ -11,12 +11,11 @@ part 'captain_session_dto_output.g.dart';
 /// CaptainSessionDtoOutput
 ///
 /// Properties:
-/// * [accountId]
-/// * [captainId]
-/// * [sessionId]
+/// * [accountId] 
+/// * [captainId] 
+/// * [sessionId] 
 @BuiltValue()
-abstract class CaptainSessionDtoOutput
-    implements Built<CaptainSessionDtoOutput, CaptainSessionDtoOutputBuilder> {
+abstract class CaptainSessionDtoOutput implements Built<CaptainSessionDtoOutput, CaptainSessionDtoOutputBuilder> {
   @BuiltValueField(wireName: r'accountId')
   String get accountId;
 
@@ -28,25 +27,18 @@ abstract class CaptainSessionDtoOutput
 
   CaptainSessionDtoOutput._();
 
-  factory CaptainSessionDtoOutput([
-    void updates(CaptainSessionDtoOutputBuilder b),
-  ]) = _$CaptainSessionDtoOutput;
+  factory CaptainSessionDtoOutput([void updates(CaptainSessionDtoOutputBuilder b)]) = _$CaptainSessionDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainSessionDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainSessionDtoOutput> get serializer =>
-      _$CaptainSessionDtoOutputSerializer();
+  static Serializer<CaptainSessionDtoOutput> get serializer => _$CaptainSessionDtoOutputSerializer();
 }
 
-class _$CaptainSessionDtoOutputSerializer
-    implements PrimitiveSerializer<CaptainSessionDtoOutput> {
+class _$CaptainSessionDtoOutputSerializer implements PrimitiveSerializer<CaptainSessionDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    CaptainSessionDtoOutput,
-    _$CaptainSessionDtoOutput,
-  ];
+  final Iterable<Type> types = const [CaptainSessionDtoOutput, _$CaptainSessionDtoOutput];
 
   @override
   final String wireName = r'CaptainSessionDtoOutput';
@@ -79,11 +71,7 @@ class _$CaptainSessionDtoOutputSerializer
     CaptainSessionDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -99,30 +87,24 @@ class _$CaptainSessionDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'accountId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.accountId = valueDes;
           break;
         case r'captainId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.captainId = valueDes;
           break;
         case r'sessionId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.sessionId = valueDes;
           break;
         default:
@@ -153,3 +135,5 @@ class _$CaptainSessionDtoOutputSerializer
     return result.build();
   }
 }
+
+

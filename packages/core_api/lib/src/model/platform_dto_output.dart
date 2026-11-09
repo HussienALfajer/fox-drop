@@ -17,8 +17,7 @@ part 'platform_dto_output.g.dart';
 /// * [maintenance] - The maintenance setting of the app: the blocking maintenance screen.
 /// * [maintenanceMessage] - The maintenance message, when set.
 @BuiltValue()
-abstract class PlatformDtoOutput
-    implements Built<PlatformDtoOutput, PlatformDtoOutputBuilder> {
+abstract class PlatformDtoOutput implements Built<PlatformDtoOutput, PlatformDtoOutputBuilder> {
   /// required: below the min_version setting of the app, the blocking update screen; suggested: below its latest_version, a dismissible banner.
   @BuiltValueField(wireName: r'updateNeed')
   PlatformDtoOutputUpdateNeedEnum get updateNeed;
@@ -38,19 +37,16 @@ abstract class PlatformDtoOutput
 
   PlatformDtoOutput._();
 
-  factory PlatformDtoOutput([void updates(PlatformDtoOutputBuilder b)]) =
-      _$PlatformDtoOutput;
+  factory PlatformDtoOutput([void updates(PlatformDtoOutputBuilder b)]) = _$PlatformDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PlatformDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PlatformDtoOutput> get serializer =>
-      _$PlatformDtoOutputSerializer();
+  static Serializer<PlatformDtoOutput> get serializer => _$PlatformDtoOutputSerializer();
 }
 
-class _$PlatformDtoOutputSerializer
-    implements PrimitiveSerializer<PlatformDtoOutput> {
+class _$PlatformDtoOutputSerializer implements PrimitiveSerializer<PlatformDtoOutput> {
   @override
   final Iterable<Type> types = const [PlatformDtoOutput, _$PlatformDtoOutput];
 
@@ -94,11 +90,7 @@ class _$PlatformDtoOutputSerializer
     PlatformDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -114,42 +106,32 @@ class _$PlatformDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'updateNeed':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      PlatformDtoOutputUpdateNeedEnum,
-                    ),
-                  )
-                  as PlatformDtoOutputUpdateNeedEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(PlatformDtoOutputUpdateNeedEnum),
+          ) as PlatformDtoOutputUpdateNeedEnum;
           result.updateNeed = valueDes;
           break;
         case r'updateMessage':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.updateMessage = valueDes;
           break;
         case r'maintenance':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.maintenance = valueDes;
           break;
         case r'maintenanceMessage':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.maintenanceMessage = valueDes;
           break;
@@ -182,25 +164,22 @@ class _$PlatformDtoOutputSerializer
   }
 }
 
+
 /// required: below the min_version setting of the app, the blocking update screen; suggested: below its latest_version, a dismissible banner.
 class PlatformDtoOutputUpdateNeedEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'required')
-  static const PlatformDtoOutputUpdateNeedEnum required_ =
-      _$platformDtoOutputUpdateNeedEnum_required_;
+  static const PlatformDtoOutputUpdateNeedEnum required_ = _$platformDtoOutputUpdateNeedEnum_required_;
   @BuiltValueEnumConst(wireName: r'suggested')
-  static const PlatformDtoOutputUpdateNeedEnum suggested =
-      _$platformDtoOutputUpdateNeedEnum_suggested;
+  static const PlatformDtoOutputUpdateNeedEnum suggested = _$platformDtoOutputUpdateNeedEnum_suggested;
   @BuiltValueEnumConst(wireName: r'none')
-  static const PlatformDtoOutputUpdateNeedEnum none =
-      _$platformDtoOutputUpdateNeedEnum_none;
+  static const PlatformDtoOutputUpdateNeedEnum none = _$platformDtoOutputUpdateNeedEnum_none;
 
-  static Serializer<PlatformDtoOutputUpdateNeedEnum> get serializer =>
-      _$platformDtoOutputUpdateNeedEnumSerializer;
+  static Serializer<PlatformDtoOutputUpdateNeedEnum> get serializer => _$platformDtoOutputUpdateNeedEnumSerializer;
 
-  const PlatformDtoOutputUpdateNeedEnum._(String name) : super(name);
+  const PlatformDtoOutputUpdateNeedEnum._(String name): super(name);
 
-  static BuiltSet<PlatformDtoOutputUpdateNeedEnum> get values =>
-      _$platformDtoOutputUpdateNeedEnumValues;
-  static PlatformDtoOutputUpdateNeedEnum valueOf(String name) =>
-      _$platformDtoOutputUpdateNeedEnumValueOf(name);
+  static BuiltSet<PlatformDtoOutputUpdateNeedEnum> get values => _$platformDtoOutputUpdateNeedEnumValues;
+  static PlatformDtoOutputUpdateNeedEnum valueOf(String name) => _$platformDtoOutputUpdateNeedEnumValueOf(name);
 }
+

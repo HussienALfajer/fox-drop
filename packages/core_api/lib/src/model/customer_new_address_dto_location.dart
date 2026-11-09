@@ -11,15 +11,10 @@ part 'customer_new_address_dto_location.g.dart';
 /// The pin, inside an active zone (CU §7.1).
 ///
 /// Properties:
-/// * [latitude]
-/// * [longitude]
+/// * [latitude] 
+/// * [longitude] 
 @BuiltValue()
-abstract class CustomerNewAddressDtoLocation
-    implements
-        Built<
-          CustomerNewAddressDtoLocation,
-          CustomerNewAddressDtoLocationBuilder
-        > {
+abstract class CustomerNewAddressDtoLocation implements Built<CustomerNewAddressDtoLocation, CustomerNewAddressDtoLocationBuilder> {
   @BuiltValueField(wireName: r'latitude')
   num get latitude;
 
@@ -28,25 +23,18 @@ abstract class CustomerNewAddressDtoLocation
 
   CustomerNewAddressDtoLocation._();
 
-  factory CustomerNewAddressDtoLocation([
-    void updates(CustomerNewAddressDtoLocationBuilder b),
-  ]) = _$CustomerNewAddressDtoLocation;
+  factory CustomerNewAddressDtoLocation([void updates(CustomerNewAddressDtoLocationBuilder b)]) = _$CustomerNewAddressDtoLocation;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerNewAddressDtoLocationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerNewAddressDtoLocation> get serializer =>
-      _$CustomerNewAddressDtoLocationSerializer();
+  static Serializer<CustomerNewAddressDtoLocation> get serializer => _$CustomerNewAddressDtoLocationSerializer();
 }
 
-class _$CustomerNewAddressDtoLocationSerializer
-    implements PrimitiveSerializer<CustomerNewAddressDtoLocation> {
+class _$CustomerNewAddressDtoLocationSerializer implements PrimitiveSerializer<CustomerNewAddressDtoLocation> {
   @override
-  final Iterable<Type> types = const [
-    CustomerNewAddressDtoLocation,
-    _$CustomerNewAddressDtoLocation,
-  ];
+  final Iterable<Type> types = const [CustomerNewAddressDtoLocation, _$CustomerNewAddressDtoLocation];
 
   @override
   final String wireName = r'CustomerNewAddressDtoLocation';
@@ -74,11 +62,7 @@ class _$CustomerNewAddressDtoLocationSerializer
     CustomerNewAddressDtoLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -94,15 +78,17 @@ class _$CustomerNewAddressDtoLocationSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'latitude':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(num))
-                  as num;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
           result.latitude = valueDes;
           break;
         case r'longitude':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(num))
-                  as num;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
           result.longitude = valueDes;
           break;
         default:
@@ -133,3 +119,5 @@ class _$CustomerNewAddressDtoLocationSerializer
     return result.build();
   }
 }
+
+

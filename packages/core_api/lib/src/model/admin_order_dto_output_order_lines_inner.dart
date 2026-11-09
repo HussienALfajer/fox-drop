@@ -14,19 +14,14 @@ part 'admin_order_dto_output_order_lines_inner.g.dart';
 ///
 /// Properties:
 /// * [itemId] - «رفض نيابة عن المطعم» picks the unavailable items by it.
-/// * [name]
-/// * [quantity]
-/// * [options]
-/// * [note]
+/// * [name] 
+/// * [quantity] 
+/// * [options] 
+/// * [note] 
 /// * [unitPrice] - Integer minor units (AP §8.6).
 /// * [lineTotal] - Integer minor units (AP §8.6).
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderLinesInner
-    implements
-        Built<
-          AdminOrderDtoOutputOrderLinesInner,
-          AdminOrderDtoOutputOrderLinesInnerBuilder
-        > {
+abstract class AdminOrderDtoOutputOrderLinesInner implements Built<AdminOrderDtoOutputOrderLinesInner, AdminOrderDtoOutputOrderLinesInnerBuilder> {
   /// «رفض نيابة عن المطعم» picks the unavailable items by it.
   @BuiltValueField(wireName: r'itemId')
   String get itemId;
@@ -53,25 +48,18 @@ abstract class AdminOrderDtoOutputOrderLinesInner
 
   AdminOrderDtoOutputOrderLinesInner._();
 
-  factory AdminOrderDtoOutputOrderLinesInner([
-    void updates(AdminOrderDtoOutputOrderLinesInnerBuilder b),
-  ]) = _$AdminOrderDtoOutputOrderLinesInner;
+  factory AdminOrderDtoOutputOrderLinesInner([void updates(AdminOrderDtoOutputOrderLinesInnerBuilder b)]) = _$AdminOrderDtoOutputOrderLinesInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderDtoOutputOrderLinesInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderLinesInner> get serializer =>
-      _$AdminOrderDtoOutputOrderLinesInnerSerializer();
+  static Serializer<AdminOrderDtoOutputOrderLinesInner> get serializer => _$AdminOrderDtoOutputOrderLinesInnerSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderLinesInnerSerializer
-    implements PrimitiveSerializer<AdminOrderDtoOutputOrderLinesInner> {
+class _$AdminOrderDtoOutputOrderLinesInnerSerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderLinesInner> {
   @override
-  final Iterable<Type> types = const [
-    AdminOrderDtoOutputOrderLinesInner,
-    _$AdminOrderDtoOutputOrderLinesInner,
-  ];
+  final Iterable<Type> types = const [AdminOrderDtoOutputOrderLinesInner, _$AdminOrderDtoOutputOrderLinesInner];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderLinesInner';
@@ -99,17 +87,13 @@ class _$AdminOrderDtoOutputOrderLinesInnerSerializer
     yield r'options';
     yield serializers.serialize(
       object.options,
-      specifiedType: const FullType(BuiltList, [
-        FullType(AdminOrderDtoOutputOrderLinesInnerOptionsInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(AdminOrderDtoOutputOrderLinesInnerOptionsInner)]),
     );
     yield r'note';
-    yield object.note == null
-        ? null
-        : serializers.serialize(
-            object.note,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.note == null ? null : serializers.serialize(
+      object.note,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'unitPrice';
     yield serializers.serialize(
       object.unitPrice,
@@ -128,11 +112,7 @@ class _$AdminOrderDtoOutputOrderLinesInnerSerializer
     AdminOrderDtoOutputOrderLinesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -148,66 +128,53 @@ class _$AdminOrderDtoOutputOrderLinesInnerSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'itemId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.itemId = valueDes;
           break;
         case r'name':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.name = valueDes;
           break;
         case r'quantity':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.quantity = valueDes;
           break;
         case r'options':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(AdminOrderDtoOutputOrderLinesInnerOptionsInner),
-                    ]),
-                  )
-                  as BuiltList<AdminOrderDtoOutputOrderLinesInnerOptionsInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(AdminOrderDtoOutputOrderLinesInnerOptionsInner)]),
+          ) as BuiltList<AdminOrderDtoOutputOrderLinesInnerOptionsInner>;
           result.options.replace(valueDes);
           break;
         case r'note':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.note = valueDes;
           break;
         case r'unitPrice':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.unitPrice = valueDes;
           break;
         case r'lineTotal':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.lineTotal = valueDes;
           break;
         default:
@@ -238,3 +205,5 @@ class _$AdminOrderDtoOutputOrderLinesInnerSerializer
     return result.build();
   }
 }
+
+

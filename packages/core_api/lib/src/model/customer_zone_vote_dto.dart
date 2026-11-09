@@ -13,10 +13,9 @@ part 'customer_zone_vote_dto.g.dart';
 ///
 /// Properties:
 /// * [deviceId] - The app installation, generated once by the app and kept until it is removed.
-/// * [location]
+/// * [location] 
 @BuiltValue()
-abstract class CustomerZoneVoteDto
-    implements Built<CustomerZoneVoteDto, CustomerZoneVoteDtoBuilder> {
+abstract class CustomerZoneVoteDto implements Built<CustomerZoneVoteDto, CustomerZoneVoteDtoBuilder> {
   /// The app installation, generated once by the app and kept until it is removed.
   @BuiltValueField(wireName: r'deviceId')
   String get deviceId;
@@ -26,24 +25,18 @@ abstract class CustomerZoneVoteDto
 
   CustomerZoneVoteDto._();
 
-  factory CustomerZoneVoteDto([void updates(CustomerZoneVoteDtoBuilder b)]) =
-      _$CustomerZoneVoteDto;
+  factory CustomerZoneVoteDto([void updates(CustomerZoneVoteDtoBuilder b)]) = _$CustomerZoneVoteDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerZoneVoteDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerZoneVoteDto> get serializer =>
-      _$CustomerZoneVoteDtoSerializer();
+  static Serializer<CustomerZoneVoteDto> get serializer => _$CustomerZoneVoteDtoSerializer();
 }
 
-class _$CustomerZoneVoteDtoSerializer
-    implements PrimitiveSerializer<CustomerZoneVoteDto> {
+class _$CustomerZoneVoteDtoSerializer implements PrimitiveSerializer<CustomerZoneVoteDto> {
   @override
-  final Iterable<Type> types = const [
-    CustomerZoneVoteDto,
-    _$CustomerZoneVoteDto,
-  ];
+  final Iterable<Type> types = const [CustomerZoneVoteDto, _$CustomerZoneVoteDto];
 
   @override
   final String wireName = r'CustomerZoneVoteDto';
@@ -71,11 +64,7 @@ class _$CustomerZoneVoteDtoSerializer
     CustomerZoneVoteDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -91,21 +80,17 @@ class _$CustomerZoneVoteDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'deviceId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.deviceId = valueDes;
           break;
         case r'location':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(CustomerZoneVoteDtoLocation),
-                  )
-                  as CustomerZoneVoteDtoLocation;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CustomerZoneVoteDtoLocation),
+          ) as CustomerZoneVoteDtoLocation;
           result.location.replace(valueDes);
           break;
         default:
@@ -136,3 +121,5 @@ class _$CustomerZoneVoteDtoSerializer
     return result.build();
   }
 }
+
+

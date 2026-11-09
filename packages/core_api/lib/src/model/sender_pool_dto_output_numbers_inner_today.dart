@@ -11,17 +11,12 @@ part 'sender_pool_dto_output_numbers_inner_today.g.dart';
 /// Today in Asia/Damascus.
 ///
 /// Properties:
-/// * [sent]
-/// * [failed]
-/// * [delivered]
-/// * [read]
+/// * [sent] 
+/// * [failed] 
+/// * [delivered] 
+/// * [read] 
 @BuiltValue()
-abstract class SenderPoolDtoOutputNumbersInnerToday
-    implements
-        Built<
-          SenderPoolDtoOutputNumbersInnerToday,
-          SenderPoolDtoOutputNumbersInnerTodayBuilder
-        > {
+abstract class SenderPoolDtoOutputNumbersInnerToday implements Built<SenderPoolDtoOutputNumbersInnerToday, SenderPoolDtoOutputNumbersInnerTodayBuilder> {
   @BuiltValueField(wireName: r'sent')
   int get sent;
 
@@ -36,25 +31,18 @@ abstract class SenderPoolDtoOutputNumbersInnerToday
 
   SenderPoolDtoOutputNumbersInnerToday._();
 
-  factory SenderPoolDtoOutputNumbersInnerToday([
-    void updates(SenderPoolDtoOutputNumbersInnerTodayBuilder b),
-  ]) = _$SenderPoolDtoOutputNumbersInnerToday;
+  factory SenderPoolDtoOutputNumbersInnerToday([void updates(SenderPoolDtoOutputNumbersInnerTodayBuilder b)]) = _$SenderPoolDtoOutputNumbersInnerToday;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SenderPoolDtoOutputNumbersInnerTodayBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SenderPoolDtoOutputNumbersInnerToday> get serializer =>
-      _$SenderPoolDtoOutputNumbersInnerTodaySerializer();
+  static Serializer<SenderPoolDtoOutputNumbersInnerToday> get serializer => _$SenderPoolDtoOutputNumbersInnerTodaySerializer();
 }
 
-class _$SenderPoolDtoOutputNumbersInnerTodaySerializer
-    implements PrimitiveSerializer<SenderPoolDtoOutputNumbersInnerToday> {
+class _$SenderPoolDtoOutputNumbersInnerTodaySerializer implements PrimitiveSerializer<SenderPoolDtoOutputNumbersInnerToday> {
   @override
-  final Iterable<Type> types = const [
-    SenderPoolDtoOutputNumbersInnerToday,
-    _$SenderPoolDtoOutputNumbersInnerToday,
-  ];
+  final Iterable<Type> types = const [SenderPoolDtoOutputNumbersInnerToday, _$SenderPoolDtoOutputNumbersInnerToday];
 
   @override
   final String wireName = r'SenderPoolDtoOutputNumbersInnerToday';
@@ -92,11 +80,7 @@ class _$SenderPoolDtoOutputNumbersInnerTodaySerializer
     SenderPoolDtoOutputNumbersInnerToday object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -112,27 +96,31 @@ class _$SenderPoolDtoOutputNumbersInnerTodaySerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'sent':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.sent = valueDes;
           break;
         case r'failed':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.failed = valueDes;
           break;
         case r'delivered':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.delivered = valueDes;
           break;
         case r'read':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.read = valueDes;
           break;
         default:
@@ -163,3 +151,5 @@ class _$SenderPoolDtoOutputNumbersInnerTodaySerializer
     return result.build();
   }
 }
+
+

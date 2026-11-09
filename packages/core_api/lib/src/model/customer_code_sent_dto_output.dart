@@ -14,11 +14,9 @@ part 'customer_code_sent_dto_output.g.dart';
 /// Properties:
 /// * [channel] - Where the code went (architecture §8.3.4).
 /// * [resendAfterSec] - When the app may offer «إعادة الإرسال».
-/// * [expiresAt]
+/// * [expiresAt] 
 @BuiltValue()
-abstract class CustomerCodeSentDtoOutput
-    implements
-        Built<CustomerCodeSentDtoOutput, CustomerCodeSentDtoOutputBuilder> {
+abstract class CustomerCodeSentDtoOutput implements Built<CustomerCodeSentDtoOutput, CustomerCodeSentDtoOutputBuilder> {
   /// Where the code went (architecture §8.3.4).
   @BuiltValueField(wireName: r'channel')
   CustomerCodeSentDtoOutputChannelEnum get channel;
@@ -33,25 +31,18 @@ abstract class CustomerCodeSentDtoOutput
 
   CustomerCodeSentDtoOutput._();
 
-  factory CustomerCodeSentDtoOutput([
-    void updates(CustomerCodeSentDtoOutputBuilder b),
-  ]) = _$CustomerCodeSentDtoOutput;
+  factory CustomerCodeSentDtoOutput([void updates(CustomerCodeSentDtoOutputBuilder b)]) = _$CustomerCodeSentDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerCodeSentDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerCodeSentDtoOutput> get serializer =>
-      _$CustomerCodeSentDtoOutputSerializer();
+  static Serializer<CustomerCodeSentDtoOutput> get serializer => _$CustomerCodeSentDtoOutputSerializer();
 }
 
-class _$CustomerCodeSentDtoOutputSerializer
-    implements PrimitiveSerializer<CustomerCodeSentDtoOutput> {
+class _$CustomerCodeSentDtoOutputSerializer implements PrimitiveSerializer<CustomerCodeSentDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    CustomerCodeSentDtoOutput,
-    _$CustomerCodeSentDtoOutput,
-  ];
+  final Iterable<Type> types = const [CustomerCodeSentDtoOutput, _$CustomerCodeSentDtoOutput];
 
   @override
   final String wireName = r'CustomerCodeSentDtoOutput';
@@ -84,11 +75,7 @@ class _$CustomerCodeSentDtoOutputSerializer
     CustomerCodeSentDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -104,29 +91,24 @@ class _$CustomerCodeSentDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'channel':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CustomerCodeSentDtoOutputChannelEnum,
-                    ),
-                  )
-                  as CustomerCodeSentDtoOutputChannelEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CustomerCodeSentDtoOutputChannelEnum),
+          ) as CustomerCodeSentDtoOutputChannelEnum;
           result.channel = valueDes;
           break;
         case r'resendAfterSec':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.resendAfterSec = valueDes;
           break;
         case r'expiresAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.expiresAt = valueDes;
           break;
         default:
@@ -158,19 +140,18 @@ class _$CustomerCodeSentDtoOutputSerializer
   }
 }
 
+
 /// Where the code went (architecture §8.3.4).
 class CustomerCodeSentDtoOutputChannelEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'whatsapp')
-  static const CustomerCodeSentDtoOutputChannelEnum whatsapp =
-      _$customerCodeSentDtoOutputChannelEnum_whatsapp;
+  static const CustomerCodeSentDtoOutputChannelEnum whatsapp = _$customerCodeSentDtoOutputChannelEnum_whatsapp;
 
-  static Serializer<CustomerCodeSentDtoOutputChannelEnum> get serializer =>
-      _$customerCodeSentDtoOutputChannelEnumSerializer;
+  static Serializer<CustomerCodeSentDtoOutputChannelEnum> get serializer => _$customerCodeSentDtoOutputChannelEnumSerializer;
 
-  const CustomerCodeSentDtoOutputChannelEnum._(String name) : super(name);
+  const CustomerCodeSentDtoOutputChannelEnum._(String name): super(name);
 
-  static BuiltSet<CustomerCodeSentDtoOutputChannelEnum> get values =>
-      _$customerCodeSentDtoOutputChannelEnumValues;
-  static CustomerCodeSentDtoOutputChannelEnum valueOf(String name) =>
-      _$customerCodeSentDtoOutputChannelEnumValueOf(name);
+  static BuiltSet<CustomerCodeSentDtoOutputChannelEnum> get values => _$customerCodeSentDtoOutputChannelEnumValues;
+  static CustomerCodeSentDtoOutputChannelEnum valueOf(String name) => _$customerCodeSentDtoOutputChannelEnumValueOf(name);
 }
+

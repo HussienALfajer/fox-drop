@@ -13,38 +13,26 @@ part 'customer_notifications_dto_output.g.dart';
 /// CustomerNotificationsDtoOutput
 ///
 /// Properties:
-/// * [notifications]
+/// * [notifications] 
 @BuiltValue()
-abstract class CustomerNotificationsDtoOutput
-    implements
-        Built<
-          CustomerNotificationsDtoOutput,
-          CustomerNotificationsDtoOutputBuilder
-        > {
+abstract class CustomerNotificationsDtoOutput implements Built<CustomerNotificationsDtoOutput, CustomerNotificationsDtoOutputBuilder> {
   @BuiltValueField(wireName: r'notifications')
   BuiltList<CustomerNotificationsDtoOutputNotificationsInner> get notifications;
 
   CustomerNotificationsDtoOutput._();
 
-  factory CustomerNotificationsDtoOutput([
-    void updates(CustomerNotificationsDtoOutputBuilder b),
-  ]) = _$CustomerNotificationsDtoOutput;
+  factory CustomerNotificationsDtoOutput([void updates(CustomerNotificationsDtoOutputBuilder b)]) = _$CustomerNotificationsDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerNotificationsDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerNotificationsDtoOutput> get serializer =>
-      _$CustomerNotificationsDtoOutputSerializer();
+  static Serializer<CustomerNotificationsDtoOutput> get serializer => _$CustomerNotificationsDtoOutputSerializer();
 }
 
-class _$CustomerNotificationsDtoOutputSerializer
-    implements PrimitiveSerializer<CustomerNotificationsDtoOutput> {
+class _$CustomerNotificationsDtoOutputSerializer implements PrimitiveSerializer<CustomerNotificationsDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    CustomerNotificationsDtoOutput,
-    _$CustomerNotificationsDtoOutput,
-  ];
+  final Iterable<Type> types = const [CustomerNotificationsDtoOutput, _$CustomerNotificationsDtoOutput];
 
   @override
   final String wireName = r'CustomerNotificationsDtoOutput';
@@ -57,9 +45,7 @@ class _$CustomerNotificationsDtoOutputSerializer
     yield r'notifications';
     yield serializers.serialize(
       object.notifications,
-      specifiedType: const FullType(BuiltList, [
-        FullType(CustomerNotificationsDtoOutputNotificationsInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(CustomerNotificationsDtoOutputNotificationsInner)]),
     );
   }
 
@@ -69,11 +55,7 @@ class _$CustomerNotificationsDtoOutputSerializer
     CustomerNotificationsDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -89,18 +71,10 @@ class _$CustomerNotificationsDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'notifications':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        CustomerNotificationsDtoOutputNotificationsInner,
-                      ),
-                    ]),
-                  )
-                  as BuiltList<
-                    CustomerNotificationsDtoOutputNotificationsInner
-                  >;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(CustomerNotificationsDtoOutputNotificationsInner)]),
+          ) as BuiltList<CustomerNotificationsDtoOutputNotificationsInner>;
           result.notifications.replace(valueDes);
           break;
         default:
@@ -131,3 +105,5 @@ class _$CustomerNotificationsDtoOutputSerializer
     return result.build();
   }
 }
+
+

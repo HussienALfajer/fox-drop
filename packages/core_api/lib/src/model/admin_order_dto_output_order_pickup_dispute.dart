@@ -13,17 +13,12 @@ part 'admin_order_dto_output_order_pickup_dispute.g.dart';
 /// «خلاف على دفعة الاستلام» after the pickup (RA §8.10 item 8), always urgent.
 ///
 /// Properties:
-/// * [at]
+/// * [at] 
 /// * [accountId] - The restaurant user.
-/// * [device]
+/// * [device] 
 /// * [receivedLines] - What the restaurant says it received.
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderPickupDispute
-    implements
-        Built<
-          AdminOrderDtoOutputOrderPickupDispute,
-          AdminOrderDtoOutputOrderPickupDisputeBuilder
-        > {
+abstract class AdminOrderDtoOutputOrderPickupDispute implements Built<AdminOrderDtoOutputOrderPickupDispute, AdminOrderDtoOutputOrderPickupDisputeBuilder> {
   @BuiltValueField(wireName: r'at')
   DateTime get at;
 
@@ -40,25 +35,18 @@ abstract class AdminOrderDtoOutputOrderPickupDispute
 
   AdminOrderDtoOutputOrderPickupDispute._();
 
-  factory AdminOrderDtoOutputOrderPickupDispute([
-    void updates(AdminOrderDtoOutputOrderPickupDisputeBuilder b),
-  ]) = _$AdminOrderDtoOutputOrderPickupDispute;
+  factory AdminOrderDtoOutputOrderPickupDispute([void updates(AdminOrderDtoOutputOrderPickupDisputeBuilder b)]) = _$AdminOrderDtoOutputOrderPickupDispute;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderDtoOutputOrderPickupDisputeBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderPickupDispute> get serializer =>
-      _$AdminOrderDtoOutputOrderPickupDisputeSerializer();
+  static Serializer<AdminOrderDtoOutputOrderPickupDispute> get serializer => _$AdminOrderDtoOutputOrderPickupDisputeSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderPickupDisputeSerializer
-    implements PrimitiveSerializer<AdminOrderDtoOutputOrderPickupDispute> {
+class _$AdminOrderDtoOutputOrderPickupDisputeSerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderPickupDispute> {
   @override
-  final Iterable<Type> types = const [
-    AdminOrderDtoOutputOrderPickupDispute,
-    _$AdminOrderDtoOutputOrderPickupDispute,
-  ];
+  final Iterable<Type> types = const [AdminOrderDtoOutputOrderPickupDispute, _$AdminOrderDtoOutputOrderPickupDispute];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderPickupDispute';
@@ -86,9 +74,7 @@ class _$AdminOrderDtoOutputOrderPickupDisputeSerializer
     yield r'receivedLines';
     yield serializers.serialize(
       object.receivedLines,
-      specifiedType: const FullType(BuiltList, [
-        FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType.nullable(CaptainWentOfflineDtoOutputHandIn)]),
     );
   }
 
@@ -98,11 +84,7 @@ class _$AdminOrderDtoOutputOrderPickupDisputeSerializer
     AdminOrderDtoOutputOrderPickupDispute object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -118,41 +100,31 @@ class _$AdminOrderDtoOutputOrderPickupDisputeSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'at':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.at = valueDes;
           break;
         case r'accountId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.accountId = valueDes;
           break;
         case r'device':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.device = valueDes;
           break;
         case r'receivedLines':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
-                    ]),
-                  )
-                  as BuiltList<CaptainWentOfflineDtoOutputHandIn?>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType.nullable(CaptainWentOfflineDtoOutputHandIn)]),
+          ) as BuiltList<CaptainWentOfflineDtoOutputHandIn?>;
           result.receivedLines.replace(valueDes);
           break;
         default:
@@ -183,3 +155,5 @@ class _$AdminOrderDtoOutputOrderPickupDisputeSerializer
     return result.build();
   }
 }
+
+

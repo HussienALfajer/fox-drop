@@ -11,28 +11,24 @@ part 'merchant_refresh_dto.g.dart';
 /// MerchantRefreshDto
 ///
 /// Properties:
-/// * [refreshToken]
+/// * [refreshToken] 
 @BuiltValue()
-abstract class MerchantRefreshDto
-    implements Built<MerchantRefreshDto, MerchantRefreshDtoBuilder> {
+abstract class MerchantRefreshDto implements Built<MerchantRefreshDto, MerchantRefreshDtoBuilder> {
   @BuiltValueField(wireName: r'refreshToken')
   String get refreshToken;
 
   MerchantRefreshDto._();
 
-  factory MerchantRefreshDto([void updates(MerchantRefreshDtoBuilder b)]) =
-      _$MerchantRefreshDto;
+  factory MerchantRefreshDto([void updates(MerchantRefreshDtoBuilder b)]) = _$MerchantRefreshDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantRefreshDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantRefreshDto> get serializer =>
-      _$MerchantRefreshDtoSerializer();
+  static Serializer<MerchantRefreshDto> get serializer => _$MerchantRefreshDtoSerializer();
 }
 
-class _$MerchantRefreshDtoSerializer
-    implements PrimitiveSerializer<MerchantRefreshDto> {
+class _$MerchantRefreshDtoSerializer implements PrimitiveSerializer<MerchantRefreshDto> {
   @override
   final Iterable<Type> types = const [MerchantRefreshDto, _$MerchantRefreshDto];
 
@@ -57,11 +53,7 @@ class _$MerchantRefreshDtoSerializer
     MerchantRefreshDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -77,12 +69,10 @@ class _$MerchantRefreshDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'refreshToken':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.refreshToken = valueDes;
           break;
         default:
@@ -113,3 +103,5 @@ class _$MerchantRefreshDtoSerializer
     return result.build();
   }
 }
+
+

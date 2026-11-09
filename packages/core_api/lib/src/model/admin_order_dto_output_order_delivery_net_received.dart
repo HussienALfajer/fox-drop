@@ -12,14 +12,9 @@ part 'admin_order_dto_output_order_delivery_net_received.g.dart';
 ///
 /// Properties:
 /// * [amount] - Integer minor units (AP §8.6).
-/// * [currency]
+/// * [currency] 
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderDeliveryNetReceived
-    implements
-        Built<
-          AdminOrderDtoOutputOrderDeliveryNetReceived,
-          AdminOrderDtoOutputOrderDeliveryNetReceivedBuilder
-        > {
+abstract class AdminOrderDtoOutputOrderDeliveryNetReceived implements Built<AdminOrderDtoOutputOrderDeliveryNetReceived, AdminOrderDtoOutputOrderDeliveryNetReceivedBuilder> {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -29,27 +24,18 @@ abstract class AdminOrderDtoOutputOrderDeliveryNetReceived
 
   AdminOrderDtoOutputOrderDeliveryNetReceived._();
 
-  factory AdminOrderDtoOutputOrderDeliveryNetReceived([
-    void updates(AdminOrderDtoOutputOrderDeliveryNetReceivedBuilder b),
-  ]) = _$AdminOrderDtoOutputOrderDeliveryNetReceived;
+  factory AdminOrderDtoOutputOrderDeliveryNetReceived([void updates(AdminOrderDtoOutputOrderDeliveryNetReceivedBuilder b)]) = _$AdminOrderDtoOutputOrderDeliveryNetReceived;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminOrderDtoOutputOrderDeliveryNetReceivedBuilder b) =>
-      b;
+  static void _defaults(AdminOrderDtoOutputOrderDeliveryNetReceivedBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderDeliveryNetReceived>
-  get serializer => _$AdminOrderDtoOutputOrderDeliveryNetReceivedSerializer();
+  static Serializer<AdminOrderDtoOutputOrderDeliveryNetReceived> get serializer => _$AdminOrderDtoOutputOrderDeliveryNetReceivedSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderDeliveryNetReceivedSerializer
-    implements
-        PrimitiveSerializer<AdminOrderDtoOutputOrderDeliveryNetReceived> {
+class _$AdminOrderDtoOutputOrderDeliveryNetReceivedSerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderDeliveryNetReceived> {
   @override
-  final Iterable<Type> types = const [
-    AdminOrderDtoOutputOrderDeliveryNetReceived,
-    _$AdminOrderDtoOutputOrderDeliveryNetReceived,
-  ];
+  final Iterable<Type> types = const [AdminOrderDtoOutputOrderDeliveryNetReceived, _$AdminOrderDtoOutputOrderDeliveryNetReceived];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderDeliveryNetReceived';
@@ -77,11 +63,7 @@ class _$AdminOrderDtoOutputOrderDeliveryNetReceivedSerializer
     AdminOrderDtoOutputOrderDeliveryNetReceived object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -97,21 +79,17 @@ class _$AdminOrderDtoOutputOrderDeliveryNetReceivedSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.currency = valueDes;
           break;
         default:
@@ -142,3 +120,5 @@ class _$AdminOrderDtoOutputOrderDeliveryNetReceivedSerializer
     return result.build();
   }
 }
+
+

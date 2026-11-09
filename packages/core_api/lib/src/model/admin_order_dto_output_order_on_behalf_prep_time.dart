@@ -13,17 +13,12 @@ part 'admin_order_dto_output_order_on_behalf_prep_time.g.dart';
 ///
 /// Properties:
 /// * [options] - The chips (merchant.prep_time_options).
-/// * [stepMin]
-/// * [floorMin]
-/// * [ceilingMin]
+/// * [stepMin] 
+/// * [floorMin] 
+/// * [ceilingMin] 
 /// * [defaultMin] - Preselected: the restaurant's default prep time plus busy mode's minutes while it is on.
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderOnBehalfPrepTime
-    implements
-        Built<
-          AdminOrderDtoOutputOrderOnBehalfPrepTime,
-          AdminOrderDtoOutputOrderOnBehalfPrepTimeBuilder
-        > {
+abstract class AdminOrderDtoOutputOrderOnBehalfPrepTime implements Built<AdminOrderDtoOutputOrderOnBehalfPrepTime, AdminOrderDtoOutputOrderOnBehalfPrepTimeBuilder> {
   /// The chips (merchant.prep_time_options).
   @BuiltValueField(wireName: r'options')
   BuiltList<int> get options;
@@ -43,25 +38,18 @@ abstract class AdminOrderDtoOutputOrderOnBehalfPrepTime
 
   AdminOrderDtoOutputOrderOnBehalfPrepTime._();
 
-  factory AdminOrderDtoOutputOrderOnBehalfPrepTime([
-    void updates(AdminOrderDtoOutputOrderOnBehalfPrepTimeBuilder b),
-  ]) = _$AdminOrderDtoOutputOrderOnBehalfPrepTime;
+  factory AdminOrderDtoOutputOrderOnBehalfPrepTime([void updates(AdminOrderDtoOutputOrderOnBehalfPrepTimeBuilder b)]) = _$AdminOrderDtoOutputOrderOnBehalfPrepTime;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderDtoOutputOrderOnBehalfPrepTimeBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderOnBehalfPrepTime> get serializer =>
-      _$AdminOrderDtoOutputOrderOnBehalfPrepTimeSerializer();
+  static Serializer<AdminOrderDtoOutputOrderOnBehalfPrepTime> get serializer => _$AdminOrderDtoOutputOrderOnBehalfPrepTimeSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderOnBehalfPrepTimeSerializer
-    implements PrimitiveSerializer<AdminOrderDtoOutputOrderOnBehalfPrepTime> {
+class _$AdminOrderDtoOutputOrderOnBehalfPrepTimeSerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderOnBehalfPrepTime> {
   @override
-  final Iterable<Type> types = const [
-    AdminOrderDtoOutputOrderOnBehalfPrepTime,
-    _$AdminOrderDtoOutputOrderOnBehalfPrepTime,
-  ];
+  final Iterable<Type> types = const [AdminOrderDtoOutputOrderOnBehalfPrepTime, _$AdminOrderDtoOutputOrderOnBehalfPrepTime];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderOnBehalfPrepTime';
@@ -104,11 +92,7 @@ class _$AdminOrderDtoOutputOrderOnBehalfPrepTimeSerializer
     AdminOrderDtoOutputOrderOnBehalfPrepTime object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -124,36 +108,38 @@ class _$AdminOrderDtoOutputOrderOnBehalfPrepTimeSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'options':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [FullType(int)]),
-                  )
-                  as BuiltList<int>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(int)]),
+          ) as BuiltList<int>;
           result.options.replace(valueDes);
           break;
         case r'stepMin':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.stepMin = valueDes;
           break;
         case r'floorMin':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.floorMin = valueDes;
           break;
         case r'ceilingMin':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.ceilingMin = valueDes;
           break;
         case r'defaultMin':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.defaultMin = valueDes;
           break;
         default:
@@ -184,3 +170,5 @@ class _$AdminOrderDtoOutputOrderOnBehalfPrepTimeSerializer
     return result.build();
   }
 }
+
+

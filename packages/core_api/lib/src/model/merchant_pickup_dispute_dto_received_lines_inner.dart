@@ -12,14 +12,9 @@ part 'merchant_pickup_dispute_dto_received_lines_inner.g.dart';
 ///
 /// Properties:
 /// * [amount] - Integer minor units (AP §8.6).
-/// * [currency]
+/// * [currency] 
 @BuiltValue()
-abstract class MerchantPickupDisputeDtoReceivedLinesInner
-    implements
-        Built<
-          MerchantPickupDisputeDtoReceivedLinesInner,
-          MerchantPickupDisputeDtoReceivedLinesInnerBuilder
-        > {
+abstract class MerchantPickupDisputeDtoReceivedLinesInner implements Built<MerchantPickupDisputeDtoReceivedLinesInner, MerchantPickupDisputeDtoReceivedLinesInnerBuilder> {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -29,26 +24,18 @@ abstract class MerchantPickupDisputeDtoReceivedLinesInner
 
   MerchantPickupDisputeDtoReceivedLinesInner._();
 
-  factory MerchantPickupDisputeDtoReceivedLinesInner([
-    void updates(MerchantPickupDisputeDtoReceivedLinesInnerBuilder b),
-  ]) = _$MerchantPickupDisputeDtoReceivedLinesInner;
+  factory MerchantPickupDisputeDtoReceivedLinesInner([void updates(MerchantPickupDisputeDtoReceivedLinesInnerBuilder b)]) = _$MerchantPickupDisputeDtoReceivedLinesInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(MerchantPickupDisputeDtoReceivedLinesInnerBuilder b) =>
-      b;
+  static void _defaults(MerchantPickupDisputeDtoReceivedLinesInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantPickupDisputeDtoReceivedLinesInner>
-  get serializer => _$MerchantPickupDisputeDtoReceivedLinesInnerSerializer();
+  static Serializer<MerchantPickupDisputeDtoReceivedLinesInner> get serializer => _$MerchantPickupDisputeDtoReceivedLinesInnerSerializer();
 }
 
-class _$MerchantPickupDisputeDtoReceivedLinesInnerSerializer
-    implements PrimitiveSerializer<MerchantPickupDisputeDtoReceivedLinesInner> {
+class _$MerchantPickupDisputeDtoReceivedLinesInnerSerializer implements PrimitiveSerializer<MerchantPickupDisputeDtoReceivedLinesInner> {
   @override
-  final Iterable<Type> types = const [
-    MerchantPickupDisputeDtoReceivedLinesInner,
-    _$MerchantPickupDisputeDtoReceivedLinesInner,
-  ];
+  final Iterable<Type> types = const [MerchantPickupDisputeDtoReceivedLinesInner, _$MerchantPickupDisputeDtoReceivedLinesInner];
 
   @override
   final String wireName = r'MerchantPickupDisputeDtoReceivedLinesInner';
@@ -76,11 +63,7 @@ class _$MerchantPickupDisputeDtoReceivedLinesInnerSerializer
     MerchantPickupDisputeDtoReceivedLinesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -96,21 +79,17 @@ class _$MerchantPickupDisputeDtoReceivedLinesInnerSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.currency = valueDes;
           break;
         default:
@@ -141,3 +120,5 @@ class _$MerchantPickupDisputeDtoReceivedLinesInnerSerializer
     return result.build();
   }
 }
+
+

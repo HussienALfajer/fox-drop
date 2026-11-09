@@ -16,12 +16,7 @@ part 'admin_order_card_dto_output_order_badges.g.dart';
 /// * [newCustomer] - «زبون جديد»: no delivered order yet.
 /// * [pickupPending] - «بانتظار تأكيد الاستلام» (AP §9.2.1).
 @BuiltValue()
-abstract class AdminOrderCardDtoOutputOrderBadges
-    implements
-        Built<
-          AdminOrderCardDtoOutputOrderBadges,
-          AdminOrderCardDtoOutputOrderBadgesBuilder
-        > {
+abstract class AdminOrderCardDtoOutputOrderBadges implements Built<AdminOrderCardDtoOutputOrderBadges, AdminOrderCardDtoOutputOrderBadgesBuilder> {
   /// «بحاجة لتعيين» (AP §8.3).
   @BuiltValueField(wireName: r'needsAssignment')
   bool get needsAssignment;
@@ -40,25 +35,18 @@ abstract class AdminOrderCardDtoOutputOrderBadges
 
   AdminOrderCardDtoOutputOrderBadges._();
 
-  factory AdminOrderCardDtoOutputOrderBadges([
-    void updates(AdminOrderCardDtoOutputOrderBadgesBuilder b),
-  ]) = _$AdminOrderCardDtoOutputOrderBadges;
+  factory AdminOrderCardDtoOutputOrderBadges([void updates(AdminOrderCardDtoOutputOrderBadgesBuilder b)]) = _$AdminOrderCardDtoOutputOrderBadges;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderCardDtoOutputOrderBadgesBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderCardDtoOutputOrderBadges> get serializer =>
-      _$AdminOrderCardDtoOutputOrderBadgesSerializer();
+  static Serializer<AdminOrderCardDtoOutputOrderBadges> get serializer => _$AdminOrderCardDtoOutputOrderBadgesSerializer();
 }
 
-class _$AdminOrderCardDtoOutputOrderBadgesSerializer
-    implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderBadges> {
+class _$AdminOrderCardDtoOutputOrderBadgesSerializer implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderBadges> {
   @override
-  final Iterable<Type> types = const [
-    AdminOrderCardDtoOutputOrderBadges,
-    _$AdminOrderCardDtoOutputOrderBadges,
-  ];
+  final Iterable<Type> types = const [AdminOrderCardDtoOutputOrderBadges, _$AdminOrderCardDtoOutputOrderBadges];
 
   @override
   final String wireName = r'AdminOrderCardDtoOutputOrderBadges';
@@ -96,11 +84,7 @@ class _$AdminOrderCardDtoOutputOrderBadgesSerializer
     AdminOrderCardDtoOutputOrderBadges object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -116,39 +100,31 @@ class _$AdminOrderCardDtoOutputOrderBadgesSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'needsAssignment':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.needsAssignment = valueDes;
           break;
         case r'note':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.note = valueDes;
           break;
         case r'newCustomer':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.newCustomer = valueDes;
           break;
         case r'pickupPending':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.pickupPending = valueDes;
           break;
         default:
@@ -179,3 +155,5 @@ class _$AdminOrderCardDtoOutputOrderBadgesSerializer
     return result.build();
   }
 }
+
+

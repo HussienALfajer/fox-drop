@@ -17,28 +17,23 @@ part 'admin_order_card_dto_output_order.g.dart';
 /// AdminOrderCardDtoOutputOrder
 ///
 /// Properties:
-/// * [id]
+/// * [id] 
 /// * [number] - Shown as #10423 (AP §4.8).
 /// * [status] - The board column (AP §9.2.1).
 /// * [version] - Increases with every change (architecture §5.3).
-/// * [placedAt]
-/// * [restaurant]
-/// * [neighbourhood]
+/// * [placedAt] 
+/// * [restaurant] 
+/// * [neighbourhood] 
 /// * [statusSince] - The time in the current state counts from it.
 /// * [limitAt] - The column's limit (AP §9.2.1): green before 80% of it, amber from 80%, red past it; null where it is not built yet.
 /// * [captainTrack] - AP §8.2; null before the search starts and before any offer.
-/// * [captain]
-/// * [total]
-/// * [badges]
-/// * [moments]
+/// * [captain] 
+/// * [total] 
+/// * [badges] 
+/// * [moments] 
 /// * [alerts] - AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active.
 @BuiltValue()
-abstract class AdminOrderCardDtoOutputOrder
-    implements
-        Built<
-          AdminOrderCardDtoOutputOrder,
-          AdminOrderCardDtoOutputOrderBuilder
-        > {
+abstract class AdminOrderCardDtoOutputOrder implements Built<AdminOrderCardDtoOutputOrder, AdminOrderCardDtoOutputOrderBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -96,25 +91,18 @@ abstract class AdminOrderCardDtoOutputOrder
 
   AdminOrderCardDtoOutputOrder._();
 
-  factory AdminOrderCardDtoOutputOrder([
-    void updates(AdminOrderCardDtoOutputOrderBuilder b),
-  ]) = _$AdminOrderCardDtoOutputOrder;
+  factory AdminOrderCardDtoOutputOrder([void updates(AdminOrderCardDtoOutputOrderBuilder b)]) = _$AdminOrderCardDtoOutputOrder;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderCardDtoOutputOrderBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderCardDtoOutputOrder> get serializer =>
-      _$AdminOrderCardDtoOutputOrderSerializer();
+  static Serializer<AdminOrderCardDtoOutputOrder> get serializer => _$AdminOrderCardDtoOutputOrderSerializer();
 }
 
-class _$AdminOrderCardDtoOutputOrderSerializer
-    implements PrimitiveSerializer<AdminOrderCardDtoOutputOrder> {
+class _$AdminOrderCardDtoOutputOrderSerializer implements PrimitiveSerializer<AdminOrderCardDtoOutputOrder> {
   @override
-  final Iterable<Type> types = const [
-    AdminOrderCardDtoOutputOrder,
-    _$AdminOrderCardDtoOutputOrder,
-  ];
+  final Iterable<Type> types = const [AdminOrderCardDtoOutputOrder, _$AdminOrderCardDtoOutputOrder];
 
   @override
   final String wireName = r'AdminOrderCardDtoOutputOrder';
@@ -165,30 +153,20 @@ class _$AdminOrderCardDtoOutputOrderSerializer
       specifiedType: const FullType(DateTime),
     );
     yield r'limitAt';
-    yield object.limitAt == null
-        ? null
-        : serializers.serialize(
-            object.limitAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.limitAt == null ? null : serializers.serialize(
+      object.limitAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'captainTrack';
-    yield object.captainTrack == null
-        ? null
-        : serializers.serialize(
-            object.captainTrack,
-            specifiedType: const FullType.nullable(
-              AdminOrderCardDtoOutputOrderCaptainTrackEnum,
-            ),
-          );
+    yield object.captainTrack == null ? null : serializers.serialize(
+      object.captainTrack,
+      specifiedType: const FullType.nullable(AdminOrderCardDtoOutputOrderCaptainTrackEnum),
+    );
     yield r'captain';
-    yield object.captain == null
-        ? null
-        : serializers.serialize(
-            object.captain,
-            specifiedType: const FullType.nullable(
-              AdminOrderCardDtoOutputOrderCaptain,
-            ),
-          );
+    yield object.captain == null ? null : serializers.serialize(
+      object.captain,
+      specifiedType: const FullType.nullable(AdminOrderCardDtoOutputOrderCaptain),
+    );
     yield r'total';
     yield serializers.serialize(
       object.total,
@@ -207,9 +185,7 @@ class _$AdminOrderCardDtoOutputOrderSerializer
     yield r'alerts';
     yield serializers.serialize(
       object.alerts,
-      specifiedType: const FullType(BuiltList, [
-        FullType(AdminOrderCardDtoOutputOrderAlertsEnum),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(AdminOrderCardDtoOutputOrderAlertsEnum)]),
     );
   }
 
@@ -219,11 +195,7 @@ class _$AdminOrderCardDtoOutputOrderSerializer
     AdminOrderCardDtoOutputOrder object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -239,154 +211,111 @@ class _$AdminOrderCardDtoOutputOrderSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.id = valueDes;
           break;
         case r'number':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.number = valueDes;
           break;
         case r'status':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      AdminOrderCardDtoOutputOrderStatusEnum,
-                    ),
-                  )
-                  as AdminOrderCardDtoOutputOrderStatusEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(AdminOrderCardDtoOutputOrderStatusEnum),
+          ) as AdminOrderCardDtoOutputOrderStatusEnum;
           result.status = valueDes;
           break;
         case r'version':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.version = valueDes;
           break;
         case r'placedAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.placedAt = valueDes;
           break;
         case r'restaurant':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      AdminOrderCardDtoOutputOrderRestaurant,
-                    ),
-                  )
-                  as AdminOrderCardDtoOutputOrderRestaurant;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(AdminOrderCardDtoOutputOrderRestaurant),
+          ) as AdminOrderCardDtoOutputOrderRestaurant;
           result.restaurant.replace(valueDes);
           break;
         case r'neighbourhood':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.neighbourhood = valueDes;
           break;
         case r'statusSince':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.statusSince = valueDes;
           break;
         case r'limitAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.limitAt = valueDes;
           break;
         case r'captainTrack':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      AdminOrderCardDtoOutputOrderCaptainTrackEnum,
-                    ),
-                  )
-                  as AdminOrderCardDtoOutputOrderCaptainTrackEnum?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(AdminOrderCardDtoOutputOrderCaptainTrackEnum),
+          ) as AdminOrderCardDtoOutputOrderCaptainTrackEnum?;
           if (valueDes == null) continue;
           result.captainTrack = valueDes;
           break;
         case r'captain':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      AdminOrderCardDtoOutputOrderCaptain,
-                    ),
-                  )
-                  as AdminOrderCardDtoOutputOrderCaptain?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(AdminOrderCardDtoOutputOrderCaptain),
+          ) as AdminOrderCardDtoOutputOrderCaptain?;
           if (valueDes == null) continue;
           result.captain.replace(valueDes);
           break;
         case r'total':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      AdminOrderCardDtoOutputOrderTotal,
-                    ),
-                  )
-                  as AdminOrderCardDtoOutputOrderTotal;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(AdminOrderCardDtoOutputOrderTotal),
+          ) as AdminOrderCardDtoOutputOrderTotal;
           result.total.replace(valueDes);
           break;
         case r'badges':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      AdminOrderCardDtoOutputOrderBadges,
-                    ),
-                  )
-                  as AdminOrderCardDtoOutputOrderBadges;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(AdminOrderCardDtoOutputOrderBadges),
+          ) as AdminOrderCardDtoOutputOrderBadges;
           result.badges.replace(valueDes);
           break;
         case r'moments':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      AdminOrderCardDtoOutputOrderMoments,
-                    ),
-                  )
-                  as AdminOrderCardDtoOutputOrderMoments;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(AdminOrderCardDtoOutputOrderMoments),
+          ) as AdminOrderCardDtoOutputOrderMoments;
           result.moments.replace(valueDes);
           break;
         case r'alerts':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(AdminOrderCardDtoOutputOrderAlertsEnum),
-                    ]),
-                  )
-                  as BuiltList<AdminOrderCardDtoOutputOrderAlertsEnum>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(AdminOrderCardDtoOutputOrderAlertsEnum)]),
+          ) as BuiltList<AdminOrderCardDtoOutputOrderAlertsEnum>;
           result.alerts.replace(valueDes);
           break;
         default:
@@ -418,125 +347,93 @@ class _$AdminOrderCardDtoOutputOrderSerializer
   }
 }
 
+
 /// The board column (AP §9.2.1).
 class AdminOrderCardDtoOutputOrderStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'placed')
-  static const AdminOrderCardDtoOutputOrderStatusEnum placed =
-      _$adminOrderCardDtoOutputOrderStatusEnum_placed;
+  static const AdminOrderCardDtoOutputOrderStatusEnum placed = _$adminOrderCardDtoOutputOrderStatusEnum_placed;
   @BuiltValueEnumConst(wireName: r'accepted')
-  static const AdminOrderCardDtoOutputOrderStatusEnum accepted =
-      _$adminOrderCardDtoOutputOrderStatusEnum_accepted;
+  static const AdminOrderCardDtoOutputOrderStatusEnum accepted = _$adminOrderCardDtoOutputOrderStatusEnum_accepted;
   @BuiltValueEnumConst(wireName: r'ready')
-  static const AdminOrderCardDtoOutputOrderStatusEnum ready =
-      _$adminOrderCardDtoOutputOrderStatusEnum_ready;
+  static const AdminOrderCardDtoOutputOrderStatusEnum ready = _$adminOrderCardDtoOutputOrderStatusEnum_ready;
   @BuiltValueEnumConst(wireName: r'picked_up')
-  static const AdminOrderCardDtoOutputOrderStatusEnum pickedUp =
-      _$adminOrderCardDtoOutputOrderStatusEnum_pickedUp;
+  static const AdminOrderCardDtoOutputOrderStatusEnum pickedUp = _$adminOrderCardDtoOutputOrderStatusEnum_pickedUp;
   @BuiltValueEnumConst(wireName: r'arrived')
-  static const AdminOrderCardDtoOutputOrderStatusEnum arrived =
-      _$adminOrderCardDtoOutputOrderStatusEnum_arrived;
+  static const AdminOrderCardDtoOutputOrderStatusEnum arrived = _$adminOrderCardDtoOutputOrderStatusEnum_arrived;
   @BuiltValueEnumConst(wireName: r'delivered')
-  static const AdminOrderCardDtoOutputOrderStatusEnum delivered =
-      _$adminOrderCardDtoOutputOrderStatusEnum_delivered;
+  static const AdminOrderCardDtoOutputOrderStatusEnum delivered = _$adminOrderCardDtoOutputOrderStatusEnum_delivered;
   @BuiltValueEnumConst(wireName: r'rejected')
-  static const AdminOrderCardDtoOutputOrderStatusEnum rejected =
-      _$adminOrderCardDtoOutputOrderStatusEnum_rejected;
+  static const AdminOrderCardDtoOutputOrderStatusEnum rejected = _$adminOrderCardDtoOutputOrderStatusEnum_rejected;
   @BuiltValueEnumConst(wireName: r'cancelled')
-  static const AdminOrderCardDtoOutputOrderStatusEnum cancelled =
-      _$adminOrderCardDtoOutputOrderStatusEnum_cancelled;
+  static const AdminOrderCardDtoOutputOrderStatusEnum cancelled = _$adminOrderCardDtoOutputOrderStatusEnum_cancelled;
   @BuiltValueEnumConst(wireName: r'failed')
-  static const AdminOrderCardDtoOutputOrderStatusEnum failed =
-      _$adminOrderCardDtoOutputOrderStatusEnum_failed;
+  static const AdminOrderCardDtoOutputOrderStatusEnum failed = _$adminOrderCardDtoOutputOrderStatusEnum_failed;
 
-  static Serializer<AdminOrderCardDtoOutputOrderStatusEnum> get serializer =>
-      _$adminOrderCardDtoOutputOrderStatusEnumSerializer;
+  static Serializer<AdminOrderCardDtoOutputOrderStatusEnum> get serializer => _$adminOrderCardDtoOutputOrderStatusEnumSerializer;
 
-  const AdminOrderCardDtoOutputOrderStatusEnum._(String name) : super(name);
+  const AdminOrderCardDtoOutputOrderStatusEnum._(String name): super(name);
 
-  static BuiltSet<AdminOrderCardDtoOutputOrderStatusEnum> get values =>
-      _$adminOrderCardDtoOutputOrderStatusEnumValues;
-  static AdminOrderCardDtoOutputOrderStatusEnum valueOf(String name) =>
-      _$adminOrderCardDtoOutputOrderStatusEnumValueOf(name);
+  static BuiltSet<AdminOrderCardDtoOutputOrderStatusEnum> get values => _$adminOrderCardDtoOutputOrderStatusEnumValues;
+  static AdminOrderCardDtoOutputOrderStatusEnum valueOf(String name) => _$adminOrderCardDtoOutputOrderStatusEnumValueOf(name);
 }
 
 /// AP §8.2; null before the search starts and before any offer.
 class AdminOrderCardDtoOutputOrderCaptainTrackEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'searching')
-  static const AdminOrderCardDtoOutputOrderCaptainTrackEnum searching =
-      _$adminOrderCardDtoOutputOrderCaptainTrackEnum_searching;
+  static const AdminOrderCardDtoOutputOrderCaptainTrackEnum searching = _$adminOrderCardDtoOutputOrderCaptainTrackEnum_searching;
   @BuiltValueEnumConst(wireName: r'offered')
-  static const AdminOrderCardDtoOutputOrderCaptainTrackEnum offered =
-      _$adminOrderCardDtoOutputOrderCaptainTrackEnum_offered;
+  static const AdminOrderCardDtoOutputOrderCaptainTrackEnum offered = _$adminOrderCardDtoOutputOrderCaptainTrackEnum_offered;
   @BuiltValueEnumConst(wireName: r'assigned')
-  static const AdminOrderCardDtoOutputOrderCaptainTrackEnum assigned =
-      _$adminOrderCardDtoOutputOrderCaptainTrackEnum_assigned;
+  static const AdminOrderCardDtoOutputOrderCaptainTrackEnum assigned = _$adminOrderCardDtoOutputOrderCaptainTrackEnum_assigned;
   @BuiltValueEnumConst(wireName: r'at_merchant')
-  static const AdminOrderCardDtoOutputOrderCaptainTrackEnum atMerchant =
-      _$adminOrderCardDtoOutputOrderCaptainTrackEnum_atMerchant;
+  static const AdminOrderCardDtoOutputOrderCaptainTrackEnum atMerchant = _$adminOrderCardDtoOutputOrderCaptainTrackEnum_atMerchant;
   @BuiltValueEnumConst(wireName: r'pickup_pending')
-  static const AdminOrderCardDtoOutputOrderCaptainTrackEnum pickupPending =
-      _$adminOrderCardDtoOutputOrderCaptainTrackEnum_pickupPending;
+  static const AdminOrderCardDtoOutputOrderCaptainTrackEnum pickupPending = _$adminOrderCardDtoOutputOrderCaptainTrackEnum_pickupPending;
   @BuiltValueEnumConst(wireName: r'picked_up')
-  static const AdminOrderCardDtoOutputOrderCaptainTrackEnum pickedUp =
-      _$adminOrderCardDtoOutputOrderCaptainTrackEnum_pickedUp;
+  static const AdminOrderCardDtoOutputOrderCaptainTrackEnum pickedUp = _$adminOrderCardDtoOutputOrderCaptainTrackEnum_pickedUp;
   @BuiltValueEnumConst(wireName: r'at_customer')
-  static const AdminOrderCardDtoOutputOrderCaptainTrackEnum atCustomer =
-      _$adminOrderCardDtoOutputOrderCaptainTrackEnum_atCustomer;
+  static const AdminOrderCardDtoOutputOrderCaptainTrackEnum atCustomer = _$adminOrderCardDtoOutputOrderCaptainTrackEnum_atCustomer;
   @BuiltValueEnumConst(wireName: r'done')
-  static const AdminOrderCardDtoOutputOrderCaptainTrackEnum done =
-      _$adminOrderCardDtoOutputOrderCaptainTrackEnum_done;
+  static const AdminOrderCardDtoOutputOrderCaptainTrackEnum done = _$adminOrderCardDtoOutputOrderCaptainTrackEnum_done;
 
-  static Serializer<AdminOrderCardDtoOutputOrderCaptainTrackEnum>
-  get serializer => _$adminOrderCardDtoOutputOrderCaptainTrackEnumSerializer;
+  static Serializer<AdminOrderCardDtoOutputOrderCaptainTrackEnum> get serializer => _$adminOrderCardDtoOutputOrderCaptainTrackEnumSerializer;
 
-  const AdminOrderCardDtoOutputOrderCaptainTrackEnum._(String name)
-    : super(name);
+  const AdminOrderCardDtoOutputOrderCaptainTrackEnum._(String name): super(name);
 
-  static BuiltSet<AdminOrderCardDtoOutputOrderCaptainTrackEnum> get values =>
-      _$adminOrderCardDtoOutputOrderCaptainTrackEnumValues;
-  static AdminOrderCardDtoOutputOrderCaptainTrackEnum valueOf(String name) =>
-      _$adminOrderCardDtoOutputOrderCaptainTrackEnumValueOf(name);
+  static BuiltSet<AdminOrderCardDtoOutputOrderCaptainTrackEnum> get values => _$adminOrderCardDtoOutputOrderCaptainTrackEnumValues;
+  static AdminOrderCardDtoOutputOrderCaptainTrackEnum valueOf(String name) => _$adminOrderCardDtoOutputOrderCaptainTrackEnumValueOf(name);
 }
 
 class AdminOrderCardDtoOutputOrderAlertsEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'restaurant_not_accepted')
-  static const AdminOrderCardDtoOutputOrderAlertsEnum restaurantNotAccepted =
-      _$adminOrderCardDtoOutputOrderAlertsEnum_restaurantNotAccepted;
+  static const AdminOrderCardDtoOutputOrderAlertsEnum restaurantNotAccepted = _$adminOrderCardDtoOutputOrderAlertsEnum_restaurantNotAccepted;
   @BuiltValueEnumConst(wireName: r'no_captain')
-  static const AdminOrderCardDtoOutputOrderAlertsEnum noCaptain =
-      _$adminOrderCardDtoOutputOrderAlertsEnum_noCaptain;
+  static const AdminOrderCardDtoOutputOrderAlertsEnum noCaptain = _$adminOrderCardDtoOutputOrderAlertsEnum_noCaptain;
   @BuiltValueEnumConst(wireName: r'no_captain_after_ready')
-  static const AdminOrderCardDtoOutputOrderAlertsEnum noCaptainAfterReady =
-      _$adminOrderCardDtoOutputOrderAlertsEnum_noCaptainAfterReady;
+  static const AdminOrderCardDtoOutputOrderAlertsEnum noCaptainAfterReady = _$adminOrderCardDtoOutputOrderAlertsEnum_noCaptainAfterReady;
   @BuiltValueEnumConst(wireName: r'captain_gps_lost')
-  static const AdminOrderCardDtoOutputOrderAlertsEnum captainGpsLost =
-      _$adminOrderCardDtoOutputOrderAlertsEnum_captainGpsLost;
+  static const AdminOrderCardDtoOutputOrderAlertsEnum captainGpsLost = _$adminOrderCardDtoOutputOrderAlertsEnum_captainGpsLost;
   @BuiltValueEnumConst(wireName: r'pickup_disputed')
-  static const AdminOrderCardDtoOutputOrderAlertsEnum pickupDisputed =
-      _$adminOrderCardDtoOutputOrderAlertsEnum_pickupDisputed;
+  static const AdminOrderCardDtoOutputOrderAlertsEnum pickupDisputed = _$adminOrderCardDtoOutputOrderAlertsEnum_pickupDisputed;
   @BuiltValueEnumConst(wireName: r'prep_late')
-  static const AdminOrderCardDtoOutputOrderAlertsEnum prepLate =
-      _$adminOrderCardDtoOutputOrderAlertsEnum_prepLate;
+  static const AdminOrderCardDtoOutputOrderAlertsEnum prepLate = _$adminOrderCardDtoOutputOrderAlertsEnum_prepLate;
   @BuiltValueEnumConst(wireName: r'captain_waiting')
-  static const AdminOrderCardDtoOutputOrderAlertsEnum captainWaiting =
-      _$adminOrderCardDtoOutputOrderAlertsEnum_captainWaiting;
+  static const AdminOrderCardDtoOutputOrderAlertsEnum captainWaiting = _$adminOrderCardDtoOutputOrderAlertsEnum_captainWaiting;
   @BuiltValueEnumConst(wireName: r'delivery_late')
-  static const AdminOrderCardDtoOutputOrderAlertsEnum deliveryLate =
-      _$adminOrderCardDtoOutputOrderAlertsEnum_deliveryLate;
+  static const AdminOrderCardDtoOutputOrderAlertsEnum deliveryLate = _$adminOrderCardDtoOutputOrderAlertsEnum_deliveryLate;
   @BuiltValueEnumConst(wireName: r'collection_shortfall')
-  static const AdminOrderCardDtoOutputOrderAlertsEnum collectionShortfall =
-      _$adminOrderCardDtoOutputOrderAlertsEnum_collectionShortfall;
+  static const AdminOrderCardDtoOutputOrderAlertsEnum collectionShortfall = _$adminOrderCardDtoOutputOrderAlertsEnum_collectionShortfall;
   @BuiltValueEnumConst(wireName: r'away_from_address')
-  static const AdminOrderCardDtoOutputOrderAlertsEnum awayFromAddress =
-      _$adminOrderCardDtoOutputOrderAlertsEnum_awayFromAddress;
+  static const AdminOrderCardDtoOutputOrderAlertsEnum awayFromAddress = _$adminOrderCardDtoOutputOrderAlertsEnum_awayFromAddress;
 
-  static Serializer<AdminOrderCardDtoOutputOrderAlertsEnum> get serializer =>
-      _$adminOrderCardDtoOutputOrderAlertsEnumSerializer;
+  static Serializer<AdminOrderCardDtoOutputOrderAlertsEnum> get serializer => _$adminOrderCardDtoOutputOrderAlertsEnumSerializer;
 
-  const AdminOrderCardDtoOutputOrderAlertsEnum._(String name) : super(name);
+  const AdminOrderCardDtoOutputOrderAlertsEnum._(String name): super(name);
 
-  static BuiltSet<AdminOrderCardDtoOutputOrderAlertsEnum> get values =>
-      _$adminOrderCardDtoOutputOrderAlertsEnumValues;
-  static AdminOrderCardDtoOutputOrderAlertsEnum valueOf(String name) =>
-      _$adminOrderCardDtoOutputOrderAlertsEnumValueOf(name);
+  static BuiltSet<AdminOrderCardDtoOutputOrderAlertsEnum> get values => _$adminOrderCardDtoOutputOrderAlertsEnumValues;
+  static AdminOrderCardDtoOutputOrderAlertsEnum valueOf(String name) => _$adminOrderCardDtoOutputOrderAlertsEnumValueOf(name);
 }
+

@@ -13,20 +13,15 @@ part 'customer_active_orders_dto_output_orders_inner_lines_inner.g.dart';
 /// CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
 ///
 /// Properties:
-/// * [itemId]
-/// * [name]
-/// * [quantity]
-/// * [note]
-/// * [options]
+/// * [itemId] 
+/// * [name] 
+/// * [quantity] 
+/// * [note] 
+/// * [options] 
 /// * [unitPrice] - Integer minor units (AP §8.6).
 /// * [lineTotal] - Integer minor units (AP §8.6).
 @BuiltValue()
-abstract class CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
-    implements
-        Built<
-          CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
-          CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder
-        > {
+abstract class CustomerActiveOrdersDtoOutputOrdersInnerLinesInner implements Built<CustomerActiveOrdersDtoOutputOrdersInnerLinesInner, CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder> {
   @BuiltValueField(wireName: r'itemId')
   String get itemId;
 
@@ -52,31 +47,18 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
 
   CustomerActiveOrdersDtoOutputOrdersInnerLinesInner._();
 
-  factory CustomerActiveOrdersDtoOutputOrdersInnerLinesInner([
-    void updates(CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder b),
-  ]) = _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner;
+  factory CustomerActiveOrdersDtoOutputOrdersInnerLinesInner([void updates(CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder b)]) = _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder b,
-  ) => b;
+  static void _defaults(CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerLinesInner>
-  get serializer =>
-      _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerSerializer();
+  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerLinesInner> get serializer => _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerSerializer();
 }
 
-class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerSerializer
-    implements
-        PrimitiveSerializer<
-          CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
-        > {
+class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerSerializer implements PrimitiveSerializer<CustomerActiveOrdersDtoOutputOrdersInnerLinesInner> {
   @override
-  final Iterable<Type> types = const [
-    CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
-    _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
-  ];
+  final Iterable<Type> types = const [CustomerActiveOrdersDtoOutputOrdersInnerLinesInner, _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner];
 
   @override
   final String wireName = r'CustomerActiveOrdersDtoOutputOrdersInnerLinesInner';
@@ -102,18 +84,14 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerSerializer
       specifiedType: const FullType(int),
     );
     yield r'note';
-    yield object.note == null
-        ? null
-        : serializers.serialize(
-            object.note,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.note == null ? null : serializers.serialize(
+      object.note,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'options';
     yield serializers.serialize(
       object.options,
-      specifiedType: const FullType(BuiltList, [
-        FullType(CustomerQuoteDtoOutputLinesInnerOptionsInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(CustomerQuoteDtoOutputLinesInnerOptionsInner)]),
     );
     yield r'unitPrice';
     yield serializers.serialize(
@@ -133,11 +111,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerSerializer
     CustomerActiveOrdersDtoOutputOrdersInnerLinesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -153,66 +127,53 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'itemId':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.itemId = valueDes;
           break;
         case r'name':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.name = valueDes;
           break;
         case r'quantity':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.quantity = valueDes;
           break;
         case r'note':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.note = valueDes;
           break;
         case r'options':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(CustomerQuoteDtoOutputLinesInnerOptionsInner),
-                    ]),
-                  )
-                  as BuiltList<CustomerQuoteDtoOutputLinesInnerOptionsInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(CustomerQuoteDtoOutputLinesInnerOptionsInner)]),
+          ) as BuiltList<CustomerQuoteDtoOutputLinesInnerOptionsInner>;
           result.options.replace(valueDes);
           break;
         case r'unitPrice':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.unitPrice = valueDes;
           break;
         case r'lineTotal':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.lineTotal = valueDes;
           break;
         default:
@@ -243,3 +204,5 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerSerializer
     return result.build();
   }
 }
+
+

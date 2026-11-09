@@ -13,15 +13,10 @@ part 'sender_pool_dto_output_alerts_inner.g.dart';
 ///
 /// Properties:
 /// * [type] - number_stopped: «رقم إرسال الرموز متوقف» (warning); cannot_send: «لا يمكن إرسال رموز الدخول» (critical).
-/// * [severity]
+/// * [severity] 
 /// * [numberIds] - The stopped numbers; empty for cannot_send.
 @BuiltValue()
-abstract class SenderPoolDtoOutputAlertsInner
-    implements
-        Built<
-          SenderPoolDtoOutputAlertsInner,
-          SenderPoolDtoOutputAlertsInnerBuilder
-        > {
+abstract class SenderPoolDtoOutputAlertsInner implements Built<SenderPoolDtoOutputAlertsInner, SenderPoolDtoOutputAlertsInnerBuilder> {
   /// number_stopped: «رقم إرسال الرموز متوقف» (warning); cannot_send: «لا يمكن إرسال رموز الدخول» (critical).
   @BuiltValueField(wireName: r'type')
   SenderPoolDtoOutputAlertsInnerTypeEnum get type;
@@ -37,25 +32,18 @@ abstract class SenderPoolDtoOutputAlertsInner
 
   SenderPoolDtoOutputAlertsInner._();
 
-  factory SenderPoolDtoOutputAlertsInner([
-    void updates(SenderPoolDtoOutputAlertsInnerBuilder b),
-  ]) = _$SenderPoolDtoOutputAlertsInner;
+  factory SenderPoolDtoOutputAlertsInner([void updates(SenderPoolDtoOutputAlertsInnerBuilder b)]) = _$SenderPoolDtoOutputAlertsInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SenderPoolDtoOutputAlertsInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SenderPoolDtoOutputAlertsInner> get serializer =>
-      _$SenderPoolDtoOutputAlertsInnerSerializer();
+  static Serializer<SenderPoolDtoOutputAlertsInner> get serializer => _$SenderPoolDtoOutputAlertsInnerSerializer();
 }
 
-class _$SenderPoolDtoOutputAlertsInnerSerializer
-    implements PrimitiveSerializer<SenderPoolDtoOutputAlertsInner> {
+class _$SenderPoolDtoOutputAlertsInnerSerializer implements PrimitiveSerializer<SenderPoolDtoOutputAlertsInner> {
   @override
-  final Iterable<Type> types = const [
-    SenderPoolDtoOutputAlertsInner,
-    _$SenderPoolDtoOutputAlertsInner,
-  ];
+  final Iterable<Type> types = const [SenderPoolDtoOutputAlertsInner, _$SenderPoolDtoOutputAlertsInner];
 
   @override
   final String wireName = r'SenderPoolDtoOutputAlertsInner';
@@ -88,11 +76,7 @@ class _$SenderPoolDtoOutputAlertsInnerSerializer
     SenderPoolDtoOutputAlertsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -108,36 +92,24 @@ class _$SenderPoolDtoOutputAlertsInnerSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'type':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      SenderPoolDtoOutputAlertsInnerTypeEnum,
-                    ),
-                  )
-                  as SenderPoolDtoOutputAlertsInnerTypeEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(SenderPoolDtoOutputAlertsInnerTypeEnum),
+          ) as SenderPoolDtoOutputAlertsInnerTypeEnum;
           result.type = valueDes;
           break;
         case r'severity':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      SenderPoolDtoOutputAlertsInnerSeverityEnum,
-                    ),
-                  )
-                  as SenderPoolDtoOutputAlertsInnerSeverityEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(SenderPoolDtoOutputAlertsInnerSeverityEnum),
+          ) as SenderPoolDtoOutputAlertsInnerSeverityEnum;
           result.severity = valueDes;
           break;
         case r'numberIds':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(String),
-                    ]),
-                  )
-                  as BuiltList<String>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(String)]),
+          ) as BuiltList<String>;
           result.numberIds.replace(valueDes);
           break;
         default:
@@ -169,41 +141,35 @@ class _$SenderPoolDtoOutputAlertsInnerSerializer
   }
 }
 
+
 /// number_stopped: «رقم إرسال الرموز متوقف» (warning); cannot_send: «لا يمكن إرسال رموز الدخول» (critical).
 class SenderPoolDtoOutputAlertsInnerTypeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'number_stopped')
-  static const SenderPoolDtoOutputAlertsInnerTypeEnum numberStopped =
-      _$senderPoolDtoOutputAlertsInnerTypeEnum_numberStopped;
+  static const SenderPoolDtoOutputAlertsInnerTypeEnum numberStopped = _$senderPoolDtoOutputAlertsInnerTypeEnum_numberStopped;
   @BuiltValueEnumConst(wireName: r'cannot_send')
-  static const SenderPoolDtoOutputAlertsInnerTypeEnum cannotSend =
-      _$senderPoolDtoOutputAlertsInnerTypeEnum_cannotSend;
+  static const SenderPoolDtoOutputAlertsInnerTypeEnum cannotSend = _$senderPoolDtoOutputAlertsInnerTypeEnum_cannotSend;
 
-  static Serializer<SenderPoolDtoOutputAlertsInnerTypeEnum> get serializer =>
-      _$senderPoolDtoOutputAlertsInnerTypeEnumSerializer;
+  static Serializer<SenderPoolDtoOutputAlertsInnerTypeEnum> get serializer => _$senderPoolDtoOutputAlertsInnerTypeEnumSerializer;
 
-  const SenderPoolDtoOutputAlertsInnerTypeEnum._(String name) : super(name);
+  const SenderPoolDtoOutputAlertsInnerTypeEnum._(String name): super(name);
 
-  static BuiltSet<SenderPoolDtoOutputAlertsInnerTypeEnum> get values =>
-      _$senderPoolDtoOutputAlertsInnerTypeEnumValues;
-  static SenderPoolDtoOutputAlertsInnerTypeEnum valueOf(String name) =>
-      _$senderPoolDtoOutputAlertsInnerTypeEnumValueOf(name);
+  static BuiltSet<SenderPoolDtoOutputAlertsInnerTypeEnum> get values => _$senderPoolDtoOutputAlertsInnerTypeEnumValues;
+  static SenderPoolDtoOutputAlertsInnerTypeEnum valueOf(String name) => _$senderPoolDtoOutputAlertsInnerTypeEnumValueOf(name);
 }
 
 class SenderPoolDtoOutputAlertsInnerSeverityEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'warning')
-  static const SenderPoolDtoOutputAlertsInnerSeverityEnum warning =
-      _$senderPoolDtoOutputAlertsInnerSeverityEnum_warning;
+  static const SenderPoolDtoOutputAlertsInnerSeverityEnum warning = _$senderPoolDtoOutputAlertsInnerSeverityEnum_warning;
   @BuiltValueEnumConst(wireName: r'critical')
-  static const SenderPoolDtoOutputAlertsInnerSeverityEnum critical =
-      _$senderPoolDtoOutputAlertsInnerSeverityEnum_critical;
+  static const SenderPoolDtoOutputAlertsInnerSeverityEnum critical = _$senderPoolDtoOutputAlertsInnerSeverityEnum_critical;
 
-  static Serializer<SenderPoolDtoOutputAlertsInnerSeverityEnum>
-  get serializer => _$senderPoolDtoOutputAlertsInnerSeverityEnumSerializer;
+  static Serializer<SenderPoolDtoOutputAlertsInnerSeverityEnum> get serializer => _$senderPoolDtoOutputAlertsInnerSeverityEnumSerializer;
 
-  const SenderPoolDtoOutputAlertsInnerSeverityEnum._(String name) : super(name);
+  const SenderPoolDtoOutputAlertsInnerSeverityEnum._(String name): super(name);
 
-  static BuiltSet<SenderPoolDtoOutputAlertsInnerSeverityEnum> get values =>
-      _$senderPoolDtoOutputAlertsInnerSeverityEnumValues;
-  static SenderPoolDtoOutputAlertsInnerSeverityEnum valueOf(String name) =>
-      _$senderPoolDtoOutputAlertsInnerSeverityEnumValueOf(name);
+  static BuiltSet<SenderPoolDtoOutputAlertsInnerSeverityEnum> get values => _$senderPoolDtoOutputAlertsInnerSeverityEnumValues;
+  static SenderPoolDtoOutputAlertsInnerSeverityEnum valueOf(String name) => _$senderPoolDtoOutputAlertsInnerSeverityEnumValueOf(name);
 }
+

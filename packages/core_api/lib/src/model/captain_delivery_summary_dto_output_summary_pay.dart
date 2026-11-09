@@ -16,14 +16,9 @@ part 'captain_delivery_summary_dto_output_summary_pay.g.dart';
 /// * [topUp] - «إكمال للحد الأدنى», shown when above 0.
 /// * [waiting] - Integer minor units (AP §8.6).
 /// * [total] - «ربحت من هذا الطلب: {الأجر}».
-/// * [currency]
+/// * [currency] 
 @BuiltValue()
-abstract class CaptainDeliverySummaryDtoOutputSummaryPay
-    implements
-        Built<
-          CaptainDeliverySummaryDtoOutputSummaryPay,
-          CaptainDeliverySummaryDtoOutputSummaryPayBuilder
-        > {
+abstract class CaptainDeliverySummaryDtoOutputSummaryPay implements Built<CaptainDeliverySummaryDtoOutputSummaryPay, CaptainDeliverySummaryDtoOutputSummaryPayBuilder> {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'base')
   String get base_;
@@ -49,26 +44,18 @@ abstract class CaptainDeliverySummaryDtoOutputSummaryPay
 
   CaptainDeliverySummaryDtoOutputSummaryPay._();
 
-  factory CaptainDeliverySummaryDtoOutputSummaryPay([
-    void updates(CaptainDeliverySummaryDtoOutputSummaryPayBuilder b),
-  ]) = _$CaptainDeliverySummaryDtoOutputSummaryPay;
+  factory CaptainDeliverySummaryDtoOutputSummaryPay([void updates(CaptainDeliverySummaryDtoOutputSummaryPayBuilder b)]) = _$CaptainDeliverySummaryDtoOutputSummaryPay;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CaptainDeliverySummaryDtoOutputSummaryPayBuilder b) =>
-      b;
+  static void _defaults(CaptainDeliverySummaryDtoOutputSummaryPayBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainDeliverySummaryDtoOutputSummaryPay> get serializer =>
-      _$CaptainDeliverySummaryDtoOutputSummaryPaySerializer();
+  static Serializer<CaptainDeliverySummaryDtoOutputSummaryPay> get serializer => _$CaptainDeliverySummaryDtoOutputSummaryPaySerializer();
 }
 
-class _$CaptainDeliverySummaryDtoOutputSummaryPaySerializer
-    implements PrimitiveSerializer<CaptainDeliverySummaryDtoOutputSummaryPay> {
+class _$CaptainDeliverySummaryDtoOutputSummaryPaySerializer implements PrimitiveSerializer<CaptainDeliverySummaryDtoOutputSummaryPay> {
   @override
-  final Iterable<Type> types = const [
-    CaptainDeliverySummaryDtoOutputSummaryPay,
-    _$CaptainDeliverySummaryDtoOutputSummaryPay,
-  ];
+  final Iterable<Type> types = const [CaptainDeliverySummaryDtoOutputSummaryPay, _$CaptainDeliverySummaryDtoOutputSummaryPay];
 
   @override
   final String wireName = r'CaptainDeliverySummaryDtoOutputSummaryPay';
@@ -116,11 +103,7 @@ class _$CaptainDeliverySummaryDtoOutputSummaryPaySerializer
     CaptainDeliverySummaryDtoOutputSummaryPay object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -136,57 +119,45 @@ class _$CaptainDeliverySummaryDtoOutputSummaryPaySerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'base':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.base_ = valueDes;
           break;
         case r'distance':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.distance = valueDes;
           break;
         case r'topUp':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.topUp = valueDes;
           break;
         case r'waiting':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.waiting = valueDes;
           break;
         case r'total':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.total = valueDes;
           break;
         case r'currency':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.currency = valueDes;
           break;
         default:
@@ -217,3 +188,5 @@ class _$CaptainDeliverySummaryDtoOutputSummaryPaySerializer
     return result.build();
   }
 }
+
+

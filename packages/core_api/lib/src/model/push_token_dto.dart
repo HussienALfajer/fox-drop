@@ -13,10 +13,9 @@ part 'push_token_dto.g.dart';
 ///
 /// Properties:
 /// * [token] - The app installation's Firebase Installation ID (FID), FCM's target for this device.
-/// * [platform]
+/// * [platform] 
 @BuiltValue()
-abstract class PushTokenDto
-    implements Built<PushTokenDto, PushTokenDtoBuilder> {
+abstract class PushTokenDto implements Built<PushTokenDto, PushTokenDtoBuilder> {
   /// The app installation's Firebase Installation ID (FID), FCM's target for this device.
   @BuiltValueField(wireName: r'token')
   String get token;
@@ -66,11 +65,7 @@ class _$PushTokenDtoSerializer implements PrimitiveSerializer<PushTokenDto> {
     PushTokenDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -86,21 +81,17 @@ class _$PushTokenDtoSerializer implements PrimitiveSerializer<PushTokenDto> {
       final value = serializedList[i + 1];
       switch (key) {
         case r'token':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.token = valueDes;
           break;
         case r'platform':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(PushTokenDtoPlatformEnum),
-                  )
-                  as PushTokenDtoPlatformEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(PushTokenDtoPlatformEnum),
+          ) as PushTokenDtoPlatformEnum;
           result.platform = valueDes;
           break;
         default:
@@ -132,18 +123,17 @@ class _$PushTokenDtoSerializer implements PrimitiveSerializer<PushTokenDto> {
   }
 }
 
+
 class PushTokenDtoPlatformEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'android')
-  static const PushTokenDtoPlatformEnum android =
-      _$pushTokenDtoPlatformEnum_android;
+  static const PushTokenDtoPlatformEnum android = _$pushTokenDtoPlatformEnum_android;
 
-  static Serializer<PushTokenDtoPlatformEnum> get serializer =>
-      _$pushTokenDtoPlatformEnumSerializer;
+  static Serializer<PushTokenDtoPlatformEnum> get serializer => _$pushTokenDtoPlatformEnumSerializer;
 
-  const PushTokenDtoPlatformEnum._(String name) : super(name);
+  const PushTokenDtoPlatformEnum._(String name): super(name);
 
-  static BuiltSet<PushTokenDtoPlatformEnum> get values =>
-      _$pushTokenDtoPlatformEnumValues;
-  static PushTokenDtoPlatformEnum valueOf(String name) =>
-      _$pushTokenDtoPlatformEnumValueOf(name);
+  static BuiltSet<PushTokenDtoPlatformEnum> get values => _$pushTokenDtoPlatformEnumValues;
+  static PushTokenDtoPlatformEnum valueOf(String name) => _$pushTokenDtoPlatformEnumValueOf(name);
 }
+

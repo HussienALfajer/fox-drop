@@ -12,34 +12,26 @@ part 'merchant_order_dto_output.g.dart';
 /// MerchantOrderDtoOutput
 ///
 /// Properties:
-/// * [order]
+/// * [order] 
 @BuiltValue()
-abstract class MerchantOrderDtoOutput
-    implements Built<MerchantOrderDtoOutput, MerchantOrderDtoOutputBuilder> {
+abstract class MerchantOrderDtoOutput implements Built<MerchantOrderDtoOutput, MerchantOrderDtoOutputBuilder> {
   @BuiltValueField(wireName: r'order')
   MerchantOrderDtoOutputOrder get order;
 
   MerchantOrderDtoOutput._();
 
-  factory MerchantOrderDtoOutput([
-    void updates(MerchantOrderDtoOutputBuilder b),
-  ]) = _$MerchantOrderDtoOutput;
+  factory MerchantOrderDtoOutput([void updates(MerchantOrderDtoOutputBuilder b)]) = _$MerchantOrderDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantOrderDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantOrderDtoOutput> get serializer =>
-      _$MerchantOrderDtoOutputSerializer();
+  static Serializer<MerchantOrderDtoOutput> get serializer => _$MerchantOrderDtoOutputSerializer();
 }
 
-class _$MerchantOrderDtoOutputSerializer
-    implements PrimitiveSerializer<MerchantOrderDtoOutput> {
+class _$MerchantOrderDtoOutputSerializer implements PrimitiveSerializer<MerchantOrderDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    MerchantOrderDtoOutput,
-    _$MerchantOrderDtoOutput,
-  ];
+  final Iterable<Type> types = const [MerchantOrderDtoOutput, _$MerchantOrderDtoOutput];
 
   @override
   final String wireName = r'MerchantOrderDtoOutput';
@@ -62,11 +54,7 @@ class _$MerchantOrderDtoOutputSerializer
     MerchantOrderDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -82,12 +70,10 @@ class _$MerchantOrderDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'order':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(MerchantOrderDtoOutputOrder),
-                  )
-                  as MerchantOrderDtoOutputOrder;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(MerchantOrderDtoOutputOrder),
+          ) as MerchantOrderDtoOutputOrder;
           result.order.replace(valueDes);
           break;
         default:
@@ -118,3 +104,5 @@ class _$MerchantOrderDtoOutputSerializer
     return result.build();
   }
 }
+
+

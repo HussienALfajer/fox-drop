@@ -14,9 +14,7 @@ part 'customer_zone_voted_dto_output.g.dart';
 /// Properties:
 /// * [status] - Either way the app shows «شكراً، سنخبرك عندما نصل إلى منطقتك».
 @BuiltValue()
-abstract class CustomerZoneVotedDtoOutput
-    implements
-        Built<CustomerZoneVotedDtoOutput, CustomerZoneVotedDtoOutputBuilder> {
+abstract class CustomerZoneVotedDtoOutput implements Built<CustomerZoneVotedDtoOutput, CustomerZoneVotedDtoOutputBuilder> {
   /// Either way the app shows «شكراً، سنخبرك عندما نصل إلى منطقتك».
   @BuiltValueField(wireName: r'status')
   CustomerZoneVotedDtoOutputStatusEnum get status;
@@ -24,25 +22,18 @@ abstract class CustomerZoneVotedDtoOutput
 
   CustomerZoneVotedDtoOutput._();
 
-  factory CustomerZoneVotedDtoOutput([
-    void updates(CustomerZoneVotedDtoOutputBuilder b),
-  ]) = _$CustomerZoneVotedDtoOutput;
+  factory CustomerZoneVotedDtoOutput([void updates(CustomerZoneVotedDtoOutputBuilder b)]) = _$CustomerZoneVotedDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerZoneVotedDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerZoneVotedDtoOutput> get serializer =>
-      _$CustomerZoneVotedDtoOutputSerializer();
+  static Serializer<CustomerZoneVotedDtoOutput> get serializer => _$CustomerZoneVotedDtoOutputSerializer();
 }
 
-class _$CustomerZoneVotedDtoOutputSerializer
-    implements PrimitiveSerializer<CustomerZoneVotedDtoOutput> {
+class _$CustomerZoneVotedDtoOutputSerializer implements PrimitiveSerializer<CustomerZoneVotedDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    CustomerZoneVotedDtoOutput,
-    _$CustomerZoneVotedDtoOutput,
-  ];
+  final Iterable<Type> types = const [CustomerZoneVotedDtoOutput, _$CustomerZoneVotedDtoOutput];
 
   @override
   final String wireName = r'CustomerZoneVotedDtoOutput';
@@ -65,11 +56,7 @@ class _$CustomerZoneVotedDtoOutputSerializer
     CustomerZoneVotedDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -85,14 +72,10 @@ class _$CustomerZoneVotedDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'status':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CustomerZoneVotedDtoOutputStatusEnum,
-                    ),
-                  )
-                  as CustomerZoneVotedDtoOutputStatusEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CustomerZoneVotedDtoOutputStatusEnum),
+          ) as CustomerZoneVotedDtoOutputStatusEnum;
           result.status = valueDes;
           break;
         default:
@@ -124,22 +107,20 @@ class _$CustomerZoneVotedDtoOutputSerializer
   }
 }
 
+
 /// Either way the app shows «شكراً، سنخبرك عندما نصل إلى منطقتك».
 class CustomerZoneVotedDtoOutputStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'recorded')
-  static const CustomerZoneVotedDtoOutputStatusEnum recorded =
-      _$customerZoneVotedDtoOutputStatusEnum_recorded;
+  static const CustomerZoneVotedDtoOutputStatusEnum recorded = _$customerZoneVotedDtoOutputStatusEnum_recorded;
   @BuiltValueEnumConst(wireName: r'already_voted')
-  static const CustomerZoneVotedDtoOutputStatusEnum alreadyVoted =
-      _$customerZoneVotedDtoOutputStatusEnum_alreadyVoted;
+  static const CustomerZoneVotedDtoOutputStatusEnum alreadyVoted = _$customerZoneVotedDtoOutputStatusEnum_alreadyVoted;
 
-  static Serializer<CustomerZoneVotedDtoOutputStatusEnum> get serializer =>
-      _$customerZoneVotedDtoOutputStatusEnumSerializer;
+  static Serializer<CustomerZoneVotedDtoOutputStatusEnum> get serializer => _$customerZoneVotedDtoOutputStatusEnumSerializer;
 
-  const CustomerZoneVotedDtoOutputStatusEnum._(String name) : super(name);
+  const CustomerZoneVotedDtoOutputStatusEnum._(String name): super(name);
 
-  static BuiltSet<CustomerZoneVotedDtoOutputStatusEnum> get values =>
-      _$customerZoneVotedDtoOutputStatusEnumValues;
-  static CustomerZoneVotedDtoOutputStatusEnum valueOf(String name) =>
-      _$customerZoneVotedDtoOutputStatusEnumValueOf(name);
+  static BuiltSet<CustomerZoneVotedDtoOutputStatusEnum> get values => _$customerZoneVotedDtoOutputStatusEnumValues;
+  static CustomerZoneVotedDtoOutputStatusEnum valueOf(String name) => _$customerZoneVotedDtoOutputStatusEnumValueOf(name);
 }
+

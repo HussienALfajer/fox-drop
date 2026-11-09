@@ -11,28 +11,24 @@ part 'captain_refresh_dto.g.dart';
 /// CaptainRefreshDto
 ///
 /// Properties:
-/// * [refreshToken]
+/// * [refreshToken] 
 @BuiltValue()
-abstract class CaptainRefreshDto
-    implements Built<CaptainRefreshDto, CaptainRefreshDtoBuilder> {
+abstract class CaptainRefreshDto implements Built<CaptainRefreshDto, CaptainRefreshDtoBuilder> {
   @BuiltValueField(wireName: r'refreshToken')
   String get refreshToken;
 
   CaptainRefreshDto._();
 
-  factory CaptainRefreshDto([void updates(CaptainRefreshDtoBuilder b)]) =
-      _$CaptainRefreshDto;
+  factory CaptainRefreshDto([void updates(CaptainRefreshDtoBuilder b)]) = _$CaptainRefreshDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainRefreshDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainRefreshDto> get serializer =>
-      _$CaptainRefreshDtoSerializer();
+  static Serializer<CaptainRefreshDto> get serializer => _$CaptainRefreshDtoSerializer();
 }
 
-class _$CaptainRefreshDtoSerializer
-    implements PrimitiveSerializer<CaptainRefreshDto> {
+class _$CaptainRefreshDtoSerializer implements PrimitiveSerializer<CaptainRefreshDto> {
   @override
   final Iterable<Type> types = const [CaptainRefreshDto, _$CaptainRefreshDto];
 
@@ -57,11 +53,7 @@ class _$CaptainRefreshDtoSerializer
     CaptainRefreshDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -77,12 +69,10 @@ class _$CaptainRefreshDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'refreshToken':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.refreshToken = valueDes;
           break;
         default:
@@ -113,3 +103,5 @@ class _$CaptainRefreshDtoSerializer
     return result.build();
   }
 }
+
+

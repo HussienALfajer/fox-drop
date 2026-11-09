@@ -14,12 +14,7 @@ part 'merchant_orders_dto_output_orders_inner_captain_arrival.g.dart';
 /// * [at] - «وصل الكابتن {الاسم} لاستلام الطلب #{رقم}»; the waiting timer counts from it.
 /// * [waitingAlertAt] - Not picked up by then: every device chimes «الكابتن ينتظر الطلب #{رقم} منذ {د} دقائق» (RA §8.9).
 @BuiltValue()
-abstract class MerchantOrdersDtoOutputOrdersInnerCaptainArrival
-    implements
-        Built<
-          MerchantOrdersDtoOutputOrdersInnerCaptainArrival,
-          MerchantOrdersDtoOutputOrdersInnerCaptainArrivalBuilder
-        > {
+abstract class MerchantOrdersDtoOutputOrdersInnerCaptainArrival implements Built<MerchantOrdersDtoOutputOrdersInnerCaptainArrival, MerchantOrdersDtoOutputOrdersInnerCaptainArrivalBuilder> {
   /// «وصل الكابتن {الاسم} لاستلام الطلب #{رقم}»; the waiting timer counts from it.
   @BuiltValueField(wireName: r'at')
   DateTime get at;
@@ -30,29 +25,18 @@ abstract class MerchantOrdersDtoOutputOrdersInnerCaptainArrival
 
   MerchantOrdersDtoOutputOrdersInnerCaptainArrival._();
 
-  factory MerchantOrdersDtoOutputOrdersInnerCaptainArrival([
-    void updates(MerchantOrdersDtoOutputOrdersInnerCaptainArrivalBuilder b),
-  ]) = _$MerchantOrdersDtoOutputOrdersInnerCaptainArrival;
+  factory MerchantOrdersDtoOutputOrdersInnerCaptainArrival([void updates(MerchantOrdersDtoOutputOrdersInnerCaptainArrivalBuilder b)]) = _$MerchantOrdersDtoOutputOrdersInnerCaptainArrival;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    MerchantOrdersDtoOutputOrdersInnerCaptainArrivalBuilder b,
-  ) => b;
+  static void _defaults(MerchantOrdersDtoOutputOrdersInnerCaptainArrivalBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantOrdersDtoOutputOrdersInnerCaptainArrival>
-  get serializer =>
-      _$MerchantOrdersDtoOutputOrdersInnerCaptainArrivalSerializer();
+  static Serializer<MerchantOrdersDtoOutputOrdersInnerCaptainArrival> get serializer => _$MerchantOrdersDtoOutputOrdersInnerCaptainArrivalSerializer();
 }
 
-class _$MerchantOrdersDtoOutputOrdersInnerCaptainArrivalSerializer
-    implements
-        PrimitiveSerializer<MerchantOrdersDtoOutputOrdersInnerCaptainArrival> {
+class _$MerchantOrdersDtoOutputOrdersInnerCaptainArrivalSerializer implements PrimitiveSerializer<MerchantOrdersDtoOutputOrdersInnerCaptainArrival> {
   @override
-  final Iterable<Type> types = const [
-    MerchantOrdersDtoOutputOrdersInnerCaptainArrival,
-    _$MerchantOrdersDtoOutputOrdersInnerCaptainArrival,
-  ];
+  final Iterable<Type> types = const [MerchantOrdersDtoOutputOrdersInnerCaptainArrival, _$MerchantOrdersDtoOutputOrdersInnerCaptainArrival];
 
   @override
   final String wireName = r'MerchantOrdersDtoOutputOrdersInnerCaptainArrival';
@@ -80,11 +64,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerCaptainArrivalSerializer
     MerchantOrdersDtoOutputOrdersInnerCaptainArrival object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -100,21 +80,17 @@ class _$MerchantOrdersDtoOutputOrdersInnerCaptainArrivalSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'at':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.at = valueDes;
           break;
         case r'waitingAlertAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.waitingAlertAt = valueDes;
           break;
         default:
@@ -145,3 +121,5 @@ class _$MerchantOrdersDtoOutputOrdersInnerCaptainArrivalSerializer
     return result.build();
   }
 }
+
+

@@ -13,18 +13,13 @@ part 'merchant_menu_dto_output_categories_inner_items_inner_option_groups_inner_
 /// MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
 ///
 /// Properties:
-/// * [id]
-/// * [name]
-/// * [priceDelta]
-/// * [available]
-/// * [switchedOff]
+/// * [id] 
+/// * [name] 
+/// * [priceDelta] 
+/// * [available] 
+/// * [switchedOff] 
 @BuiltValue()
-abstract class MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
-    implements
-        Built<
-          MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner,
-          MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInnerBuilder
-        > {
+abstract class MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner implements Built<MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner, MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInnerBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -42,47 +37,25 @@ abstract class MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOp
 
   MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner._();
 
-  factory MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner([
-    void updates(
-      MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInnerBuilder
-      b,
-    ),
-  ]) =
-      _$MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner;
+  factory MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner([void updates(MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInnerBuilder b)]) = _$MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInnerBuilder
-    b,
-  ) => b;
+  static void _defaults(MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<
-    MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
-  >
-  get serializer =>
-      _$MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInnerSerializer();
+  static Serializer<MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner> get serializer => _$MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInnerSerializer();
 }
 
-class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInnerSerializer
-    implements
-        PrimitiveSerializer<
-          MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
-        > {
+class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInnerSerializer implements PrimitiveSerializer<MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner> {
   @override
-  final Iterable<Type> types = const [
-    MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner,
-    _$MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner,
-  ];
+  final Iterable<Type> types = const [MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner, _$MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner];
 
   @override
-  final String wireName =
-      r'MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner';
+  final String wireName = r'MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
-    object, {
+    MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'id';
@@ -98,9 +71,7 @@ class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsIn
     yield r'priceDelta';
     yield serializers.serialize(
       object.priceDelta,
-      specifiedType: const FullType(
-        MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice,
-      ),
+      specifiedType: const FullType(MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice),
     );
     yield r'available';
     yield serializers.serialize(
@@ -108,28 +79,19 @@ class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsIn
       specifiedType: const FullType(bool),
     );
     yield r'switchedOff';
-    yield object.switchedOff == null
-        ? null
-        : serializers.serialize(
-            object.switchedOff,
-            specifiedType: const FullType.nullable(
-              MerchantMenuDtoOutputCategoriesInnerSwitchedOff,
-            ),
-          );
+    yield object.switchedOff == null ? null : serializers.serialize(
+      object.switchedOff,
+      specifiedType: const FullType.nullable(MerchantMenuDtoOutputCategoriesInnerSwitchedOff),
+    );
   }
 
   @override
   Object serialize(
     Serializers serializers,
-    MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
-    object, {
+    MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -137,8 +99,7 @@ class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsIn
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInnerBuilder
-    result,
+    required MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInnerBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -146,52 +107,38 @@ class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsIn
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.id = valueDes;
           break;
         case r'name':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.name = valueDes;
           break;
         case r'priceDelta':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice,
-                    ),
-                  )
-                  as MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice),
+          ) as MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice;
           result.priceDelta.replace(valueDes);
           break;
         case r'available':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.available = valueDes;
           break;
         case r'switchedOff':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      MerchantMenuDtoOutputCategoriesInnerSwitchedOff,
-                    ),
-                  )
-                  as MerchantMenuDtoOutputCategoriesInnerSwitchedOff?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(MerchantMenuDtoOutputCategoriesInnerSwitchedOff),
+          ) as MerchantMenuDtoOutputCategoriesInnerSwitchedOff?;
           if (valueDes == null) continue;
           result.switchedOff.replace(valueDes);
           break;
@@ -204,14 +151,12 @@ class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsIn
   }
 
   @override
-  MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
-  deserialize(
+  MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result =
-        MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInnerBuilder();
+    final result = MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
@@ -225,3 +170,5 @@ class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsIn
     return result.build();
   }
 }
+
+

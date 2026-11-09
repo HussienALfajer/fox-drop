@@ -12,35 +12,27 @@ part 'terms_accepted_dto_output.g.dart';
 /// TermsAcceptedDtoOutput
 ///
 /// Properties:
-/// * [status]
+/// * [status] 
 @BuiltValue()
-abstract class TermsAcceptedDtoOutput
-    implements Built<TermsAcceptedDtoOutput, TermsAcceptedDtoOutputBuilder> {
+abstract class TermsAcceptedDtoOutput implements Built<TermsAcceptedDtoOutput, TermsAcceptedDtoOutputBuilder> {
   @BuiltValueField(wireName: r'status')
   TermsAcceptedDtoOutputStatusEnum get status;
   // enum statusEnum {  accepted,  };
 
   TermsAcceptedDtoOutput._();
 
-  factory TermsAcceptedDtoOutput([
-    void updates(TermsAcceptedDtoOutputBuilder b),
-  ]) = _$TermsAcceptedDtoOutput;
+  factory TermsAcceptedDtoOutput([void updates(TermsAcceptedDtoOutputBuilder b)]) = _$TermsAcceptedDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(TermsAcceptedDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<TermsAcceptedDtoOutput> get serializer =>
-      _$TermsAcceptedDtoOutputSerializer();
+  static Serializer<TermsAcceptedDtoOutput> get serializer => _$TermsAcceptedDtoOutputSerializer();
 }
 
-class _$TermsAcceptedDtoOutputSerializer
-    implements PrimitiveSerializer<TermsAcceptedDtoOutput> {
+class _$TermsAcceptedDtoOutputSerializer implements PrimitiveSerializer<TermsAcceptedDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    TermsAcceptedDtoOutput,
-    _$TermsAcceptedDtoOutput,
-  ];
+  final Iterable<Type> types = const [TermsAcceptedDtoOutput, _$TermsAcceptedDtoOutput];
 
   @override
   final String wireName = r'TermsAcceptedDtoOutput';
@@ -63,11 +55,7 @@ class _$TermsAcceptedDtoOutputSerializer
     TermsAcceptedDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -83,14 +71,10 @@ class _$TermsAcceptedDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'status':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      TermsAcceptedDtoOutputStatusEnum,
-                    ),
-                  )
-                  as TermsAcceptedDtoOutputStatusEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(TermsAcceptedDtoOutputStatusEnum),
+          ) as TermsAcceptedDtoOutputStatusEnum;
           result.status = valueDes;
           break;
         default:
@@ -122,18 +106,17 @@ class _$TermsAcceptedDtoOutputSerializer
   }
 }
 
+
 class TermsAcceptedDtoOutputStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'accepted')
-  static const TermsAcceptedDtoOutputStatusEnum accepted =
-      _$termsAcceptedDtoOutputStatusEnum_accepted;
+  static const TermsAcceptedDtoOutputStatusEnum accepted = _$termsAcceptedDtoOutputStatusEnum_accepted;
 
-  static Serializer<TermsAcceptedDtoOutputStatusEnum> get serializer =>
-      _$termsAcceptedDtoOutputStatusEnumSerializer;
+  static Serializer<TermsAcceptedDtoOutputStatusEnum> get serializer => _$termsAcceptedDtoOutputStatusEnumSerializer;
 
-  const TermsAcceptedDtoOutputStatusEnum._(String name) : super(name);
+  const TermsAcceptedDtoOutputStatusEnum._(String name): super(name);
 
-  static BuiltSet<TermsAcceptedDtoOutputStatusEnum> get values =>
-      _$termsAcceptedDtoOutputStatusEnumValues;
-  static TermsAcceptedDtoOutputStatusEnum valueOf(String name) =>
-      _$termsAcceptedDtoOutputStatusEnumValueOf(name);
+  static BuiltSet<TermsAcceptedDtoOutputStatusEnum> get values => _$termsAcceptedDtoOutputStatusEnumValues;
+  static TermsAcceptedDtoOutputStatusEnum valueOf(String name) => _$termsAcceptedDtoOutputStatusEnumValueOf(name);
 }
+

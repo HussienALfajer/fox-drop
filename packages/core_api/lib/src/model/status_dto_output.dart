@@ -12,11 +12,10 @@ part 'status_dto_output.g.dart';
 /// StatusDtoOutput
 ///
 /// Properties:
-/// * [status]
+/// * [status] 
 /// * [serverTime] - The server clock in Unix milliseconds.
 @BuiltValue()
-abstract class StatusDtoOutput
-    implements Built<StatusDtoOutput, StatusDtoOutputBuilder> {
+abstract class StatusDtoOutput implements Built<StatusDtoOutput, StatusDtoOutputBuilder> {
   @BuiltValueField(wireName: r'status')
   StatusDtoOutputStatusEnum get status;
   // enum statusEnum {  ok,  };
@@ -27,19 +26,16 @@ abstract class StatusDtoOutput
 
   StatusDtoOutput._();
 
-  factory StatusDtoOutput([void updates(StatusDtoOutputBuilder b)]) =
-      _$StatusDtoOutput;
+  factory StatusDtoOutput([void updates(StatusDtoOutputBuilder b)]) = _$StatusDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(StatusDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<StatusDtoOutput> get serializer =>
-      _$StatusDtoOutputSerializer();
+  static Serializer<StatusDtoOutput> get serializer => _$StatusDtoOutputSerializer();
 }
 
-class _$StatusDtoOutputSerializer
-    implements PrimitiveSerializer<StatusDtoOutput> {
+class _$StatusDtoOutputSerializer implements PrimitiveSerializer<StatusDtoOutput> {
   @override
   final Iterable<Type> types = const [StatusDtoOutput, _$StatusDtoOutput];
 
@@ -69,11 +65,7 @@ class _$StatusDtoOutputSerializer
     StatusDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -89,18 +81,17 @@ class _$StatusDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'status':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(StatusDtoOutputStatusEnum),
-                  )
-                  as StatusDtoOutputStatusEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(StatusDtoOutputStatusEnum),
+          ) as StatusDtoOutputStatusEnum;
           result.status = valueDes;
           break;
         case r'serverTime':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.serverTime = valueDes;
           break;
         default:
@@ -132,17 +123,17 @@ class _$StatusDtoOutputSerializer
   }
 }
 
+
 class StatusDtoOutputStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'ok')
   static const StatusDtoOutputStatusEnum ok = _$statusDtoOutputStatusEnum_ok;
 
-  static Serializer<StatusDtoOutputStatusEnum> get serializer =>
-      _$statusDtoOutputStatusEnumSerializer;
+  static Serializer<StatusDtoOutputStatusEnum> get serializer => _$statusDtoOutputStatusEnumSerializer;
 
-  const StatusDtoOutputStatusEnum._(String name) : super(name);
+  const StatusDtoOutputStatusEnum._(String name): super(name);
 
-  static BuiltSet<StatusDtoOutputStatusEnum> get values =>
-      _$statusDtoOutputStatusEnumValues;
-  static StatusDtoOutputStatusEnum valueOf(String name) =>
-      _$statusDtoOutputStatusEnumValueOf(name);
+  static BuiltSet<StatusDtoOutputStatusEnum> get values => _$statusDtoOutputStatusEnumValues;
+  static StatusDtoOutputStatusEnum valueOf(String name) => _$statusDtoOutputStatusEnumValueOf(name);
 }
+

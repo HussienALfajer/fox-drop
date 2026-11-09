@@ -15,12 +15,7 @@ part 'customer_quote_dto_output_free_delivery.g.dart';
 /// * [reached] - «توصيلك مجاني».
 /// * [missing] - «أضف {المبلغ} لتحصل على توصيل مجاني».
 @BuiltValue()
-abstract class CustomerQuoteDtoOutputFreeDelivery
-    implements
-        Built<
-          CustomerQuoteDtoOutputFreeDelivery,
-          CustomerQuoteDtoOutputFreeDeliveryBuilder
-        > {
+abstract class CustomerQuoteDtoOutputFreeDelivery implements Built<CustomerQuoteDtoOutputFreeDelivery, CustomerQuoteDtoOutputFreeDeliveryBuilder> {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'threshold')
   String get threshold;
@@ -35,25 +30,18 @@ abstract class CustomerQuoteDtoOutputFreeDelivery
 
   CustomerQuoteDtoOutputFreeDelivery._();
 
-  factory CustomerQuoteDtoOutputFreeDelivery([
-    void updates(CustomerQuoteDtoOutputFreeDeliveryBuilder b),
-  ]) = _$CustomerQuoteDtoOutputFreeDelivery;
+  factory CustomerQuoteDtoOutputFreeDelivery([void updates(CustomerQuoteDtoOutputFreeDeliveryBuilder b)]) = _$CustomerQuoteDtoOutputFreeDelivery;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerQuoteDtoOutputFreeDeliveryBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerQuoteDtoOutputFreeDelivery> get serializer =>
-      _$CustomerQuoteDtoOutputFreeDeliverySerializer();
+  static Serializer<CustomerQuoteDtoOutputFreeDelivery> get serializer => _$CustomerQuoteDtoOutputFreeDeliverySerializer();
 }
 
-class _$CustomerQuoteDtoOutputFreeDeliverySerializer
-    implements PrimitiveSerializer<CustomerQuoteDtoOutputFreeDelivery> {
+class _$CustomerQuoteDtoOutputFreeDeliverySerializer implements PrimitiveSerializer<CustomerQuoteDtoOutputFreeDelivery> {
   @override
-  final Iterable<Type> types = const [
-    CustomerQuoteDtoOutputFreeDelivery,
-    _$CustomerQuoteDtoOutputFreeDelivery,
-  ];
+  final Iterable<Type> types = const [CustomerQuoteDtoOutputFreeDelivery, _$CustomerQuoteDtoOutputFreeDelivery];
 
   @override
   final String wireName = r'CustomerQuoteDtoOutputFreeDelivery';
@@ -86,11 +74,7 @@ class _$CustomerQuoteDtoOutputFreeDeliverySerializer
     CustomerQuoteDtoOutputFreeDelivery object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -106,30 +90,24 @@ class _$CustomerQuoteDtoOutputFreeDeliverySerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'threshold':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.threshold = valueDes;
           break;
         case r'reached':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.reached = valueDes;
           break;
         case r'missing':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.missing = valueDes;
           break;
         default:
@@ -160,3 +138,5 @@ class _$CustomerQuoteDtoOutputFreeDeliverySerializer
     return result.build();
   }
 }
+
+

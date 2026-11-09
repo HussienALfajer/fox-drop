@@ -13,22 +13,17 @@ part 'team_users_dto_output_users_inner.g.dart';
 /// TeamUsersDtoOutputUsersInner
 ///
 /// Properties:
-/// * [id]
-/// * [name]
-/// * [email]
-/// * [phone]
-/// * [roles]
-/// * [status]
-/// * [totpEnrolled]
-/// * [lastSignInAt]
-/// * [openSessions]
+/// * [id] 
+/// * [name] 
+/// * [email] 
+/// * [phone] 
+/// * [roles] 
+/// * [status] 
+/// * [totpEnrolled] 
+/// * [lastSignInAt] 
+/// * [openSessions] 
 @BuiltValue()
-abstract class TeamUsersDtoOutputUsersInner
-    implements
-        Built<
-          TeamUsersDtoOutputUsersInner,
-          TeamUsersDtoOutputUsersInnerBuilder
-        > {
+abstract class TeamUsersDtoOutputUsersInner implements Built<TeamUsersDtoOutputUsersInner, TeamUsersDtoOutputUsersInnerBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -59,25 +54,18 @@ abstract class TeamUsersDtoOutputUsersInner
 
   TeamUsersDtoOutputUsersInner._();
 
-  factory TeamUsersDtoOutputUsersInner([
-    void updates(TeamUsersDtoOutputUsersInnerBuilder b),
-  ]) = _$TeamUsersDtoOutputUsersInner;
+  factory TeamUsersDtoOutputUsersInner([void updates(TeamUsersDtoOutputUsersInnerBuilder b)]) = _$TeamUsersDtoOutputUsersInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(TeamUsersDtoOutputUsersInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<TeamUsersDtoOutputUsersInner> get serializer =>
-      _$TeamUsersDtoOutputUsersInnerSerializer();
+  static Serializer<TeamUsersDtoOutputUsersInner> get serializer => _$TeamUsersDtoOutputUsersInnerSerializer();
 }
 
-class _$TeamUsersDtoOutputUsersInnerSerializer
-    implements PrimitiveSerializer<TeamUsersDtoOutputUsersInner> {
+class _$TeamUsersDtoOutputUsersInnerSerializer implements PrimitiveSerializer<TeamUsersDtoOutputUsersInner> {
   @override
-  final Iterable<Type> types = const [
-    TeamUsersDtoOutputUsersInner,
-    _$TeamUsersDtoOutputUsersInner,
-  ];
+  final Iterable<Type> types = const [TeamUsersDtoOutputUsersInner, _$TeamUsersDtoOutputUsersInner];
 
   @override
   final String wireName = r'TeamUsersDtoOutputUsersInner';
@@ -93,26 +81,20 @@ class _$TeamUsersDtoOutputUsersInnerSerializer
       specifiedType: const FullType(String),
     );
     yield r'name';
-    yield object.name == null
-        ? null
-        : serializers.serialize(
-            object.name,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.name == null ? null : serializers.serialize(
+      object.name,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'email';
-    yield object.email == null
-        ? null
-        : serializers.serialize(
-            object.email,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.email == null ? null : serializers.serialize(
+      object.email,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'phone';
-    yield object.phone == null
-        ? null
-        : serializers.serialize(
-            object.phone,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.phone == null ? null : serializers.serialize(
+      object.phone,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'roles';
     yield serializers.serialize(
       object.roles,
@@ -129,18 +111,14 @@ class _$TeamUsersDtoOutputUsersInnerSerializer
       specifiedType: const FullType(bool),
     );
     yield r'lastSignInAt';
-    yield object.lastSignInAt == null
-        ? null
-        : serializers.serialize(
-            object.lastSignInAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.lastSignInAt == null ? null : serializers.serialize(
+      object.lastSignInAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'openSessions';
     yield serializers.serialize(
       object.openSessions,
-      specifiedType: const FullType(BuiltList, [
-        FullType(TeamUsersDtoOutputUsersInnerOpenSessionsInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(TeamUsersDtoOutputUsersInnerOpenSessionsInner)]),
     );
   }
 
@@ -150,11 +128,7 @@ class _$TeamUsersDtoOutputUsersInnerSerializer
     TeamUsersDtoOutputUsersInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -170,94 +144,70 @@ class _$TeamUsersDtoOutputUsersInnerSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.id = valueDes;
           break;
         case r'name':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.name = valueDes;
           break;
         case r'email':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.email = valueDes;
           break;
         case r'phone':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.phone = valueDes;
           break;
         case r'roles':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(String),
-                    ]),
-                  )
-                  as BuiltList<String>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(String)]),
+          ) as BuiltList<String>;
           result.roles.replace(valueDes);
           break;
         case r'status':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      TeamUsersDtoOutputUsersInnerStatusEnum,
-                    ),
-                  )
-                  as TeamUsersDtoOutputUsersInnerStatusEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(TeamUsersDtoOutputUsersInnerStatusEnum),
+          ) as TeamUsersDtoOutputUsersInnerStatusEnum;
           result.status = valueDes;
           break;
         case r'totpEnrolled':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.totpEnrolled = valueDes;
           break;
         case r'lastSignInAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.lastSignInAt = valueDes;
           break;
         case r'openSessions':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(TeamUsersDtoOutputUsersInnerOpenSessionsInner),
-                    ]),
-                  )
-                  as BuiltList<TeamUsersDtoOutputUsersInnerOpenSessionsInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(TeamUsersDtoOutputUsersInnerOpenSessionsInner)]),
+          ) as BuiltList<TeamUsersDtoOutputUsersInnerOpenSessionsInner>;
           result.openSessions.replace(valueDes);
           break;
         default:
@@ -289,27 +239,23 @@ class _$TeamUsersDtoOutputUsersInnerSerializer
   }
 }
 
+
 class TeamUsersDtoOutputUsersInnerStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'pending')
-  static const TeamUsersDtoOutputUsersInnerStatusEnum pending =
-      _$teamUsersDtoOutputUsersInnerStatusEnum_pending;
+  static const TeamUsersDtoOutputUsersInnerStatusEnum pending = _$teamUsersDtoOutputUsersInnerStatusEnum_pending;
   @BuiltValueEnumConst(wireName: r'active')
-  static const TeamUsersDtoOutputUsersInnerStatusEnum active =
-      _$teamUsersDtoOutputUsersInnerStatusEnum_active;
+  static const TeamUsersDtoOutputUsersInnerStatusEnum active = _$teamUsersDtoOutputUsersInnerStatusEnum_active;
   @BuiltValueEnumConst(wireName: r'totp_reset')
-  static const TeamUsersDtoOutputUsersInnerStatusEnum totpReset =
-      _$teamUsersDtoOutputUsersInnerStatusEnum_totpReset;
+  static const TeamUsersDtoOutputUsersInnerStatusEnum totpReset = _$teamUsersDtoOutputUsersInnerStatusEnum_totpReset;
   @BuiltValueEnumConst(wireName: r'disabled')
-  static const TeamUsersDtoOutputUsersInnerStatusEnum disabled =
-      _$teamUsersDtoOutputUsersInnerStatusEnum_disabled;
+  static const TeamUsersDtoOutputUsersInnerStatusEnum disabled = _$teamUsersDtoOutputUsersInnerStatusEnum_disabled;
 
-  static Serializer<TeamUsersDtoOutputUsersInnerStatusEnum> get serializer =>
-      _$teamUsersDtoOutputUsersInnerStatusEnumSerializer;
+  static Serializer<TeamUsersDtoOutputUsersInnerStatusEnum> get serializer => _$teamUsersDtoOutputUsersInnerStatusEnumSerializer;
 
-  const TeamUsersDtoOutputUsersInnerStatusEnum._(String name) : super(name);
+  const TeamUsersDtoOutputUsersInnerStatusEnum._(String name): super(name);
 
-  static BuiltSet<TeamUsersDtoOutputUsersInnerStatusEnum> get values =>
-      _$teamUsersDtoOutputUsersInnerStatusEnumValues;
-  static TeamUsersDtoOutputUsersInnerStatusEnum valueOf(String name) =>
-      _$teamUsersDtoOutputUsersInnerStatusEnumValueOf(name);
+  static BuiltSet<TeamUsersDtoOutputUsersInnerStatusEnum> get values => _$teamUsersDtoOutputUsersInnerStatusEnumValues;
+  static TeamUsersDtoOutputUsersInnerStatusEnum valueOf(String name) => _$teamUsersDtoOutputUsersInnerStatusEnumValueOf(name);
 }
+

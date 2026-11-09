@@ -11,16 +11,11 @@ part 'admin_restaurant_images_dto_output_categories_inner_items_inner.g.dart';
 /// AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner
 ///
 /// Properties:
-/// * [id]
-/// * [name]
+/// * [id] 
+/// * [name] 
 /// * [photoKey] - Its key in public-media, shown through /media/ (architecture §5.8); null without one.
 @BuiltValue()
-abstract class AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner
-    implements
-        Built<
-          AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner,
-          AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerBuilder
-        > {
+abstract class AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner implements Built<AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner, AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -33,37 +28,21 @@ abstract class AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner
 
   AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner._();
 
-  factory AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner([
-    void updates(
-      AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerBuilder b,
-    ),
-  ]) = _$AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner;
+  factory AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner([void updates(AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerBuilder b)]) = _$AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerBuilder b,
-  ) => b;
+  static void _defaults(AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner>
-  get serializer =>
-      _$AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerSerializer();
+  static Serializer<AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner> get serializer => _$AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerSerializer();
 }
 
-class _$AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerSerializer
-    implements
-        PrimitiveSerializer<
-          AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner
-        > {
+class _$AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerSerializer implements PrimitiveSerializer<AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner> {
   @override
-  final Iterable<Type> types = const [
-    AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner,
-    _$AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner,
-  ];
+  final Iterable<Type> types = const [AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner, _$AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner];
 
   @override
-  final String wireName =
-      r'AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner';
+  final String wireName = r'AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
@@ -81,12 +60,10 @@ class _$AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerSerializer
       specifiedType: const FullType(String),
     );
     yield r'photoKey';
-    yield object.photoKey == null
-        ? null
-        : serializers.serialize(
-            object.photoKey,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.photoKey == null ? null : serializers.serialize(
+      object.photoKey,
+      specifiedType: const FullType.nullable(String),
+    );
   }
 
   @override
@@ -95,11 +72,7 @@ class _$AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerSerializer
     AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -107,8 +80,7 @@ class _$AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerBuilder
-    result,
+    required AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -116,30 +88,24 @@ class _$AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.id = valueDes;
           break;
         case r'name':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.name = valueDes;
           break;
         case r'photoKey':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.photoKey = valueDes;
           break;
@@ -157,8 +123,7 @@ class _$AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result =
-        AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerBuilder();
+    final result = AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
@@ -172,3 +137,5 @@ class _$AdminRestaurantImagesDtoOutputCategoriesInnerItemsInnerSerializer
     return result.build();
   }
 }
+
+

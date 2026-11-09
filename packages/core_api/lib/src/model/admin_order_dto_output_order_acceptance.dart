@@ -11,16 +11,11 @@ part 'admin_order_dto_output_order_acceptance.g.dart';
 /// AdminOrderDtoOutputOrderAcceptance
 ///
 /// Properties:
-/// * [at]
-/// * [prepMin]
-/// * [prepDueAt]
+/// * [at] 
+/// * [prepMin] 
+/// * [prepDueAt] 
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderAcceptance
-    implements
-        Built<
-          AdminOrderDtoOutputOrderAcceptance,
-          AdminOrderDtoOutputOrderAcceptanceBuilder
-        > {
+abstract class AdminOrderDtoOutputOrderAcceptance implements Built<AdminOrderDtoOutputOrderAcceptance, AdminOrderDtoOutputOrderAcceptanceBuilder> {
   @BuiltValueField(wireName: r'at')
   DateTime get at;
 
@@ -32,25 +27,18 @@ abstract class AdminOrderDtoOutputOrderAcceptance
 
   AdminOrderDtoOutputOrderAcceptance._();
 
-  factory AdminOrderDtoOutputOrderAcceptance([
-    void updates(AdminOrderDtoOutputOrderAcceptanceBuilder b),
-  ]) = _$AdminOrderDtoOutputOrderAcceptance;
+  factory AdminOrderDtoOutputOrderAcceptance([void updates(AdminOrderDtoOutputOrderAcceptanceBuilder b)]) = _$AdminOrderDtoOutputOrderAcceptance;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminOrderDtoOutputOrderAcceptanceBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderAcceptance> get serializer =>
-      _$AdminOrderDtoOutputOrderAcceptanceSerializer();
+  static Serializer<AdminOrderDtoOutputOrderAcceptance> get serializer => _$AdminOrderDtoOutputOrderAcceptanceSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderAcceptanceSerializer
-    implements PrimitiveSerializer<AdminOrderDtoOutputOrderAcceptance> {
+class _$AdminOrderDtoOutputOrderAcceptanceSerializer implements PrimitiveSerializer<AdminOrderDtoOutputOrderAcceptance> {
   @override
-  final Iterable<Type> types = const [
-    AdminOrderDtoOutputOrderAcceptance,
-    _$AdminOrderDtoOutputOrderAcceptance,
-  ];
+  final Iterable<Type> types = const [AdminOrderDtoOutputOrderAcceptance, _$AdminOrderDtoOutputOrderAcceptance];
 
   @override
   final String wireName = r'AdminOrderDtoOutputOrderAcceptance';
@@ -83,11 +71,7 @@ class _$AdminOrderDtoOutputOrderAcceptanceSerializer
     AdminOrderDtoOutputOrderAcceptance object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -103,27 +87,24 @@ class _$AdminOrderDtoOutputOrderAcceptanceSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'at':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.at = valueDes;
           break;
         case r'prepMin':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.prepMin = valueDes;
           break;
         case r'prepDueAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.prepDueAt = valueDes;
           break;
         default:
@@ -154,3 +135,5 @@ class _$AdminOrderDtoOutputOrderAcceptanceSerializer
     return result.build();
   }
 }
+
+

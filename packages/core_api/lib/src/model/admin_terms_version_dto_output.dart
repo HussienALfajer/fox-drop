@@ -13,11 +13,9 @@ part 'admin_terms_version_dto_output.g.dart';
 /// Properties:
 /// * [version] - Sent back with «أوافق» (CU §15, CA §15).
 /// * [body] - Plain text; a line per paragraph.
-/// * [publishedAt]
+/// * [publishedAt] 
 @BuiltValue()
-abstract class AdminTermsVersionDtoOutput
-    implements
-        Built<AdminTermsVersionDtoOutput, AdminTermsVersionDtoOutputBuilder> {
+abstract class AdminTermsVersionDtoOutput implements Built<AdminTermsVersionDtoOutput, AdminTermsVersionDtoOutputBuilder> {
   /// Sent back with «أوافق» (CU §15, CA §15).
   @BuiltValueField(wireName: r'version')
   int get version;
@@ -31,25 +29,18 @@ abstract class AdminTermsVersionDtoOutput
 
   AdminTermsVersionDtoOutput._();
 
-  factory AdminTermsVersionDtoOutput([
-    void updates(AdminTermsVersionDtoOutputBuilder b),
-  ]) = _$AdminTermsVersionDtoOutput;
+  factory AdminTermsVersionDtoOutput([void updates(AdminTermsVersionDtoOutputBuilder b)]) = _$AdminTermsVersionDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminTermsVersionDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminTermsVersionDtoOutput> get serializer =>
-      _$AdminTermsVersionDtoOutputSerializer();
+  static Serializer<AdminTermsVersionDtoOutput> get serializer => _$AdminTermsVersionDtoOutputSerializer();
 }
 
-class _$AdminTermsVersionDtoOutputSerializer
-    implements PrimitiveSerializer<AdminTermsVersionDtoOutput> {
+class _$AdminTermsVersionDtoOutputSerializer implements PrimitiveSerializer<AdminTermsVersionDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    AdminTermsVersionDtoOutput,
-    _$AdminTermsVersionDtoOutput,
-  ];
+  final Iterable<Type> types = const [AdminTermsVersionDtoOutput, _$AdminTermsVersionDtoOutput];
 
   @override
   final String wireName = r'AdminTermsVersionDtoOutput';
@@ -82,11 +73,7 @@ class _$AdminTermsVersionDtoOutputSerializer
     AdminTermsVersionDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -102,27 +89,24 @@ class _$AdminTermsVersionDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'version':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.version = valueDes;
           break;
         case r'body':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.body = valueDes;
           break;
         case r'publishedAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.publishedAt = valueDes;
           break;
         default:
@@ -153,3 +137,5 @@ class _$AdminTermsVersionDtoOutputSerializer
     return result.build();
   }
 }
+
+

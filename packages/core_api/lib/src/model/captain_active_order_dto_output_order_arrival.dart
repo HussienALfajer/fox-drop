@@ -13,37 +13,25 @@ part 'captain_active_order_dto_output_order_arrival.g.dart';
 /// Properties:
 /// * [at] - The waiting timer counts from it (CA §9.3).
 @BuiltValue()
-abstract class CaptainActiveOrderDtoOutputOrderArrival
-    implements
-        Built<
-          CaptainActiveOrderDtoOutputOrderArrival,
-          CaptainActiveOrderDtoOutputOrderArrivalBuilder
-        > {
+abstract class CaptainActiveOrderDtoOutputOrderArrival implements Built<CaptainActiveOrderDtoOutputOrderArrival, CaptainActiveOrderDtoOutputOrderArrivalBuilder> {
   /// The waiting timer counts from it (CA §9.3).
   @BuiltValueField(wireName: r'at')
   DateTime get at;
 
   CaptainActiveOrderDtoOutputOrderArrival._();
 
-  factory CaptainActiveOrderDtoOutputOrderArrival([
-    void updates(CaptainActiveOrderDtoOutputOrderArrivalBuilder b),
-  ]) = _$CaptainActiveOrderDtoOutputOrderArrival;
+  factory CaptainActiveOrderDtoOutputOrderArrival([void updates(CaptainActiveOrderDtoOutputOrderArrivalBuilder b)]) = _$CaptainActiveOrderDtoOutputOrderArrival;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainActiveOrderDtoOutputOrderArrivalBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainActiveOrderDtoOutputOrderArrival> get serializer =>
-      _$CaptainActiveOrderDtoOutputOrderArrivalSerializer();
+  static Serializer<CaptainActiveOrderDtoOutputOrderArrival> get serializer => _$CaptainActiveOrderDtoOutputOrderArrivalSerializer();
 }
 
-class _$CaptainActiveOrderDtoOutputOrderArrivalSerializer
-    implements PrimitiveSerializer<CaptainActiveOrderDtoOutputOrderArrival> {
+class _$CaptainActiveOrderDtoOutputOrderArrivalSerializer implements PrimitiveSerializer<CaptainActiveOrderDtoOutputOrderArrival> {
   @override
-  final Iterable<Type> types = const [
-    CaptainActiveOrderDtoOutputOrderArrival,
-    _$CaptainActiveOrderDtoOutputOrderArrival,
-  ];
+  final Iterable<Type> types = const [CaptainActiveOrderDtoOutputOrderArrival, _$CaptainActiveOrderDtoOutputOrderArrival];
 
   @override
   final String wireName = r'CaptainActiveOrderDtoOutputOrderArrival';
@@ -66,11 +54,7 @@ class _$CaptainActiveOrderDtoOutputOrderArrivalSerializer
     CaptainActiveOrderDtoOutputOrderArrival object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -86,12 +70,10 @@ class _$CaptainActiveOrderDtoOutputOrderArrivalSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'at':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.at = valueDes;
           break;
         default:
@@ -122,3 +104,5 @@ class _$CaptainActiveOrderDtoOutputOrderArrivalSerializer
     return result.build();
   }
 }
+
+

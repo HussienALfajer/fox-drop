@@ -16,8 +16,7 @@ part 'admin_restaurant_pause_dto.g.dart';
 /// * [message] - To customers, up to 100 characters.
 /// * [reason] - Why, for the change log (AP §9.6.4).
 @BuiltValue()
-abstract class AdminRestaurantPauseDto
-    implements Built<AdminRestaurantPauseDto, AdminRestaurantPauseDtoBuilder> {
+abstract class AdminRestaurantPauseDto implements Built<AdminRestaurantPauseDto, AdminRestaurantPauseDtoBuilder> {
   /// 15, 30 or 60; null with until, or for «حتى الاستئناف».
   @BuiltValueField(wireName: r'minutes')
   int? get minutes;
@@ -36,25 +35,18 @@ abstract class AdminRestaurantPauseDto
 
   AdminRestaurantPauseDto._();
 
-  factory AdminRestaurantPauseDto([
-    void updates(AdminRestaurantPauseDtoBuilder b),
-  ]) = _$AdminRestaurantPauseDto;
+  factory AdminRestaurantPauseDto([void updates(AdminRestaurantPauseDtoBuilder b)]) = _$AdminRestaurantPauseDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminRestaurantPauseDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRestaurantPauseDto> get serializer =>
-      _$AdminRestaurantPauseDtoSerializer();
+  static Serializer<AdminRestaurantPauseDto> get serializer => _$AdminRestaurantPauseDtoSerializer();
 }
 
-class _$AdminRestaurantPauseDtoSerializer
-    implements PrimitiveSerializer<AdminRestaurantPauseDto> {
+class _$AdminRestaurantPauseDtoSerializer implements PrimitiveSerializer<AdminRestaurantPauseDto> {
   @override
-  final Iterable<Type> types = const [
-    AdminRestaurantPauseDto,
-    _$AdminRestaurantPauseDto,
-  ];
+  final Iterable<Type> types = const [AdminRestaurantPauseDto, _$AdminRestaurantPauseDto];
 
   @override
   final String wireName = r'AdminRestaurantPauseDto';
@@ -65,26 +57,20 @@ class _$AdminRestaurantPauseDtoSerializer
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'minutes';
-    yield object.minutes == null
-        ? null
-        : serializers.serialize(
-            object.minutes,
-            specifiedType: const FullType.nullable(int),
-          );
+    yield object.minutes == null ? null : serializers.serialize(
+      object.minutes,
+      specifiedType: const FullType.nullable(int),
+    );
     yield r'until';
-    yield object.until == null
-        ? null
-        : serializers.serialize(
-            object.until,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.until == null ? null : serializers.serialize(
+      object.until,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'message';
-    yield object.message == null
-        ? null
-        : serializers.serialize(
-            object.message,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.message == null ? null : serializers.serialize(
+      object.message,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'reason';
     yield serializers.serialize(
       object.reason,
@@ -98,11 +84,7 @@ class _$AdminRestaurantPauseDtoSerializer
     AdminRestaurantPauseDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -118,42 +100,34 @@ class _$AdminRestaurantPauseDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'minutes':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(int),
-                  )
-                  as int?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
           if (valueDes == null) continue;
           result.minutes = valueDes;
           break;
         case r'until':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.until = valueDes;
           break;
         case r'message':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.message = valueDes;
           break;
         case r'reason':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.reason = valueDes;
           break;
         default:
@@ -184,3 +158,5 @@ class _$AdminRestaurantPauseDtoSerializer
     return result.build();
   }
 }
+
+

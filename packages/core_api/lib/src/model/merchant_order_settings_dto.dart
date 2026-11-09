@@ -14,9 +14,7 @@ part 'merchant_order_settings_dto.g.dart';
 /// * [defaultPrepMin] - Within prepFloorMin and prepCeilingMin.
 /// * [maxActiveOrders] - Off (null) or 1 to 50.
 @BuiltValue()
-abstract class MerchantOrderSettingsDto
-    implements
-        Built<MerchantOrderSettingsDto, MerchantOrderSettingsDtoBuilder> {
+abstract class MerchantOrderSettingsDto implements Built<MerchantOrderSettingsDto, MerchantOrderSettingsDtoBuilder> {
   /// Within prepFloorMin and prepCeilingMin.
   @BuiltValueField(wireName: r'defaultPrepMin')
   int get defaultPrepMin;
@@ -27,25 +25,18 @@ abstract class MerchantOrderSettingsDto
 
   MerchantOrderSettingsDto._();
 
-  factory MerchantOrderSettingsDto([
-    void updates(MerchantOrderSettingsDtoBuilder b),
-  ]) = _$MerchantOrderSettingsDto;
+  factory MerchantOrderSettingsDto([void updates(MerchantOrderSettingsDtoBuilder b)]) = _$MerchantOrderSettingsDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantOrderSettingsDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantOrderSettingsDto> get serializer =>
-      _$MerchantOrderSettingsDtoSerializer();
+  static Serializer<MerchantOrderSettingsDto> get serializer => _$MerchantOrderSettingsDtoSerializer();
 }
 
-class _$MerchantOrderSettingsDtoSerializer
-    implements PrimitiveSerializer<MerchantOrderSettingsDto> {
+class _$MerchantOrderSettingsDtoSerializer implements PrimitiveSerializer<MerchantOrderSettingsDto> {
   @override
-  final Iterable<Type> types = const [
-    MerchantOrderSettingsDto,
-    _$MerchantOrderSettingsDto,
-  ];
+  final Iterable<Type> types = const [MerchantOrderSettingsDto, _$MerchantOrderSettingsDto];
 
   @override
   final String wireName = r'MerchantOrderSettingsDto';
@@ -61,12 +52,10 @@ class _$MerchantOrderSettingsDtoSerializer
       specifiedType: const FullType(int),
     );
     yield r'maxActiveOrders';
-    yield object.maxActiveOrders == null
-        ? null
-        : serializers.serialize(
-            object.maxActiveOrders,
-            specifiedType: const FullType.nullable(int),
-          );
+    yield object.maxActiveOrders == null ? null : serializers.serialize(
+      object.maxActiveOrders,
+      specifiedType: const FullType.nullable(int),
+    );
   }
 
   @override
@@ -75,11 +64,7 @@ class _$MerchantOrderSettingsDtoSerializer
     MerchantOrderSettingsDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -95,18 +80,17 @@ class _$MerchantOrderSettingsDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'defaultPrepMin':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.defaultPrepMin = valueDes;
           break;
         case r'maxActiveOrders':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(int),
-                  )
-                  as int?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
           if (valueDes == null) continue;
           result.maxActiveOrders = valueDes;
           break;
@@ -138,3 +122,5 @@ class _$MerchantOrderSettingsDtoSerializer
     return result.build();
   }
 }
+
+

@@ -12,14 +12,9 @@ part 'captain_current_offer_dto_output_offer_collect.g.dart';
 ///
 /// Properties:
 /// * [amount] - Minor units of the currency, as a string.
-/// * [currency]
+/// * [currency] 
 @BuiltValue()
-abstract class CaptainCurrentOfferDtoOutputOfferCollect
-    implements
-        Built<
-          CaptainCurrentOfferDtoOutputOfferCollect,
-          CaptainCurrentOfferDtoOutputOfferCollectBuilder
-        > {
+abstract class CaptainCurrentOfferDtoOutputOfferCollect implements Built<CaptainCurrentOfferDtoOutputOfferCollect, CaptainCurrentOfferDtoOutputOfferCollectBuilder> {
   /// Minor units of the currency, as a string.
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -29,25 +24,18 @@ abstract class CaptainCurrentOfferDtoOutputOfferCollect
 
   CaptainCurrentOfferDtoOutputOfferCollect._();
 
-  factory CaptainCurrentOfferDtoOutputOfferCollect([
-    void updates(CaptainCurrentOfferDtoOutputOfferCollectBuilder b),
-  ]) = _$CaptainCurrentOfferDtoOutputOfferCollect;
+  factory CaptainCurrentOfferDtoOutputOfferCollect([void updates(CaptainCurrentOfferDtoOutputOfferCollectBuilder b)]) = _$CaptainCurrentOfferDtoOutputOfferCollect;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainCurrentOfferDtoOutputOfferCollectBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainCurrentOfferDtoOutputOfferCollect> get serializer =>
-      _$CaptainCurrentOfferDtoOutputOfferCollectSerializer();
+  static Serializer<CaptainCurrentOfferDtoOutputOfferCollect> get serializer => _$CaptainCurrentOfferDtoOutputOfferCollectSerializer();
 }
 
-class _$CaptainCurrentOfferDtoOutputOfferCollectSerializer
-    implements PrimitiveSerializer<CaptainCurrentOfferDtoOutputOfferCollect> {
+class _$CaptainCurrentOfferDtoOutputOfferCollectSerializer implements PrimitiveSerializer<CaptainCurrentOfferDtoOutputOfferCollect> {
   @override
-  final Iterable<Type> types = const [
-    CaptainCurrentOfferDtoOutputOfferCollect,
-    _$CaptainCurrentOfferDtoOutputOfferCollect,
-  ];
+  final Iterable<Type> types = const [CaptainCurrentOfferDtoOutputOfferCollect, _$CaptainCurrentOfferDtoOutputOfferCollect];
 
   @override
   final String wireName = r'CaptainCurrentOfferDtoOutputOfferCollect';
@@ -75,11 +63,7 @@ class _$CaptainCurrentOfferDtoOutputOfferCollectSerializer
     CaptainCurrentOfferDtoOutputOfferCollect object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -95,21 +79,17 @@ class _$CaptainCurrentOfferDtoOutputOfferCollectSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.currency = valueDes;
           break;
         default:
@@ -140,3 +120,5 @@ class _$CaptainCurrentOfferDtoOutputOfferCollectSerializer
     return result.build();
   }
 }
+
+

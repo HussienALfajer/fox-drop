@@ -15,34 +15,25 @@ part 'admin_shortfalls_dto_output.g.dart';
 /// Properties:
 /// * [shortfalls] - «نقص في التحصيل» (AP §8.6), newest first; all open until resolution is built.
 @BuiltValue()
-abstract class AdminShortfallsDtoOutput
-    implements
-        Built<AdminShortfallsDtoOutput, AdminShortfallsDtoOutputBuilder> {
+abstract class AdminShortfallsDtoOutput implements Built<AdminShortfallsDtoOutput, AdminShortfallsDtoOutputBuilder> {
   /// «نقص في التحصيل» (AP §8.6), newest first; all open until resolution is built.
   @BuiltValueField(wireName: r'shortfalls')
   BuiltList<AdminShortfallsDtoOutputShortfallsInner> get shortfalls;
 
   AdminShortfallsDtoOutput._();
 
-  factory AdminShortfallsDtoOutput([
-    void updates(AdminShortfallsDtoOutputBuilder b),
-  ]) = _$AdminShortfallsDtoOutput;
+  factory AdminShortfallsDtoOutput([void updates(AdminShortfallsDtoOutputBuilder b)]) = _$AdminShortfallsDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminShortfallsDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminShortfallsDtoOutput> get serializer =>
-      _$AdminShortfallsDtoOutputSerializer();
+  static Serializer<AdminShortfallsDtoOutput> get serializer => _$AdminShortfallsDtoOutputSerializer();
 }
 
-class _$AdminShortfallsDtoOutputSerializer
-    implements PrimitiveSerializer<AdminShortfallsDtoOutput> {
+class _$AdminShortfallsDtoOutputSerializer implements PrimitiveSerializer<AdminShortfallsDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    AdminShortfallsDtoOutput,
-    _$AdminShortfallsDtoOutput,
-  ];
+  final Iterable<Type> types = const [AdminShortfallsDtoOutput, _$AdminShortfallsDtoOutput];
 
   @override
   final String wireName = r'AdminShortfallsDtoOutput';
@@ -55,9 +46,7 @@ class _$AdminShortfallsDtoOutputSerializer
     yield r'shortfalls';
     yield serializers.serialize(
       object.shortfalls,
-      specifiedType: const FullType(BuiltList, [
-        FullType(AdminShortfallsDtoOutputShortfallsInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(AdminShortfallsDtoOutputShortfallsInner)]),
     );
   }
 
@@ -67,11 +56,7 @@ class _$AdminShortfallsDtoOutputSerializer
     AdminShortfallsDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -87,14 +72,10 @@ class _$AdminShortfallsDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'shortfalls':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(AdminShortfallsDtoOutputShortfallsInner),
-                    ]),
-                  )
-                  as BuiltList<AdminShortfallsDtoOutputShortfallsInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(AdminShortfallsDtoOutputShortfallsInner)]),
+          ) as BuiltList<AdminShortfallsDtoOutputShortfallsInner>;
           result.shortfalls.replace(valueDes);
           break;
         default:
@@ -125,3 +106,5 @@ class _$AdminShortfallsDtoOutputSerializer
     return result.build();
   }
 }
+
+

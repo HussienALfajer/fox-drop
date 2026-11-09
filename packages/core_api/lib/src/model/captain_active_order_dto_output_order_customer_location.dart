@@ -11,15 +11,10 @@ part 'captain_active_order_dto_output_order_customer_location.g.dart';
 /// The exact pin, with the route and «ابدأ الملاحة».
 ///
 /// Properties:
-/// * [latitude]
-/// * [longitude]
+/// * [latitude] 
+/// * [longitude] 
 @BuiltValue()
-abstract class CaptainActiveOrderDtoOutputOrderCustomerLocation
-    implements
-        Built<
-          CaptainActiveOrderDtoOutputOrderCustomerLocation,
-          CaptainActiveOrderDtoOutputOrderCustomerLocationBuilder
-        > {
+abstract class CaptainActiveOrderDtoOutputOrderCustomerLocation implements Built<CaptainActiveOrderDtoOutputOrderCustomerLocation, CaptainActiveOrderDtoOutputOrderCustomerLocationBuilder> {
   @BuiltValueField(wireName: r'latitude')
   num get latitude;
 
@@ -28,29 +23,18 @@ abstract class CaptainActiveOrderDtoOutputOrderCustomerLocation
 
   CaptainActiveOrderDtoOutputOrderCustomerLocation._();
 
-  factory CaptainActiveOrderDtoOutputOrderCustomerLocation([
-    void updates(CaptainActiveOrderDtoOutputOrderCustomerLocationBuilder b),
-  ]) = _$CaptainActiveOrderDtoOutputOrderCustomerLocation;
+  factory CaptainActiveOrderDtoOutputOrderCustomerLocation([void updates(CaptainActiveOrderDtoOutputOrderCustomerLocationBuilder b)]) = _$CaptainActiveOrderDtoOutputOrderCustomerLocation;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    CaptainActiveOrderDtoOutputOrderCustomerLocationBuilder b,
-  ) => b;
+  static void _defaults(CaptainActiveOrderDtoOutputOrderCustomerLocationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainActiveOrderDtoOutputOrderCustomerLocation>
-  get serializer =>
-      _$CaptainActiveOrderDtoOutputOrderCustomerLocationSerializer();
+  static Serializer<CaptainActiveOrderDtoOutputOrderCustomerLocation> get serializer => _$CaptainActiveOrderDtoOutputOrderCustomerLocationSerializer();
 }
 
-class _$CaptainActiveOrderDtoOutputOrderCustomerLocationSerializer
-    implements
-        PrimitiveSerializer<CaptainActiveOrderDtoOutputOrderCustomerLocation> {
+class _$CaptainActiveOrderDtoOutputOrderCustomerLocationSerializer implements PrimitiveSerializer<CaptainActiveOrderDtoOutputOrderCustomerLocation> {
   @override
-  final Iterable<Type> types = const [
-    CaptainActiveOrderDtoOutputOrderCustomerLocation,
-    _$CaptainActiveOrderDtoOutputOrderCustomerLocation,
-  ];
+  final Iterable<Type> types = const [CaptainActiveOrderDtoOutputOrderCustomerLocation, _$CaptainActiveOrderDtoOutputOrderCustomerLocation];
 
   @override
   final String wireName = r'CaptainActiveOrderDtoOutputOrderCustomerLocation';
@@ -78,11 +62,7 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerLocationSerializer
     CaptainActiveOrderDtoOutputOrderCustomerLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -98,15 +78,17 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerLocationSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'latitude':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(num))
-                  as num;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
           result.latitude = valueDes;
           break;
         case r'longitude':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(num))
-                  as num;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
           result.longitude = valueDes;
           break;
         default:
@@ -137,3 +119,5 @@ class _$CaptainActiveOrderDtoOutputOrderCustomerLocationSerializer
     return result.build();
   }
 }
+
+

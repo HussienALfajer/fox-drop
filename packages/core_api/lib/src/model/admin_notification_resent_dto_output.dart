@@ -13,37 +13,25 @@ part 'admin_notification_resent_dto_output.g.dart';
 /// Properties:
 /// * [body] - The text pushed again.
 @BuiltValue()
-abstract class AdminNotificationResentDtoOutput
-    implements
-        Built<
-          AdminNotificationResentDtoOutput,
-          AdminNotificationResentDtoOutputBuilder
-        > {
+abstract class AdminNotificationResentDtoOutput implements Built<AdminNotificationResentDtoOutput, AdminNotificationResentDtoOutputBuilder> {
   /// The text pushed again.
   @BuiltValueField(wireName: r'body')
   String get body;
 
   AdminNotificationResentDtoOutput._();
 
-  factory AdminNotificationResentDtoOutput([
-    void updates(AdminNotificationResentDtoOutputBuilder b),
-  ]) = _$AdminNotificationResentDtoOutput;
+  factory AdminNotificationResentDtoOutput([void updates(AdminNotificationResentDtoOutputBuilder b)]) = _$AdminNotificationResentDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminNotificationResentDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminNotificationResentDtoOutput> get serializer =>
-      _$AdminNotificationResentDtoOutputSerializer();
+  static Serializer<AdminNotificationResentDtoOutput> get serializer => _$AdminNotificationResentDtoOutputSerializer();
 }
 
-class _$AdminNotificationResentDtoOutputSerializer
-    implements PrimitiveSerializer<AdminNotificationResentDtoOutput> {
+class _$AdminNotificationResentDtoOutputSerializer implements PrimitiveSerializer<AdminNotificationResentDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    AdminNotificationResentDtoOutput,
-    _$AdminNotificationResentDtoOutput,
-  ];
+  final Iterable<Type> types = const [AdminNotificationResentDtoOutput, _$AdminNotificationResentDtoOutput];
 
   @override
   final String wireName = r'AdminNotificationResentDtoOutput';
@@ -66,11 +54,7 @@ class _$AdminNotificationResentDtoOutputSerializer
     AdminNotificationResentDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -86,12 +70,10 @@ class _$AdminNotificationResentDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'body':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.body = valueDes;
           break;
         default:
@@ -122,3 +104,5 @@ class _$AdminNotificationResentDtoOutputSerializer
     return result.build();
   }
 }
+
+

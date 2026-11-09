@@ -12,39 +12,27 @@ part 'admin_emergency_stop_resumed_dto_output.g.dart';
 /// AdminEmergencyStopResumedDtoOutput
 ///
 /// Properties:
-/// * [resumed]
+/// * [resumed] 
 @BuiltValue()
-abstract class AdminEmergencyStopResumedDtoOutput
-    implements
-        Built<
-          AdminEmergencyStopResumedDtoOutput,
-          AdminEmergencyStopResumedDtoOutputBuilder
-        > {
+abstract class AdminEmergencyStopResumedDtoOutput implements Built<AdminEmergencyStopResumedDtoOutput, AdminEmergencyStopResumedDtoOutputBuilder> {
   @BuiltValueField(wireName: r'resumed')
   AdminEmergencyStopResumedDtoOutputResumedEnum get resumed;
   // enum resumedEnum {  true,  };
 
   AdminEmergencyStopResumedDtoOutput._();
 
-  factory AdminEmergencyStopResumedDtoOutput([
-    void updates(AdminEmergencyStopResumedDtoOutputBuilder b),
-  ]) = _$AdminEmergencyStopResumedDtoOutput;
+  factory AdminEmergencyStopResumedDtoOutput([void updates(AdminEmergencyStopResumedDtoOutputBuilder b)]) = _$AdminEmergencyStopResumedDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminEmergencyStopResumedDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminEmergencyStopResumedDtoOutput> get serializer =>
-      _$AdminEmergencyStopResumedDtoOutputSerializer();
+  static Serializer<AdminEmergencyStopResumedDtoOutput> get serializer => _$AdminEmergencyStopResumedDtoOutputSerializer();
 }
 
-class _$AdminEmergencyStopResumedDtoOutputSerializer
-    implements PrimitiveSerializer<AdminEmergencyStopResumedDtoOutput> {
+class _$AdminEmergencyStopResumedDtoOutputSerializer implements PrimitiveSerializer<AdminEmergencyStopResumedDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    AdminEmergencyStopResumedDtoOutput,
-    _$AdminEmergencyStopResumedDtoOutput,
-  ];
+  final Iterable<Type> types = const [AdminEmergencyStopResumedDtoOutput, _$AdminEmergencyStopResumedDtoOutput];
 
   @override
   final String wireName = r'AdminEmergencyStopResumedDtoOutput';
@@ -57,9 +45,7 @@ class _$AdminEmergencyStopResumedDtoOutputSerializer
     yield r'resumed';
     yield serializers.serialize(
       object.resumed,
-      specifiedType: const FullType(
-        AdminEmergencyStopResumedDtoOutputResumedEnum,
-      ),
+      specifiedType: const FullType(AdminEmergencyStopResumedDtoOutputResumedEnum),
     );
   }
 
@@ -69,11 +55,7 @@ class _$AdminEmergencyStopResumedDtoOutputSerializer
     AdminEmergencyStopResumedDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -89,14 +71,10 @@ class _$AdminEmergencyStopResumedDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'resumed':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      AdminEmergencyStopResumedDtoOutputResumedEnum,
-                    ),
-                  )
-                  as AdminEmergencyStopResumedDtoOutputResumedEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(AdminEmergencyStopResumedDtoOutputResumedEnum),
+          ) as AdminEmergencyStopResumedDtoOutputResumedEnum;
           result.resumed = valueDes;
           break;
         default:
@@ -128,19 +106,17 @@ class _$AdminEmergencyStopResumedDtoOutputSerializer
   }
 }
 
+
 class AdminEmergencyStopResumedDtoOutputResumedEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'true')
-  static const AdminEmergencyStopResumedDtoOutputResumedEnum true_ =
-      _$adminEmergencyStopResumedDtoOutputResumedEnum_true_;
+  static const AdminEmergencyStopResumedDtoOutputResumedEnum true_ = _$adminEmergencyStopResumedDtoOutputResumedEnum_true_;
 
-  static Serializer<AdminEmergencyStopResumedDtoOutputResumedEnum>
-  get serializer => _$adminEmergencyStopResumedDtoOutputResumedEnumSerializer;
+  static Serializer<AdminEmergencyStopResumedDtoOutputResumedEnum> get serializer => _$adminEmergencyStopResumedDtoOutputResumedEnumSerializer;
 
-  const AdminEmergencyStopResumedDtoOutputResumedEnum._(String name)
-    : super(name);
+  const AdminEmergencyStopResumedDtoOutputResumedEnum._(String name): super(name);
 
-  static BuiltSet<AdminEmergencyStopResumedDtoOutputResumedEnum> get values =>
-      _$adminEmergencyStopResumedDtoOutputResumedEnumValues;
-  static AdminEmergencyStopResumedDtoOutputResumedEnum valueOf(String name) =>
-      _$adminEmergencyStopResumedDtoOutputResumedEnumValueOf(name);
+  static BuiltSet<AdminEmergencyStopResumedDtoOutputResumedEnum> get values => _$adminEmergencyStopResumedDtoOutputResumedEnumValues;
+  static AdminEmergencyStopResumedDtoOutputResumedEnum valueOf(String name) => _$adminEmergencyStopResumedDtoOutputResumedEnumValueOf(name);
 }
+

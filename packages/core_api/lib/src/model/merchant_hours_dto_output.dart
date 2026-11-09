@@ -17,18 +17,17 @@ part 'merchant_hours_dto_output.g.dart';
 ///
 /// Properties:
 /// * [periods] - The weekly schedule; a weekday without a period is «مغلق طوال اليوم» (RA §10).
-/// * [holiday]
-/// * [defaultPrepMin]
+/// * [holiday] 
+/// * [defaultPrepMin] 
 /// * [prepFloorMin] - merchant.prep_time_floor_min.
 /// * [prepCeilingMin] - merchant.prep_time_ceiling_min.
 /// * [maxActiveOrders] - Off (null) or 1 to 50 (RA §7.4).
-/// * [minimumOrder]
-/// * [coverage]
+/// * [minimumOrder] 
+/// * [coverage] 
 /// * [commissionBp] - Basis points of the items value: 1500 is 15%.
 /// * [settlementWeekday] - merchant.settlement_weekday, such as saturday.
 @BuiltValue()
-abstract class MerchantHoursDtoOutput
-    implements Built<MerchantHoursDtoOutput, MerchantHoursDtoOutputBuilder> {
+abstract class MerchantHoursDtoOutput implements Built<MerchantHoursDtoOutput, MerchantHoursDtoOutputBuilder> {
   /// The weekly schedule; a weekday without a period is «مغلق طوال اليوم» (RA §10).
   @BuiltValueField(wireName: r'periods')
   BuiltList<MerchantHoursDtoOutputPeriodsInner> get periods;
@@ -67,25 +66,18 @@ abstract class MerchantHoursDtoOutput
 
   MerchantHoursDtoOutput._();
 
-  factory MerchantHoursDtoOutput([
-    void updates(MerchantHoursDtoOutputBuilder b),
-  ]) = _$MerchantHoursDtoOutput;
+  factory MerchantHoursDtoOutput([void updates(MerchantHoursDtoOutputBuilder b)]) = _$MerchantHoursDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MerchantHoursDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantHoursDtoOutput> get serializer =>
-      _$MerchantHoursDtoOutputSerializer();
+  static Serializer<MerchantHoursDtoOutput> get serializer => _$MerchantHoursDtoOutputSerializer();
 }
 
-class _$MerchantHoursDtoOutputSerializer
-    implements PrimitiveSerializer<MerchantHoursDtoOutput> {
+class _$MerchantHoursDtoOutputSerializer implements PrimitiveSerializer<MerchantHoursDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    MerchantHoursDtoOutput,
-    _$MerchantHoursDtoOutput,
-  ];
+  final Iterable<Type> types = const [MerchantHoursDtoOutput, _$MerchantHoursDtoOutput];
 
   @override
   final String wireName = r'MerchantHoursDtoOutput';
@@ -98,19 +90,13 @@ class _$MerchantHoursDtoOutputSerializer
     yield r'periods';
     yield serializers.serialize(
       object.periods,
-      specifiedType: const FullType(BuiltList, [
-        FullType(MerchantHoursDtoOutputPeriodsInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(MerchantHoursDtoOutputPeriodsInner)]),
     );
     yield r'holiday';
-    yield object.holiday == null
-        ? null
-        : serializers.serialize(
-            object.holiday,
-            specifiedType: const FullType.nullable(
-              MerchantStatusDtoOutputHoliday,
-            ),
-          );
+    yield object.holiday == null ? null : serializers.serialize(
+      object.holiday,
+      specifiedType: const FullType.nullable(MerchantStatusDtoOutputHoliday),
+    );
     yield r'defaultPrepMin';
     yield serializers.serialize(
       object.defaultPrepMin,
@@ -127,18 +113,14 @@ class _$MerchantHoursDtoOutputSerializer
       specifiedType: const FullType(int),
     );
     yield r'maxActiveOrders';
-    yield object.maxActiveOrders == null
-        ? null
-        : serializers.serialize(
-            object.maxActiveOrders,
-            specifiedType: const FullType.nullable(int),
-          );
+    yield object.maxActiveOrders == null ? null : serializers.serialize(
+      object.maxActiveOrders,
+      specifiedType: const FullType.nullable(int),
+    );
     yield r'minimumOrder';
     yield serializers.serialize(
       object.minimumOrder,
-      specifiedType: const FullType(
-        MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice,
-      ),
+      specifiedType: const FullType(MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice),
     );
     yield r'coverage';
     yield serializers.serialize(
@@ -146,12 +128,10 @@ class _$MerchantHoursDtoOutputSerializer
       specifiedType: const FullType(MerchantHoursDtoOutputCoverage),
     );
     yield r'commissionBp';
-    yield object.commissionBp == null
-        ? null
-        : serializers.serialize(
-            object.commissionBp,
-            specifiedType: const FullType.nullable(int),
-          );
+    yield object.commissionBp == null ? null : serializers.serialize(
+      object.commissionBp,
+      specifiedType: const FullType.nullable(int),
+    );
     yield r'settlementWeekday';
     yield serializers.serialize(
       object.settlementWeekday,
@@ -165,11 +145,7 @@ class _$MerchantHoursDtoOutputSerializer
     MerchantHoursDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -185,95 +161,76 @@ class _$MerchantHoursDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'periods':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(MerchantHoursDtoOutputPeriodsInner),
-                    ]),
-                  )
-                  as BuiltList<MerchantHoursDtoOutputPeriodsInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(MerchantHoursDtoOutputPeriodsInner)]),
+          ) as BuiltList<MerchantHoursDtoOutputPeriodsInner>;
           result.periods.replace(valueDes);
           break;
         case r'holiday':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      MerchantStatusDtoOutputHoliday,
-                    ),
-                  )
-                  as MerchantStatusDtoOutputHoliday?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(MerchantStatusDtoOutputHoliday),
+          ) as MerchantStatusDtoOutputHoliday?;
           if (valueDes == null) continue;
           result.holiday.replace(valueDes);
           break;
         case r'defaultPrepMin':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.defaultPrepMin = valueDes;
           break;
         case r'prepFloorMin':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.prepFloorMin = valueDes;
           break;
         case r'prepCeilingMin':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.prepCeilingMin = valueDes;
           break;
         case r'maxActiveOrders':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(int),
-                  )
-                  as int?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
           if (valueDes == null) continue;
           result.maxActiveOrders = valueDes;
           break;
         case r'minimumOrder':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice,
-                    ),
-                  )
-                  as MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice),
+          ) as MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice;
           result.minimumOrder.replace(valueDes);
           break;
         case r'coverage':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      MerchantHoursDtoOutputCoverage,
-                    ),
-                  )
-                  as MerchantHoursDtoOutputCoverage;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(MerchantHoursDtoOutputCoverage),
+          ) as MerchantHoursDtoOutputCoverage;
           result.coverage.replace(valueDes);
           break;
         case r'commissionBp':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(int),
-                  )
-                  as int?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
           if (valueDes == null) continue;
           result.commissionBp = valueDes;
           break;
         case r'settlementWeekday':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.settlementWeekday = valueDes;
           break;
         default:
@@ -304,3 +261,5 @@ class _$MerchantHoursDtoOutputSerializer
     return result.build();
   }
 }
+
+

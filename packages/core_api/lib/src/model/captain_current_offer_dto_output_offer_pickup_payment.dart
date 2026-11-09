@@ -12,14 +12,9 @@ part 'captain_current_offer_dto_output_offer_pickup_payment.g.dart';
 ///
 /// Properties:
 /// * [amount] - Minor units of the currency, as a string.
-/// * [currency]
+/// * [currency] 
 @BuiltValue()
-abstract class CaptainCurrentOfferDtoOutputOfferPickupPayment
-    implements
-        Built<
-          CaptainCurrentOfferDtoOutputOfferPickupPayment,
-          CaptainCurrentOfferDtoOutputOfferPickupPaymentBuilder
-        > {
+abstract class CaptainCurrentOfferDtoOutputOfferPickupPayment implements Built<CaptainCurrentOfferDtoOutputOfferPickupPayment, CaptainCurrentOfferDtoOutputOfferPickupPaymentBuilder> {
   /// Minor units of the currency, as a string.
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -29,29 +24,18 @@ abstract class CaptainCurrentOfferDtoOutputOfferPickupPayment
 
   CaptainCurrentOfferDtoOutputOfferPickupPayment._();
 
-  factory CaptainCurrentOfferDtoOutputOfferPickupPayment([
-    void updates(CaptainCurrentOfferDtoOutputOfferPickupPaymentBuilder b),
-  ]) = _$CaptainCurrentOfferDtoOutputOfferPickupPayment;
+  factory CaptainCurrentOfferDtoOutputOfferPickupPayment([void updates(CaptainCurrentOfferDtoOutputOfferPickupPaymentBuilder b)]) = _$CaptainCurrentOfferDtoOutputOfferPickupPayment;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    CaptainCurrentOfferDtoOutputOfferPickupPaymentBuilder b,
-  ) => b;
+  static void _defaults(CaptainCurrentOfferDtoOutputOfferPickupPaymentBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainCurrentOfferDtoOutputOfferPickupPayment>
-  get serializer =>
-      _$CaptainCurrentOfferDtoOutputOfferPickupPaymentSerializer();
+  static Serializer<CaptainCurrentOfferDtoOutputOfferPickupPayment> get serializer => _$CaptainCurrentOfferDtoOutputOfferPickupPaymentSerializer();
 }
 
-class _$CaptainCurrentOfferDtoOutputOfferPickupPaymentSerializer
-    implements
-        PrimitiveSerializer<CaptainCurrentOfferDtoOutputOfferPickupPayment> {
+class _$CaptainCurrentOfferDtoOutputOfferPickupPaymentSerializer implements PrimitiveSerializer<CaptainCurrentOfferDtoOutputOfferPickupPayment> {
   @override
-  final Iterable<Type> types = const [
-    CaptainCurrentOfferDtoOutputOfferPickupPayment,
-    _$CaptainCurrentOfferDtoOutputOfferPickupPayment,
-  ];
+  final Iterable<Type> types = const [CaptainCurrentOfferDtoOutputOfferPickupPayment, _$CaptainCurrentOfferDtoOutputOfferPickupPayment];
 
   @override
   final String wireName = r'CaptainCurrentOfferDtoOutputOfferPickupPayment';
@@ -79,11 +63,7 @@ class _$CaptainCurrentOfferDtoOutputOfferPickupPaymentSerializer
     CaptainCurrentOfferDtoOutputOfferPickupPayment object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -99,21 +79,17 @@ class _$CaptainCurrentOfferDtoOutputOfferPickupPaymentSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.currency = valueDes;
           break;
         default:
@@ -144,3 +120,5 @@ class _$CaptainCurrentOfferDtoOutputOfferPickupPaymentSerializer
     return result.build();
   }
 }
+
+
