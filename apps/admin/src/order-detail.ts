@@ -49,6 +49,7 @@ export const eventKeys = {
   'order.item_report_closed': 'order.event.itemReportClosed',
   'order.edited': 'order.event.edited',
   'order.edit_acknowledged': 'order.event.editAcknowledged',
+  'order.outcome_set': 'order.event.outcomeSet',
 } as const;
 
 export function eventKey(type: string | null): (typeof eventKeys)[keyof typeof eventKeys] | null {
@@ -88,6 +89,13 @@ const reasonKeysByType = {
     operations: 'order.reason.byOperations',
   },
   'order.cancelled': { merchant_auto_cancel: 'order.reason.merchantAutoCancel' },
+  'order.outcome_set': {
+    free: 'order.outcome.free',
+    fake: 'order.outcome.fake',
+    damaged: 'order.outcome.damaged',
+    wrong_refused: 'order.outcome.wrongRefused',
+    failed_other: 'order.outcome.failedOther',
+  },
 } as const;
 
 type ReasonKey = {

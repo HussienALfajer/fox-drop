@@ -47,6 +47,8 @@ const detail = {
   rejection: null,
   onBehalf: null,
   cancelChoices: null,
+  outcome: null,
+  outcomeChoices: null,
   itemReport: null,
   timeChange: null,
   editChoices: null,
