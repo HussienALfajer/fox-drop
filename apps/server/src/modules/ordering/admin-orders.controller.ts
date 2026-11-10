@@ -32,6 +32,7 @@ import {
 import { ORDER_ALERT_CODES } from './order-alerts.js';
 import {
   CANCELLABLE,
+  TIME_CHANGEABLE,
   type CancellationPreview,
   OrderCommandRefusedError,
   OrderCommands,
@@ -85,6 +86,7 @@ const card = z.object({
     note: z.boolean().describe('«ملاحظة».'),
     newCustomer: z.boolean().describe('«زبون جديد»: no delivered order yet.'),
     pickupPending: z.boolean().describe('«بانتظار تأكيد الاستلام» (AP §9.2.1).'),
+    itemReport: z.boolean().describe('«صنف نفد»: an open item-unavailable report (RA §8.12).'),
   }),
   moments: z
     .object({
@@ -168,6 +170,10 @@ class AdminAcceptDto extends createZodDto(
       ),
     reason: z.string().trim().min(1).max(500).describe('Required (AP §9.3.2).'),
   }),
+) {}
+
+class AdminCloseItemReportDto extends createZodDto(
+  z.object({ reason: z.string().trim().min(1).max(500).describe('Required (AP §9.3.2).') }),
 ) {}
 
 class AdminChangeTimeDto extends createZodDto(
@@ -363,6 +369,29 @@ class AdminOrderDto extends createZodDto(
         })
         .nullable()
         .describe('While placed, accepted or ready: the choices of «إلغاء الطلب» (AP §9.3.2).'),
+      itemReport: z
+        .object({
+          at: z.iso.datetime(),
+          items: z.array(
+            z.object({
+              itemId: z.uuid(),
+              name: z.string(),
+              until: z.enum(['tomorrow', 'turned_back_on']).describe('«حتى الغد» or «حتى أعيده».'),
+            }),
+          ),
+          note: z
+            .enum(['similar_substitute', 'not_enough'])
+            .nullable()
+            .describe('«يوجد بديل مشابه» or «الكمية غير كافية».'),
+        })
+        .nullable()
+        .describe(
+          'RA §8.12: the open item-unavailable report, which blocks the pickup; «إغلاق بلاغ صنف نفد» closes it (POST …/item-report/close). Null otherwise.',
+        ),
+      timeChange: z
+        .object({ maxMin: z.int().describe('order.eta_change_max_min.') })
+        .nullable()
+        .describe('While accepted, ready or picked up: «تعديل الوقت» (AP §9.3.2).'),
       rejection: z
         .object({
           at: z.iso.datetime(),
@@ -553,6 +582,7 @@ function cardBody(item: OperationsOrder) {
       note: order.note !== null,
       newCustomer: item.newCustomer,
       pickupPending: item.pickupPending,
+      itemReport: order.itemReport !== null,
     },
     moments: {
       acceptAlertAt: at(item.moments.acceptAlertAt),
@@ -692,6 +722,37 @@ export class AdminOrdersController {
           reason: body.reason,
           idempotencyKey,
           prepMin: body.prepMin,
+        },
+        new Date(),
+      ),
+    );
+  }
+
+  // AP §9.3.2 «إغلاق بلاغ صنف نفد»: the open item-unavailable report closed
+  // without an edit, with the required reason, which the restaurant's
+  // devices chime with (RA §16 #37); the pickup is free again. 409
+  // order_state_changed without an open report; 404 unknown_order; 422
+  // idempotency_key_reused.
+  @Post(':orderId/item-report/close')
+  @RequirePermission('operations.manage')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOrderCardDto })
+  async closeItemReport(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminCloseItemReportDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.onBehalf(params.orderId, () =>
+      this.commands.closeItemReport(
+        {
+          orderId: params.orderId,
+          admin: { accountId: session.accountId, roles: session.roles },
+          context: requestContext(request),
+          reason: body.reason,
+          idempotencyKey,
         },
         new Date(),
       ),
@@ -867,6 +928,7 @@ export class AdminOrdersController {
       if (
         refusal === 'invalid_prep_time' ||
         refusal === 'invalid_time_change' ||
+        refusal === 'invalid_item_report' ||
         refusal === 'unknown_reason' ||
         refusal === 'invalid_rejection' ||
         refusal === 'invalid_cancellation'
@@ -1046,15 +1108,19 @@ export class AdminOrdersController {
     }
     const { order } = item;
     const { cancellation } = order;
-    const [profile, timeline, onBehalf, cancelReasons, customerLabel] = await Promise.all([
-      this.customers.profile(order.customerAccountId),
-      this.views.timeline(order),
-      order.status === 'placed'
-        ? this.commands.onBehalfChoices(order.restaurantId, order.cityId, now)
-        : null,
-      CANCELLABLE.includes(order.status) ? this.commands.cancelReasons() : null,
-      cancellation?.byCustomer ? this.commands.customerCancelLabel(cancellation.reason) : null,
-    ]);
+    const [profile, timeline, onBehalf, cancelReasons, customerLabel, timeChange] =
+      await Promise.all([
+        this.customers.profile(order.customerAccountId),
+        this.views.timeline(order),
+        order.status === 'placed'
+          ? this.commands.onBehalfChoices(order.restaurantId, order.cityId, now)
+          : null,
+        CANCELLABLE.includes(order.status) ? this.commands.cancelReasons() : null,
+        cancellation?.byCustomer ? this.commands.customerCancelLabel(cancellation.reason) : null,
+        TIME_CHANGEABLE.includes(order.status)
+          ? this.commands.timeChangeChoices(order.cityId)
+          : null,
+      ]);
     const { acceptance } = order;
     // The cancellation itself, not its acknowledgement (RA §8.14).
     const cancelEvent = timeline.find(
@@ -1097,6 +1163,12 @@ export class AdminOrdersController {
           captainSeenAt: cancellation.captainSeenAt?.toISOString() ?? null,
         },
         cancelChoices: cancelReasons && { reasons: cancelReasons },
+        itemReport: order.itemReport && {
+          at: order.itemReport.at.toISOString(),
+          items: order.itemReport.items,
+          note: order.itemReport.note,
+        },
+        timeChange,
         rejection: order.rejection && {
           at: order.rejection.at.toISOString(),
           reason: order.rejection.reason,

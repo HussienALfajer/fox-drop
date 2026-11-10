@@ -82,6 +82,12 @@ const customerOrder = z.object({
     .describe(
       '«يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows.',
     ),
+  itemReport: z
+    .object({ at: z.iso.datetime() })
+    .nullable()
+    .describe(
+      'CU §11.6: the restaurant reported an item unavailable; the banner «المطعم أبلغ أن صنفاً في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن.» shows until the report is closed, withdrawn, or the order edited or cancelled. Null otherwise.',
+    ),
   cancellation: z
     .object({
       at: z.iso.datetime(),
@@ -397,6 +403,7 @@ function orderBody(
     version: order.version,
     placedAt: order.placedAt.toISOString(),
     promisedAt: order.acceptance?.promisedAt.toISOString() ?? null,
+    itemReport: order.itemReport && { at: order.itemReport.at.toISOString() },
     rejection: order.rejection && {
       at: order.rejection.at.toISOString(),
       reason: order.rejection.reason,

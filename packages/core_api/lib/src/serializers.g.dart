@@ -40,6 +40,7 @@ Serializers _$serializers =
           ..add(AdminChangeTimeDto.serializer)
           ..add(AdminCitiesDtoOutput.serializer)
           ..add(AdminCitiesDtoOutputCitiesInner.serializer)
+          ..add(AdminCloseItemReportDto.serializer)
           ..add(AdminConfirmPickupDto.serializer)
           ..add(AdminContactDtoOutput.serializer)
           ..add(AdminDispatchStateDtoOutput.serializer)
@@ -112,6 +113,12 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderDeliveryRecordedBy.serializer)
           ..add(AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum.serializer)
           ..add(AdminOrderDtoOutputOrderDeliveryShortfall.serializer)
+          ..add(AdminOrderDtoOutputOrderItemReport.serializer)
+          ..add(AdminOrderDtoOutputOrderItemReportItemsInner.serializer)
+          ..add(
+            AdminOrderDtoOutputOrderItemReportItemsInnerUntilEnum.serializer,
+          )
+          ..add(AdminOrderDtoOutputOrderItemReportNoteEnum.serializer)
           ..add(AdminOrderDtoOutputOrderLinesInner.serializer)
           ..add(AdminOrderDtoOutputOrderLinesInnerOptionsInner.serializer)
           ..add(AdminOrderDtoOutputOrderMoney.serializer)
@@ -129,6 +136,7 @@ Serializers _$serializers =
           )
           ..add(AdminOrderDtoOutputOrderRejection.serializer)
           ..add(AdminOrderDtoOutputOrderStatusEnum.serializer)
+          ..add(AdminOrderDtoOutputOrderTimeChange.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInner.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerActor.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerFromEnum.serializer)
@@ -303,6 +311,7 @@ Serializers _$serializers =
           )
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerDelivery.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerEstimate.serializer)
+          ..add(CustomerActiveOrdersDtoOutputOrdersInnerItemReport.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerLinesInner.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerMoney.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerRejection.serializer)
@@ -437,6 +446,8 @@ Serializers _$serializers =
           ..add(MerchantHoursDtoOutputCoverage.serializer)
           ..add(MerchantHoursDtoOutputCoverageKindEnum.serializer)
           ..add(MerchantHoursDtoOutputPeriodsInner.serializer)
+          ..add(MerchantItemReportDto.serializer)
+          ..add(MerchantItemReportDtoNoteEnum.serializer)
           ..add(MerchantMenuDtoOutput.serializer)
           ..add(MerchantMenuDtoOutputCategoriesInner.serializer)
           ..add(MerchantMenuDtoOutputCategoriesInnerItemsInner.serializer)
@@ -468,6 +479,15 @@ Serializers _$serializers =
           ..add(MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerCaptainVehicleEnum.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerCustomer.serializer)
+          ..add(MerchantOrdersDtoOutputOrdersInnerItemReport.serializer)
+          ..add(
+            MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner.serializer,
+          )
+          ..add(
+            MerchantOrdersDtoOutputOrdersInnerItemReportItemsInnerUntilEnum
+                .serializer,
+          )
+          ..add(MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerLinesInner.serializer)
           ..add(
             MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner.serializer,
@@ -672,6 +692,12 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(int)]),
             () => ListBuilder<int>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderDtoOutputOrderItemReportItemsInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderItemReportItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1276,6 +1302,17 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(
+                MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(MerchantOrdersDtoOutputOrdersInnerLinesInner),
             ]),
             () => ListBuilder<MerchantOrdersDtoOutputOrdersInnerLinesInner>(),
@@ -1325,6 +1362,12 @@ Serializers _$serializers =
               const FullType(MerchantPickupDisputeDtoReceivedLinesInner),
             ]),
             () => ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantRejectDtoItemsInner),
+            ]),
+            () => ListBuilder<MerchantRejectDtoItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

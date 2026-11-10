@@ -170,6 +170,9 @@ _$adminOrderCardDtoOutputOrderAlertsEnum_collectionShortfall =
 const AdminOrderCardDtoOutputOrderAlertsEnum
 _$adminOrderCardDtoOutputOrderAlertsEnum_awayFromAddress =
     const AdminOrderCardDtoOutputOrderAlertsEnum._('awayFromAddress');
+const AdminOrderCardDtoOutputOrderAlertsEnum
+_$adminOrderCardDtoOutputOrderAlertsEnum_itemUnavailable =
+    const AdminOrderCardDtoOutputOrderAlertsEnum._('itemUnavailable');
 
 AdminOrderCardDtoOutputOrderAlertsEnum
 _$adminOrderCardDtoOutputOrderAlertsEnumValueOf(String name) {
@@ -194,6 +197,8 @@ _$adminOrderCardDtoOutputOrderAlertsEnumValueOf(String name) {
       return _$adminOrderCardDtoOutputOrderAlertsEnum_collectionShortfall;
     case 'awayFromAddress':
       return _$adminOrderCardDtoOutputOrderAlertsEnum_awayFromAddress;
+    case 'itemUnavailable':
+      return _$adminOrderCardDtoOutputOrderAlertsEnum_itemUnavailable;
     default:
       throw ArgumentError(name);
   }
@@ -213,6 +218,7 @@ _$adminOrderCardDtoOutputOrderAlertsEnumValues =
         _$adminOrderCardDtoOutputOrderAlertsEnum_deliveryLate,
         _$adminOrderCardDtoOutputOrderAlertsEnum_collectionShortfall,
         _$adminOrderCardDtoOutputOrderAlertsEnum_awayFromAddress,
+        _$adminOrderCardDtoOutputOrderAlertsEnum_itemUnavailable,
       ],
     );
 
@@ -336,6 +342,7 @@ class _$AdminOrderCardDtoOutputOrderAlertsEnumSerializer
     'deliveryLate': 'delivery_late',
     'collectionShortfall': 'collection_shortfall',
     'awayFromAddress': 'away_from_address',
+    'itemUnavailable': 'item_unavailable',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -348,6 +355,7 @@ class _$AdminOrderCardDtoOutputOrderAlertsEnumSerializer
     'delivery_late': 'deliveryLate',
     'collection_shortfall': 'collectionShortfall',
     'away_from_address': 'awayFromAddress',
+    'item_unavailable': 'itemUnavailable',
   };
 
   @override

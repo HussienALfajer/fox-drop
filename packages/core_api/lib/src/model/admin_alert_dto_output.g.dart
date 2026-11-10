@@ -40,6 +40,9 @@ const AdminAlertDtoOutputCodeEnum
 _$adminAlertDtoOutputCodeEnum_awayFromAddress =
     const AdminAlertDtoOutputCodeEnum._('awayFromAddress');
 const AdminAlertDtoOutputCodeEnum
+_$adminAlertDtoOutputCodeEnum_itemUnavailable =
+    const AdminAlertDtoOutputCodeEnum._('itemUnavailable');
+const AdminAlertDtoOutputCodeEnum
 _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused =
     const AdminAlertDtoOutputCodeEnum._('restaurantAutoPaused');
 
@@ -71,6 +74,8 @@ AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
       return _$adminAlertDtoOutputCodeEnum_codeNumberStopped;
     case 'awayFromAddress':
       return _$adminAlertDtoOutputCodeEnum_awayFromAddress;
+    case 'itemUnavailable':
+      return _$adminAlertDtoOutputCodeEnum_itemUnavailable;
     case 'restaurantAutoPaused':
       return _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused;
     default:
@@ -94,6 +99,7 @@ _$adminAlertDtoOutputCodeEnumValues =
       _$adminAlertDtoOutputCodeEnum_codesCannotSend,
       _$adminAlertDtoOutputCodeEnum_codeNumberStopped,
       _$adminAlertDtoOutputCodeEnum_awayFromAddress,
+      _$adminAlertDtoOutputCodeEnum_itemUnavailable,
       _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused,
     ]);
 
@@ -205,6 +211,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'codesCannotSend': 'codes_cannot_send',
     'codeNumberStopped': 'code_number_stopped',
     'awayFromAddress': 'away_from_address',
+    'itemUnavailable': 'item_unavailable',
     'restaurantAutoPaused': 'restaurant_auto_paused',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
@@ -221,6 +228,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'codes_cannot_send': 'codesCannotSend',
     'code_number_stopped': 'codeNumberStopped',
     'away_from_address': 'awayFromAddress',
+    'item_unavailable': 'itemUnavailable',
     'restaurant_auto_paused': 'restaurantAutoPaused',
   };
 

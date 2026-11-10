@@ -171,6 +171,9 @@ _$adminOrderDtoOutputOrderAlertsEnum_collectionShortfall =
 const AdminOrderDtoOutputOrderAlertsEnum
 _$adminOrderDtoOutputOrderAlertsEnum_awayFromAddress =
     const AdminOrderDtoOutputOrderAlertsEnum._('awayFromAddress');
+const AdminOrderDtoOutputOrderAlertsEnum
+_$adminOrderDtoOutputOrderAlertsEnum_itemUnavailable =
+    const AdminOrderDtoOutputOrderAlertsEnum._('itemUnavailable');
 
 AdminOrderDtoOutputOrderAlertsEnum _$adminOrderDtoOutputOrderAlertsEnumValueOf(
   String name,
@@ -196,6 +199,8 @@ AdminOrderDtoOutputOrderAlertsEnum _$adminOrderDtoOutputOrderAlertsEnumValueOf(
       return _$adminOrderDtoOutputOrderAlertsEnum_collectionShortfall;
     case 'awayFromAddress':
       return _$adminOrderDtoOutputOrderAlertsEnum_awayFromAddress;
+    case 'itemUnavailable':
+      return _$adminOrderDtoOutputOrderAlertsEnum_itemUnavailable;
     default:
       throw ArgumentError(name);
   }
@@ -215,6 +220,7 @@ _$adminOrderDtoOutputOrderAlertsEnumValues =
         _$adminOrderDtoOutputOrderAlertsEnum_deliveryLate,
         _$adminOrderDtoOutputOrderAlertsEnum_collectionShortfall,
         _$adminOrderDtoOutputOrderAlertsEnum_awayFromAddress,
+        _$adminOrderDtoOutputOrderAlertsEnum_itemUnavailable,
       ],
     );
 
@@ -335,6 +341,7 @@ class _$AdminOrderDtoOutputOrderAlertsEnumSerializer
     'deliveryLate': 'delivery_late',
     'collectionShortfall': 'collection_shortfall',
     'awayFromAddress': 'away_from_address',
+    'itemUnavailable': 'item_unavailable',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -347,6 +354,7 @@ class _$AdminOrderDtoOutputOrderAlertsEnumSerializer
     'delivery_late': 'deliveryLate',
     'collection_shortfall': 'collectionShortfall',
     'away_from_address': 'awayFromAddress',
+    'item_unavailable': 'itemUnavailable',
   };
 
   @override
@@ -413,6 +421,10 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
   @override
   final AdminOrderDtoOutputOrderCancelChoices? cancelChoices;
   @override
+  final AdminOrderDtoOutputOrderItemReport? itemReport;
+  @override
+  final AdminOrderDtoOutputOrderTimeChange? timeChange;
+  @override
   final AdminOrderDtoOutputOrderRejection? rejection;
   @override
   final AdminOrderDtoOutputOrderOnBehalf? onBehalf;
@@ -456,6 +468,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     this.readyAt,
     this.cancellation,
     this.cancelChoices,
+    this.itemReport,
+    this.timeChange,
     this.rejection,
     this.onBehalf,
     required this.customer,
@@ -499,6 +513,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
         readyAt == other.readyAt &&
         cancellation == other.cancellation &&
         cancelChoices == other.cancelChoices &&
+        itemReport == other.itemReport &&
+        timeChange == other.timeChange &&
         rejection == other.rejection &&
         onBehalf == other.onBehalf &&
         customer == other.customer &&
@@ -533,6 +549,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     _$hash = $jc(_$hash, readyAt.hashCode);
     _$hash = $jc(_$hash, cancellation.hashCode);
     _$hash = $jc(_$hash, cancelChoices.hashCode);
+    _$hash = $jc(_$hash, itemReport.hashCode);
+    _$hash = $jc(_$hash, timeChange.hashCode);
     _$hash = $jc(_$hash, rejection.hashCode);
     _$hash = $jc(_$hash, onBehalf.hashCode);
     _$hash = $jc(_$hash, customer.hashCode);
@@ -569,6 +587,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
           ..add('readyAt', readyAt)
           ..add('cancellation', cancellation)
           ..add('cancelChoices', cancelChoices)
+          ..add('itemReport', itemReport)
+          ..add('timeChange', timeChange)
           ..add('rejection', rejection)
           ..add('onBehalf', onBehalf)
           ..add('customer', customer)
@@ -690,6 +710,18 @@ class AdminOrderDtoOutputOrderBuilder
     AdminOrderDtoOutputOrderCancelChoicesBuilder? cancelChoices,
   ) => _$this._cancelChoices = cancelChoices;
 
+  AdminOrderDtoOutputOrderItemReportBuilder? _itemReport;
+  AdminOrderDtoOutputOrderItemReportBuilder get itemReport =>
+      _$this._itemReport ??= AdminOrderDtoOutputOrderItemReportBuilder();
+  set itemReport(AdminOrderDtoOutputOrderItemReportBuilder? itemReport) =>
+      _$this._itemReport = itemReport;
+
+  AdminOrderDtoOutputOrderTimeChangeBuilder? _timeChange;
+  AdminOrderDtoOutputOrderTimeChangeBuilder get timeChange =>
+      _$this._timeChange ??= AdminOrderDtoOutputOrderTimeChangeBuilder();
+  set timeChange(AdminOrderDtoOutputOrderTimeChangeBuilder? timeChange) =>
+      _$this._timeChange = timeChange;
+
   AdminOrderDtoOutputOrderRejectionBuilder? _rejection;
   AdminOrderDtoOutputOrderRejectionBuilder get rejection =>
       _$this._rejection ??= AdminOrderDtoOutputOrderRejectionBuilder();
@@ -769,6 +801,8 @@ class AdminOrderDtoOutputOrderBuilder
       _readyAt = $v.readyAt;
       _cancellation = $v.cancellation?.toBuilder();
       _cancelChoices = $v.cancelChoices?.toBuilder();
+      _itemReport = $v.itemReport?.toBuilder();
+      _timeChange = $v.timeChange?.toBuilder();
       _rejection = $v.rejection?.toBuilder();
       _onBehalf = $v.onBehalf?.toBuilder();
       _customer = $v.customer.toBuilder();
@@ -850,6 +884,8 @@ class AdminOrderDtoOutputOrderBuilder
             readyAt: readyAt,
             cancellation: _cancellation?.build(),
             cancelChoices: _cancelChoices?.build(),
+            itemReport: _itemReport?.build(),
+            timeChange: _timeChange?.build(),
             rejection: _rejection?.build(),
             onBehalf: _onBehalf?.build(),
             customer: customer.build(),
@@ -884,6 +920,10 @@ class AdminOrderDtoOutputOrderBuilder
         _cancellation?.build();
         _$failedField = 'cancelChoices';
         _cancelChoices?.build();
+        _$failedField = 'itemReport';
+        _itemReport?.build();
+        _$failedField = 'timeChange';
+        _timeChange?.build();
         _$failedField = 'rejection';
         _rejection?.build();
         _$failedField = 'onBehalf';

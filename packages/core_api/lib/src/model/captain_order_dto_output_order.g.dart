@@ -261,6 +261,8 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
   @override
   final CaptainActiveOrderDtoOutputOrderArrival? arrival;
   @override
+  final bool itemReportOpen;
+  @override
   final int itemCount;
   @override
   final BuiltList<CaptainActiveOrderDtoOutputOrderLinesInner> lines;
@@ -290,6 +292,7 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
     required this.restaurant,
     required this.preparation,
     this.arrival,
+    required this.itemReportOpen,
     required this.itemCount,
     required this.lines,
     this.note,
@@ -320,6 +323,7 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
         restaurant == other.restaurant &&
         preparation == other.preparation &&
         arrival == other.arrival &&
+        itemReportOpen == other.itemReportOpen &&
         itemCount == other.itemCount &&
         lines == other.lines &&
         note == other.note &&
@@ -341,6 +345,7 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
     _$hash = $jc(_$hash, restaurant.hashCode);
     _$hash = $jc(_$hash, preparation.hashCode);
     _$hash = $jc(_$hash, arrival.hashCode);
+    _$hash = $jc(_$hash, itemReportOpen.hashCode);
     _$hash = $jc(_$hash, itemCount.hashCode);
     _$hash = $jc(_$hash, lines.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
@@ -364,6 +369,7 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
           ..add('restaurant', restaurant)
           ..add('preparation', preparation)
           ..add('arrival', arrival)
+          ..add('itemReportOpen', itemReportOpen)
           ..add('itemCount', itemCount)
           ..add('lines', lines)
           ..add('note', note)
@@ -425,6 +431,11 @@ class CaptainOrderDtoOutputOrderBuilder
       _$this._arrival ??= CaptainActiveOrderDtoOutputOrderArrivalBuilder();
   set arrival(CaptainActiveOrderDtoOutputOrderArrivalBuilder? arrival) =>
       _$this._arrival = arrival;
+
+  bool? _itemReportOpen;
+  bool? get itemReportOpen => _$this._itemReportOpen;
+  set itemReportOpen(bool? itemReportOpen) =>
+      _$this._itemReportOpen = itemReportOpen;
 
   int? _itemCount;
   int? get itemCount => _$this._itemCount;
@@ -488,6 +499,7 @@ class CaptainOrderDtoOutputOrderBuilder
       _restaurant = $v.restaurant.toBuilder();
       _preparation = $v.preparation.toBuilder();
       _arrival = $v.arrival?.toBuilder();
+      _itemReportOpen = $v.itemReportOpen;
       _itemCount = $v.itemCount;
       _lines = $v.lines.toBuilder();
       _note = $v.note;
@@ -548,6 +560,11 @@ class CaptainOrderDtoOutputOrderBuilder
             restaurant: restaurant.build(),
             preparation: preparation.build(),
             arrival: _arrival?.build(),
+            itemReportOpen: BuiltValueNullFieldError.checkNotNull(
+              itemReportOpen,
+              r'CaptainOrderDtoOutputOrder',
+              'itemReportOpen',
+            ),
             itemCount: BuiltValueNullFieldError.checkNotNull(
               itemCount,
               r'CaptainOrderDtoOutputOrder',

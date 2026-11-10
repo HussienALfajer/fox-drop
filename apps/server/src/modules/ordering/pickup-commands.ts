@@ -6,6 +6,7 @@ import type { Database } from '../../database/database.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { AuditService } from '../audit/index.js';
 import { SettingsService } from '../settings/index.js';
+import { openItemReport } from './item-reports.js';
 import type { AdminOrderCommand } from './captain-orders.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
 import { recordTransition } from './order-events.js';
@@ -194,6 +195,10 @@ export class PickupCommands {
         return true;
       }
       if (!pickable(order)) return false;
+      // RA §8.10, §8.12: an open item report blocks the pickup.
+      if ((await openItemReport(tx, order.id, order.placedAt)) !== null) {
+        throw new OrderCommandRefusedError('item_report_open', 'an item report is open');
+      }
       const refusal = checkLines(order.snapshot, command.lines, order.itemsValue);
       if (refusal !== null) throw new OrderCommandRefusedError(refusal, 'invalid lines');
       let request = await openRequest(tx, order.id);

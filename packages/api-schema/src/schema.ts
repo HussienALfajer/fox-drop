@@ -1892,6 +1892,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/orders/{orderId}/item-report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantOrdersReportItems"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orders/{orderId}/item-report/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantOrdersWithdrawItemReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/resend-notification": {
         parameters: {
             query?: never;
@@ -1934,6 +1966,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminOrdersAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/item-report/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersCloseItemReport"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4360,6 +4408,11 @@ export interface components {
                 placedAt: string;
                 /** @description «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows. */
                 promisedAt: string | null;
+                /** @description CU §11.6: the restaurant reported an item unavailable; the banner «المطعم أبلغ أن صنفاً في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن.» shows until the report is closed, withdrawn, or the order edited or cancelled. Null otherwise. */
+                itemReport: {
+                    /** Format: date-time */
+                    at: string;
+                } | null;
                 /** @description While cancelled (CU §11.9). */
                 cancellation: {
                     /** Format: date-time */
@@ -4500,6 +4553,11 @@ export interface components {
                 placedAt: string;
                 /** @description «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows. */
                 promisedAt: string | null;
+                /** @description CU §11.6: the restaurant reported an item unavailable; the banner «المطعم أبلغ أن صنفاً في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن.» shows until the report is closed, withdrawn, or the order edited or cancelled. Null otherwise. */
+                itemReport: {
+                    /** Format: date-time */
+                    at: string;
+                } | null;
                 /** @description While cancelled (CU §11.9). */
                 cancellation: {
                     /** Format: date-time */
@@ -4758,6 +4816,20 @@ export interface components {
                      */
                     waitingAlertAt: string;
                 } | null;
+                /** @description RA §8.12: the open item-unavailable report: the badge «صنف نفد — بانتظار العمليات», the line «العمليات تتواصل مع الزبون» and «تراجع — الصنف متوفر» (POST …/item-report/withdraw); pickup requests wait until it closes (RA §8.10). Null otherwise. */
+                itemReport: {
+                    /** Format: date-time */
+                    at: string;
+                    items: {
+                        /** Format: uuid */
+                        itemId: string;
+                        name: string;
+                        /** @enum {string} */
+                        until: "tomorrow" | "turned_back_on";
+                    }[];
+                    /** @description «يوجد بديل مشابه» or «الكمية غير كافية». */
+                    note: ("similar_substitute" | "not_enough") | null;
+                } | null;
                 /** @description RA §8.14: operations cancelled the accepted order; every device rings with «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» until «حسناً» on any of them (POST …/acknowledge-cancellation), then the board drops the order. Null otherwise, and once acknowledged. */
                 cancellation: {
                     /** Format: date-time */
@@ -4911,6 +4983,20 @@ export interface components {
                      */
                     waitingAlertAt: string;
                 } | null;
+                /** @description RA §8.12: the open item-unavailable report: the badge «صنف نفد — بانتظار العمليات», the line «العمليات تتواصل مع الزبون» and «تراجع — الصنف متوفر» (POST …/item-report/withdraw); pickup requests wait until it closes (RA §8.10). Null otherwise. */
+                itemReport: {
+                    /** Format: date-time */
+                    at: string;
+                    items: {
+                        /** Format: uuid */
+                        itemId: string;
+                        name: string;
+                        /** @enum {string} */
+                        until: "tomorrow" | "turned_back_on";
+                    }[];
+                    /** @description «يوجد بديل مشابه» or «الكمية غير كافية». */
+                    note: ("similar_substitute" | "not_enough") | null;
+                } | null;
                 /** @description RA §8.14: operations cancelled the accepted order; every device rings with «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» until «حسناً» on any of them (POST …/acknowledge-cancellation), then the board drops the order. Null otherwise, and once acknowledged. */
                 cancellation: {
                     /** Format: date-time */
@@ -4991,6 +5077,20 @@ export interface components {
                 currency: string;
             }[];
         };
+        MerchantItemReportDto: {
+            /** @description One or more of the order's items, each once, switched off in the menu at once. */
+            items: {
+                /** Format: uuid */
+                itemId: string;
+                /**
+                 * @description «حتى الغد» (the default) or «حتى أعيده» (RA §9.3).
+                 * @enum {string}
+                 */
+                until: "tomorrow" | "turned_back_on";
+            }[];
+            /** @description Optional: «يوجد بديل مشابه» or «الكمية غير كافية». */
+            note: ("similar_substitute" | "not_enough") | null;
+        };
         AdminResendNotificationDto: {
             /**
              * @description The customer, the restaurant's devices or the assigned captain.
@@ -5064,6 +5164,8 @@ export interface components {
                     newCustomer: boolean;
                     /** @description «بانتظار تأكيد الاستلام» (AP §9.2.1). */
                     pickupPending: boolean;
+                    /** @description «صنف نفد»: an open item-unavailable report (RA §8.12). */
+                    itemReport: boolean;
                 };
                 /** @description The alerts' moments, so the panel raises each when it passes. */
                 moments: {
@@ -5077,12 +5179,16 @@ export interface components {
                     captainWaitingAlertAt: string | null;
                 };
                 /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
-                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address")[];
+                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable")[];
             };
         };
         AdminAcceptDto: {
             /** @description Whole minutes from merchant.prep_time_floor_min to merchant.prep_time_ceiling_min (RA §8.5); 400 invalid_prep_time otherwise. */
             prepMin: number;
+            /** @description Required (AP §9.3.2). */
+            reason: string;
+        };
+        AdminCloseItemReportDto: {
             /** @description Required (AP §9.3.2). */
             reason: string;
         };
@@ -5295,6 +5401,8 @@ export interface components {
                     newCustomer: boolean;
                     /** @description «بانتظار تأكيد الاستلام» (AP §9.2.1). */
                     pickupPending: boolean;
+                    /** @description «صنف نفد»: an open item-unavailable report (RA §8.12). */
+                    itemReport: boolean;
                 };
                 /** @description The alerts' moments, so the panel raises each when it passes. */
                 moments: {
@@ -5308,7 +5416,7 @@ export interface components {
                     captainWaitingAlertAt: string | null;
                 };
                 /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
-                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address")[];
+                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable")[];
             }[];
         };
         AdminOrderDto_Output: {
@@ -5363,6 +5471,8 @@ export interface components {
                     newCustomer: boolean;
                     /** @description «بانتظار تأكيد الاستلام» (AP §9.2.1). */
                     pickupPending: boolean;
+                    /** @description «صنف نفد»: an open item-unavailable report (RA §8.12). */
+                    itemReport: boolean;
                 };
                 /** @description The alerts' moments, so the panel raises each when it passes. */
                 moments: {
@@ -5376,7 +5486,7 @@ export interface components {
                     captainWaitingAlertAt: string | null;
                 };
                 /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
-                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address")[];
+                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable")[];
                 promisedAt: string | null;
                 acceptance: {
                     /** Format: date-time */
@@ -5433,6 +5543,28 @@ export interface components {
                         code: string;
                         label: string;
                     }[];
+                } | null;
+                /** @description RA §8.12: the open item-unavailable report, which blocks the pickup; «إغلاق بلاغ صنف نفد» closes it (POST …/item-report/close). Null otherwise. */
+                itemReport: {
+                    /** Format: date-time */
+                    at: string;
+                    items: {
+                        /** Format: uuid */
+                        itemId: string;
+                        name: string;
+                        /**
+                         * @description «حتى الغد» or «حتى أعيده».
+                         * @enum {string}
+                         */
+                        until: "tomorrow" | "turned_back_on";
+                    }[];
+                    /** @description «يوجد بديل مشابه» or «الكمية غير كافية». */
+                    note: ("similar_substitute" | "not_enough") | null;
+                } | null;
+                /** @description While accepted, ready or picked up: «تعديل الوقت» (AP §9.3.2). */
+                timeChange: {
+                    /** @description order.eta_change_max_min. */
+                    maxMin: number;
                 } | null;
                 /** @description While rejected (AP §9.3.1 «rejected (with reason)»). */
                 rejection: {
@@ -5702,6 +5834,8 @@ export interface components {
                      */
                     at: string;
                 } | null;
+                /** @description The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2). */
+                itemReportOpen: boolean;
                 itemCount: number;
                 /** @description The item check (C7): one tick box per line. */
                 lines: {
@@ -5899,6 +6033,8 @@ export interface components {
                      */
                     at: string;
                 } | null;
+                /** @description The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2). */
+                itemReportOpen: boolean;
                 itemCount: number;
                 /** @description The item check (C7): one tick box per line. */
                 lines: {
@@ -6236,7 +6372,7 @@ export interface components {
                  * @description The rule of AP §9.1.3.
                  * @enum {string}
                  */
-                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "restaurant_auto_paused";
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "restaurant_auto_paused";
                 /**
                  * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
                  * @enum {string}
@@ -6272,7 +6408,7 @@ export interface components {
              * @description The rule of AP §9.1.3.
              * @enum {string}
              */
-            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "restaurant_auto_paused";
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "restaurant_auto_paused";
             /**
              * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
              * @enum {string}
@@ -9388,6 +9524,60 @@ export interface operations {
             };
         };
     };
+    merchantOrdersReportItems: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantItemReportDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderDto_Output"];
+                };
+            };
+        };
+    };
+    merchantOrdersWithdrawItemReport: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderDto_Output"];
+                };
+            };
+        };
+    };
     adminOrdersResendNotification: {
         parameters: {
             query?: never;
@@ -9458,6 +9648,35 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminAcceptDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCardDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersCloseItemReport: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCloseItemReportDto"];
             };
         };
         responses: {

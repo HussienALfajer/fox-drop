@@ -154,6 +154,7 @@
       "captainWaiting": "كابتن ينتظر عند المطعم",
       "pickupDisputed": "خلاف على مبلغ الاستلام",
       "awayFromAddress": "تسليم بعيد عن العنوان",
+      "itemUnavailable": "صنف نفد بعد القبول",
       "captainGpsLost": "انقطع اتصال كابتن أثناء طلب",
       "deliveryLate": "توصيل متأخر",
       "collectionShortfall": "نقص في التحصيل",
@@ -166,7 +167,8 @@
       "needsAssignment": "بحاجة لتعيين",
       "note": "ملاحظة",
       "newCustomer": "زبون جديد",
-      "pickupPending": "بانتظار تأكيد الاستلام"
+      "pickupPending": "بانتظار تأكيد الاستلام",
+      "itemReport": "صنف نفد"
     },
     "vehicle": {
       "walking": "مشياً",

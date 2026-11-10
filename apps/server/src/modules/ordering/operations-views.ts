@@ -252,6 +252,7 @@ export class OperationsViews {
           ),
           away: view.away !== null,
           shortfall: shortfalls.has(view.id),
+          itemReportOpen: view.itemReport !== null,
         },
         now,
       );

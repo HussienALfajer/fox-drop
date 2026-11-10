@@ -29,6 +29,7 @@ part 'captain_active_order_dto_output_order.g.dart';
 /// * [restaurant]
 /// * [preparation]
 /// * [arrival]
+/// * [itemReportOpen] - The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2).
 /// * [itemCount]
 /// * [lines] - The item check (C7): one tick box per line.
 /// * [note] - The customer's note.
@@ -72,6 +73,10 @@ abstract class CaptainActiveOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'arrival')
   CaptainActiveOrderDtoOutputOrderArrival? get arrival;
+
+  /// The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2).
+  @BuiltValueField(wireName: r'itemReportOpen')
+  bool get itemReportOpen;
 
   @BuiltValueField(wireName: r'itemCount')
   int get itemCount;
@@ -177,6 +182,11 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
               CaptainActiveOrderDtoOutputOrderArrival,
             ),
           );
+    yield r'itemReportOpen';
+    yield serializers.serialize(
+      object.itemReportOpen,
+      specifiedType: const FullType(bool),
+    );
     yield r'itemCount';
     yield serializers.serialize(
       object.itemCount,
@@ -329,6 +339,15 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
                   as CaptainActiveOrderDtoOutputOrderArrival?;
           if (valueDes == null) continue;
           result.arrival.replace(valueDes);
+          break;
+        case r'itemReportOpen':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.itemReportOpen = valueDes;
           break;
         case r'itemCount':
           final valueDes =

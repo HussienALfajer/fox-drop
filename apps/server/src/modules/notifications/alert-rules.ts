@@ -38,6 +38,9 @@ export const alertCodes = [
   // «تسليم بعيد عن العنوان»: arrival or delivery beyond
   // captain.customer_radius_m of the pin, with a reason.
   'away_from_address',
+  // «صنف نفد بعد القبول»: the restaurant's open item-unavailable report (RA
+  // §8.12), until it is withdrawn, closed or the order cancelled.
+  'item_unavailable',
   // «مطعم أوقف تلقائياً»: merchant.auto_pause_unanswered_count unanswered
   // orders in a business day (AP §9.6.5), until operations resume it.
   'restaurant_auto_paused',
@@ -73,6 +76,7 @@ export const ALERT_RULES: Record<AlertCode, AlertRule> = {
   codes_cannot_send: rule('critical', OPERATIONS, 'otp_pool'),
   code_number_stopped: rule('warning', ['OWN'], 'otp_number'),
   away_from_address: { ...rule('information', OPERATIONS, 'order'), resolvesItself: false },
+  item_unavailable: rule('critical', OPERATIONS, 'order'),
   restaurant_auto_paused: rule('warning', OPERATIONS, 'restaurant'),
 };
 

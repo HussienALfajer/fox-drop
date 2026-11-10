@@ -199,6 +199,12 @@ export function orderPushes(
       ];
     case 'order.delivered':
       return [customer('customer.delivered')];
+    case 'order.item_reported':
+      // CU §11.6, §14 #10: FOX DROP will call the customer.
+      return [customer('customer.item_unavailable')];
+    case 'order.item_report_closed':
+      // RA §16 #37, with operations' reason.
+      return [merchant('merchant.item_report_closed', { السبب: reason ?? '' })];
     case 'order.time_changed':
       return [
         // CU §11.6, §14 #12: the new promised time.

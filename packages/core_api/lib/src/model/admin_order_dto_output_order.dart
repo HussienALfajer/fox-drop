@@ -19,7 +19,9 @@ import 'package:core_api/src/model/admin_order_card_dto_output_order_moments.dar
 import 'package:core_api/src/model/admin_order_dto_output_order_money.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_captain.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_restaurant.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_item_report.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_time_change.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -48,6 +50,8 @@ part 'admin_order_dto_output_order.g.dart';
 /// * [readyAt]
 /// * [cancellation]
 /// * [cancelChoices]
+/// * [itemReport]
+/// * [timeChange]
 /// * [rejection]
 /// * [onBehalf]
 /// * [customer]
@@ -114,7 +118,7 @@ abstract class AdminOrderDtoOutputOrder
   /// AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active.
   @BuiltValueField(wireName: r'alerts')
   BuiltList<AdminOrderDtoOutputOrderAlertsEnum> get alerts;
-  // enum alertsEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  away_from_address,  };
+  // enum alertsEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  away_from_address,  item_unavailable,  };
 
   @BuiltValueField(wireName: r'promisedAt')
   DateTime? get promisedAt;
@@ -130,6 +134,12 @@ abstract class AdminOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'cancelChoices')
   AdminOrderDtoOutputOrderCancelChoices? get cancelChoices;
+
+  @BuiltValueField(wireName: r'itemReport')
+  AdminOrderDtoOutputOrderItemReport? get itemReport;
+
+  @BuiltValueField(wireName: r'timeChange')
+  AdminOrderDtoOutputOrderTimeChange? get timeChange;
 
   @BuiltValueField(wireName: r'rejection')
   AdminOrderDtoOutputOrderRejection? get rejection;
@@ -314,6 +324,24 @@ class _$AdminOrderDtoOutputOrderSerializer
             object.cancelChoices,
             specifiedType: const FullType.nullable(
               AdminOrderDtoOutputOrderCancelChoices,
+            ),
+          );
+    yield r'itemReport';
+    yield object.itemReport == null
+        ? null
+        : serializers.serialize(
+            object.itemReport,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderItemReport,
+            ),
+          );
+    yield r'timeChange';
+    yield object.timeChange == null
+        ? null
+        : serializers.serialize(
+            object.timeChange,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderTimeChange,
             ),
           );
     yield r'rejection';
@@ -613,6 +641,30 @@ class _$AdminOrderDtoOutputOrderSerializer
           if (valueDes == null) continue;
           result.cancelChoices.replace(valueDes);
           break;
+        case r'itemReport':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderItemReport,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderItemReport?;
+          if (valueDes == null) continue;
+          result.itemReport.replace(valueDes);
+          break;
+        case r'timeChange':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderTimeChange,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderTimeChange?;
+          if (valueDes == null) continue;
+          result.timeChange.replace(valueDes);
+          break;
         case r'rejection':
           final valueDes =
               serializers.deserialize(
@@ -853,6 +905,9 @@ class AdminOrderDtoOutputOrderAlertsEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'away_from_address')
   static const AdminOrderDtoOutputOrderAlertsEnum awayFromAddress =
       _$adminOrderDtoOutputOrderAlertsEnum_awayFromAddress;
+  @BuiltValueEnumConst(wireName: r'item_unavailable')
+  static const AdminOrderDtoOutputOrderAlertsEnum itemUnavailable =
+      _$adminOrderDtoOutputOrderAlertsEnum_itemUnavailable;
 
   static Serializer<AdminOrderDtoOutputOrderAlertsEnum> get serializer =>
       _$adminOrderDtoOutputOrderAlertsEnumSerializer;

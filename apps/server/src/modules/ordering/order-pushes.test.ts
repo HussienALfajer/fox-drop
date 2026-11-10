@@ -39,6 +39,14 @@ const restaurant = { party: 'merchant', restaurantId: 'restaurant-1', owners: fa
 const captain = { party: 'captain', captainId: 'captain-1' };
 
 describe('the pushes of an order event', () => {
+  it('tells the customer of an item report and the restaurant of its closing by operations (CU §14 #10, RA §16 #37)', () => {
+    expect(sent('order.item_reported')).toEqual([[customer, 'customer.item_unavailable', {}]]);
+    expect(sent('order.item_report_closed', 'وجد المطعم الصنف', { actor: 'admin' })).toEqual([
+      [restaurant, 'merchant.item_report_closed', { رقم: '10002', السبب: 'وجد المطعم الصنف' }],
+    ]);
+    expect(sent('order.item_report_withdrawn')).toEqual([]);
+  });
+
   it('tells the customer a new promised time, and the restaurant a new prep time (CU §14 #12, RA §16 #12)', () => {
     expect(sent('order.time_changed', 'prep_time_changed', { actor: 'admin' })).toEqual([
       [customer, 'customer.time_changed', { الساعة: '9:45 م' }],

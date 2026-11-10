@@ -120,6 +120,11 @@ const activeOrder = z
       })
       .nullable()
       .describe('Null until «وصلت إلى المطعم».'),
+    itemReportOpen: z
+      .boolean()
+      .describe(
+        'The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2).',
+      ),
     itemCount: z.int(),
     lines: z
       .array(
@@ -440,6 +445,7 @@ function activeOrderBody({
       ).toISOString(),
     },
     arrival: order.captainArrival && { at: order.captainArrival.at.toISOString() },
+    itemReportOpen: order.itemReport !== null,
     itemCount: order.lines.reduce((sum, line) => sum + line.quantity, 0),
     lines: order.lines.map((line) => ({
       name: line.name,

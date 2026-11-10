@@ -19,7 +19,13 @@ const card = {
   captainTrack: 'searching',
   captain: null,
   total: { amount: '1250', currency: 'USD' },
-  badges: { needsAssignment: true, note: false, newCustomer: true, pickupPending: false },
+  badges: {
+    needsAssignment: true,
+    note: false,
+    newCustomer: true,
+    pickupPending: false,
+    itemReport: false,
+  },
   moments: {
     acceptAlertAt: null,
     prepLateAlertAt: null,

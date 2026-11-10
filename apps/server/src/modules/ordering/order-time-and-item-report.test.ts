@@ -192,6 +192,9 @@ async function admin(roles: string[]) {
       post(`/v1/admin/orders/${orderId}/cancel`, body, key),
     changeTime: (orderId: string, body: object, key?: string) =>
       post(`/v1/admin/orders/${orderId}/change-time`, body, key),
+    closeItemReport: (orderId: string, body: object) =>
+      post(`/v1/admin/orders/${orderId}/item-report/close`, body),
+    cookies,
     detail: async (orderId: string) =>
       (await app.inject({ method: 'GET', url: `/v1/admin/orders/${orderId}`, cookies })).json()
         .order,
@@ -483,5 +486,180 @@ describe('POST /v1/admin/orders/{orderId}/change-time (AP §9.3.2, docs/domain/0
     const accepted = await acceptedOrder();
     const fin = await (await admin(['FIN'])).changeTime(accepted.id, { addMin: 5, reason: null });
     expect(fin.statusCode).toBe(403);
+  });
+});
+
+const report = (
+  headers: Record<string, string>,
+  orderId: string,
+  body: object = { items: [{ itemId: item, until: 'turned_back_on' }], note: 'not_enough' },
+) =>
+  app.inject({
+    method: 'POST',
+    url: `/v1/merchant/orders/${orderId}/item-report`,
+    headers: { ...headers, 'idempotency-key': randomUUID() },
+    payload: body,
+  });
+
+const withdraw = (headers: Record<string, string>, orderId: string) =>
+  app.inject({
+    method: 'POST',
+    url: `/v1/merchant/orders/${orderId}/item-report/withdraw`,
+    headers: { ...headers, 'idempotency-key': randomUUID() },
+  });
+
+// The menu's own switch of the item and whether customers can order it.
+const menuItem = async (headers: Record<string, string>) =>
+  (await app.inject({ method: 'GET', url: '/v1/merchant/menu', headers }))
+    .json()
+    .categories.flatMap((category: { items: { id: string }[] }) => category.items)
+    .find((entry: { id: string }) => entry.id === item);
+
+// Every case orders the same item: switch it on again after a report that
+// leaves it off.
+const switchOn = async (headers: Record<string, string>) => {
+  const answer = await app.inject({
+    method: 'PUT',
+    url: '/v1/merchant/menu/availability',
+    headers,
+    payload: { type: 'item', id: item, available: true },
+  });
+  expect(answer.statusCode).toBe(200);
+};
+
+const reportRow = async (orderId: string) =>
+  (
+    await sql.query(
+      `SELECT items, note, closed_how, closed_by_type, close_reason
+         FROM ordering.item_reports WHERE order_id = $1 ORDER BY reported_at DESC`,
+      [orderId],
+    )
+  ).rows[0];
+
+describe('the item-unavailable report (RA §8.12)', () => {
+  it('switches the items off, tells every party and raises the critical alert', async () => {
+    const order = await acceptedOrder();
+    const answer = await report(order.cashier, order.id);
+    expect(answer.statusCode).toBe(200);
+    expect(answer.json().order.itemReport).toEqual({
+      at: expect.any(String),
+      items: [{ itemId: item, name: 'شاورما', until: 'turned_back_on' }],
+      note: 'not_enough',
+    });
+    expect(await menuItem(order.cashier)).toMatchObject({
+      available: false,
+      switchedOff: { until: null },
+    });
+    expect((await events(order.id)).at(-1)).toEqual({
+      type: 'order.item_reported',
+      actor_type: 'restaurant',
+      reason: null,
+    });
+    expect((await customerOrder(order.customer, order.id)).itemReport).toEqual({
+      at: expect.any(String),
+    });
+    const ops = await admin(['OPS']);
+    const detail = await ops.detail(order.id);
+    expect(detail.badges.itemReport).toBe(true);
+    expect(detail.alerts).toContain('item_unavailable');
+    expect(detail.itemReport.items[0].name).toBe('شاورما');
+    // The restaurant keeps preparing: «الطلب جاهز» still works.
+    expect((await ready(order.cashier, order.id)).statusCode).toBe(200);
+    await switchOn(order.cashier);
+  });
+
+  it('refuses items not on the order, a second report and a report while a pickup request is open', async () => {
+    const { order, captain } = await captainAtRestaurant();
+    const foreign = await report(order.cashier, order.id, {
+      items: [{ itemId: randomUUID(), until: 'tomorrow' }],
+      note: null,
+    });
+    expect(foreign.statusCode).toBe(400);
+    expect(foreign.json().error).toBe('invalid_item_report');
+    expect((await captain.requestPickup(order.id)).statusCode).toBe(200);
+    const during = await report(order.cashier, order.id);
+    expect(during.statusCode).toBe(409);
+    expect(during.json().error).toBe('order_state_changed');
+    const other = await acceptedOrder();
+    expect((await report(other.cashier, other.id)).statusCode).toBe(200);
+    const again = await report(other.cashier, other.id);
+    expect(again.statusCode).toBe(409);
+    expect(again.json().error).toBe('order_state_changed');
+    expect((await withdraw(other.cashier, other.id)).statusCode).toBe(200);
+  });
+
+  it('blocks the pickup until the restaurant withdraws it, which switches the items on again', async () => {
+    const { order, captain, ops } = await captainAtRestaurant();
+    expect((await report(order.cashier, order.id)).statusCode).toBe(200);
+    expect((await captain.active()).json().order.itemReportOpen).toBe(true);
+    const blocked = await captain.requestPickup(order.id);
+    expect(blocked.statusCode).toBe(409);
+    expect(blocked.json().error).toBe('item_report_open');
+    const byOperations = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/orders/${order.id}/confirm-pickup`,
+      cookies: ops.cookies,
+      headers: { 'idempotency-key': randomUUID() },
+      payload: { lines: [{ currency: 'TRY', amount: '24000' }], reason: 'test' },
+    });
+    expect(byOperations.statusCode).toBe(409);
+    expect(byOperations.json().error).toBe('item_report_open');
+    const withdrawn = await withdraw(order.cashier, order.id);
+    expect(withdrawn.statusCode).toBe(200);
+    expect(withdrawn.json().order.itemReport).toBeNull();
+    expect((await menuItem(order.cashier)).available).toBe(true);
+    expect(await reportRow(order.id)).toMatchObject({
+      closed_how: 'withdrawn',
+      closed_by_type: 'restaurant',
+    });
+    expect((await ops.detail(order.id)).alerts).not.toContain('item_unavailable');
+    expect((await captain.active()).json().order.itemReportOpen).toBe(false);
+    expect((await captain.requestPickup(order.id)).statusCode).toBe(200);
+    const late = await withdraw(order.cashier, order.id);
+    expect(late.statusCode).toBe(409);
+  });
+
+  it('closes by operations with their reason, which the restaurant hears, leaving the menu as it is', async () => {
+    const order = await acceptedOrder();
+    expect((await report(order.cashier, order.id)).statusCode).toBe(200);
+    const ops = await admin(['OPS']);
+    const missing = await ops.closeItemReport(order.id, { reason: '' });
+    expect(missing.statusCode).toBe(400);
+    const closed = await ops.closeItemReport(order.id, { reason: 'وجد المطعم الصنف' });
+    expect(closed.statusCode).toBe(200);
+    expect(closed.json().order.badges.itemReport).toBe(false);
+    expect(await reportRow(order.id)).toMatchObject({
+      closed_how: 'closed',
+      closed_by_type: 'admin',
+      close_reason: 'وجد المطعم الصنف',
+    });
+    expect(await outboxReason(order.id, 'order.item_report_closed')).toBe('وجد المطعم الصنف');
+    expect((await menuItem(order.cashier)).available).toBe(false);
+    const again = await ops.closeItemReport(order.id, { reason: 'مرة أخرى' });
+    expect(again.statusCode).toBe(409);
+    expect(
+      (await (await admin(['FIN'])).closeItemReport(order.id, { reason: 'x' })).statusCode,
+    ).toBe(403);
+    await switchOn(order.cashier);
+  });
+
+  it("is cleared by operations' cancellation", async () => {
+    const order = await acceptedOrder();
+    expect((await report(order.cashier, order.id)).statusCode).toBe(200);
+    const ops = await admin(['OPS']);
+    const cancelled = await ops.cancel(order.id, {
+      cancellation: 'emergency',
+      responsible: 'platform',
+      foodPrepared: false,
+      compensateCaptain: false,
+      cash: null,
+      reason: 'ملاحظة العمليات',
+    });
+    expect(cancelled.statusCode).toBe(200);
+    expect(await reportRow(order.id)).toMatchObject({
+      closed_how: 'cancelled',
+      closed_by_type: 'admin',
+    });
+    await switchOn(order.cashier);
   });
 });
