@@ -62,6 +62,14 @@ export interface Balance {
   amount: bigint;
 }
 
+// A journal as posted (`journalLines`).
+export interface PostedJournal {
+  id: string;
+  type: JournalType;
+  reason: string | null;
+  entries: { purpose: AccountPurpose; ownerId: string | null; currency: string; amount: bigint }[];
+}
+
 // The database, or the open transaction of the change the money belongs to.
 export type LedgerExecutor = Pick<NodePgDatabase, 'insert' | 'select'>;
 
@@ -151,6 +159,52 @@ export class LedgerService {
     };
     this.checkActor(journal.actor);
     return this.insert(journal, journalId, executor);
+  }
+
+  // The journals as posted, in the order of the ids given: their type,
+  // reason and entries with each account's purpose and owner, for a preview
+  // of their reversal (AP §8.9 «Changing an outcome»).
+  async journalLines(
+    journalIds: readonly string[],
+    executor: LedgerExecutor = this.database.db,
+  ): Promise<PostedJournal[]> {
+    if (journalIds.length === 0) return [];
+    const ids = [...journalIds];
+    const [heads, lines] = await Promise.all([
+      executor
+        .select({ id: journals.id, type: journals.type, reason: journals.reason })
+        .from(journals)
+        .where(inArray(journals.id, ids)),
+      executor
+        .select({
+          journalId: entries.journalId,
+          purpose: accounts.purpose,
+          ownerId: accounts.ownerId,
+          currency: entries.currency,
+          amount: entries.amount,
+        })
+        .from(entries)
+        .innerJoin(accounts, eq(accounts.id, entries.accountId))
+        .where(inArray(entries.journalId, ids))
+        .orderBy(entries.id),
+    ]);
+    return ids.map((id) => {
+      const head = heads.find((each) => each.id === id);
+      if (!head) throw new LedgerRefusal(`journal ${id} does not exist`);
+      return {
+        id,
+        type: head.type as JournalType,
+        reason: head.reason,
+        entries: lines
+          .filter((line) => line.journalId === id)
+          .map((line) => ({
+            purpose: line.purpose as AccountPurpose,
+            ownerId: line.ownerId,
+            currency: line.currency,
+            amount: line.amount,
+          })),
+      };
+    });
   }
 
   // The sum of the account's entries, shown from the party's view.

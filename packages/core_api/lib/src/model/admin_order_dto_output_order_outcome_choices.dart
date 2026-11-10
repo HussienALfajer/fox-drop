@@ -4,7 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_order_dto_output_order_outcome_choices_foods_inner.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_outcome_change_foods_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -23,7 +23,7 @@ abstract class AdminOrderDtoOutputOrderOutcomeChoices
         > {
   /// Content's food_after_failed list, in order (AP Appendix B).
   @BuiltValueField(wireName: r'foods')
-  BuiltList<AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner> get foods;
+  BuiltList<AdminOrderDtoOutputOrderOutcomeChangeFoodsInner> get foods;
 
   AdminOrderDtoOutputOrderOutcomeChoices._();
 
@@ -59,7 +59,7 @@ class _$AdminOrderDtoOutputOrderOutcomeChoicesSerializer
     yield serializers.serialize(
       object.foods,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner),
+        FullType(AdminOrderDtoOutputOrderOutcomeChangeFoodsInner),
       ]),
     );
   }
@@ -94,14 +94,10 @@ class _$AdminOrderDtoOutputOrderOutcomeChoicesSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner,
-                      ),
+                      FullType(AdminOrderDtoOutputOrderOutcomeChangeFoodsInner),
                     ]),
                   )
-                  as BuiltList<
-                    AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner
-                  >;
+                  as BuiltList<AdminOrderDtoOutputOrderOutcomeChangeFoodsInner>;
           result.foods.replace(valueDes);
           break;
         default:

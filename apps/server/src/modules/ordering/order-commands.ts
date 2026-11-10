@@ -10,7 +10,7 @@ import { CaptainsService } from '../captains/index.js';
 import { CustomersService } from '../customers/index.js';
 import { ContentRefusedError, ContentService } from '../content/index.js';
 import { GeoService, tripMinutes } from '../geo/index.js';
-import { LedgerService } from '../ledger/index.js';
+import { type AccountPurpose, LedgerService } from '../ledger/index.js';
 import {
   type MerchantChange,
   MerchantsService,
@@ -37,14 +37,24 @@ import {
   planEdit,
 } from './order-edits.js';
 import { lockOrder, type OrderEventType, recordTransition } from './order-events.js';
-import { pendingOutcome, postOrderJournals, readOutcomeFacts } from './outcome-facts.js';
 import {
+  currentOutcome,
+  pendingOutcome,
+  postOrderJournals,
+  readOutcomeFacts,
+} from './outcome-facts.js';
+import {
+  captainNet,
+  OUTCOME_CHANGE_REASON,
   type OutcomeChoices,
+  outcomeChangeProblem,
+  outcomeChangeUntil,
   type OutcomeEntry,
   outcomeEntries,
   type OutcomeFacts,
   type OutcomeFood,
   type OutcomeJournal,
+  type SetOutcome,
 } from './outcome.js';
 import { OrderAssignments } from './order-assignments.js';
 import { baseTotal, linesOf } from './pickup-booking.js';
@@ -119,7 +129,11 @@ export type OrderCommandRefusal =
   // fit the outcome, or customer.fake_order_dues_rule fixed without its
   // amount.
   | 'invalid_outcome'
-  | 'dues_rule_unset';
+  | 'dues_rule_unset'
+  // AP §8.9 «تغيير النتيجة» (slice 2.11c): past order.outcome_change_days of
+  // the first outcome, or an outcome that cannot be reversed (none, still
+  // waiting for its collection, or posted before its journals were kept).
+  | 'outcome_change_closed';
 
 // A restaurant command the order refuses; order_state_changed carries the
 // order as it is now, which the app explains (RA §4.7).
@@ -291,7 +305,8 @@ type Transition = {
     | 'withdraw_item_report'
     | 'close_item_report'
     | 'edit'
-    | 'set_outcome';
+    | 'set_outcome'
+    | 'change_outcome';
   from: OrderView['status'][];
   to: 'accepted' | 'ready' | 'rejected' | 'cancelled' | null;
   event?: OrderEventType;
@@ -712,6 +727,11 @@ export class OrderCommands {
           guard: async (tx) =>
             (await lockOrder(tx, order.id, order.placedAt))?.version === read.version,
           effects: async (tx) => {
+            // With an amount to collect, the collection posts the journals.
+            const journalIds = waits
+              ? null
+              : await this.postJournals(tx, order, actor, result.journals);
+            const net = waits ? null : captainNet(result.journals);
             await tx.insert(orderOutcomeRows).values({
               orderId: order.id,
               orderPlacedAt: order.placedAt,
@@ -730,8 +750,9 @@ export class OrderCommands {
               note: command.reason,
               setAt: now,
               setBy: actor.id,
+              journalIds,
+              captainNet: net,
             });
-            if (!waits) await this.postJournals(tx, order, actor, result.journals);
           },
           audit: {
             before: {},
@@ -781,19 +802,7 @@ export class OrderCommands {
             },
           ]
         : [];
-    const [names, captain, customers] = await Promise.all([
-      this.merchants.names([facts.restaurantId]),
-      this.captains.captain(facts.captainId, now),
-      this.customers.firstNames([facts.customerAccountId]),
-    ]);
-    const name = (party: OutcomeEntry['party']) =>
-      party.kind === 'merchant'
-        ? (names.get(facts.restaurantId)?.nameAr ?? null)
-        : party.kind === 'captain'
-          ? (captain?.name ?? null)
-          : party.kind === 'customer'
-            ? (customers.get(facts.customerAccountId) ?? null)
-            : null;
+    const name = await this.partyNames(facts, now);
     return {
       status: result.status,
       loss: result.loss,
@@ -810,6 +819,235 @@ export class OrderCommands {
         })),
       ),
     };
+  }
+
+  // AP §8.9 «Changing an outcome», AP §9.3.2 «تغيير النتيجة» (slice 2.11c;
+  // owner decisions 2026-11-10): OWN changes a finished order's outcome, its
+  // party or where the food went, within order.outcome_change_days of the
+  // first outcome, as often as needed, with a reason. In one transaction:
+  // the outcome in force marked replaced, each of its journals reversed
+  // (ledger, dues, so the block lifts by itself), the new outcome's journals
+  // from outcomeEntries on the order as it is now, its row (kept beside the
+  // old: the history), the order's status and outcome following it, the
+  // event order.outcome_changed and the audit. The amount collected stays
+  // (its custody lines are cash that really moved), so the new outcome
+  // counts the same amount. The strike and the trust follow the outcome in
+  // force (a fake one). 400 invalid_outcome; 409 outcome_change_closed,
+  // dues_rule_unset, captain_pay_unset, order_state_changed.
+  async changeOutcome(
+    command: AdminOrderCommand & Omit<OutcomeChoices, 'amountToCollect'> & { version: number },
+    now: Date,
+  ): Promise<OrderView> {
+    const actor = { type: 'admin' as const, id: command.admin.accountId };
+    const given = {
+      outcome: command.outcome,
+      responsible: command.responsible,
+      delivered: command.delivered,
+      food: command.food,
+    };
+    return this.run(
+      { kind: 'admin', command },
+      { verb: 'change_outcome', from: FINISHED, to: null, event: 'order.outcome_changed' },
+      { ...given, version: command.version },
+      now,
+      async (order) => {
+        const { current, read, choices, result } = await this.outcomeChange(order, given, now);
+        if (read.version !== command.version) throw await this.stateChanged(order);
+        const old = current.row;
+        const customerText =
+          result.status === 'failed'
+            ? await this.content.customerText('failed_outcome', choices.outcome)
+            : null;
+        // What the outcome gives the captain (the pay, a charge, an edit's
+        // charge given back): the captain hears of a change that moves it.
+        const net = captainNet(result.journals);
+        const captainChanged = old.captainNet !== net;
+        return {
+          set: {
+            outcome: choices.outcome,
+            ...(result.status === 'failed'
+              ? { deliveredAt: null }
+              : old.status === 'failed'
+                ? { deliveredAt: now }
+                : {}),
+          },
+          to: result.status,
+          publicReason: choices.outcome,
+          // The entries were worked out from the order and its outcome before
+          // the lock; anything since moved its version.
+          guard: async (tx) =>
+            (await lockOrder(tx, order.id, order.placedAt))?.version === read.version,
+          effects: async (tx) => {
+            const replaced = await tx
+              .update(orderOutcomeRows)
+              .set({ replacedAt: now })
+              .where(and(eq(orderOutcomeRows.id, old.id), isNull(orderOutcomeRows.replacedAt)))
+              .returning({ id: orderOutcomeRows.id });
+            if (replaced.length !== 1) throw new Error(`outcome ${old.id} already replaced`);
+            for (const journalId of old.journalIds ?? []) {
+              await this.ledger.reverse(journalId, { actor, reason: OUTCOME_CHANGE_REASON }, tx);
+            }
+            const journalIds = await this.postJournals(tx, order, actor, result.journals);
+            await tx.insert(orderOutcomeRows).values({
+              orderId: order.id,
+              orderPlacedAt: order.placedAt,
+              cityId: order.cityId,
+              outcome: choices.outcome,
+              responsible: choices.responsible,
+              status: result.status,
+              food: choices.food,
+              currency: read.facts.currency,
+              amountToCollect: choices.amountToCollect,
+              loss: result.loss,
+              dues: result.dues,
+              merchantDebit: result.merchantDebit,
+              captainPay: result.captainPay,
+              customerText,
+              note: command.reason,
+              setAt: now,
+              setBy: actor.id,
+              collectedAt: old.collectedAt,
+              // The captain's card shows again only when its money changed;
+              // otherwise it stays as the captain left it.
+              captainSeenAt: captainChanged ? null : old.captainSeenAt,
+              journalIds,
+              captainNet: net,
+              replacesId: old.id,
+            });
+          },
+          audit: {
+            before: {
+              outcome: old.outcome,
+              responsible: old.responsible,
+              food: old.food,
+              loss: old.loss.toString(),
+              dues: old.dues?.toString() ?? null,
+              merchantDebit: old.merchantDebit?.toString() ?? null,
+              captainPay: old.captainPay.toString(),
+            },
+            after: {
+              loss: result.loss.toString(),
+              dues: result.dues?.toString() ?? null,
+              merchantDebit: result.merchantDebit?.toString() ?? null,
+              captainPay: result.captainPay.toString(),
+            },
+          },
+        };
+      },
+    );
+  }
+
+  // AP §8.9 «The same preview is shown first»: what «تغيير النتيجة» with
+  // these choices would reverse and post, for the dialog; it writes nothing.
+  async previewOutcomeChange(
+    orderId: string,
+    given: Omit<OutcomeChoices, 'amountToCollect'>,
+    now: Date,
+  ): Promise<OutcomeChangePreview> {
+    const order = await this.find(orderId, {});
+    if (!FINISHED.includes(order.status)) throw await this.stateChanged(order);
+    const { current, read, result } = await this.outcomeChange(order, given, now);
+    const reversed = await this.ledger.journalLines(current.row.journalIds ?? []);
+    const name = await this.partyNames(read.facts, now);
+    return {
+      status: result.status,
+      loss: result.loss,
+      dues: result.dues,
+      captainPay: result.captainPay,
+      currency: read.facts.currency,
+      provisional: false,
+      reversed: reversed.flatMap((journal) =>
+        journal.entries.map((entry) => {
+          const party = partyOf(entry.purpose, entry.ownerId);
+          return {
+            type: journal.type,
+            reason: journal.reason,
+            account: entry.purpose,
+            amount: -entry.amount,
+            currency: entry.currency,
+            party: { ...party, name: name(party) },
+          };
+        }),
+      ),
+      entries: result.journals.flatMap((journal) =>
+        journal.entries.map((entry) => ({
+          type: journal.type,
+          reason: journal.reason,
+          ...entry,
+          party: { ...entry.party, name: name(entry.party) },
+        })),
+      ),
+    };
+  }
+
+  // The detail's «تغيير النتيجة» while it is open: its last moment and where
+  // the food can go; null otherwise.
+  async outcomeChangeChoices(
+    order: Pick<OrderView, 'cityId' | 'status' | 'outcome'>,
+    now: Date,
+  ): Promise<{ until: Date; foods: { code: OutcomeFood; label: string }[] } | null> {
+    const { outcome } = order;
+    if (!FINISHED.includes(order.status) || !outcome?.posted) return null;
+    const days = await this.settings.get('order.outcome_change_days', { cityId: order.cityId });
+    const until = outcomeChangeUntil(outcome.firstSetAt, days);
+    if (now > until) return null;
+    return { until, foods: await this.outcomeFoods() };
+  }
+
+  // What a change of the order's outcome would book: the outcome in force
+  // (checked against the choices and the days), the facts of the order now
+  // and the new outcome's entries, which count the amount collected again.
+  private async outcomeChange(
+    order: OrderAtStart,
+    given: Omit<OutcomeChoices, 'amountToCollect'>,
+    now: Date,
+  ) {
+    const current = await currentOutcome(this.database.db, order);
+    if (current === null) {
+      throw new OrderCommandRefusedError('outcome_change_closed', 'the order has no outcome');
+    }
+    const choices = outcomeChoicesOf({
+      ...given,
+      amountToCollect: current.row.amountToCollect,
+    });
+    const days = await this.settings.get('order.outcome_change_days', { cityId: order.cityId });
+    const problem = outcomeChangeProblem(
+      {
+        outcome: current.row.outcome as SetOutcome,
+        responsible: current.row.responsible,
+        status: current.row.status,
+        food: current.row.food,
+        amountToCollect: current.row.amountToCollect,
+        firstSetAt: current.firstSetAt,
+        posted: current.row.journalIds !== null,
+      },
+      choices,
+      now,
+      days,
+    );
+    if (problem !== null) {
+      throw new OrderCommandRefusedError(problem, `the outcome change is ${problem}`);
+    }
+    const read = await this.outcomeFacts(order, now);
+    return { current, read, choices, result: this.outcome(read.facts, choices) };
+  }
+
+  // The names the outcome dialogs show beside each entry: the restaurant's,
+  // the captain's and the customer's first name.
+  private async partyNames(facts: OutcomeFacts, now: Date) {
+    const [names, captain, customers] = await Promise.all([
+      this.merchants.names([facts.restaurantId]),
+      this.captains.captain(facts.captainId, now),
+      this.customers.firstNames([facts.customerAccountId]),
+    ]);
+    return (party: OutcomeEntry['party']) =>
+      party.kind === 'merchant'
+        ? (names.get(facts.restaurantId)?.nameAr ?? null)
+        : party.kind === 'captain'
+          ? (captain?.name ?? null)
+          : party.kind === 'customer'
+            ? (customers.get(facts.customerAccountId) ?? null)
+            : null;
   }
 
   // AP §9.3.2 «تحديد النتيجة»: where the food can go, Content's
@@ -1702,13 +1940,13 @@ export class OrderCommands {
   }
 
   // The journals of an order's change, posted in its transaction, all with
-  // the order as their source (E3).
+  // the order as their source (E3); their ids.
   private postJournals(
     tx: Tx,
     order: { id: string; cityId: string },
     actor: { type: 'admin'; id: string },
     journals: (AfterPickupJournal | OutcomeJournal)[],
-  ): Promise<void> {
+  ): Promise<string[]> {
     return postOrderJournals(tx, this.ledger, order, actor, journals);
   }
 
@@ -2085,7 +2323,18 @@ export class OrderCommands {
       if (first !== null) return this.read(first);
       throw await this.stateChanged(order);
     }
-    const prepared = await change(order);
+    let prepared: Change;
+    try {
+      prepared = await change(order);
+    } catch (error) {
+      // A repeat may read the order after the first committed and be
+      // refused by what the first changed: it answers the first's order.
+      if (error instanceof OrderCommandRefusedError) {
+        const first = await this.replay(this.database.db, key, requestHash, now);
+        if (first !== null) return this.read(first);
+      }
+      throw error;
+    }
     const noCaptainAlertMin = prepared.searchStartAt
       ? await this.settings.get('dispatch.no_captain_alert_min', { cityId: order.cityId })
       : 0;
@@ -2343,6 +2592,22 @@ export interface OutcomePreview {
     reason: string | null;
     party: { name: string | null };
   })[];
+}
+
+// «تغيير النتيجة»: the entries reversed beside the ones posted.
+export interface OutcomeChangePreview extends OutcomePreview {
+  reversed: OutcomePreview['entries'];
+}
+
+// AP §8.9 «تغيير النتيجة»: a finished order with an outcome.
+const FINISHED: OrderView['status'][] = ['delivered', 'failed'];
+
+// The party of a ledger account, as the outcome's preview names it.
+function partyOf(purpose: AccountPurpose, ownerId: string | null): OutcomeEntry['party'] {
+  if (purpose.startsWith('captain.')) return { kind: 'captain', id: ownerId };
+  if (purpose === 'merchant.account') return { kind: 'merchant', id: ownerId };
+  if (purpose === 'customer.dues') return { kind: 'customer', id: ownerId };
+  return { kind: 'platform', id: null };
 }
 
 function outcomeChoicesOf(given: OutcomeChoices): OutcomeChoices {

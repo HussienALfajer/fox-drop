@@ -1,4 +1,4 @@
-import { and, eq, gt, isNull } from 'drizzle-orm';
+import { and, asc, eq, gt, isNull } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { CaptainsService } from '../captains/index.js';
 import type { LedgerActor, LedgerService } from '../ledger/index.js';
@@ -94,20 +94,41 @@ export async function pendingOutcome(executor: Executor, order: { id: string; pl
         eq(orderOutcomeRows.orderPlacedAt, order.placedAt),
         gt(orderOutcomeRows.amountToCollect, 0n),
         isNull(orderOutcomeRows.collectedAt),
+        isNull(orderOutcomeRows.replacedAt),
       ),
     );
   return row ?? null;
 }
 
+// «تغيير النتيجة» (slice 2.11c): the order's outcome in force, and the moment
+// its first outcome was set (order.outcome_change_days count from it); null
+// without an outcome.
+export async function currentOutcome(executor: Executor, order: { id: string; placedAt: Date }) {
+  const rows = await executor
+    .select()
+    .from(orderOutcomeRows)
+    .where(
+      and(
+        eq(orderOutcomeRows.orderId, order.id),
+        eq(orderOutcomeRows.orderPlacedAt, order.placedAt),
+      ),
+    )
+    .orderBy(asc(orderOutcomeRows.setAt));
+  const row = rows.find((each) => each.replacedAt === null);
+  return row ? { row, firstSetAt: rows[0]!.setAt } : null;
+}
+
 // The journals of an order's change, posted in its transaction, all with
-// the order as their source (E3).
+// the order as their source (E3); their ids, which an outcome keeps so a
+// change can reverse them (slice 2.11c).
 export async function postOrderJournals(
   tx: Tx,
   ledger: LedgerService,
   order: { id: string; cityId: string },
   actor: LedgerActor,
   journals: Pick<OutcomeJournal, 'type' | 'reason' | 'entries'>[],
-): Promise<void> {
+): Promise<string[]> {
+  const ids: string[] = [];
   for (const journal of journals) {
     const entries = [];
     for (const entry of journal.entries) {
@@ -122,7 +143,7 @@ export async function postOrderJournals(
       );
       entries.push({ accountId, currency: entry.currency, amount: entry.amount });
     }
-    await ledger.post(
+    const id = await ledger.post(
       {
         cityId: order.cityId,
         type: journal.type,
@@ -133,5 +154,7 @@ export async function postOrderJournals(
       },
       tx,
     );
+    ids.push(id);
   }
+  return ids;
 }

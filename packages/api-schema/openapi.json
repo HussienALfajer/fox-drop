@@ -5325,6 +5325,110 @@
         ]
       }
     },
+    "/v1/admin/orders/{orderId}/outcome-change": {
+      "post": {
+        "operationId": "adminOrdersChangeOutcome",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminChangeOutcomeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderCardDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/orders/{orderId}/outcome-change-preview": {
+      "post": {
+        "operationId": "adminOrdersOutcomeChangePreview",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminOutcomeChangePreviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOutcomeChangePreviewAnswerDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/orders/{orderId}/record-arrival": {
       "post": {
         "operationId": "adminOrdersRecordArrival",
@@ -19132,6 +19236,400 @@
         ],
         "additionalProperties": false
       },
+      "AdminChangeOutcomeDto": {
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "free",
+              "fake",
+              "damaged",
+              "wrong_refused",
+              "failed_other"
+            ],
+            "description": "AP §8.9; fake needs the customer responsible, and only fake takes the customer."
+          },
+          "responsible": {
+            "type": "string",
+            "enum": [
+              "restaurant",
+              "captain",
+              "customer",
+              "platform"
+            ]
+          },
+          "delivered": {
+            "type": "boolean",
+            "description": "Free is delivered, fake, wrong_refused and failed_other failed; damaged either."
+          },
+          "food": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "kept_by_captain",
+                  "returned_to_restaurant",
+                  "destroyed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible."
+          },
+          "version": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "The order's version the dialog previewed (AP §8.9 «Preview»); any other is 409 order_state_changed."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Required (AP §8.9): why the outcome changes, never shown to the apps."
+          }
+        },
+        "required": [
+          "outcome",
+          "responsible",
+          "delivered",
+          "food",
+          "version",
+          "reason"
+        ]
+      },
+      "AdminOutcomeChangePreviewDto": {
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "free",
+              "fake",
+              "damaged",
+              "wrong_refused",
+              "failed_other"
+            ],
+            "description": "AP §8.9; fake needs the customer responsible, and only fake takes the customer."
+          },
+          "responsible": {
+            "type": "string",
+            "enum": [
+              "restaurant",
+              "captain",
+              "customer",
+              "platform"
+            ]
+          },
+          "delivered": {
+            "type": "boolean",
+            "description": "Free is delivered, fake, wrong_refused and failed_other failed; damaged either."
+          },
+          "food": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "kept_by_captain",
+                  "returned_to_restaurant",
+                  "destroyed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible."
+          }
+        },
+        "required": [
+          "outcome",
+          "responsible",
+          "delivered",
+          "food"
+        ]
+      },
+      "AdminOutcomeChangePreviewAnswerDto_Output": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "delivered",
+              "failed"
+            ]
+          },
+          "provisional": {
+            "type": "boolean",
+            "description": "With an amount to collect: the entries are posted from the payment recorded (AP §9.3.2), the custody line as the collection books it."
+          },
+          "loss": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              }
+            },
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "additionalProperties": false,
+            "description": "docs/domain/09 rule 3: what the responsible party bears for the food."
+          },
+          "dues": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$",
+                    "description": "Integer minor units (AP §8.6)."
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  }
+                },
+                "required": [
+                  "amount",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The customer's dues (AP §8.8), with the customer responsible."
+          },
+          "captainPay": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              }
+            },
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "additionalProperties": false,
+            "description": "The captain's pay, 0 when the captain is responsible."
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "The journal type, such as dues.charge."
+                },
+                "reason": {
+                  "description": "The journal's reason, its line on the party's account (RA §12.5).",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "account": {
+                  "type": "string",
+                  "description": "The account purpose, such as customer.dues."
+                },
+                "party": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "merchant",
+                        "captain",
+                        "customer",
+                        "platform"
+                      ]
+                    },
+                    "id": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "id",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "amount": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false,
+                  "description": "From the platform's side: + a debit, − a credit."
+                }
+              },
+              "required": [
+                "type",
+                "reason",
+                "account",
+                "party",
+                "amount"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Every entry the outcome would post (AP §8.9 «Preview»)."
+          },
+          "reversed": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "The journal type, such as dues.charge."
+                },
+                "reason": {
+                  "description": "The journal's reason, its line on the party's account (RA §12.5).",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "account": {
+                  "type": "string",
+                  "description": "The account purpose, such as customer.dues."
+                },
+                "party": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "merchant",
+                        "captain",
+                        "customer",
+                        "platform"
+                      ]
+                    },
+                    "id": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "id",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "amount": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false,
+                  "description": "From the platform's side: + a debit, − a credit."
+                }
+              },
+              "required": [
+                "type",
+                "reason",
+                "account",
+                "party",
+                "amount"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Every entry of the outcome in force reversed (AP §8.9 «Changing an outcome»), before the new outcome's entries; each carries the reversed journal's own reason, which names it, while the reversal is posted with the reason «تغيير النتيجة»."
+          }
+        },
+        "required": [
+          "status",
+          "provisional",
+          "loss",
+          "dues",
+          "captainPay",
+          "entries",
+          "reversed"
+        ],
+        "additionalProperties": false
+      },
       "AdminRecordArrivalDto": {
         "type": "object",
         "properties": {
@@ -20545,6 +21043,87 @@
                         "format": "uuid",
                         "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                         "description": "The admin who set it."
+                      },
+                      "history": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            "replacedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            "outcome": {
+                              "type": "string",
+                              "enum": [
+                                "free",
+                                "fake",
+                                "damaged",
+                                "wrong_refused",
+                                "failed_other"
+                              ],
+                              "description": "AP §8.9; fake needs the customer responsible, and only fake takes the customer."
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "delivered",
+                                "failed"
+                              ]
+                            },
+                            "responsible": {
+                              "type": "string",
+                              "enum": [
+                                "restaurant",
+                                "captain",
+                                "customer",
+                                "platform"
+                              ]
+                            },
+                            "food": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "kept_by_captain",
+                                    "returned_to_restaurant",
+                                    "destroyed"
+                                  ]
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible."
+                            },
+                            "note": {
+                              "type": "string"
+                            },
+                            "setBy": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            }
+                          },
+                          "required": [
+                            "at",
+                            "replacedAt",
+                            "outcome",
+                            "status",
+                            "responsible",
+                            "food",
+                            "note",
+                            "setBy"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "description": "The outcomes «تغيير النتيجة» replaced, oldest first (slice 2.11c)."
                       }
                     },
                     "required": [
@@ -20562,7 +21141,8 @@
                       "captainPay",
                       "customerText",
                       "note",
-                      "setBy"
+                      "setBy",
+                      "history"
                     ],
                     "additionalProperties": false
                   },
@@ -20570,7 +21150,56 @@
                     "type": "null"
                   }
                 ],
-                "description": "AP §9.3.2 «تحديد النتيجة»: the outcome operations set (AP §8.9)."
+                "description": "AP §9.3.2 «تحديد النتيجة»: the outcome in force (AP §8.9), the last one set or changed."
+              },
+              "outcomeChange": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "until": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                        "description": "order.outcome_change_days after the first outcome."
+                      },
+                      "foods": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "kept_by_captain",
+                                "returned_to_restaurant",
+                                "destroyed"
+                              ]
+                            },
+                            "label": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "label"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "description": "Content's food_after_failed list, in order (AP Appendix B)."
+                      }
+                    },
+                    "required": [
+                      "until",
+                      "foods"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "AP §8.9 «تغيير النتيجة» (OWN only, orders.change_outcome): while the outcome can change; null otherwise."
               },
               "outcomeChoices": {
                 "anyOf": [
@@ -22231,6 +22860,7 @@
               "cancellation",
               "cancelChoices",
               "outcome",
+              "outcomeChange",
               "outcomeChoices",
               "itemReport",
               "timeChange",

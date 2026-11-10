@@ -125,6 +125,22 @@ export interface OrderView {
     customerText: string | null;
     note: string;
     setBy: string;
+    // «تغيير النتيجة» (slice 2.11c): the order's first outcome, from which
+    // order.outcome_change_days count; whether this one's journals were kept
+    // (posted, and set since 2.11c), so it can change; the outcomes it
+    // replaced, oldest first.
+    firstSetAt: Date;
+    posted: boolean;
+    history: {
+      at: Date;
+      replacedAt: Date;
+      outcome: SetOutcome;
+      status: 'delivered' | 'failed';
+      responsible: ResponsibleParty;
+      food: OutcomeFood | null;
+      note: string;
+      setBy: string;
+    }[];
   } | null;
   // The customer's text for it (CU Appendix C), copied at the cancellation;
   // byCustomer for the customer's own while placed (CU §11.4, §11.9).
@@ -432,7 +448,12 @@ export async function readOrders(
           );
   return rows.map((row) => {
     const collection = deliveries.find((each) => each.orderId === row.id);
-    const outcome = outcomes.find((each) => each.orderId === row.id);
+    // The outcome in force; the ones «تغيير النتيجة» replaced are its history
+    // (slice 2.11c).
+    const ownOutcomes = outcomes
+      .filter((each) => each.orderId === row.id)
+      .sort((a, b) => a.setAt.getTime() - b.setAt.getTime());
+    const outcome = ownOutcomes.find((each) => each.replacedAt === null);
     const report = reports.find((each) => each.orderId === row.id);
     const ownLines = lines.filter((line) => line.orderId === row.id);
     const snapshot = snapshotOf(row.rateSnapshot);
@@ -506,6 +527,20 @@ export async function readOrders(
               customerText: outcome.customerText,
               note: outcome.note,
               setBy: outcome.setBy,
+              firstSetAt: ownOutcomes[0]!.setAt,
+              posted: outcome.journalIds !== null,
+              history: ownOutcomes
+                .filter((each) => each.replacedAt !== null)
+                .map((each) => ({
+                  at: each.setAt,
+                  replacedAt: each.replacedAt!,
+                  outcome: each.outcome as SetOutcome,
+                  status: each.status,
+                  responsible: each.responsible,
+                  food: each.food,
+                  note: each.note,
+                  setBy: each.setBy,
+                })),
             }
           : null,
       delivery:

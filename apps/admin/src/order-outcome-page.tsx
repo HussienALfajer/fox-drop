@@ -196,7 +196,7 @@ const refusalKeys = {
   invalid_outcome: 'order.onBehalf.refused',
 } as const satisfies Record<OutcomeRefusal, string>;
 
-function OutcomeSentence({ line }: { line: OutcomeLine }) {
+export function OutcomeSentence({ line }: { line: OutcomeLine }) {
   const { t } = useTranslation();
   // A party the server could not name shows by its kind.
   const name = 'name' in line ? line.name : null;

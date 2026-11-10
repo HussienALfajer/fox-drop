@@ -9,7 +9,7 @@ part of 'admin_order_dto_output_order_outcome_choices.dart';
 class _$AdminOrderDtoOutputOrderOutcomeChoices
     extends AdminOrderDtoOutputOrderOutcomeChoices {
   @override
-  final BuiltList<AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner> foods;
+  final BuiltList<AdminOrderDtoOutputOrderOutcomeChangeFoodsInner> foods;
 
   factory _$AdminOrderDtoOutputOrderOutcomeChoices([
     void Function(AdminOrderDtoOutputOrderOutcomeChoicesBuilder)? updates,
@@ -57,12 +57,12 @@ class AdminOrderDtoOutputOrderOutcomeChoicesBuilder
         > {
   _$AdminOrderDtoOutputOrderOutcomeChoices? _$v;
 
-  ListBuilder<AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner>? _foods;
-  ListBuilder<AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner> get foods =>
+  ListBuilder<AdminOrderDtoOutputOrderOutcomeChangeFoodsInner>? _foods;
+  ListBuilder<AdminOrderDtoOutputOrderOutcomeChangeFoodsInner> get foods =>
       _$this._foods ??=
-          ListBuilder<AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner>();
+          ListBuilder<AdminOrderDtoOutputOrderOutcomeChangeFoodsInner>();
   set foods(
-    ListBuilder<AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner>? foods,
+    ListBuilder<AdminOrderDtoOutputOrderOutcomeChangeFoodsInner>? foods,
   ) => _$this._foods = foods;
 
   AdminOrderDtoOutputOrderOutcomeChoicesBuilder() {

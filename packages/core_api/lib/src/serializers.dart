@@ -26,6 +26,7 @@ import 'package:core_api/src/model/admin_cancel_dto.dart';
 import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner.dart';
 import 'package:core_api/src/model/admin_cancel_preview_dto.dart';
+import 'package:core_api/src/model/admin_change_outcome_dto.dart';
 import 'package:core_api/src/model/admin_change_time_dto.dart';
 import 'package:core_api/src/model/admin_cities_dto_output.dart';
 import 'package:core_api/src/model/admin_cities_dto_output_cities_inner.dart';
@@ -97,8 +98,10 @@ import 'package:core_api/src/model/admin_order_dto_output_order_money.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf_prep_time.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_outcome.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_outcome_change.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_outcome_change_foods_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_outcome_choices.dart';
-import 'package:core_api/src/model/admin_order_dto_output_order_outcome_choices_foods_inner.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_outcome_history_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_dispute.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_requests_inner.dart';
@@ -110,6 +113,9 @@ import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.d
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_actor.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_item_report.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_time_change.dart';
+import 'package:core_api/src/model/admin_outcome_change_preview_answer_dto_output.dart';
+import 'package:core_api/src/model/admin_outcome_change_preview_answer_dto_output_dues.dart';
+import 'package:core_api/src/model/admin_outcome_change_preview_dto.dart';
 import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_captain_pay.dart';
 import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_entries_inner.dart';
@@ -435,6 +441,7 @@ part 'serializers.g.dart';
   AdminCancelPreviewAnswerDtoOutput,
   AdminCancelPreviewAnswerDtoOutputEntriesInner,
   AdminCancelPreviewDto,
+  AdminChangeOutcomeDto,
   AdminChangeTimeDto,
   AdminCitiesDtoOutput,
   AdminCitiesDtoOutputCitiesInner,
@@ -506,8 +513,10 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderOnBehalf,
   AdminOrderDtoOutputOrderOnBehalfPrepTime,
   AdminOrderDtoOutputOrderOutcome,
+  AdminOrderDtoOutputOrderOutcomeChange,
+  AdminOrderDtoOutputOrderOutcomeChangeFoodsInner,
   AdminOrderDtoOutputOrderOutcomeChoices,
-  AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner,
+  AdminOrderDtoOutputOrderOutcomeHistoryInner,
   AdminOrderDtoOutputOrderPickup,
   AdminOrderDtoOutputOrderPickupDispute,
   AdminOrderDtoOutputOrderPickupRequestsInner,
@@ -519,6 +528,9 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderTimelineInnerActor,
   AdminOrderDtoOutputOrderTimelineInnerItemReport,
   AdminOrderDtoOutputOrderTimelineInnerTimeChange,
+  AdminOutcomeChangePreviewAnswerDtoOutput,
+  AdminOutcomeChangePreviewAnswerDtoOutputDues,
+  AdminOutcomeChangePreviewDto,
   AdminOutcomePreviewAnswerDtoOutput,
   AdminOutcomePreviewAnswerDtoOutputCaptainPay,
   AdminOutcomePreviewAnswerDtoOutputEntriesInner,
@@ -952,13 +964,6 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
-              FullType(AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner),
-            ]),
-            () =>
-                ListBuilder<AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
               FullType(CaptainActiveOrderDtoOutputOrderLinesInner),
             ]),
             () => ListBuilder<CaptainActiveOrderDtoOutputOrderLinesInner>(),
@@ -993,6 +998,13 @@ Serializers serializers =
               FullType(AdminRecordDeliveryDtoReceivedInner),
             ]),
             () => ListBuilder<AdminRecordDeliveryDtoReceivedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminOrderDtoOutputOrderOutcomeChangeFoodsInner),
+            ]),
+            () =>
+                ListBuilder<AdminOrderDtoOutputOrderOutcomeChangeFoodsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1208,6 +1220,12 @@ Serializers serializers =
               FullType(MerchantOrdersDtoOutputOrdersInnerLinesInner),
             ]),
             () => ListBuilder<MerchantOrdersDtoOutputOrdersInnerLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminOrderDtoOutputOrderOutcomeHistoryInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderOutcomeHistoryInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

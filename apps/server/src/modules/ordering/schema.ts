@@ -700,8 +700,9 @@ export const orderEdits = ordering.table(
 export const outcomeFoods = ['kept_by_captain', 'returned_to_restaurant', 'destroyed'] as const;
 
 // AP §9.3.2 «تحديد النتيجة», docs/domain/09 (slice 2.11a): the outcome of an
-// order that ended after the pickup without a normal delivery, one per order
-// so far («تغيير النتيجة» comes with 2.11c). It keeps operations' choices
+// order that ended after the pickup without a normal delivery. «تغيير النتيجة»
+// (slice 2.11c) replaces the row with a new one and keeps the old, so an order
+// has one row in force (`replaced_at` null) and its history. It keeps operations' choices
 // (the outcome, the responsible party, whether a damaged order was
 // delivered, where the food went, the amount to collect), what was booked
 // (the loss amount, the customer's dues, what the restaurant returns, the
@@ -739,13 +740,29 @@ export const orderOutcomeRows = ordering.table(
     // record the payment; the outcome is posted then, and the loss, the
     // restaurant's debit and the pay above are set again from it.
     collectedAt: timestamp('collected_at', { withTimezone: true }),
+    // Slice 2.11c: the journals the outcome posted, which a change reverses;
+    // null while it waits for its collection, and on an outcome posted before
+    // this slice (it cannot change).
+    journalIds: uuid('journal_ids').array(),
+    // What the outcome's journals give the captain's earnings, a charge below
+    // 0 (the pay, a charge, edits' charges given back), set with journal_ids;
+    // a change notifies the captain when it moves.
+    captainNet: bigint('captain_net', { mode: 'bigint' }),
+    // The outcome this one replaced, and when this one was replaced.
+    replacesId: uuid('replaces_id'),
+    replacedAt: timestamp('replaced_at', { withTimezone: true }),
   },
   (table) => [
     foreignKey({
       columns: [table.orderId, table.orderPlacedAt],
       foreignColumns: [orders.id, orders.placedAt],
     }),
-    uniqueIndex('order_outcomes_order').on(table.orderId),
+    foreignKey({ columns: [table.replacesId], foreignColumns: [table.id] }),
+    uniqueIndex('order_outcomes_current')
+      .on(table.orderId)
+      .where(sql`${table.replacedAt} IS NULL`),
+    uniqueIndex('order_outcomes_replaces').on(table.replacesId),
+    index('order_outcomes_order_rows').on(table.orderId, table.orderPlacedAt),
     check(
       'order_outcomes_values',
       sql`${table.outcome} IN ('free', 'fake', 'damaged', 'wrong_refused', 'failed_other') AND ${table.responsible} IN ('restaurant', 'captain', 'customer', 'platform') AND ${table.status} IN ('delivered', 'failed') AND (${table.food} IS NULL OR ${table.food} IN ('kept_by_captain', 'returned_to_restaurant', 'destroyed'))`,
@@ -757,6 +774,10 @@ export const orderOutcomeRows = ordering.table(
     check(
       'order_outcomes_collection',
       sql`(${table.amountToCollect} = 0 OR ${table.status} = 'delivered') AND (${table.collectedAt} IS NULL OR ${table.amountToCollect} > 0)`,
+    ),
+    check(
+      'order_outcomes_change',
+      sql`(${table.replacedAt} IS NULL OR ${table.journalIds} IS NOT NULL) AND (${table.replacesId} IS NULL OR ${table.journalIds} IS NOT NULL) AND (${table.journalIds} IS NULL) = (${table.captainNet} IS NULL)`,
     ),
     check(
       'order_outcomes_money',

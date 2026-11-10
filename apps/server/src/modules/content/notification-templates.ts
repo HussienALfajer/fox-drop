@@ -57,6 +57,11 @@ const customer: Entry[] = [
   // customer text of its reason.
   ['cancelled', '8', 'أُلغي طلبك: {السبب}', 'default', true],
   ['failed', '9', 'تعذّر تسليم طلبك: {السبب}', 'default'],
+  // AP §8.9 «تغيير النتيجة» (slice 2.11c): the texts ours, beside CU §14 #9
+  // (to confirm with the owner).
+  ['outcome_changed', '9', 'راجعنا طلبك #{رقم} وتغيّرت نتيجته: {السبب}', 'default'],
+  ['outcome_changed_delivered', '9', 'راجعنا طلبك #{رقم}: تم التسليم', 'default'],
+  ['outcome_dues_cancelled', '9', 'راجعنا طلبك #{رقم}: لم يعد عليك شيء لـ FOX DROP عنه', 'default'],
   ['item_unavailable', '10', 'صنف في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن', 'default'],
   ['order_edited', '11', 'عدّلت FOX DROP طلبك. المجموع الجديد: {المبلغ}', 'default'],
   ['time_changed', '12', 'تغيّر موعد وصول طلبك إلى {الساعة}', 'default'],
@@ -126,6 +131,15 @@ const merchant: Entry[] = [
     'انتهى الطلب #{رقم}: {النتيجة} — يُقيَّد عليكم {المبلغ} في كشف السبت',
     'silent',
   ],
+  // AP §8.9 «تغيير النتيجة» (slice 2.11c): what the restaurant now owes for
+  // the order changed (the texts ours, to confirm with the owner).
+  ['outcome_changed', '19', 'تغيّرت نتيجة الطلب #{رقم}: {النتيجة} — أُلغي القيد عليكم', 'silent'],
+  [
+    'outcome_changed_debited',
+    '19',
+    'تغيّرت نتيجة الطلب #{رقم}: {النتيجة} — يُقيَّد عليكم {المبلغ} في كشف السبت',
+    'silent',
+  ],
   ['cancelled_after_acceptance', '18', 'أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}', 'ring', true],
   ['admin_price_change', '21', 'عدّلت FOX DROP سعر {الصنف}: {القديم} ← {الجديد}', 'chime'],
   ['menu_change_approved', '22', 'قُبل تعديلك على {الصنف}', 'silent'],
@@ -179,6 +193,9 @@ const captain: Entry[] = [
   ['outcome_set', '10', 'أنهت العمليات الطلب: {النتيجة}.', 'chime'],
   // CA §9.10 «Outcome set by OPS with an amount to collect» (K9, slice 2.11b).
   ['outcome_collect', '10', 'أنهت العمليات الطلب: {النتيجة}. اقبض {المبلغ}.', 'chime'],
+  // AP §8.9 «تغيير النتيجة» (slice 2.11c): the captain's pay or charge moved
+  // (the text ours, to confirm with the owner).
+  ['outcome_changed', '10', 'غيّرت العمليات نتيجة الطلب #{رقم}: {النتيجة}.', 'chime'],
   // CA §9.10.
   ['withdrawn', '11', 'سُحب منك الطلب: {السبب}', 'cancellation', true],
   ['cancelled', '11', 'أُلغيت المهمة: {السبب}', 'cancellation', true],

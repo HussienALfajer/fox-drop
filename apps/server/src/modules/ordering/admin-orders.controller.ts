@@ -37,6 +37,7 @@ import {
   CANCELLABLE,
   TIME_CHANGEABLE,
   type CancellationPreview,
+  type OutcomeChangePreview,
   type OutcomePreview,
   type EditPreview,
   OrderCommandRefusedError,
@@ -487,37 +488,73 @@ class AdminSetOutcomeDto extends createZodDto(
 
 class AdminOutcomePreviewDto extends createZodDto(z.object(outcomeChoices)) {}
 
-class AdminOutcomePreviewAnswerDto extends createZodDto(
+// AP §8.9 «تغيير النتيجة» (slice 2.11c): the same choices without an amount
+// to collect, which stays as collected.
+const outcomeChangeChoices = {
+  outcome: outcomeChoices.outcome,
+  responsible: outcomeChoices.responsible,
+  delivered: outcomeChoices.delivered,
+  food: outcomeChoices.food,
+};
+
+class AdminChangeOutcomeDto extends createZodDto(
   z.object({
-    status: z.enum(['delivered', 'failed']),
-    provisional: z
-      .boolean()
+    ...outcomeChangeChoices,
+    version: z
+      .int()
       .describe(
-        'With an amount to collect: the entries are posted from the payment recorded (AP §9.3.2), the custody line as the collection books it.',
+        "The order's version the dialog previewed (AP §8.9 «Preview»); any other is 409 order_state_changed.",
       ),
-    loss: money.describe('docs/domain/09 rule 3: what the responsible party bears for the food.'),
-    dues: money
-      .nullable()
-      .describe("The customer's dues (AP §8.8), with the customer responsible."),
-    captainPay: money.describe("The captain's pay, 0 when the captain is responsible."),
-    entries: z
-      .array(
-        z.object({
-          type: z.string().describe('The journal type, such as dues.charge.'),
-          reason: z
-            .string()
-            .nullable()
-            .describe("The journal's reason, its line on the party's account (RA §12.5)."),
-          account: z.string().describe('The account purpose, such as customer.dues.'),
-          party: z.object({
-            kind: z.enum(['merchant', 'captain', 'customer', 'platform']),
-            id: z.uuid().nullable(),
-            name: z.string().nullable(),
-          }),
-          amount: money.describe("From the platform's side: + a debit, − a credit."),
-        }),
-      )
-      .describe('Every entry the outcome would post (AP §8.9 «Preview»).'),
+    reason: z
+      .string()
+      .trim()
+      .min(1)
+      .max(500)
+      .describe('Required (AP §8.9): why the outcome changes, never shown to the apps.'),
+  }),
+) {}
+
+class AdminOutcomeChangePreviewDto extends createZodDto(z.object(outcomeChangeChoices)) {}
+
+const previewEntry = z.object({
+  type: z.string().describe('The journal type, such as dues.charge.'),
+  reason: z
+    .string()
+    .nullable()
+    .describe("The journal's reason, its line on the party's account (RA §12.5)."),
+  account: z.string().describe('The account purpose, such as customer.dues.'),
+  party: z.object({
+    kind: z.enum(['merchant', 'captain', 'customer', 'platform']),
+    id: z.uuid().nullable(),
+    name: z.string().nullable(),
+  }),
+  amount: money.describe("From the platform's side: + a debit, − a credit."),
+});
+
+const outcomePreviewAnswer = z.object({
+  status: z.enum(['delivered', 'failed']),
+  provisional: z
+    .boolean()
+    .describe(
+      'With an amount to collect: the entries are posted from the payment recorded (AP §9.3.2), the custody line as the collection books it.',
+    ),
+  loss: money.describe('docs/domain/09 rule 3: what the responsible party bears for the food.'),
+  dues: money.nullable().describe("The customer's dues (AP §8.8), with the customer responsible."),
+  captainPay: money.describe("The captain's pay, 0 when the captain is responsible."),
+  entries: z
+    .array(previewEntry)
+    .describe('Every entry the outcome would post (AP §8.9 «Preview»).'),
+});
+
+class AdminOutcomePreviewAnswerDto extends createZodDto(outcomePreviewAnswer) {}
+
+class AdminOutcomeChangePreviewAnswerDto extends createZodDto(
+  outcomePreviewAnswer.extend({
+    reversed: z
+      .array(previewEntry)
+      .describe(
+        "Every entry of the outcome in force reversed (AP §8.9 «Changing an outcome»), before the new outcome's entries; each carries the reversed journal's own reason, which names it, while the reversal is posted with the reason «تغيير النتيجة».",
+      ),
   }),
 ) {}
 
@@ -597,9 +634,41 @@ class AdminOrderDto extends createZodDto(
           customerText: z.string().nullable().describe('What the customer sees of a failed order.'),
           note: z.string().describe("Operations' internal note."),
           setBy: z.uuid().describe('The admin who set it.'),
+          history: z
+            .array(
+              z.object({
+                at: z.iso.datetime(),
+                replacedAt: z.iso.datetime(),
+                outcome: outcomeChoices.outcome,
+                status: z.enum(['delivered', 'failed']),
+                responsible: outcomeChoices.responsible,
+                food: outcomeChoices.food,
+                note: z.string(),
+                setBy: z.uuid(),
+              }),
+            )
+            .describe('The outcomes «تغيير النتيجة» replaced, oldest first (slice 2.11c).'),
         })
         .nullable()
-        .describe('AP §9.3.2 «تحديد النتيجة»: the outcome operations set (AP §8.9).'),
+        .describe(
+          'AP §9.3.2 «تحديد النتيجة»: the outcome in force (AP §8.9), the last one set or changed.',
+        ),
+      outcomeChange: z
+        .object({
+          until: z.iso.datetime().describe('order.outcome_change_days after the first outcome.'),
+          foods: z
+            .array(
+              z.object({
+                code: z.enum(['kept_by_captain', 'returned_to_restaurant', 'destroyed']),
+                label: z.string(),
+              }),
+            )
+            .describe("Content's food_after_failed list, in order (AP Appendix B)."),
+        })
+        .nullable()
+        .describe(
+          'AP §8.9 «تغيير النتيجة» (OWN only, orders.change_outcome): while the outcome can change; null otherwise.',
+        ),
       outcomeChoices: z
         .object({
           foods: z
@@ -892,6 +961,30 @@ class AdminOrderDto extends createZodDto(
     }),
   }),
 ) {}
+
+// AP §8.9 «Preview»: the answer of both outcome previews.
+function previewEntryBody(entry: OutcomePreview['entries'][number]) {
+  return {
+    type: entry.type,
+    reason: entry.reason,
+    account: entry.account,
+    party: entry.party,
+    amount: { amount: entry.amount.toString(), currency: entry.currency },
+  };
+}
+
+function outcomePreviewBody(preview: OutcomePreview) {
+  const { status, loss, dues, captainPay, currency, entries, provisional } = preview;
+  const amount = (value: bigint) => ({ amount: value.toString(), currency });
+  return {
+    status,
+    provisional,
+    loss: amount(loss),
+    dues: dues === null ? null : amount(dues),
+    captainPay: amount(captainPay),
+    entries: entries.map(previewEntryBody),
+  };
+}
 
 function cardBody(item: OperationsOrder) {
   const { order } = item;
@@ -1388,22 +1481,63 @@ export class AdminOrdersController {
         new Date(),
       );
     });
-    const { status, loss, dues, captainPay, currency, entries, provisional } = preview!;
-    const amount = (value: bigint) => ({ amount: value.toString(), currency });
-    return {
-      status,
-      provisional,
-      loss: amount(loss),
-      dues: dues === null ? null : amount(dues),
-      captainPay: amount(captainPay),
-      entries: entries.map((entry) => ({
-        type: entry.type,
-        reason: entry.reason,
-        account: entry.account,
-        party: entry.party,
-        amount: { amount: entry.amount.toString(), currency: entry.currency },
-      })),
-    };
+    return outcomePreviewBody(preview!);
+  }
+
+  // AP §8.9 «Changing an outcome», AP §9.3.2 «تغيير النتيجة» (slice 2.11c):
+  // OWN only (orders.change_outcome) changes a finished order's outcome, its
+  // party or where the food went, within order.outcome_change_days of the
+  // first outcome, with a reason: the old outcome's entries reversed and the
+  // new ones posted in one transaction. 400 invalid_outcome; 409
+  // outcome_change_closed, dues_rule_unset, captain_pay_unset,
+  // order_state_changed; 404 unknown_order; 422 idempotency_key_reused.
+  @Post(':orderId/outcome-change')
+  @RequirePermission('orders.change_outcome')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOrderCardDto })
+  async changeOutcome(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminChangeOutcomeDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.onBehalf(params.orderId, () =>
+      this.commands.changeOutcome(
+        {
+          orderId: params.orderId,
+          admin: { accountId: session.accountId, roles: session.roles },
+          context: requestContext(request),
+          idempotencyKey,
+          outcome: body.outcome,
+          responsible: body.responsible,
+          delivered: body.delivered,
+          food: body.food,
+          version: body.version,
+          reason: body.reason,
+        },
+        new Date(),
+      ),
+    );
+  }
+
+  // AP §8.9 «The same preview is shown first»: the entries the change would
+  // reverse and post; it writes nothing, so it takes no key.
+  @Post(':orderId/outcome-change-preview')
+  @RequirePermission('orders.change_outcome')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOutcomeChangePreviewAnswerDto })
+  async outcomeChangePreview(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminOutcomeChangePreviewDto,
+  ) {
+    let preview: OutcomeChangePreview | undefined;
+    await this.onBehalf(params.orderId, async () => {
+      preview = await this.commands.previewOutcomeChange(params.orderId, body, new Date());
+    });
+    const { reversed, ...rest } = preview!;
+    return { ...outcomePreviewBody(rest), reversed: reversed.map(previewEntryBody) };
   }
 
   // Runs a command on the restaurant's behalf and answers the card, or its
@@ -1660,6 +1794,7 @@ export class AdminOrdersController {
       editChoices,
       edits,
       outcomeFoods,
+      outcomeChange,
     ] = await Promise.all([
       this.customers.profile(order.customerAccountId),
       this.views.timeline(order),
@@ -1676,6 +1811,7 @@ export class AdminOrdersController {
       AFTER_PICKUP.includes(order.status) && order.outcome === null
         ? this.commands.outcomeFoods()
         : null,
+      this.commands.outcomeChangeChoices(order, now),
     ]);
     const { acceptance } = order;
     // The cancellation itself, not its acknowledgement (RA §8.14).
@@ -1735,8 +1871,17 @@ export class AdminOrdersController {
           customerText: order.outcome.customerText,
           note: order.outcome.note,
           setBy: order.outcome.setBy,
+          history: order.outcome.history.map((each) => ({
+            ...each,
+            at: each.at.toISOString(),
+            replacedAt: each.replacedAt.toISOString(),
+          })),
         },
         outcomeChoices: outcomeFoods && { foods: outcomeFoods },
+        outcomeChange: outcomeChange && {
+          until: outcomeChange.until.toISOString(),
+          foods: outcomeChange.foods,
+        },
         itemReport: order.itemReport && {
           at: order.itemReport.at.toISOString(),
           items: order.itemReport.items,

@@ -31,6 +31,10 @@ Serializers _$serializers =
           ..add(AdminCancelPreviewDto.serializer)
           ..add(AdminCancelPreviewDtoCashEnum.serializer)
           ..add(AdminCancelPreviewDtoResponsibleEnum.serializer)
+          ..add(AdminChangeOutcomeDto.serializer)
+          ..add(AdminChangeOutcomeDtoFoodEnum.serializer)
+          ..add(AdminChangeOutcomeDtoOutcomeEnum.serializer)
+          ..add(AdminChangeOutcomeDtoResponsibleEnum.serializer)
           ..add(AdminChangeTimeDto.serializer)
           ..add(AdminCitiesDtoOutput.serializer)
           ..add(AdminCitiesDtoOutputCitiesInner.serializer)
@@ -144,12 +148,25 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderOnBehalf.serializer)
           ..add(AdminOrderDtoOutputOrderOnBehalfPrepTime.serializer)
           ..add(AdminOrderDtoOutputOrderOutcome.serializer)
-          ..add(AdminOrderDtoOutputOrderOutcomeChoices.serializer)
-          ..add(AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner.serializer)
+          ..add(AdminOrderDtoOutputOrderOutcomeChange.serializer)
+          ..add(AdminOrderDtoOutputOrderOutcomeChangeFoodsInner.serializer)
           ..add(
-            AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum.serializer,
+            AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnum.serializer,
           )
+          ..add(AdminOrderDtoOutputOrderOutcomeChoices.serializer)
           ..add(AdminOrderDtoOutputOrderOutcomeFoodEnum.serializer)
+          ..add(AdminOrderDtoOutputOrderOutcomeHistoryInner.serializer)
+          ..add(AdminOrderDtoOutputOrderOutcomeHistoryInnerFoodEnum.serializer)
+          ..add(
+            AdminOrderDtoOutputOrderOutcomeHistoryInnerOutcomeEnum.serializer,
+          )
+          ..add(
+            AdminOrderDtoOutputOrderOutcomeHistoryInnerResponsibleEnum
+                .serializer,
+          )
+          ..add(
+            AdminOrderDtoOutputOrderOutcomeHistoryInnerStatusEnum.serializer,
+          )
           ..add(AdminOrderDtoOutputOrderOutcomeOutcomeEnum.serializer)
           ..add(AdminOrderDtoOutputOrderOutcomeResponsibleEnum.serializer)
           ..add(AdminOrderDtoOutputOrderOutcomeStatusEnum.serializer)
@@ -173,6 +190,13 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderTimelineInnerItemReport.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerTimeChange.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerToEnum.serializer)
+          ..add(AdminOutcomeChangePreviewAnswerDtoOutput.serializer)
+          ..add(AdminOutcomeChangePreviewAnswerDtoOutputDues.serializer)
+          ..add(AdminOutcomeChangePreviewAnswerDtoOutputStatusEnum.serializer)
+          ..add(AdminOutcomeChangePreviewDto.serializer)
+          ..add(AdminOutcomeChangePreviewDtoFoodEnum.serializer)
+          ..add(AdminOutcomeChangePreviewDtoOutcomeEnum.serializer)
+          ..add(AdminOutcomeChangePreviewDtoResponsibleEnum.serializer)
           ..add(AdminOutcomePreviewAnswerDtoOutput.serializer)
           ..add(AdminOutcomePreviewAnswerDtoOutputCaptainPay.serializer)
           ..add(AdminOutcomePreviewAnswerDtoOutputEntriesInner.serializer)
@@ -874,16 +898,41 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
-              const FullType(AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner),
+              const FullType(AdminOrderDtoOutputOrderOutcomeChangeFoodsInner),
             ]),
             () =>
-                ListBuilder<AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner>(),
+                ListBuilder<AdminOrderDtoOutputOrderOutcomeChangeFoodsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderDtoOutputOrderOutcomeChangeFoodsInner),
+            ]),
+            () =>
+                ListBuilder<AdminOrderDtoOutputOrderOutcomeChangeFoodsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderDtoOutputOrderOutcomeHistoryInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderOutcomeHistoryInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(AdminOrderDtoOutputOrderPickupRequestsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderPickupRequestsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOutcomePreviewAnswerDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminOutcomePreviewAnswerDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOutcomePreviewAnswerDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminOutcomePreviewAnswerDtoOutputEntriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
