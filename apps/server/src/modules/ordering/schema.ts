@@ -734,6 +734,11 @@ export const orderOutcomeRows = ordering.table(
     setAt: timestamp('set_at', { withTimezone: true }).notNull(),
     setBy: uuid('set_by').notNull(),
     captainSeenAt: timestamp('captain_seen_at', { withTimezone: true }),
+    // Slice 2.11b (K9): with an amount to collect, the order stays picked up
+    // or arrived («بانتظار تسجيل التحصيل») until the captain or operations
+    // record the payment; the outcome is posted then, and the loss, the
+    // restaurant's debit and the pay above are set again from it.
+    collectedAt: timestamp('collected_at', { withTimezone: true }),
   },
   (table) => [
     foreignKey({
@@ -748,6 +753,10 @@ export const orderOutcomeRows = ordering.table(
     check(
       'order_outcomes_rules',
       sql`(${table.outcome} = 'fake') = (${table.responsible} = 'customer') AND (${table.responsible} = 'customer') = (${table.dues} IS NOT NULL) AND (${table.status} = 'failed') = (${table.food} IS NOT NULL) AND (${table.status} = 'delivered' OR ${table.outcome} <> 'free') AND (${table.status} = 'failed' OR ${table.outcome} IN ('free', 'damaged')) AND (${table.food} IS DISTINCT FROM 'returned_to_restaurant' OR ${table.responsible} = 'restaurant') AND (${table.status} = 'failed') = (${table.customerText} IS NOT NULL) AND (${table.responsible} = 'restaurant') = (${table.merchantDebit} IS NOT NULL)`,
+    ),
+    check(
+      'order_outcomes_collection',
+      sql`(${table.amountToCollect} = 0 OR ${table.status} = 'delivered') AND (${table.collectedAt} IS NULL OR ${table.amountToCollect} > 0)`,
     ),
     check(
       'order_outcomes_money',

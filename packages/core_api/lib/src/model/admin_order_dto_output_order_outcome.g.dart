@@ -325,6 +325,10 @@ class _$AdminOrderDtoOutputOrderOutcome
   @override
   final DateTime at;
   @override
+  final bool awaitingCollection;
+  @override
+  final DateTime? collectedAt;
+  @override
   final AdminOrderDtoOutputOrderOutcomeOutcomeEnum outcome;
   @override
   final AdminOrderDtoOutputOrderOutcomeStatusEnum status;
@@ -355,6 +359,8 @@ class _$AdminOrderDtoOutputOrderOutcome
 
   _$AdminOrderDtoOutputOrderOutcome._({
     required this.at,
+    required this.awaitingCollection,
+    this.collectedAt,
     required this.outcome,
     required this.status,
     required this.responsible,
@@ -382,6 +388,8 @@ class _$AdminOrderDtoOutputOrderOutcome
     if (identical(other, this)) return true;
     return other is AdminOrderDtoOutputOrderOutcome &&
         at == other.at &&
+        awaitingCollection == other.awaitingCollection &&
+        collectedAt == other.collectedAt &&
         outcome == other.outcome &&
         status == other.status &&
         responsible == other.responsible &&
@@ -400,6 +408,8 @@ class _$AdminOrderDtoOutputOrderOutcome
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, at.hashCode);
+    _$hash = $jc(_$hash, awaitingCollection.hashCode);
+    _$hash = $jc(_$hash, collectedAt.hashCode);
     _$hash = $jc(_$hash, outcome.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, responsible.hashCode);
@@ -420,6 +430,8 @@ class _$AdminOrderDtoOutputOrderOutcome
   String toString() {
     return (newBuiltValueToStringHelper(r'AdminOrderDtoOutputOrderOutcome')
           ..add('at', at)
+          ..add('awaitingCollection', awaitingCollection)
+          ..add('collectedAt', collectedAt)
           ..add('outcome', outcome)
           ..add('status', status)
           ..add('responsible', responsible)
@@ -447,6 +459,15 @@ class AdminOrderDtoOutputOrderOutcomeBuilder
   DateTime? _at;
   DateTime? get at => _$this._at;
   set at(DateTime? at) => _$this._at = at;
+
+  bool? _awaitingCollection;
+  bool? get awaitingCollection => _$this._awaitingCollection;
+  set awaitingCollection(bool? awaitingCollection) =>
+      _$this._awaitingCollection = awaitingCollection;
+
+  DateTime? _collectedAt;
+  DateTime? get collectedAt => _$this._collectedAt;
+  set collectedAt(DateTime? collectedAt) => _$this._collectedAt = collectedAt;
 
   AdminOrderDtoOutputOrderOutcomeOutcomeEnum? _outcome;
   AdminOrderDtoOutputOrderOutcomeOutcomeEnum? get outcome => _$this._outcome;
@@ -521,6 +542,8 @@ class AdminOrderDtoOutputOrderOutcomeBuilder
     final $v = _$v;
     if ($v != null) {
       _at = $v.at;
+      _awaitingCollection = $v.awaitingCollection;
+      _collectedAt = $v.collectedAt;
       _outcome = $v.outcome;
       _status = $v.status;
       _responsible = $v.responsible;
@@ -562,6 +585,12 @@ class AdminOrderDtoOutputOrderOutcomeBuilder
               r'AdminOrderDtoOutputOrderOutcome',
               'at',
             ),
+            awaitingCollection: BuiltValueNullFieldError.checkNotNull(
+              awaitingCollection,
+              r'AdminOrderDtoOutputOrderOutcome',
+              'awaitingCollection',
+            ),
+            collectedAt: collectedAt,
             outcome: BuiltValueNullFieldError.checkNotNull(
               outcome,
               r'AdminOrderDtoOutputOrderOutcome',

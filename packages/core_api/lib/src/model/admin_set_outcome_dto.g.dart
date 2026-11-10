@@ -248,6 +248,8 @@ class _$AdminSetOutcomeDto extends AdminSetOutcomeDto {
   @override
   final AdminSetOutcomeDtoFoodEnum? food;
   @override
+  final String? amountToCollect;
+  @override
   final int version;
   @override
   final String reason;
@@ -261,6 +263,7 @@ class _$AdminSetOutcomeDto extends AdminSetOutcomeDto {
     required this.responsible,
     required this.delivered,
     this.food,
+    this.amountToCollect,
     required this.version,
     required this.reason,
   }) : super._();
@@ -281,6 +284,7 @@ class _$AdminSetOutcomeDto extends AdminSetOutcomeDto {
         responsible == other.responsible &&
         delivered == other.delivered &&
         food == other.food &&
+        amountToCollect == other.amountToCollect &&
         version == other.version &&
         reason == other.reason;
   }
@@ -292,6 +296,7 @@ class _$AdminSetOutcomeDto extends AdminSetOutcomeDto {
     _$hash = $jc(_$hash, responsible.hashCode);
     _$hash = $jc(_$hash, delivered.hashCode);
     _$hash = $jc(_$hash, food.hashCode);
+    _$hash = $jc(_$hash, amountToCollect.hashCode);
     _$hash = $jc(_$hash, version.hashCode);
     _$hash = $jc(_$hash, reason.hashCode);
     _$hash = $jf(_$hash);
@@ -305,6 +310,7 @@ class _$AdminSetOutcomeDto extends AdminSetOutcomeDto {
           ..add('responsible', responsible)
           ..add('delivered', delivered)
           ..add('food', food)
+          ..add('amountToCollect', amountToCollect)
           ..add('version', version)
           ..add('reason', reason))
         .toString();
@@ -333,6 +339,11 @@ class AdminSetOutcomeDtoBuilder
   AdminSetOutcomeDtoFoodEnum? get food => _$this._food;
   set food(AdminSetOutcomeDtoFoodEnum? food) => _$this._food = food;
 
+  String? _amountToCollect;
+  String? get amountToCollect => _$this._amountToCollect;
+  set amountToCollect(String? amountToCollect) =>
+      _$this._amountToCollect = amountToCollect;
+
   int? _version;
   int? get version => _$this._version;
   set version(int? version) => _$this._version = version;
@@ -352,6 +363,7 @@ class AdminSetOutcomeDtoBuilder
       _responsible = $v.responsible;
       _delivered = $v.delivered;
       _food = $v.food;
+      _amountToCollect = $v.amountToCollect;
       _version = $v.version;
       _reason = $v.reason;
       _$v = null;
@@ -392,6 +404,7 @@ class AdminSetOutcomeDtoBuilder
             'delivered',
           ),
           food: food,
+          amountToCollect: amountToCollect,
           version: BuiltValueNullFieldError.checkNotNull(
             version,
             r'AdminSetOutcomeDto',

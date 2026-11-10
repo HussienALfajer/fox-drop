@@ -1928,6 +1928,19 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String captainOutcomeCollect(String outcome, String amount) {
+    return 'أنهت العمليات الطلب: $outcome. اقبض $amount.';
+  }
+
+  @override
+  String get captainAwaitingCollection => 'بانتظار تسجيل التحصيل';
+
+  @override
+  String customerAmountDueNow(String amount) {
+    return 'المبلغ المطلوب الآن: $amount';
+  }
+
+  @override
   String get captainOutcomeFree => 'مجاني';
 
   @override

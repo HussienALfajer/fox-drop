@@ -246,15 +246,19 @@ class OrderScreen extends ConsumerWidget {
           ? l10n.customerCaptainCollecting
           : l10n.customerAwaitingCaptain,
     ),
-    OnTheWay(:final captain) => (
+    OnTheWay(:final captain, :final dueNow) => (
       l10n.customerStatusPickedUp,
-      l10n.customerCaptainPickedUp(captain),
+      dueNow == null
+          ? l10n.customerCaptainPickedUp(captain)
+          : l10n.customerAmountDueNow(l10n.formatMoney(dueNow, order.currency)),
     ),
-    AtDoor() => (
+    AtDoor(:final dueNow) => (
       l10n.customerStatusArrived,
-      l10n.customerPrepareAmount(
-        l10n.formatMoney(order.money.total, order.currency),
-      ),
+      dueNow == null
+          ? l10n.customerPrepareAmount(
+              l10n.formatMoney(order.money.total, order.currency),
+            )
+          : l10n.customerAmountDueNow(l10n.formatMoney(dueNow, order.currency)),
     ),
     Delivered(:final paidNothing) => (
       l10n.customerStatusDelivered,

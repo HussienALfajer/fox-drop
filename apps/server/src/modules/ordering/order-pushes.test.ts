@@ -103,6 +103,8 @@ describe('the pushes of an order event', () => {
       status: 'failed' as const,
       customerText: 'تعذّر الوصول إليك أو إلى العنوان',
       merchantDebit: null,
+      amountToCollect: null,
+      awaitingCollection: false,
     };
     expect(sent('order.outcome_set', 'failed_other', { actor: 'admin', outcome: failed })).toEqual([
       [customer, 'customer.failed', { السبب: 'تعذّر الوصول إليك أو إلى العنوان' }],
@@ -119,7 +121,13 @@ describe('the pushes of an order event', () => {
       'merchant.order_failed_debited',
       { رقم: '10002', النتيجة: 'خطأ ورفضه الزبون', المبلغ: '400 ₺' },
     ]);
-    const free = { label: 'مجاني', status: 'delivered' as const, customerText: null };
+    const free = {
+      label: 'مجاني',
+      status: 'delivered' as const,
+      customerText: null,
+      amountToCollect: null,
+      awaitingCollection: false,
+    };
     // Delivered: the restaurant hears only what it returns.
     expect(
       sent('order.outcome_set', 'free', {
@@ -140,6 +148,36 @@ describe('the pushes of an order event', () => {
       'merchant.outcome_debited',
       { رقم: '10002', النتيجة: 'مجاني', المبلغ: '400 ₺' },
     ]);
+  });
+
+  it('tells the captain only an amount to collect, and the others once it is recorded (CA §9.10, K9)', () => {
+    const owners = { ...restaurant, owners: true };
+    const free = {
+      label: 'مجاني',
+      status: 'delivered' as const,
+      customerText: null,
+      merchantDebit: '400 ₺',
+      amountToCollect: '50 ₺',
+    };
+    expect(
+      sent('order.outcome_set', 'free', {
+        actor: 'admin',
+        outcome: { ...free, awaitingCollection: true },
+      }),
+    ).toEqual([
+      [captain, 'captain.outcome_collect', { رقم: '10002', النتيجة: 'مجاني', المبلغ: '50 ₺' }],
+    ]);
+    const collected = { ...free, awaitingCollection: false };
+    expect(
+      sent('order.outcome_collected', 'free', { actor: 'captain', outcome: collected }),
+    ).toEqual([
+      [customer, 'customer.delivered', {}],
+      [owners, 'merchant.outcome_debited', { رقم: '10002', النتيجة: 'مجاني', المبلغ: '400 ₺' }],
+    ]);
+    // Operations recorded it: the captain hears the end too.
+    expect(
+      sent('order.outcome_collected', 'free', { actor: 'admin', outcome: collected }).at(-1),
+    ).toEqual([captain, 'captain.outcome_set', { رقم: '10002', النتيجة: 'مجاني' }]);
   });
 
   it('rings every device of the restaurant with a new order (RA §16 #1)', () => {

@@ -5439,6 +5439,63 @@
         ]
       }
     },
+    "/v1/admin/orders/{orderId}/outcome-payment": {
+      "post": {
+        "operationId": "adminOrdersCollectOutcome",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRecordDeliveryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderCardDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/orders/shortfalls": {
       "get": {
         "operationId": "adminOrdersShortfalls",
@@ -5795,6 +5852,63 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CaptainDeliverDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainDeliverySummaryDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/captain/orders/{orderId}/outcome-payment": {
+      "post": {
+        "operationId": "captainOrdersCollectOutcome",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptainOutcomePaymentDto"
               }
             }
           }
@@ -14178,6 +14292,10 @@
                           ],
                           "additionalProperties": false,
                           "description": "CU §11.6: «المبلغ المطلوب الآن: {المبلغ}», or «لن تدفع شيئاً لهذا الطلب» at 0."
+                        },
+                        "awaitingCollection": {
+                          "type": "boolean",
+                          "description": "The captain has yet to collect the amount (K9): the order is still on its way or at the door."
                         }
                       },
                       "required": [
@@ -14185,7 +14303,8 @@
                         "outcome",
                         "status",
                         "text",
-                        "amountToCollect"
+                        "amountToCollect",
+                        "awaitingCollection"
                       ],
                       "additionalProperties": false
                     },
@@ -14903,6 +15022,10 @@
                         ],
                         "additionalProperties": false,
                         "description": "CU §11.6: «المبلغ المطلوب الآن: {المبلغ}», or «لن تدفع شيئاً لهذا الطلب» at 0."
+                      },
+                      "awaitingCollection": {
+                        "type": "boolean",
+                        "description": "The captain has yet to collect the amount (K9): the order is still on its way or at the door."
                       }
                     },
                     "required": [
@@ -14910,7 +15033,8 @@
                       "outcome",
                       "status",
                       "text",
-                      "amountToCollect"
+                      "amountToCollect",
+                      "awaitingCollection"
                     ],
                     "additionalProperties": false
                   },
@@ -17619,6 +17743,10 @@
                     "type": "boolean",
                     "description": "«بانتظار تأكيد الاستلام» (AP §9.2.1)."
                   },
+                  "awaitingCollection": {
+                    "type": "boolean",
+                    "description": "«بانتظار تسجيل التحصيل»: an outcome with an amount to collect waits for the payment (CA §9.10, K9)."
+                  },
                   "itemReport": {
                     "type": "boolean",
                     "description": "«صنف نفد»: an open item-unavailable report (RA §8.12)."
@@ -17629,6 +17757,7 @@
                   "note",
                   "newCustomer",
                   "pickupPending",
+                  "awaitingCollection",
                   "itemReport"
                 ],
                 "additionalProperties": false
@@ -18732,6 +18861,12 @@
             ],
             "description": "A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible."
           },
+          "amountToCollect": {
+            "default": "0",
+            "description": "What the customer still pays, in the base currency (K9): above 0 only on a delivered outcome and below the order total (owner decisions 2026-11-10), else 400 invalid_outcome. Above 0 the order waits «بانتظار تسجيل التحصيل» and the outcome is posted from the payment recorded.",
+            "type": "string",
+            "pattern": "^-?\\d+$"
+          },
           "version": {
             "type": "integer",
             "minimum": -9007199254740991,
@@ -18796,6 +18931,12 @@
               }
             ],
             "description": "A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible."
+          },
+          "amountToCollect": {
+            "default": "0",
+            "description": "What the customer still pays, in the base currency (K9): above 0 only on a delivered outcome and below the order total (owner decisions 2026-11-10), else 400 invalid_outcome. Above 0 the order waits «بانتظار تسجيل التحصيل» and the outcome is posted from the payment recorded.",
+            "type": "string",
+            "pattern": "^-?\\d+$"
           }
         },
         "required": [
@@ -18814,6 +18955,10 @@
               "delivered",
               "failed"
             ]
+          },
+          "provisional": {
+            "type": "boolean",
+            "description": "With an amount to collect: the entries are posted from the payment recorded (AP §9.3.2), the custody line as the collection books it."
           },
           "loss": {
             "type": "object",
@@ -18979,6 +19124,7 @@
         },
         "required": [
           "status",
+          "provisional",
           "loss",
           "dues",
           "captainPay",
@@ -19419,6 +19565,10 @@
                       "type": "boolean",
                       "description": "«بانتظار تأكيد الاستلام» (AP §9.2.1)."
                     },
+                    "awaitingCollection": {
+                      "type": "boolean",
+                      "description": "«بانتظار تسجيل التحصيل»: an outcome with an amount to collect waits for the payment (CA §9.10, K9)."
+                    },
                     "itemReport": {
                       "type": "boolean",
                       "description": "«صنف نفد»: an open item-unavailable report (RA §8.12)."
@@ -19429,6 +19579,7 @@
                     "note",
                     "newCustomer",
                     "pickupPending",
+                    "awaitingCollection",
                     "itemReport"
                   ],
                   "additionalProperties": false
@@ -19755,6 +19906,10 @@
                     "type": "boolean",
                     "description": "«بانتظار تأكيد الاستلام» (AP §9.2.1)."
                   },
+                  "awaitingCollection": {
+                    "type": "boolean",
+                    "description": "«بانتظار تسجيل التحصيل»: an outcome with an amount to collect waits for the payment (CA §9.10, K9)."
+                  },
                   "itemReport": {
                     "type": "boolean",
                     "description": "«صنف نفد»: an open item-unavailable report (RA §8.12)."
@@ -19765,6 +19920,7 @@
                   "note",
                   "newCustomer",
                   "pickupPending",
+                  "awaitingCollection",
                   "itemReport"
                 ],
                 "additionalProperties": false
@@ -20199,6 +20355,22 @@
                         "format": "date-time",
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                       },
+                      "awaitingCollection": {
+                        "type": "boolean",
+                        "description": "«بانتظار تسجيل التحصيل» (K9): the money below is provisional until the captain or operations record the payment."
+                      },
+                      "collectedAt": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
                       "outcome": {
                         "type": "string",
                         "enum": [
@@ -20377,6 +20549,8 @@
                     },
                     "required": [
                       "at",
+                      "awaitingCollection",
+                      "collectedAt",
                       "outcome",
                       "status",
                       "responsible",
@@ -22241,6 +22415,77 @@
                     "type": "boolean",
                     "description": "Operations added items and the restaurant has not pressed «اطلعت على التعديل» (RA §8.13): the screen shows «بانتظار تأكيد المطعم للتعديل» and the pickup request waits (409 edit_unacknowledged) (CA §9 step 2)."
                   },
+                  "outcomeToCollect": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "outcome": {
+                            "type": "string",
+                            "enum": [
+                              "free",
+                              "damaged"
+                            ]
+                          },
+                          "amount": {
+                            "type": "object",
+                            "properties": {
+                              "amount": {
+                                "type": "string",
+                                "pattern": "^-?\\d+$",
+                                "description": "Integer minor units (AP §8.6)."
+                              },
+                              "currency": {
+                                "type": "string",
+                                "minLength": 3,
+                                "maxLength": 3
+                              }
+                            },
+                            "required": [
+                              "amount",
+                              "currency"
+                            ],
+                            "additionalProperties": false,
+                            "description": "The amount due on the payment screen (CA §9.7)."
+                          },
+                          "equivalents": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "amount": {
+                                  "type": "string",
+                                  "pattern": "^-?\\d+$",
+                                  "description": "Integer minor units (AP §8.6)."
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "minLength": 3,
+                                  "maxLength": 3
+                                }
+                              },
+                              "required": [
+                                "amount",
+                                "currency"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "description": "The amount in the other accepted currencies, each by its rounding (CA §9.7)."
+                          }
+                        },
+                        "required": [
+                          "outcome",
+                          "amount",
+                          "equivalents"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Operations ended the order with an amount to collect (CA §9.10, K9): «أنهت العمليات الطلب: {النتيجة}. اقبض {المبلغ}.», the payment screen for this amount and the badge «بانتظار تسجيل التحصيل»; record it with POST .../outcome-payment."
+                  },
                   "itemCount": {
                     "type": "integer",
                     "minimum": -9007199254740991,
@@ -22752,6 +22997,7 @@
                   "arrival",
                   "itemReportOpen",
                   "editUnacknowledged",
+                  "outcomeToCollect",
                   "itemCount",
                   "lines",
                   "note",
@@ -23188,6 +23434,77 @@
               "editUnacknowledged": {
                 "type": "boolean",
                 "description": "Operations added items and the restaurant has not pressed «اطلعت على التعديل» (RA §8.13): the screen shows «بانتظار تأكيد المطعم للتعديل» and the pickup request waits (409 edit_unacknowledged) (CA §9 step 2)."
+              },
+              "outcomeToCollect": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "outcome": {
+                        "type": "string",
+                        "enum": [
+                          "free",
+                          "damaged"
+                        ]
+                      },
+                      "amount": {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "string",
+                            "pattern": "^-?\\d+$",
+                            "description": "Integer minor units (AP §8.6)."
+                          },
+                          "currency": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3
+                          }
+                        },
+                        "required": [
+                          "amount",
+                          "currency"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The amount due on the payment screen (CA §9.7)."
+                      },
+                      "equivalents": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "pattern": "^-?\\d+$",
+                              "description": "Integer minor units (AP §8.6)."
+                            },
+                            "currency": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 3
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "description": "The amount in the other accepted currencies, each by its rounding (CA §9.7)."
+                      }
+                    },
+                    "required": [
+                      "outcome",
+                      "amount",
+                      "equivalents"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Operations ended the order with an amount to collect (CA §9.10, K9): «أنهت العمليات الطلب: {النتيجة}. اقبض {المبلغ}.», the payment screen for this amount and the badge «بانتظار تسجيل التحصيل»; record it with POST .../outcome-payment."
               },
               "itemCount": {
                 "type": "integer",
@@ -23700,6 +24017,7 @@
               "arrival",
               "itemReportOpen",
               "editUnacknowledged",
+              "outcomeToCollect",
               "itemCount",
               "lines",
               "note",
@@ -24102,6 +24420,166 @@
           "summary"
         ],
         "additionalProperties": false
+      },
+      "CaptainOutcomePaymentDto": {
+        "type": "object",
+        "properties": {
+          "received": {
+            "minItems": 1,
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "string",
+                  "pattern": "^\\d{1,15}$",
+                  "description": "Integer minor units (AP §8.6)."
+                },
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                }
+              },
+              "required": [
+                "amount",
+                "currency"
+              ]
+            },
+            "description": "What the customer paid, one line per currency."
+          },
+          "change": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "string",
+                  "pattern": "^\\d{1,15}$",
+                  "description": "Integer minor units (AP §8.6)."
+                },
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                }
+              },
+              "required": [
+                "amount",
+                "currency"
+              ]
+            },
+            "description": "The change given back, one line per currency; a tip is recorded as given (K14)."
+          },
+          "amountDue": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              }
+            },
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "description": "The amount due the screen showed; another one now answers 409 amount_due_changed."
+          },
+          "shortfall": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9_]{1,40}$",
+                    "description": "The reason's code in its Content list."
+                  },
+                  "note": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The text of a reason that needs one («أخرى»), and only of it."
+                  }
+                },
+                "required": [
+                  "reason",
+                  "note"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Needed when the net received is short beyond rounding: «الزبون لا يملك المبلغ كاملاً», «خطأ في العد», «أخرى»."
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "latitude": {
+                    "type": "number",
+                    "minimum": -90,
+                    "maximum": 90
+                  },
+                  "longitude": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180
+                  },
+                  "accuracyMetres": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "recordedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "simulated": {
+                    "type": "boolean",
+                    "description": "The device reports a mock location."
+                  }
+                },
+                "required": [
+                  "latitude",
+                  "longitude",
+                  "accuracyMetres",
+                  "recordedAt",
+                  "simulated"
+                ],
+                "description": "The latest GPS fix."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The latest fix, recorded with the command (CA §15); no radius applies, since the screen opens wherever the captain is."
+          }
+        },
+        "required": [
+          "received",
+          "change",
+          "amountDue",
+          "shortfall",
+          "location"
+        ]
       },
       "CaptainPickupRequestDto": {
         "type": "object",

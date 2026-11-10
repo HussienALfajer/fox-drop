@@ -47,6 +47,8 @@ export interface OperationsOrder {
   // «بانتظار تأكيد الاستلام» (AP §9.2.1).
   needsAssignment: boolean;
   pickupPending: boolean;
+  // K9 (slice 2.11b): «بانتظار تسجيل التحصيل».
+  awaitingCollection: boolean;
   // AP §9.3.1: every pickup request, newest first.
   pickupRequests: PickupRequestView[];
   // RA §8.10 item 8: the restaurant's dispute after the pickup.
@@ -353,6 +355,7 @@ export class OperationsViews {
         alerts,
         needsAssignment: more.captainTrack === 'searching',
         pickupPending: more.captainTrack === 'pickup_pending',
+        awaitingCollection: view.outcome?.awaitingCollection ?? false,
         pickupRequests: requests.get(view.id) ?? [],
         pickupDispute: disputes.get(view.id) ?? null,
         newCustomer: !regulars.has(view.customerAccountId),

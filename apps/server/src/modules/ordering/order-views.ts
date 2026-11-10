@@ -102,7 +102,15 @@ export interface OrderView {
   // AP §9.3.2 «تحديد النتيجة» (slice 2.11a): the outcome operations set,
   // with what it booked, the customer's text of a failed order (CU Appendix
   // C) and operations' note; null for a normal delivery and before the end.
+  // With an amount to collect (slice 2.11b, K9) it is set while the order is
+  // still picked up or arrived, `awaitingCollection` until the payment is
+  // recorded («بانتظار تسجيل التحصيل»), its money provisional until then.
   outcome: {
+    awaitingCollection: boolean;
+    collectedAt: Date | null;
+    // CA §9.7 items 1-2: the amount to collect in the other accepted
+    // currencies, by the order's snapshot.
+    amountEquivalents: { currency: string; amount: bigint }[];
     at: Date;
     outcome: SetOutcome;
     status: 'delivered' | 'failed';
@@ -377,7 +385,14 @@ export async function readOrders(
         )
     ).map((row) => row.orderId),
   );
-  const ended = rows.filter((row) => row.outcome !== null && row.outcome !== 'normal');
+  // An outcome waiting for its collection belongs to a picked-up or arrived
+  // order (K9).
+  const ended = rows.filter(
+    (row) =>
+      (row.outcome !== null && row.outcome !== 'normal') ||
+      row.status === 'picked_up' ||
+      row.status === 'arrived',
+  );
   const outcomes =
     ended.length === 0
       ? []
@@ -467,6 +482,17 @@ export async function readOrders(
         outcome && outcome.outcome !== 'normal'
           ? {
               at: outcome.setAt,
+              awaitingCollection: outcome.amountToCollect > 0n && outcome.collectedAt === null,
+              collectedAt: outcome.collectedAt,
+              amountEquivalents:
+                outcome.amountToCollect > 0n
+                  ? snapshot.currencies
+                      .filter((entry) => entry.code !== snapshot.baseCurrency)
+                      .map((entry) => ({
+                        currency: entry.code,
+                        amount: equivalent(snapshot, outcome.amountToCollect, entry.code),
+                      }))
+                  : [],
               outcome: outcome.outcome,
               status: outcome.status,
               responsible: outcome.responsible,

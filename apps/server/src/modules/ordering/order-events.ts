@@ -88,7 +88,11 @@ export type OrderEventType =
   // AP §9.3.2 «تحديد النتيجة», AP §8.9 (slice 2.11a): operations ended a
   // picked-up order with an outcome other than normal (status failed, or
   // delivered for free and damaged; track done). The outcome is its reason.
-  | 'order.outcome_set';
+  // With an amount to collect (slice 2.11b, K9) the status stays and the
+  // captain's payment screen opens; order.outcome_collected is the payment
+  // recorded and the outcome posted (status delivered, track done).
+  | 'order.outcome_set'
+  | 'order.outcome_collected';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that

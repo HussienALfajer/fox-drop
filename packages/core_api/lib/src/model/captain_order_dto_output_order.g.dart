@@ -265,6 +265,8 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
   @override
   final bool editUnacknowledged;
   @override
+  final CaptainOrderDtoOutputOrderOutcomeToCollect? outcomeToCollect;
+  @override
   final int itemCount;
   @override
   final BuiltList<CaptainActiveOrderDtoOutputOrderLinesInner> lines;
@@ -296,6 +298,7 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
     this.arrival,
     required this.itemReportOpen,
     required this.editUnacknowledged,
+    this.outcomeToCollect,
     required this.itemCount,
     required this.lines,
     this.note,
@@ -328,6 +331,7 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
         arrival == other.arrival &&
         itemReportOpen == other.itemReportOpen &&
         editUnacknowledged == other.editUnacknowledged &&
+        outcomeToCollect == other.outcomeToCollect &&
         itemCount == other.itemCount &&
         lines == other.lines &&
         note == other.note &&
@@ -351,6 +355,7 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
     _$hash = $jc(_$hash, arrival.hashCode);
     _$hash = $jc(_$hash, itemReportOpen.hashCode);
     _$hash = $jc(_$hash, editUnacknowledged.hashCode);
+    _$hash = $jc(_$hash, outcomeToCollect.hashCode);
     _$hash = $jc(_$hash, itemCount.hashCode);
     _$hash = $jc(_$hash, lines.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
@@ -376,6 +381,7 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
           ..add('arrival', arrival)
           ..add('itemReportOpen', itemReportOpen)
           ..add('editUnacknowledged', editUnacknowledged)
+          ..add('outcomeToCollect', outcomeToCollect)
           ..add('itemCount', itemCount)
           ..add('lines', lines)
           ..add('note', note)
@@ -448,6 +454,14 @@ class CaptainOrderDtoOutputOrderBuilder
   set editUnacknowledged(bool? editUnacknowledged) =>
       _$this._editUnacknowledged = editUnacknowledged;
 
+  CaptainOrderDtoOutputOrderOutcomeToCollectBuilder? _outcomeToCollect;
+  CaptainOrderDtoOutputOrderOutcomeToCollectBuilder get outcomeToCollect =>
+      _$this._outcomeToCollect ??=
+          CaptainOrderDtoOutputOrderOutcomeToCollectBuilder();
+  set outcomeToCollect(
+    CaptainOrderDtoOutputOrderOutcomeToCollectBuilder? outcomeToCollect,
+  ) => _$this._outcomeToCollect = outcomeToCollect;
+
   int? _itemCount;
   int? get itemCount => _$this._itemCount;
   set itemCount(int? itemCount) => _$this._itemCount = itemCount;
@@ -512,6 +526,7 @@ class CaptainOrderDtoOutputOrderBuilder
       _arrival = $v.arrival?.toBuilder();
       _itemReportOpen = $v.itemReportOpen;
       _editUnacknowledged = $v.editUnacknowledged;
+      _outcomeToCollect = $v.outcomeToCollect?.toBuilder();
       _itemCount = $v.itemCount;
       _lines = $v.lines.toBuilder();
       _note = $v.note;
@@ -582,6 +597,7 @@ class CaptainOrderDtoOutputOrderBuilder
               r'CaptainOrderDtoOutputOrder',
               'editUnacknowledged',
             ),
+            outcomeToCollect: _outcomeToCollect?.build(),
             itemCount: BuiltValueNullFieldError.checkNotNull(
               itemCount,
               r'CaptainOrderDtoOutputOrder',
@@ -604,6 +620,9 @@ class CaptainOrderDtoOutputOrderBuilder
         preparation.build();
         _$failedField = 'arrival';
         _arrival?.build();
+
+        _$failedField = 'outcomeToCollect';
+        _outcomeToCollect?.build();
 
         _$failedField = 'lines';
         lines.build();

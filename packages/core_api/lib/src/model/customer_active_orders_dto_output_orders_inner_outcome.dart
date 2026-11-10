@@ -18,6 +18,7 @@ part 'customer_active_orders_dto_output_orders_inner_outcome.g.dart';
 /// * [status]
 /// * [text] - A failed order: «تعذّر التسليم» with this reason (CU §11.9, Appendix C).
 /// * [amountToCollect]
+/// * [awaitingCollection] - The captain has yet to collect the amount (K9): the order is still on its way or at the door.
 @BuiltValue()
 abstract class CustomerActiveOrdersDtoOutputOrdersInnerOutcome
     implements
@@ -43,6 +44,10 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerOutcome
   @BuiltValueField(wireName: r'amountToCollect')
   CustomerActiveOrdersDtoOutputOrdersInnerOutcomeAmountToCollect
   get amountToCollect;
+
+  /// The captain has yet to collect the amount (K9): the order is still on its way or at the door.
+  @BuiltValueField(wireName: r'awaitingCollection')
+  bool get awaitingCollection;
 
   CustomerActiveOrdersDtoOutputOrdersInnerOutcome._();
 
@@ -110,6 +115,11 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerOutcomeSerializer
       specifiedType: const FullType(
         CustomerActiveOrdersDtoOutputOrdersInnerOutcomeAmountToCollect,
       ),
+    );
+    yield r'awaitingCollection';
+    yield serializers.serialize(
+      object.awaitingCollection,
+      specifiedType: const FullType(bool),
     );
   }
 
@@ -189,6 +199,15 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerOutcomeSerializer
                   )
                   as CustomerActiveOrdersDtoOutputOrdersInnerOutcomeAmountToCollect;
           result.amountToCollect.replace(valueDes);
+          break;
+        case r'awaitingCollection':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.awaitingCollection = valueDes;
           break;
         default:
           unhandled.add(key);

@@ -79,6 +79,8 @@ class _$AdminOutcomePreviewAnswerDtoOutput
   @override
   final AdminOutcomePreviewAnswerDtoOutputStatusEnum status;
   @override
+  final bool provisional;
+  @override
   final AdminOutcomePreviewAnswerDtoOutputLoss loss;
   @override
   final CaptainWentOfflineDtoOutputHandIn? dues;
@@ -93,6 +95,7 @@ class _$AdminOutcomePreviewAnswerDtoOutput
 
   _$AdminOutcomePreviewAnswerDtoOutput._({
     required this.status,
+    required this.provisional,
     required this.loss,
     this.dues,
     required this.captainPay,
@@ -112,6 +115,7 @@ class _$AdminOutcomePreviewAnswerDtoOutput
     if (identical(other, this)) return true;
     return other is AdminOutcomePreviewAnswerDtoOutput &&
         status == other.status &&
+        provisional == other.provisional &&
         loss == other.loss &&
         dues == other.dues &&
         captainPay == other.captainPay &&
@@ -122,6 +126,7 @@ class _$AdminOutcomePreviewAnswerDtoOutput
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, status.hashCode);
+    _$hash = $jc(_$hash, provisional.hashCode);
     _$hash = $jc(_$hash, loss.hashCode);
     _$hash = $jc(_$hash, dues.hashCode);
     _$hash = $jc(_$hash, captainPay.hashCode);
@@ -134,6 +139,7 @@ class _$AdminOutcomePreviewAnswerDtoOutput
   String toString() {
     return (newBuiltValueToStringHelper(r'AdminOutcomePreviewAnswerDtoOutput')
           ..add('status', status)
+          ..add('provisional', provisional)
           ..add('loss', loss)
           ..add('dues', dues)
           ..add('captainPay', captainPay)
@@ -154,6 +160,10 @@ class AdminOutcomePreviewAnswerDtoOutputBuilder
   AdminOutcomePreviewAnswerDtoOutputStatusEnum? get status => _$this._status;
   set status(AdminOutcomePreviewAnswerDtoOutputStatusEnum? status) =>
       _$this._status = status;
+
+  bool? _provisional;
+  bool? get provisional => _$this._provisional;
+  set provisional(bool? provisional) => _$this._provisional = provisional;
 
   AdminOutcomePreviewAnswerDtoOutputLossBuilder? _loss;
   AdminOutcomePreviewAnswerDtoOutputLossBuilder get loss =>
@@ -191,6 +201,7 @@ class AdminOutcomePreviewAnswerDtoOutputBuilder
     final $v = _$v;
     if ($v != null) {
       _status = $v.status;
+      _provisional = $v.provisional;
       _loss = $v.loss.toBuilder();
       _dues = $v.dues?.toBuilder();
       _captainPay = $v.captainPay.toBuilder();
@@ -225,6 +236,11 @@ class AdminOutcomePreviewAnswerDtoOutputBuilder
               status,
               r'AdminOutcomePreviewAnswerDtoOutput',
               'status',
+            ),
+            provisional: BuiltValueNullFieldError.checkNotNull(
+              provisional,
+              r'AdminOutcomePreviewAnswerDtoOutput',
+              'provisional',
             ),
             loss: loss.build(),
             dues: _dues?.build(),

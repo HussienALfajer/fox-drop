@@ -41,19 +41,20 @@ describe('partiesFor', () => {
 
 describe('the outcome body', () => {
   it('waits for an outcome and a fitting party, then the note', () => {
-    expect(outcomePreviewBody(emptyOutcome)).toBeNull();
+    expect(outcomePreviewBody(emptyOutcome, 'TRY')).toBeNull();
     expect(
-      outcomePreviewBody({ ...emptyOutcome, outcome: 'fake', responsible: 'platform' }),
+      outcomePreviewBody({ ...emptyOutcome, outcome: 'fake', responsible: 'platform' }, 'TRY'),
     ).toBeNull();
     const fake = { ...emptyOutcome, outcome: 'fake' as const, responsible: 'customer' as const };
-    expect(outcomePreviewBody(fake)).toEqual({
+    expect(outcomePreviewBody(fake, 'TRY')).toEqual({
       outcome: 'fake',
       responsible: 'customer',
       delivered: false,
       food: 'kept_by_captain',
+      amountToCollect: '0',
     });
-    expect(outcomeBody(fake, 7)).toBeNull();
-    expect(outcomeBody({ ...fake, reason: ' اتصلنا ' }, 7)).toMatchObject({
+    expect(outcomeBody(fake, 7, 'TRY')).toBeNull();
+    expect(outcomeBody({ ...fake, reason: ' اتصلنا ' }, 7, 'TRY')).toMatchObject({
       reason: 'اتصلنا',
       version: 7,
     });
@@ -61,21 +62,34 @@ describe('the outcome body', () => {
 
   it('delivers free, and damaged when asked, without a food', () => {
     expect(
-      outcomePreviewBody({ ...emptyOutcome, outcome: 'free', responsible: 'platform' }),
+      outcomePreviewBody({ ...emptyOutcome, outcome: 'free', responsible: 'platform' }, 'TRY'),
     ).toMatchObject({ delivered: true, food: null });
     const damaged = {
       ...emptyOutcome,
       outcome: 'damaged' as const,
       responsible: 'captain' as const,
     };
-    expect(outcomePreviewBody(damaged)).toMatchObject({
+    expect(outcomePreviewBody(damaged, 'TRY')).toMatchObject({
       delivered: false,
       food: 'kept_by_captain',
     });
-    expect(outcomePreviewBody({ ...damaged, damagedDelivered: true })).toMatchObject({
+    expect(outcomePreviewBody({ ...damaged, damagedDelivered: true }, 'TRY')).toMatchObject({
       delivered: true,
       food: null,
     });
+  });
+
+  it('keeps an amount to collect on a delivered order only (K9)', () => {
+    const free = {
+      ...emptyOutcome,
+      outcome: 'free' as const,
+      responsible: 'platform' as const,
+      collect: '50',
+    };
+    expect(outcomePreviewBody(free, 'TRY')?.amountToCollect).toBe('5000');
+    expect(outcomePreviewBody({ ...free, collect: '5x' }, 'TRY')).toBeNull();
+    const failed = { ...free, outcome: 'failed_other' as const };
+    expect(outcomePreviewBody(failed, 'TRY')?.amountToCollect).toBe('0');
   });
 
   it('returns the food to the restaurant only when it is responsible (K10)', () => {
@@ -89,9 +103,9 @@ describe('the outcome body', () => {
       'kept_by_captain',
       'destroyed',
     ]);
-    expect(outcomePreviewBody(form)?.food).toBe('kept_by_captain');
+    expect(outcomePreviewBody(form, 'TRY')?.food).toBe('kept_by_captain');
     expect(foodsFor({ ...form, responsible: 'restaurant' }, choices)).toHaveLength(3);
-    expect(outcomePreviewBody({ ...form, responsible: 'restaurant' })?.food).toBe(
+    expect(outcomePreviewBody({ ...form, responsible: 'restaurant' }, 'TRY')?.food).toBe(
       'returned_to_restaurant',
     );
   });
@@ -116,6 +130,7 @@ describe('outcomeLines', () => {
     loss: money('34000'),
     dues: money('38000'),
     captainPay: money('3500'),
+    provisional: false,
     entries: [
       entry('merchant.commission', 'merchant.account', '6000', 'merchant', 'مطعم السعادة'),
       entry('merchant.commission', 'platform.order_clearing', '-6000', 'platform'),
@@ -153,6 +168,60 @@ describe('outcomeLines', () => {
     expect(lines.slice(1)).toEqual([
       { key: 'captainCharge', name: 'أحمد', amount: money('34000'), reason: 'تالف' },
       { key: 'platformCostReturned', amount: money('1000') },
+    ]);
+  });
+
+  it('says what is collected, the custody left, the pay it offsets and the revenue (K9)', () => {
+    const lines = outcomeLines(
+      {
+        ...fake,
+        status: 'delivered',
+        provisional: true,
+        entries: [
+          entry('custody.collect', 'captain.custody', '5000', 'captain', 'أحمد'),
+          entry('custody.collect', 'platform.order_clearing', '-5000', 'platform'),
+          entry('merchant.debit', 'merchant.account', '40000', 'merchant', 'مطعم السعادة'),
+          entry('merchant.debit', 'platform.order_clearing', '-40000', 'platform'),
+          entry('earn.order_pay', 'captain.earnings', '-3500', 'captain', 'أحمد'),
+          entry('earn.order_pay', 'platform.operating_cost', '3500', 'platform'),
+          entry(
+            'platform.operating_cost',
+            'platform.operating_cost',
+            '-3500',
+            'platform',
+            null,
+            'ما دفعه الزبون يغطّي أجر الكابتن',
+          ),
+          entry(
+            'platform.operating_cost',
+            'platform.order_clearing',
+            '3500',
+            'platform',
+            null,
+            'ما دفعه الزبون يغطّي أجر الكابتن',
+          ),
+          entry('platform.revenue_delivery', 'platform.order_clearing', '1500', 'platform'),
+          entry('platform.revenue_delivery', 'platform.revenue_delivery', '-1500', 'platform'),
+        ],
+      },
+      pickup,
+    );
+    expect(lines).toEqual([
+      { key: 'collect', name: 'أحمد', amount: money('5000') },
+      { key: 'custodyReimbursed', name: 'أحمد', amount: money('35000') },
+      { key: 'merchantDebit', name: 'مطعم السعادة', amount: money('40000') },
+      { key: 'captainPay', name: 'أحمد', amount: money('3500'), by: 'cost' },
+      { key: 'payOffset', amount: money('3500'), test: false },
+      { key: 'deliveryRevenue', amount: money('1500') },
+    ]);
+    expect(
+      outcomeLines(
+        { ...fake, entries: [entry('custody.collect', 'captain.custody', '42000', 'captain')] },
+        pickup,
+      ).slice(0, 2),
+    ).toEqual([
+      { key: 'collect', name: 'أحمد', amount: money('42000') },
+      { key: 'custodyHandIn', name: 'أحمد', amount: money('2000') },
     ]);
   });
 

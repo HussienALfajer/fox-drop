@@ -37,7 +37,7 @@ import {
   planEdit,
 } from './order-edits.js';
 import { lockOrder, type OrderEventType, recordTransition } from './order-events.js';
-import { captainPay } from './captain-pay.js';
+import { pendingOutcome, postOrderJournals, readOutcomeFacts } from './outcome-facts.js';
 import {
   type OutcomeChoices,
   type OutcomeEntry,
@@ -662,14 +662,17 @@ export class OrderCommands {
   // AP §9.3.2 «تحديد النتيجة», AP §8.9, docs/domain/08, 09 (slice 2.11a):
   // operations end a picked-up or arrived order with an outcome other than
   // normal, the responsible party, whether a damaged order was delivered and,
-  // for a failed order, where the food went (CA §9.12), with their note.
-  // Nothing is collected (2.11b adds the amount to collect, K9). In one
-  // transaction: the order failed or delivered with its outcome (track done,
-  // so the captain is free at once), the outcome's row with the customer's
-  // text copied from Content's failed_outcome list, the journals of
-  // outcomeEntries (a fake order's dues.charge, which blocks the customer at
-  // checkout until the dues are paid) and the audit. 400 invalid_outcome;
-  // 409 dues_rule_unset, captain_pay_unset, order_state_changed.
+  // for a failed order, where the food went (CA §9.12), with their note. In
+  // one transaction: the order failed or delivered with its outcome (track
+  // done, so the captain is free at once), the outcome's row with the
+  // customer's text copied from Content's failed_outcome list, the journals
+  // of outcomeEntries (a fake order's dues.charge, which blocks the customer
+  // at checkout until the dues are paid) and the audit. With an amount to
+  // collect (slice 2.11b, K9) only the row is written: the order stays picked
+  // up or arrived «بانتظار تسجيل التحصيل», the captain busy, and the outcome
+  // is posted when the payment is recorded (CaptainOrders.collectOutcome).
+  // 400 invalid_outcome; 409 dues_rule_unset, captain_pay_unset,
+  // order_state_changed (an outcome already waiting too).
   async setOutcome(
     command: AdminOrderCommand & OutcomeChoices & { version: number },
     now: Date,
@@ -686,19 +689,24 @@ export class OrderCommands {
         // AP §8.9: the outcome posts the entries the dialog previewed on the
         // order as it showed it; any change since is order_state_changed.
         if (read.version !== command.version) throw await this.stateChanged(order);
+        if (await pendingOutcome(this.database.db, order)) throw await this.stateChanged(order);
         const result = this.outcome(read.facts, choices);
         const customerText =
           result.status === 'failed'
             ? await this.content.customerText('failed_outcome', choices.outcome)
             : null;
+        const waits = choices.amountToCollect > 0n;
         return {
-          set: {
-            outcome: choices.outcome,
-            captainTrack: 'done',
-            ...(result.status === 'delivered' ? { deliveredAt: now } : {}),
-          },
-          to: result.status,
-          publicReason: choices.outcome,
+          set: waits
+            ? {}
+            : {
+                outcome: choices.outcome,
+                captainTrack: 'done',
+                ...(result.status === 'delivered' ? { deliveredAt: now } : {}),
+              },
+          ...(waits ? {} : { to: result.status }),
+          // RA §16 #19: the restaurant learns the outcome once it is posted.
+          ...(waits ? {} : { publicReason: choices.outcome }),
           // The entries were worked out from the order before the lock; an
           // edit since moved its version.
           guard: async (tx) =>
@@ -713,7 +721,7 @@ export class OrderCommands {
               status: result.status,
               food: choices.food,
               currency: read.facts.currency,
-              amountToCollect: 0n,
+              amountToCollect: choices.amountToCollect,
               loss: result.loss,
               dues: result.dues,
               merchantDebit: result.merchantDebit,
@@ -723,11 +731,12 @@ export class OrderCommands {
               setAt: now,
               setBy: actor.id,
             });
-            await this.postJournals(tx, order, actor, result.journals);
+            if (!waits) await this.postJournals(tx, order, actor, result.journals);
           },
           audit: {
             before: {},
             after: {
+              amountToCollect: choices.amountToCollect.toString(),
               loss: result.loss.toString(),
               dues: result.dues?.toString() ?? null,
               captainPay: result.captainPay.toString(),
@@ -740,12 +749,38 @@ export class OrderCommands {
 
   // AP §8.9 «Preview»: what «تحديد النتيجة» with these choices would book,
   // every entry with its amount, account and party's name, for the dialog;
-  // it writes nothing.
+  // it writes nothing. With an amount to collect it is provisional until the
+  // collection (AP §9.3.2): it shows the captain collecting the whole amount
+  // in the base currency, which the collection's own lines replace.
   async previewOutcome(orderId: string, given: OutcomeChoices, now: Date): Promise<OutcomePreview> {
     const order = await this.find(orderId, {});
     if (!AFTER_PICKUP.includes(order.status)) throw await this.stateChanged(order);
     const { facts } = await this.outcomeFacts(order, now);
-    const result = this.outcome(facts, outcomeChoicesOf(given));
+    const choices = outcomeChoicesOf(given);
+    const result = this.outcome(facts, choices);
+    const collect: OutcomeJournal[] =
+      choices.amountToCollect > 0n
+        ? [
+            {
+              type: 'custody.collect',
+              reason: null,
+              entries: [
+                {
+                  account: 'captain.custody',
+                  party: { kind: 'captain', id: facts.captainId },
+                  amount: choices.amountToCollect,
+                  currency: facts.currency,
+                },
+                {
+                  account: 'platform.order_clearing',
+                  party: { kind: 'platform', id: null },
+                  amount: -choices.amountToCollect,
+                  currency: facts.currency,
+                },
+              ],
+            },
+          ]
+        : [];
     const [names, captain, customers] = await Promise.all([
       this.merchants.names([facts.restaurantId]),
       this.captains.captain(facts.captainId, now),
@@ -765,7 +800,8 @@ export class OrderCommands {
       dues: result.dues,
       captainPay: result.captainPay,
       currency: facts.currency,
-      entries: result.journals.flatMap((journal) =>
+      provisional: choices.amountToCollect > 0n,
+      entries: [...collect, ...result.journals].flatMap((journal) =>
         journal.entries.map((entry) => ({
           type: journal.type,
           reason: journal.reason,
@@ -792,66 +828,9 @@ export class OrderCommands {
     return result;
   }
 
-  // What the outcome's entries depend on, read before the transaction: the
-  // order, what the pickup paid and its edits since booked (frozenAtPickup),
-  // the captain's pay (slow reads) and the dues rule; and the version they
-  // were read at, which the transaction compares under the lock.
-  private async outcomeFacts(
-    order: OrderAtStart,
-    now: Date,
-  ): Promise<{ facts: OutcomeFacts; version: number }> {
-    const [row] = await this.database.db
-      .select({
-        version: orders.version,
-        captainId: orders.captainId,
-        customerAccountId: orders.customerAccountId,
-        currency: orders.currency,
-        testOrder: orders.testOrder,
-        itemsValue: orders.itemsValue,
-        deliveryFee: orders.deliveryFee,
-        discount: orders.discount,
-      })
-      .from(orders)
-      .where(orderKey(order.id, order.placedAt));
-    if (!row) throw new Error(`order ${order.id} not found`);
-    if (row.captainId === null) throw new Error(`order ${order.id} has no captain`);
-    const frozen = await frozenAtPickup(this.database.db, { ...order, ...row });
-    const [{ pay, commissionBp }, rule, fixed] = await Promise.all([
-      captainPay(this.database.db, this.captains, order, row.captainId, now),
-      this.settings.get('customer.fake_order_dues_rule', { cityId: order.cityId }),
-      this.settings.get('customer.fake_order_dues_fixed', { cityId: order.cityId }),
-    ]);
-    return {
-      version: row.version,
-      facts: {
-        restaurantId: order.restaurantId,
-        captainId: row.captainId,
-        customerAccountId: row.customerAccountId,
-        currency: row.currency,
-        testOrder: row.testOrder,
-        commissionBp,
-        itemsValue: row.itemsValue,
-        deliveryFee: row.deliveryFee,
-        discount: row.discount,
-        pickup: {
-          itemsValue: frozen.itemsValue,
-          restaurantCharge: frozen.restaurantCharge,
-          restaurantCommissionCut: frozen.restaurantCommissionCut,
-          captainCharge: frozen.captainCharge,
-          platformCharge: frozen.platformCharge,
-          feeCuts: frozen.feeCuts,
-        },
-        pay: pay && { orderPay: pay.orderPay, waiting: pay.waiting },
-        duesRule: {
-          kind: rule,
-          // A fixed amount in another currency than the order's is unset.
-          fixed:
-            fixed !== null && (fixed.currency ?? row.currency) === row.currency
-              ? BigInt(fixed.amountMinor)
-              : null,
-        },
-      },
-    };
+  // What the outcome's entries depend on (outcome-facts.ts).
+  private outcomeFacts(order: OrderAtStart, now: Date) {
+    return readOutcomeFacts(this.database.db, this.captains, this.settings, order, now);
   }
 
   // AP §9.3.2 «إلغاء الطلب» (slice 2.8c): the reasons the panel's dialog
@@ -1724,38 +1703,13 @@ export class OrderCommands {
 
   // The journals of an order's change, posted in its transaction, all with
   // the order as their source (E3).
-  private async postJournals(
+  private postJournals(
     tx: Tx,
     order: { id: string; cityId: string },
     actor: { type: 'admin'; id: string },
     journals: (AfterPickupJournal | OutcomeJournal)[],
   ): Promise<void> {
-    for (const journal of journals) {
-      const entries = [];
-      for (const entry of journal.entries) {
-        const accountId = await this.ledger.openAccount(
-          {
-            cityId: order.cityId,
-            purpose: entry.account,
-            ownerId: entry.party.id,
-            currency: entry.currency,
-          },
-          tx,
-        );
-        entries.push({ accountId, currency: entry.currency, amount: entry.amount });
-      }
-      await this.ledger.post(
-        {
-          cityId: order.cityId,
-          type: journal.type,
-          source: { kind: 'order', id: order.id },
-          actor,
-          reason: journal.reason,
-          entries,
-        },
-        tx,
-      );
-    }
+    return postOrderJournals(tx, this.ledger, order, actor, journals);
   }
 
   // AP §9.3.3: what the edit dialog offers: the items customers can order
@@ -1899,6 +1853,10 @@ export class OrderCommands {
     // (picked up under the dialog, say) is order_state_changed first.
     if (version !== undefined && row.version !== version) throw await this.stateChanged(order);
     const afterPickup = AFTER_PICKUP.includes(row.status);
+    // K9 (slice 2.11b): the outcome decided what the customer still pays.
+    if (afterPickup && (await pendingOutcome(this.database.db, order))) {
+      throw await this.stateChanged(order);
+    }
     // AP §9.3.3: after the pickup an edit names who bears it; before, none.
     // The preview may come before the dialog's party is chosen.
     if (afterPickup ? request.responsible === null && !preview : request.responsible !== null) {
@@ -2378,6 +2336,8 @@ export interface OutcomePreview {
   dues: bigint | null;
   captainPay: bigint;
   currency: string;
+  // An amount to collect: the entries wait for the collection (AP §9.3.2).
+  provisional: boolean;
   entries: (OutcomeEntry & {
     type: OutcomeJournal['type'];
     reason: string | null;
@@ -2391,6 +2351,7 @@ function outcomeChoicesOf(given: OutcomeChoices): OutcomeChoices {
     responsible: given.responsible,
     delivered: given.delivered,
     food: given.food,
+    amountToCollect: given.amountToCollect,
   };
 }
 

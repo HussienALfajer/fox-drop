@@ -51,11 +51,15 @@ export interface OrderPushFacts {
   // AP §8.9 «تحديد النتيجة» (slice 2.11a): the outcome's label (AP Appendix
   // C), the status it ended in, the customer's text of a failed order and
   // what the restaurant returns when it is responsible.
+  // With an amount to collect (slice 2.11b, K9), the amount, and whether it
+  // still waits for the payment.
   outcome: {
     label: string;
     status: 'delivered' | 'failed';
     customerText: string | null;
     merchantDebit: string | null;
+    amountToCollect: string | null;
+    awaitingCollection: boolean;
   } | null;
 }
 
@@ -115,6 +119,33 @@ export function orderPushes(
           },
         ];
   const captainName = facts.captainFirstName ?? '';
+  // AP §8.9: the pushes of an outcome posted: the customer's, the owners'
+  // and, unless the captain recorded its payment, the captain's.
+  const outcomePushes = (
+    outcome: NonNullable<OrderPushFacts['outcome']>,
+    withCaptain: boolean,
+  ): OrderPush[] => {
+    const failed = outcome.status === 'failed';
+    const debit = outcome.merchantDebit;
+    return [
+      failed
+        ? customer('customer.failed', { السبب: outcome.customerText ?? '' })
+        : customer('customer.delivered'),
+      ...(failed
+        ? [
+            debit === null
+              ? owners('merchant.order_failed', { النتيجة: outcome.label })
+              : owners('merchant.order_failed_debited', {
+                  النتيجة: outcome.label,
+                  المبلغ: debit,
+                }),
+          ]
+        : debit === null
+          ? []
+          : [owners('merchant.outcome_debited', { النتيجة: outcome.label, المبلغ: debit })]),
+      ...(withCaptain ? captain('captain.outcome_set', { النتيجة: outcome.label }) : []),
+    ];
+  };
 
   switch (type) {
     case 'order.placed':
@@ -225,26 +256,21 @@ export function orderPushes(
       // §16 #19); the captain's «أنهت العمليات الطلب: {النتيجة}.» (CA §9.10).
       const outcome = facts.outcome;
       if (outcome === null) return [];
-      const failed = outcome.status === 'failed';
-      const debit = outcome.merchantDebit;
-      return [
-        failed
-          ? customer('customer.failed', { السبب: outcome.customerText ?? '' })
-          : customer('customer.delivered'),
-        ...(failed
-          ? [
-              debit === null
-                ? owners('merchant.order_failed', { النتيجة: outcome.label })
-                : owners('merchant.order_failed_debited', {
-                    النتيجة: outcome.label,
-                    المبلغ: debit,
-                  }),
-            ]
-          : debit === null
-            ? []
-            : [owners('merchant.outcome_debited', { النتيجة: outcome.label, المبلغ: debit })]),
-        ...captain('captain.outcome_set', { النتيجة: outcome.label }),
-      ];
+      // K9: only the captain hears it now, with the amount; the others when
+      // the payment is recorded (order.outcome_collected).
+      if (outcome.awaitingCollection) {
+        return captain('captain.outcome_collect', {
+          النتيجة: outcome.label,
+          المبلغ: outcome.amountToCollect ?? '',
+        });
+      }
+      return outcomePushes(outcome, true);
+    }
+    case 'order.outcome_collected': {
+      // K9 (slice 2.11b): the outcome posted from the payment recorded; the
+      // captain hears it only when operations recorded it.
+      const outcome = facts.outcome;
+      return outcome === null ? [] : outcomePushes(outcome, facts.actor === 'admin');
     }
     case 'order.item_reported':
       // CU §11.6, §14 #10: FOX DROP will call the customer.

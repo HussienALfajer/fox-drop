@@ -3,6 +3,7 @@ import { keepPreviousData, queryOptions, useMutation, useQueryClient } from '@ta
 import { useRef } from 'react';
 import { api } from './api.js';
 import { OPERATIONS_MANAGE } from './assign-captain.js';
+import { minorOf } from './format.js';
 import type { OrderDetail } from './order-detail.js';
 import { type AdminSession, can } from './session.js';
 
@@ -38,6 +39,9 @@ export interface OutcomeForm {
   // A damaged order: «سُلّم بتخفيض» rather than failed.
   damagedDelivered: boolean;
   food: Food;
+  // K9 (slice 2.11b): what the customer still pays, typed in the base
+  // currency's major units; empty is nothing, offered on a delivered order.
+  collect: string;
   // Operations' note, required (AP §9.3.2), never shown to the apps.
   reason: string;
 }
@@ -47,6 +51,7 @@ export const emptyOutcome: OutcomeForm = {
   responsible: null,
   damagedDelivered: false,
   food: 'kept_by_captain',
+  collect: '',
   reason: '',
 };
 
@@ -69,11 +74,21 @@ export function foodsFor(form: OutcomeForm, choices: OutcomeChoices) {
   );
 }
 
+// K9: the amount to collect in minor units, '0' when none is typed or the
+// order failed, null when what is typed is not an amount (the server checks
+// it stays below the order total).
+export function amountToCollectOf(form: OutcomeForm, currency: string): string | null {
+  if (!deliveredFor(form) || form.collect.trim() === '') return '0';
+  return minorOf(form.collect, currency);
+}
+
 // The choices once an outcome and a fitting party are chosen; a food that no
 // longer fits falls back to «يبقى مع الكابتن», the default.
-export function outcomePreviewBody(form: OutcomeForm): PreviewBody | null {
+export function outcomePreviewBody(form: OutcomeForm, currency: string): PreviewBody | null {
   if (form.outcome === null || form.responsible === null) return null;
   if (!partiesFor(form.outcome).includes(form.responsible)) return null;
+  const amountToCollect = amountToCollectOf(form, currency);
+  if (amountToCollect === null) return null;
   const delivered = deliveredFor(form);
   const food =
     form.food === 'returned_to_restaurant' && form.responsible !== 'restaurant'
@@ -84,14 +99,19 @@ export function outcomePreviewBody(form: OutcomeForm): PreviewBody | null {
     responsible: form.responsible,
     delivered,
     food: delivered ? null : food,
+    amountToCollect,
   };
 }
 
 // The body of a complete form, or null while a step is missing, with the
 // order's version the preview was asked on (AP §8.9: the entries posted are
 // the ones shown).
-export function outcomeBody(form: OutcomeForm, version: number): OutcomeBody | null {
-  const choices = outcomePreviewBody(form);
+export function outcomeBody(
+  form: OutcomeForm,
+  version: number,
+  currency: string,
+): OutcomeBody | null {
+  const choices = outcomePreviewBody(form, currency);
   const reason = form.reason.trim();
   return choices === null || reason === '' ? null : { ...choices, version, reason };
 }
@@ -186,8 +206,17 @@ type Money = { amount: string; currency: string };
 // (عهدة) ويُقيَّد له أجر … (مستحقات). تُسجَّل عمولة … على المطعم. سيُحظر الزبون
 // حتى دفع ….»), as a translation key and its values.
 export type OutcomeLine =
+  // K9: what the captain collects from the customer (into the custody).
+  | { key: 'collect'; name: string | null; amount: Money }
   // The desk pays the captain back what the pickup took from the custody.
   | { key: 'custodyReimbursed'; name: string | null; amount: Money }
+  // Collected beyond the pickup payment: the captain hands it in.
+  | { key: 'custodyHandIn'; name: string | null; amount: Money }
+  // Collected beyond what the outcome's costs take: the platform's revenue.
+  | { key: 'deliveryRevenue'; amount: Money }
+  // With the restaurant responsible, what was collected lowers the pay the
+  // platform bears.
+  | { key: 'payOffset'; amount: Money; test: boolean }
   | { key: 'commission'; name: string | null; amount: Money }
   | { key: 'commissionRestored'; name: string | null; amount: Money }
   | { key: 'merchantDebit'; name: string | null; amount: Money }
@@ -204,6 +233,10 @@ export type OutcomeLine =
 
 type Entry = OutcomePreview['entries'][number];
 
+// The server's reason on the journal that lowers the platform's cost of the
+// captain's pay by what was collected (outcome.ts PAY_OFFSET_REASON).
+const PAY_OFFSET_REASON = 'ما دفعه الزبون يغطّي أجر الكابتن';
+
 const isCredit = (entry: Entry) => entry.amount.amount.startsWith('-');
 const size = (entry: Entry): Money => ({
   ...entry.amount,
@@ -214,20 +247,30 @@ const size = (entry: Entry): Money => ({
 // each naming an entry only when its sign is the sentence's; anything else
 // is `unknown`. The order clearing account only carries each journal and
 // nets to zero, so it is left out, as is the commission's revenue side.
-// It first says what the desk pays the captain back: the pickup payment,
-// which nothing collected offsets (AP §8.9 rule 1).
+// It first says what the captain collects (K9) and what that leaves on the
+// custody against the pickup payment (AP §8.9 rule 1): the desk pays back
+// what the collection does not cover, or the captain hands in the rest.
 export function outcomeLines(
   preview: OutcomePreview,
   pickup: { captainName: string | null; payment: Money },
 ): OutcomeLine[] {
   const lines: OutcomeLine[] = [];
-  // Rule 1: whatever the outcome, nothing collected leaves the custody short
-  // by the pickup payment until the desk pays it back.
-  lines.push({ key: 'custodyReimbursed', name: pickup.captainName, amount: pickup.payment });
+  const custody = preview.entries.filter((entry) => entry.type === 'custody.collect');
+  const collected = custody.find((entry) => entry.account === 'captain.custody');
+  const collectedMinor = BigInt(collected?.amount.amount ?? '0');
+  if (collected && collectedMinor > 0n) {
+    lines.push({ key: 'collect', name: pickup.captainName, amount: collected.amount });
+  }
+  const gap = collectedMinor - BigInt(pickup.payment.amount);
+  const gapMoney = { ...pickup.payment, amount: (gap < 0n ? -gap : gap).toString() };
+  if (gap < 0n)
+    lines.push({ key: 'custodyReimbursed', name: pickup.captainName, amount: gapMoney });
+  if (gap > 0n) lines.push({ key: 'custodyHandIn', name: pickup.captainName, amount: gapMoney });
   const journals = new Map<string, Entry[]>();
   // One journal per type and reason: a fee cut given back and the
   // captain's charge are two earn.charge journals.
   for (const entry of preview.entries) {
+    if (entry.type === 'custody.collect') continue;
     const key = JSON.stringify([entry.type, entry.reason]);
     journals.set(key, [...(journals.get(key) ?? []), entry]);
   }
@@ -303,9 +346,16 @@ function journalLine(type: string, entries: Entry[]): OutcomeLine | null {
     case 'platform.test_cost': {
       const cost = on(type);
       if (cost.length !== 1) return null;
+      if (isCredit(cost[0]!) && cost[0]!.reason === PAY_OFFSET_REASON) {
+        return { key: 'payOffset', amount: size(cost[0]!), test: type === 'platform.test_cost' };
+      }
       return isCredit(cost[0]!)
         ? { key: 'platformCostReturned', amount: size(cost[0]!) }
         : { key: 'platformCost', amount: size(cost[0]!), test: type === 'platform.test_cost' };
+    }
+    case 'platform.revenue_delivery': {
+      const revenue = one('platform.revenue_delivery', true);
+      return revenue && { key: 'deliveryRevenue', amount: size(revenue) };
     }
     default:
       return null;

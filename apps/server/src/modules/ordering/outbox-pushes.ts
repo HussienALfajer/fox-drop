@@ -270,7 +270,10 @@ export class OutboxPushes {
         type === 'order.edited'
           ? await this.merchantDebit(order, new Date(payload.at), currencies)
           : null,
-      outcome: type === 'order.outcome_set' ? await this.outcome(order, currencies) : null,
+      outcome:
+        type === 'order.outcome_set' || type === 'order.outcome_collected'
+          ? await this.outcome(order, currencies, type === 'order.outcome_set')
+          : null,
     };
   }
 
@@ -297,13 +300,22 @@ export class OutboxPushes {
 
   // AP §8.9 (slice 2.11a): the order's outcome, its label, the customer's
   // text of a failed order and what the restaurant returns.
-  private async outcome(order: typeof orders.$inferSelect, currencies: Currencies) {
+  // With an amount to collect (slice 2.11b), order.outcome_set tells only the
+  // captain to collect, unless the payment was recorded since (then the
+  // collection's own event tells the rest).
+  private async outcome(
+    order: typeof orders.$inferSelect,
+    currencies: Currencies,
+    setNow: boolean,
+  ) {
     const [row] = await this.database.db
       .select({
         outcome: orderOutcomeRows.outcome,
         status: orderOutcomeRows.status,
         customerText: orderOutcomeRows.customerText,
         merchantDebit: orderOutcomeRows.merchantDebit,
+        amountToCollect: orderOutcomeRows.amountToCollect,
+        collectedAt: orderOutcomeRows.collectedAt,
         currency: orderOutcomeRows.currency,
       })
       .from(orderOutcomeRows)
@@ -322,6 +334,11 @@ export class OutboxPushes {
         row.merchantDebit === null
           ? null
           : formatMoney(row.merchantDebit, row.currency, currencies),
+      amountToCollect:
+        row.amountToCollect > 0n
+          ? formatMoney(row.amountToCollect, row.currency, currencies)
+          : null,
+      awaitingCollection: setNow && row.amountToCollect > 0n && row.collectedAt === null,
     };
   }
 

@@ -6,6 +6,12 @@ import 'door_payment.dart';
 import 'location.dart';
 import 'work.dart';
 
+/// AP Appendix C: the labels of the outcomes that keep an amount to collect.
+String collectOutcomeText(AppLocalizations l10n, CollectOutcome outcome) =>
+    outcome == CollectOutcome.damaged
+    ? l10n.captainOutcomeDamaged
+    : l10n.captainOutcomeFree;
+
 /// AP Appendix C: the outcomes' labels.
 String outcomeText(AppLocalizations l10n, EndedOutcome outcome) =>
     switch (outcome) {
@@ -137,6 +143,10 @@ extension CaptainTexts on AppLocalizations {
     OrderCancelled(:final cancelled) => captainTaskCancelled(cancelled.reason),
     OutcomeSet(:final ended) => captainOutcomeSet(
       outcomeText(this, ended.outcome),
+    ),
+    OutcomeToCollect(:final outcome, :final amount) => captainOutcomeCollect(
+      collectOutcomeText(this, outcome),
+      moneyOf(amount),
     ),
     OrderEdited(:final pay, :final collect) => captainOrderEdited(
       moneyOf(pay),

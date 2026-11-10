@@ -24,6 +24,7 @@ const card = {
     note: false,
     newCustomer: true,
     pickupPending: false,
+    awaitingCollection: false,
     itemReport: false,
   },
   moments: {

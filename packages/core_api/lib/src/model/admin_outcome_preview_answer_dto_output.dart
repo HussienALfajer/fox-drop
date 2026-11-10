@@ -17,6 +17,7 @@ part 'admin_outcome_preview_answer_dto_output.g.dart';
 ///
 /// Properties:
 /// * [status]
+/// * [provisional] - With an amount to collect: the entries are posted from the payment recorded (AP §9.3.2), the custody line as the collection books it.
 /// * [loss]
 /// * [dues]
 /// * [captainPay]
@@ -31,6 +32,10 @@ abstract class AdminOutcomePreviewAnswerDtoOutput
   @BuiltValueField(wireName: r'status')
   AdminOutcomePreviewAnswerDtoOutputStatusEnum get status;
   // enum statusEnum {  delivered,  failed,  };
+
+  /// With an amount to collect: the entries are posted from the payment recorded (AP §9.3.2), the custody line as the collection books it.
+  @BuiltValueField(wireName: r'provisional')
+  bool get provisional;
 
   @BuiltValueField(wireName: r'loss')
   AdminOutcomePreviewAnswerDtoOutputLoss get loss;
@@ -81,6 +86,11 @@ class _$AdminOutcomePreviewAnswerDtoOutputSerializer
       specifiedType: const FullType(
         AdminOutcomePreviewAnswerDtoOutputStatusEnum,
       ),
+    );
+    yield r'provisional';
+    yield serializers.serialize(
+      object.provisional,
+      specifiedType: const FullType(bool),
     );
     yield r'loss';
     yield serializers.serialize(
@@ -147,6 +157,15 @@ class _$AdminOutcomePreviewAnswerDtoOutputSerializer
                   )
                   as AdminOutcomePreviewAnswerDtoOutputStatusEnum;
           result.status = valueDes;
+          break;
+        case r'provisional':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.provisional = valueDes;
           break;
         case r'loss':
           final valueDes =

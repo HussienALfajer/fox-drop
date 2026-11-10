@@ -177,6 +177,8 @@ const captain: Entry[] = [
   // CA §9.10 «Outcome set by OPS» with nothing to collect: its text without
   // «اقبض {المبلغ}» (slice 2.11a).
   ['outcome_set', '10', 'أنهت العمليات الطلب: {النتيجة}.', 'chime'],
+  // CA §9.10 «Outcome set by OPS with an amount to collect» (K9, slice 2.11b).
+  ['outcome_collect', '10', 'أنهت العمليات الطلب: {النتيجة}. اقبض {المبلغ}.', 'chime'],
   // CA §9.10.
   ['withdrawn', '11', 'سُحب منك الطلب: {السبب}', 'cancellation', true],
   ['cancelled', '11', 'أُلغيت المهمة: {السبب}', 'cancellation', true],

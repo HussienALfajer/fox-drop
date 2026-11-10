@@ -2164,6 +2164,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders/{orderId}/outcome-payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersCollectOutcome"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/shortfalls": {
         parameters: {
             query?: never;
@@ -2302,6 +2318,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["captainOrdersDeliver"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/orders/{orderId}/outcome-payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainOrdersCollectOutcome"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4553,6 +4585,8 @@ export interface components {
                         amount: string;
                         currency: string;
                     };
+                    /** @description The captain has yet to collect the amount (K9): the order is still on its way or at the door. */
+                    awaitingCollection: boolean;
                 } | null;
                 /** @description Once delivered; the order screen opens the rating sheet (CU §12.1). */
                 delivery: {
@@ -4729,6 +4763,8 @@ export interface components {
                         amount: string;
                         currency: string;
                     };
+                    /** @description The captain has yet to collect the amount (K9): the order is still on its way or at the door. */
+                    awaitingCollection: boolean;
                 } | null;
                 /** @description Once delivered; the order screen opens the rating sheet (CU §12.1). */
                 delivery: {
@@ -5389,6 +5425,8 @@ export interface components {
                     newCustomer: boolean;
                     /** @description «بانتظار تأكيد الاستلام» (AP §9.2.1). */
                     pickupPending: boolean;
+                    /** @description «بانتظار تسجيل التحصيل»: an outcome with an amount to collect waits for the payment (CA §9.10, K9). */
+                    awaitingCollection: boolean;
                     /** @description «صنف نفد»: an open item-unavailable report (RA §8.12). */
                     itemReport: boolean;
                 };
@@ -5643,6 +5681,11 @@ export interface components {
             delivered: boolean;
             /** @description A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible. */
             food: ("kept_by_captain" | "returned_to_restaurant" | "destroyed") | null;
+            /**
+             * @description What the customer still pays, in the base currency (K9): above 0 only on a delivered outcome and below the order total (owner decisions 2026-11-10), else 400 invalid_outcome. Above 0 the order waits «بانتظار تسجيل التحصيل» and the outcome is posted from the payment recorded.
+             * @default 0
+             */
+            amountToCollect: string;
             /** @description The order's version the dialog previewed (AP §8.9 «Preview»); any other is 409 order_state_changed. */
             version: number;
             /** @description Required (AP §9.3.2): the internal note, never shown to the apps. */
@@ -5660,10 +5703,17 @@ export interface components {
             delivered: boolean;
             /** @description A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible. */
             food: ("kept_by_captain" | "returned_to_restaurant" | "destroyed") | null;
+            /**
+             * @description What the customer still pays, in the base currency (K9): above 0 only on a delivered outcome and below the order total (owner decisions 2026-11-10), else 400 invalid_outcome. Above 0 the order waits «بانتظار تسجيل التحصيل» and the outcome is posted from the payment recorded.
+             * @default 0
+             */
+            amountToCollect: string;
         };
         AdminOutcomePreviewAnswerDto_Output: {
             /** @enum {string} */
             status: "delivered" | "failed";
+            /** @description With an amount to collect: the entries are posted from the payment recorded (AP §9.3.2), the custody line as the collection books it. */
+            provisional: boolean;
             /** @description docs/domain/09 rule 3: what the responsible party bears for the food. */
             loss: {
                 /** @description Integer minor units (AP §8.6). */
@@ -5822,6 +5872,8 @@ export interface components {
                     newCustomer: boolean;
                     /** @description «بانتظار تأكيد الاستلام» (AP §9.2.1). */
                     pickupPending: boolean;
+                    /** @description «بانتظار تسجيل التحصيل»: an outcome with an amount to collect waits for the payment (CA §9.10, K9). */
+                    awaitingCollection: boolean;
                     /** @description «صنف نفد»: an open item-unavailable report (RA §8.12). */
                     itemReport: boolean;
                 };
@@ -5892,6 +5944,8 @@ export interface components {
                     newCustomer: boolean;
                     /** @description «بانتظار تأكيد الاستلام» (AP §9.2.1). */
                     pickupPending: boolean;
+                    /** @description «بانتظار تسجيل التحصيل»: an outcome with an amount to collect waits for the payment (CA §9.10, K9). */
+                    awaitingCollection: boolean;
                     /** @description «صنف نفد»: an open item-unavailable report (RA §8.12). */
                     itemReport: boolean;
                 };
@@ -5969,6 +6023,9 @@ export interface components {
                 outcome: {
                     /** Format: date-time */
                     at: string;
+                    /** @description «بانتظار تسجيل التحصيل» (K9): the money below is provisional until the captain or operations record the payment. */
+                    awaitingCollection: boolean;
+                    collectedAt: string | null;
                     /**
                      * @description AP §8.9; fake needs the customer responsible, and only fake takes the customer.
                      * @enum {string}
@@ -6431,6 +6488,23 @@ export interface components {
                 itemReportOpen: boolean;
                 /** @description Operations added items and the restaurant has not pressed «اطلعت على التعديل» (RA §8.13): the screen shows «بانتظار تأكيد المطعم للتعديل» and the pickup request waits (409 edit_unacknowledged) (CA §9 step 2). */
                 editUnacknowledged: boolean;
+                /** @description Operations ended the order with an amount to collect (CA §9.10, K9): «أنهت العمليات الطلب: {النتيجة}. اقبض {المبلغ}.», the payment screen for this amount and the badge «بانتظار تسجيل التحصيل»; record it with POST .../outcome-payment. */
+                outcomeToCollect: {
+                    /** @enum {string} */
+                    outcome: "free" | "damaged";
+                    /** @description The amount due on the payment screen (CA §9.7). */
+                    amount: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
+                    /** @description The amount in the other accepted currencies, each by its rounding (CA §9.7). */
+                    equivalents: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    }[];
+                } | null;
                 itemCount: number;
                 /** @description The item check (C7): one tick box per line. */
                 lines: {
@@ -6659,6 +6733,23 @@ export interface components {
                 itemReportOpen: boolean;
                 /** @description Operations added items and the restaurant has not pressed «اطلعت على التعديل» (RA §8.13): the screen shows «بانتظار تأكيد المطعم للتعديل» and the pickup request waits (409 edit_unacknowledged) (CA §9 step 2). */
                 editUnacknowledged: boolean;
+                /** @description Operations ended the order with an amount to collect (CA §9.10, K9): «أنهت العمليات الطلب: {النتيجة}. اقبض {المبلغ}.», the payment screen for this amount and the badge «بانتظار تسجيل التحصيل»; record it with POST .../outcome-payment. */
+                outcomeToCollect: {
+                    /** @enum {string} */
+                    outcome: "free" | "damaged";
+                    /** @description The amount due on the payment screen (CA §9.7). */
+                    amount: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
+                    /** @description The amount in the other accepted currencies, each by its rounding (CA §9.7). */
+                    equivalents: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    }[];
+                } | null;
                 itemCount: number;
                 /** @description The item check (C7): one tick box per line. */
                 lines: {
@@ -6875,6 +6966,43 @@ export interface components {
                     currency: string;
                 };
             };
+        };
+        CaptainOutcomePaymentDto: {
+            /** @description What the customer paid, one line per currency. */
+            received: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            }[];
+            /** @description The change given back, one line per currency; a tip is recorded as given (K14). */
+            change: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            }[];
+            /** @description The amount due the screen showed; another one now answers 409 amount_due_changed. */
+            amountDue: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+            /** @description Needed when the net received is short beyond rounding: «الزبون لا يملك المبلغ كاملاً», «خطأ في العد», «أخرى». */
+            shortfall: {
+                /** @description The reason's code in its Content list. */
+                reason: string;
+                /** @description The text of a reason that needs one («أخرى»), and only of it. */
+                note: string | null;
+            } | null;
+            /** @description The latest fix, recorded with the command (CA §15); no radius applies, since the screen opens wherever the captain is. */
+            location: {
+                latitude: number;
+                longitude: number;
+                accuracyMetres: number;
+                /** Format: date-time */
+                recordedAt: string;
+                /** @description The device reports a mock location. */
+                simulated: boolean;
+            } | null;
         };
         CaptainPickupRequestDto: {
             /** @description The currency lines paid, the proposed ones or the own split. */
@@ -10625,6 +10753,35 @@ export interface operations {
             };
         };
     };
+    adminOrdersCollectOutcome: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRecordDeliveryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCardDto_Output"];
+                };
+            };
+        };
+    };
     adminOrdersShortfalls: {
         parameters: {
             query: {
@@ -10828,6 +10985,35 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["CaptainDeliverDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainDeliverySummaryDto_Output"];
+                };
+            };
+        };
+    };
+    captainOrdersCollectOutcome: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainOutcomePaymentDto"];
             };
         };
         responses: {

@@ -1528,3 +1528,240 @@ describe('POST /v1/admin/orders/{orderId}/outcome (AP §9.3.2, §8.9)', () => {
     expect((await sup.outcome(order.order.id, fake)).statusCode).toBe(403);
   });
 });
+
+const TRY = (amount: string) => [{ currency: 'TRY', amount }];
+
+// The payment of an outcome's amount to collect, by the captain (no fix) or
+// by operations with a reason.
+const outcomePayment = (
+  order: Awaited<ReturnType<typeof pickedUpOrder>>,
+  by: 'captain' | 'ops',
+  payment: { received: string; due?: string; shortfall?: object | null },
+) =>
+  app.inject({
+    method: 'POST',
+    url: `/v1/${by === 'captain' ? 'captain' : 'admin'}/orders/${order.order.id}/outcome-payment`,
+    ...(by === 'captain'
+      ? { headers: { ...order.captain.headers, 'idempotency-key': randomUUID() } }
+      : { cookies: order.ops.cookies, headers: { 'idempotency-key': randomUUID() } }),
+    payload: {
+      received: TRY(payment.received),
+      change: [],
+      amountDue: { amount: payment.due ?? payment.received, currency: 'TRY' },
+      shortfall: payment.shortfall ?? null,
+      ...(by === 'ops'
+        ? { reason: 'الكابتن بلا هاتف' }
+        : {
+            location: {
+              ...atCustomer,
+              accuracyMetres: 10,
+              recordedAt: new Date().toISOString(),
+              simulated: false,
+            },
+          }),
+    },
+  });
+
+// Slice 2.11b (K9). The order of pickedUpOrder: items 24000, fee 4000, total
+// 28000, commission 3600, merchant net 20400; the captain's pay 2500.
+describe('«تحديد النتيجة» with an amount to collect (AP §9.3.2, CA §9.10, K9)', () => {
+  const free = {
+    outcome: 'free',
+    responsible: 'platform',
+    delivered: true,
+    food: null,
+    amountToCollect: '5000',
+  };
+
+  it('waits for the captain to record 50, then posts the outcome from it', async () => {
+    const order = await pickedUpOrder();
+    const before = await balances(order.captain.captainId);
+    const preview = await order.ops.outcomePreview(order.order.id, free);
+    expect(preview.statusCode).toBe(200);
+    expect(preview.json()).toMatchObject({
+      status: 'delivered',
+      provisional: true,
+      loss: { amount: '15400' },
+      captainPay: { amount: '2500' },
+    });
+    expect(previewLines(preview.json().entries)).toEqual([
+      ['custody.collect', 'captain.custody', '5000'],
+      ['custody.collect', 'platform.order_clearing', '-5000'],
+      ['merchant.commission', 'merchant.account', '3600'],
+      ['merchant.commission', 'platform.order_clearing', '-3600'],
+      ['platform.operating_cost', 'platform.operating_cost', '15400'],
+      ['platform.operating_cost', 'platform.order_clearing', '-15400'],
+      ['earn.order_pay', 'captain.earnings', '-2500'],
+      ['earn.order_pay', 'platform.operating_cost', '2500'],
+    ]);
+    const set = await order.ops.outcome(order.order.id, free);
+    expect(set.statusCode).toBe(200);
+    expect(set.json().order).toMatchObject({ status: 'picked_up' });
+    expect(set.json().order.badges.awaitingCollection).toBe(true);
+    // Nothing is posted yet: the order waits «بانتظار تسجيل التحصيل».
+    expect(await orderRow(order.order.id)).toMatchObject({
+      status: 'picked_up',
+      outcome: null,
+      captain_track: 'picked_up',
+      delivered_at: null,
+    });
+    expect(await outcomeRow(order.order.id)).toMatchObject({
+      amount_to_collect: '5000',
+      collected_at: null,
+      status: 'delivered',
+    });
+    expect(moneyMoved(before, await balances(order.captain.captainId))).toMatchObject({
+      clearing: 0n,
+      restaurant: 0n,
+      operatingCost: 0n,
+      earnings: 0n,
+    });
+    expect(await outboxReason(order.order.id, 'order.outcome_set')).toBeNull();
+    // The captain: still busy, with the payment screen for 50.
+    const waiting = (await order.captain.active()).json();
+    expect(waiting.ended).toBeNull();
+    expect(waiting.order.outcomeToCollect).toEqual({
+      outcome: 'free',
+      amount: { amount: '5000', currency: 'TRY' },
+      equivalents: [],
+    });
+    // The customer: «المبلغ المطلوب الآن: 50».
+    const seen = await customerOrder(order.order.customer, order.order.id);
+    expect(seen.status).toBe('picked_up');
+    expect(seen.outcome).toMatchObject({
+      outcome: 'free',
+      amountToCollect: { amount: '5000', currency: 'TRY' },
+      awaitingCollection: true,
+    });
+    const detail = await order.ops.detail(order.order.id);
+    expect(detail.outcome).toMatchObject({ awaitingCollection: true, collectedAt: null });
+    expect(detail.outcomeChoices).toBeNull();
+    expect(detail.editChoices).toBeNull();
+    // While it waits: no other outcome, edit or delivery.
+    expect((await order.ops.outcome(order.order.id, free)).json().error).toBe(
+      'order_state_changed',
+    );
+    expect(
+      (await order.ops.edit(order.order.id, { ...oneShawarma, responsible: 'platform' })).json()
+        .error,
+    ).toBe('order_state_changed');
+    expect((await order.arriveAtCustomer()).statusCode).toBe(200);
+    const deliver = await order.deliver('28000');
+    expect(deliver.statusCode).toBe(409);
+    expect(deliver.json().error).toBe('order_state_changed');
+    // The amount the screen showed, then the payment.
+    const stale = await outcomePayment(order, 'captain', { received: '4000', due: '4000' });
+    expect(stale.statusCode).toBe(409);
+    expect(stale.json().error).toBe('amount_due_changed');
+    const paid = await outcomePayment(order, 'captain', { received: '5000' });
+    expect(paid.statusCode).toBe(200);
+    expect(paid.json().summary).toMatchObject({
+      pay: { total: '2500' },
+      custodyChange: { amount: '-19000', currency: 'TRY' },
+    });
+    expect(await orderRow(order.order.id)).toMatchObject({
+      status: 'delivered',
+      outcome: 'free',
+      captain_track: 'done',
+    });
+    const row = await outcomeRow(order.order.id);
+    expect(row).toMatchObject({ loss: '15400', captain_pay: '2500' });
+    expect(row.collected_at).not.toBeNull();
+    expect(row.captain_seen_at).not.toBeNull();
+    // The pickup's 24000 comes back to zero on the clearing account.
+    expect(moneyMoved(before, await balances(order.captain.captainId))).toMatchObject({
+      clearing: -24_000n,
+      restaurant: -3_600n,
+      operatingCost: 15_400n + 2_500n,
+      earnings: 2_500n,
+    });
+    expect(await outboxReason(order.order.id, 'order.outcome_collected')).toBe('free');
+    const after = await customerOrder(order.order.customer, order.order.id);
+    expect(after.status).toBe('delivered');
+    expect(after.outcome.awaitingCollection).toBe(false);
+    const done = (await order.captain.active()).json();
+    expect(done.order).toBeNull();
+    expect(done.ended).toBeNull();
+    // A second payment finds nothing waiting.
+    expect((await outcomePayment(order, 'captain', { received: '5000' })).statusCode).toBe(409);
+  });
+
+  it('lets operations record a short payment: the shortfall stays open, the pay offset', async () => {
+    const order = await pickedUpOrder();
+    const before = await balances(order.captain.captainId);
+    const damaged = { ...free, outcome: 'damaged', responsible: 'restaurant' };
+    expect((await order.ops.outcome(order.order.id, damaged)).statusCode).toBe(200);
+    const missing = await outcomePayment(order, 'ops', { received: '4000', due: '5000' });
+    expect(missing.statusCode).toBe(409);
+    expect(missing.json()).toMatchObject({
+      error: 'shortfall_reason_required',
+      shortfall: { amount: '1000', currency: 'TRY' },
+    });
+    const paid = await outcomePayment(order, 'ops', {
+      received: '4000',
+      due: '5000',
+      shortfall: { reason: 'customer_short', note: null },
+    });
+    expect(paid.statusCode).toBe(200);
+    expect(paid.json().order.status).toBe('delivered');
+    // The restaurant returns the 24000; the 50 counted as collected pays
+    // the captain's 25 and books 25 as delivery revenue; the missing 10 waits
+    // on the clearing account for operations (AP §8.6).
+    expect(moneyMoved(before, await balances(order.captain.captainId))).toMatchObject({
+      clearing: -24_000n + 1_000n,
+      restaurant: -24_000n,
+      delivery: 2_500n,
+      operatingCost: 0n,
+      earnings: 2_500n,
+    });
+    expect((await outcomeRow(order.order.id)).merchant_debit).toBe('24000');
+    const detail = await order.ops.detail(order.order.id);
+    expect(detail.delivery).toMatchObject({
+      outcome: 'damaged',
+      netReceived: { amount: '4000', currency: 'TRY' },
+      shortfall: { amount: { amount: '1000', currency: 'TRY' }, reason: 'customer_short' },
+      recordedBy: { type: 'admin', reason: 'الكابتن بلا هاتف' },
+    });
+    expect(detail.outcome).toMatchObject({ awaitingCollection: false });
+    // Operations recorded it: the captain gets the outcome card.
+    expect((await order.captain.active()).json().ended).toMatchObject({
+      orderId: order.order.id,
+      outcome: 'damaged',
+      pay: { amount: '2500', currency: 'TRY' },
+    });
+  });
+
+  it('refuses an amount on a failed order, the whole total, and a payment with nothing waiting', async () => {
+    const order = await pickedUpOrder();
+    const refused = async (body: object) => {
+      const answer = await order.ops.outcome(order.order.id, body);
+      expect(answer.statusCode).toBe(400);
+      return answer.json().error;
+    };
+    expect(
+      await refused({
+        outcome: 'failed_other',
+        responsible: 'platform',
+        delivered: false,
+        food: 'kept_by_captain',
+        amountToCollect: '5000',
+      }),
+    ).toBe('invalid_outcome');
+    expect(await refused({ ...free, amountToCollect: '28000' })).toBe('invalid_outcome');
+    const none = await outcomePayment(order, 'captain', { received: '5000' });
+    expect(none.statusCode).toBe(409);
+    expect(none.json().error).toBe('order_state_changed');
+    // Another captain's order is unknown to them.
+    expect((await order.ops.outcome(order.order.id, free)).statusCode).toBe(200);
+    const other = await onlineCaptain();
+    const foreign = await outcomePayment(
+      { ...order, captain: { ...order.captain, ...other } },
+      'captain',
+      {
+        received: '5000',
+      },
+    );
+    expect(foreign.statusCode).toBe(404);
+    expect(foreign.json().error).toBe('unknown_order');
+  });
+});

@@ -16,6 +16,7 @@ part 'admin_set_outcome_dto.g.dart';
 /// * [responsible]
 /// * [delivered] - Free is delivered, fake, wrong_refused and failed_other failed; damaged either.
 /// * [food] - A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible.
+/// * [amountToCollect] - What the customer still pays, in the base currency (K9): above 0 only on a delivered outcome and below the order total (owner decisions 2026-11-10), else 400 invalid_outcome. Above 0 the order waits «بانتظار تسجيل التحصيل» and the outcome is posted from the payment recorded.
 /// * [version] - The order's version the dialog previewed (AP §8.9 «Preview»); any other is 409 order_state_changed.
 /// * [reason] - Required (AP §9.3.2): the internal note, never shown to the apps.
 @BuiltValue()
@@ -39,6 +40,10 @@ abstract class AdminSetOutcomeDto
   AdminSetOutcomeDtoFoodEnum? get food;
   // enum foodEnum {  kept_by_captain,  returned_to_restaurant,  destroyed,  };
 
+  /// What the customer still pays, in the base currency (K9): above 0 only on a delivered outcome and below the order total (owner decisions 2026-11-10), else 400 invalid_outcome. Above 0 the order waits «بانتظار تسجيل التحصيل» and the outcome is posted from the payment recorded.
+  @BuiltValueField(wireName: r'amountToCollect')
+  String? get amountToCollect;
+
   /// The order's version the dialog previewed (AP §8.9 «Preview»); any other is 409 order_state_changed.
   @BuiltValueField(wireName: r'version')
   int get version;
@@ -53,7 +58,8 @@ abstract class AdminSetOutcomeDto
       _$AdminSetOutcomeDto;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminSetOutcomeDtoBuilder b) => b;
+  static void _defaults(AdminSetOutcomeDtoBuilder b) =>
+      b..amountToCollect = '0';
 
   @BuiltValueSerializer(custom: true)
   static Serializer<AdminSetOutcomeDto> get serializer =>
@@ -95,6 +101,13 @@ class _$AdminSetOutcomeDtoSerializer
             object.food,
             specifiedType: const FullType.nullable(AdminSetOutcomeDtoFoodEnum),
           );
+    if (object.amountToCollect != null) {
+      yield r'amountToCollect';
+      yield serializers.serialize(
+        object.amountToCollect,
+        specifiedType: const FullType(String),
+      );
+    }
     yield r'version';
     yield serializers.serialize(
       object.version,
@@ -174,6 +187,16 @@ class _$AdminSetOutcomeDtoSerializer
                   as AdminSetOutcomeDtoFoodEnum?;
           if (valueDes == null) continue;
           result.food = valueDes;
+          break;
+        case r'amountToCollect':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.amountToCollect = valueDes;
           break;
         case r'version':
           final valueDes =

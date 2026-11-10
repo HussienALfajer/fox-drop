@@ -26,6 +26,36 @@ class OrderView extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final step = stepOf(order);
     final refused = refusedRequest(order);
+    // CA §9.10 (K9): operations ended the order with an amount to collect;
+    // the payment screen for it replaces the step.
+    final collect = order.outcomeToCollect;
+    if (collect != null) {
+      return ListView(
+        padding: const EdgeInsetsDirectional.all(16),
+        children: [
+          Text(l10n.captainAwaitingCollection),
+          Text(l10n.captainOrderItems(order.number, order.itemCount)),
+          Text(
+            l10n.captainOutcomeCollect(
+              collectOutcomeText(l10n, collect.outcome),
+              l10n.formatMoney(collect.amount.amount, collect.amount.currency),
+            ),
+          ),
+          PaymentForm(
+            key: ValueKey('outcome-${order.id}'),
+            order: order,
+            outcomeAmount: Money(
+              collect.amount.amount,
+              collect.amount.currency,
+            ),
+            outcomeEquivalents: [
+              for (final e in collect.equivalents.nonNulls)
+                Money(e.amount, e.currency),
+            ],
+          ),
+        ],
+      );
+    }
     return ListView(
       padding: const EdgeInsetsDirectional.all(16),
       children: [

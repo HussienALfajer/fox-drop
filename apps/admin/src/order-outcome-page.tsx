@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { formatMoney } from './format.js';
 import { outcomeKeys, responsibleKeys } from './order-detail.js';
 import {
+  amountToCollectOf,
   deliveredFor,
   emptyOutcome,
   foodsFor,
@@ -24,17 +25,20 @@ import {
 // (the customer for a fake order only), whether a damaged order was
 // delivered, where a failed order's food went, the preview of every entry
 // (docs/domain/09), asked again on each choice, then operations' note and the
-// confirm. Nothing is collected yet (slice 2.11b).
+// confirm. A delivered order may keep an amount to collect (slice 2.11b, K9):
+// the order then waits «بانتظار تسجيل التحصيل» and the preview is provisional.
 export function SetOutcome({
   orderId,
   version,
   choices,
   pickup,
+  total,
 }: {
   orderId: string;
   version: number;
   choices: OutcomeChoices;
   pickup: { captainName: string | null; payment: { amount: string; currency: string } };
+  total: { amount: string; currency: string };
 }) {
   const { t } = useTranslation();
   const title = useId();
@@ -53,12 +57,16 @@ export function SetOutcome({
     }
     setForm(next);
   };
-  const asked = outcomePreviewBody(form);
+  const currency = total.currency;
+  const asked = outcomePreviewBody(form, currency);
+  const collectInvalid = amountToCollectOf(form, currency) === null;
   const preview = useQuery(outcomePreviewQuery(orderId, version, asked));
   const shown = preview.data?.status === 'preview' ? preview.data.preview : undefined;
   const lines = shown && outcomeLines(shown, pickup);
   const setOutcome = useSetOutcome(orderId);
-  const body = lines?.some((line) => line.key === 'unknown') ? null : outcomeBody(form, version);
+  const body = lines?.some((line) => line.key === 'unknown')
+    ? null
+    : outcomeBody(form, version, currency);
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (body) setOutcome.mutate(body);
@@ -123,7 +131,22 @@ export function SetOutcome({
           ))}
         </fieldset>
       )}
-      <p>{t('order.setOutcome.nothingToCollect')}</p>
+      {delivered && (
+        <label>
+          {t('order.setOutcome.collect', { total: formatMoney(total) })}
+          <input
+            inputMode="decimal"
+            value={form.collect}
+            onChange={(event) => set({ collect: event.target.value })}
+          />
+        </label>
+      )}
+      {collectInvalid && <p role="alert">{t('order.setOutcome.collectInvalid')}</p>}
+      <p>
+        {shown?.provisional
+          ? t('order.setOutcome.awaitingCollection')
+          : t('order.setOutcome.nothingToCollect')}
+      </p>
       <section aria-live="polite">
         <h4>{t('order.cancel.preview')}</h4>
         {asked === null && <p>{t('order.setOutcome.pick')}</p>}
@@ -181,6 +204,25 @@ function OutcomeSentence({ line }: { line: OutcomeLine }) {
   const restaurant = name ?? t('order.restaurant');
   const customer = name ?? t('order.customer');
   switch (line.key) {
+    case 'collect':
+      return t('order.setOutcome.entry.collect', {
+        name: captain,
+        amount: formatMoney(line.amount),
+      });
+    case 'custodyHandIn':
+      return t('order.setOutcome.entry.custodyHandIn', {
+        name: captain,
+        amount: formatMoney(line.amount),
+      });
+    case 'deliveryRevenue':
+      return t('order.setOutcome.entry.deliveryRevenue', { amount: formatMoney(line.amount) });
+    case 'payOffset':
+      return t(
+        line.test ? 'order.setOutcome.entry.payOffsetTest' : 'order.setOutcome.entry.payOffset',
+        {
+          amount: formatMoney(line.amount),
+        },
+      );
     case 'custodyReimbursed':
       return t('order.setOutcome.entry.custodyReimbursed', {
         name: captain,

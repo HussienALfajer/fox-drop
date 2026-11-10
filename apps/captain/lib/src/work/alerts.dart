@@ -145,6 +145,14 @@ class OutcomeSet extends Alert {
   final Ended ended;
 }
 
+/// «أنهت العمليات الطلب: {النتيجة}. اقبض {المبلغ}.» (CA §9.10, K9, slice
+/// 2.11b): the payment screen opens for that amount, with a chime.
+class OutcomeToCollect extends Alert {
+  const OutcomeToCollect(this.outcome, this.amount);
+  final CollectOutcome outcome;
+  final Money amount;
+}
+
 /// «تم تعديل الطلب — المبلغ الجديد للمطعم {المبلغ}، للتحصيل {المبلغ}»: operations
 /// edited the order before the pickup (CA §9.10, §14 #10); the item
 /// checklist shows the new lines.
@@ -211,6 +219,15 @@ List<Alert> alertStep(
       alerts.add(AssignedByOperations(order.number));
     }
     return alerts;
+  }
+  final collect = order.outcomeToCollect;
+  if (collect != null && was!.outcomeToCollect == null) {
+    alerts.add(
+      OutcomeToCollect(
+        collect.outcome,
+        Money(collect.amount.amount, collect.amount.currency),
+      ),
+    );
   }
   if (!was!.preparation.ready && order.preparation.ready) {
     alerts.add(OrderReady(order.number));
