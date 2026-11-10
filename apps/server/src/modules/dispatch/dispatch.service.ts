@@ -20,6 +20,8 @@ import {
   type AssignmentActor,
   type DispatchOrder,
   HANDOVER_FROM,
+  type HandoverCloseReason,
+  type OpenHandover,
   OrderAssignments,
 } from '../ordering/index.js';
 import { SettingsService } from '../settings/index.js';
@@ -182,7 +184,8 @@ export class DispatchService implements OnModuleInit {
         .where(and(eq(offers.orderId, order.id), eq(offers.status, 'open')))
         .for('update');
       if (!open) return;
-      await this.close(tx, order, open, 'withdrawn', now, actor);
+      // A handover's offer closes its handover as ended (slice 2.12b).
+      await this.close(tx, order, open, 'withdrawn', now, actor, 'ended');
     });
   }
 
@@ -384,6 +387,9 @@ export class DispatchService implements OnModuleInit {
     status: 'declined' | 'expired' | 'withdrawn',
     now: Date,
     actor: AssignmentActor = { type: 'system', id: null },
+    // A handover's offer withdrawn because the order ended or the handover
+    // was replaced says so (slice 2.12b).
+    handoverReason: HandoverCloseReason = status,
   ): Promise<DispatchOrder> {
     await closeOffer(tx, offer.id, status, now);
     if (offer.handover) {
@@ -391,7 +397,7 @@ export class DispatchService implements OnModuleInit {
       // captain's.
       const handover = await this.assignments.openHandover(tx, order);
       if (handover === null || handover.offerId !== offer.id) return order;
-      return this.assignments.closeHandover(tx, order, handover, status, actor, now);
+      return this.assignments.closeHandover(tx, order, handover, handoverReason, actor, now);
     }
     return this.assignments.change(
       tx,
@@ -830,10 +836,23 @@ export class DispatchService implements OnModuleInit {
       if (!locked) throw new Error(`order ${order.id} not found`);
       const repeat = await this.replay(tx, command.admin.accountId, command, hash, now);
       if (repeat !== null) return true;
-      const current = await this.expireLate(tx, locked, now);
-      const problem = await this.assignments.handoverProblem(tx, current, command.captainId);
+      const late = await this.expireLate(tx, locked, now);
+      const problem = await this.assignments.handoverProblem(tx, late, command.captainId);
       if (problem === 'same_captain') throw this.captainBusy();
       if (problem !== null) return false;
+      // Owner decision 2026-11-11: a new handover replaces the open one (its
+      // offer withdrawn, or its second captain freed).
+      const open = await this.assignments.openHandover(tx, late);
+      const current =
+        open === null
+          ? late
+          : await this.replaceHandover(
+              tx,
+              late,
+              open,
+              { type: 'admin', id: command.admin.accountId },
+              now,
+            );
       await this.lockFreeCaptain(tx, lockCaptain, command.captainId);
       let offerId: string | null = null;
       if (shown !== null) {
@@ -891,6 +910,24 @@ export class DispatchService implements OnModuleInit {
     const restaurant = await this.merchants.restaurant(order.restaurantId, now);
     if (!restaurant) throw new Error(`restaurant ${order.restaurantId} not found`);
     return restaurant;
+  }
+
+  // Closes the order's open handover as replaced: its open offer withdrawn,
+  // or its assignment ended, so the second captain is free.
+  private async replaceHandover(
+    tx: Tx,
+    order: DispatchOrder,
+    open: OpenHandover,
+    actor: AssignmentActor,
+    now: Date,
+  ): Promise<DispatchOrder> {
+    if (open.assignedAt === null && open.offerId !== null) {
+      const offer = await lockOffer(tx, open.offerId);
+      if (offer?.status === 'open') {
+        return this.close(tx, order, offer, 'withdrawn', now, actor, 'replaced');
+      }
+    }
+    return this.assignments.closeHandover(tx, order, open, 'replaced', actor, now);
   }
 
   // Where a handover's second captain is measured from: the first captain's

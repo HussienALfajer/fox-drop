@@ -26,6 +26,11 @@ _$adminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum_ended =
     const AdminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum._(
       'ended',
     );
+const AdminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum
+_$adminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum_replaced =
+    const AdminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum._(
+      'replaced',
+    );
 
 AdminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum
 _$adminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnumValueOf(
@@ -40,6 +45,8 @@ _$adminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnumValueOf(
       return _$adminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum_withdrawn;
     case 'ended':
       return _$adminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum_ended;
+    case 'replaced':
+      return _$adminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum_replaced;
     default:
       throw ArgumentError(name);
   }
@@ -54,6 +61,7 @@ _$adminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnumValues =
       _$adminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum_expired,
       _$adminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum_withdrawn,
       _$adminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum_ended,
+      _$adminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum_replaced,
     ]);
 
 Serializer<AdminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum>
@@ -70,12 +78,14 @@ class _$AdminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnumSerializer
     'expired': 'expired',
     'withdrawn': 'withdrawn',
     'ended': 'ended',
+    'replaced': 'replaced',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'declined': 'declined',
     'expired': 'expired',
     'withdrawn': 'withdrawn',
     'ended': 'ended',
+    'replaced': 'replaced',
   };
 
   @override

@@ -9,7 +9,7 @@ const second = '0195f000-0000-7000-8000-000000000002';
 
 describe('canHandOver', () => {
   const order = { status: 'picked_up' as const, captainId: first };
-  const clear = { open: false, outcomePending: false };
+  const clear = { outcomePending: false };
 
   it('allows a picked-up or arrived order with its captain, to another captain', () => {
     expect(canHandOver(order, clear, second)).toBeNull();
@@ -24,11 +24,8 @@ describe('canHandOver', () => {
     }
   });
 
-  it('refuses an order with a handover open or an outcome waiting for its collection', () => {
-    expect(canHandOver(order, { ...clear, open: true }, second)).toBe('order_not_handoverable');
-    expect(canHandOver(order, { ...clear, outcomePending: true }, second)).toBe(
-      'order_not_handoverable',
-    );
+  it('refuses an order with an outcome waiting for its collection', () => {
+    expect(canHandOver(order, { outcomePending: true }, second)).toBe('order_not_handoverable');
   });
 
   it('refuses the order’s own captain as the second captain', () => {

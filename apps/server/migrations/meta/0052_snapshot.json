@@ -8070,7 +8070,7 @@
         },
         "handovers_close": {
           "name": "handovers_close",
-          "value": "(\"ordering\".\"handovers\".\"closed_at\" IS NULL) = (\"ordering\".\"handovers\".\"close_reason\" IS NULL)\n        AND (\"ordering\".\"handovers\".\"close_reason\" IS NULL OR \"ordering\".\"handovers\".\"close_reason\" IN ('declined', 'expired', 'withdrawn', 'ended'))"
+          "value": "(\"ordering\".\"handovers\".\"closed_at\" IS NULL) = (\"ordering\".\"handovers\".\"close_reason\" IS NULL)\n        AND (\"ordering\".\"handovers\".\"close_reason\" IS NULL OR \"ordering\".\"handovers\".\"close_reason\" IN ('declined', 'expired', 'withdrawn', 'ended', 'replaced'))"
         },
         "handovers_steps": {
           "name": "handovers_steps",

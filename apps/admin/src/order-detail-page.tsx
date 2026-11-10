@@ -300,6 +300,9 @@ export function OrderDetailPage() {
           <Link to="/orders/$orderId/handover" params={{ orderId }} search>
             {t('handover.title')}
           </Link>
+          {detail.handover.handovers.some(
+            (each) => each.receivedAt === null && each.closedAt === null,
+          ) && <span> {t('handover.replaces')}</span>}
         </p>
       )}
       <Outlet />

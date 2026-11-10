@@ -132,6 +132,7 @@ export class OrderingWorkerModule {}
 export {
   type AssignmentActor,
   type AssignmentChange,
+  type HandoverCloseReason,
   type OpenHandover,
   type DispatchOrder,
   OrderAssignments,

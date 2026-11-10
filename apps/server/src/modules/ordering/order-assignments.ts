@@ -158,15 +158,8 @@ export class OrderAssignments implements OnModuleInit {
     order: DispatchOrder,
     toCaptainId: string,
   ): Promise<HandoverRefusal | null> {
-    const [open, outcomePending] = await Promise.all([
-      this.openHandover(executor, order),
-      pendingOutcome(executor, order),
-    ]);
-    return canHandOver(
-      order,
-      { open: open !== null, outcomePending: outcomePending !== null },
-      toCaptainId,
-    );
+    const outcomePending = await pendingOutcome(executor, order);
+    return canHandOver(order, { outcomePending: outcomePending !== null }, toCaptainId);
   }
 
   // AP §9.3.2, CA §9.10.1 (slice 2.12b): the order's open handover, if any.

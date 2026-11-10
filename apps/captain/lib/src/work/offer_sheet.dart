@@ -65,7 +65,8 @@ class OfferSheet extends ConsumerWidget {
                   : l10n.formatMoney(pay.amount, pay.currency),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
-            Text(l10n.captainWaitingPayMayApply),
+            // The second captain of a handover earns no waiting (AP §9.3.2).
+            if (handover == null) Text(l10n.captainWaitingPayMayApply),
             Text(
               handover == null
                   ? l10n.captainOfferRestaurant(

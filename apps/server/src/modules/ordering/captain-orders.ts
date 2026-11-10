@@ -1567,10 +1567,12 @@ export class CaptainOrders {
     const receiving = open.toCaptainId === captainId && open.assignedAt !== null;
     if (!giving && !receiving) return null;
     const otherId = giving ? open.toCaptainId : open.fromCaptainId;
+    // The second captain's number and position only once they have it.
+    const shared = receiving || open.assignedAt !== null;
     const [other, phone, location] = await Promise.all([
       this.captains.captain(otherId, now),
-      this.captainAccounts.phone(otherId),
-      this.captains.latestPoint(otherId),
+      shared ? this.captainAccounts.phone(otherId) : null,
+      shared ? this.captains.latestPoint(otherId) : null,
     ]);
     return {
       role: giving ? 'giving' : 'receiving',

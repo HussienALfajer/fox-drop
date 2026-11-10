@@ -21505,7 +21505,8 @@
                                 "declined",
                                 "expired",
                                 "withdrawn",
-                                "ended"
+                                "ended",
+                                "replaced"
                               ]
                             },
                             {

@@ -97,6 +97,14 @@ const reasonKeysByType = {
     expired: 'order.reason.expired',
     withdrawn: 'order.reason.withdrawn',
   },
+  // Slice 2.12b: why a handover closed without the receipt.
+  'order.handover_closed': {
+    declined: 'order.handovers.closed.declined',
+    expired: 'order.handovers.closed.expired',
+    withdrawn: 'order.handovers.closed.withdrawn',
+    ended: 'order.handovers.closed.ended',
+    replaced: 'order.handovers.closed.replaced',
+  },
   'order.pickup_rejected': {
     amount_incorrect: 'order.reason.amountIncorrect',
     incomplete: 'order.reason.incomplete',
@@ -160,6 +168,7 @@ export const handoverCloseKeys = {
   expired: 'order.handovers.closed.expired',
   withdrawn: 'order.handovers.closed.withdrawn',
   ended: 'order.handovers.closed.ended',
+  replaced: 'order.handovers.closed.replaced',
 } as const satisfies Record<
   NonNullable<OrderDetail['handover']['handovers'][number]['closeReason']>,
   string

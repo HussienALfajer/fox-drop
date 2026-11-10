@@ -16,7 +16,7 @@ CREATE TABLE "ordering"."handovers" (
 	"from_seen_at" timestamp with time zone,
 	CONSTRAINT "handovers_two_captains" CHECK ("ordering"."handovers"."from_captain_id" <> "ordering"."handovers"."to_captain_id"),
 	CONSTRAINT "handovers_close" CHECK (("ordering"."handovers"."closed_at" IS NULL) = ("ordering"."handovers"."close_reason" IS NULL)
-        AND ("ordering"."handovers"."close_reason" IS NULL OR "ordering"."handovers"."close_reason" IN ('declined', 'expired', 'withdrawn', 'ended'))),
+        AND ("ordering"."handovers"."close_reason" IS NULL OR "ordering"."handovers"."close_reason" IN ('declined', 'expired', 'withdrawn', 'ended', 'replaced'))),
 	CONSTRAINT "handovers_steps" CHECK (("ordering"."handovers"."received_at" IS NULL OR ("ordering"."handovers"."assigned_at" IS NOT NULL AND "ordering"."handovers"."closed_at" IS NULL))
         AND ("ordering"."handovers"."offer_id" IS NOT NULL OR "ordering"."handovers"."assigned_at" IS NOT NULL)
         AND ("ordering"."handovers"."from_seen_at" IS NULL OR "ordering"."handovers"."received_at" IS NOT NULL))

@@ -715,7 +715,7 @@ class AdminOrderDto extends createZodDto(
                   .describe('«استلمت الطلب من الكابتن {الاسم}».'),
                 closedAt: z.iso.datetime().nullable(),
                 closeReason: z
-                  .enum(['declined', 'expired', 'withdrawn', 'ended'])
+                  .enum(['declined', 'expired', 'withdrawn', 'ended', 'replaced'])
                   .nullable()
                   .describe(
                     'Why it closed without the receipt: the offer declined, expired or withdrawn, or the order ended first.',

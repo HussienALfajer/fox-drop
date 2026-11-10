@@ -828,8 +828,8 @@ export class OrderCommands {
 
   // AP §9.3.1, §9.3.2 «تسليم لكابتن آخر» (slice 2.12b): the order's
   // handovers, oldest first, with both captains' names, and whether
-  // operations may open one now (picked up or arrived with a captain, none
-  // open, no outcome waiting).
+  // operations may open one now (picked up or arrived with a captain, no
+  // outcome waiting; an open one is then replaced).
   async handoversOf(
     order: { id: string; placedAt: Date; status: OrderView['status']; captainId: string | null },
     now: Date,
@@ -856,11 +856,11 @@ export class OrderCommands {
         ids.map(async (id) => [id, (await this.captains.captain(id, now))?.name ?? null] as const),
       ),
     );
-    const open = rows.some((row) => row.receivedAt === null && row.closedAt === null);
     const outcomePending = (await pendingOutcome(this.database.db, order)) !== null;
     return {
-      allowed:
-        canHandOver(order, { open, outcomePending }, '') === null && order.captainId !== null,
+      // A handover still open is replaced by a new one (owner decision
+      // 2026-11-11).
+      allowed: canHandOver(order, { outcomePending }, '') === null && order.captainId !== null,
       rows: rows.map((row) => ({
         ...row,
         fromCaptainName: names.get(row.fromCaptainId) ?? null,

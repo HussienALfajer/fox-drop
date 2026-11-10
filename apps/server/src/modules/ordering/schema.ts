@@ -1011,8 +1011,15 @@ export const reassignments = ordering.table(
 // AP §9.3.2 «تسليم لكابتن آخر», CA §9.10.1 (slice 2.12b): why an open
 // handover closed without the receipt: the offer was declined, expired or
 // withdrawn (the second captain went offline), or the order ended first
-// («تحديد النتيجة», «تسجيل التسليم»).
-export const handoverCloseReasons = ['declined', 'expired', 'withdrawn', 'ended'] as const;
+// («تحديد النتيجة», «تسجيل التسليم»), or operations replaced the second
+// captain with another handover (owner decision 2026-11-11).
+export const handoverCloseReasons = [
+  'declined',
+  'expired',
+  'withdrawn',
+  'ended',
+  'replaced',
+] as const;
 
 // A picked-up order handed from its captain to a second one (AP §9.3.2,
 // CA §9.10.1): opened by operations as a manual offer (offer_id) or an
@@ -1058,7 +1065,7 @@ export const handovers = ordering.table(
     check(
       'handovers_close',
       sql`(${table.closedAt} IS NULL) = (${table.closeReason} IS NULL)
-        AND (${table.closeReason} IS NULL OR ${table.closeReason} IN ('declined', 'expired', 'withdrawn', 'ended'))`,
+        AND (${table.closeReason} IS NULL OR ${table.closeReason} IN ('declined', 'expired', 'withdrawn', 'ended', 'replaced'))`,
     ),
     check(
       'handovers_steps',

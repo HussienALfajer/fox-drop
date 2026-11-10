@@ -6336,7 +6336,7 @@ export interface components {
                         receivedAt: string | null;
                         closedAt: string | null;
                         /** @description Why it closed without the receipt: the offer declined, expired or withdrawn, or the order ended first. */
-                        closeReason: ("declined" | "expired" | "withdrawn" | "ended") | null;
+                        closeReason: ("declined" | "expired" | "withdrawn" | "ended" | "replaced") | null;
                         /** @description Operations' internal note. */
                         note: string;
                         /** Format: uuid */

@@ -65,7 +65,7 @@ abstract class AdminOrderDtoOutputOrderHandoverHandoversInner
   @BuiltValueField(wireName: r'closeReason')
   AdminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum?
   get closeReason;
-  // enum closeReasonEnum {  declined,  expired,  withdrawn,  ended,  };
+  // enum closeReasonEnum {  declined,  expired,  withdrawn,  ended,  replaced,  };
 
   /// Operations' internal note.
   @BuiltValueField(wireName: r'note')
@@ -372,6 +372,10 @@ class AdminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum
   @BuiltValueEnumConst(wireName: r'ended')
   static const AdminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum
   ended = _$adminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum_ended;
+  @BuiltValueEnumConst(wireName: r'replaced')
+  static const AdminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum
+  replaced =
+      _$adminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum_replaced;
 
   static Serializer<
     AdminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum

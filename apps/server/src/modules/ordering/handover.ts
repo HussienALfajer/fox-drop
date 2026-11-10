@@ -9,19 +9,15 @@ export const HANDOVER_FROM: readonly OrderStatus[] = ['picked_up', 'arrived'];
 export type HandoverRefusal = 'order_not_handoverable' | 'same_captain';
 
 // AP §9.3.2, CA §9.10.1 (slice 2.12b): operations hand a picked-up order
-// from its captain to a second one, while no other handover is open and no
-// outcome waits for its collection (K9: the order is the outcome's then).
+// from its captain to a second one while no outcome waits for its
+// collection (K9: the order is the outcome's then). A handover still open
+// is replaced by the new one (owner decision 2026-11-11).
 export function canHandOver(
   order: { status: OrderStatus; captainId: string | null },
-  facts: { open: boolean; outcomePending: boolean },
+  facts: { outcomePending: boolean },
   toCaptainId: string,
 ): HandoverRefusal | null {
-  if (
-    !HANDOVER_FROM.includes(order.status) ||
-    order.captainId === null ||
-    facts.open ||
-    facts.outcomePending
-  ) {
+  if (!HANDOVER_FROM.includes(order.status) || order.captainId === null || facts.outcomePending) {
     return 'order_not_handoverable';
   }
   if (order.captainId === toCaptainId) return 'same_captain';
