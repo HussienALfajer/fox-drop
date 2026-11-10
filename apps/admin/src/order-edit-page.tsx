@@ -3,8 +3,12 @@ import { type FormEvent, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatMoney } from './format.js';
 import type { OrderDetail } from './order-detail.js';
+import { responsibleKeys } from './order-detail.js';
 import {
   type AddedLine,
+  AFTER_PICKUP_PARTIES,
+  type AfterPickupLine,
+  afterPickupLines,
   type EditChange,
   type EditChoices,
   type EditForm,
@@ -59,7 +63,9 @@ export function EditChangeText({ change }: { change: EditChange }) {
 // removes it), lines added from the restaurant's current menu with their
 // options, a new delivery fee, the extra prep time when items are added to a
 // ready order, operations' required note, and the before-and-after money
-// preview before the confirm.
+// preview before the confirm. After the pickup (slice 2.10b): only lowering
+// quantities and the fee, the responsible party, and the entries it posts
+// with the new amount to collect.
 export function EditOrder({
   orderId,
   detail,
@@ -76,13 +82,27 @@ export function EditOrder({
   const { lines, status, version } = detail;
   const currency = detail.money.currency;
   const [form, setForm] = useState<EditForm>(() => initialForm(lines));
-  const request = editRequest(form, lines, status, currency, choices.extraPrepMaxMin);
+  const { afterPickup } = choices;
+  const request = editRequest(
+    form,
+    lines,
+    status,
+    currency,
+    choices.extraPrepMaxMin,
+    afterPickup ? { deliveryFee: detail.money.deliveryFee } : null,
+  );
   const preview = useQuery(editPreviewQuery(orderId, version, request));
   const edit = useEditOrder(orderId);
   const body = editBody(request, form.reason, version);
   const shown = preview.data?.status === 'preview' ? preview.data.preview : null;
+  const entryLines = shown && afterPickup ? afterPickupLines(shown) : [];
   const ready =
-    body !== null && shown !== null && !preview.isPlaceholderData && !preview.isFetching;
+    body !== null &&
+    shown !== null &&
+    !preview.isPlaceholderData &&
+    !preview.isFetching &&
+    (!afterPickup ||
+      (form.responsible !== null && !entryLines.some((line) => line.key === 'unknown')));
   const money = (amount: string) => formatMoney({ amount, currency });
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -103,6 +123,7 @@ export function EditOrder({
   return (
     <form onSubmit={submit} aria-labelledby={title} noValidate>
       <h3 id={title}>{t('order.edit.title')}</h3>
+      {afterPickup && <p>{t('order.edit.afterPickupHint')}</p>}
       <fieldset>
         <legend>{t('order.edit.lines')}</legend>
         {lines.map((line) => (
@@ -112,7 +133,7 @@ export function EditOrder({
               <input
                 type="number"
                 min={0}
-                max={MAX_QUANTITY}
+                max={afterPickup ? line.quantity : MAX_QUANTITY}
                 step={1}
                 value={form.quantities[line.position] ?? line.quantity}
                 onChange={(event) =>
@@ -133,13 +154,15 @@ export function EditOrder({
             </button>
           </p>
         ))}
-        <p>{t('order.edit.optionsHint')}</p>
+        {!afterPickup && <p>{t('order.edit.optionsHint')}</p>}
       </fieldset>
-      <AddLine
-        items={choices.items}
-        currency={currency}
-        onAdd={(line) => setForm({ ...form, added: [...form.added, line] })}
-      />
+      {!afterPickup && (
+        <AddLine
+          items={choices.items}
+          currency={currency}
+          onAdd={(line) => setForm({ ...form, added: [...form.added, line] })}
+        />
+      )}
       {form.added.length > 0 && (
         <ul>
           {form.added.map((line, index) => {
@@ -168,7 +191,9 @@ export function EditOrder({
         </ul>
       )}
       <label>
-        {t('order.edit.fee', { fee: money(detail.money.deliveryFee) })}
+        {t(afterPickup ? 'order.edit.lowerFee' : 'order.edit.fee', {
+          fee: money(detail.money.deliveryFee),
+        })}
         <input
           inputMode="decimal"
           value={form.fee}
@@ -188,6 +213,22 @@ export function EditOrder({
           />
         </label>
       )}
+      {afterPickup && (
+        <fieldset>
+          <legend>{t('order.edit.responsible')}</legend>
+          {AFTER_PICKUP_PARTIES.map((party) => (
+            <label key={party}>
+              <input
+                type="radio"
+                name="responsible"
+                checked={form.responsible === party}
+                onChange={() => setForm({ ...form, responsible: party })}
+              />
+              {t(responsibleKeys[party])}
+            </label>
+          ))}
+        </fieldset>
+      )}
       <label>
         {t('order.edit.note')}
         <textarea
@@ -198,6 +239,23 @@ export function EditOrder({
       </label>
       {request === null && <p>{t('order.edit.incomplete')}</p>}
       {shown && <PreviewSection preview={shown} money={money} time={time} />}
+      {shown && afterPickup && (
+        <section aria-live="polite">
+          <h4>{t('order.cancel.preview')}</h4>
+          {form.responsible === null ? (
+            <p>{t('order.cancel.pickResponsible')}</p>
+          ) : (
+            <ul>
+              {entryLines.map((line, index) => (
+                <li key={index}>
+                  <EntryText line={line} />
+                </li>
+              ))}
+            </ul>
+          )}
+          <p>{t('order.edit.newCollect', { amount: money(shown.after.total) })}</p>
+        </section>
+      )}
       <button type="submit" disabled={edit.isPending || !ready}>
         {t('order.edit.confirm')}
       </button>
@@ -206,6 +264,36 @@ export function EditOrder({
       {result?.status === 'done' && <p role="status">{t('order.edit.done')}</p>}
     </form>
   );
+}
+
+function EntryText({ line }: { line: AfterPickupLine }) {
+  const { t } = useTranslation();
+  switch (line.key) {
+    case 'merchantDebit':
+      return (
+        <>
+          {t('order.edit.entry.merchantDebit', {
+            name: line.name ?? '',
+            amount: formatMoney(line.amount),
+          })}
+        </>
+      );
+    case 'commissionReversed':
+      return <>{t('order.edit.entry.commissionReversed', { amount: formatMoney(line.amount) })}</>;
+    case 'captainCharge':
+      return (
+        <>
+          {t('order.edit.entry.captainCharge', {
+            name: line.name ?? '',
+            amount: formatMoney(line.amount),
+          })}
+        </>
+      );
+    case 'platformCost':
+      return <>{t('order.cancel.entry.platformCost', { amount: formatMoney(line.amount) })}</>;
+    default:
+      return <>{t('order.cancel.entry.unknown')}</>;
+  }
 }
 
 function PreviewSection({

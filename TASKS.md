@@ -13,9 +13,9 @@ Slice 2.10b, edits after pickup (`docs/roadmap.md`, Phase 2).
 - **Ask the owner first:** how the door collection books after a removal (the total drops while the clearing account holds the full pickup payment), whether the commission reversal is on the removed items' value only, and the preview's sentences for each party (as «إلغاء الطلب» shows them).
 - **Plan (to confirm):**
   - [x] Server: removals and a lower fee after pickup with the responsible party and their entries, once per edit; failing tests first.
-  - [ ] Captain app: «حُذفت أصناف من الطلب — المبلغ الجديد للتحصيل {المبلغ}» and the new amount at the door.
-  - [ ] Panel: the responsible party and the entries' preview in the dialog after pickup.
-  - [ ] Restaurant: the owners' silent push with the amount (RA §12.5).
+  - [x] Captain app: «حُذفت أصناف من الطلب — المبلغ الجديد للتحصيل {المبلغ}» and the new amount at the door.
+  - [x] Panel: the responsible party and the entries' preview in the dialog after pickup.
+  - [x] Restaurant: the owners' silent push with the amount (RA §12.5): sent by the server on the existing `silent` channel, nothing in the app.
   - [ ] Review, hand over to 2.11, pull request.
 
 ### Left from 2.10a (`feat/order-edits`)

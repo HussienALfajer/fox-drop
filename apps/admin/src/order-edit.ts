@@ -14,9 +14,19 @@ export type EditChoices = NonNullable<OrderDetail['editChoices']>;
 export type MenuItem = EditChoices['items'][number];
 export type EditChange = EditPreview['changes'][number];
 type Line = OrderDetail['lines'][number];
+type Money = { amount: string; currency: string };
 
-// AP §9.3.3 «تعديل الطلب»: OWN and OPS, while the order is placed, accepted
-// or ready (the detail then carries the menu).
+// AP §9.3.3, docs/domain/09: who bears an edit after the pickup (never the
+// customer).
+export type AfterPickupParty = NonNullable<PreviewBody['responsible']>;
+export const AFTER_PICKUP_PARTIES = [
+  'restaurant',
+  'captain',
+  'platform',
+] as const satisfies readonly AfterPickupParty[];
+
+// AP §9.3.3 «تعديل الطلب»: OWN and OPS, while the order is placed, accepted,
+// ready (the detail then carries the menu), picked up or arrived.
 export function canEdit(
   session: AdminSession | null | undefined,
   order: Pick<OrderDetail, 'editChoices'>,
@@ -45,6 +55,8 @@ export interface EditForm {
   extraPrepMin: number;
   // Operations' note, required (AP §9.3.2), never shown to the apps.
   reason: string;
+  // After the pickup: who bears the edit, required to confirm.
+  responsible: AfterPickupParty | null;
 }
 
 export function initialForm(lines: readonly Line[]): EditForm {
@@ -54,6 +66,7 @@ export function initialForm(lines: readonly Line[]): EditForm {
     fee: '',
     extraPrepMin: Number.NaN,
     reason: '',
+    responsible: null,
   };
 }
 
@@ -87,13 +100,15 @@ export function optionsFit(item: MenuItem, optionIds: readonly string[]): boolea
 }
 
 // The edit as the server takes it, or null while it changes nothing, a
-// quantity, the fee or the extra prep time does not fit.
+// quantity, the fee or the extra prep time does not fit. After the pickup
+// (`after`, the order's current fee) only removals and a lower fee fit.
 export function editRequest(
   form: EditForm,
   lines: readonly Line[],
   status: OrderDetail['status'],
   currency: string,
   extraPrepMaxMin: number,
+  after: { deliveryFee: string } | null = null,
 ): PreviewBody | null {
   const quantities = lines.map((line) => form.quantities[line.position] ?? line.quantity);
   if (quantities.some((quantity) => quantity !== 0 && !quantityFits(quantity))) return null;
@@ -101,6 +116,10 @@ export function editRequest(
   const fee = form.fee.trim();
   const deliveryFee = fee === '' ? null : minorOf(fee, currency);
   if (fee !== '' && deliveryFee === null) return null;
+  if (after) {
+    if (form.added.length > 0 || addsItems(form, lines)) return null;
+    if (deliveryFee !== null && BigInt(deliveryFee) > BigInt(after.deliveryFee)) return null;
+  }
   const keep = lines
     .map((line, index) => ({ position: line.position, quantity: quantities[index]! }))
     .filter((line) => line.quantity > 0);
@@ -116,7 +135,13 @@ export function editRequest(
     if (!Number.isInteger(extra) || extra < 1 || extra > extraPrepMaxMin) return null;
     extraPrepMin = extra;
   }
-  return { keep, add: form.added, deliveryFee, extraPrepMin, responsible: null };
+  return {
+    keep,
+    add: form.added,
+    deliveryFee,
+    extraPrepMin,
+    responsible: after ? form.responsible : null,
+  };
 }
 
 // The command's body, or null without a complete request and the note. It
@@ -130,6 +155,68 @@ export function editBody(
   const note = reason.trim();
   if (request === null || note === '') return null;
   return { ...request, version, reason: note };
+}
+
+// AP §9.3.3, docs/domain/09 (owner decision 2026-11-10: in the style of
+// «إلغاء الطلب»): the entries an edit after the pickup posts, one sentence
+// per journal, the order clearing account left out. As for the cancellation,
+// an entry whose sign is not the sentence's or a type the panel cannot name
+// is `unknown` and blocks the confirm.
+export type AfterPickupLine =
+  | { key: 'merchantDebit'; name: string | null; amount: Money }
+  | { key: 'commissionReversed'; amount: Money }
+  | { key: 'captainCharge'; name: string | null; amount: Money }
+  | { key: 'platformCost'; amount: Money }
+  | { key: 'unknown' };
+
+type Entry = EditPreview['entries'][number];
+
+export function afterPickupLines(preview: EditPreview): AfterPickupLine[] {
+  const journals = new Map<string, Entry[]>();
+  for (const entry of preview.entries) {
+    journals.set(entry.type, [...(journals.get(entry.type) ?? []), entry]);
+  }
+  return [...journals].map(([type, entries]) => entryLine(type, entries) ?? { key: 'unknown' });
+}
+
+const isCredit = (entry: Entry) => entry.amount.amount.startsWith('-');
+const size = (entry: Entry): Money => ({
+  ...entry.amount,
+  amount: entry.amount.amount.replace(/^-/, ''),
+});
+
+function entryLine(type: string, entries: Entry[]): AfterPickupLine | null {
+  // The one entry of an account, with the expected direction.
+  const one = (account: string, credit: boolean) => {
+    const found = entries.filter((entry) => entry.account === account);
+    return found.length === 1 && isCredit(found[0]!) === credit ? found[0]! : null;
+  };
+  switch (type) {
+    case 'merchant.debit': {
+      const merchant = one('merchant.account', false);
+      return (
+        merchant && { key: 'merchantDebit', name: merchant.party.name, amount: size(merchant) }
+      );
+    }
+    case 'merchant.commission': {
+      const merchant = one('merchant.account', true);
+      return merchant && one('platform.revenue_commission', false)
+        ? { key: 'commissionReversed', amount: size(merchant) }
+        : null;
+    }
+    case 'earn.charge': {
+      const earnings = one('captain.earnings', false);
+      return (
+        earnings && { key: 'captainCharge', name: earnings.party.name, amount: size(earnings) }
+      );
+    }
+    case 'platform.operating_cost': {
+      const cost = one('platform.operating_cost', false);
+      return cost && { key: 'platformCost', amount: size(cost) };
+    }
+    default:
+      return null;
+  }
 }
 
 // order_state_changed: the order left the statuses an edit allows or moved
