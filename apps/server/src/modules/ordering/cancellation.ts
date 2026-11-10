@@ -175,46 +175,8 @@ export function cancellationEntries(
     });
   }
 
-  // AP §8.1: the restaurant kept the captain's payment: the payment on the
-  // captain's custody, and the restaurant owes it back at settlement.
-  if (choices.cash === 'not_returned') {
-    // Phase 1 (owner decision 2026-11-05): the pickup payment is in the base
-    // currency only, so the lines and their base total net the clearing
-    // account. When other currencies arrive (RA §12.7), book the gap between
-    // the lines and their base total on platform.fx_rounding, as
-    // PickupBooking does, before allowing them here.
-    if (facts.cashLines.some((line) => line.currency !== currency)) {
-      throw new Error('a kept payment outside the base currency, not booked yet');
-    }
-    journals.push(
-      {
-        type: 'custody.pay_merchant',
-        reason: null,
-        entries: facts.cashLines.flatMap((line) => [
-          {
-            account: 'captain.custody' as const,
-            party: captain,
-            amount: -line.amount,
-            currency: line.currency,
-          },
-          {
-            account: 'platform.order_clearing' as const,
-            party: platform,
-            amount: line.amount,
-            currency: line.currency,
-          },
-        ]),
-      },
-      {
-        type: 'merchant.debit',
-        reason: null,
-        entries: [
-          { account: 'merchant.account', party: merchant, amount: facts.cashBase, currency },
-          clearing(-facts.cashBase),
-        ],
-      },
-    );
-  }
+  // AP §8.1: the restaurant kept the captain's payment.
+  if (choices.cash === 'not_returned') journals.push(...keptPaymentJournals(facts));
 
   return {
     journals,
@@ -224,4 +186,60 @@ export function cancellationEntries(
     cashAsked,
     compensationAllowed,
   };
+}
+
+// AP §8.1, docs/domain/01: the restaurant kept the captain's payment («لا»
+// to «هل أعاد المطعم المبلغ للكابتن؟»): the payment on the captain's
+// custody, and the restaurant owes it back at settlement. Shared by the
+// cancellation and the reassignment (slice 2.12a); the order clearing
+// account nets to zero over them.
+export function keptPaymentJournals(
+  facts: Pick<
+    CancellationFacts,
+    'restaurantId' | 'captainId' | 'currency' | 'cashLines' | 'cashBase'
+  >,
+): CancellationJournal[] {
+  const { currency } = facts;
+  const platform = { kind: 'platform' as const, id: null };
+  // Phase 1 (owner decision 2026-11-05): the pickup payment is in the base
+  // currency only, so the lines and their base total net the clearing
+  // account. When other currencies arrive (RA §12.7), book the gap between
+  // the lines and their base total on platform.fx_rounding, as
+  // PickupBooking does, before allowing them here.
+  if (facts.cashLines.some((line) => line.currency !== currency)) {
+    throw new Error('a kept payment outside the base currency, not booked yet');
+  }
+  return [
+    {
+      type: 'custody.pay_merchant',
+      reason: null,
+      entries: facts.cashLines.flatMap((line) => [
+        {
+          account: 'captain.custody' as const,
+          party: { kind: 'captain' as const, id: facts.captainId },
+          amount: -line.amount,
+          currency: line.currency,
+        },
+        {
+          account: 'platform.order_clearing' as const,
+          party: platform,
+          amount: line.amount,
+          currency: line.currency,
+        },
+      ]),
+    },
+    {
+      type: 'merchant.debit',
+      reason: null,
+      entries: [
+        {
+          account: 'merchant.account',
+          party: { kind: 'merchant', id: facts.restaurantId },
+          amount: facts.cashBase,
+          currency,
+        },
+        { account: 'platform.order_clearing', party: platform, amount: -facts.cashBase, currency },
+      ],
+    },
+  ];
 }
