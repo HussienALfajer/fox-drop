@@ -18,6 +18,7 @@ part 'admin_edit_dto.g.dart';
 /// * [add] - Lines added from the restaurant's current menu at current prices, available only (400 invalid_edit). A line whose options change is left out of keep and added again.
 /// * [deliveryFee] - A new delivery fee in minor units, or null to keep it (the threshold is not checked again).
 /// * [extraPrepMin] - Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise).
+/// * [responsible] - After the pickup (picked_up, arrived) only, and required then (400 invalid_edit otherwise; the preview answers without it): who bears the removed items and the lower fee (AP §9.3.3, docs/domain/09), «المطعم», «الكابتن» or «المنصة»; never the customer. After the pickup an edit only removes lines or lowers quantities and lowers the fee.
 /// * [version] - The order's version the dialog showed; another is 409 order_state_changed, so the edit is the one previewed.
 /// * [reason] - Required (AP §9.3.2): the internal note, never shown to the apps.
 @BuiltValue()
@@ -38,6 +39,11 @@ abstract class AdminEditDto
   /// Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise).
   @BuiltValueField(wireName: r'extraPrepMin')
   int? get extraPrepMin;
+
+  /// After the pickup (picked_up, arrived) only, and required then (400 invalid_edit otherwise; the preview answers without it): who bears the removed items and the lower fee (AP §9.3.3, docs/domain/09), «المطعم», «الكابتن» or «المنصة»; never the customer. After the pickup an edit only removes lines or lowers quantities and lowers the fee.
+  @BuiltValueField(wireName: r'responsible')
+  AdminEditDtoResponsibleEnum? get responsible;
+  // enum responsibleEnum {  restaurant,  captain,  platform,  };
 
   /// The order's version the dialog showed; another is 409 order_state_changed, so the edit is the one previewed.
   @BuiltValueField(wireName: r'version')
@@ -98,6 +104,13 @@ class _$AdminEditDtoSerializer implements PrimitiveSerializer<AdminEditDto> {
             object.extraPrepMin,
             specifiedType: const FullType.nullable(int),
           );
+    if (object.responsible != null) {
+      yield r'responsible';
+      yield serializers.serialize(
+        object.responsible,
+        specifiedType: const FullType.nullable(AdminEditDtoResponsibleEnum),
+      );
+    }
     yield r'version';
     yield serializers.serialize(
       object.version,
@@ -177,6 +190,18 @@ class _$AdminEditDtoSerializer implements PrimitiveSerializer<AdminEditDto> {
           if (valueDes == null) continue;
           result.extraPrepMin = valueDes;
           break;
+        case r'responsible':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminEditDtoResponsibleEnum,
+                    ),
+                  )
+                  as AdminEditDtoResponsibleEnum?;
+          if (valueDes == null) continue;
+          result.responsible = valueDes;
+          break;
         case r'version':
           final valueDes =
               serializers.deserialize(value, specifiedType: const FullType(int))
@@ -219,4 +244,27 @@ class _$AdminEditDtoSerializer implements PrimitiveSerializer<AdminEditDto> {
     );
     return result.build();
   }
+}
+
+/// After the pickup (picked_up, arrived) only, and required then (400 invalid_edit otherwise; the preview answers without it): who bears the removed items and the lower fee (AP §9.3.3, docs/domain/09), «المطعم», «الكابتن» or «المنصة»; never the customer. After the pickup an edit only removes lines or lowers quantities and lowers the fee.
+class AdminEditDtoResponsibleEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'restaurant')
+  static const AdminEditDtoResponsibleEnum restaurant =
+      _$adminEditDtoResponsibleEnum_restaurant;
+  @BuiltValueEnumConst(wireName: r'captain')
+  static const AdminEditDtoResponsibleEnum captain =
+      _$adminEditDtoResponsibleEnum_captain;
+  @BuiltValueEnumConst(wireName: r'platform')
+  static const AdminEditDtoResponsibleEnum platform =
+      _$adminEditDtoResponsibleEnum_platform;
+
+  static Serializer<AdminEditDtoResponsibleEnum> get serializer =>
+      _$adminEditDtoResponsibleEnumSerializer;
+
+  const AdminEditDtoResponsibleEnum._(String name) : super(name);
+
+  static BuiltSet<AdminEditDtoResponsibleEnum> get values =>
+      _$adminEditDtoResponsibleEnumValues;
+  static AdminEditDtoResponsibleEnum valueOf(String name) =>
+      _$adminEditDtoResponsibleEnumValueOf(name);
 }

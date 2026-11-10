@@ -607,13 +607,14 @@ export const itemReports = ordering.table(
   ],
 );
 
-// AP §9.3.3, RA §8.13 (slice 2.10a): «تعديل الطلب» before the pickup, one
-// row per edit: what changed (the restaurant's prompt and the panel's
+// AP §9.3.3, RA §8.13 (slice 2.10a): «تعديل الطلب», one row per edit: what changed (the restaurant's prompt and the panel's
 // timeline), the money before and after, and, for items added to a ready
 // order, the extra prep time and the times it moved. The restaurant
 // acknowledges it with «اطلعت على التعديل» on any device; until then an edit
 // that adds items rings, blocks the pickup request (RA §8.10) and raises
 // «المطعم لم يؤكد التعديل» after order.merchant_accept_alert_min (AP §9.1.3).
+// After the pickup (slice 2.10b) an edit only removes items or lowers the
+// fee, with a responsible party who bears it, and needs no acknowledgement.
 // Only the acknowledgement columns ever change.
 export const orderEdits = ordering.table(
   'order_edits',
@@ -626,7 +627,8 @@ export const orderEdits = ordering.table(
     cityId: uuid('city_id').notNull(),
     at: timestamp('at', { withTimezone: true }).notNull(),
     adminId: uuid('admin_id').notNull(),
-    // The order's status when edited (placed, accepted or ready).
+    // The order's status when edited: placed, accepted or ready, or after the
+    // pickup picked_up or arrived.
     status: text('status', { enum: orderStatuses }).notNull(),
     // [{ kind: 'added' | 'removed' | 'quantity', name, options: [name],
     // quantity, quantityBefore }], as order-edits.ts writes them.
@@ -647,6 +649,14 @@ export const orderEdits = ordering.table(
     prepMinAfter: smallint('prep_min_after'),
     promisedBefore: timestamp('promised_before', { withTimezone: true }),
     promisedAfter: timestamp('promised_after', { withTimezone: true }),
+    // After the pickup (AP §9.3.3, §8.9): who bears the edit, what they bear
+    // (the removed items' value for the restaurant, their merchant net for
+    // the captain or the platform, plus the fee's cut), and the commission
+    // on the removed items, reversed for the restaurant or, for the others,
+    // recovering the pickup payment at the delivery.
+    responsible: text('responsible', { enum: ['restaurant', 'captain', 'platform'] }),
+    charge: bigint('charge', { mode: 'bigint' }),
+    commissionCut: bigint('commission_cut', { mode: 'bigint' }),
     // RA §8.13 «اطلعت على التعديل»: the restaurant user and the app
     // installation.
     acknowledgedAt: timestamp('acknowledged_at', { withTimezone: true }),
@@ -662,7 +672,14 @@ export const orderEdits = ordering.table(
     index('order_edits_unacknowledged')
       .on(table.orderId)
       .where(sql`${table.acknowledgedAt} IS NULL`),
-    check('order_edits_status', sql`${table.status} IN ('placed', 'accepted', 'ready')`),
+    check(
+      'order_edits_status',
+      sql`${table.status} IN ('placed', 'accepted', 'ready', 'picked_up', 'arrived')`,
+    ),
+    check(
+      'order_edits_after_pickup',
+      sql`(${table.status} IN ('picked_up', 'arrived')) = (${table.responsible} IS NOT NULL) AND (${table.responsible} IS NULL) = (${table.charge} IS NULL) AND (${table.responsible} IS NULL) = (${table.commissionCut} IS NULL) AND (${table.responsible} IS NULL OR ${table.responsible} IN ('restaurant', 'captain', 'platform')) AND ${table.charge} >= 0 AND ${table.commissionCut} >= 0 AND (${table.responsible} IS NULL OR (NOT ${table.addsItems} AND ${table.acknowledgedAt} IS NULL))`,
+    ),
     check(
       'order_edits_money',
       sql`${table.itemsValueBefore} >= 0 AND ${table.itemsValueAfter} >= 0 AND ${table.deliveryFeeBefore} >= 0 AND ${table.deliveryFeeAfter} >= 0 AND ${table.totalBefore} >= 0 AND ${table.totalAfter} >= 0`,

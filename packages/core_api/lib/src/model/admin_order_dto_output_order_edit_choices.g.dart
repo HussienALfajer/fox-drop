@@ -9,6 +9,8 @@ part of 'admin_order_dto_output_order_edit_choices.dart';
 class _$AdminOrderDtoOutputOrderEditChoices
     extends AdminOrderDtoOutputOrderEditChoices {
   @override
+  final bool afterPickup;
+  @override
   final int extraPrepMaxMin;
   @override
   final BuiltList<AdminOrderDtoOutputOrderEditChoicesItemsInner> items;
@@ -19,6 +21,7 @@ class _$AdminOrderDtoOutputOrderEditChoices
       (AdminOrderDtoOutputOrderEditChoicesBuilder()..update(updates))._build();
 
   _$AdminOrderDtoOutputOrderEditChoices._({
+    required this.afterPickup,
     required this.extraPrepMaxMin,
     required this.items,
   }) : super._();
@@ -35,6 +38,7 @@ class _$AdminOrderDtoOutputOrderEditChoices
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is AdminOrderDtoOutputOrderEditChoices &&
+        afterPickup == other.afterPickup &&
         extraPrepMaxMin == other.extraPrepMaxMin &&
         items == other.items;
   }
@@ -42,6 +46,7 @@ class _$AdminOrderDtoOutputOrderEditChoices
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, afterPickup.hashCode);
     _$hash = $jc(_$hash, extraPrepMaxMin.hashCode);
     _$hash = $jc(_$hash, items.hashCode);
     _$hash = $jf(_$hash);
@@ -51,6 +56,7 @@ class _$AdminOrderDtoOutputOrderEditChoices
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'AdminOrderDtoOutputOrderEditChoices')
+          ..add('afterPickup', afterPickup)
           ..add('extraPrepMaxMin', extraPrepMaxMin)
           ..add('items', items))
         .toString();
@@ -64,6 +70,10 @@ class AdminOrderDtoOutputOrderEditChoicesBuilder
           AdminOrderDtoOutputOrderEditChoicesBuilder
         > {
   _$AdminOrderDtoOutputOrderEditChoices? _$v;
+
+  bool? _afterPickup;
+  bool? get afterPickup => _$this._afterPickup;
+  set afterPickup(bool? afterPickup) => _$this._afterPickup = afterPickup;
 
   int? _extraPrepMaxMin;
   int? get extraPrepMaxMin => _$this._extraPrepMaxMin;
@@ -85,6 +95,7 @@ class AdminOrderDtoOutputOrderEditChoicesBuilder
   AdminOrderDtoOutputOrderEditChoicesBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _afterPickup = $v.afterPickup;
       _extraPrepMaxMin = $v.extraPrepMaxMin;
       _items = $v.items.toBuilder();
       _$v = null;
@@ -113,6 +124,11 @@ class AdminOrderDtoOutputOrderEditChoicesBuilder
       _$result =
           _$v ??
           _$AdminOrderDtoOutputOrderEditChoices._(
+            afterPickup: BuiltValueNullFieldError.checkNotNull(
+              afterPickup,
+              r'AdminOrderDtoOutputOrderEditChoices',
+              'afterPickup',
+            ),
             extraPrepMaxMin: BuiltValueNullFieldError.checkNotNull(
               extraPrepMaxMin,
               r'AdminOrderDtoOutputOrderEditChoices',

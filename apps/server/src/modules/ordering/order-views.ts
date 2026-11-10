@@ -187,6 +187,10 @@ export interface OrderView {
 // first with `newestFirst`.
 // AP §9.3.3: an order operations may edit before its pickup.
 export const BEFORE_PICKUP: OrderStatus[] = ['placed', 'accepted', 'ready'];
+// AP §9.3.3 (slice 2.10b): after the pickup, edits only remove items or lower
+// the fee, with a responsible party.
+export const AFTER_PICKUP: OrderStatus[] = ['picked_up', 'arrived'];
+export const EDITABLE: OrderStatus[] = [...BEFORE_PICKUP, ...AFTER_PICKUP];
 
 export async function readOrders(
   executor: Executor,

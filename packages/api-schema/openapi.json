@@ -17588,6 +17588,23 @@
             ],
             "description": "Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise)."
           },
+          "responsible": {
+            "default": null,
+            "description": "After the pickup (picked_up, arrived) only, and required then (400 invalid_edit otherwise; the preview answers without it): who bears the removed items and the lower fee (AP §9.3.3, docs/domain/09), «المطعم», «الكابتن» or «المنصة»; never the customer. After the pickup an edit only removes lines or lowers quantities and lowers the fee.",
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "restaurant",
+                  "captain",
+                  "platform"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "version": {
             "type": "integer",
             "minimum": -9007199254740991,
@@ -17696,6 +17713,23 @@
               }
             ],
             "description": "Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise)."
+          },
+          "responsible": {
+            "default": null,
+            "description": "After the pickup (picked_up, arrived) only, and required then (400 invalid_edit otherwise; the preview answers without it): who bears the removed items and the lower fee (AP §9.3.3, docs/domain/09), «المطعم», «الكابتن» or «المنصة»; never the customer. After the pickup an edit only removes lines or lowers quantities and lowers the fee.",
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "restaurant",
+                  "captain",
+                  "platform"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -17874,6 +17908,92 @@
               }
             ],
             "description": "The new promised time when it moves."
+          },
+          "afterPickup": {
+            "type": "boolean",
+            "description": "The order was picked up: the edit needs a responsible party (AP §9.3.3)."
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "The journal type, such as merchant.debit."
+                },
+                "account": {
+                  "type": "string",
+                  "description": "The account purpose, such as merchant.account."
+                },
+                "party": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "merchant",
+                        "captain",
+                        "platform"
+                      ]
+                    },
+                    "id": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "id",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "amount": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false,
+                  "description": "From the platform's side: + a debit, − a credit."
+                }
+              },
+              "required": [
+                "type",
+                "account",
+                "party",
+                "amount"
+              ],
+              "additionalProperties": false
+            },
+            "description": "After the pickup, every entry the edit would post for the responsible party (docs/domain/09); empty before the pickup or until the party is chosen."
           }
         },
         "required": [
@@ -17883,7 +18003,9 @@
           "changes",
           "addsItems",
           "backToPreparing",
-          "promisedAt"
+          "promisedAt",
+          "afterPickup",
+          "entries"
         ],
         "additionalProperties": false
       },
@@ -19553,6 +19675,10 @@
                   {
                     "type": "object",
                     "properties": {
+                      "afterPickup": {
+                        "type": "boolean",
+                        "description": "Picked up or arrived: only lines removed or lowered and a lower fee, with a responsible party (no menu)."
+                      },
                       "extraPrepMaxMin": {
                         "type": "integer",
                         "minimum": -9007199254740991,
@@ -19655,6 +19781,7 @@
                       }
                     },
                     "required": [
+                      "afterPickup",
                       "extraPrepMaxMin",
                       "items"
                     ],
@@ -19664,7 +19791,7 @@
                     "type": "null"
                   }
                 ],
-                "description": "While placed, accepted or ready: «تعديل الطلب» (AP §9.3.3)."
+                "description": "While placed, accepted, ready, picked up or arrived: «تعديل الطلب» (AP §9.3.3)."
               },
               "edits": {
                 "type": "array",
@@ -19814,6 +19941,35 @@
                         }
                       ]
                     },
+                    "responsible": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "restaurant",
+                            "captain",
+                            "platform"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "After the pickup: who bore the edit."
+                    },
+                    "charge": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^-?\\d+$",
+                          "description": "Integer minor units (AP §8.6)."
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "After the pickup: what the responsible party bore (the removed value or its merchant net, and the fee cut)."
+                    },
                     "acknowledgedAt": {
                       "anyOf": [
                         {
@@ -19838,6 +19994,8 @@
                     "deliveryFee",
                     "total",
                     "extraPrepMin",
+                    "responsible",
+                    "charge",
                     "acknowledgedAt"
                   ],
                   "additionalProperties": false

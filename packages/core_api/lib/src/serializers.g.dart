@@ -28,12 +28,6 @@ Serializers _$serializers =
           ..add(AdminCancelDtoResponsibleEnum.serializer)
           ..add(AdminCancelPreviewAnswerDtoOutput.serializer)
           ..add(AdminCancelPreviewAnswerDtoOutputEntriesInner.serializer)
-          ..add(AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount.serializer)
-          ..add(AdminCancelPreviewAnswerDtoOutputEntriesInnerParty.serializer)
-          ..add(
-            AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum
-                .serializer,
-          )
           ..add(AdminCancelPreviewDto.serializer)
           ..add(AdminCancelPreviewDtoCashEnum.serializer)
           ..add(AdminCancelPreviewDtoResponsibleEnum.serializer)
@@ -51,11 +45,19 @@ Serializers _$serializers =
           ..add(AdminEditDto.serializer)
           ..add(AdminEditDtoAddInner.serializer)
           ..add(AdminEditDtoKeepInner.serializer)
+          ..add(AdminEditDtoResponsibleEnum.serializer)
           ..add(AdminEditPreviewAnswerDtoOutput.serializer)
           ..add(AdminEditPreviewAnswerDtoOutputBefore.serializer)
           ..add(AdminEditPreviewAnswerDtoOutputChangesInner.serializer)
           ..add(AdminEditPreviewAnswerDtoOutputChangesInnerKindEnum.serializer)
+          ..add(AdminEditPreviewAnswerDtoOutputEntriesInner.serializer)
+          ..add(AdminEditPreviewAnswerDtoOutputEntriesInnerAmount.serializer)
+          ..add(AdminEditPreviewAnswerDtoOutputEntriesInnerParty.serializer)
+          ..add(
+            AdminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnum.serializer,
+          )
           ..add(AdminEditPreviewDto.serializer)
+          ..add(AdminEditPreviewDtoResponsibleEnum.serializer)
           ..add(AdminEmergencyStopDtoOutput.serializer)
           ..add(AdminEmergencyStopDtoOutputStop.serializer)
           ..add(AdminEmergencyStopResumedDtoOutput.serializer)
@@ -129,6 +131,7 @@ Serializers _$serializers =
           )
           ..add(AdminOrderDtoOutputOrderEditsInner.serializer)
           ..add(AdminOrderDtoOutputOrderEditsInnerItemsValue.serializer)
+          ..add(AdminOrderDtoOutputOrderEditsInnerResponsibleEnum.serializer)
           ..add(AdminOrderDtoOutputOrderEditsInnerStatusEnum.serializer)
           ..add(AdminOrderDtoOutputOrderItemReport.serializer)
           ..add(AdminOrderDtoOutputOrderItemReportItemsInner.serializer)
@@ -672,6 +675,12 @@ Serializers _$serializers =
               const FullType(AdminEditPreviewAnswerDtoOutputChangesInner),
             ]),
             () => ListBuilder<AdminEditPreviewAnswerDtoOutputChangesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminEditPreviewAnswerDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminEditPreviewAnswerDtoOutputEntriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

@@ -6,6 +6,73 @@ part of 'admin_edit_dto.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const AdminEditDtoResponsibleEnum _$adminEditDtoResponsibleEnum_restaurant =
+    const AdminEditDtoResponsibleEnum._('restaurant');
+const AdminEditDtoResponsibleEnum _$adminEditDtoResponsibleEnum_captain =
+    const AdminEditDtoResponsibleEnum._('captain');
+const AdminEditDtoResponsibleEnum _$adminEditDtoResponsibleEnum_platform =
+    const AdminEditDtoResponsibleEnum._('platform');
+
+AdminEditDtoResponsibleEnum _$adminEditDtoResponsibleEnumValueOf(String name) {
+  switch (name) {
+    case 'restaurant':
+      return _$adminEditDtoResponsibleEnum_restaurant;
+    case 'captain':
+      return _$adminEditDtoResponsibleEnum_captain;
+    case 'platform':
+      return _$adminEditDtoResponsibleEnum_platform;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AdminEditDtoResponsibleEnum>
+_$adminEditDtoResponsibleEnumValues =
+    BuiltSet<AdminEditDtoResponsibleEnum>(const <AdminEditDtoResponsibleEnum>[
+      _$adminEditDtoResponsibleEnum_restaurant,
+      _$adminEditDtoResponsibleEnum_captain,
+      _$adminEditDtoResponsibleEnum_platform,
+    ]);
+
+Serializer<AdminEditDtoResponsibleEnum>
+_$adminEditDtoResponsibleEnumSerializer =
+    _$AdminEditDtoResponsibleEnumSerializer();
+
+class _$AdminEditDtoResponsibleEnumSerializer
+    implements PrimitiveSerializer<AdminEditDtoResponsibleEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'restaurant': 'restaurant',
+    'captain': 'captain',
+    'platform': 'platform',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'restaurant': 'restaurant',
+    'captain': 'captain',
+    'platform': 'platform',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[AdminEditDtoResponsibleEnum];
+  @override
+  final String wireName = 'AdminEditDtoResponsibleEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminEditDtoResponsibleEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminEditDtoResponsibleEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AdminEditDtoResponsibleEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$AdminEditDto extends AdminEditDto {
   @override
   final BuiltList<AdminEditDtoKeepInner> keep;
@@ -15,6 +82,8 @@ class _$AdminEditDto extends AdminEditDto {
   final String? deliveryFee;
   @override
   final int? extraPrepMin;
+  @override
+  final AdminEditDtoResponsibleEnum? responsible;
   @override
   final int version;
   @override
@@ -28,6 +97,7 @@ class _$AdminEditDto extends AdminEditDto {
     required this.add,
     this.deliveryFee,
     this.extraPrepMin,
+    this.responsible,
     required this.version,
     required this.reason,
   }) : super._();
@@ -46,6 +116,7 @@ class _$AdminEditDto extends AdminEditDto {
         add == other.add &&
         deliveryFee == other.deliveryFee &&
         extraPrepMin == other.extraPrepMin &&
+        responsible == other.responsible &&
         version == other.version &&
         reason == other.reason;
   }
@@ -57,6 +128,7 @@ class _$AdminEditDto extends AdminEditDto {
     _$hash = $jc(_$hash, add.hashCode);
     _$hash = $jc(_$hash, deliveryFee.hashCode);
     _$hash = $jc(_$hash, extraPrepMin.hashCode);
+    _$hash = $jc(_$hash, responsible.hashCode);
     _$hash = $jc(_$hash, version.hashCode);
     _$hash = $jc(_$hash, reason.hashCode);
     _$hash = $jf(_$hash);
@@ -70,6 +142,7 @@ class _$AdminEditDto extends AdminEditDto {
           ..add('add', add)
           ..add('deliveryFee', deliveryFee)
           ..add('extraPrepMin', extraPrepMin)
+          ..add('responsible', responsible)
           ..add('version', version)
           ..add('reason', reason))
         .toString();
@@ -98,6 +171,11 @@ class AdminEditDtoBuilder
   int? get extraPrepMin => _$this._extraPrepMin;
   set extraPrepMin(int? extraPrepMin) => _$this._extraPrepMin = extraPrepMin;
 
+  AdminEditDtoResponsibleEnum? _responsible;
+  AdminEditDtoResponsibleEnum? get responsible => _$this._responsible;
+  set responsible(AdminEditDtoResponsibleEnum? responsible) =>
+      _$this._responsible = responsible;
+
   int? _version;
   int? get version => _$this._version;
   set version(int? version) => _$this._version = version;
@@ -117,6 +195,7 @@ class AdminEditDtoBuilder
       _add = $v.add.toBuilder();
       _deliveryFee = $v.deliveryFee;
       _extraPrepMin = $v.extraPrepMin;
+      _responsible = $v.responsible;
       _version = $v.version;
       _reason = $v.reason;
       _$v = null;
@@ -147,6 +226,7 @@ class AdminEditDtoBuilder
             add: add.build(),
             deliveryFee: deliveryFee,
             extraPrepMin: extraPrepMin,
+            responsible: responsible,
             version: BuiltValueNullFieldError.checkNotNull(
               version,
               r'AdminEditDto',

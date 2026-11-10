@@ -12,7 +12,7 @@ Slice 2.10b, edits after pickup (`docs/roadmap.md`, Phase 2).
 - **Builds on 2.10a:** `POST /v1/admin/orders/{orderId}/edit` and its preview (`order-edits.ts`, `planEdit`), `ordering.order_edits`, the lines' `removed_by_edit`, the panel's «تعديل الطلب» dialog (`apps/admin/src/order-edit*.ts`), the customer's marks and the captain's `OrderEdited` chime.
 - **Ask the owner first:** how the door collection books after a removal (the total drops while the clearing account holds the full pickup payment), whether the commission reversal is on the removed items' value only, and the preview's sentences for each party (as «إلغاء الطلب» shows them).
 - **Plan (to confirm):**
-  - [ ] Server: removals and a lower fee after pickup with the responsible party and their entries, once per edit; failing tests first.
+  - [x] Server: removals and a lower fee after pickup with the responsible party and their entries, once per edit; failing tests first.
   - [ ] Captain app: «حُذفت أصناف من الطلب — المبلغ الجديد للتحصيل {المبلغ}» and the new amount at the door.
   - [ ] Panel: the responsible party and the entries' preview in the dialog after pickup.
   - [ ] Restaurant: the owners' silent push with the amount (RA §12.5).

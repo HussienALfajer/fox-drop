@@ -44,7 +44,7 @@ const fries = { itemId: 'fries', optionIds: [], quantity: 1 };
 // AP §9.3.3 «تعديل الطلب»: OWN and OPS, while the detail offers it.
 describe('canEdit', () => {
   const session = (permissions: string[]) => ({ permissions }) as never;
-  const choices = { editChoices: { extraPrepMaxMin: 60, items: [] } };
+  const choices = { editChoices: { afterPickup: false, extraPrepMaxMin: 60, items: [] } };
   it('needs operations.manage and the detail choice', () => {
     expect(canEdit(session(['operations.manage']), choices)).toBe(true);
     expect(canEdit(session(['operations.read']), choices)).toBe(false);
@@ -69,6 +69,7 @@ describe('the edit request', () => {
       add: [fries],
       deliveryFee: null,
       extraPrepMin: null,
+      responsible: null,
     });
   });
 

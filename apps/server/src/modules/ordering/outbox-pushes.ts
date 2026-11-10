@@ -23,7 +23,7 @@ import {
   type OrderPushFacts,
   PICKUP_EVENTS,
 } from './order-pushes.js';
-import { orderEvents, orders, outbox, pickupRequests } from './schema.js';
+import { orderEdits, orderEvents, orders, outbox, pickupRequests } from './schema.js';
 import { unansweredInBusinessDay } from './unanswered.js';
 
 // Rows taken per transaction, which holds their locks while it reads what
@@ -258,7 +258,32 @@ export class OutboxPushes {
         type === 'order.cancelled' && order.cancelReason === 'merchant_auto_cancel' && timeZone
           ? await this.unanswered(order, timeZone)
           : null,
+      merchantDebit:
+        type === 'order.edited'
+          ? await this.merchantDebit(order, new Date(payload.at), currencies)
+          : null,
     };
+  }
+
+  // RA §12.5: an edit after the pickup with the restaurant responsible, the
+  // edit made at the event's time.
+  private async merchantDebit(
+    order: typeof orders.$inferSelect,
+    at: Date,
+    currencies: Currencies,
+  ): Promise<string | null> {
+    const [edit] = await this.database.db
+      .select({ charge: orderEdits.charge, currency: orderEdits.currency })
+      .from(orderEdits)
+      .where(
+        and(
+          eq(orderEdits.orderId, order.id),
+          eq(orderEdits.orderPlacedAt, order.placedAt),
+          eq(orderEdits.at, at),
+          eq(orderEdits.responsible, 'restaurant'),
+        ),
+      );
+    return edit?.charge ? formatMoney(edit.charge, edit.currency, currencies) : null;
   }
 
   // The request the event is about: the latest opened by the event's time,

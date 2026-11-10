@@ -27,6 +27,8 @@ import {
 } from './cancellation.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
 import {
+  type AfterPickupJournal,
+  afterPickupEntries,
   type CurrentLine,
   type EditChange,
   type EditRequest,
@@ -37,7 +39,15 @@ import { lockOrder, type OrderEventType, recordTransition } from './order-events
 import { OrderAssignments } from './order-assignments.js';
 import { baseTotal, linesOf } from './pickup-booking.js';
 import type { SearchStartJob } from './order-timers.js';
-import { BEFORE_PICKUP, orderKey, readOrders, snapshotOf, type OrderView } from './order-views.js';
+import {
+  AFTER_PICKUP,
+  BEFORE_PICKUP,
+  EDITABLE,
+  orderKey,
+  readOrders,
+  snapshotOf,
+  type OrderView,
+} from './order-views.js';
 import { commission } from './door-payment.js';
 import { priceLines, quoteMoney, type QuoteMoney } from './quote.js';
 import {
@@ -573,32 +583,7 @@ export class OrderCommands {
                 closedById: actor.id,
               })
               .where(openReportOf(order.id, order.placedAt));
-            for (const journal of result.journals) {
-              const entries = [];
-              for (const entry of journal.entries) {
-                const accountId = await this.ledger.openAccount(
-                  {
-                    cityId: order.cityId,
-                    purpose: entry.account,
-                    ownerId: entry.party.id,
-                    currency: entry.currency,
-                  },
-                  tx,
-                );
-                entries.push({ accountId, currency: entry.currency, amount: entry.amount });
-              }
-              await this.ledger.post(
-                {
-                  cityId: order.cityId,
-                  type: journal.type,
-                  source: { kind: 'order', id: order.id },
-                  actor,
-                  reason: journal.reason,
-                  entries,
-                },
-                tx,
-              );
-            }
+            await this.postJournals(tx, order, actor, result.journals);
             if (result.strike) {
               await this.customers.recordLateCancel(tx, {
                 accountId: read.customerAccountId,
@@ -1279,6 +1264,12 @@ export class OrderCommands {
   // rings the restaurant when items were added (RA §16 #16) and tells the
   // customer the new total (CU §14 #11). 400 invalid_edit; 409
   // pickup_request_open, order_state_changed.
+  //
+  // After the pickup (slice 2.10b, AP §9.3.3, docs/domain/09): only lines
+  // removed or lowered and a lower fee, with the responsible party, who bears
+  // it in entries posted with the edit (`afterPickupEntries`); no prompt to
+  // acknowledge, and order.edited publishes removed_after_pickup or
+  // fee_lowered_after_pickup.
   async editOrder(
     command: AdminOrderCommand & EditRequest & { version: number },
     now: Date,
@@ -1288,15 +1279,18 @@ export class OrderCommands {
       add: command.add,
       deliveryFee: command.deliveryFee,
       extraPrepMin: command.extraPrepMin,
+      responsible: command.responsible,
     };
+    const actor = { type: 'admin' as const, id: command.admin.accountId };
     return this.run(
       { kind: 'admin', command },
-      { verb: 'edit', from: BEFORE_PICKUP, to: null, event: 'order.edited' },
+      { verb: 'edit', from: EDITABLE, to: null, event: 'order.edited' },
       {
         keep: request.keep,
         add: request.add,
         deliveryFee: request.deliveryFee?.toString() ?? null,
         extraPrepMin: request.extraPrepMin,
+        responsible: request.responsible,
         version: command.version,
       },
       now,
@@ -1305,7 +1299,7 @@ export class OrderCommands {
         // AP §9.3.3: the edit is the one previewed on the order as the
         // dialog showed it; any change since is order_state_changed.
         if (edit.version !== command.version) throw await this.stateChanged(order);
-        const { plan, before, after, times } = edit;
+        const { plan, before, after, times, booking } = edit;
         const editId = randomUUID();
         return {
           set: {
@@ -1324,11 +1318,15 @@ export class OrderCommands {
               : {}),
           },
           ...(times ? { to: 'accepted' as const } : {}),
-          publicReason: times
-            ? 'items_added_back_to_preparing'
-            : plan.addsItems
-              ? 'items_added'
-              : 'changed',
+          publicReason: booking
+            ? plan.changes.length > 0
+              ? 'removed_after_pickup'
+              : 'fee_lowered_after_pickup'
+            : times
+              ? 'items_added_back_to_preparing'
+              : plan.addsItems
+                ? 'items_added'
+                : 'changed',
           guard: async (tx) =>
             (await this.editBasis(tx, order)) === edit.basis &&
             (await lockOrder(tx, order.id, order.placedAt))?.version === command.version,
@@ -1350,6 +1348,13 @@ export class OrderCommands {
               deliveryFeeAfter: after.deliveryFee,
               totalBefore: before.total,
               totalAfter: after.total,
+              ...(booking
+                ? {
+                    responsible: request.responsible,
+                    charge: booking.charge,
+                    commissionCut: booking.commissionCut,
+                  }
+                : {}),
               ...(times
                 ? {
                     extraPrepMin: times.extraPrepMin,
@@ -1417,10 +1422,17 @@ export class OrderCommands {
                   isNull(itemReports.closedAt),
                 ),
               );
+            if (booking) await this.postJournals(tx, order, actor, booking.journals);
           },
           audit: {
             before: { money: moneyAudit(before) },
-            after: { money: moneyAudit(after), changes: plan.changes },
+            after: {
+              money: moneyAudit(after),
+              changes: plan.changes,
+              ...(booking
+                ? { responsible: request.responsible, charge: booking.charge.toString() }
+                : {}),
+            },
           },
         };
       },
@@ -1432,12 +1444,26 @@ export class OrderCommands {
   // order_state_changed.
   async previewEdit(orderId: string, request: EditRequest, now: Date): Promise<EditPreview> {
     const order = await this.find(orderId, {});
-    if (!BEFORE_PICKUP.includes(order.status)) throw await this.stateChanged(order);
-    const { plan, before, after, times, commissionOf } = await this.prepareEdit(
+    if (!EDITABLE.includes(order.status)) throw await this.stateChanged(order);
+    const { plan, before, after, times, commissionOf, booking, captainId } = await this.prepareEdit(
       order,
       request,
       now,
+      { preview: true },
     );
+    const entries = (booking?.journals ?? []).flatMap((journal) =>
+      journal.entries.map((entry) => ({ type: journal.type, ...entry })),
+    );
+    const [names, captain] = await Promise.all([
+      this.merchants.names([order.restaurantId]),
+      captainId === null ? null : this.captains.captain(captainId, now),
+    ]);
+    const name = (party: { kind: string }) =>
+      party.kind === 'merchant'
+        ? (names.get(order.restaurantId)?.nameAr ?? null)
+        : party.kind === 'captain'
+          ? (captain?.name ?? null)
+          : null;
     const side = (money: QuoteMoney) => {
       const cut = commissionOf(money.itemsValue);
       return { ...money, commission: cut, merchantNet: money.itemsValue - cut };
@@ -1449,14 +1475,61 @@ export class OrderCommands {
       addsItems: plan.addsItems,
       backToPreparing: times !== null,
       promisedAt: times?.promisedAfter ?? null,
+      afterPickup: AFTER_PICKUP.includes(order.status),
+      entries: entries.map((entry) => ({
+        ...entry,
+        party: { ...entry.party, name: name(entry.party) },
+      })),
     };
+  }
+
+  // The journals of an order's change, posted in its transaction, all with
+  // the order as their source (E3).
+  private async postJournals(
+    tx: Tx,
+    order: { id: string; cityId: string },
+    actor: { type: 'admin'; id: string },
+    journals: AfterPickupJournal[],
+  ): Promise<void> {
+    for (const journal of journals) {
+      const entries = [];
+      for (const entry of journal.entries) {
+        const accountId = await this.ledger.openAccount(
+          {
+            cityId: order.cityId,
+            purpose: entry.account,
+            ownerId: entry.party.id,
+            currency: entry.currency,
+          },
+          tx,
+        );
+        entries.push({ accountId, currency: entry.currency, amount: entry.amount });
+      }
+      await this.ledger.post(
+        {
+          cityId: order.cityId,
+          type: journal.type,
+          source: { kind: 'order', id: order.id },
+          actor,
+          reason: journal.reason,
+          entries,
+        },
+        tx,
+      );
+    }
   }
 
   // AP §9.3.3: what the edit dialog offers: the items customers can order
   // now from the restaurant's menu, with their option groups, and the extra
   // prep time of a ready order, whole minutes from 1 to
   // order.eta_change_max_min.
-  async editChoices(order: { cityId: string; restaurantId: string }, now: Date) {
+  async editChoices(
+    order: { cityId: string; restaurantId: string; status: OrderView['status'] },
+    now: Date,
+  ) {
+    // AP §9.3.3: after the pickup nothing is added, so no menu.
+    const afterPickup = AFTER_PICKUP.includes(order.status);
+    if (afterPickup) return { afterPickup, extraPrepMaxMin: 0, items: [] };
     const [extraPrepMaxMin, menu] = await Promise.all([
       this.settings.get('order.eta_change_max_min', { cityId: order.cityId }),
       this.merchants.menu(order.restaurantId, now),
@@ -1486,7 +1559,7 @@ export class OrderCommands {
             })),
           })),
       );
-    return { extraPrepMaxMin, items };
+    return { afterPickup, extraPrepMaxMin, items };
   }
 
   // AP §9.3.1: the order's edits, oldest first, for the detail.
@@ -1561,11 +1634,17 @@ export class OrderCommands {
   // The edit worked out from the order as it is, before the lock: its plan,
   // the money before and after, and the times of a ready order sent back to
   // accepted; `basis` is what the guard compares under the lock.
-  private async prepareEdit(order: OrderAtStart, request: EditRequest, now: Date) {
+  private async prepareEdit(
+    order: OrderAtStart,
+    request: EditRequest,
+    now: Date,
+    { preview = false }: { preview?: boolean } = {},
+  ) {
     const [row] = await this.database.db
       .select({
         status: orders.status,
         version: orders.version,
+        captainId: orders.captainId,
         captainTrack: orders.captainTrack,
         currency: orders.currency,
         discount: orders.discount,
@@ -1576,7 +1655,18 @@ export class OrderCommands {
       })
       .from(orders)
       .where(orderKey(order.id, order.placedAt));
-    if (!row || !BEFORE_PICKUP.includes(row.status)) throw await this.stateChanged(order);
+    if (!row || !EDITABLE.includes(row.status)) throw await this.stateChanged(order);
+    const afterPickup = AFTER_PICKUP.includes(row.status);
+    // AP §9.3.3: after the pickup an edit names who bears it; before, none.
+    // The preview may come before the dialog's party is chosen.
+    if (afterPickup ? request.responsible === null && !preview : request.responsible !== null) {
+      throw new OrderCommandRefusedError(
+        'invalid_edit',
+        afterPickup
+          ? 'an edit after the pickup needs the responsible party'
+          : 'only an edit after the pickup has a responsible party',
+      );
+    }
     // RA §8.10: no edit while the captain's pickup request is open.
     if (row.captainTrack === 'pickup_pending') {
       throw new OrderCommandRefusedError(
@@ -1608,11 +1698,17 @@ export class OrderCommands {
       })),
       row.currency,
     );
-    const plan = planEdit(current, request, priced);
+    const plan = planEdit(current, request, priced, { afterPickup });
     if (typeof plan === 'string') throw new OrderCommandRefusedError('invalid_edit', plan);
     const deliveryFee = request.deliveryFee ?? row.deliveryFee;
     if (deliveryFee < 0n) {
       throw new OrderCommandRefusedError('invalid_edit', 'the delivery fee is not negative');
+    }
+    if (afterPickup && deliveryFee > row.deliveryFee) {
+      throw new OrderCommandRefusedError(
+        'invalid_edit',
+        'after the pickup the delivery fee can only be lowered',
+      );
     }
     if (plan.changes.length === 0 && deliveryFee === row.deliveryFee) {
       throw new OrderCommandRefusedError('invalid_edit', 'the edit changes nothing');
@@ -1662,19 +1758,36 @@ export class OrderCommands {
       };
     }
     const positions = allLines.map((entry) => entry.position);
+    // AP §8.4; none on a test order (AP §9.6.3).
+    const commissionOf = (itemsValue: bigint) =>
+      row.testOrder ? 0n : commission(itemsValue, row.commissionBp);
+    const booking =
+      afterPickup && request.responsible !== null
+        ? afterPickupEntries({
+            responsible: request.responsible,
+            restaurantId: order.restaurantId,
+            captainId: row.captainId,
+            currency: row.currency,
+            itemsValueBefore: view.money.itemsValue,
+            itemsValueAfter: after.itemsValue,
+            deliveryFeeBefore: row.deliveryFee,
+            deliveryFeeAfter: after.deliveryFee,
+            commissionOf,
+          })
+        : null;
     return {
       plan,
       before: view.money,
       after,
       times,
+      booking,
+      captainId: row.captainId,
       basis,
       version: row.version,
       status: row.status,
       currency: row.currency,
       nextPosition: positions.length === 0 ? 0 : Math.max(...positions) + 1,
-      // AP §8.4; none on a test order (AP §9.6.3).
-      commissionOf: (itemsValue: bigint) =>
-        row.testOrder ? 0n : commission(itemsValue, row.commissionBp),
+      commissionOf,
     };
   }
 
@@ -1998,6 +2111,13 @@ export interface EditPreview {
   addsItems: boolean;
   backToPreparing: boolean;
   promisedAt: Date | null;
+  // After the pickup: the entries the responsible party's edit posts, each
+  // with its party's name (empty until the party is chosen).
+  afterPickup: boolean;
+  entries: (AfterPickupJournal['entries'][number] & {
+    type: AfterPickupJournal['type'];
+    party: { name: string | null };
+  })[];
 }
 
 function moneyAudit(money: QuoteMoney) {

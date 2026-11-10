@@ -13,9 +13,9 @@ class _$AdminCancelPreviewAnswerDtoOutputEntriesInner
   @override
   final String account;
   @override
-  final AdminCancelPreviewAnswerDtoOutputEntriesInnerParty party;
+  final AdminEditPreviewAnswerDtoOutputEntriesInnerParty party;
   @override
-  final AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount amount;
+  final AdminEditPreviewAnswerDtoOutputEntriesInnerAmount amount;
 
   factory _$AdminCancelPreviewAnswerDtoOutputEntriesInner([
     void Function(AdminCancelPreviewAnswerDtoOutputEntriesInnerBuilder)?
@@ -89,19 +89,19 @@ class AdminCancelPreviewAnswerDtoOutputEntriesInnerBuilder
   String? get account => _$this._account;
   set account(String? account) => _$this._account = account;
 
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyBuilder? _party;
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyBuilder get party =>
+  AdminEditPreviewAnswerDtoOutputEntriesInnerPartyBuilder? _party;
+  AdminEditPreviewAnswerDtoOutputEntriesInnerPartyBuilder get party =>
       _$this._party ??=
-          AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyBuilder();
-  set party(AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyBuilder? party) =>
+          AdminEditPreviewAnswerDtoOutputEntriesInnerPartyBuilder();
+  set party(AdminEditPreviewAnswerDtoOutputEntriesInnerPartyBuilder? party) =>
       _$this._party = party;
 
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder? _amount;
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder get amount =>
+  AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder? _amount;
+  AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder get amount =>
       _$this._amount ??=
-          AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder();
+          AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder();
   set amount(
-    AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder? amount,
+    AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder? amount,
   ) => _$this._amount = amount;
 
   AdminCancelPreviewAnswerDtoOutputEntriesInnerBuilder() {

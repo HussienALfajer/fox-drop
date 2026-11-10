@@ -45,6 +45,9 @@ export interface OrderPushFacts {
   // RA §16 #2: the restaurant's unanswered orders of the business day and
   // the limit before the automatic pause.
   unanswered: { count: number; limit: number } | null;
+  // RA §8.13, §12.5: what an edit after the pickup debits the restaurant
+  // when it is responsible; null otherwise.
+  merchantDebit: string | null;
 }
 
 export interface OrderPush {
@@ -80,6 +83,11 @@ export function orderPushes(
     templateKey,
     values: { ...number, ...values },
     data: order,
+  });
+  // RA §16 «Owners»: the owners' devices only.
+  const owners = (templateKey: string, values: Record<string, string> = {}): OrderPush => ({
+    ...merchant(templateKey, values),
+    recipient: { party: 'merchant', restaurantId: facts.restaurantId, owners: true },
   });
   const captain = (
     templateKey: string,
@@ -217,6 +225,24 @@ export function orderPushes(
           : []),
       ];
     case 'order.edited':
+      // AP §9.3.3 after the pickup (slice 2.10b): the customer's new total,
+      // the captain's new amount to collect (CA §9.10), and the owners'
+      // silent push of the debit when the restaurant is responsible (RA
+      // §8.13, §12.5); the restaurant's devices are not rung.
+      if (reason === 'removed_after_pickup' || reason === 'fee_lowered_after_pickup') {
+        return [
+          customer('customer.order_edited', { المبلغ: facts.total }),
+          ...(facts.merchantDebit === null
+            ? []
+            : [owners('merchant.debited_after_pickup', { المبلغ: facts.merchantDebit })]),
+          ...captain(
+            reason === 'removed_after_pickup'
+              ? 'captain.items_removed_after_pickup'
+              : 'captain.collect_lowered',
+            { المبلغ: facts.total },
+          ),
+        ];
+      }
       return [
         // CU §11.6, §14 #11: the new total; a ready order back to preparing
         // also moved the promised time (CU §14 #12).

@@ -116,7 +116,7 @@ export function editRequest(
     if (!Number.isInteger(extra) || extra < 1 || extra > extraPrepMaxMin) return null;
     extraPrepMin = extra;
   }
-  return { keep, add: form.added, deliveryFee, extraPrepMin };
+  return { keep, add: form.added, deliveryFee, extraPrepMin, responsible: null };
 }
 
 // The command's body, or null without a complete request and the note. It

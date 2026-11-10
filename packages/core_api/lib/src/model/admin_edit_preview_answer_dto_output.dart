@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_edit_preview_answer_dto_output_before.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_edit_preview_answer_dto_output_entries_inner.dart';
 import 'package:core_api/src/model/admin_edit_preview_answer_dto_output_changes_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -21,6 +22,8 @@ part 'admin_edit_preview_answer_dto_output.g.dart';
 /// * [addsItems] - The restaurant must acknowledge it before the pickup (RA §8.13).
 /// * [backToPreparing] - A ready order goes back to «قيد التحضير».
 /// * [promisedAt] - The new promised time when it moves.
+/// * [afterPickup] - The order was picked up: the edit needs a responsible party (AP §9.3.3).
+/// * [entries] - After the pickup, every entry the edit would post for the responsible party (docs/domain/09); empty before the pickup or until the party is chosen.
 @BuiltValue()
 abstract class AdminEditPreviewAnswerDtoOutput
     implements
@@ -51,6 +54,14 @@ abstract class AdminEditPreviewAnswerDtoOutput
   /// The new promised time when it moves.
   @BuiltValueField(wireName: r'promisedAt')
   DateTime? get promisedAt;
+
+  /// The order was picked up: the edit needs a responsible party (AP §9.3.3).
+  @BuiltValueField(wireName: r'afterPickup')
+  bool get afterPickup;
+
+  /// After the pickup, every entry the edit would post for the responsible party (docs/domain/09); empty before the pickup or until the party is chosen.
+  @BuiltValueField(wireName: r'entries')
+  BuiltList<AdminEditPreviewAnswerDtoOutputEntriesInner> get entries;
 
   AdminEditPreviewAnswerDtoOutput._();
 
@@ -121,6 +132,18 @@ class _$AdminEditPreviewAnswerDtoOutputSerializer
             object.promisedAt,
             specifiedType: const FullType.nullable(DateTime),
           );
+    yield r'afterPickup';
+    yield serializers.serialize(
+      object.afterPickup,
+      specifiedType: const FullType(bool),
+    );
+    yield r'entries';
+    yield serializers.serialize(
+      object.entries,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminEditPreviewAnswerDtoOutputEntriesInner),
+      ]),
+    );
   }
 
   @override
@@ -217,6 +240,26 @@ class _$AdminEditPreviewAnswerDtoOutputSerializer
                   as DateTime?;
           if (valueDes == null) continue;
           result.promisedAt = valueDes;
+          break;
+        case r'afterPickup':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.afterPickup = valueDes;
+          break;
+        case r'entries':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminEditPreviewAnswerDtoOutputEntriesInner),
+                    ]),
+                  )
+                  as BuiltList<AdminEditPreviewAnswerDtoOutputEntriesInner>;
+          result.entries.replace(valueDes);
           break;
         default:
           unhandled.add(key);

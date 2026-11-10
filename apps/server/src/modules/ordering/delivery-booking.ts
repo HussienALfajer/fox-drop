@@ -57,7 +57,16 @@ export interface Delivery {
   pay: PayParts;
   waitingMinutes: number;
   // AP §8.4: null on a test restaurant's order, which posts none (AP §9.6.3).
+  // AP §9.3.3 (slice 2.10b): on the items value of the pickup, frozen by an
+  // edit after it (`frozenAtPickup`), with the part on the items the captain
+  // or the platform bore going to the order clearing account.
   commission: bigint | null;
+  commissionToClearing: bigint;
+  // The delivery fee of the pickup: the platform's revenue, its cut by an
+  // edit after the pickup borne by the responsible party.
+  deliveryFee: bigint;
+  // The total the payment was checked against; an edit since refuses it.
+  amountDue: bigint;
 }
 
 export interface DeliveredBy {
@@ -213,11 +222,11 @@ export class DeliveryBooking {
     const clearing = await account('platform.order_clearing', base);
     // AP §8.11: the delivery fee is the platform's revenue.
     await post('platform.revenue_delivery', [
-      { accountId: clearing, currency: base, amount: order.deliveryFee },
+      { accountId: clearing, currency: base, amount: delivery.deliveryFee },
       {
         accountId: await account('platform.revenue_delivery', base),
         currency: base,
-        amount: -order.deliveryFee,
+        amount: -delivery.deliveryFee,
       },
     ]);
     // AP §8.4, §8.6: the total's rounding and the door's gap within rounding.
@@ -236,8 +245,12 @@ export class DeliveryBooking {
         {
           accountId: await account('platform.revenue_commission', base),
           currency: base,
-          amount: -delivery.commission,
+          amount: -(delivery.commission - delivery.commissionToClearing),
         },
+        // docs/domain/09 rule 3: the commission on items removed after the
+        // pickup with the captain or the platform responsible recovers the
+        // pickup payment.
+        { accountId: clearing, currency: base, amount: -delivery.commissionToClearing },
       ]);
     }
     // AP §8.5.2, AP §9.6.3: a test order's pay is the platform's test cost.

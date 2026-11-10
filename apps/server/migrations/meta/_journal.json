@@ -323,6 +323,13 @@
       "when": 1794279423111,
       "tag": "0045_ordering_edits",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1794288366736,
+      "tag": "0046_ordering_edits_after_pickup",
+      "breakpoints": true
     }
   ]
 }
