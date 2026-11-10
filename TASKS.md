@@ -4,18 +4,17 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.11, outcomes and failed orders (`docs/roadmap.md`, Phase 2).
+Slice 2.11a, «تحديد النتيجة» with nothing to collect (`docs/roadmap.md`, Phase 2; 2.11 split into 2.11a, 2.11b and 2.11c, owner decision 2026-11-10).
 
-- **Roadmap line:** «تحديد النتيجة» with the preview of its entries for each responsible party, the captain's payment screen for an amount to collect (K9), where the food went, OWN's «تغيير النتيجة» within 7 days reversing every side effect (AP §8.9, §9.3.2, CA §9.12, `docs/domain/09`). The owner sets an outcome and the entries match the preview.
-- **Specs:** AP §9.3.2 «تحديد النتيجة» and «تغيير النتيجة», AP §8.9 (`docs/domain/09`: the outcomes, the one rule of their money, the preview, the food, the change within `order.outcome_change_days`), docs/domain/08 (the customer's dues and strike for a fake order), docs/domain/07 and 11, CA §9.10 («Outcome set by OPS with an amount to collect», K9) and CA §9.12, CU §11.6 («المبلغ المطلوب الآن»), RA §16 #19 (the owners' silent push), RA §12.5 («استرداد مبلغ الاستلام»), AP Appendix C (the outcomes' labels), and the definitions of done.
+- **Roadmap line:** the outcomes ending `failed` or `delivered` with the amount to collect 0, the responsible party, the preview of every entry, the one rule of docs/domain/09 for each party counting the edits after the pickup, where the food went, a fake order's dues with the block, strike and lost trust, the captain's instruction and pay, the customer's «لن تدفع شيئاً لهذا الطلب». The owner sets a fake order with the customer responsible and the entries match the preview.
+- **Specs:** AP §9.3.2 «تحديد النتيجة», AP §8.9 (`docs/domain/09`, with «After an edit after pickup»), `docs/domain/08` (fake order, dues), docs/domain/07 and 11, CA §9.10 (outcome rows), CA §9.12, CU §11.6, AP Appendix C (the outcomes' labels), and the definitions of done (AP §14 item 32 «Failed orders record where the food went»).
 - **Branch:** `feat/order-outcomes`.
-- **Builds on 2.10b:** the clearing account's frozen pickup values (`frozenAtPickup` in `order-edits.ts`): an order edited after the pickup and then failed must book from the pickup payment and count the edits' entries already posted (a restaurant-responsible edit reversed part of a commission no delivery will post). The preview sentences of «إلغاء الطلب» and «تعديل الطلب» (`previewLines`, `afterPickupLines` in the panel).
-- **Ask the owner first:** the split into pull requests (the roadmap line holds the outcome, the captain's payment screen and the change of an outcome: run the `slice-plan` skill), the customer's dues before the dues ledger exists (AP §8.8), and how an outcome books after an edit after the pickup.
-- **Plan (to confirm after the split):**
-  - [ ] Server: «تحديد النتيجة» with its preview for each outcome and party; failing tests first.
-  - [ ] Captain app: the payment screen for an amount to collect (K9) and «بانتظار تسجيل التحصيل».
-  - [ ] Panel: the outcome dialog with the entries' preview and where the food went.
-  - [ ] «تغيير النتيجة» within `order.outcome_change_days`, reversing every side effect.
+- **Owner decisions 2026-11-10:** three pull requests (2.11a, 2.11b with the amount to collect K9, 2.11c «تغيير النتيجة»); a fake order posts `dues.charge` on a new customer dues account now and blocks the customer at checkout, with the strike and the lost trust (the banner and the desk payment come with 2.25; until then only «تغيير النتيجة» lifts it); nobody pays twice after an edit after the pickup (docs/domain/09); the device block is its own slice 2.25b.
+- **Plan:**
+  - [ ] Ledger and customers: the customer dues account and `dues.charge`, the dues block at checkout, the fake-order strike, trust counted after the last fake outcome; failing tests first.
+  - [ ] Server: `outcomeEntries` (the pure rule, every party, after edits), the preview and «تحديد النتيجة» routes from `picked_up` and `arrived` with amount 0, the food, the captain's and customer's reads, pushes; failing tests first.
+  - [ ] Panel: the outcome dialog with the entries' preview and where the food went, the detail's outcome.
+  - [ ] Captain app: «أنهت العمليات الطلب: {النتيجة}» with the food instruction; customer app: «لن تدفع شيئاً لهذا الطلب».
   - [ ] Review, hand over, pull request.
 
 ### Left from 2.10b (`feat/order-edits-after-pickup`)

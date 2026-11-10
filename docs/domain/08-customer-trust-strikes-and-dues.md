@@ -12,6 +12,7 @@
   - When the outcome is set to fake, the customer is blocked until they pay their dues.
   - Dues follow `customer.fake_order_dues_rule`: `fee_plus_merchant_net` (default: delivery fee + merchant net), `fee_plus_items_value`, or `fixed` (an amount set by OWN).
   - FIN records the payment at the desk, which unblocks the customer automatically.
+- **The device block (owner decision 2026-11-10, slice 2.25b):** a dues block or a manual block follows the account, its phone number and the phone itself, so a new account, another number, a reinstall or a VPN on the same phone cannot order. The device's identity must survive a reinstall (Android ID with Play Integrity's device recall on Android, a Keychain item with DeviceCheck on iOS); the IP address is only a signal, never the block, since a VPN changes it and many customers share one. OWN can lift a device's block with a reason, for a phone sold on.
 - **Dues ledger «مستحقات الزبون»** (base currency):
 
   | Entry             | Sign | When                                                                  |
