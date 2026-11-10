@@ -180,7 +180,7 @@ const refusalKeys = {
   cash_answer_not_allowed: 'order.onBehalf.refused',
 } as const satisfies Record<CancelRefusal, string>;
 
-function PreviewSentence({ line }: { line: PreviewLine }) {
+export function PreviewSentence({ line }: { line: PreviewLine }) {
   const { t } = useTranslation();
   // A party the server could not name shows by its kind.
   const restaurant = 'name' in line ? (line.name ?? t('order.restaurant')) : '';

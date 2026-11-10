@@ -12,6 +12,8 @@ import { canSetOutcome } from './order-outcome.js';
 import { RecordOutcomePayment } from './order-outcome-payment-page.js';
 import { canRecordOutcomePayment } from './order-outcome-payment.js';
 import { canCancel } from './order-cancel.js';
+import { ReassignOrder } from './order-reassign-page.js';
+import { canReassign } from './order-reassign.js';
 import {
   actorKey,
   cancelReasonKeys,
@@ -261,6 +263,14 @@ export function OrderDetailPage() {
           choices={detail.cancelChoices}
         />
       )}
+      {canReassign(session, detail) && (
+        <ReassignOrder
+          key={[orderId, detail.version].join(':')}
+          orderId={orderId}
+          version={detail.version}
+          choices={detail.reassignChoices}
+        />
+      )}
       {canResend(session) && (
         <ResendNotification orderId={orderId} targets={resendTargets(detail)} />
       )}
@@ -284,6 +294,30 @@ export function OrderDetailPage() {
         </p>
       )}
       <Outlet />
+      {detail.reassignments.length > 0 && (
+        <section>
+          <h4>{t('order.reassignments.title')}</h4>
+          <ul>
+            {detail.reassignments.map((each) => (
+              <li key={each.at}>
+                {[
+                  t('order.reassignments.line', {
+                    time: time(each.at),
+                    label: each.label,
+                    fault: t(
+                      each.captainFault ? 'order.reassign.captainFault' : 'order.reassign.noFault',
+                    ),
+                  }),
+                  each.cash && t('order.cancellation.cash', { answer: t(cashKeys[each.cash]) }),
+                  each.note,
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <h3>{t('order.restaurant')}</h3>
       <p>{detail.restaurant.name}</p>

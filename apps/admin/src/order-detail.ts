@@ -52,6 +52,7 @@ export const eventKeys = {
   'order.outcome_set': 'order.event.outcomeSet',
   'order.outcome_collected': 'order.event.outcomeCollected',
   'order.outcome_changed': 'order.event.outcomeChanged',
+  'order.reassigned': 'order.event.reassigned',
 } as const;
 
 export function eventKey(type: string | null): (typeof eventKeys)[keyof typeof eventKeys] | null {

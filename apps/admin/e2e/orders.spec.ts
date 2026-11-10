@@ -48,6 +48,8 @@ const detail = {
   rejection: null,
   onBehalf: null,
   cancelChoices: null,
+  reassignChoices: null,
+  reassignments: [],
   outcome: null,
   outcomeChoices: null,
   itemReport: null,
@@ -586,6 +588,114 @@ test('shows a cancellation by operations in the detail and its timeline', async 
   await expect(cancelled).toContainText('ظرف طارئ');
   await expect(cancelled).toContainText('انقطاع الكهرباء');
   await expect(panel.getByRole('form', { name: 'إلغاء الطلب' })).toHaveCount(0);
+});
+
+// AP §9.3.2 «سحب وإعادة تعيين» (slice 2.12a): the reason prefills its fault,
+// the captain reached the restaurant so the cash question comes with the
+// entries, and «اختيار كابتن آخر الآن» opens the picker after the withdrawal.
+test('takes an order from its captain with the cash question, then opens the picker', async ({
+  page,
+}) => {
+  await fakeSession(page, ['operations.read', 'operations.manage']);
+  await fakeOperations(page);
+  const captainId = '01900000-0000-7000-8000-0000000000c1';
+  await page.route(`**/v1/admin/orders/${orderId}`, (route) =>
+    route.fulfill({
+      json: {
+        order: {
+          ...detail,
+          reassignChoices: {
+            reasons: [
+              { code: 'vehicle_breakdown', label: 'عطل في المركبة', captainFault: false },
+              { code: 'captain_late', label: 'تأخر الكابتن', captainFault: true },
+            ],
+          },
+          reassignments: [
+            {
+              at: later(-20),
+              captainId,
+              reason: 'connection_lost',
+              label: 'انقطاع الاتصال',
+              captainFault: false,
+              cash: null,
+              note: 'لا يرد',
+              adminId: captainId,
+              captainSeenAt: null,
+            },
+          ],
+        },
+      },
+    }),
+  );
+  await page.route(`**/v1/admin/orders/${orderId}/reassign-preview`, (route) =>
+    route.fulfill({
+      json:
+        route.request().postDataJSON().cash === 'not_returned'
+          ? {
+              entries: [
+                {
+                  type: 'custody.pay_merchant',
+                  account: 'captain.custody',
+                  party: { kind: 'captain', id: captainId, name: 'سامر' },
+                  amount: { amount: '-1000', currency: 'USD' },
+                },
+                {
+                  type: 'custody.pay_merchant',
+                  account: 'platform.order_clearing',
+                  party: { kind: 'platform', id: null, name: null },
+                  amount: { amount: '1000', currency: 'USD' },
+                },
+                {
+                  type: 'merchant.debit',
+                  account: 'merchant.account',
+                  party: { kind: 'merchant', id: captainId, name: 'مطعم الشام' },
+                  amount: { amount: '1000', currency: 'USD' },
+                },
+                {
+                  type: 'merchant.debit',
+                  account: 'platform.order_clearing',
+                  party: { kind: 'platform', id: null, name: null },
+                  amount: { amount: '-1000', currency: 'USD' },
+                },
+              ],
+              cashAsked: true,
+              cashLines: [{ amount: '1000', currency: 'USD' }],
+            }
+          : { entries: [], cashAsked: true, cashLines: [{ amount: '1000', currency: 'USD' }] },
+    }),
+  );
+  let sent: unknown;
+  await page.route(`**/v1/admin/orders/${orderId}/reassign`, (route) => {
+    sent = route.request().postDataJSON();
+    return route.fulfill({ json: { order: card } });
+  });
+  await page.route(`**/v1/admin/orders/${orderId}/captains`, (route) =>
+    route.fulfill({ json: { captains: [] } }),
+  );
+  await page.goto(`/orders/${orderId}`);
+
+  await expect(page.getByText(/«انقطاع الاتصال» — دون خطأ\. لا يرد/)).toBeVisible();
+  const reassign = page.getByRole('form', { name: 'سحب وإعادة تعيين' });
+  await reassign.getByRole('radio', { name: 'تأخر الكابتن' }).check();
+  await expect(reassign.getByRole('radio', { name: 'بخطأ من الكابتن' })).toBeChecked();
+  await reassign.getByRole('radio', { name: 'عطل في المركبة' }).check();
+  await expect(reassign.getByRole('radio', { name: 'دون خطأ' })).toBeChecked();
+  await expect(reassign.getByText(/دفع الكابتن للمطعم: .*10\.00/)).toBeVisible();
+  await reassign.getByRole('radio', { name: 'لا', exact: true }).check();
+  await expect(reassign.getByText(/يُعاد للكابتن «سامر» .*10\.00.* \(عهدة\)\./)).toBeVisible();
+  await reassign.getByRole('radio', { name: 'اختيار كابتن آخر الآن' }).check();
+  await reassign.getByRole('textbox', { name: 'السبب (للسجل الداخلي)' }).fill('تعطلت الدراجة');
+  await reassign.getByRole('button', { name: 'تأكيد السحب' }).click();
+
+  await expect
+    .poll(() => sent)
+    .toEqual({
+      reassignment: 'vehicle_breakdown',
+      captainFault: false,
+      cash: 'not_returned',
+      reason: 'تعطلت الدراجة',
+    });
+  await expect(page).toHaveURL(new RegExp(`/orders/${orderId}/assign`));
 });
 
 // AP §9.3.2: the captain's vehicle has no rate, so «تعويض الكابتن» is
