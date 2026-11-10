@@ -457,6 +457,7 @@ void main() {
       'status': status,
       'text': text,
       'amountToCollect': {'amount': '0', 'currency': 'TRY'},
+      'awaitingCollection': false,
     };
     final app = await open(tester, [
       FakeAnswer(200, {
@@ -484,6 +485,28 @@ void main() {
     ]);
     expect(_status(tester), contains('لم تدفع شيئاً لهذا الطلب'));
     await free.done(tester);
+  });
+
+  testWidgets('an outcome waiting for its amount says what is due now '
+      '(CU §11.6, K9)', (tester) async {
+    final app = await open(tester, [
+      FakeAnswer(200, {
+        'order': _order(
+          status: 'arrived',
+          version: 9,
+          outcome: {
+            'at': '2026-11-07T12:40:00.000Z',
+            'outcome': 'free',
+            'status': 'delivered',
+            'text': null,
+            'amountToCollect': {'amount': '5000', 'currency': 'TRY'},
+            'awaitingCollection': true,
+          },
+        ),
+      }),
+    ]);
+    expect(_status(tester), contains('المبلغ المطلوب الآن: 50 ₺'));
+    await app.done(tester);
   });
 
   testWidgets('an order operations cancelled shows its reason (CU §11.9)', (

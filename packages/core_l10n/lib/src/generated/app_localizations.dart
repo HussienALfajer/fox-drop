@@ -3214,6 +3214,24 @@ abstract class AppLocalizations {
   /// **'أنهت العمليات الطلب: {outcome}.'**
   String captainOutcomeSet(String outcome);
 
+  /// Operations ended the captain's order with an amount to collect (CA §9.10, K9, slice 2.11b): the payment screen opens for it; {outcome} is the outcome's label, {amount} is formatted with formatMoney.
+  ///
+  /// In ar, this message translates to:
+  /// **'أنهت العمليات الطلب: {outcome}. اقبض {amount}.'**
+  String captainOutcomeCollect(String outcome, String amount);
+
+  /// The badge of an order waiting for the captain to record the amount operations set to collect (CA §9.10, Appendix B, slice 2.11b).
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار تسجيل التحصيل'**
+  String get captainAwaitingCollection;
+
+  /// The order screen after operations set an outcome with an amount to collect (CU §11.6, slice 2.11b); {amount} is formatted with formatMoney.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ المطلوب الآن: {amount}'**
+  String customerAmountDueNow(String amount);
+
   /// The outcome free (AP Appendix C).
   ///
   /// In ar, this message translates to:

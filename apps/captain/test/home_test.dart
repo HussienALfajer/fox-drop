@@ -800,6 +800,47 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets('an outcome with an amount to collect opens the payment screen '
+      'and records it (CA §9.10, K9)', (tester) async {
+    final app = TestApp();
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [orderJson(status: 'picked_up', track: 'picked_up')],
+    );
+    await app.pump(tester);
+    await app.live(tester);
+
+    final waiting = orderJson(
+      status: 'picked_up',
+      track: 'picked_up',
+      version: 7,
+    )..['outcomeToCollect'] = {'outcome': 'free', 'amount': moneyJson('5000')};
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [waiting],
+    );
+    app.transport.event('order.outcome_set', 7);
+    await app.settle(tester);
+    expect(find.text('بانتظار تسجيل التحصيل'), findsOneWidget);
+    expect(find.text('أنهت العمليات الطلب: مجاني. اقبض 50 ₺.'), findsWidgets);
+    expect(app.ringer.chimes, 1);
+
+    app.server.on('/v1/captain/orders/$orderId/outcome-payment', [
+      FakeAnswer(200, summaryJson()),
+    ]);
+    app.work(availability: [availabilityJson(state: 'online_available')]);
+    await app.tapVisible(tester, find.byKey(const Key('exact-TRY')));
+    await tester.pump();
+    await app.tapVisible(tester, find.text('تم التسليم'));
+    await app.settle(tester);
+    final body = bodyOf(app, '/v1/captain/orders/$orderId/outcome-payment');
+    expect(body['received'], [moneyJson('5000')]);
+    expect(body['amountDue'], moneyJson('5000'));
+    expect(body.containsKey('location'), isFalse);
+    expect(find.text('ربحت من هذا الطلب: 35 ₺'), findsOneWidget);
+    await app.done(tester);
+  });
+
   testWidgets('shows the charge when the captain is responsible (CA §10.6)', (
     tester,
   ) async {

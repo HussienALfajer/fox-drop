@@ -74,15 +74,22 @@ class ReadyForCaptain extends OrderTitle {
   final bool captainThere;
 }
 
-/// «في الطريق إليك» — «الكابتن {الاسم} استلم طلبك».
+/// «في الطريق إليك» — «الكابتن {الاسم} استلم طلبك», or «المبلغ المطلوب
+/// الآن: {المبلغ}» once operations set an outcome with an amount to collect.
 class OnTheWay extends OrderTitle {
-  const OnTheWay(this.captain);
+  const OnTheWay(this.captain, {this.dueNow});
   final String captain;
+
+  /// CU §11.6 (K9, slice 2.11b): the amount the captain still collects, in
+  /// minor units of the order's currency.
+  final String? dueNow;
 }
 
-/// «الكابتن عند الباب» — «جهّز {المبلغ}».
+/// «الكابتن عند الباب» — «جهّز {المبلغ}», or «المبلغ المطلوب الآن: {المبلغ}».
 class AtDoor extends OrderTitle {
-  const AtDoor();
+  const AtDoor({this.dueNow});
+
+  final String? dueNow;
 }
 
 /// «تم التسليم» — «بالعافية!».
@@ -130,6 +137,11 @@ class Failed extends OrderTitle {
 
 OrderTitle titleOf(CustomerOrder order) {
   final captain = order.captain;
+  final outcome = order.outcome;
+  // CU §11.6: an outcome waiting for the captain to collect its amount.
+  final dueNow = outcome != null && outcome.awaitingCollection
+      ? outcome.amountToCollect.amount
+      : null;
   return switch (order.status.name) {
     'placed' => AwaitingRestaurant(order.restaurant.nameAr),
     'accepted' => Preparing(
@@ -138,8 +150,9 @@ OrderTitle titleOf(CustomerOrder order) {
       captainThere: captain?.atRestaurant ?? false,
     ),
     'ready' => ReadyForCaptain(captainThere: captain?.atRestaurant ?? false),
-    'pickedUp' || 'picked_up' => OnTheWay(captain?.firstName ?? ''),
-    'arrived' => const AtDoor(),
+    'pickedUp' ||
+    'picked_up' => OnTheWay(captain?.firstName ?? '', dueNow: dueNow),
+    'arrived' => AtDoor(dueNow: dueNow),
     'delivered' => Delivered(
       paidNothing: order.outcome?.amountToCollect.amount == '0',
     ),

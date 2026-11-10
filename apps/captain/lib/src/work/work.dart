@@ -19,6 +19,8 @@ typedef Cancelled = CaptainActiveOrderDtoOutputCancelled;
 typedef CancelledCash = CaptainActiveOrderDtoOutputCancelledCashEnum;
 typedef Ended = CaptainActiveOrderDtoOutputEnded;
 typedef EndedOutcome = CaptainActiveOrderDtoOutputEndedOutcomeEnum;
+typedef CollectOutcome =
+    CaptainActiveOrderDtoOutputOrderOutcomeToCollectOutcomeEnum;
 typedef EndedFood = CaptainActiveOrderDtoOutputEndedFoodEnum;
 
 /// What the captain's screens show, always as the server answered it: the

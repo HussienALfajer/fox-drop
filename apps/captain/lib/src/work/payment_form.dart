@@ -16,9 +16,14 @@ import 'work.dart';
 /// with the order's rates; the app computes the change only for one
 /// currency, which needs no rate. Unstyled until the design.
 class PaymentForm extends ConsumerStatefulWidget {
-  const PaymentForm({super.key, required this.order});
+  const PaymentForm({super.key, required this.order, this.outcomeAmount});
 
   final ActiveOrder order;
+
+  /// CA §9.10 (K9): the amount operations set to collect with an outcome,
+  /// in the base currency; the form records it instead of a delivery, with
+  /// no location and no equivalents (the app has no rates for this amount).
+  final Money? outcomeAmount;
 
   @override
   ConsumerState<PaymentForm> createState() => _PaymentFormState();
@@ -38,6 +43,7 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
   ActiveOrder get _order => widget.order;
 
   Money _collect(ActiveOrder order) =>
+      widget.outcomeAmount ??
       Money(order.collect.amount, order.collect.currency);
 
   /// The amount due the screen shows, which the command carries (CA §9.7
@@ -54,10 +60,12 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
     }
   }
 
-  List<Money> get _due => dueIn(_amountDue, [
-    for (final e in _order.customer.collectEquivalents.nonNulls)
-      Money(e.amount, e.currency),
-  ], _order.customer.payIn);
+  List<Money> get _due => widget.outcomeAmount != null
+      ? [_amountDue]
+      : dueIn(_amountDue, [
+          for (final e in _order.customer.collectEquivalents.nonNulls)
+            Money(e.amount, e.currency),
+        ], _order.customer.payIn);
 
   TextEditingController _field(
     Map<String, TextEditingController> fields,
@@ -138,6 +146,25 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
     }
     setState(() => _reasonMissing = false);
     final commands = ref.read(commandsProvider.notifier);
+    if (widget.outcomeAmount != null) {
+      final notice = await commands.collectOutcome(
+        _order.id,
+        DoorPayment(
+          received: received,
+          change: change,
+          amountDue: _amountDue,
+          shortfall: reason,
+        ),
+      );
+      if (!mounted) return;
+      if (notice is ReasonChanged) {
+        setState(() => _shortReason = null);
+        showNotice(context, notice);
+        return;
+      }
+      setState(() => _refused = notice);
+      return;
+    }
     final pin = _order.customer.location;
     final fix = ref.read(locationTrackerProvider).latest;
     final distance = fix?.metresTo(

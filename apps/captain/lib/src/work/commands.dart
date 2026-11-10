@@ -316,6 +316,42 @@ class Commands extends Notifier<Set<String>> {
         return answer;
       });
 
+  /// The payment of the amount operations set to collect with an outcome
+  /// (CA §9.10, K9): no location, since the screen opens wherever the
+  /// captain is; the summary opens.
+  Future<Notice?> collectOutcome(String orderId, DoorPayment payment) async {
+    final (answer, notice) = await _send(
+      orderId,
+      'outcome-payment ${payment.key}',
+      (key) => _api.captainOrdersCollectOutcome(
+        orderId: orderId,
+        idempotencyKey: key,
+        captainOutcomePaymentDto: CaptainOutcomePaymentDto(
+          (b) => b
+            ..received.addAll(payment.received.map(_line))
+            ..change.addAll(payment.change.map(_line))
+            ..amountDue.replace(
+              AdminRecordDeliveryDtoAmountDue(
+                (m) => m
+                  ..amount = payment.amountDue.amount
+                  ..currency = payment.amountDue.currency,
+              ),
+            )
+            ..shortfall = payment.shortfall == null
+                ? null
+                : (AdminRecordDeliveryDtoShortfallBuilder()
+                    ..reason = payment.shortfall!.reason
+                    ..note = payment.shortfall!.note),
+        ),
+      ),
+    );
+    final data = answer?.data;
+    if (data is CaptainDeliverySummaryDtoOutput) {
+      ref.read(summaryProvider.notifier).show(data.summary);
+    }
+    return notice;
+  }
+
   /// «حسناً» on an order operations cancelled (CA §9.10): no key and no
   /// location, since it only records once that the captain saw it.
   Future<Notice?> acknowledgeCancellation(String orderId) async => (await _send(
