@@ -96,6 +96,9 @@ import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner_opti
 import 'package:core_api/src/model/admin_order_dto_output_order_money.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf_prep_time.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_outcome.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_outcome_choices.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_outcome_choices_foods_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_dispute.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_requests_inner.dart';
@@ -107,6 +110,12 @@ import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.d
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_actor.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_item_report.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_time_change.dart';
+import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output.dart';
+import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_captain_pay.dart';
+import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_entries_inner.dart';
+import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_entries_inner_party.dart';
+import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_loss.dart';
+import 'package:core_api/src/model/admin_outcome_preview_dto.dart';
 import 'package:core_api/src/model/admin_picker_dto_output.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody.dart';
@@ -138,6 +147,7 @@ import 'package:core_api/src/model/admin_restaurants_dto_output_restaurants_inne
 import 'package:core_api/src/model/admin_resume_emergency_stop_dto.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/admin_set_image_dto.dart';
+import 'package:core_api/src/model/admin_set_outcome_dto.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output_shortfalls_inner.dart';
 import 'package:core_api/src/model/admin_start_emergency_stop_dto.dart';
@@ -154,6 +164,9 @@ import 'package:core_api/src/model/admin_work_rules_dto_output.dart';
 import 'package:core_api/src/model/backup_codes_dto_output.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_cancelled.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_ended.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_ended_charge.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_ended_pay.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
@@ -234,6 +247,8 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_item_report.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_money.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_outcome.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_outcome_amount_to_collect.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_rejection.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_removed_lines_inner.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_removed_lines_inner_options_inner.dart';
@@ -485,6 +500,9 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderMoney,
   AdminOrderDtoOutputOrderOnBehalf,
   AdminOrderDtoOutputOrderOnBehalfPrepTime,
+  AdminOrderDtoOutputOrderOutcome,
+  AdminOrderDtoOutputOrderOutcomeChoices,
+  AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner,
   AdminOrderDtoOutputOrderPickup,
   AdminOrderDtoOutputOrderPickupDispute,
   AdminOrderDtoOutputOrderPickupRequestsInner,
@@ -496,6 +514,12 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderTimelineInnerActor,
   AdminOrderDtoOutputOrderTimelineInnerItemReport,
   AdminOrderDtoOutputOrderTimelineInnerTimeChange,
+  AdminOutcomePreviewAnswerDtoOutput,
+  AdminOutcomePreviewAnswerDtoOutputCaptainPay,
+  AdminOutcomePreviewAnswerDtoOutputEntriesInner,
+  AdminOutcomePreviewAnswerDtoOutputEntriesInnerParty,
+  AdminOutcomePreviewAnswerDtoOutputLoss,
+  AdminOutcomePreviewDto,
   AdminPickerDtoOutput,
   AdminPickerDtoOutputCaptainsInner,
   AdminPickerDtoOutputCaptainsInnerCustody,
@@ -527,6 +551,7 @@ part 'serializers.g.dart';
   AdminResumeEmergencyStopDto,
   AdminSessionDtoOutput,
   AdminSetImageDto,
+  AdminSetOutcomeDto,
   AdminShortfallsDtoOutput,
   AdminShortfallsDtoOutputShortfallsInner,
   AdminStartEmergencyStopDto,
@@ -543,6 +568,9 @@ part 'serializers.g.dart';
   BackupCodesDtoOutput,
   CaptainActiveOrderDtoOutput,
   CaptainActiveOrderDtoOutputCancelled,
+  CaptainActiveOrderDtoOutputEnded,
+  CaptainActiveOrderDtoOutputEndedCharge,
+  CaptainActiveOrderDtoOutputEndedPay,
   CaptainActiveOrderDtoOutputOrder,
   CaptainActiveOrderDtoOutputOrderArrival,
   CaptainActiveOrderDtoOutputOrderCollect,
@@ -623,6 +651,8 @@ part 'serializers.g.dart';
   CustomerActiveOrdersDtoOutputOrdersInnerItemReport,
   CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
   CustomerActiveOrdersDtoOutputOrdersInnerMoney,
+  CustomerActiveOrdersDtoOutputOrdersInnerOutcome,
+  CustomerActiveOrdersDtoOutputOrdersInnerOutcomeAmountToCollect,
   CustomerActiveOrdersDtoOutputOrdersInnerRejection,
   CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner,
   CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInnerOptionsInner,
@@ -856,6 +886,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminOutcomePreviewAnswerDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminOutcomePreviewAnswerDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
             ]),
             () =>
@@ -903,6 +939,13 @@ Serializers serializers =
               FullType(CustomerRestaurantPageDtoOutputMenuInner),
             ]),
             () => ListBuilder<CustomerRestaurantPageDtoOutputMenuInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner),
+            ]),
+            () =>
+                ListBuilder<AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

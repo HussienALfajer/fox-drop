@@ -88,7 +88,7 @@ function pickup(
 const post = (journal: PostJournal) => db.transaction((tx) => ledger.post(journal, tx));
 
 describe('the catalogue', () => {
-  it('has every entry type of AP §8.5 and §8.7, the platform types of §8.11, and no other', () => {
+  it('has every entry type of AP §8.5, §8.7 and §8.8 (its dues.charge so far), the platform types of §8.11, and no other', () => {
     expect([...journalTypeNames].sort()).toEqual(
       [
         'custody.collect',
@@ -113,6 +113,7 @@ describe('the catalogue', () => {
         'merchant.debit',
         'merchant.settlement',
         'merchant.adjustment',
+        'dues.charge',
         'platform.revenue_delivery',
         'platform.discount_cost',
         'platform.compensation_cost',

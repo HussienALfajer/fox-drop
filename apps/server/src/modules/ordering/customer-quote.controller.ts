@@ -146,6 +146,7 @@ class CustomerQuoteDto extends createZodDto(
             'terms_pending',
             'emergency_stop',
             'review_stop',
+            'dues_unpaid',
             'item_not_found',
             'item_unavailable',
             'option_not_found',
@@ -163,6 +164,9 @@ class CustomerQuoteDto extends createZodDto(
             .string()
             .nullable()
             .describe('emergency_stop: the browsing message (AP §9.1.6).'),
+          amount: amount
+            .nullable()
+            .describe('dues_unpaid: what the customer owes (CU §5.5, AP §8.8).'),
         }),
       )
       .describe('CU §10.6: every one blocks ordering; the texts are in Appendix C.'),
@@ -263,6 +267,10 @@ export function quoteBody(quote: Quote) {
     problems: quote.problems.map((entry) => ({
       ...entry,
       opensAt: entry.opensAt?.toISOString() ?? null,
+      amount: entry.amount && {
+        amount: entry.amount.amount.toString(),
+        currency: entry.amount.currency,
+      },
     })),
   };
 }

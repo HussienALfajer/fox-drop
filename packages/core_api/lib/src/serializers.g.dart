@@ -143,6 +143,16 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderMoney.serializer)
           ..add(AdminOrderDtoOutputOrderOnBehalf.serializer)
           ..add(AdminOrderDtoOutputOrderOnBehalfPrepTime.serializer)
+          ..add(AdminOrderDtoOutputOrderOutcome.serializer)
+          ..add(AdminOrderDtoOutputOrderOutcomeChoices.serializer)
+          ..add(AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner.serializer)
+          ..add(
+            AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum.serializer,
+          )
+          ..add(AdminOrderDtoOutputOrderOutcomeFoodEnum.serializer)
+          ..add(AdminOrderDtoOutputOrderOutcomeOutcomeEnum.serializer)
+          ..add(AdminOrderDtoOutputOrderOutcomeResponsibleEnum.serializer)
+          ..add(AdminOrderDtoOutputOrderOutcomeStatusEnum.serializer)
           ..add(AdminOrderDtoOutputOrderPickup.serializer)
           ..add(AdminOrderDtoOutputOrderPickupDispute.serializer)
           ..add(AdminOrderDtoOutputOrderPickupRequestsInner.serializer)
@@ -163,6 +173,20 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderTimelineInnerItemReport.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerTimeChange.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerToEnum.serializer)
+          ..add(AdminOutcomePreviewAnswerDtoOutput.serializer)
+          ..add(AdminOutcomePreviewAnswerDtoOutputCaptainPay.serializer)
+          ..add(AdminOutcomePreviewAnswerDtoOutputEntriesInner.serializer)
+          ..add(AdminOutcomePreviewAnswerDtoOutputEntriesInnerParty.serializer)
+          ..add(
+            AdminOutcomePreviewAnswerDtoOutputEntriesInnerPartyKindEnum
+                .serializer,
+          )
+          ..add(AdminOutcomePreviewAnswerDtoOutputLoss.serializer)
+          ..add(AdminOutcomePreviewAnswerDtoOutputStatusEnum.serializer)
+          ..add(AdminOutcomePreviewDto.serializer)
+          ..add(AdminOutcomePreviewDtoFoodEnum.serializer)
+          ..add(AdminOutcomePreviewDtoOutcomeEnum.serializer)
+          ..add(AdminOutcomePreviewDtoResponsibleEnum.serializer)
           ..add(AdminPickerDtoOutput.serializer)
           ..add(AdminPickerDtoOutputCaptainsInner.serializer)
           ..add(AdminPickerDtoOutputCaptainsInnerCustody.serializer)
@@ -210,6 +234,10 @@ Serializers _$serializers =
           ..add(AdminResumeEmergencyStopDto.serializer)
           ..add(AdminSessionDtoOutput.serializer)
           ..add(AdminSetImageDto.serializer)
+          ..add(AdminSetOutcomeDto.serializer)
+          ..add(AdminSetOutcomeDtoFoodEnum.serializer)
+          ..add(AdminSetOutcomeDtoOutcomeEnum.serializer)
+          ..add(AdminSetOutcomeDtoResponsibleEnum.serializer)
           ..add(AdminShortfallsDtoOutput.serializer)
           ..add(AdminShortfallsDtoOutputShortfallsInner.serializer)
           ..add(AdminStartEmergencyStopDto.serializer)
@@ -227,6 +255,12 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutput.serializer)
           ..add(CaptainActiveOrderDtoOutputCancelled.serializer)
           ..add(CaptainActiveOrderDtoOutputCancelledCashEnum.serializer)
+          ..add(CaptainActiveOrderDtoOutputEnded.serializer)
+          ..add(CaptainActiveOrderDtoOutputEndedCharge.serializer)
+          ..add(CaptainActiveOrderDtoOutputEndedFoodEnum.serializer)
+          ..add(CaptainActiveOrderDtoOutputEndedOutcomeEnum.serializer)
+          ..add(CaptainActiveOrderDtoOutputEndedPay.serializer)
+          ..add(CaptainActiveOrderDtoOutputEndedStatusEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputOrder.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderArrival.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderCaptainTrackEnum.serializer)
@@ -336,6 +370,19 @@ Serializers _$serializers =
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerItemReport.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerLinesInner.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerMoney.serializer)
+          ..add(CustomerActiveOrdersDtoOutputOrdersInnerOutcome.serializer)
+          ..add(
+            CustomerActiveOrdersDtoOutputOrdersInnerOutcomeAmountToCollect
+                .serializer,
+          )
+          ..add(
+            CustomerActiveOrdersDtoOutputOrdersInnerOutcomeOutcomeEnum
+                .serializer,
+          )
+          ..add(
+            CustomerActiveOrdersDtoOutputOrdersInnerOutcomeStatusEnum
+                .serializer,
+          )
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerRejection.serializer)
           ..add(
             CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner
@@ -813,9 +860,22 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner),
+            ]),
+            () =>
+                ListBuilder<AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminOrderDtoOutputOrderPickupRequestsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderPickupRequestsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOutcomePreviewAnswerDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminOutcomePreviewAnswerDtoOutputEntriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

@@ -22,6 +22,9 @@ export const accountPurposes = {
   'captain.earnings': { owned: true, sign: -1n },
   // The kit deposit held for the captain, paid back at termination (AP §9.10.3).
   'captain.deposit': { owned: true, sign: -1n },
+  // AP §8.8 «مستحقات الزبون», in the base currency: + the customer owes the
+  // platform. Owned by the customer's account.
+  'customer.dues': { owned: true, sign: 1n },
   // AP §8.7: − the restaurant owes the platform, + the platform owes it.
   'merchant.account': { owned: true, sign: -1n },
   // AP §8.11, revenues shown positive.
@@ -127,6 +130,13 @@ export const journalRules = {
   'merchant.debit': { account: 'merchant.account', counters: orderOrTicketCounter },
   'merchant.settlement': { account: 'merchant.account', ...deskInAnyCurrency },
   'merchant.adjustment': { account: 'merchant.account', ...adjustment },
+  // AP §8.8, §8.9: a fake order's dues recover the loss on the order
+  // clearing account; what they charge beyond it (the fee, by
+  // customer.fake_order_dues_rule) is the delivery's revenue.
+  'dues.charge': {
+    account: 'customer.dues',
+    counters: ['platform.order_clearing', 'platform.revenue_delivery'],
+  },
   'platform.revenue_delivery': { account: 'platform.revenue_delivery', counters: orderCounter },
   'platform.discount_cost': { account: 'platform.discount_cost', counters: orderCounter },
   'platform.compensation_cost': {

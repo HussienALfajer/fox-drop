@@ -7,6 +7,7 @@ import 'package:core_api/src/model/admin_order_dto_output_order_edits_inner.dart
 import 'package:core_api/src/model/admin_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_outcome_choices.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_rejection.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices.dart';
@@ -21,6 +22,7 @@ import 'package:core_api/src/model/admin_order_dto_output_order_removed_lines_in
 import 'package:core_api/src/model/admin_order_card_dto_output_order_moments.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_money.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_captain.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_outcome.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_item_report.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup.dart';
@@ -53,6 +55,8 @@ part 'admin_order_dto_output_order.g.dart';
 /// * [readyAt]
 /// * [cancellation]
 /// * [cancelChoices]
+/// * [outcome]
+/// * [outcomeChoices]
 /// * [itemReport]
 /// * [timeChange]
 /// * [editChoices]
@@ -140,6 +144,12 @@ abstract class AdminOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'cancelChoices')
   AdminOrderDtoOutputOrderCancelChoices? get cancelChoices;
+
+  @BuiltValueField(wireName: r'outcome')
+  AdminOrderDtoOutputOrderOutcome? get outcome;
+
+  @BuiltValueField(wireName: r'outcomeChoices')
+  AdminOrderDtoOutputOrderOutcomeChoices? get outcomeChoices;
 
   @BuiltValueField(wireName: r'itemReport')
   AdminOrderDtoOutputOrderItemReport? get itemReport;
@@ -341,6 +351,24 @@ class _$AdminOrderDtoOutputOrderSerializer
             object.cancelChoices,
             specifiedType: const FullType.nullable(
               AdminOrderDtoOutputOrderCancelChoices,
+            ),
+          );
+    yield r'outcome';
+    yield object.outcome == null
+        ? null
+        : serializers.serialize(
+            object.outcome,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderOutcome,
+            ),
+          );
+    yield r'outcomeChoices';
+    yield object.outcomeChoices == null
+        ? null
+        : serializers.serialize(
+            object.outcomeChoices,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderOutcomeChoices,
             ),
           );
     yield r'itemReport';
@@ -680,6 +708,30 @@ class _$AdminOrderDtoOutputOrderSerializer
                   as AdminOrderDtoOutputOrderCancelChoices?;
           if (valueDes == null) continue;
           result.cancelChoices.replace(valueDes);
+          break;
+        case r'outcome':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderOutcome,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderOutcome?;
+          if (valueDes == null) continue;
+          result.outcome.replace(valueDes);
+          break;
+        case r'outcomeChoices':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderOutcomeChoices,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderOutcomeChoices?;
+          if (valueDes == null) continue;
+          result.outcomeChoices.replace(valueDes);
           break;
         case r'itemReport':
           final valueDes =

@@ -363,11 +363,15 @@ export async function frozenAtPickup(
   commissionToClearing: bigint;
   restaurantCommissionCut: bigint;
   restaurantCharge: bigint;
+  captainCharge: bigint;
+  platformCharge: bigint;
+  feeCuts: { restaurant: bigint; captain: bigint; platform: bigint };
 }> {
   const edits = await executor
     .select({
       itemsValueBefore: orderEdits.itemsValueBefore,
       deliveryFeeBefore: orderEdits.deliveryFeeBefore,
+      deliveryFeeAfter: orderEdits.deliveryFeeAfter,
       responsible: orderEdits.responsible,
       charge: orderEdits.charge,
       commissionCut: orderEdits.commissionCut,
@@ -385,6 +389,10 @@ export async function frozenAtPickup(
     edits
       .filter((edit) => party(edit.responsible))
       .reduce((total, edit) => total + (edit[of] ?? 0n), 0n);
+  const feeCut = (party: string) =>
+    edits
+      .filter((edit) => edit.responsible === party)
+      .reduce((total, edit) => total + edit.deliveryFeeBefore - edit.deliveryFeeAfter, 0n);
   const first = edits[0];
   return {
     itemsValue: first?.itemsValueBefore ?? order.itemsValue,
@@ -392,5 +400,16 @@ export async function frozenAtPickup(
     commissionToClearing: sum((party) => party !== 'restaurant', 'commissionCut'),
     restaurantCommissionCut: sum((party) => party === 'restaurant', 'commissionCut'),
     restaurantCharge: sum((party) => party === 'restaurant', 'charge'),
+    // What an outcome gives back when the restaurant is responsible
+    // (docs/domain/09, owner decision 2026-11-10).
+    captainCharge: sum((party) => party === 'captain', 'charge'),
+    platformCharge: sum((party) => party === 'platform', 'charge'),
+    // The part of each party's charges that was a lower fee, which an
+    // outcome books no revenue for and so gives back.
+    feeCuts: {
+      restaurant: feeCut('restaurant'),
+      captain: feeCut('captain'),
+      platform: feeCut('platform'),
+    },
   };
 }

@@ -110,6 +110,22 @@ const merchant: Entry[] = [
     'عُدّل الطلب #{رقم} بعد الاستلام — يُقيَّد عليكم {المبلغ} في كشف السبت',
     'silent',
   ],
+  // RA §16 #19 (slice 2.11a): a failed order, or an outcome the restaurant
+  // is responsible for, with the money effect (the debit's wording ours, as
+  // the edit's above; to confirm with the owner).
+  ['order_failed', '19', 'لم يُسلَّم الطلب #{رقم}: {النتيجة}', 'silent'],
+  [
+    'order_failed_debited',
+    '19',
+    'لم يُسلَّم الطلب #{رقم}: {النتيجة} — يُقيَّد عليكم {المبلغ} في كشف السبت',
+    'silent',
+  ],
+  [
+    'outcome_debited',
+    '19',
+    'انتهى الطلب #{رقم}: {النتيجة} — يُقيَّد عليكم {المبلغ} في كشف السبت',
+    'silent',
+  ],
   ['cancelled_after_acceptance', '18', 'أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}', 'ring', true],
   ['admin_price_change', '21', 'عدّلت FOX DROP سعر {الصنف}: {القديم} ← {الجديد}', 'chime'],
   ['menu_change_approved', '22', 'قُبل تعديلك على {الصنف}', 'silent'],
@@ -158,6 +174,9 @@ const captain: Entry[] = [
     'chime',
   ],
   ['collect_lowered', '10', 'المبلغ الجديد للتحصيل للطلب #{رقم}: {المبلغ}', 'chime'],
+  // CA §9.10 «Outcome set by OPS» with nothing to collect: its text without
+  // «اقبض {المبلغ}» (slice 2.11a).
+  ['outcome_set', '10', 'أنهت العمليات الطلب: {النتيجة}.', 'chime'],
   // CA §9.10.
   ['withdrawn', '11', 'سُحب منك الطلب: {السبب}', 'cancellation', true],
   ['cancelled', '11', 'أُلغيت المهمة: {السبب}', 'cancellation', true],

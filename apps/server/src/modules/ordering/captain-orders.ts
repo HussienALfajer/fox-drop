@@ -22,7 +22,6 @@ import {
 } from '../content/index.js';
 import { openItemReport } from './item-reports.js';
 import { frozenAtPickup, unacknowledgedAdditionAt } from './order-edits.js';
-import { acceptedPrepMin } from './time-changes.js';
 import { CAPTAIN_ACTIVE } from './order-assignments.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
 import { lockOrder, type OrderRow, recordTransition } from './order-events.js';
@@ -46,9 +45,11 @@ import {
   type PickupRequestView,
   pickupRequestsOf,
 } from './pickup-views.js';
-import { collections, orders, pickupRequests } from './schema.js';
+import { collections, orderOutcomeRows, orders, pickupRequests } from './schema.js';
+import type { OutcomeFood, SetOutcome } from './outcome.js';
 import { type Delivery, DeliveryBooking, lockForDelivery } from './delivery-booking.js';
-import { checkDoorPayment, waitingMinutes } from './door-payment.js';
+import { checkDoorPayment } from './door-payment.js';
+import { captainPay } from './captain-pay.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 
@@ -152,6 +153,20 @@ export interface CaptainCancellation {
   at: Date;
 }
 
+// CA §9.10, §9.12 (slice 2.11a): operations set the outcome of the
+// captain's order: «أنهت العمليات الطلب: {النتيجة}.», where the food goes
+// (null when delivered), and the pay or the charge it brought.
+export interface CaptainOutcome {
+  orderId: string;
+  number: bigint;
+  outcome: SetOutcome;
+  status: 'delivered' | 'failed';
+  food: OutcomeFood | null;
+  pay: { amount: bigint; currency: string } | null;
+  charge: { amount: bigint; currency: string } | null;
+  at: Date;
+}
+
 // The captain's active order (CA §9) with the restaurant it is picked up
 // from.
 export interface CaptainActiveOrder {
@@ -248,6 +263,84 @@ export class CaptainOrders {
         row.compensation === null ? null : { amount: row.compensation, currency: row.currency },
       at: row.at,
     };
+  }
+
+  // CA §9.10, §9.12 (slice 2.11a): the captain's latest order operations
+  // ended with an outcome within CANCELLED_CARD_MS that the captain has not
+  // acknowledged, for the card «أنهت العمليات الطلب: {النتيجة}.» with where
+  // the food goes; null otherwise.
+  async outcome(captainId: string, now: Date): Promise<CaptainOutcome | null> {
+    const since = new Date(now.getTime() - CANCELLED_CARD_MS);
+    const [row] = await this.database.db
+      .select({
+        orderId: orders.id,
+        number: orders.number,
+        outcome: orderOutcomeRows.outcome,
+        status: orderOutcomeRows.status,
+        food: orderOutcomeRows.food,
+        responsible: orderOutcomeRows.responsible,
+        loss: orderOutcomeRows.loss,
+        captainPay: orderOutcomeRows.captainPay,
+        currency: orderOutcomeRows.currency,
+        at: orderOutcomeRows.setAt,
+      })
+      .from(orderOutcomeRows)
+      .innerJoin(
+        orders,
+        and(
+          eq(orders.id, orderOutcomeRows.orderId),
+          eq(orders.placedAt, orderOutcomeRows.orderPlacedAt),
+        ),
+      )
+      .where(
+        and(
+          eq(orders.captainId, captainId),
+          isNull(orderOutcomeRows.captainSeenAt),
+          gt(orderOutcomeRows.setAt, since),
+          // An order ends after the pickup within hours of placing.
+          gt(orders.placedAt, new Date(since.getTime() - CANCELLED_AFTER_PLACING_MS)),
+        ),
+      )
+      .orderBy(desc(orderOutcomeRows.setAt))
+      .limit(1);
+    if (!row || row.outcome === 'normal') return null;
+    const money = (amount: bigint) => (amount > 0n ? { amount, currency: row.currency } : null);
+    return {
+      orderId: row.orderId,
+      number: row.number,
+      outcome: row.outcome,
+      status: row.status,
+      food: row.food,
+      pay: money(row.captainPay),
+      charge: row.responsible === 'captain' ? money(row.loss) : null,
+      at: row.at,
+    };
+  }
+
+  // CA §9.12 «حسناً» on the outcome card: the outcome keeps when the captain
+  // saw it, so the card shows no more; idempotent by its nature, no fix.
+  // Another captain's order is unknown_order; one without an outcome
+  // operations set is order_state_changed.
+  async acknowledgeOutcome(captainId: string, orderId: string, now: Date): Promise<void> {
+    const [row] = await this.database.db
+      .select({ placedAt: orders.placedAt, outcomeId: orderOutcomeRows.id })
+      .from(orders)
+      .leftJoin(
+        orderOutcomeRows,
+        and(
+          eq(orders.id, orderOutcomeRows.orderId),
+          eq(orders.placedAt, orderOutcomeRows.orderPlacedAt),
+        ),
+      )
+      .where(and(eq(orders.id, orderId), eq(orders.captainId, captainId)));
+    if (!row) throw new CaptainOrderRefusedError('unknown_order', 'no such order');
+    if (row.outcomeId === null) {
+      throw new CaptainOrderRefusedError('order_state_changed', 'no outcome set by operations');
+    }
+    await this.database.db
+      .update(orderOutcomeRows)
+      .set({ captainSeenAt: now })
+      .where(and(eq(orderOutcomeRows.id, row.outcomeId), isNull(orderOutcomeRows.captainSeenAt)));
   }
 
   // CA §9.10 «حسناً» on the cancellation card: the order keeps when the
@@ -585,45 +678,14 @@ export class CaptainOrders {
       );
     }
     if (order.captainId === null) throw new Error(`order ${order.id} has no captain`);
-    const [money] = await this.database.db
-      .select({
-        payTableId: orders.payTableId,
-        tripMetres: orders.tripMetres,
-        commissionBp: orders.commissionBp,
-        acceptedAt: orders.acceptedAt,
-        prepMin: orders.prepMin,
-        arrivedAtMerchantAt: orders.arrivedAtMerchantAt,
-        captainWaitingAlertAt: orders.captainWaitingAlertAt,
-        pickedUpAt: orders.pickedUpAt,
-        testOrder: orders.testOrder,
-      })
-      .from(orders)
-      .where(orderKey(order.id, order.placedAt));
-    const captain = await this.captains.captain(order.captainId, now);
-    if (!money?.acceptedAt || money.prepMin === null || !money.pickedUpAt) {
-      throw new Error(`order ${order.id} was not picked up`);
-    }
-    if (!captain) throw new Error(`captain ${order.captainId} not found`);
-    // Placing needs a pay table in force (captain_pay_unset); only an order
-    // placed before slice 1.13 can lack one.
-    if (money.payTableId === null) throw new Error(`order ${order.id} kept no pay table`);
-    const waiting = waitingMinutes({
-      acceptedAt: money.acceptedAt,
-      // docs/domain/04 (slice 2.9, to confirm with the owner): «تعديل الوقت»
-      // never shortens the captain's paid waiting; it counts from the prep
-      // time chosen at acceptance.
-      prepMin: (await acceptedPrepMin(this.database.db, order)) ?? money.prepMin,
-      arrivedAtMerchantAt: money.arrivedAtMerchantAt,
-      captainWaitingAlertAt: money.captainWaitingAlertAt,
-      pickedUpAt: money.pickedUpAt,
-    });
-    const pay = await this.captains.payParts(
-      money.payTableId,
-      captain.vehicle,
-      money.tripMetres ?? 0,
-      waiting,
+    const { pay, waiting, commissionBp } = await captainPay(
+      this.database.db,
+      this.captains,
+      order,
+      order.captainId,
+      now,
     );
-    if (!pay) throw new Error(`pay table ${money.payTableId} has no rate for ${captain.vehicle}`);
+    if (!pay) throw new Error(`order ${order.id}'s pay table has no rate for its captain`);
     return {
       received: collection.received,
       change: collection.change,
@@ -636,7 +698,7 @@ export class CaptainOrders {
       pay,
       waitingMinutes: waiting,
       // AP §9.6.3: a test order, flagged at placing, posts no commission.
-      commissionBp: money.testOrder ? null : money.commissionBp,
+      commissionBp,
       amountDue: order.total,
     };
   }

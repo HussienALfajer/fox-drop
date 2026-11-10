@@ -695,6 +695,67 @@ export const orderEdits = ordering.table(
   ],
 );
 
+// AP §8.9 food after a failed order (CA §9.12, K10): the codes of Content's
+// closed food_after_failed list.
+export const outcomeFoods = ['kept_by_captain', 'returned_to_restaurant', 'destroyed'] as const;
+
+// AP §9.3.2 «تحديد النتيجة», docs/domain/09 (slice 2.11a): the outcome of an
+// order that ended after the pickup without a normal delivery, one per order
+// so far («تغيير النتيجة» comes with 2.11c). It keeps operations' choices
+// (the outcome, the responsible party, whether a damaged order was
+// delivered, where the food went, the amount to collect), what was booked
+// (the loss amount, the customer's dues, what the restaurant returns, the
+// captain's pay), the customer's
+// text copied from Content when the order failed, operations' note and who
+// set it, and when the captain saw the instruction. The money itself is in
+// the ledger.
+export const orderOutcomeRows = ordering.table(
+  'order_outcomes',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    outcome: text('outcome', { enum: orderOutcomes }).notNull(),
+    responsible: text('responsible', { enum: responsibleParties }).notNull(),
+    // The status the order ended in: delivered (free, damaged) or failed.
+    status: text('status', { enum: ['delivered', 'failed'] }).notNull(),
+    food: text('food', { enum: outcomeFoods }),
+    currency: text('currency').notNull(),
+    amountToCollect: bigint('amount_to_collect', { mode: 'bigint' }).notNull(),
+    loss: bigint('loss', { mode: 'bigint' }).notNull(),
+    dues: bigint('dues', { mode: 'bigint' }),
+    merchantDebit: bigint('merchant_debit', { mode: 'bigint' }),
+    captainPay: bigint('captain_pay', { mode: 'bigint' }).notNull(),
+    customerText: text('customer_text'),
+    note: text('note').notNull(),
+    setAt: timestamp('set_at', { withTimezone: true }).notNull(),
+    setBy: uuid('set_by').notNull(),
+    captainSeenAt: timestamp('captain_seen_at', { withTimezone: true }),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId, table.orderPlacedAt],
+      foreignColumns: [orders.id, orders.placedAt],
+    }),
+    uniqueIndex('order_outcomes_order').on(table.orderId),
+    check(
+      'order_outcomes_values',
+      sql`${table.outcome} IN ('free', 'fake', 'damaged', 'wrong_refused', 'failed_other') AND ${table.responsible} IN ('restaurant', 'captain', 'customer', 'platform') AND ${table.status} IN ('delivered', 'failed') AND (${table.food} IS NULL OR ${table.food} IN ('kept_by_captain', 'returned_to_restaurant', 'destroyed'))`,
+    ),
+    check(
+      'order_outcomes_rules',
+      sql`(${table.outcome} = 'fake') = (${table.responsible} = 'customer') AND (${table.responsible} = 'customer') = (${table.dues} IS NOT NULL) AND (${table.status} = 'failed') = (${table.food} IS NOT NULL) AND (${table.status} = 'delivered' OR ${table.outcome} <> 'free') AND (${table.status} = 'failed' OR ${table.outcome} IN ('free', 'damaged')) AND (${table.food} IS DISTINCT FROM 'returned_to_restaurant' OR ${table.responsible} = 'restaurant') AND (${table.status} = 'failed') = (${table.customerText} IS NOT NULL) AND (${table.responsible} = 'restaurant') = (${table.merchantDebit} IS NOT NULL)`,
+    ),
+    check(
+      'order_outcomes_money',
+      sql`${table.amountToCollect} >= 0 AND ${table.loss} >= 0 AND ${table.dues} > 0 AND ${table.merchantDebit} >= 0 AND ${table.captainPay} >= 0 AND char_length(${table.note}) BETWEEN 1 AND 500`,
+    ),
+  ],
+);
+
 // AP §8.6, CA §9.7–9.8, AP §9.3.2: the payment at the door, one per order,
 // recorded by the captain at «تم التسليم» or by operations
 // («تسجيل التسليم نيابة عن الكابتن»): the lines received and given back, their

@@ -297,10 +297,10 @@ describe('the quote (CU §10.6)', () => {
       })
     ).json();
     expect(problems).toEqual([
-      { code: 'options_invalid', line: 1, opensAt: null, message: null },
-      { code: 'item_not_found', line: 2, opensAt: null, message: null },
-      { code: 'price_changed', line: 3, opensAt: null, message: null },
-      { code: 'below_minimum_order', line: null, opensAt: null, message: null },
+      { code: 'options_invalid', line: 1, opensAt: null, message: null, amount: null },
+      { code: 'item_not_found', line: 2, opensAt: null, message: null, amount: null },
+      { code: 'price_changed', line: 3, opensAt: null, message: null, amount: null },
+      { code: 'below_minimum_order', line: null, opensAt: null, message: null, amount: null },
     ]);
     // The lines that cannot be ordered are not in the money: 30 + 12.30.
     expect(lines[1]).toMatchObject({ unitPrice: null, lineTotal: null });
@@ -351,8 +351,14 @@ describe('the quote (CU §10.6)', () => {
     try {
       const { problems } = (await quote(cart)).json();
       expect(problems).toEqual([
-        { code: 'update_required', line: null, opensAt: null, message: null },
-        { code: 'platform_closed', line: null, opensAt: expect.any(String), message: null },
+        { code: 'update_required', line: null, opensAt: null, message: null, amount: null },
+        {
+          code: 'platform_closed',
+          line: null,
+          opensAt: expect.any(String),
+          message: null,
+          amount: null,
+        },
       ]);
     } finally {
       await settings.update('app.<app>.min_version', { parameter: 'customer' }, null, bySystem);
@@ -420,7 +426,7 @@ describe('the quote (CU §10.6)', () => {
     );
     try {
       expect((await quote(cart)).json().problems).toEqual([
-        { code: 'maintenance', line: null, opensAt: null, message: null },
+        { code: 'maintenance', line: null, opensAt: null, message: null, amount: null },
       ]);
     } finally {
       await settings.reset('app.<app>.maintenance', maintenance, bySystem);
@@ -432,7 +438,7 @@ describe('the quote (CU §10.6)', () => {
     try {
       const body = (await quote({ ...cart, payIn: 'TRY' })).json();
       expect(body.problems).toEqual([
-        { code: 'rates_unavailable', line: null, opensAt: null, message: null },
+        { code: 'rates_unavailable', line: null, opensAt: null, message: null, amount: null },
       ]);
       expect(body).toMatchObject({
         currency: 'TRY',

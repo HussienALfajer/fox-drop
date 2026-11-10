@@ -37,6 +37,15 @@ import {
   planEdit,
 } from './order-edits.js';
 import { lockOrder, type OrderEventType, recordTransition } from './order-events.js';
+import { captainPay } from './captain-pay.js';
+import {
+  type OutcomeChoices,
+  type OutcomeEntry,
+  outcomeEntries,
+  type OutcomeFacts,
+  type OutcomeFood,
+  type OutcomeJournal,
+} from './outcome.js';
 import { OrderAssignments } from './order-assignments.js';
 import { baseTotal, linesOf } from './pickup-booking.js';
 import type { SearchStartJob } from './order-timers.js';
@@ -62,7 +71,9 @@ import {
   itemReports,
   orderEdits,
   orderLines,
+  orderOutcomeRows,
   orders,
+  outcomeFoods,
   pickupRequests,
   timeChanges,
 } from './schema.js';
@@ -103,7 +114,12 @@ export type OrderCommandRefusal =
   // or the extra prep time do not fit; no edit while a pickup request is
   // open (RA §8.10).
   | 'invalid_edit'
-  | 'pickup_request_open';
+  | 'pickup_request_open'
+  // AP §9.3.2 «تحديد النتيجة» (slice 2.11a, outcome.ts): choices that do not
+  // fit the outcome, or customer.fake_order_dues_rule fixed without its
+  // amount.
+  | 'invalid_outcome'
+  | 'dues_rule_unset';
 
 // A restaurant command the order refuses; order_state_changed carries the
 // order as it is now, which the app explains (RA §4.7).
@@ -274,7 +290,8 @@ type Transition = {
     | 'report_item'
     | 'withdraw_item_report'
     | 'close_item_report'
-    | 'edit';
+    | 'edit'
+    | 'set_outcome';
   from: OrderView['status'][];
   to: 'accepted' | 'ready' | 'rejected' | 'cancelled' | null;
   event?: OrderEventType;
@@ -639,6 +656,201 @@ export class OrderCommands {
       compensationAllowed: result.compensationAllowed,
       cashLines: result.cashAsked ? facts.cashLines : null,
       strike: result.strike,
+    };
+  }
+
+  // AP §9.3.2 «تحديد النتيجة», AP §8.9, docs/domain/08, 09 (slice 2.11a):
+  // operations end a picked-up or arrived order with an outcome other than
+  // normal, the responsible party, whether a damaged order was delivered and,
+  // for a failed order, where the food went (CA §9.12), with their note.
+  // Nothing is collected (2.11b adds the amount to collect, K9). In one
+  // transaction: the order failed or delivered with its outcome (track done,
+  // so the captain is free at once), the outcome's row with the customer's
+  // text copied from Content's failed_outcome list, the journals of
+  // outcomeEntries (a fake order's dues.charge, which blocks the customer at
+  // checkout until the dues are paid) and the audit. 400 invalid_outcome;
+  // 409 dues_rule_unset, captain_pay_unset, order_state_changed.
+  async setOutcome(
+    command: AdminOrderCommand & OutcomeChoices & { version: number },
+    now: Date,
+  ): Promise<OrderView> {
+    const choices = outcomeChoicesOf(command);
+    const actor = { type: 'admin' as const, id: command.admin.accountId };
+    return this.run(
+      { kind: 'admin', command },
+      { verb: 'set_outcome', from: AFTER_PICKUP, to: null, event: 'order.outcome_set' },
+      { ...choices, version: command.version },
+      now,
+      async (order) => {
+        const read = await this.outcomeFacts(order, now);
+        // AP §8.9: the outcome posts the entries the dialog previewed on the
+        // order as it showed it; any change since is order_state_changed.
+        if (read.version !== command.version) throw await this.stateChanged(order);
+        const result = this.outcome(read.facts, choices);
+        const customerText =
+          result.status === 'failed'
+            ? await this.content.customerText('failed_outcome', choices.outcome)
+            : null;
+        return {
+          set: {
+            outcome: choices.outcome,
+            captainTrack: 'done',
+            ...(result.status === 'delivered' ? { deliveredAt: now } : {}),
+          },
+          to: result.status,
+          publicReason: choices.outcome,
+          // The entries were worked out from the order before the lock; an
+          // edit since moved its version.
+          guard: async (tx) =>
+            (await lockOrder(tx, order.id, order.placedAt))?.version === read.version,
+          effects: async (tx) => {
+            await tx.insert(orderOutcomeRows).values({
+              orderId: order.id,
+              orderPlacedAt: order.placedAt,
+              cityId: order.cityId,
+              outcome: choices.outcome,
+              responsible: choices.responsible,
+              status: result.status,
+              food: choices.food,
+              currency: read.facts.currency,
+              amountToCollect: 0n,
+              loss: result.loss,
+              dues: result.dues,
+              merchantDebit: result.merchantDebit,
+              captainPay: result.captainPay,
+              customerText,
+              note: command.reason,
+              setAt: now,
+              setBy: actor.id,
+            });
+            await this.postJournals(tx, order, actor, result.journals);
+          },
+          audit: {
+            before: {},
+            after: {
+              loss: result.loss.toString(),
+              dues: result.dues?.toString() ?? null,
+              captainPay: result.captainPay.toString(),
+            },
+          },
+        };
+      },
+    );
+  }
+
+  // AP §8.9 «Preview»: what «تحديد النتيجة» with these choices would book,
+  // every entry with its amount, account and party's name, for the dialog;
+  // it writes nothing.
+  async previewOutcome(orderId: string, given: OutcomeChoices, now: Date): Promise<OutcomePreview> {
+    const order = await this.find(orderId, {});
+    if (!AFTER_PICKUP.includes(order.status)) throw await this.stateChanged(order);
+    const { facts } = await this.outcomeFacts(order, now);
+    const result = this.outcome(facts, outcomeChoicesOf(given));
+    const [names, captain, customers] = await Promise.all([
+      this.merchants.names([facts.restaurantId]),
+      this.captains.captain(facts.captainId, now),
+      this.customers.firstNames([facts.customerAccountId]),
+    ]);
+    const name = (party: OutcomeEntry['party']) =>
+      party.kind === 'merchant'
+        ? (names.get(facts.restaurantId)?.nameAr ?? null)
+        : party.kind === 'captain'
+          ? (captain?.name ?? null)
+          : party.kind === 'customer'
+            ? (customers.get(facts.customerAccountId) ?? null)
+            : null;
+    return {
+      status: result.status,
+      loss: result.loss,
+      dues: result.dues,
+      captainPay: result.captainPay,
+      currency: facts.currency,
+      entries: result.journals.flatMap((journal) =>
+        journal.entries.map((entry) => ({
+          type: journal.type,
+          reason: journal.reason,
+          ...entry,
+          party: { ...entry.party, name: name(entry.party) },
+        })),
+      ),
+    };
+  }
+
+  // AP §9.3.2 «تحديد النتيجة»: where the food can go, Content's
+  // food_after_failed list in order (AP Appendix B).
+  async outcomeFoods(): Promise<{ code: OutcomeFood; label: string }[]> {
+    return (await this.content.reasonsOf('food_after_failed'))
+      .filter((reason) => reason.active && isOutcomeFood(reason.code))
+      .map(({ code, label }) => ({ code: code as OutcomeFood, label }));
+  }
+
+  private outcome(facts: OutcomeFacts, choices: OutcomeChoices) {
+    const result = outcomeEntries(facts, choices);
+    if ('problem' in result) {
+      throw new OrderCommandRefusedError(result.problem, `the outcome is ${result.problem}`);
+    }
+    return result;
+  }
+
+  // What the outcome's entries depend on, read before the transaction: the
+  // order, what the pickup paid and its edits since booked (frozenAtPickup),
+  // the captain's pay (slow reads) and the dues rule; and the version they
+  // were read at, which the transaction compares under the lock.
+  private async outcomeFacts(
+    order: OrderAtStart,
+    now: Date,
+  ): Promise<{ facts: OutcomeFacts; version: number }> {
+    const [row] = await this.database.db
+      .select({
+        version: orders.version,
+        captainId: orders.captainId,
+        customerAccountId: orders.customerAccountId,
+        currency: orders.currency,
+        testOrder: orders.testOrder,
+        itemsValue: orders.itemsValue,
+        deliveryFee: orders.deliveryFee,
+        discount: orders.discount,
+      })
+      .from(orders)
+      .where(orderKey(order.id, order.placedAt));
+    if (!row) throw new Error(`order ${order.id} not found`);
+    if (row.captainId === null) throw new Error(`order ${order.id} has no captain`);
+    const frozen = await frozenAtPickup(this.database.db, { ...order, ...row });
+    const [{ pay, commissionBp }, rule, fixed] = await Promise.all([
+      captainPay(this.database.db, this.captains, order, row.captainId, now),
+      this.settings.get('customer.fake_order_dues_rule', { cityId: order.cityId }),
+      this.settings.get('customer.fake_order_dues_fixed', { cityId: order.cityId }),
+    ]);
+    return {
+      version: row.version,
+      facts: {
+        restaurantId: order.restaurantId,
+        captainId: row.captainId,
+        customerAccountId: row.customerAccountId,
+        currency: row.currency,
+        testOrder: row.testOrder,
+        commissionBp,
+        itemsValue: row.itemsValue,
+        deliveryFee: row.deliveryFee,
+        discount: row.discount,
+        pickup: {
+          itemsValue: frozen.itemsValue,
+          restaurantCharge: frozen.restaurantCharge,
+          restaurantCommissionCut: frozen.restaurantCommissionCut,
+          captainCharge: frozen.captainCharge,
+          platformCharge: frozen.platformCharge,
+          feeCuts: frozen.feeCuts,
+        },
+        pay: pay && { orderPay: pay.orderPay, waiting: pay.waiting },
+        duesRule: {
+          kind: rule,
+          // A fixed amount in another currency than the order's is unset.
+          fixed:
+            fixed !== null && (fixed.currency ?? row.currency) === row.currency
+              ? BigInt(fixed.amountMinor)
+              : null,
+        },
+      },
     };
   }
 
@@ -1516,7 +1728,7 @@ export class OrderCommands {
     tx: Tx,
     order: { id: string; cityId: string },
     actor: { type: 'admin'; id: string },
-    journals: AfterPickupJournal[],
+    journals: (AfterPickupJournal | OutcomeJournal)[],
   ): Promise<void> {
     for (const journal of journals) {
       const entries = [];
@@ -2157,4 +2369,31 @@ function moneyAudit(money: QuoteMoney) {
     deliveryFee: money.deliveryFee.toString(),
     total: money.total.toString(),
   };
+}
+
+// AP §8.9 «Preview»: the outcome dialog's entries and totals.
+export interface OutcomePreview {
+  status: 'delivered' | 'failed';
+  loss: bigint;
+  dues: bigint | null;
+  captainPay: bigint;
+  currency: string;
+  entries: (OutcomeEntry & {
+    type: OutcomeJournal['type'];
+    reason: string | null;
+    party: { name: string | null };
+  })[];
+}
+
+function outcomeChoicesOf(given: OutcomeChoices): OutcomeChoices {
+  return {
+    outcome: given.outcome,
+    responsible: given.responsible,
+    delivered: given.delivered,
+    food: given.food,
+  };
+}
+
+function isOutcomeFood(code: string): code is OutcomeFood {
+  return (outcomeFoods as readonly string[]).includes(code);
 }

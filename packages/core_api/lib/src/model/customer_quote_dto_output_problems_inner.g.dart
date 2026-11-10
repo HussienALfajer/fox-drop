@@ -60,6 +60,9 @@ const CustomerQuoteDtoOutputProblemsInnerCodeEnum
 _$customerQuoteDtoOutputProblemsInnerCodeEnum_reviewStop =
     const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('reviewStop');
 const CustomerQuoteDtoOutputProblemsInnerCodeEnum
+_$customerQuoteDtoOutputProblemsInnerCodeEnum_duesUnpaid =
+    const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('duesUnpaid');
+const CustomerQuoteDtoOutputProblemsInnerCodeEnum
 _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound =
     const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('itemNotFound');
 const CustomerQuoteDtoOutputProblemsInnerCodeEnum
@@ -120,6 +123,8 @@ _$customerQuoteDtoOutputProblemsInnerCodeEnumValueOf(String name) {
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_emergencyStop;
     case 'reviewStop':
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_reviewStop;
+    case 'duesUnpaid':
+      return _$customerQuoteDtoOutputProblemsInnerCodeEnum_duesUnpaid;
     case 'itemNotFound':
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound;
     case 'itemUnavailable':
@@ -160,6 +165,7 @@ _$customerQuoteDtoOutputProblemsInnerCodeEnumValues =
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_termsPending,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_emergencyStop,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_reviewStop,
+        _$customerQuoteDtoOutputProblemsInnerCodeEnum_duesUnpaid,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemUnavailable,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_optionNotFound,
@@ -195,6 +201,7 @@ class _$CustomerQuoteDtoOutputProblemsInnerCodeEnumSerializer
     'termsPending': 'terms_pending',
     'emergencyStop': 'emergency_stop',
     'reviewStop': 'review_stop',
+    'duesUnpaid': 'dues_unpaid',
     'itemNotFound': 'item_not_found',
     'itemUnavailable': 'item_unavailable',
     'optionNotFound': 'option_not_found',
@@ -221,6 +228,7 @@ class _$CustomerQuoteDtoOutputProblemsInnerCodeEnumSerializer
     'terms_pending': 'termsPending',
     'emergency_stop': 'emergencyStop',
     'review_stop': 'reviewStop',
+    'dues_unpaid': 'duesUnpaid',
     'item_not_found': 'itemNotFound',
     'item_unavailable': 'itemUnavailable',
     'option_not_found': 'optionNotFound',
@@ -264,6 +272,8 @@ class _$CustomerQuoteDtoOutputProblemsInner
   final DateTime? opensAt;
   @override
   final String? message;
+  @override
+  final CaptainWentOfflineDtoOutputHandIn? amount;
 
   factory _$CustomerQuoteDtoOutputProblemsInner([
     void Function(CustomerQuoteDtoOutputProblemsInnerBuilder)? updates,
@@ -275,6 +285,7 @@ class _$CustomerQuoteDtoOutputProblemsInner
     this.line,
     this.opensAt,
     this.message,
+    this.amount,
   }) : super._();
   @override
   CustomerQuoteDtoOutputProblemsInner rebuild(
@@ -292,7 +303,8 @@ class _$CustomerQuoteDtoOutputProblemsInner
         code == other.code &&
         line == other.line &&
         opensAt == other.opensAt &&
-        message == other.message;
+        message == other.message &&
+        amount == other.amount;
   }
 
   @override
@@ -302,6 +314,7 @@ class _$CustomerQuoteDtoOutputProblemsInner
     _$hash = $jc(_$hash, line.hashCode);
     _$hash = $jc(_$hash, opensAt.hashCode);
     _$hash = $jc(_$hash, message.hashCode);
+    _$hash = $jc(_$hash, amount.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -312,7 +325,8 @@ class _$CustomerQuoteDtoOutputProblemsInner
           ..add('code', code)
           ..add('line', line)
           ..add('opensAt', opensAt)
-          ..add('message', message))
+          ..add('message', message)
+          ..add('amount', amount))
         .toString();
   }
 }
@@ -342,6 +356,12 @@ class CustomerQuoteDtoOutputProblemsInnerBuilder
   String? get message => _$this._message;
   set message(String? message) => _$this._message = message;
 
+  CaptainWentOfflineDtoOutputHandInBuilder? _amount;
+  CaptainWentOfflineDtoOutputHandInBuilder get amount =>
+      _$this._amount ??= CaptainWentOfflineDtoOutputHandInBuilder();
+  set amount(CaptainWentOfflineDtoOutputHandInBuilder? amount) =>
+      _$this._amount = amount;
+
   CustomerQuoteDtoOutputProblemsInnerBuilder() {
     CustomerQuoteDtoOutputProblemsInner._defaults(this);
   }
@@ -353,6 +373,7 @@ class CustomerQuoteDtoOutputProblemsInnerBuilder
       _line = $v.line;
       _opensAt = $v.opensAt;
       _message = $v.message;
+      _amount = $v.amount?.toBuilder();
       _$v = null;
     }
     return this;
@@ -374,18 +395,35 @@ class CustomerQuoteDtoOutputProblemsInnerBuilder
   CustomerQuoteDtoOutputProblemsInner build() => _build();
 
   _$CustomerQuoteDtoOutputProblemsInner _build() {
-    final _$result =
-        _$v ??
-        _$CustomerQuoteDtoOutputProblemsInner._(
-          code: BuiltValueNullFieldError.checkNotNull(
-            code,
-            r'CustomerQuoteDtoOutputProblemsInner',
-            'code',
-          ),
-          line: line,
-          opensAt: opensAt,
-          message: message,
+    _$CustomerQuoteDtoOutputProblemsInner _$result;
+    try {
+      _$result =
+          _$v ??
+          _$CustomerQuoteDtoOutputProblemsInner._(
+            code: BuiltValueNullFieldError.checkNotNull(
+              code,
+              r'CustomerQuoteDtoOutputProblemsInner',
+              'code',
+            ),
+            line: line,
+            opensAt: opensAt,
+            message: message,
+            amount: _amount?.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'amount';
+        _amount?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+          r'CustomerQuoteDtoOutputProblemsInner',
+          _$failedField,
+          e.toString(),
         );
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

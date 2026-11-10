@@ -2100,6 +2100,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders/{orderId}/outcome": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersSetOutcome"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/outcome-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersOutcomePreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/record-arrival": {
         parameters: {
             query?: never;
@@ -2190,6 +2222,22 @@ export interface paths {
         get: operations["captainOrdersActive"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/orders/{orderId}/acknowledge-outcome": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainOrdersAcknowledgeOutcome"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4429,13 +4477,19 @@ export interface components {
             /** @description CU §10.6: every one blocks ordering; the texts are in Appendix C. */
             problems: {
                 /** @enum {string} */
-                code: "update_required" | "maintenance" | "platform_closed" | "outside_zones" | "not_covered" | "restaurant_closed" | "below_minimum_order" | "minimum_not_in_base_currency" | "delivery_unpriced" | "rates_unavailable" | "captain_pay_unset" | "one_order_at_a_time" | "active_order_limit" | "no_captain_nearby" | "terms_pending" | "emergency_stop" | "review_stop" | "item_not_found" | "item_unavailable" | "option_not_found" | "option_unavailable" | "options_invalid" | "price_not_in_base_currency" | "price_changed";
+                code: "update_required" | "maintenance" | "platform_closed" | "outside_zones" | "not_covered" | "restaurant_closed" | "below_minimum_order" | "minimum_not_in_base_currency" | "delivery_unpriced" | "rates_unavailable" | "captain_pay_unset" | "one_order_at_a_time" | "active_order_limit" | "no_captain_nearby" | "terms_pending" | "emergency_stop" | "review_stop" | "dues_unpaid" | "item_not_found" | "item_unavailable" | "option_not_found" | "option_unavailable" | "options_invalid" | "price_not_in_base_currency" | "price_changed";
                 /** @description The cart line, for a line problem. */
                 line: number | null;
                 /** @description platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}». */
                 opensAt: string | null;
                 /** @description emergency_stop: the browsing message (AP §9.1.6). */
                 message: string | null;
+                /** @description dues_unpaid: what the customer owes (CU §5.5, AP §8.8). */
+                amount: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                } | null;
             }[];
         };
         CustomerActiveOrdersDto_Output: {
@@ -4482,6 +4536,23 @@ export interface components {
                     text: string;
                     /** @description «اطلب بدون الأصناف غير المتوفرة» rebuilds the cart without these items (CU §11.9, Q22); empty for the other reasons. */
                     unavailableItemIds: string[];
+                } | null;
+                /** @description Once operations set an outcome other than normal (AP §8.9). */
+                outcome: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @enum {string} */
+                    outcome: "free" | "fake" | "damaged" | "wrong_refused" | "failed_other";
+                    /** @enum {string} */
+                    status: "delivered" | "failed";
+                    /** @description A failed order: «تعذّر التسليم» with this reason (CU §11.9, Appendix C). */
+                    text: string | null;
+                    /** @description CU §11.6: «المبلغ المطلوب الآن: {المبلغ}», or «لن تدفع شيئاً لهذا الطلب» at 0. */
+                    amountToCollect: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
                 } | null;
                 /** @description Once delivered; the order screen opens the rating sheet (CU §12.1). */
                 delivery: {
@@ -4641,6 +4712,23 @@ export interface components {
                     text: string;
                     /** @description «اطلب بدون الأصناف غير المتوفرة» rebuilds the cart without these items (CU §11.9, Q22); empty for the other reasons. */
                     unavailableItemIds: string[];
+                } | null;
+                /** @description Once operations set an outcome other than normal (AP §8.9). */
+                outcome: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @enum {string} */
+                    outcome: "free" | "fake" | "damaged" | "wrong_refused" | "failed_other";
+                    /** @enum {string} */
+                    status: "delivered" | "failed";
+                    /** @description A failed order: «تعذّر التسليم» with this reason (CU §11.9, Appendix C). */
+                    text: string | null;
+                    /** @description CU §11.6: «المبلغ المطلوب الآن: {المبلغ}», or «لن تدفع شيئاً لهذا الطلب» at 0. */
+                    amountToCollect: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
                 } | null;
                 /** @description Once delivered; the order screen opens the rating sheet (CU §12.1). */
                 delivery: {
@@ -5543,6 +5631,79 @@ export interface components {
             /** @description The customer gets a late-cancellation strike (docs/domain/08): from accepted or ready with the customer responsible. */
             strike: boolean;
         };
+        AdminSetOutcomeDto: {
+            /**
+             * @description AP §8.9; fake needs the customer responsible, and only fake takes the customer.
+             * @enum {string}
+             */
+            outcome: "free" | "fake" | "damaged" | "wrong_refused" | "failed_other";
+            /** @enum {string} */
+            responsible: "restaurant" | "captain" | "customer" | "platform";
+            /** @description Free is delivered, fake, wrong_refused and failed_other failed; damaged either. */
+            delivered: boolean;
+            /** @description A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible. */
+            food: ("kept_by_captain" | "returned_to_restaurant" | "destroyed") | null;
+            /** @description The order's version the dialog previewed (AP §8.9 «Preview»); any other is 409 order_state_changed. */
+            version: number;
+            /** @description Required (AP §9.3.2): the internal note, never shown to the apps. */
+            reason: string;
+        };
+        AdminOutcomePreviewDto: {
+            /**
+             * @description AP §8.9; fake needs the customer responsible, and only fake takes the customer.
+             * @enum {string}
+             */
+            outcome: "free" | "fake" | "damaged" | "wrong_refused" | "failed_other";
+            /** @enum {string} */
+            responsible: "restaurant" | "captain" | "customer" | "platform";
+            /** @description Free is delivered, fake, wrong_refused and failed_other failed; damaged either. */
+            delivered: boolean;
+            /** @description A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible. */
+            food: ("kept_by_captain" | "returned_to_restaurant" | "destroyed") | null;
+        };
+        AdminOutcomePreviewAnswerDto_Output: {
+            /** @enum {string} */
+            status: "delivered" | "failed";
+            /** @description docs/domain/09 rule 3: what the responsible party bears for the food. */
+            loss: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+            /** @description The customer's dues (AP §8.8), with the customer responsible. */
+            dues: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            } | null;
+            /** @description The captain's pay, 0 when the captain is responsible. */
+            captainPay: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+            /** @description Every entry the outcome would post (AP §8.9 «Preview»). */
+            entries: {
+                /** @description The journal type, such as dues.charge. */
+                type: string;
+                /** @description The journal's reason, its line on the party's account (RA §12.5). */
+                reason: string | null;
+                /** @description The account purpose, such as customer.dues. */
+                account: string;
+                party: {
+                    /** @enum {string} */
+                    kind: "merchant" | "captain" | "customer" | "platform";
+                    id: string | null;
+                    name: string | null;
+                };
+                /** @description From the platform's side: + a debit, − a credit. */
+                amount: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+            }[];
+        };
         AdminRecordArrivalDto: {
             /** @description Required (AP §9.3.2). */
             reason: string;
@@ -5801,6 +5962,66 @@ export interface components {
                     /** @description Content's active ops_cancel reasons, in order (AP Appendix B). */
                     reasons: {
                         code: string;
+                        label: string;
+                    }[];
+                } | null;
+                /** @description AP §9.3.2 «تحديد النتيجة»: the outcome operations set (AP §8.9). */
+                outcome: {
+                    /** Format: date-time */
+                    at: string;
+                    /**
+                     * @description AP §8.9; fake needs the customer responsible, and only fake takes the customer.
+                     * @enum {string}
+                     */
+                    outcome: "free" | "fake" | "damaged" | "wrong_refused" | "failed_other";
+                    /** @enum {string} */
+                    status: "delivered" | "failed";
+                    /** @enum {string} */
+                    responsible: "restaurant" | "captain" | "customer" | "platform";
+                    /** @description A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible. */
+                    food: ("kept_by_captain" | "returned_to_restaurant" | "destroyed") | null;
+                    amountToCollect: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
+                    loss: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
+                    dues: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    /** @description «استرداد مبلغ الاستلام» (RA §12.5). */
+                    merchantDebit: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    captainPay: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
+                    /** @description What the customer sees of a failed order. */
+                    customerText: string | null;
+                    /** @description Operations' internal note. */
+                    note: string;
+                    /**
+                     * Format: uuid
+                     * @description The admin who set it.
+                     */
+                    setBy: string;
+                } | null;
+                /** @description While picked up or arrived: the choices of «تحديد النتيجة» (AP §9.3.2). */
+                outcomeChoices: {
+                    /** @description Content's food_after_failed list, in order (AP Appendix B). */
+                    foods: {
+                        /** @enum {string} */
+                        code: "kept_by_captain" | "returned_to_restaurant" | "destroyed";
                         label: string;
                     }[];
                 } | null;
@@ -6343,6 +6564,33 @@ export interface components {
                 /** @description «تعويض: {المبلغ}» when operations compensated the captain. */
                 compensation: {
                     /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                } | null;
+                /** Format: date-time */
+                at: string;
+            } | null;
+            /** @description The latest order operations ended with an outcome within 12 hours that the captain has not acknowledged (POST …/acknowledge-outcome). */
+            ended: {
+                /** Format: uuid */
+                orderId: string;
+                number: string;
+                /**
+                 * @description «أنهت العمليات الطلب: {النتيجة}.» with the label of AP Appendix C.
+                 * @enum {string}
+                 */
+                outcome: "free" | "fake" | "damaged" | "wrong_refused" | "failed_other";
+                /** @enum {string} */
+                status: "delivered" | "failed";
+                /** @description Where a failed order's food goes (CA §9.12), by Content's food_after_failed. */
+                food: ("kept_by_captain" | "returned_to_restaurant" | "destroyed") | null;
+                /** @description The pay the order still brings (CA §9.12). */
+                pay: {
+                    amount: string;
+                    currency: string;
+                } | null;
+                /** @description With the captain responsible: the charge on the earnings (CA §10.6). */
+                charge: {
                     amount: string;
                     currency: string;
                 } | null;
@@ -10264,6 +10512,61 @@ export interface operations {
             };
         };
     };
+    adminOrdersSetOutcome: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetOutcomeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCardDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersOutcomePreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminOutcomePreviewDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOutcomePreviewAnswerDto_Output"];
+                };
+            };
+        };
+    };
     adminOrdersRecordArrival: {
         parameters: {
             query?: never;
@@ -10393,6 +10696,28 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainActiveOrderDto_Output"];
+                };
+            };
+        };
+    };
+    captainOrdersAcknowledgeOutcome: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;

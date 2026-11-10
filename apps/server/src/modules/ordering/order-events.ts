@@ -84,7 +84,11 @@ export type OrderEventType =
   // pickup (a ready order back to accepted when items were added), and the
   // restaurant's «اطلعت على التعديل».
   | 'order.edited'
-  | 'order.edit_acknowledged';
+  | 'order.edit_acknowledged'
+  // AP §9.3.2 «تحديد النتيجة», AP §8.9 (slice 2.11a): operations ended a
+  // picked-up order with an outcome other than normal (status failed, or
+  // delivered for free and damaged; track done). The outcome is its reason.
+  | 'order.outcome_set';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that

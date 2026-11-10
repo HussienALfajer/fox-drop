@@ -48,6 +48,15 @@ export interface OrderPushFacts {
   // RA §8.13, §12.5: what an edit after the pickup debits the restaurant
   // when it is responsible; null otherwise.
   merchantDebit: string | null;
+  // AP §8.9 «تحديد النتيجة» (slice 2.11a): the outcome's label (AP Appendix
+  // C), the status it ended in, the customer's text of a failed order and
+  // what the restaurant returns when it is responsible.
+  outcome: {
+    label: string;
+    status: 'delivered' | 'failed';
+    customerText: string | null;
+    merchantDebit: string | null;
+  } | null;
 }
 
 export interface OrderPush {
@@ -209,6 +218,34 @@ export function orderPushes(
       ];
     case 'order.delivered':
       return [customer('customer.delivered')];
+    case 'order.outcome_set': {
+      // AP §8.9 (slice 2.11a): the customer's «تعذّر تسليم طلبك: {السبب}» (CU
+      // §14 #9) or «تم التسليم» for a free or damaged delivery (CU #6); the
+      // owners' silent push of a failed order or of what they return (RA
+      // §16 #19); the captain's «أنهت العمليات الطلب: {النتيجة}.» (CA §9.10).
+      const outcome = facts.outcome;
+      if (outcome === null) return [];
+      const failed = outcome.status === 'failed';
+      const debit = outcome.merchantDebit;
+      return [
+        failed
+          ? customer('customer.failed', { السبب: outcome.customerText ?? '' })
+          : customer('customer.delivered'),
+        ...(failed
+          ? [
+              debit === null
+                ? owners('merchant.order_failed', { النتيجة: outcome.label })
+                : owners('merchant.order_failed_debited', {
+                    النتيجة: outcome.label,
+                    المبلغ: debit,
+                  }),
+            ]
+          : debit === null
+            ? []
+            : [owners('merchant.outcome_debited', { النتيجة: outcome.label, المبلغ: debit })]),
+        ...captain('captain.outcome_set', { النتيجة: outcome.label }),
+      ];
+    }
     case 'order.item_reported':
       // CU §11.6, §14 #10: FOX DROP will call the customer.
       return [customer('customer.item_unavailable')];

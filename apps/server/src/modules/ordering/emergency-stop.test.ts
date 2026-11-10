@@ -387,6 +387,7 @@ describe('the emergency stop (AP §9.1.6)', () => {
       line: null,
       opensAt: null,
       message: 'توقفنا مؤقتاً بسبب العاصفة',
+      amount: null,
     });
     expect((await state(ops.cookies)).stop).toMatchObject({ attempts: 0 });
     const checkout = { openedCheckout: true };

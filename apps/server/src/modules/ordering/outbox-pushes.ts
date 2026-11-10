@@ -23,7 +23,15 @@ import {
   type OrderPushFacts,
   PICKUP_EVENTS,
 } from './order-pushes.js';
-import { orderEdits, orderEvents, orders, outbox, pickupRequests } from './schema.js';
+import {
+  orderEdits,
+  orderEvents,
+  orderOutcomeRows,
+  orders,
+  outbox,
+  pickupRequests,
+} from './schema.js';
+import { OUTCOME_LABELS } from './outcome.js';
 import { unansweredInBusinessDay } from './unanswered.js';
 
 // Rows taken per transaction, which holds their locks while it reads what
@@ -262,6 +270,7 @@ export class OutboxPushes {
         type === 'order.edited'
           ? await this.merchantDebit(order, new Date(payload.at), currencies)
           : null,
+      outcome: type === 'order.outcome_set' ? await this.outcome(order, currencies) : null,
     };
   }
 
@@ -284,6 +293,36 @@ export class OutboxPushes {
         ),
       );
     return edit?.charge ? formatMoney(edit.charge, edit.currency, currencies) : null;
+  }
+
+  // AP §8.9 (slice 2.11a): the order's outcome, its label, the customer's
+  // text of a failed order and what the restaurant returns.
+  private async outcome(order: typeof orders.$inferSelect, currencies: Currencies) {
+    const [row] = await this.database.db
+      .select({
+        outcome: orderOutcomeRows.outcome,
+        status: orderOutcomeRows.status,
+        customerText: orderOutcomeRows.customerText,
+        merchantDebit: orderOutcomeRows.merchantDebit,
+        currency: orderOutcomeRows.currency,
+      })
+      .from(orderOutcomeRows)
+      .where(
+        and(
+          eq(orderOutcomeRows.orderId, order.id),
+          eq(orderOutcomeRows.orderPlacedAt, order.placedAt),
+        ),
+      );
+    if (!row) return null;
+    return {
+      label: OUTCOME_LABELS[row.outcome],
+      status: row.status,
+      customerText: row.customerText,
+      merchantDebit:
+        row.merchantDebit === null
+          ? null
+          : formatMoney(row.merchantDebit, row.currency, currencies),
+    };
   }
 
   // The request the event is about: the latest opened by the event's time,

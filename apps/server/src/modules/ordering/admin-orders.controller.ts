@@ -32,11 +32,12 @@ import {
 import { ORDER_ALERT_CODES } from './order-alerts.js';
 import type { EditChange } from './order-edits.js';
 import { AFTER_PICKUP_PARTIES } from './order-edits.js';
-import { EDITABLE } from './order-views.js';
+import { AFTER_PICKUP, EDITABLE } from './order-views.js';
 import {
   CANCELLABLE,
   TIME_CHANGEABLE,
   type CancellationPreview,
+  type OutcomePreview,
   type EditPreview,
   OrderCommandRefusedError,
   OrderCommands,
@@ -441,6 +442,70 @@ class AdminCancelPreviewAnswerDto extends createZodDto(
   }),
 ) {}
 
+const outcomeChoices = {
+  outcome: z
+    .enum(['free', 'fake', 'damaged', 'wrong_refused', 'failed_other'])
+    .describe('AP §8.9; fake needs the customer responsible, and only fake takes the customer.'),
+  responsible: z.enum(['restaurant', 'captain', 'customer', 'platform']),
+  delivered: z
+    .boolean()
+    .describe('Free is delivered, fake, wrong_refused and failed_other failed; damaged either.'),
+  food: z
+    .enum(['kept_by_captain', 'returned_to_restaurant', 'destroyed'])
+    .nullable()
+    .describe(
+      "A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible.",
+    ),
+};
+
+class AdminSetOutcomeDto extends createZodDto(
+  z.object({
+    ...outcomeChoices,
+    version: z
+      .int()
+      .describe(
+        "The order's version the dialog previewed (AP §8.9 «Preview»); any other is 409 order_state_changed.",
+      ),
+    reason: z
+      .string()
+      .trim()
+      .min(1)
+      .max(500)
+      .describe('Required (AP §9.3.2): the internal note, never shown to the apps.'),
+  }),
+) {}
+
+class AdminOutcomePreviewDto extends createZodDto(z.object(outcomeChoices)) {}
+
+class AdminOutcomePreviewAnswerDto extends createZodDto(
+  z.object({
+    status: z.enum(['delivered', 'failed']),
+    loss: money.describe('docs/domain/09 rule 3: what the responsible party bears for the food.'),
+    dues: money
+      .nullable()
+      .describe("The customer's dues (AP §8.8), with the customer responsible."),
+    captainPay: money.describe("The captain's pay, 0 when the captain is responsible."),
+    entries: z
+      .array(
+        z.object({
+          type: z.string().describe('The journal type, such as dues.charge.'),
+          reason: z
+            .string()
+            .nullable()
+            .describe("The journal's reason, its line on the party's account (RA §12.5)."),
+          account: z.string().describe('The account purpose, such as customer.dues.'),
+          party: z.object({
+            kind: z.enum(['merchant', 'captain', 'customer', 'platform']),
+            id: z.uuid().nullable(),
+            name: z.string().nullable(),
+          }),
+          amount: money.describe("From the platform's side: + a debit, − a credit."),
+        }),
+      )
+      .describe('Every entry the outcome would post (AP §8.9 «Preview»).'),
+  }),
+) {}
+
 class AdminOrderCardDto extends createZodDto(z.object({ order: card })) {}
 
 class AdminOrderDto extends createZodDto(
@@ -496,6 +561,37 @@ class AdminOrderDto extends createZodDto(
         })
         .nullable()
         .describe('While placed, accepted or ready: the choices of «إلغاء الطلب» (AP §9.3.2).'),
+      outcome: z
+        .object({
+          at: z.iso.datetime(),
+          outcome: outcomeChoices.outcome,
+          status: z.enum(['delivered', 'failed']),
+          responsible: outcomeChoices.responsible,
+          food: outcomeChoices.food,
+          amountToCollect: money,
+          loss: money,
+          dues: money.nullable(),
+          merchantDebit: money.nullable().describe('«استرداد مبلغ الاستلام» (RA §12.5).'),
+          captainPay: money,
+          customerText: z.string().nullable().describe('What the customer sees of a failed order.'),
+          note: z.string().describe("Operations' internal note."),
+          setBy: z.uuid().describe('The admin who set it.'),
+        })
+        .nullable()
+        .describe('AP §9.3.2 «تحديد النتيجة»: the outcome operations set (AP §8.9).'),
+      outcomeChoices: z
+        .object({
+          foods: z
+            .array(
+              z.object({
+                code: z.enum(['kept_by_captain', 'returned_to_restaurant', 'destroyed']),
+                label: z.string(),
+              }),
+            )
+            .describe("Content's food_after_failed list, in order (AP Appendix B)."),
+        })
+        .nullable()
+        .describe('While picked up or arrived: the choices of «تحديد النتيجة» (AP §9.3.2).'),
       itemReport: z
         .object({
           at: z.iso.datetime(),
@@ -1215,6 +1311,73 @@ export class AdminOrdersController {
     };
   }
 
+  // AP §9.3.2 «تحديد النتيجة», AP §8.9 (slice 2.11a): a picked-up or
+  // arrived order ended with an outcome, the responsible party, whether a
+  // damaged order was delivered, where a failed order's food went and the
+  // internal note, nothing to collect; the entries and the audit in one
+  // transaction. 400 invalid_outcome; 409 dues_rule_unset,
+  // captain_pay_unset, order_state_changed, each with the order as it is
+  // now; 404 unknown_order; 422 idempotency_key_reused.
+  @Post(':orderId/outcome')
+  @RequirePermission('operations.manage')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOrderCardDto })
+  async setOutcome(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminSetOutcomeDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.onBehalf(params.orderId, () =>
+      this.commands.setOutcome(
+        {
+          orderId: params.orderId,
+          admin: { accountId: session.accountId, roles: session.roles },
+          context: requestContext(request),
+          idempotencyKey,
+          outcome: body.outcome,
+          responsible: body.responsible,
+          delivered: body.delivered,
+          food: body.food,
+          version: body.version,
+          reason: body.reason,
+        },
+        new Date(),
+      ),
+    );
+  }
+
+  // AP §8.9 «Preview»: every entry the outcome's choices would post; it
+  // writes nothing, so it takes no key. 400 invalid_outcome; 409
+  // dues_rule_unset, captain_pay_unset, order_state_changed.
+  @Post(':orderId/outcome-preview')
+  @RequirePermission('operations.manage')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOutcomePreviewAnswerDto })
+  async outcomePreview(@Param() params: AdminOrderParamsDto, @Body() body: AdminOutcomePreviewDto) {
+    let preview: OutcomePreview | undefined;
+    await this.onBehalf(params.orderId, async () => {
+      preview = await this.commands.previewOutcome(params.orderId, body, new Date());
+    });
+    const { status, loss, dues, captainPay, currency, entries } = preview!;
+    const amount = (value: bigint) => ({ amount: value.toString(), currency });
+    return {
+      status,
+      loss: amount(loss),
+      dues: dues === null ? null : amount(dues),
+      captainPay: amount(captainPay),
+      entries: entries.map((entry) => ({
+        type: entry.type,
+        reason: entry.reason,
+        account: entry.account,
+        party: entry.party,
+        amount: { amount: entry.amount.toString(), currency: entry.currency },
+      })),
+    };
+  }
+
   // Runs a command on the restaurant's behalf and answers the card, or its
   // refusal.
   private async onBehalf(orderId: string, run: () => Promise<unknown>) {
@@ -1239,7 +1402,8 @@ export class AdminOrdersController {
         refusal === 'unknown_reason' ||
         refusal === 'invalid_rejection' ||
         refusal === 'invalid_cancellation' ||
-        refusal === 'invalid_edit'
+        refusal === 'invalid_edit' ||
+        refusal === 'invalid_outcome'
       ) {
         throw new BadRequestException({
           statusCode: HttpStatus.BAD_REQUEST,
@@ -1425,6 +1589,7 @@ export class AdminOrdersController {
       timeChange,
       editChoices,
       edits,
+      outcomeFoods,
     ] = await Promise.all([
       this.customers.profile(order.customerAccountId),
       this.views.timeline(order),
@@ -1436,6 +1601,7 @@ export class AdminOrdersController {
       TIME_CHANGEABLE.includes(order.status) ? this.commands.timeChangeChoices(order.cityId) : null,
       EDITABLE.includes(order.status) ? this.commands.editChoices(order, now) : null,
       this.commands.editsOf(order),
+      AFTER_PICKUP.includes(order.status) ? this.commands.outcomeFoods() : null,
     ]);
     const { acceptance } = order;
     // The cancellation itself, not its acknowledgement (RA §8.14).
@@ -1479,6 +1645,22 @@ export class AdminOrdersController {
           captainSeenAt: cancellation.captainSeenAt?.toISOString() ?? null,
         },
         cancelChoices: cancelReasons && { reasons: cancelReasons },
+        outcome: order.outcome && {
+          at: order.outcome.at.toISOString(),
+          outcome: order.outcome.outcome,
+          status: order.outcome.status,
+          responsible: order.outcome.responsible,
+          food: order.outcome.food,
+          amountToCollect: base(order.outcome.amountToCollect)!,
+          loss: base(order.outcome.loss)!,
+          dues: base(order.outcome.dues),
+          merchantDebit: base(order.outcome.merchantDebit),
+          captainPay: base(order.outcome.captainPay)!,
+          customerText: order.outcome.customerText,
+          note: order.outcome.note,
+          setBy: order.outcome.setBy,
+        },
+        outcomeChoices: outcomeFoods && { foods: outcomeFoods },
         itemReport: order.itemReport && {
           at: order.itemReport.at.toISOString(),
           items: order.itemReport.items,
