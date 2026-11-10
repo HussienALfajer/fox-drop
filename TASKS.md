@@ -4,19 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.10a, edits before pickup (`docs/roadmap.md`, Phase 2; 2.10 split in two on 2026-11-10: 2.10a before pickup with the panel, 2.10b after pickup).
+Slice 2.10b, edits after pickup (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** «تعديل الطلب» in `placed`, `accepted` and `ready` with the before-and-after money preview, the money recalculated from the snapshots, an open item report cleared, the restaurant's acknowledgement with its ring, a `ready` order back to `accepted`, the 3-minute alert, the captain's block and the customer's new total. The owner adds an item to a ready order and it returns to preparing.
-- **Specs:** AP §9.3.3, §9.3.2 (the edit row), §9.1.3 («المطعم لم يؤكد التعديل»), RA §8.13, §8.10, §8.12, RA §16, CA §9.3, §9.10, CU §11.6, §14 #11, docs/domain/01 and 04, and the definitions of done.
-- **Branch:** `feat/order-edits`.
-- **Owner decisions (2026-11-10):** two pull requests (2.10a, 2.10b). A higher quantity on an existing line keeps the line's original unit price and counts as an addition (it rings and blocks the pickup until acknowledged); a line whose options change is replaced by a new line at the current menu's prices. The delivery fee stays as placed unless operations type a new one (the free-delivery threshold is not re-checked). Items added to a `ready` order send it back to `accepted` with the extra prep time operations enter, and the promised time moves by the same minutes, rounded up to the next 5 as «تعديل الوقت» does, with the customer told the new time.
-- **Plan:**
-  - [ ] Server: the edit command and its preview (lines, money, the item report cleared, `ready` back to `accepted`, the acknowledgement state, the pickup blocked, the 3-minute alert); failing tests first.
-  - [ ] Restaurant app: the edit prompt with its ring or chime and «اطلعت على التعديل».
-  - [ ] Captain app: «بانتظار تأكيد المطعم للتعديل» and «تم تعديل الطلب — …».
-  - [ ] Customer app: the push and the summary's «أُضيف» and «حُذف».
-  - [ ] Panel: «تعديل الطلب» with its preview, and the edit on the detail.
-  - [ ] Review, hand over to 2.10b, pull request.
+- **Roadmap line:** removing items and lowering the delivery fee in `picked_up` and `arrived` with a responsible party (restaurant: `merchant.debit` and the reversing `merchant.commission` once; captain: `earn.charge`; platform: operating cost; never the customer), the new amount to collect, the captain's «حُذفت أصناف من الطلب — المبلغ الجديد للتحصيل {المبلغ}», the owners' silent push. The owner removes an item after pickup with the restaurant responsible and the restaurant's account shows the debit.
+- **Specs:** AP §9.3.3 (after pickup: removals and a lower fee, with a responsible party; the pickup payment and the commission base frozen), AP §8.1, §8.9, docs/domain/01, 07, 09 and 11 (the entries and their counter-accounts, `apps/server/src/modules/ledger/CLAUDE.md`), RA §8.13 («After pickup»), RA §12.5 (the amount returned on Saturday), CA §9.10 («حُذفت أصناف…», «Lower delivery fee after pickup»), CU §11.6, and the definitions of done.
+- **Branch:** `feat/order-edits-after-pickup`.
+- **Builds on 2.10a:** `POST /v1/admin/orders/{orderId}/edit` and its preview (`order-edits.ts`, `planEdit`), `ordering.order_edits`, the lines' `removed_by_edit`, the panel's «تعديل الطلب» dialog (`apps/admin/src/order-edit*.ts`), the customer's marks and the captain's `OrderEdited` chime.
+- **Ask the owner first:** how the door collection books after a removal (the total drops while the clearing account holds the full pickup payment), whether the commission reversal is on the removed items' value only, and the preview's sentences for each party (as «إلغاء الطلب» shows them).
+- **Plan (to confirm):**
+  - [ ] Server: removals and a lower fee after pickup with the responsible party and their entries, once per edit; failing tests first.
+  - [ ] Captain app: «حُذفت أصناف من الطلب — المبلغ الجديد للتحصيل {المبلغ}» and the new amount at the door.
+  - [ ] Panel: the responsible party and the entries' preview in the dialog after pickup.
+  - [ ] Restaurant: the owners' silent push with the amount (RA §12.5).
+  - [ ] Review, hand over to 2.11, pull request.
+
+### Left from 2.10a (`feat/order-edits`)
+
+- **Before deploying to staging:** migration 0045 adds `ordering.order_edits` and three nullable columns and a `CHECK` on the partitioned `ordering.order_lines` (it scans every partition, fine before launch), and lets an item report close `edited`. The new restaurant APK rings with the edit prompt; an older one shows the new lines and money without it, and its pickup waits for an acknowledgement it cannot give (operations confirm the pickup on its behalf). The new captain APK shows «بانتظار تأكيد المطعم للتعديل»; an older one gets `409 edit_unacknowledged` with no text for it. Raise `app.merchant.min_version` and `app.captain.min_version` with these builds; the customer app needs the new build for the «أُضيف»/«حُذف» marks (an older one reads the new lines without them).
+- **To check on staging:** in the panel, a ready order's detail → «تعديل الطلب» → raise a line, add an item from the menu, 10 minutes of extra prep, a note: the preview shows the money before and after and «يعود الطلب إلى «قيد التحضير»…»; after «تأكيد التعديل» the order is in «قيد التحضير», the restaurant app rings «تم تعديل الطلب #{رقم} — أُضيفت أصناف» with the changes until «اطلعت على التعديل», the captain at the restaurant sees «بانتظار تأكيد المطعم للتعديل» and hears «تم تعديل الطلب — المبلغ الجديد للمطعم …، للتحصيل …», the customer gets «عدّلت FOX DROP طلبك. المجموع الجديد: {المبلغ}» and sees «أُضيف»; three minutes without the acknowledgement raise «المطعم لم يؤكد التعديل». An edit that only removes a line or changes the fee chimes «تم تعديل الطلب #{رقم}» and does not block the pickup. An edit of an order with an open item report closes the report.
+- **To confirm with the owner:** the captain's push names the two amounts «{للمطعم}» and «{للتحصيل}» (CA §9.10's text has two «{المبلغ}»); the extra prep time runs from the edit (the restaurant's countdown restarts) and is 1 to `order.eta_change_max_min`; any edit closes an open item report, even one that leaves the reported item (RA §8.12); an edit of a placed order that adds items rings before the new-order prompt; the owners' new merchant net in the restaurant prompt waits for the board's owner-only money lines; the strings the spec gives no wording for (restaurant: «قيمة الأصناف الجديدة: {المبلغ}», «عاد الطلب إلى «قيد التحضير»: {د} د إضافية», «{الصنف}: {قبل} ← {بعد}», «أُضيف: …», «حُذف: …»; captain: «تم تعديل الطلب — المبلغ الجديد للمطعم {المبلغ}، للتحصيل {المبلغ}» as CA §9.10; customer: the banner on the order screen; panel: every label of the dialog and the detail's edits list, `order.edit.*` in `apps/admin/src/locales/ar.json`).
+- **Not yet:** a note on an added line; a percentage discount recomputed on the new items value (codes, Phase 2); the captain's change list (the item check shows the new lines); two quick edits push the newer amounts twice (pushes read the order when queued).
 
 ### Left from 2.9 (`feat/order-time-and-item-report`)
 
