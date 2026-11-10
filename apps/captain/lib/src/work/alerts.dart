@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import 'door_payment.dart';
 import 'work.dart';
 
 /// The sounds of CA §4.4. Until the design's bundled sounds (owner decision
@@ -137,6 +138,15 @@ class OrderCancelled extends Alert {
   final Cancelled cancelled;
 }
 
+/// «تم تعديل الطلب — المبلغ الجديد للمطعم {المبلغ}، للتحصيل {المبلغ}»: operations
+/// edited the order before the pickup (CA §9.10, §14 #10); the item
+/// checklist shows the new lines.
+class OrderEdited extends Alert {
+  const OrderEdited(this.pay, this.collect);
+  final Money pay;
+  final Money collect;
+}
+
 /// The offers and orders answered on this phone, whose closing it does not
 /// announce as another's.
 class Answered {
@@ -193,6 +203,17 @@ List<Alert> alertStep(
       was.pickup.request?.id == refused.id &&
       was.pickup.request?.status == RequestStatus.open) {
     alerts.add(PickupRefused(refused));
+  }
+  // CA §9.10: an edit before the pickup changes the amounts.
+  if (order.pickup.pickedUpAt == null &&
+      (was.pickupPayment.amount != order.pickupPayment.amount ||
+          was.collect.amount != order.collect.amount)) {
+    alerts.add(
+      OrderEdited(
+        Money(order.pickupPayment.amount, order.pickupPayment.currency),
+        Money(order.collect.amount, order.collect.currency),
+      ),
+    );
   }
   if (was.pickup.disputedAt == null && order.pickup.disputedAt != null) {
     alerts.add(const PickupDisputed());

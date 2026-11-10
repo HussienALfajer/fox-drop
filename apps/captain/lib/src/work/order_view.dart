@@ -235,12 +235,18 @@ class _AtRestaurantState extends ConsumerState<_AtRestaurant> {
             ),
           if (order.note case final note?) Text(l10n.captainNote(note)),
           // CA §9 step 2: an item-unavailable report holds the pickup until
-          // operations edit, cancel or close it.
+          // operations edit, cancel or close it; an edit that added items,
+          // until the restaurant acknowledges it.
           if (pickupBlocked(order))
-            Text(
-              l10n.captainWaitingForOrderEdit,
-              key: const Key('waiting-for-order-edit'),
-            )
+            order.itemReportOpen
+                ? Text(
+                    l10n.captainWaitingForOrderEdit,
+                    key: const Key('waiting-for-order-edit'),
+                  )
+                : Text(
+                    l10n.captainWaitingForEditAcknowledgement,
+                    key: const Key('waiting-for-edit-acknowledgement'),
+                  )
           // The payment shows once every item is ticked (C7).
           else if (allTicked) ...[
             Text(

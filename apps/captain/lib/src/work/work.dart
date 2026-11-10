@@ -58,9 +58,11 @@ PickupRequest? openRequest(ActiveOrder order) {
 }
 
 /// Whether the pickup request waits: the restaurant reported an item
-/// unavailable and operations have not edited, cancelled or closed it (CA §9
-/// step 2, RA §8.12): «بانتظار تعديل الطلب من العمليات».
-bool pickupBlocked(ActiveOrder order) => order.itemReportOpen;
+/// unavailable and operations have not edited, cancelled or closed it (RA
+/// §8.12), or operations added items and the restaurant has not acknowledged
+/// the edit (RA §8.13) (CA §9 step 2).
+bool pickupBlocked(ActiveOrder order) =>
+    order.itemReportOpen || order.editUnacknowledged;
 
 /// The latest request the restaurant refused, while the captain is back at
 /// the restaurant (CA §9.4 item 4), or null.
