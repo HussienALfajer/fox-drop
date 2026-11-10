@@ -639,6 +639,40 @@ void main() {
     await app.done(tester);
   });
 
+  // CU §5.5, AP §8.8 (slice 2.11a): a fake order's dues block ordering until
+  // paid at the office; nothing to do in the app.
+  testWidgets('unpaid dues refuse the order with the amount', (tester) async {
+    final app = await _checkout(
+      tester,
+      quotes: [
+        FakeAnswer(
+          200,
+          _quote(
+            problems: [
+              {
+                'code': 'dues_unpaid',
+                'line': null,
+                'opensAt': null,
+                'amount': {'amount': '24400', 'currency': 'TRY'},
+              },
+            ],
+          ),
+        ),
+      ],
+    );
+    expect(
+      find.text(
+        'عليك 244 ₺ لـ FOX DROP. ادفعه في المكتب ليُفك الحظر تلقائياً.',
+      ),
+      findsOneWidget,
+    );
+    final confirm = tester.widget<FilledButton>(
+      find.byKey(const Key('confirm-order')),
+    );
+    expect(confirm.onPressed, isNull);
+    await app.done(tester);
+  });
+
   testWidgets('a blocked order keeps the cart and shows the new quote', (
     tester,
   ) async {

@@ -256,6 +256,11 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
           _ringer.cancellation();
           continue;
         }
+        // The outcome card says it; the chime alone.
+        if (alert is OutcomeSet) {
+          _ringer.chime();
+          continue;
+        }
         if (alert.chimes) _ringer.chime();
         _show(l10n.alertText(alert));
       }
@@ -296,6 +301,8 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
             Positioned.fill(child: _HandInCard(amount: handIn)),
           if (work?.cancelled case final cancelled?)
             Positioned.fill(child: _CancelledCard(cancelled: cancelled)),
+          if (work?.ended case final ended?)
+            Positioned.fill(child: _EndedCard(ended: ended)),
           if (offer != null) Positioned.fill(child: OfferSheet(offer: offer)),
         ],
       ),
@@ -367,6 +374,67 @@ class _CancelledCard extends ConsumerWidget {
                     final notice = await ref
                         .read(commandsProvider.notifier)
                         .acknowledgeCancellation(cancelled.orderId);
+                    if (notice != null) {
+                      messenger.showSnackBar(
+                        SnackBar(content: Text(l10n.noticeText(notice))),
+                      );
+                    }
+                  },
+            child: Text(sending ? l10n.captainSending : l10n.captainOk),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// CA §9.10, §9.12 (slice 2.11a): the order operations ended with an outcome,
+/// where the food goes, and the pay or the charge, until «حسناً»; the
+/// availability shows under it.
+class _EndedCard extends ConsumerWidget {
+  const _EndedCard({required this.ended});
+
+  final Ended ended;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final sending = ref.watch(commandsProvider).contains(ended.orderId);
+    final outcome = outcomeText(l10n, ended.outcome);
+    final food = foodText(l10n, ended.food);
+    final pay = ended.pay;
+    final charge = ended.charge;
+    return Material(
+      child: ListView(
+        padding: const EdgeInsetsDirectional.all(16),
+        children: [
+          Text(
+            l10n.captainOutcomeSet(outcome),
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          if (food != null) Text(food),
+          if (pay != null)
+            Text(
+              l10n.captainOutcomePay(
+                l10n.formatMoney(pay.amount, pay.currency),
+              ),
+            ),
+          if (charge != null)
+            Text(
+              l10n.captainOutcomeCharge(
+                l10n.formatMoney(charge.amount, charge.currency),
+                outcome,
+              ),
+            ),
+          FilledButton(
+            key: const Key('outcome-ok'),
+            onPressed: sending
+                ? null
+                : () async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    final notice = await ref
+                        .read(commandsProvider.notifier)
+                        .acknowledgeOutcome(ended.orderId);
                     if (notice != null) {
                       messenger.showSnackBar(
                         SnackBar(content: Text(l10n.noticeText(notice))),

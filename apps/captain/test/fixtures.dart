@@ -185,6 +185,26 @@ Map<String, Object?> cancelledJson({
   'at': now.toIso8601String(),
 };
 
+/// An order of this captain operations ended with an outcome (CA §9.10,
+/// §9.12), as `GET /v1/captain/orders/active` sends it beside the active
+/// order.
+Map<String, Object?> endedJson({
+  String outcome = 'failed_other',
+  String status = 'failed',
+  String? food = 'returned_to_restaurant',
+  Map<String, Object?>? pay,
+  Map<String, Object?>? charge,
+}) => {
+  'orderId': orderId,
+  'number': '10423',
+  'outcome': outcome,
+  'status': status,
+  'food': food,
+  'pay': pay,
+  'charge': charge,
+  'at': now.toIso8601String(),
+};
+
 /// A pickup request of the active order.
 Map<String, Object?> requestJson({
   String status = 'open',
@@ -356,12 +376,13 @@ class TestApp {
   DateTime clockNow = now;
 
   /// The answers of the three reads, consumed in order (the last repeats);
-  /// [cancelled] goes with every answer of the active order.
+  /// [cancelled] and [ended] go with every answer of the active order.
   void work({
     required List<Map<String, Object?>> availability,
     List<Map<String, Object?>?> offers = const [null],
     List<Map<String, Object?>?> orders = const [null],
     Map<String, Object?>? cancelled,
+    Map<String, Object?>? ended,
   }) {
     server.on('/v1/captain/availability', [
       for (final a in availability) FakeAnswer(200, a),
@@ -371,7 +392,7 @@ class TestApp {
     ]);
     server.on('/v1/captain/orders/active', [
       for (final o in orders)
-        FakeAnswer(200, {'order': o, 'cancelled': cancelled}),
+        FakeAnswer(200, {'order': o, 'cancelled': cancelled, 'ended': ended}),
     ]);
   }
 

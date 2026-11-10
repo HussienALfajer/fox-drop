@@ -16,6 +16,7 @@ Map<String, Object?> _order({
   Map<String, Object?>? captain,
   Map<String, Object?>? cancellation,
   Map<String, Object?>? rejection,
+  Map<String, Object?>? outcome,
   List<Map<String, Object?>>? lines,
   String? promisedAt,
   Map<String, Object?>? itemReport,
@@ -29,6 +30,7 @@ Map<String, Object?> _order({
   'promisedAt': promisedAt,
   'cancellation': cancellation,
   'rejection': rejection,
+  'outcome': outcome,
   'delivery': null,
   'itemReport': itemReport,
   'restaurant': {'id': shamId, 'nameAr': 'مطعم الشام', 'nameEn': null},
@@ -445,6 +447,43 @@ void main() {
       expect(find.byKey(const Key('similar-$nourId')), findsOneWidget);
       await app.done(tester);
     });
+  });
+
+  testWidgets('a failed order shows its reason, and a free one that nothing '
+      'was paid (CU §11.9, AP §8.9)', (tester) async {
+    Map<String, Object?> outcome(String code, String status, String? text) => {
+      'at': '2026-11-07T12:40:00.000Z',
+      'outcome': code,
+      'status': status,
+      'text': text,
+      'amountToCollect': {'amount': '0', 'currency': 'TRY'},
+    };
+    final app = await open(tester, [
+      FakeAnswer(200, {
+        'order': _order(
+          status: 'failed',
+          version: 9,
+          outcome: outcome(
+            'failed_other',
+            'failed',
+            'تعذّر الوصول إليك أو إلى العنوان',
+          ),
+        ),
+      }),
+    ]);
+    expect(_status(tester), 'تعذّر التسليم — تعذّر الوصول إليك أو إلى العنوان');
+    await app.done(tester);
+    final free = await open(tester, [
+      FakeAnswer(200, {
+        'order': _order(
+          status: 'delivered',
+          version: 9,
+          outcome: outcome('free', 'delivered', null),
+        ),
+      }),
+    ]);
+    expect(_status(tester), contains('لم تدفع شيئاً لهذا الطلب'));
+    await free.done(tester);
   });
 
   testWidgets('an order operations cancelled shows its reason (CU §11.9)', (

@@ -15,6 +15,7 @@ Work work({
   Map<String, Object?>? offer,
   Map<String, Object?>? order,
   Map<String, Object?>? cancelled,
+  Map<String, Object?>? ended,
 }) => Work(
   availability: standardSerializers.deserializeWith(
     CaptainAvailabilityDtoOutput.serializer,
@@ -31,6 +32,12 @@ Work work({
       : standardSerializers.deserializeWith(
           CaptainActiveOrderDtoOutputOrder.serializer,
           order,
+        ),
+  ended: ended == null
+      ? null
+      : standardSerializers.deserializeWith(
+          CaptainActiveOrderDtoOutputEnded.serializer,
+          ended,
         ),
   cancelled: cancelled == null
       ? null
@@ -369,6 +376,25 @@ void main() {
       // Acknowledged: nothing to announce.
       expect(alertStep(cancelled, work(), now, answered), isEmpty);
     });
+
+    test(
+      'an outcome set by operations chimes once (CA §9.10, slice 2.11a)',
+      () {
+        final busy = work(
+          state: 'busy',
+          order: orderJson(status: 'picked_up', track: 'picked_up'),
+        );
+        final ended = work(ended: endedJson());
+        expect(
+          alertStep(busy, ended, now, answered).single,
+          isA<OutcomeSet>()
+              .having((a) => a.ended.orderId, 'orderId', orderId)
+              .having((a) => a.chimes, 'chimes', true),
+        );
+        expect(alertStep(ended, ended, now, answered), isEmpty);
+        expect(alertStep(ended, work(), now, answered), isEmpty);
+      },
+    );
 
     test('the offer rings while open and in time, unless answered here', () {
       final offered = work(offer: offerJson());

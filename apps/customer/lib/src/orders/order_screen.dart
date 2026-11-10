@@ -256,12 +256,15 @@ class OrderScreen extends ConsumerWidget {
         l10n.formatMoney(order.money.total, order.currency),
       ),
     ),
-    Delivered() => (l10n.customerStatusDelivered, l10n.customerEnjoy),
+    Delivered(:final paidNothing) => (
+      l10n.customerStatusDelivered,
+      paidNothing ? l10n.customerPaidNothing : l10n.customerEnjoy,
+    ),
     NoRestaurantResponse() => (l10n.customerNoRestaurantResponse, null),
     Rejected(:final text) => (l10n.customerRejected, text),
     CancelledByYou() => (l10n.customerCancelledByYou, null),
     Cancelled(:final text) => (l10n.customerCancelled, text),
-    Failed() => (l10n.customerDeliveryFailed, null),
+    Failed(:final text) => (l10n.customerDeliveryFailed, text),
   };
 }
 

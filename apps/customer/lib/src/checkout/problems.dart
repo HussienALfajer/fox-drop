@@ -111,6 +111,20 @@ List<ProblemView> problemViews(
         views.add(
           ProblemView(l10n.customerTermsPending, ProblemAction.showTerms),
         );
+      case ProblemCode.duesUnpaid:
+        // CU §5.5, AP §8.8: a fake order's dues, paid at the office; the
+        // block lifts by itself once they are paid.
+        final amount = problem.amount;
+        views.add(
+          ProblemView(
+            l10n.customerDuesUnpaid(
+              amount == null
+                  ? ''
+                  : l10n.formatMoney(amount.amount, amount.currency),
+            ),
+            ProblemAction.none,
+          ),
+        );
       case ProblemCode.reviewStop:
         // docs/domain/08: late cancellations stopped ordering until support
         // reviews the account; support lifts it, not the customer.

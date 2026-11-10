@@ -3196,6 +3196,84 @@ abstract class AppLocalizations {
   /// **'تعويض: {amount}'**
   String captainCompensation(String amount);
 
+  /// The checkout problem dues_unpaid: a fake order's dues block ordering until paid at the office (CU §5.5, AP §8.8, slice 2.11a); {amount} is formatted with formatMoney.
+  ///
+  /// In ar, this message translates to:
+  /// **'عليك {amount} لـ FOX DROP. ادفعه في المكتب ليُفك الحظر تلقائياً.'**
+  String customerDuesUnpaid(String amount);
+
+  /// A free or damaged order delivered with nothing to pay (CU §11.9, slice 2.11a).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تدفع شيئاً لهذا الطلب'**
+  String get customerPaidNothing;
+
+  /// The outcome card after operations set the outcome of the captain's order (CA §9.10, slice 2.11a); {outcome} is the outcome's label (AP Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'أنهت العمليات الطلب: {outcome}.'**
+  String captainOutcomeSet(String outcome);
+
+  /// The outcome free (AP Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'مجاني'**
+  String get captainOutcomeFree;
+
+  /// The outcome fake (AP Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'وهمي'**
+  String get captainOutcomeFake;
+
+  /// The outcome damaged (AP Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'تالف'**
+  String get captainOutcomeDamaged;
+
+  /// The outcome wrong_refused (AP Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'خطأ ورفضه الزبون'**
+  String get captainOutcomeWrongRefused;
+
+  /// The outcome failed_other (AP Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر التسليم'**
+  String get captainOutcomeFailedOther;
+
+  /// Where a failed order's food goes: kept_by_captain «يبقى مع الكابتن» (CA §9.12, K10; the wording to the captain ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطعام يبقى معك'**
+  String get captainFoodKept;
+
+  /// Where a failed order's food goes: returned_to_restaurant «أُعيد إلى المطعم» (CA §9.12, K10).
+  ///
+  /// In ar, this message translates to:
+  /// **'أعِد الطعام إلى المطعم'**
+  String get captainFoodReturned;
+
+  /// Where a failed order's food goes: destroyed «أُتلف» (CA §9.12, K10).
+  ///
+  /// In ar, this message translates to:
+  /// **'أتلف الطعام'**
+  String get captainFoodDestroyed;
+
+  /// The pay a failed or free order still brings the captain (CA §9.12); {amount} is formatted with formatMoney.
+  ///
+  /// In ar, this message translates to:
+  /// **'أجرك من الطلب: {amount}'**
+  String captainOutcomePay(String amount);
+
+  /// The charge on the earnings with the captain responsible for the outcome (CA §10.6, §14 #14); {amount} formatted with formatMoney, {reason} the outcome's label.
+  ///
+  /// In ar, this message translates to:
+  /// **'خُصم من مستحقاتك {amount}: {reason}'**
+  String captainOutcomeCharge(String amount, String reason);
+
   /// The checkout problem review_stop: late cancellations stopped ordering until support reviews the account (docs/domain/08; owner decision 2026-11-09).
   ///
   /// In ar, this message translates to:
