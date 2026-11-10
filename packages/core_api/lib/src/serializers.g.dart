@@ -296,6 +296,7 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputEndedOutcomeEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputEndedPay.serializer)
           ..add(CaptainActiveOrderDtoOutputEndedStatusEnum.serializer)
+          ..add(CaptainActiveOrderDtoOutputHandedOver.serializer)
           ..add(CaptainActiveOrderDtoOutputOrder.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderArrival.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderCaptainTrackEnum.serializer)
@@ -304,6 +305,12 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputOrderCustomerAddress.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderCustomerArrival.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderCustomerLocation.serializer)
+          ..add(CaptainActiveOrderDtoOutputOrderHandover.serializer)
+          ..add(CaptainActiveOrderDtoOutputOrderHandoverCaptain.serializer)
+          ..add(
+            CaptainActiveOrderDtoOutputOrderHandoverCaptainLocation.serializer,
+          )
+          ..add(CaptainActiveOrderDtoOutputOrderHandoverRoleEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderLinesInner.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderOutcomeToCollect.serializer)
           ..add(

@@ -50,6 +50,8 @@ interface OutboxPayload {
   reason: string | null;
   at: string;
   captainId?: string | null;
+  // A handover's first captain (slice 2.12b).
+  otherCaptainId?: string;
   offerPay?: { amount: string; currency: string } | null;
   offerExpiresAt?: string;
 }
@@ -193,7 +195,8 @@ export class OutboxPushes {
           priority: rendered.priority,
           data: push.data,
           // CA §14 #1–2: an offer's push ends with the offer.
-          ...(type === 'order.offered' && payload.offerExpiresAt
+          ...((type === 'order.offered' || type === 'order.handover_offered') &&
+          payload.offerExpiresAt
             ? { expiresAt: new Date(payload.offerExpiresAt) }
             : {}),
         };
@@ -245,6 +248,7 @@ export class OutboxPushes {
       restaurantName: names.get(order.restaurantId)?.nameAr ?? '',
       captainId,
       captainFirstName: captain ? captain.name.trim().split(/\s+/)[0]! : null,
+      otherCaptainId: payload.otherCaptainId ?? null,
       recipientName: order.recipientName,
       promisedTime: order.promisedAt && timeZone ? formatTime(order.promisedAt, timeZone) : null,
       total: formatMoney(order.total, order.currency, currencies),

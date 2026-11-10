@@ -181,6 +181,7 @@ import 'package:core_api/src/model/captain_active_order_dto_output_cancelled.dar
 import 'package:core_api/src/model/captain_active_order_dto_output_ended.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_ended_charge.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_ended_pay.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_handed_over.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
@@ -188,6 +189,9 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_custome
 import 'package:core_api/src/model/captain_active_order_dto_output_order_customer_address.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_customer_arrival.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_customer_location.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_handover.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_handover_captain.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_handover_captain_location.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_outcome_to_collect.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_outcome_to_collect_amount.dart';
@@ -607,6 +611,7 @@ part 'serializers.g.dart';
   CaptainActiveOrderDtoOutputEnded,
   CaptainActiveOrderDtoOutputEndedCharge,
   CaptainActiveOrderDtoOutputEndedPay,
+  CaptainActiveOrderDtoOutputHandedOver,
   CaptainActiveOrderDtoOutputOrder,
   CaptainActiveOrderDtoOutputOrderArrival,
   CaptainActiveOrderDtoOutputOrderCollect,
@@ -614,6 +619,9 @@ part 'serializers.g.dart';
   CaptainActiveOrderDtoOutputOrderCustomerAddress,
   CaptainActiveOrderDtoOutputOrderCustomerArrival,
   CaptainActiveOrderDtoOutputOrderCustomerLocation,
+  CaptainActiveOrderDtoOutputOrderHandover,
+  CaptainActiveOrderDtoOutputOrderHandoverCaptain,
+  CaptainActiveOrderDtoOutputOrderHandoverCaptainLocation,
   CaptainActiveOrderDtoOutputOrderLinesInner,
   CaptainActiveOrderDtoOutputOrderOutcomeToCollect,
   CaptainActiveOrderDtoOutputOrderOutcomeToCollectAmount,

@@ -938,6 +938,9 @@ export class OrderCommands {
           // edit since moved its version.
           guard: async (tx) =>
             (await lockOrder(tx, order.id, order.placedAt))?.version === read.version,
+          // Slice 2.12b: an open handover ends with the outcome (its offer
+          // withdrawn): the order is the outcome's now.
+          before: (tx) => this.assignments.beforeEnd(tx, order.id, order.placedAt, actor, now),
           effects: async (tx) => {
             // With an amount to collect, the collection posts the journals.
             const journalIds = waits

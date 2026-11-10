@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/captain_active_order_dto_output_ended.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_withdrawn.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_handed_over.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_cancelled.dart';
 import 'package:built_value/built_value.dart';
@@ -19,6 +20,7 @@ part 'captain_active_order_dto_output.g.dart';
 /// * [cancelled]
 /// * [withdrawn]
 /// * [ended]
+/// * [handedOver]
 @BuiltValue()
 abstract class CaptainActiveOrderDtoOutput
     implements
@@ -34,6 +36,9 @@ abstract class CaptainActiveOrderDtoOutput
 
   @BuiltValueField(wireName: r'ended')
   CaptainActiveOrderDtoOutputEnded? get ended;
+
+  @BuiltValueField(wireName: r'handedOver')
+  CaptainActiveOrderDtoOutputHandedOver? get handedOver;
 
   CaptainActiveOrderDtoOutput._();
 
@@ -99,6 +104,15 @@ class _$CaptainActiveOrderDtoOutputSerializer
             object.ended,
             specifiedType: const FullType.nullable(
               CaptainActiveOrderDtoOutputEnded,
+            ),
+          );
+    yield r'handedOver';
+    yield object.handedOver == null
+        ? null
+        : serializers.serialize(
+            object.handedOver,
+            specifiedType: const FullType.nullable(
+              CaptainActiveOrderDtoOutputHandedOver,
             ),
           );
   }
@@ -175,6 +189,18 @@ class _$CaptainActiveOrderDtoOutputSerializer
                   as CaptainActiveOrderDtoOutputEnded?;
           if (valueDes == null) continue;
           result.ended.replace(valueDes);
+          break;
+        case r'handedOver':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainActiveOrderDtoOutputHandedOver,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputHandedOver?;
+          if (valueDes == null) continue;
+          result.handedOver.replace(valueDes);
           break;
         default:
           unhandled.add(key);

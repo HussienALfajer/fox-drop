@@ -54,10 +54,13 @@ interface Row {
     | 'order.offered'
     | 'order.assigned'
     | 'order.item_report_closed'
-    | 'order.reassigned';
+    | 'order.reassigned'
+    | 'order.handover_assigned'
+    | 'order.handed_over';
   version: number;
   captainTrack?: string;
   captainId?: string;
+  otherCaptainId?: string;
   byCustomer?: boolean;
   reason?: string;
 }
@@ -72,6 +75,7 @@ const payloadOf = (row: Row) => ({
   status: row.type === 'order.cancelled' ? 'cancelled' : 'placed',
   version: row.version,
   ...(row.captainTrack ? { captainTrack: row.captainTrack, captainId: row.captainId ?? null } : {}),
+  ...(row.otherCaptainId ? { otherCaptainId: row.otherCaptainId } : {}),
   ...(row.byCustomer === undefined ? {} : { byCustomer: row.byCustomer }),
   reason: row.reason ?? null,
   at: new Date().toISOString(),
@@ -139,6 +143,26 @@ describe('the outbox relay (architecture §5.5, E4)', () => {
     expect(await reasonOn(`ops:city.${city}`)).toContain('captain_late');
     expect(await reasonOn(`merchant:${order.restaurantId}`)).toEqual([null]);
     expect(await reasonOn(`order:${order.orderId}`)).toEqual([null]);
+  });
+
+  it('sends a handover’s steps to both captains and the panel only, and its receipt to all (slice 2.12b)', async () => {
+    const order = { orderId: randomUUID(), restaurantId: randomUUID() };
+    const first = randomUUID();
+    const second = randomUUID();
+    const handover = {
+      ...order,
+      captainTrack: 'picked_up',
+      captainId: second,
+      otherCaptainId: first,
+    };
+    await insert({ ...handover, type: 'order.handover_assigned', version: 9 });
+    await insert({ ...handover, type: 'order.handed_over', version: 10 });
+    await relay.drain(new Date());
+    expect(await versionsOn(`captain:${first}`)).toEqual([9, 10]);
+    expect(await versionsOn(`captain:${second}`)).toEqual([9, 10]);
+    expect(await versionsOn(`ops:city.${city}`)).toEqual(expect.arrayContaining([10, 9]));
+    expect(await versionsOn(`merchant:${order.restaurantId}`)).toEqual([10]);
+    expect(await versionsOn(`order:${order.orderId}`)).toEqual([10]);
   });
 
   it("tells the restaurant the customer's own cancellation, and false for a row before slice 2.8a (RA §8.3)", async () => {

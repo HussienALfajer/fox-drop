@@ -182,6 +182,7 @@ export 'package:core_api/src/model/captain_active_order_dto_output_cancelled.dar
 export 'package:core_api/src/model/captain_active_order_dto_output_ended.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_ended_charge.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_ended_pay.dart';
+export 'package:core_api/src/model/captain_active_order_dto_output_handed_over.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
@@ -189,6 +190,9 @@ export 'package:core_api/src/model/captain_active_order_dto_output_order_custome
 export 'package:core_api/src/model/captain_active_order_dto_output_order_customer_address.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_customer_arrival.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_customer_location.dart';
+export 'package:core_api/src/model/captain_active_order_dto_output_order_handover.dart';
+export 'package:core_api/src/model/captain_active_order_dto_output_order_handover_captain.dart';
+export 'package:core_api/src/model/captain_active_order_dto_output_order_handover_captain_location.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_lines_inner.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_outcome_to_collect.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_outcome_to_collect_amount.dart';

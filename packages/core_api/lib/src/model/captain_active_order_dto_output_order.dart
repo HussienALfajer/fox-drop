@@ -7,6 +7,7 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_outcome
 import 'package:core_api/src/model/captain_active_order_dto_output_order_preparation.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_handover.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_payment.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup.dart';
@@ -41,6 +42,7 @@ part 'captain_active_order_dto_output_order.g.dart';
 /// * [pickup]
 /// * [customer]
 /// * [radii]
+/// * [handover]
 @BuiltValue()
 abstract class CaptainActiveOrderDtoOutputOrder
     implements
@@ -113,6 +115,9 @@ abstract class CaptainActiveOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'radii')
   CaptainActiveOrderDtoOutputOrderRadii get radii;
+
+  @BuiltValueField(wireName: r'handover')
+  CaptainActiveOrderDtoOutputOrderHandover? get handover;
 
   CaptainActiveOrderDtoOutputOrder._();
 
@@ -257,6 +262,15 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
       object.radii,
       specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderRadii),
     );
+    yield r'handover';
+    yield object.handover == null
+        ? null
+        : serializers.serialize(
+            object.handover,
+            specifiedType: const FullType.nullable(
+              CaptainActiveOrderDtoOutputOrderHandover,
+            ),
+          );
   }
 
   @override
@@ -475,6 +489,18 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
                   )
                   as CaptainActiveOrderDtoOutputOrderRadii;
           result.radii.replace(valueDes);
+          break;
+        case r'handover':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainActiveOrderDtoOutputOrderHandover,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderHandover?;
+          if (valueDes == null) continue;
+          result.handover.replace(valueDes);
           break;
         default:
           unhandled.add(key);

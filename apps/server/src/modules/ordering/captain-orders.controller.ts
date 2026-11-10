@@ -22,6 +22,8 @@ import {
   type CaptainActiveOrder,
   type CaptainCancellation,
   type CaptainWithdrawal,
+  type CaptainHandedOver,
+  type CaptainHandover,
   type CaptainOutcome,
   CaptainOrderRefusedError,
   CaptainOrders,
@@ -225,6 +227,33 @@ const activeOrder = z
           ),
       })
       .describe('The arrival radii, by the straight line from the latest fix.'),
+    handover: z
+      .object({
+        role: z
+          .enum(['giving', 'receiving'])
+          .describe(
+            'giving: «سيستلم الكابتن {الاسم} الطلب منك. انتظره في موقعك.»; receiving: step 1 leads to the other captain, «استلمت الطلب من الكابتن {الاسم}» within radii.customerMetres of them.',
+          ),
+        assigned: z
+          .boolean()
+          .describe('The second captain has it; false while it is still offered to them.'),
+        captain: z.object({
+          name: z.string(),
+          phone: z.string().nullable().describe('«اتصال» dials it.'),
+          location: z
+            .object({
+              latitude: z.number(),
+              longitude: z.number(),
+              recordedAt: z.iso.datetime(),
+            })
+            .nullable()
+            .describe('Their latest point, read again with the order; null without one.'),
+        }),
+      })
+      .nullable()
+      .describe(
+        '«تسليم لكابتن آخر» (CA §9.10.1, slice 2.12b): the open handover of the order, or null. While giving, the steps wait; while receiving, «لا تدفع شيئاً».',
+      ),
   })
   .describe('The active order (CA §9).');
 
@@ -300,6 +329,49 @@ const endedTask = z
     'The latest order operations ended with an outcome within 12 hours that the captain has not acknowledged (POST …/acknowledge-outcome).',
   );
 
+// CA §9.10.1 (slice 2.12b): the order this captain handed to another, until
+// their «حسناً».
+const handedOverTask = z
+  .object({
+    orderId: z.uuid(),
+    number: z.string(),
+    toCaptainName: z.string().describe('{الاسم} of «سلّمت الطلب للكابتن {الاسم}».'),
+    at: z.iso.datetime(),
+  })
+  .nullable()
+  .describe(
+    'The latest order the captain handed to another within 12 hours that they have not acknowledged (POST …/acknowledge-handover).',
+  );
+
+function handedOverBody(handedOver: CaptainHandedOver | null) {
+  return (
+    handedOver && {
+      orderId: handedOver.orderId,
+      number: handedOver.number.toString(),
+      toCaptainName: handedOver.toCaptainName,
+      at: handedOver.at.toISOString(),
+    }
+  );
+}
+
+function handoverBody(handover: CaptainHandover | null) {
+  return (
+    handover && {
+      role: handover.role,
+      assigned: handover.assigned,
+      captain: {
+        name: handover.captain.name,
+        phone: handover.captain.phone,
+        location: handover.captain.location && {
+          latitude: handover.captain.location.latitude,
+          longitude: handover.captain.location.longitude,
+          recordedAt: handover.captain.location.recordedAt.toISOString(),
+        },
+      },
+    }
+  );
+}
+
 function endedBody(ended: CaptainOutcome | null) {
   const text = (value: { amount: bigint; currency: string } | null) =>
     value && { amount: value.amount.toString(), currency: value.currency };
@@ -351,6 +423,7 @@ class CaptainActiveOrderDto extends createZodDto(
     cancelled: cancelledTask,
     withdrawn: withdrawnTask,
     ended: endedTask,
+    handedOver: handedOverTask,
   }),
 ) {}
 
@@ -534,6 +607,7 @@ function activeOrderBody({
   pickupRequest,
   pickupDispute,
   radii,
+  handover,
 }: CaptainActiveOrder) {
   if (order.captainTrack === null) throw new Error(`order ${order.id} has no captain track`);
   if (order.acceptance === null) throw new Error(`order ${order.id} was never accepted`);
@@ -573,7 +647,8 @@ function activeOrderBody({
       note: line.note,
     })),
     note: order.note,
-    pickupPayment: money(order.money.itemsValue),
+    // CA §9.10.1: «لا تدفع شيئاً» for the second captain of a handover.
+    pickupPayment: money(handover?.role === 'receiving' ? 0n : order.money.itemsValue),
     collect: money(order.money.total),
     pickup: {
       proposedLines: [money(order.money.itemsValue)],
@@ -604,6 +679,7 @@ function activeOrderBody({
       },
     },
     radii,
+    handover: handoverBody(handover),
   };
 }
 
@@ -620,18 +696,74 @@ export class CaptainOrdersController {
   async active(@CurrentAppSession() session: AppSession) {
     const captainId = captainOf(session);
     const now = new Date();
-    const [active, cancelled, withdrawn, ended] = await Promise.all([
+    const [active, cancelled, withdrawn, ended, handedOver] = await Promise.all([
       this.orders.active(captainId, now),
       this.orders.cancelled(captainId, now),
       this.orders.withdrawn(captainId, now),
       this.orders.outcome(captainId, now),
+      this.orders.handedOver(captainId, now),
     ]);
     return {
       order: active && activeOrderBody(active),
       cancelled: cancelledBody(cancelled),
       withdrawn: withdrawnBody(withdrawn),
       ended: endedBody(ended),
+      handedOver: handedOverBody(handedOver),
     };
+  }
+
+  // CA §9.10.1 «حسناً» on the handover card (slice 2.12b): answers the active
+  // read without it. Idempotent by its nature, so it takes no key, and it
+  // needs no fix. 404 unknown_order for an order this captain never handed
+  // over.
+  @Post(':orderId/acknowledge-handover')
+  @AppSignedIn()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CaptainActiveOrderDto })
+  async acknowledgeHandover(
+    @CurrentAppSession() session: AppSession,
+    @Param() params: CaptainOrderParamsDto,
+  ) {
+    const captainId = captainOf(session);
+    return refusalsAsHttp(captainId, this.orders, async () => {
+      await this.orders.acknowledgeHandover(captainId, params.orderId, new Date());
+      return this.active(session);
+    });
+  }
+
+  // CA §9.10.1, §15 «Confirm a handover receipt» (slice 2.12b): «استلمت الطلب
+  // من الكابتن {الاسم}», the second captain near the first; the order becomes
+  // theirs, picked up. 409 too_far_from_captain with the distance (null
+  // without a point of the first captain), weak_location,
+  // simulated_location, stale_location, not_online, order_state_changed; 404
+  // unknown_order; 400 invalid_location; 422 idempotency_key_reused.
+  @Post(':orderId/receive-handover')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CaptainOrderDto })
+  async receiveHandover(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: CaptainOrderParamsDto,
+    @Body() body: CaptainArriveDto,
+  ) {
+    const captainId = captainOf(session);
+    return refusalsAsHttp(captainId, this.orders, async () => ({
+      order: activeOrderBody(
+        await this.orders.receiveHandover(
+          {
+            orderId: params.orderId,
+            captainId,
+            accountId: session.accountId,
+            deviceId: session.deviceId,
+            idempotencyKey,
+            location: { ...body.location, recordedAt: new Date(body.location.recordedAt) },
+          },
+          new Date(),
+        ),
+      ),
+    }));
   }
 
   // CA §9.12 «حسناً» on the outcome card (slice 2.11a): answers the active
@@ -928,7 +1060,9 @@ async function refusalsAsHttp<T>(
     throw new ConflictException({
       statusCode: HttpStatus.CONFLICT,
       error: refusal,
-      ...(refusal === 'too_far_from_restaurant' || refusal === 'too_far_from_customer'
+      ...(refusal === 'too_far_from_restaurant' ||
+      refusal === 'too_far_from_customer' ||
+      refusal === 'too_far_from_captain'
         ? { distanceMetres: error.distanceMetres }
         : {}),
       ...(refusal === 'weak_location' ? { accuracyLimitMetres: WEAK_GPS_METRES } : {}),

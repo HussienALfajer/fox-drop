@@ -7,6 +7,7 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_prepara
 import 'package:core_api/src/model/captain_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_handover.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order_outcome_to_collect.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_payment.dart';
@@ -41,6 +42,7 @@ part 'captain_order_dto_output_order.g.dart';
 /// * [pickup]
 /// * [customer]
 /// * [radii]
+/// * [handover]
 @BuiltValue()
 abstract class CaptainOrderDtoOutputOrder
     implements
@@ -110,6 +112,9 @@ abstract class CaptainOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'radii')
   CaptainActiveOrderDtoOutputOrderRadii get radii;
+
+  @BuiltValueField(wireName: r'handover')
+  CaptainActiveOrderDtoOutputOrderHandover? get handover;
 
   CaptainOrderDtoOutputOrder._();
 
@@ -252,6 +257,15 @@ class _$CaptainOrderDtoOutputOrderSerializer
       object.radii,
       specifiedType: const FullType(CaptainActiveOrderDtoOutputOrderRadii),
     );
+    yield r'handover';
+    yield object.handover == null
+        ? null
+        : serializers.serialize(
+            object.handover,
+            specifiedType: const FullType.nullable(
+              CaptainActiveOrderDtoOutputOrderHandover,
+            ),
+          );
   }
 
   @override
@@ -470,6 +484,18 @@ class _$CaptainOrderDtoOutputOrderSerializer
                   )
                   as CaptainActiveOrderDtoOutputOrderRadii;
           result.radii.replace(valueDes);
+          break;
+        case r'handover':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainActiveOrderDtoOutputOrderHandover,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderHandover?;
+          if (valueDes == null) continue;
+          result.handover.replace(valueDes);
           break;
         default:
           unhandled.add(key);

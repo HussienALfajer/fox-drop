@@ -326,6 +326,7 @@ describe('GET /v1/captain/orders/active (CA §9.1–9.3)', () => {
       order: null,
       cancelled: null,
       withdrawn: null,
+      handedOver: null,
       ended: null,
     });
     const order = await acceptedOrder();

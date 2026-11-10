@@ -582,3 +582,147 @@ describe('POST /v1/admin/orders/{orderId}/handover (AP §9.3.2, CA §9.10.1)', (
     expect(own.json()).toMatchObject({ error: 'captain_not_eligible', reasons: ['busy'] });
   });
 });
+
+describe('POST /v1/captain/orders/{orderId}/receive-handover (CA §9.10.1, §15)', () => {
+  it('hands an arrived order to the second captain near the first, who delivers it', async () => {
+    const { order, first, ops } = await pickedUpOrder();
+    expect((await first.arriveAtCustomer(order.id)).statusCode).toBe(200);
+    await first.moveTo(brokenDown);
+    const custody = await balance('captain.custody', first.captainId);
+    expect(custody).toBe(-24_000n);
+    const second = await onlineCaptain('باسل الثاني', captainSpot);
+    expect((await ops.handover(order.id, second.captainId)).statusCode).toBe(200);
+
+    // The first captain waits: their screen names the second, with a call
+    // button, and their own steps are refused meanwhile.
+    const giving = (await first.active()).order;
+    expect(giving.handover).toMatchObject({
+      role: 'giving',
+      assigned: true,
+      captain: { name: 'باسل الثاني', phone: expect.stringMatching(/^\+9639/) },
+    });
+    const early = await first.deliver(order.id);
+    expect(early.statusCode).toBe(409);
+    expect(early.json().error).toBe('order_state_changed');
+    await first.moveTo(brokenDown);
+
+    // The second captain is led to the first and pays nothing.
+    const receiving = (await second.active()).order;
+    expect(receiving).toMatchObject({
+      id: order.id,
+      pickupPayment: { amount: '0', currency: 'TRY' },
+      collect: { amount: '28000', currency: 'TRY' },
+      handover: {
+        role: 'receiving',
+        assigned: true,
+        captain: {
+          name: 'سامر الأول',
+          location: expect.objectContaining(brokenDown),
+        },
+      },
+    });
+    // Too far from the first captain.
+    const far = await second.receive(order.id);
+    expect(far.statusCode).toBe(409);
+    expect(far.json()).toMatchObject({ error: 'too_far_from_captain' });
+    expect(far.json().distanceMetres).toBeGreaterThan(200);
+
+    await second.moveTo(besideThem);
+    const received = await second.receive(order.id);
+    expect(received.statusCode).toBe(200);
+    expect(received.json().order).toMatchObject({
+      status: 'picked_up',
+      captainTrack: 'picked_up',
+      handover: null,
+      customer: { arrival: null },
+    });
+    // docs/domain/01: arrived back to picked_up with the door arrival
+    // cleared; the order is the second captain's now.
+    expect(await orderRow(order.id)).toEqual({
+      status: 'picked_up',
+      captain_id: second.captainId,
+      captain_track: 'picked_up',
+      arrived_at_customer_at: null,
+      away_reason: null,
+    });
+    expect((await events(order.id)).at(-1)).toEqual({
+      type: 'order.handed_over',
+      actor_type: 'captain',
+      reason: null,
+      captain_id: second.captainId,
+      from_status: 'arrived',
+      to_status: 'picked_up',
+    });
+    expect(await handoverRows(order.id)).toMatchObject([{ received: true, seen: false }]);
+
+    // K17: the first captain is offline, the order gone from their app,
+    // and the card «سلّمت الطلب للكابتن {الاسم}» shows until «حسناً».
+    expect((await first.availability()).state).toBe('offline');
+    const { rows: periods } = await sql.query(
+      `SELECT end_reason FROM captains.online_periods
+         WHERE captain_id = $1 ORDER BY started_at DESC LIMIT 1`,
+      [first.captainId],
+    );
+    expect(periods).toEqual([{ end_reason: 'handed_over' }]);
+    const firstNow = await first.active();
+    expect(firstNow.order).toBeNull();
+    expect(firstNow.handedOver).toMatchObject({
+      orderId: order.id,
+      toCaptainName: 'باسل الثاني',
+    });
+    const seen = await first.acknowledgeHandover(order.id);
+    expect(seen.statusCode).toBe(200);
+    expect(seen.json().handedOver).toBeNull();
+
+    // The second captain collects at the door and earns the order pay; the
+    // pickup payment stays in the first captain's custody (AP §9.3.2).
+    expect((await second.arriveAtCustomer(order.id)).statusCode).toBe(200);
+    const delivered = await second.deliver(order.id);
+    expect(delivered.statusCode).toBe(200);
+    expect(delivered.json().summary).toMatchObject({
+      pay: { total: '2500', waiting: '0' },
+      custodyChange: { amount: '28000' },
+    });
+    expect(await balance('captain.custody', second.captainId)).toBe(28_000n);
+    expect(await balance('captain.earnings', second.captainId)).toBe(2_500n);
+    expect(await balance('captain.custody', first.captainId)).toBe(-24_000n);
+    expect(await balance('captain.earnings', first.captainId)).toBe(0n);
+  });
+
+  it('refuses a captain who is not the handover’s second captain', async () => {
+    const { order, ops } = await pickedUpOrder();
+    const second = await onlineCaptain('ثاني', besideThem);
+    const stranger = await onlineCaptain('غريب', besideThem);
+    expect((await ops.handover(order.id, second.captainId)).statusCode).toBe(200);
+    expect((await stranger.receive(order.id)).statusCode).toBe(404);
+    expect((await stranger.active()).order).toBeNull();
+  });
+
+  it('ends an open handover when operations record the delivery', async () => {
+    const { order, ops } = await pickedUpOrder();
+    const second = await onlineCaptain('منتظر', besideThem);
+    expect((await ops.handover(order.id, second.captainId)).statusCode).toBe(200);
+    const recorded = await ops.post(`/v1/admin/orders/${order.id}/record-delivery`, {
+      received: [{ currency: 'TRY', amount: '28000' }],
+      change: [],
+      amountDue: { amount: '28000', currency: 'TRY' },
+      shortfall: null,
+      reason: 'سلّمه الكابتن الأول بنفسه',
+    });
+    expect(recorded.statusCode).toBe(200);
+    expect(await handoverRows(order.id)).toMatchObject([{ close_reason: 'ended' }]);
+    expect((await second.availability()).state).toBe('online_available');
+    expect((await second.active()).order).toBeNull();
+  });
+});
+
+describe('the handover tables (AP §9.7.4)', () => {
+  it('lets the application role change only the steps of a handover', async () => {
+    const { order, ops } = await pickedUpOrder();
+    const second = await onlineCaptain('جدول', besideThem);
+    expect((await ops.handover(order.id, second.captainId)).statusCode).toBe(200);
+    await expect(
+      sql.query("UPDATE ordering.handovers SET note = 'x' WHERE order_id = $1", [order.id]),
+    ).rejects.toThrow(/permission denied/);
+  });
+});

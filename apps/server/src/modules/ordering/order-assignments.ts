@@ -1,5 +1,5 @@
 import { Inject, Injectable, Module, type OnModuleInit } from '@nestjs/common';
-import { and, count, eq, gte, inArray, isNotNull, isNull, type SQL, sql } from 'drizzle-orm';
+import { and, count, desc, eq, gte, inArray, isNotNull, isNull, type SQL, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DatabaseModule, DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -174,24 +174,7 @@ export class OrderAssignments implements OnModuleInit {
     executor: Executor,
     order: { id: string; placedAt: Date },
   ): Promise<OpenHandover | null> {
-    const [row] = await executor
-      .select({
-        id: handovers.id,
-        fromCaptainId: handovers.fromCaptainId,
-        toCaptainId: handovers.toCaptainId,
-        offerId: handovers.offerId,
-        assignedAt: handovers.assignedAt,
-      })
-      .from(handovers)
-      .where(
-        and(
-          eq(handovers.orderId, order.id),
-          eq(handovers.orderPlacedAt, order.placedAt),
-          isNull(handovers.receivedAt),
-          isNull(handovers.closedAt),
-        ),
-      );
-    return row ?? null;
+    return openHandoverOf(executor, order);
   }
 
   // AP §9.3.2 «تسليم لكابتن آخر»: operations open the handover of the locked
@@ -406,6 +389,52 @@ export class OrderAssignments implements OnModuleInit {
       captainId: assigned ? change.captainId : order.captainId,
     };
   }
+}
+
+// AP §9.3.2, CA §9.10.1 (slice 2.12b): the order's open handover, if any.
+export async function openHandoverOf(
+  executor: Executor,
+  order: { id: string; placedAt: Date },
+): Promise<OpenHandover | null> {
+  const [row] = await executor
+    .select({
+      id: handovers.id,
+      fromCaptainId: handovers.fromCaptainId,
+      toCaptainId: handovers.toCaptainId,
+      offerId: handovers.offerId,
+      assignedAt: handovers.assignedAt,
+    })
+    .from(handovers)
+    .where(
+      and(
+        eq(handovers.orderId, order.id),
+        eq(handovers.orderPlacedAt, order.placedAt),
+        isNull(handovers.receivedAt),
+        isNull(handovers.closedAt),
+      ),
+    );
+  return row ?? null;
+}
+
+// The handover the order was received by, if any: its second captain
+// delivers it, without the first's waiting, and paid nothing at the pickup.
+export async function receivedHandoverOf(
+  executor: Executor,
+  order: { id: string; placedAt: Date },
+): Promise<{ fromCaptainId: string; toCaptainId: string } | null> {
+  const [row] = await executor
+    .select({ fromCaptainId: handovers.fromCaptainId, toCaptainId: handovers.toCaptainId })
+    .from(handovers)
+    .where(
+      and(
+        eq(handovers.orderId, order.id),
+        eq(handovers.orderPlacedAt, order.placedAt),
+        isNotNull(handovers.receivedAt),
+      ),
+    )
+    .orderBy(desc(handovers.receivedAt))
+    .limit(1);
+  return row ?? null;
 }
 
 // Which of these captains have an active order now: as its captain, or as
