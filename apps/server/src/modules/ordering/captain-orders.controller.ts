@@ -135,6 +135,9 @@ const activeOrder = z
       .object({
         outcome: z.enum(['free', 'damaged']),
         amount: money.describe('The amount due on the payment screen (CA §9.7).'),
+        equivalents: z
+          .array(money)
+          .describe('The amount in the other accepted currencies, each by its rounding (CA §9.7).'),
       })
       .nullable()
       .describe(
@@ -429,7 +432,16 @@ class CaptainDeliverDto extends createZodDto(
   }),
 ) {}
 
-class CaptainOutcomePaymentDto extends createZodDto(z.object(doorPayment)) {}
+class CaptainOutcomePaymentDto extends createZodDto(
+  z.object({
+    ...doorPayment,
+    location: commandLocation
+      .nullable()
+      .describe(
+        'The latest fix, recorded with the command (CA §15); no radius applies, since the screen opens wherever the captain is.',
+      ),
+  }),
+) {}
 
 class CaptainDeliverySummaryDto extends createZodDto(
   z.object({
@@ -511,6 +523,10 @@ function activeOrderBody({
       ? {
           outcome: order.outcome.outcome as 'free' | 'damaged',
           amount: money(order.outcome.amountToCollect),
+          equivalents: order.outcome.amountEquivalents.map((each) => ({
+            amount: each.amount.toString(),
+            currency: each.currency,
+          })),
         }
       : null,
     itemCount: order.lines.reduce((sum, line) => sum + line.quantity, 0),
@@ -731,7 +747,8 @@ export class CaptainOrdersController {
 
   // CA §9.10, §9.7 (K9): the payment of the amount operations set to collect
   // with an outcome; the outcome is posted from it and the captain gets the
-  // summary. No fix: the screen opens wherever the captain is. 409
+  // summary. The fix is recorded, with no radius: the screen opens wherever
+  // the captain is. 409
   // shortfall_reason_required with `shortfall`, overpaid, amount_due_changed
   // and order_state_changed (nothing waiting) with the order as it is now,
   // currency_not_accepted; 400 invalid_lines; 404 unknown_order; 422
@@ -759,6 +776,10 @@ export class CaptainOrdersController {
             accountId: session.accountId,
             deviceId: session.deviceId,
             idempotencyKey,
+          },
+          location: body.location && {
+            ...body.location,
+            recordedAt: new Date(body.location.recordedAt),
           },
         },
         doorCollection(body),

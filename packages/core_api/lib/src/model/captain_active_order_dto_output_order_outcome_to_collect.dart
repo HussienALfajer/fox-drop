@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_outcome_to_collect_amount.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
@@ -15,6 +16,7 @@ part 'captain_active_order_dto_output_order_outcome_to_collect.g.dart';
 /// Properties:
 /// * [outcome]
 /// * [amount]
+/// * [equivalents] - The amount in the other accepted currencies, each by its rounding (CA §9.7).
 @BuiltValue()
 abstract class CaptainActiveOrderDtoOutputOrderOutcomeToCollect
     implements
@@ -28,6 +30,10 @@ abstract class CaptainActiveOrderDtoOutputOrderOutcomeToCollect
 
   @BuiltValueField(wireName: r'amount')
   CaptainActiveOrderDtoOutputOrderOutcomeToCollectAmount get amount;
+
+  /// The amount in the other accepted currencies, each by its rounding (CA §9.7).
+  @BuiltValueField(wireName: r'equivalents')
+  BuiltList<CaptainWentOfflineDtoOutputHandIn?> get equivalents;
 
   CaptainActiveOrderDtoOutputOrderOutcomeToCollect._();
 
@@ -77,6 +83,13 @@ class _$CaptainActiveOrderDtoOutputOrderOutcomeToCollectSerializer
         CaptainActiveOrderDtoOutputOrderOutcomeToCollectAmount,
       ),
     );
+    yield r'equivalents';
+    yield serializers.serialize(
+      object.equivalents,
+      specifiedType: const FullType(BuiltList, [
+        FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+      ]),
+    );
   }
 
   @override
@@ -125,6 +138,17 @@ class _$CaptainActiveOrderDtoOutputOrderOutcomeToCollectSerializer
                   )
                   as CaptainActiveOrderDtoOutputOrderOutcomeToCollectAmount;
           result.amount.replace(valueDes);
+          break;
+        case r'equivalents':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+                    ]),
+                  )
+                  as BuiltList<CaptainWentOfflineDtoOutputHandIn?>;
+          result.equivalents.replace(valueDes);
           break;
         default:
           unhandled.add(key);

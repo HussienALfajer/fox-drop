@@ -16,14 +16,22 @@ import 'work.dart';
 /// with the order's rates; the app computes the change only for one
 /// currency, which needs no rate. Unstyled until the design.
 class PaymentForm extends ConsumerStatefulWidget {
-  const PaymentForm({super.key, required this.order, this.outcomeAmount});
+  const PaymentForm({
+    super.key,
+    required this.order,
+    this.outcomeAmount,
+    this.outcomeEquivalents = const [],
+  });
 
   final ActiveOrder order;
 
   /// CA §9.10 (K9): the amount operations set to collect with an outcome,
-  /// in the base currency; the form records it instead of a delivery, with
-  /// no location and no equivalents (the app has no rates for this amount).
+  /// in the base currency; the form records it instead of a delivery,
+  /// with no radius.
   final Money? outcomeAmount;
+
+  /// That amount in the other accepted currencies (CA §9.7 items 1-2).
+  final List<Money> outcomeEquivalents;
 
   @override
   ConsumerState<PaymentForm> createState() => _PaymentFormState();
@@ -60,12 +68,16 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
     }
   }
 
-  List<Money> get _due => widget.outcomeAmount != null
-      ? [_amountDue]
-      : dueIn(_amountDue, [
-          for (final e in _order.customer.collectEquivalents.nonNulls)
-            Money(e.amount, e.currency),
-        ], _order.customer.payIn);
+  List<Money> get _due => dueIn(
+    _amountDue,
+    widget.outcomeAmount != null
+        ? widget.outcomeEquivalents
+        : [
+            for (final e in _order.customer.collectEquivalents.nonNulls)
+              Money(e.amount, e.currency),
+          ],
+    _order.customer.payIn,
+  );
 
   TextEditingController _field(
     Map<String, TextEditingController> fields,

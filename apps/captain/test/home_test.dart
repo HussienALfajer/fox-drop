@@ -810,11 +810,13 @@ void main() {
     await app.pump(tester);
     await app.live(tester);
 
-    final waiting = orderJson(
-      status: 'picked_up',
-      track: 'picked_up',
-      version: 7,
-    )..['outcomeToCollect'] = {'outcome': 'free', 'amount': moneyJson('5000')};
+    final waiting =
+        orderJson(status: 'picked_up', track: 'picked_up', version: 7)
+          ..['outcomeToCollect'] = {
+            'outcome': 'free',
+            'amount': moneyJson('5000'),
+            'equivalents': [moneyJson('500', 'USD')],
+          };
     app.work(
       availability: [availabilityJson(state: 'busy')],
       orders: [waiting],
@@ -824,6 +826,8 @@ void main() {
     expect(find.text('بانتظار تسجيل التحصيل'), findsOneWidget);
     expect(find.text('أنهت العمليات الطلب: مجاني. اقبض 50 ₺.'), findsWidgets);
     expect(app.ringer.chimes, 1);
+    // CA §9.7: the amount in the other accepted currencies too.
+    expect(find.byKey(const Key('exact-USD')), findsOneWidget);
 
     app.server.on('/v1/captain/orders/$orderId/outcome-payment', [
       FakeAnswer(200, summaryJson()),
@@ -836,7 +840,8 @@ void main() {
     final body = bodyOf(app, '/v1/captain/orders/$orderId/outcome-payment');
     expect(body['received'], [moneyJson('5000')]);
     expect(body['amountDue'], moneyJson('5000'));
-    expect(body.containsKey('location'), isFalse);
+    // CA §15: the fix goes with the command.
+    expect(body['location'], isNotNull);
     expect(find.text('ربحت من هذا الطلب: 35 ₺'), findsOneWidget);
     await app.done(tester);
   });

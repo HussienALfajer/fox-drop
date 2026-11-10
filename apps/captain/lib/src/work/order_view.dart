@@ -48,6 +48,10 @@ class OrderView extends ConsumerWidget {
               collect.amount.amount,
               collect.amount.currency,
             ),
+            outcomeEquivalents: [
+              for (final e in collect.equivalents.nonNulls)
+                Money(e.amount, e.currency),
+            ],
           ),
         ],
       );

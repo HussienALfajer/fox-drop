@@ -304,7 +304,7 @@ export class CaptainOrders {
           // K9: an outcome waiting for its collection is the payment screen.
           inArray(orders.status, ['delivered', 'failed']),
           isNull(orderOutcomeRows.captainSeenAt),
-          gt(orderOutcomeRows.setAt, since),
+          gt(sql`coalesce(${orderOutcomeRows.collectedAt}, ${orderOutcomeRows.setAt})`, since),
           // An order ends after the pickup within hours of placing.
           gt(orders.placedAt, new Date(since.getTime() - CANCELLED_AFTER_PLACING_MS)),
         ),
@@ -663,7 +663,7 @@ export class CaptainOrders {
   // order that moved since is order_state_changed. Answers the order.
   async collectOutcome(
     caller:
-      | { kind: 'captain'; command: CaptainOrderCommand }
+      | { kind: 'captain'; command: CaptainOrderCommand; location: CommandLocation | null }
       | { kind: 'admin'; command: AdminOrderCommand },
     collection: DoorCollection,
     now: Date,
@@ -721,6 +721,12 @@ export class CaptainOrders {
       );
     }
     if (order.captainId === null) throw new Error(`order ${order.id} has no captain`);
+    // CA §15: the captain's fix goes with the command, checked as any other
+    // but with no radius.
+    if (caller.kind === 'captain' && caller.location) {
+      await this.recordLocation(caller.command.captainId, caller.location, now);
+      checkFix(caller.location, now);
+    }
     const [read, paid] = await Promise.all([
       readOutcomeFacts(this.database.db, this.captains, this.settings, order, now),
       captainPay(this.database.db, this.captains, order, order.captainId, now),

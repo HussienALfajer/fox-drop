@@ -705,7 +705,8 @@ export class OrderCommands {
                 ...(result.status === 'delivered' ? { deliveredAt: now } : {}),
               },
           ...(waits ? {} : { to: result.status }),
-          publicReason: choices.outcome,
+          // RA §16 #19: the restaurant learns the outcome once it is posted.
+          ...(waits ? {} : { publicReason: choices.outcome }),
           // The entries were worked out from the order before the lock; an
           // edit since moved its version.
           guard: async (tx) =>

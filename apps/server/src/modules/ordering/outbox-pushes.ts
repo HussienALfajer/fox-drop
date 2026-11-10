@@ -300,8 +300,9 @@ export class OutboxPushes {
 
   // AP §8.9 (slice 2.11a): the order's outcome, its label, the customer's
   // text of a failed order and what the restaurant returns.
-  // With an amount to collect (slice 2.11b), order.outcome_set waits for the
-  // payment, whatever happened since.
+  // With an amount to collect (slice 2.11b), order.outcome_set tells only the
+  // captain to collect, unless the payment was recorded since (then the
+  // collection's own event tells the rest).
   private async outcome(
     order: typeof orders.$inferSelect,
     currencies: Currencies,
@@ -314,6 +315,7 @@ export class OutboxPushes {
         customerText: orderOutcomeRows.customerText,
         merchantDebit: orderOutcomeRows.merchantDebit,
         amountToCollect: orderOutcomeRows.amountToCollect,
+        collectedAt: orderOutcomeRows.collectedAt,
         currency: orderOutcomeRows.currency,
       })
       .from(orderOutcomeRows)
@@ -336,7 +338,7 @@ export class OutboxPushes {
         row.amountToCollect > 0n
           ? formatMoney(row.amountToCollect, row.currency, currencies)
           : null,
-      awaitingCollection: setNow && row.amountToCollect > 0n,
+      awaitingCollection: setNow && row.amountToCollect > 0n && row.collectedAt === null,
     };
   }
 

@@ -1549,7 +1549,16 @@ const outcomePayment = (
       change: [],
       amountDue: { amount: payment.due ?? payment.received, currency: 'TRY' },
       shortfall: payment.shortfall ?? null,
-      ...(by === 'ops' ? { reason: 'الكابتن بلا هاتف' } : {}),
+      ...(by === 'ops'
+        ? { reason: 'الكابتن بلا هاتف' }
+        : {
+            location: {
+              ...atCustomer,
+              accuracyMetres: 10,
+              recordedAt: new Date().toISOString(),
+              simulated: false,
+            },
+          }),
     },
   });
 
@@ -1607,13 +1616,14 @@ describe('«تحديد النتيجة» with an amount to collect (AP §9.3.2, C
       operatingCost: 0n,
       earnings: 0n,
     });
-    expect(await outboxReason(order.order.id, 'order.outcome_set')).toBe('free');
+    expect(await outboxReason(order.order.id, 'order.outcome_set')).toBeNull();
     // The captain: still busy, with the payment screen for 50.
     const waiting = (await order.captain.active()).json();
     expect(waiting.ended).toBeNull();
     expect(waiting.order.outcomeToCollect).toEqual({
       outcome: 'free',
       amount: { amount: '5000', currency: 'TRY' },
+      equivalents: [],
     });
     // The customer: «المبلغ المطلوب الآن: 50».
     const seen = await customerOrder(order.order.customer, order.order.id);
@@ -1741,5 +1751,17 @@ describe('«تحديد النتيجة» with an amount to collect (AP §9.3.2, C
     const none = await outcomePayment(order, 'captain', { received: '5000' });
     expect(none.statusCode).toBe(409);
     expect(none.json().error).toBe('order_state_changed');
+    // Another captain's order is unknown to them.
+    expect((await order.ops.outcome(order.order.id, free)).statusCode).toBe(200);
+    const other = await onlineCaptain();
+    const foreign = await outcomePayment(
+      { ...order, captain: { ...order.captain, ...other } },
+      'captain',
+      {
+        received: '5000',
+      },
+    );
+    expect(foreign.statusCode).toBe(404);
+    expect(foreign.json().error).toBe('unknown_order');
   });
 });

@@ -582,6 +582,48 @@ describe('outcomeEntries', () => {
       expect(clearingAfter(result, 38_000n)).toBe(0n);
     });
 
+    it('charges the captain the loss less what was collected', () => {
+      const result = outcomeEntries(
+        facts,
+        delivered({ responsible: 'captain', amountToCollect: 20_000n }),
+      );
+      expect(booked(result)).toMatchObject({ loss: 14_000n, captainPay: 0n });
+      expect(lines(result).at(-1)).toEqual([
+        'earn.charge',
+        'مجاني',
+        [
+          ['captain.earnings', 14_000n],
+          ['platform.order_clearing', -14_000n],
+        ],
+      ]);
+      expect(clearingAfter(result, 20_000n)).toBe(0n);
+    });
+
+    it('counts a lower fee an edit after the pickup charged (nobody pays twice)', () => {
+      const edited = {
+        ...facts,
+        deliveryFee: 3_000n,
+        total: 43_000n,
+        pickup: {
+          ...facts.pickup,
+          platformCharge: 1_000n,
+          feeCuts: { restaurant: 0n, captain: 0n, platform: 1_000n },
+        },
+      };
+      const result = outcomeEntries(edited, delivered({ amountToCollect: 5_000n }));
+      expect(booked(result).loss).toBe(29_000n);
+      expect(lines(result)[0]).toEqual([
+        'platform.operating_cost',
+        FEE_CUT_RETURNED_REASON,
+        [
+          ['platform.operating_cost', -1_000n],
+          ['platform.order_clearing', 1_000n],
+        ],
+      ]);
+      // The pickup's 40 000, the edit's −1 000 and the collection's −5 000.
+      expect(clearingAfter(result, 34_000n)).toBe(0n);
+    });
+
     it.each([
       ['on a failed order', failed({ amountToCollect: 5_000n })],
       ['below zero', delivered({ amountToCollect: -1n })],

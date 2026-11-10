@@ -223,9 +223,11 @@ import 'package:core_api/src/model/captain_offer_dto_output_offer.dart';
 import 'package:core_api/src/model/captain_order_dto_output.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order_customer.dart';
+import 'package:core_api/src/model/captain_order_dto_output_order_outcome_to_collect.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order_pickup_request.dart';
 import 'package:core_api/src/model/captain_outcome_payment_dto.dart';
+import 'package:core_api/src/model/captain_outcome_payment_dto_location.dart';
 import 'package:core_api/src/model/captain_pickup_request_dto.dart';
 import 'package:core_api/src/model/captain_refresh_dto.dart';
 import 'package:core_api/src/model/captain_session_dto_output.dart';
@@ -630,9 +632,11 @@ part 'serializers.g.dart';
   CaptainOrderDtoOutput,
   CaptainOrderDtoOutputOrder,
   CaptainOrderDtoOutputOrderCustomer,
+  CaptainOrderDtoOutputOrderOutcomeToCollect,
   CaptainOrderDtoOutputOrderPickup,
   CaptainOrderDtoOutputOrderPickupRequest,
   CaptainOutcomePaymentDto,
+  CaptainOutcomePaymentDtoLocation,
   CaptainPickupRequestDto,
   CaptainRefreshDto,
   CaptainSessionDtoOutput,

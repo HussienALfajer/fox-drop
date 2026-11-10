@@ -22447,11 +22447,36 @@
                             ],
                             "additionalProperties": false,
                             "description": "The amount due on the payment screen (CA §9.7)."
+                          },
+                          "equivalents": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "amount": {
+                                  "type": "string",
+                                  "pattern": "^-?\\d+$",
+                                  "description": "Integer minor units (AP §8.6)."
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "minLength": 3,
+                                  "maxLength": 3
+                                }
+                              },
+                              "required": [
+                                "amount",
+                                "currency"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "description": "The amount in the other accepted currencies, each by its rounding (CA §9.7)."
                           }
                         },
                         "required": [
                           "outcome",
-                          "amount"
+                          "amount",
+                          "equivalents"
                         ],
                         "additionalProperties": false
                       },
@@ -23442,11 +23467,36 @@
                         ],
                         "additionalProperties": false,
                         "description": "The amount due on the payment screen (CA §9.7)."
+                      },
+                      "equivalents": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "pattern": "^-?\\d+$",
+                              "description": "Integer minor units (AP §8.6)."
+                            },
+                            "currency": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 3
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "description": "The amount in the other accepted currencies, each by its rounding (CA §9.7)."
                       }
                     },
                     "required": [
                       "outcome",
-                      "amount"
+                      "amount",
+                      "equivalents"
                     ],
                     "additionalProperties": false
                   },
@@ -24477,13 +24527,58 @@
               }
             ],
             "description": "Needed when the net received is short beyond rounding: «الزبون لا يملك المبلغ كاملاً», «خطأ في العد», «أخرى»."
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "latitude": {
+                    "type": "number",
+                    "minimum": -90,
+                    "maximum": 90
+                  },
+                  "longitude": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180
+                  },
+                  "accuracyMetres": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "recordedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "simulated": {
+                    "type": "boolean",
+                    "description": "The device reports a mock location."
+                  }
+                },
+                "required": [
+                  "latitude",
+                  "longitude",
+                  "accuracyMetres",
+                  "recordedAt",
+                  "simulated"
+                ],
+                "description": "The latest GPS fix."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The latest fix, recorded with the command (CA §15); no radius applies, since the screen opens wherever the captain is."
           }
         },
         "required": [
           "received",
           "change",
           "amountDue",
-          "shortfall"
+          "shortfall",
+          "location"
         ]
       },
       "CaptainPickupRequestDto": {

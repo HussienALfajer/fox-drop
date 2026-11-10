@@ -87,6 +87,8 @@ class _$CaptainActiveOrderDtoOutputOrderOutcomeToCollect
   final CaptainActiveOrderDtoOutputOrderOutcomeToCollectOutcomeEnum outcome;
   @override
   final CaptainActiveOrderDtoOutputOrderOutcomeToCollectAmount amount;
+  @override
+  final BuiltList<CaptainWentOfflineDtoOutputHandIn?> equivalents;
 
   factory _$CaptainActiveOrderDtoOutputOrderOutcomeToCollect([
     void Function(CaptainActiveOrderDtoOutputOrderOutcomeToCollectBuilder)?
@@ -99,6 +101,7 @@ class _$CaptainActiveOrderDtoOutputOrderOutcomeToCollect
   _$CaptainActiveOrderDtoOutputOrderOutcomeToCollect._({
     required this.outcome,
     required this.amount,
+    required this.equivalents,
   }) : super._();
   @override
   CaptainActiveOrderDtoOutputOrderOutcomeToCollect rebuild(
@@ -115,7 +118,8 @@ class _$CaptainActiveOrderDtoOutputOrderOutcomeToCollect
     if (identical(other, this)) return true;
     return other is CaptainActiveOrderDtoOutputOrderOutcomeToCollect &&
         outcome == other.outcome &&
-        amount == other.amount;
+        amount == other.amount &&
+        equivalents == other.equivalents;
   }
 
   @override
@@ -123,6 +127,7 @@ class _$CaptainActiveOrderDtoOutputOrderOutcomeToCollect
     var _$hash = 0;
     _$hash = $jc(_$hash, outcome.hashCode);
     _$hash = $jc(_$hash, amount.hashCode);
+    _$hash = $jc(_$hash, equivalents.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -133,7 +138,8 @@ class _$CaptainActiveOrderDtoOutputOrderOutcomeToCollect
             r'CaptainActiveOrderDtoOutputOrderOutcomeToCollect',
           )
           ..add('outcome', outcome)
-          ..add('amount', amount))
+          ..add('amount', amount)
+          ..add('equivalents', equivalents))
         .toString();
   }
 }
@@ -161,6 +167,13 @@ class CaptainActiveOrderDtoOutputOrderOutcomeToCollectBuilder
     CaptainActiveOrderDtoOutputOrderOutcomeToCollectAmountBuilder? amount,
   ) => _$this._amount = amount;
 
+  ListBuilder<CaptainWentOfflineDtoOutputHandIn?>? _equivalents;
+  ListBuilder<CaptainWentOfflineDtoOutputHandIn?> get equivalents =>
+      _$this._equivalents ??= ListBuilder<CaptainWentOfflineDtoOutputHandIn?>();
+  set equivalents(
+    ListBuilder<CaptainWentOfflineDtoOutputHandIn?>? equivalents,
+  ) => _$this._equivalents = equivalents;
+
   CaptainActiveOrderDtoOutputOrderOutcomeToCollectBuilder() {
     CaptainActiveOrderDtoOutputOrderOutcomeToCollect._defaults(this);
   }
@@ -170,6 +183,7 @@ class CaptainActiveOrderDtoOutputOrderOutcomeToCollectBuilder
     if ($v != null) {
       _outcome = $v.outcome;
       _amount = $v.amount.toBuilder();
+      _equivalents = $v.equivalents.toBuilder();
       _$v = null;
     }
     return this;
@@ -203,12 +217,15 @@ class CaptainActiveOrderDtoOutputOrderOutcomeToCollectBuilder
               'outcome',
             ),
             amount: amount.build(),
+            equivalents: equivalents.build(),
           );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'amount';
         amount.build();
+        _$failedField = 'equivalents';
+        equivalents.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'CaptainActiveOrderDtoOutputOrderOutcomeToCollect',

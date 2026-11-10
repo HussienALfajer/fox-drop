@@ -3,12 +3,12 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/captain_active_order_dto_output_order_outcome_to_collect.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_preparation.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order_customer.dart';
+import 'package:core_api/src/model/captain_order_dto_output_order_outcome_to_collect.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_payment.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
@@ -83,7 +83,7 @@ abstract class CaptainOrderDtoOutputOrder
   bool get editUnacknowledged;
 
   @BuiltValueField(wireName: r'outcomeToCollect')
-  CaptainActiveOrderDtoOutputOrderOutcomeToCollect? get outcomeToCollect;
+  CaptainOrderDtoOutputOrderOutcomeToCollect? get outcomeToCollect;
 
   @BuiltValueField(wireName: r'itemCount')
   int get itemCount;
@@ -203,7 +203,7 @@ class _$CaptainOrderDtoOutputOrderSerializer
         : serializers.serialize(
             object.outcomeToCollect,
             specifiedType: const FullType.nullable(
-              CaptainActiveOrderDtoOutputOrderOutcomeToCollect,
+              CaptainOrderDtoOutputOrderOutcomeToCollect,
             ),
           );
     yield r'itemCount';
@@ -382,10 +382,10 @@ class _$CaptainOrderDtoOutputOrderSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      CaptainActiveOrderDtoOutputOrderOutcomeToCollect,
+                      CaptainOrderDtoOutputOrderOutcomeToCollect,
                     ),
                   )
-                  as CaptainActiveOrderDtoOutputOrderOutcomeToCollect?;
+                  as CaptainOrderDtoOutputOrderOutcomeToCollect?;
           if (valueDes == null) continue;
           result.outcomeToCollect.replace(valueDes);
           break;

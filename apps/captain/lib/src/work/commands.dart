@@ -317,33 +317,45 @@ class Commands extends Notifier<Set<String>> {
       });
 
   /// The payment of the amount operations set to collect with an outcome
-  /// (CA §9.10, K9): no location, since the screen opens wherever the
-  /// captain is; the summary opens.
+  /// (CA §9.10, K9), with the latest fix when there is one (CA §15; no
+  /// radius applies, since the screen opens wherever the captain is); the
+  /// summary opens.
   Future<Notice?> collectOutcome(String orderId, DoorPayment payment) async {
     final (answer, notice) = await _send(
       orderId,
       'outcome-payment ${payment.key}',
-      (key) => _api.captainOrdersCollectOutcome(
-        orderId: orderId,
-        idempotencyKey: key,
-        captainOutcomePaymentDto: CaptainOutcomePaymentDto(
-          (b) => b
-            ..received.addAll(payment.received.map(_line))
-            ..change.addAll(payment.change.map(_line))
-            ..amountDue.replace(
-              AdminRecordDeliveryDtoAmountDue(
-                (m) => m
-                  ..amount = payment.amountDue.amount
-                  ..currency = payment.amountDue.currency,
-              ),
-            )
-            ..shortfall = payment.shortfall == null
-                ? null
-                : (AdminRecordDeliveryDtoShortfallBuilder()
-                    ..reason = payment.shortfall!.reason
-                    ..note = payment.shortfall!.note),
-        ),
-      ),
+      (key) async {
+        final fix = await _freshFix();
+        return _api.captainOrdersCollectOutcome(
+          orderId: orderId,
+          idempotencyKey: key,
+          captainOutcomePaymentDto: CaptainOutcomePaymentDto(
+            (b) => b
+              ..location = fix == null
+                  ? null
+                  : (CaptainOutcomePaymentDtoLocationBuilder()
+                      ..latitude = fix.latitude
+                      ..longitude = fix.longitude
+                      ..accuracyMetres = fix.accuracyMetres
+                      ..recordedAt = fix.recordedAt
+                      ..simulated = fix.simulated)
+              ..received.addAll(payment.received.map(_line))
+              ..change.addAll(payment.change.map(_line))
+              ..amountDue.replace(
+                AdminRecordDeliveryDtoAmountDue(
+                  (m) => m
+                    ..amount = payment.amountDue.amount
+                    ..currency = payment.amountDue.currency,
+                ),
+              )
+              ..shortfall = payment.shortfall == null
+                  ? null
+                  : (AdminRecordDeliveryDtoShortfallBuilder()
+                      ..reason = payment.shortfall!.reason
+                      ..note = payment.shortfall!.note),
+          ),
+        );
+      },
     );
     final data = answer?.data;
     if (data is CaptainDeliverySummaryDtoOutput) {

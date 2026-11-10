@@ -15,6 +15,8 @@ class _$CaptainOutcomePaymentDto extends CaptainOutcomePaymentDto {
   final AdminRecordDeliveryDtoAmountDue amountDue;
   @override
   final AdminRecordDeliveryDtoShortfall? shortfall;
+  @override
+  final CaptainOutcomePaymentDtoLocation? location;
 
   factory _$CaptainOutcomePaymentDto([
     void Function(CaptainOutcomePaymentDtoBuilder)? updates,
@@ -25,6 +27,7 @@ class _$CaptainOutcomePaymentDto extends CaptainOutcomePaymentDto {
     required this.change,
     required this.amountDue,
     this.shortfall,
+    this.location,
   }) : super._();
   @override
   CaptainOutcomePaymentDto rebuild(
@@ -42,7 +45,8 @@ class _$CaptainOutcomePaymentDto extends CaptainOutcomePaymentDto {
         received == other.received &&
         change == other.change &&
         amountDue == other.amountDue &&
-        shortfall == other.shortfall;
+        shortfall == other.shortfall &&
+        location == other.location;
   }
 
   @override
@@ -52,6 +56,7 @@ class _$CaptainOutcomePaymentDto extends CaptainOutcomePaymentDto {
     _$hash = $jc(_$hash, change.hashCode);
     _$hash = $jc(_$hash, amountDue.hashCode);
     _$hash = $jc(_$hash, shortfall.hashCode);
+    _$hash = $jc(_$hash, location.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -62,7 +67,8 @@ class _$CaptainOutcomePaymentDto extends CaptainOutcomePaymentDto {
           ..add('received', received)
           ..add('change', change)
           ..add('amountDue', amountDue)
-          ..add('shortfall', shortfall))
+          ..add('shortfall', shortfall)
+          ..add('location', location))
         .toString();
   }
 }
@@ -96,6 +102,12 @@ class CaptainOutcomePaymentDtoBuilder
   set shortfall(AdminRecordDeliveryDtoShortfallBuilder? shortfall) =>
       _$this._shortfall = shortfall;
 
+  CaptainOutcomePaymentDtoLocationBuilder? _location;
+  CaptainOutcomePaymentDtoLocationBuilder get location =>
+      _$this._location ??= CaptainOutcomePaymentDtoLocationBuilder();
+  set location(CaptainOutcomePaymentDtoLocationBuilder? location) =>
+      _$this._location = location;
+
   CaptainOutcomePaymentDtoBuilder() {
     CaptainOutcomePaymentDto._defaults(this);
   }
@@ -107,6 +119,7 @@ class CaptainOutcomePaymentDtoBuilder
       _change = $v.change.toBuilder();
       _amountDue = $v.amountDue.toBuilder();
       _shortfall = $v.shortfall?.toBuilder();
+      _location = $v.location?.toBuilder();
       _$v = null;
     }
     return this;
@@ -135,6 +148,7 @@ class CaptainOutcomePaymentDtoBuilder
             change: change.build(),
             amountDue: amountDue.build(),
             shortfall: _shortfall?.build(),
+            location: _location?.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -147,6 +161,8 @@ class CaptainOutcomePaymentDtoBuilder
         amountDue.build();
         _$failedField = 'shortfall';
         _shortfall?.build();
+        _$failedField = 'location';
+        _location?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'CaptainOutcomePaymentDto',

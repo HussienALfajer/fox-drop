@@ -6498,6 +6498,12 @@ export interface components {
                         amount: string;
                         currency: string;
                     };
+                    /** @description The amount in the other accepted currencies, each by its rounding (CA §9.7). */
+                    equivalents: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    }[];
                 } | null;
                 itemCount: number;
                 /** @description The item check (C7): one tick box per line. */
@@ -6737,6 +6743,12 @@ export interface components {
                         amount: string;
                         currency: string;
                     };
+                    /** @description The amount in the other accepted currencies, each by its rounding (CA §9.7). */
+                    equivalents: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    }[];
                 } | null;
                 itemCount: number;
                 /** @description The item check (C7): one tick box per line. */
@@ -6980,6 +6992,16 @@ export interface components {
                 reason: string;
                 /** @description The text of a reason that needs one («أخرى»), and only of it. */
                 note: string | null;
+            } | null;
+            /** @description The latest fix, recorded with the command (CA §15); no radius applies, since the screen opens wherever the captain is. */
+            location: {
+                latitude: number;
+                longitude: number;
+                accuracyMetres: number;
+                /** Format: date-time */
+                recordedAt: string;
+                /** @description The device reports a mock location. */
+                simulated: boolean;
             } | null;
         };
         CaptainPickupRequestDto: {

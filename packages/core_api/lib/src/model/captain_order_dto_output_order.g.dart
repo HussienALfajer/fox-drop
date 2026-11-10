@@ -265,7 +265,7 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
   @override
   final bool editUnacknowledged;
   @override
-  final CaptainActiveOrderDtoOutputOrderOutcomeToCollect? outcomeToCollect;
+  final CaptainOrderDtoOutputOrderOutcomeToCollect? outcomeToCollect;
   @override
   final int itemCount;
   @override
@@ -454,12 +454,12 @@ class CaptainOrderDtoOutputOrderBuilder
   set editUnacknowledged(bool? editUnacknowledged) =>
       _$this._editUnacknowledged = editUnacknowledged;
 
-  CaptainActiveOrderDtoOutputOrderOutcomeToCollectBuilder? _outcomeToCollect;
-  CaptainActiveOrderDtoOutputOrderOutcomeToCollectBuilder
-  get outcomeToCollect => _$this._outcomeToCollect ??=
-      CaptainActiveOrderDtoOutputOrderOutcomeToCollectBuilder();
+  CaptainOrderDtoOutputOrderOutcomeToCollectBuilder? _outcomeToCollect;
+  CaptainOrderDtoOutputOrderOutcomeToCollectBuilder get outcomeToCollect =>
+      _$this._outcomeToCollect ??=
+          CaptainOrderDtoOutputOrderOutcomeToCollectBuilder();
   set outcomeToCollect(
-    CaptainActiveOrderDtoOutputOrderOutcomeToCollectBuilder? outcomeToCollect,
+    CaptainOrderDtoOutputOrderOutcomeToCollectBuilder? outcomeToCollect,
   ) => _$this._outcomeToCollect = outcomeToCollect;
 
   int? _itemCount;

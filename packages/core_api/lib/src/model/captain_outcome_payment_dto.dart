@@ -7,6 +7,7 @@ import 'package:core_api/src/model/admin_record_delivery_dto_amount_due.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_received_inner.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_shortfall.dart';
+import 'package:core_api/src/model/captain_outcome_payment_dto_location.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -19,6 +20,7 @@ part 'captain_outcome_payment_dto.g.dart';
 /// * [change] - The change given back, one line per currency; a tip is recorded as given (K14).
 /// * [amountDue]
 /// * [shortfall]
+/// * [location]
 @BuiltValue()
 abstract class CaptainOutcomePaymentDto
     implements
@@ -36,6 +38,9 @@ abstract class CaptainOutcomePaymentDto
 
   @BuiltValueField(wireName: r'shortfall')
   AdminRecordDeliveryDtoShortfall? get shortfall;
+
+  @BuiltValueField(wireName: r'location')
+  CaptainOutcomePaymentDtoLocation? get location;
 
   CaptainOutcomePaymentDto._();
 
@@ -93,6 +98,15 @@ class _$CaptainOutcomePaymentDtoSerializer
             object.shortfall,
             specifiedType: const FullType.nullable(
               AdminRecordDeliveryDtoShortfall,
+            ),
+          );
+    yield r'location';
+    yield object.location == null
+        ? null
+        : serializers.serialize(
+            object.location,
+            specifiedType: const FullType.nullable(
+              CaptainOutcomePaymentDtoLocation,
             ),
           );
   }
@@ -166,6 +180,18 @@ class _$CaptainOutcomePaymentDtoSerializer
                   as AdminRecordDeliveryDtoShortfall?;
           if (valueDes == null) continue;
           result.shortfall.replace(valueDes);
+          break;
+        case r'location':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainOutcomePaymentDtoLocation,
+                    ),
+                  )
+                  as CaptainOutcomePaymentDtoLocation?;
+          if (valueDes == null) continue;
+          result.location.replace(valueDes);
           break;
         default:
           unhandled.add(key);

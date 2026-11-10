@@ -108,6 +108,9 @@ export interface OrderView {
   outcome: {
     awaitingCollection: boolean;
     collectedAt: Date | null;
+    // CA §9.7 items 1-2: the amount to collect in the other accepted
+    // currencies, by the order's snapshot.
+    amountEquivalents: { currency: string; amount: bigint }[];
     at: Date;
     outcome: SetOutcome;
     status: 'delivered' | 'failed';
@@ -481,6 +484,15 @@ export async function readOrders(
               at: outcome.setAt,
               awaitingCollection: outcome.amountToCollect > 0n && outcome.collectedAt === null,
               collectedAt: outcome.collectedAt,
+              amountEquivalents:
+                outcome.amountToCollect > 0n
+                  ? snapshot.currencies
+                      .filter((entry) => entry.code !== snapshot.baseCurrency)
+                      .map((entry) => ({
+                        currency: entry.code,
+                        amount: equivalent(snapshot, outcome.amountToCollect, entry.code),
+                      }))
+                  : [],
               outcome: outcome.outcome,
               status: outcome.status,
               responsible: outcome.responsible,
