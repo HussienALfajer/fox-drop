@@ -43,6 +43,10 @@ export const eventKeys = {
   'order.arrived_at_customer': 'order.event.arrivedAtCustomer',
   'order.delivered': 'order.event.delivered',
   'order.cancellation_acknowledged': 'order.event.cancellationAcknowledged',
+  'order.time_changed': 'order.event.timeChanged',
+  'order.item_reported': 'order.event.itemReported',
+  'order.item_report_withdrawn': 'order.event.itemReportWithdrawn',
+  'order.item_report_closed': 'order.event.itemReportClosed',
 } as const;
 
 export function eventKey(type: string | null): (typeof eventKeys)[keyof typeof eventKeys] | null {

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { eventReason } from './order-detail.js';
+import { eventKey, eventReason } from './order-detail.js';
 
 vi.mock('./api.js', () => ({ api: {} }));
 
@@ -28,5 +28,25 @@ describe('eventReason', () => {
       eventReason({ type: 'order.offer_closed', actor: system, reason: 'new_code' }),
     ).toBeNull();
     expect(eventReason({ type: 'order.placed', actor: system, reason: null })).toBeNull();
+  });
+});
+
+// AP §9.3.1 «item reported unavailable, and how the report was closed» and
+// «ETA changes».
+describe('eventKey', () => {
+  it('names the item report and time change events', () => {
+    expect(eventKey('order.time_changed')).toBe('order.event.timeChanged');
+    expect(eventKey('order.item_reported')).toBe('order.event.itemReported');
+    expect(eventKey('order.item_report_withdrawn')).toBe('order.event.itemReportWithdrawn');
+    expect(eventKey('order.item_report_closed')).toBe('order.event.itemReportClosed');
+    expect(eventKey('order.unknown')).toBeNull();
+  });
+
+  it("shows operations' reason for closing a report and changing the time", () => {
+    const admin = { type: 'admin' };
+    expect(
+      eventReason({ type: 'order.item_report_closed', actor: admin, reason: 'وجد الصنف' }),
+    ).toEqual({ text: 'وجد الصنف' });
+    expect(eventReason({ type: 'order.time_changed', actor: admin, reason: null })).toBeNull();
   });
 });
