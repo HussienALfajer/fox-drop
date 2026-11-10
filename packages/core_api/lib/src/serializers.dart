@@ -28,6 +28,7 @@ import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entrie
 import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner_amount.dart';
 import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner_party.dart';
 import 'package:core_api/src/model/admin_cancel_preview_dto.dart';
+import 'package:core_api/src/model/admin_change_time_dto.dart';
 import 'package:core_api/src/model/admin_cities_dto_output.dart';
 import 'package:core_api/src/model/admin_cities_dto_output_cities_inner.dart';
 import 'package:core_api/src/model/admin_confirm_pickup_dto.dart';
@@ -387,6 +388,7 @@ part 'serializers.g.dart';
   AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount,
   AdminCancelPreviewAnswerDtoOutputEntriesInnerParty,
   AdminCancelPreviewDto,
+  AdminChangeTimeDto,
   AdminCitiesDtoOutput,
   AdminCitiesDtoOutputCitiesInner,
   AdminConfirmPickupDto,

@@ -9,13 +9,14 @@ Slice 2.9, time changes and items unavailable after acceptance (`docs/roadmap.md
 - **Roadmap line:** «تعديل الوقت» moving the promised time, the countdown and the search start; the restaurant's report, its alert, the pickup block and «إغلاق بلاغ صنف نفد» (AP §9.3.2, RA §8.12, CU §11.6). The restaurant reports an item and the pickup waits.
 - **Specs:** AP §9.3.2 (the rows «تعديل الوقت», `accepted`, `ready`, `picked_up`, and «إغلاق بلاغ صنف نفد»), AP §9.1.3 (the critical alert «صنف نفد بعد القبول»), AP §9.3.1 (the timeline: ETA changes, item reported unavailable and how the report was closed), docs/domain/03 (the promised time, the countdown, the search start), RA §8.12 (the button «صنف غير متوفر — اتصلوا بالزبون», its dialog, the menu switch-off, the alert, the withdrawal), RA §8.10 (no pickup request while a report is open), CU §11.6 (the item banner and push, «تغيّر موعد وصول طلبك إلى {الساعة}»), CA §9 (what the captain sees while a report blocks the pickup), and the definitions of done.
 - **Branch:** `feat/order-time-and-item-report`.
-- **Ask the owner first:** whether 2.9 is one pull request or two (like 2.7 and 2.8: the server with the restaurant app, then the panel with the customer app); use the `slice-plan` skill to propose the split. Then the open wording: the panel's dialog for «تعديل الوقت» (prep time or promised time, and how far), and what the captain app shows while a report blocks the pickup.
-- **Plan (to confirm with the split):**
-  - [ ] Server: «تعديل الوقت» for operations (moving `promised_at`, the prep due time, `prep_late_alert_at` and the search start with its job), its event, audit and push (CU §11.6); failing tests first; regenerate the API.
-  - [ ] Server: the restaurant's item-unavailable report (items «حتى الغد» or «حتى أعيده», the optional note), the items switched off, the critical alert, the customer's banner and push, the pickup refused while open, the restaurant's withdrawal and operations' «إغلاق بلاغ صنف نفد», and the cancellation clearing it.
-  - [ ] Restaurant app: «صنف غير متوفر — اتصلوا بالزبون» on accepted and ready orders without an open request, and the report's state.
-  - [ ] Panel: «تعديل الوقت», the report on the detail and timeline with «إغلاق بلاغ صنف نفد», the alert.
-  - [ ] Customer app: the banner and the time change (CU §11.6).
+- **Owner decisions (2026-11-10):** one pull request. «تعديل الوقت» adds whole minutes (chips +5, +10, +15, +20 or typed), at most 60 per change (a new city setting `order.eta_change_max_min`): on an `accepted` order it moves the prep due time (`prep_min`, the restaurant's countdown), `prep_late_alert_at`, a search start still ahead and the promised time together; once the food is ready (`ready`, `picked_up`) only the promised time. The captain's wording while a report blocks the pickup is CA §9's «بانتظار تعديل الطلب من العمليات».
+- **Plan:**
+  - [ ] Server: «تعديل الوقت» (`POST /v1/admin/orders/{orderId}/change-time`), its event `order.time_changed`, audit and the customer's push «تغيّر موعد وصول طلبك إلى {الساعة}»; failing tests first.
+  - [ ] Server: the item-unavailable report: the restaurant's report and withdrawal, the items switched off and back on, the critical alert, the customer's push, the pickup refused while open, operations' «إغلاق بلاغ صنف نفد», the cancellation clearing it, every party's read; regenerate the API.
+  - [ ] Restaurant app: «صنف غير متوفر — اتصلوا بالزبون», its dialog, the badge and «تراجع — الصنف متوفر».
+  - [ ] Captain app: «بانتظار تعديل الطلب من العمليات» with the pickup request blocked.
+  - [ ] Panel: «تعديل الوقت», the report on the detail and timeline, «إغلاق بلاغ صنف نفد», the board's badge and the alert.
+  - [ ] Customer app: the item banner (CU §11.6).
   - [ ] Review, hand over to 2.10, pull request.
 
 ### Left from 2.8c (`feat/order-cancel-panel`)

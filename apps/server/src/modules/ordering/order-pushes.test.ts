@@ -39,6 +39,16 @@ const restaurant = { party: 'merchant', restaurantId: 'restaurant-1', owners: fa
 const captain = { party: 'captain', captainId: 'captain-1' };
 
 describe('the pushes of an order event', () => {
+  it('tells the customer a new promised time, and the restaurant a new prep time (CU §14 #12, RA §16 #12)', () => {
+    expect(sent('order.time_changed', 'prep_time_changed', { actor: 'admin' })).toEqual([
+      [customer, 'customer.time_changed', { الساعة: '9:45 م' }],
+      [restaurant, 'merchant.prep_time_changed', { رقم: '10002', د: '20' }],
+    ]);
+    expect(sent('order.time_changed', 'promised_time_changed', { actor: 'admin' })).toEqual([
+      [customer, 'customer.time_changed', { الساعة: '9:45 م' }],
+    ]);
+  });
+
   it('rings every device of the restaurant with a new order (RA §16 #1)', () => {
     expect(sent('order.placed', null, { captainId: null })).toEqual([
       [restaurant, 'merchant.new_order', { رقم: '10002' }],

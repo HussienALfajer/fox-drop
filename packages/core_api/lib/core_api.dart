@@ -29,6 +29,7 @@ export 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entrie
 export 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner_amount.dart';
 export 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner_party.dart';
 export 'package:core_api/src/model/admin_cancel_preview_dto.dart';
+export 'package:core_api/src/model/admin_change_time_dto.dart';
 export 'package:core_api/src/model/admin_cities_dto_output.dart';
 export 'package:core_api/src/model/admin_cities_dto_output_cities_inner.dart';
 export 'package:core_api/src/model/admin_confirm_pickup_dto.dart';

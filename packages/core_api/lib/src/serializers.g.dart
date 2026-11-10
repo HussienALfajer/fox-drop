@@ -37,6 +37,7 @@ Serializers _$serializers =
           ..add(AdminCancelPreviewDto.serializer)
           ..add(AdminCancelPreviewDtoCashEnum.serializer)
           ..add(AdminCancelPreviewDtoResponsibleEnum.serializer)
+          ..add(AdminChangeTimeDto.serializer)
           ..add(AdminCitiesDtoOutput.serializer)
           ..add(AdminCitiesDtoOutputCitiesInner.serializer)
           ..add(AdminConfirmPickupDto.serializer)

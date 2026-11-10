@@ -170,6 +170,23 @@ class AdminAcceptDto extends createZodDto(
   }),
 ) {}
 
+class AdminChangeTimeDto extends createZodDto(
+  z.object({
+    addMin: z
+      .int()
+      .describe(
+        'Whole minutes added, from 1 to order.eta_change_max_min (owner decision 2026-11-10); 400 invalid_time_change otherwise.',
+      ),
+    reason: z
+      .string()
+      .trim()
+      .min(1)
+      .max(500)
+      .nullable()
+      .describe("Operations' optional note (AP §9.3.2)."),
+  }),
+) {}
+
 class AdminRejectDto extends createZodDto(
   z.object({
     rejection: z
@@ -681,6 +698,38 @@ export class AdminOrdersController {
     );
   }
 
+  // AP §9.3.2 «تعديل الوقت» (owner decision 2026-11-10): minutes added to an
+  // accepted, ready or picked-up order's promised time, and to its prep time
+  // while accepted; the customer hears the new time (CU §14 #12). 409
+  // order_state_changed; 404 unknown_order; 400 invalid_time_change; 422
+  // idempotency_key_reused.
+  @Post(':orderId/change-time')
+  @RequirePermission('operations.manage')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOrderCardDto })
+  async changeTime(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminChangeTimeDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.onBehalf(params.orderId, () =>
+      this.commands.changeTime(
+        {
+          orderId: params.orderId,
+          admin: { accountId: session.accountId, roles: session.roles },
+          context: requestContext(request),
+          reason: body.reason,
+          idempotencyKey,
+          addMin: body.addMin,
+        },
+        new Date(),
+      ),
+    );
+  }
+
   // AP §9.3.2 «رفض نيابة عن المطعم» (RA §8.15): a placed order rejected with
   // one of the restaurant's three reasons and their side effects (RA §8.6)
   // and operations' reason; the customer sees the reason's text, the
@@ -817,6 +866,7 @@ export class AdminOrdersController {
       }
       if (
         refusal === 'invalid_prep_time' ||
+        refusal === 'invalid_time_change' ||
         refusal === 'unknown_reason' ||
         refusal === 'invalid_rejection' ||
         refusal === 'invalid_cancellation'

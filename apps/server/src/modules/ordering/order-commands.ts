@@ -25,7 +25,7 @@ import {
   type ResponsibleParty,
 } from './cancellation.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
-import { lockOrder, recordTransition } from './order-events.js';
+import { lockOrder, type OrderEventType, recordTransition } from './order-events.js';
 import { OrderAssignments } from './order-assignments.js';
 import { baseTotal, linesOf } from './pickup-booking.js';
 import type { SearchStartJob } from './order-timers.js';
@@ -57,7 +57,9 @@ export type OrderCommandRefusal =
   | 'compensation_not_allowed'
   | 'captain_pay_unset'
   | 'cash_answer_required'
-  | 'cash_answer_not_allowed';
+  | 'cash_answer_not_allowed'
+  // AP §9.3.2 «تعديل الوقت»: whole minutes from 1 to order.eta_change_max_min.
+  | 'invalid_time_change';
 
 // A restaurant command the order refuses; order_state_changed carries the
 // order as it is now, which the app explains (RA §4.7).
@@ -108,6 +110,9 @@ export interface Rejection {
   busyExtraMin: number | null;
   pauseMin: number | null;
 }
+
+// AP §9.3.2 «تعديل الوقت»: accepted, ready or picked up.
+export const TIME_CHANGEABLE: OrderView['status'][] = ['accepted', 'ready', 'picked_up'];
 
 // AP §8.1, docs/domain/01: operations cancel before pickup.
 export const CANCELLABLE: OrderView['status'][] = ['placed', 'accepted', 'ready'];
@@ -208,11 +213,22 @@ export interface OnBehalfChoices {
   busyExtraOptionsMin: number[];
 }
 
-// The state a command needs and the one it leaves.
+// The state a command needs and the one it leaves: `to` null keeps the
+// order's status (a change within it, AP §9.3.2 «تعديل الوقت»), with its
+// event type.
 type Transition = {
-  verb: 'accept' | 'ready' | 'reject' | 'cancel';
+  verb:
+    | 'accept'
+    | 'ready'
+    | 'reject'
+    | 'cancel'
+    | 'change_time'
+    | 'report_item'
+    | 'withdraw_item_report'
+    | 'close_item_report';
   from: OrderView['status'][];
-  to: 'accepted' | 'ready' | 'rejected' | 'cancelled';
+  to: 'accepted' | 'ready' | 'rejected' | 'cancelled' | null;
+  event?: OrderEventType;
 };
 
 // Who runs a command: a user of the restaurant on its device (RA §18),
@@ -221,7 +237,8 @@ type Transition = {
 // (CU §11.4).
 type Caller =
   | { kind: 'restaurant'; command: MerchantCommand }
-  | { kind: 'admin'; command: AdminOrderCommand }
+  // «تعديل الوقت» takes an optional note (AP §9.3.2).
+  | { kind: 'admin'; command: Omit<AdminOrderCommand, 'reason'> & { reason: string | null } }
   | { kind: 'customer'; command: CustomerCommand };
 
 // A state change of the command (the columns it sets) and what the
@@ -243,6 +260,9 @@ type Change = {
   before?: (tx: Tx) => Promise<void>;
   // Written in the transaction after the order's own change (RA §8.6).
   effects?: (tx: Tx) => Promise<void>;
+  // What the audit keeps beside the status («تعديل الوقت»: the times it
+  // moved, before and after).
+  audit?: { before: Record<string, unknown>; after: Record<string, unknown> };
 };
 
 type Tx = Parameters<Parameters<Database['db']['transaction']>[0]>[0];
@@ -944,6 +964,104 @@ export class OrderCommands {
     );
   }
 
+  // AP §9.3.2 «تعديل الوقت» (owner decision 2026-11-10): operations add
+  // whole minutes, from 1 to order.eta_change_max_min, to an accepted, ready
+  // or picked-up order. The promised time moves by them, rounded up to the
+  // next 5 minutes (docs/domain/03). While the food is still being prepared
+  // (accepted) the prep time moves too: the restaurant's countdown, the
+  // prep-late moment and a search start still ahead, with its timer. The
+  // customer hears the new time (CU §14 #12) and, when the prep time moved,
+  // the restaurant the new prep time (RA §16 #12). The note is optional.
+  // 400 invalid_time_change; 409 order_state_changed.
+  async changeTime(
+    command: Omit<AdminOrderCommand, 'reason'> & { reason: string | null; addMin: number },
+    now: Date,
+  ): Promise<OrderView> {
+    return this.run(
+      { kind: 'admin', command },
+      { verb: 'change_time', from: TIME_CHANGEABLE, to: null, event: 'order.time_changed' },
+      { addMin: command.addMin, reason: command.reason },
+      now,
+      async (order) => {
+        const maxMin = await this.settings.get('order.eta_change_max_min', {
+          cityId: order.cityId,
+        });
+        if (!Number.isInteger(command.addMin) || command.addMin < 1 || command.addMin > maxMin) {
+          throw new OrderCommandRefusedError(
+            'invalid_time_change',
+            `the minutes added are whole minutes from 1 to ${maxMin}`,
+          );
+        }
+        const times = await this.times(this.database.db, order);
+        const add = command.addMin * MINUTE_MS;
+        const promisedAt = new Date(
+          Math.ceil((times.promisedAt.getTime() + add) / PROMISE_STEP_MS) * PROMISE_STEP_MS,
+        );
+        const preparing = times.status === 'accepted';
+        // A search already started, or due now, stays as it is.
+        const searchStartAt =
+          preparing &&
+          times.searchStartedAt === null &&
+          times.searchStartAt.getTime() > now.getTime()
+            ? new Date(times.searchStartAt.getTime() + add)
+            : undefined;
+        return {
+          set: {
+            promisedAt,
+            ...(preparing
+              ? {
+                  prepMin: times.prepMin + command.addMin,
+                  prepLateAlertAt: new Date(times.prepLateAlertAt.getTime() + add),
+                }
+              : {}),
+            ...(searchStartAt ? { searchStartAt } : {}),
+          },
+          ...(searchStartAt ? { searchStartAt } : {}),
+          // The apps hear whether the prep time moved (RA §16 #12).
+          publicReason: preparing ? 'prep_time_changed' : 'promised_time_changed',
+          // The times were read before the lock.
+          guard: async (tx) => sameTimes(await this.times(tx, order), times),
+          audit: {
+            before: { promisedAt: times.promisedAt.toISOString(), prepMin: times.prepMin },
+            after: {
+              promisedAt: promisedAt.toISOString(),
+              prepMin: preparing ? times.prepMin + command.addMin : times.prepMin,
+            },
+          },
+        };
+      },
+    );
+  }
+
+  private async times(
+    executor: Database['db'] | Tx,
+    order: { id: string; placedAt: Date },
+  ): Promise<OrderTimes> {
+    const [row] = await executor
+      .select({
+        status: orders.status,
+        promisedAt: orders.promisedAt,
+        prepMin: orders.prepMin,
+        prepLateAlertAt: orders.prepLateAlertAt,
+        searchStartAt: orders.searchStartAt,
+        searchStartedAt: orders.searchStartedAt,
+      })
+      .from(orders)
+      .where(orderKey(order.id, order.placedAt));
+    // Every accepted order has them together (a CHECK).
+    if (!row?.promisedAt || row.prepMin === null || !row.prepLateAlertAt || !row.searchStartAt) {
+      throw new Error(`order ${order.id} has no acceptance`);
+    }
+    return {
+      status: row.status,
+      promisedAt: row.promisedAt,
+      prepMin: row.prepMin,
+      prepLateAlertAt: row.prepLateAlertAt,
+      searchStartAt: row.searchStartAt,
+      searchStartedAt: row.searchStartedAt,
+    };
+  }
+
   private async run(
     caller: Caller,
     transition: Transition,
@@ -997,14 +1115,15 @@ export class OrderCommands {
         current = (await lockOrder(tx, order.id, order.placedAt))!;
       }
       const version = current.version + 1;
+      const to = transition.to ?? current.status;
       await tx
         .update(orders)
-        .set({ ...prepared.set, status: transition.to, version })
+        .set({ ...prepared.set, status: to, version })
         .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
       await recordTransition(tx, this.jobs, current, {
-        type: `order.${transition.to}`,
+        type: transition.event ?? `order.${to as 'accepted' | 'ready' | 'rejected' | 'cancelled'}`,
         from: current.status,
-        to: transition.to,
+        to,
         version,
         actor:
           caller.kind === 'restaurant'
@@ -1039,8 +1158,8 @@ export class OrderCommands {
             cityId: locked.cityId,
             action: `order.${transition.verb}`,
             target: { type: 'order', id: locked.id },
-            before: { status: locked.status },
-            after: { status: transition.to, ...body, reason: publicReason },
+            before: { status: locked.status, ...prepared.audit?.before },
+            after: { status: to, ...body, reason: publicReason, ...prepared.audit?.after },
             reason,
           },
           tx,
@@ -1137,6 +1256,26 @@ export class OrderCommands {
       throw new OrderCommandRefusedError('idempotency_key_reused', error.message);
     }
   }
+}
+
+// What «تعديل الوقت» moves, and what decides it.
+type OrderTimes = {
+  status: OrderView['status'];
+  promisedAt: Date;
+  prepMin: number;
+  prepLateAlertAt: Date;
+  searchStartAt: Date;
+  searchStartedAt: Date | null;
+};
+
+function sameTimes(a: OrderTimes, b: OrderTimes): boolean {
+  return (
+    a.status === b.status &&
+    a.promisedAt.getTime() === b.promisedAt.getTime() &&
+    a.prepMin === b.prepMin &&
+    a.searchStartAt.getTime() === b.searchStartAt.getTime() &&
+    (a.searchStartedAt === null) === (b.searchStartedAt === null)
+  );
 }
 
 type OrderAtStart = {
