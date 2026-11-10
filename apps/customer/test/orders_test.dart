@@ -19,6 +19,7 @@ Map<String, Object?> _order({
   List<Map<String, Object?>>? lines,
   String? promisedAt,
   Map<String, Object?>? itemReport,
+  List<Map<String, Object?>> removedLines = const [],
 }) => {
   'id': _orderId,
   'number': '10423',
@@ -53,8 +54,11 @@ Map<String, Object?> _order({
           'options': <Object>[],
           'unitPrice': '6500',
           'lineTotal': '13000',
+          'added': false,
+          'quantityBefore': null,
         },
       ],
+  'removedLines': removedLines,
   'payIn': null,
   'note': null,
   'estimate': {'fromMin': 30, 'toMin': 40},
@@ -290,6 +294,8 @@ void main() {
       ],
       'unitPrice': '5000',
       'lineTotal': '5000',
+      'added': false,
+      'quantityBefore': null,
     };
 
     final rejected = _order(
@@ -727,4 +733,56 @@ void main() {
     expect(find.text('قد يتأخر طلبك بسبب عطل'), findsNothing);
     await app.done(tester);
   });
+
+  testWidgets(
+    "an edit by FOX DROP shows the new total, «أُضيف», the quantity change "
+    'and «حُذف» (CU §11.6)',
+    (tester) async {
+      final app = await open(tester, [
+        FakeAnswer(200, {
+          'order': _order(
+            status: 'accepted',
+            version: 3,
+            promisedAt: '2026-11-07T12:45:00.000Z',
+            lines: [
+              {
+                'itemId': shawarmaId,
+                'name': 'شاورما دجاج',
+                'quantity': 3,
+                'note': null,
+                'options': <Object>[],
+                'unitPrice': '6500',
+                'lineTotal': '19500',
+                'added': false,
+                'quantityBefore': 2,
+              },
+              {
+                'itemId': shawarmaId,
+                'name': 'بطاطا',
+                'quantity': 1,
+                'note': null,
+                'options': <Object>[],
+                'unitPrice': '3000',
+                'lineTotal': '3000',
+                'added': true,
+                'quantityBefore': null,
+              },
+            ],
+            removedLines: [
+              {'name': 'كولا', 'quantity': 1, 'options': <Object>[]},
+            ],
+          ),
+        }),
+      ]);
+      expect(
+        find.text('عدّلت FOX DROP طلبك. المجموع الجديد: 140 ₺'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('شاورما دجاج: 2 ← 3'), findsOneWidget);
+      expect(find.text('أُضيف'), findsOneWidget);
+      expect(find.text('1 × كولا'), findsOneWidget);
+      expect(find.text('حُذف'), findsOneWidget);
+      await app.done(tester);
+    },
+  );
 }
