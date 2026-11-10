@@ -590,7 +590,7 @@ export class OrderCommands {
           // The entries were worked out from the order before the lock.
           guard: async (tx) => (await this.ownFacts(tx, order)).key === read.key,
           before: async (tx) => {
-            await this.assignments.beforeCancel(tx, order.id, order.placedAt, actor, now);
+            await this.assignments.beforeEnd(tx, order.id, order.placedAt, actor, now);
             // docs/domain/02: the open request voided below returns the
             // track to at_merchant, which the cancellation publishes.
             await tx

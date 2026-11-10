@@ -8,6 +8,7 @@ import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custod
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_customer.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_restaurant.dart';
+import 'package:core_api/src/model/captain_current_offer_dto_output_offer_handover.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_pickup_payment.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_preparation.dart';
 import 'package:built_value/built_value.dart';
@@ -31,6 +32,7 @@ part 'captain_current_offer_dto_output_offer.g.dart';
 /// * [pickupPayment]
 /// * [collect]
 /// * [preparation]
+/// * [handover]
 @BuiltValue()
 abstract class CaptainCurrentOfferDtoOutputOffer
     implements
@@ -79,6 +81,9 @@ abstract class CaptainCurrentOfferDtoOutputOffer
 
   @BuiltValueField(wireName: r'preparation')
   CaptainCurrentOfferDtoOutputOfferPreparation get preparation;
+
+  @BuiltValueField(wireName: r'handover')
+  CaptainCurrentOfferDtoOutputOfferHandover? get handover;
 
   CaptainCurrentOfferDtoOutputOffer._();
 
@@ -187,6 +192,15 @@ class _$CaptainCurrentOfferDtoOutputOfferSerializer
         CaptainCurrentOfferDtoOutputOfferPreparation,
       ),
     );
+    yield r'handover';
+    yield object.handover == null
+        ? null
+        : serializers.serialize(
+            object.handover,
+            specifiedType: const FullType.nullable(
+              CaptainCurrentOfferDtoOutputOfferHandover,
+            ),
+          );
   }
 
   @override
@@ -345,6 +359,18 @@ class _$CaptainCurrentOfferDtoOutputOfferSerializer
                   )
                   as CaptainCurrentOfferDtoOutputOfferPreparation;
           result.preparation.replace(valueDes);
+          break;
+        case r'handover':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainCurrentOfferDtoOutputOfferHandover,
+                    ),
+                  )
+                  as CaptainCurrentOfferDtoOutputOfferHandover?;
+          if (valueDes == null) continue;
+          result.handover.replace(valueDes);
           break;
         default:
           unhandled.add(key);

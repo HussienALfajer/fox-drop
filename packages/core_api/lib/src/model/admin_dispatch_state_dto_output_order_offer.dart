@@ -14,6 +14,7 @@ part 'admin_dispatch_state_dto_output_order_offer.g.dart';
 /// * [id]
 /// * [captainId]
 /// * [expiresAt]
+/// * [handover] - «استلام من كابتن» (AP §9.3.2, CA §9.10.1).
 @BuiltValue()
 abstract class AdminDispatchStateDtoOutputOrderOffer
     implements
@@ -29,6 +30,10 @@ abstract class AdminDispatchStateDtoOutputOrderOffer
 
   @BuiltValueField(wireName: r'expiresAt')
   DateTime get expiresAt;
+
+  /// «استلام من كابتن» (AP §9.3.2, CA §9.10.1).
+  @BuiltValueField(wireName: r'handover')
+  bool get handover;
 
   AdminDispatchStateDtoOutputOrderOffer._();
 
@@ -74,6 +79,11 @@ class _$AdminDispatchStateDtoOutputOrderOfferSerializer
     yield serializers.serialize(
       object.expiresAt,
       specifiedType: const FullType(DateTime),
+    );
+    yield r'handover';
+    yield serializers.serialize(
+      object.handover,
+      specifiedType: const FullType(bool),
     );
   }
 
@@ -128,6 +138,15 @@ class _$AdminDispatchStateDtoOutputOrderOfferSerializer
                   )
                   as DateTime;
           result.expiresAt = valueDes;
+          break;
+        case r'handover':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.handover = valueDes;
           break;
         default:
           unhandled.add(key);

@@ -101,7 +101,19 @@ export type OrderEventType =
   // from its captain before the pickup (the status stays, the track back to
   // searching); the event is about the withdrawn captain, and publishes the
   // reason's code.
-  | 'order.reassigned';
+  | 'order.reassigned'
+  // AP §9.3.2 «تسليم لكابتن آخر», CA §9.10.1 (slice 2.12b): operations offered
+  // or assigned a picked-up order's handover to a second captain, the second
+  // captain has it (accepted or assigned), the handover closed without the
+  // receipt (its reason: declined, expired, withdrawn, ended), and the
+  // receipt near the first captain (status back to picked_up if arrived; the
+  // order becomes the second captain's). The status stays but at the
+  // receipt; each is about the second captain, and reaches the first's
+  // channel too.
+  | 'order.handover_offered'
+  | 'order.handover_assigned'
+  | 'order.handover_closed'
+  | 'order.handed_over';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that
@@ -134,6 +146,8 @@ export async function recordTransition(
     // the one assigned); the order's own when left out.
     captainTrack?: CaptainTrack | null;
     captainId?: string | null;
+    // A handover's other captain (slice 2.12b), whose channel hears it too.
+    otherCaptainId?: string;
     // An offer's order pay (CA §8.2), which its push shows (CA §14 #1).
     offerPay?: { amount: bigint; currency: string } | null;
     // The offer's end: its push is no use after it (CA §14 #1-2).
@@ -183,6 +197,9 @@ export async function recordTransition(
       byCustomer: transition.actor.type === 'customer' && transition.to === 'cancelled',
       captainTrack,
       captainId,
+      ...(transition.otherCaptainId === undefined
+        ? {}
+        : { otherCaptainId: transition.otherCaptainId }),
       ...(transition.offerPay === undefined
         ? {}
         : {

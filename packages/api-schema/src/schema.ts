@@ -2708,6 +2708,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders/{orderId}/handover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminDispatchHandover"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/offers/current": {
         parameters: {
             query?: never;
@@ -7540,9 +7556,9 @@ export interface components {
                 eligible: boolean;
                 /** @description Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed. */
                 reasons: ("busy" | "cash_limit" | "closed_due" | "simulated_location" | "out_of_range" | "vehicle_not_allowed")[];
-                /** @description To the restaurant: by road within the search radius, else the straight line. */
+                /** @description To the restaurant (after the pickup, to the order’s captain at their latest point): by road within the search radius, else the straight line. */
                 distanceMetres: number;
-                /** @description To the restaurant; null beyond the search radius. */
+                /** @description To the same point; null beyond the search radius. */
                 etaMin: number | null;
                 ordersToday: number;
                 /** @description Cash-limit usage. */
@@ -7589,8 +7605,19 @@ export interface components {
                     captainId: string;
                     /** Format: date-time */
                     expiresAt: string;
+                    /** @description «استلام من كابتن» (AP §9.3.2, CA §9.10.1). */
+                    handover: boolean;
                 } | null;
             };
+        };
+        AdminHandoverDto: {
+            /**
+             * Format: uuid
+             * @description An eligible captain from the picker, measured from the first.
+             */
+            captainId: string;
+            /** @description Operations’ internal note (AP §9.3.2: required; never shown to the apps). */
+            reason: string;
         };
         CaptainCurrentOfferDto_Output: {
             /** @description The open offer, or null. */
@@ -7632,7 +7659,7 @@ export interface components {
                     /** @description Restaurant to customer. */
                     tripMetres: number;
                 };
-                /** @description «تدفع للمطعم» (D26: the items value). */
+                /** @description «تدفع للمطعم» (D26: the items value); 0 on a handover, «لا تدفع شيئاً». */
                 pickupPayment: {
                     /** @description Minor units of the currency, as a string. */
                     amount: string;
@@ -7650,6 +7677,20 @@ export interface components {
                     /** @description «قيد التحضير — جاهز بعد {د} د تقريباً» counts to it while not ready. */
                     readyAt: string | null;
                 };
+                /** @description «استلام من كابتن» (CA §9.10.1): the order is taken from this captain; restaurant.distanceMetres is then to them. Null for an ordinary offer. */
+                handover: {
+                    fromCaptainName: string;
+                    /** @description The first captain’s latest point; null without one. */
+                    location: {
+                        latitude: number;
+                        longitude: number;
+                        /**
+                         * Format: date-time
+                         * @description When the first captain’s app recorded it.
+                         */
+                        recordedAt: string;
+                    } | null;
+                } | null;
             } | null;
         };
         CaptainOfferDto_Output: {
@@ -7692,7 +7733,7 @@ export interface components {
                     /** @description Restaurant to customer. */
                     tripMetres: number;
                 };
-                /** @description «تدفع للمطعم» (D26: the items value). */
+                /** @description «تدفع للمطعم» (D26: the items value); 0 on a handover, «لا تدفع شيئاً». */
                 pickupPayment: {
                     /** @description Minor units of the currency, as a string. */
                     amount: string;
@@ -7710,6 +7751,20 @@ export interface components {
                     /** @description «قيد التحضير — جاهز بعد {د} د تقريباً» counts to it while not ready. */
                     readyAt: string | null;
                 };
+                /** @description «استلام من كابتن» (CA §9.10.1): the order is taken from this captain; restaurant.distanceMetres is then to them. Null for an ordinary offer. */
+                handover: {
+                    fromCaptainName: string;
+                    /** @description The first captain’s latest point; null without one. */
+                    location: {
+                        latitude: number;
+                        longitude: number;
+                        /**
+                         * Format: date-time
+                         * @description When the first captain’s app recorded it.
+                         */
+                        recordedAt: string;
+                    } | null;
+                } | null;
             };
         };
     };
@@ -11896,6 +11951,35 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminAssignDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDispatchStateDto_Output"];
+                };
+            };
+        };
+    };
+    adminDispatchHandover: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminHandoverDto"];
             };
         };
         responses: {

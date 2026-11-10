@@ -14,6 +14,8 @@ class _$AdminDispatchStateDtoOutputOrderOffer
   final String captainId;
   @override
   final DateTime expiresAt;
+  @override
+  final bool handover;
 
   factory _$AdminDispatchStateDtoOutputOrderOffer([
     void Function(AdminDispatchStateDtoOutputOrderOfferBuilder)? updates,
@@ -24,6 +26,7 @@ class _$AdminDispatchStateDtoOutputOrderOffer
     required this.id,
     required this.captainId,
     required this.expiresAt,
+    required this.handover,
   }) : super._();
   @override
   AdminDispatchStateDtoOutputOrderOffer rebuild(
@@ -40,7 +43,8 @@ class _$AdminDispatchStateDtoOutputOrderOffer
     return other is AdminDispatchStateDtoOutputOrderOffer &&
         id == other.id &&
         captainId == other.captainId &&
-        expiresAt == other.expiresAt;
+        expiresAt == other.expiresAt &&
+        handover == other.handover;
   }
 
   @override
@@ -49,6 +53,7 @@ class _$AdminDispatchStateDtoOutputOrderOffer
     _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, captainId.hashCode);
     _$hash = $jc(_$hash, expiresAt.hashCode);
+    _$hash = $jc(_$hash, handover.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -60,7 +65,8 @@ class _$AdminDispatchStateDtoOutputOrderOffer
           )
           ..add('id', id)
           ..add('captainId', captainId)
-          ..add('expiresAt', expiresAt))
+          ..add('expiresAt', expiresAt)
+          ..add('handover', handover))
         .toString();
   }
 }
@@ -85,6 +91,10 @@ class AdminDispatchStateDtoOutputOrderOfferBuilder
   DateTime? get expiresAt => _$this._expiresAt;
   set expiresAt(DateTime? expiresAt) => _$this._expiresAt = expiresAt;
 
+  bool? _handover;
+  bool? get handover => _$this._handover;
+  set handover(bool? handover) => _$this._handover = handover;
+
   AdminDispatchStateDtoOutputOrderOfferBuilder() {
     AdminDispatchStateDtoOutputOrderOffer._defaults(this);
   }
@@ -95,6 +105,7 @@ class AdminDispatchStateDtoOutputOrderOfferBuilder
       _id = $v.id;
       _captainId = $v.captainId;
       _expiresAt = $v.expiresAt;
+      _handover = $v.handover;
       _$v = null;
     }
     return this;
@@ -133,6 +144,11 @@ class AdminDispatchStateDtoOutputOrderOfferBuilder
             expiresAt,
             r'AdminDispatchStateDtoOutputOrderOffer',
             'expiresAt',
+          ),
+          handover: BuiltValueNullFieldError.checkNotNull(
+            handover,
+            r'AdminDispatchStateDtoOutputOrderOffer',
+            'handover',
           ),
         );
     replace(_$result);

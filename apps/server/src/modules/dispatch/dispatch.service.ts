@@ -16,7 +16,12 @@ import {
 import type { Vehicle } from '../settings/index.js';
 import { GeoService, lastCutoff, type Point, tripMinutes } from '../geo/index.js';
 import { MerchantsService } from '../merchants/index.js';
-import { type AssignmentActor, type DispatchOrder, OrderAssignments } from '../ordering/index.js';
+import {
+  type AssignmentActor,
+  type DispatchOrder,
+  HANDOVER_FROM,
+  OrderAssignments,
+} from '../ordering/index.js';
 import { SettingsService } from '../settings/index.js';
 import { idempotencyKeys, offers } from './schema.js';
 
@@ -35,6 +40,9 @@ export type DispatchRefusal =
   | 'captain_not_eligible'
   | 'captain_has_offer'
   | 'offer_unavailable'
+  // AP §9.3.2 «تسليم لكابتن آخر» (slice 2.12b): not picked up or arrived
+  // with a captain, a handover already open, or an outcome waiting.
+  | 'order_not_handoverable'
   | 'idempotency_key_reused';
 
 // A command dispatch refuses, with the reason the routes answer; a captain
@@ -68,7 +76,9 @@ export interface DispatchState {
   version: number;
   captainTrack: DispatchOrder['captainTrack'];
   captainId: string | null;
-  offer: { id: string; captainId: string; expiresAt: Date } | null;
+  // handover: the offer of a picked-up order to a second captain (slice
+  // 2.12b).
+  offer: { id: string; captainId: string; expiresAt: Date; handover: boolean } | null;
 }
 
 // An offer as the captain sees it (CA §8.2): before acceptance, never the
@@ -92,6 +102,13 @@ export interface CaptainOffer {
   collect: { amount: bigint; currency: string };
   // «جاهز» or «قيد التحضير — جاهز بعد {د} د تقريباً».
   preparation: { ready: boolean; readyAt: Date | null };
+  // CA §9.10.1 (slice 2.12b): «استلام من كابتن», from the order's captain at
+  // their latest point (null without one); the pickup payment is then 0,
+  // «لا تدفع شيئاً», and distanceMetres in restaurant is to them.
+  handover: {
+    fromCaptainName: string;
+    location: (Point & { recordedAt: Date }) | null;
+  } | null;
 }
 
 // A captain in the assignment picker (AP §9.3.2).
@@ -115,6 +132,8 @@ export interface PickerCaptain {
 export interface AdminCommand {
   orderId: string;
   captainId: string;
+  // «تسليم لكابتن آخر»: operations' required note (AP §9.3.2).
+  reason?: string;
   admin: { accountId: string; roles: string[] };
   context: AuditRequestContext;
   idempotencyKey: string;
@@ -154,8 +173,9 @@ export class DispatchService implements OnModuleInit {
     // AP §9.3.2 «إلغاء الطلب» (slice 2.8b): the order's open offer is
     // withdrawn in the cancellation's transaction, before it; the captain
     // hears nothing (the app shows «لم يعد العرض متاحاً»).
+    // An outcome or operations' delivery withdraws a handover's offer the
+    // same way (slice 2.12b).
     this.assignments.onCancel(async (tx, order, actor, now) => {
-      if (order.captainTrack !== 'offered') return;
       const [open] = await tx
         .select()
         .from(offers)
@@ -346,7 +366,6 @@ export class DispatchService implements OnModuleInit {
   // An open offer of the locked order past its time, which the worker has
   // not expired yet, expires now; the order as it is then.
   private async expireLate(tx: Tx, order: DispatchOrder, now: Date): Promise<DispatchOrder> {
-    if (order.captainTrack !== 'offered') return order;
     const [open] = await tx
       .select()
       .from(offers)
@@ -367,6 +386,13 @@ export class DispatchService implements OnModuleInit {
     actor: AssignmentActor = { type: 'system', id: null },
   ): Promise<DispatchOrder> {
     await closeOffer(tx, offer.id, status, now);
+    if (offer.handover) {
+      // Slice 2.12b: the handover closes with its offer; the order stays its
+      // captain's.
+      const handover = await this.assignments.openHandover(tx, order);
+      if (handover === null || handover.offerId !== offer.id) return order;
+      return this.assignments.closeHandover(tx, order, handover, status, actor, now);
+    }
     return this.assignments.change(
       tx,
       order,
@@ -404,14 +430,15 @@ export class DispatchService implements OnModuleInit {
   async picker(orderId: string, now: Date): Promise<PickerCaptain[]> {
     const order = await this.assignments.find(orderId);
     if (order === null) throw new DispatchRefusedError('unknown_order', 'no such order');
-    const restaurant = await this.merchants.restaurant(order.restaurantId, now);
-    if (!restaurant) throw new Error(`restaurant ${order.restaurantId} not found`);
-    const candidates = await this.captains.candidates(
-      order.cityId,
-      restaurant.location,
-      order.tripMetres,
-      now,
-    );
+    // After the pickup the picker is for «تسليم لكابتن آخر»: measured from
+    // the order's captain (slice 2.12b), who is left out.
+    const handover = HANDOVER_FROM.includes(order.status) && order.captainId !== null;
+    const from = handover
+      ? await this.handoverPoint(order, now)
+      : (await this.restaurantOf(order, now)).location;
+    const candidates = (
+      await this.captains.candidates(order.cityId, from, order.tripMetres, now)
+    ).filter((candidate) => candidate.captainId !== order.captainId);
     if (candidates.length === 0) return [];
     const [speedKmh, window, cutoff, timeZone] = await Promise.all([
       this.settings.get('order.eta_speed_kmh', { cityId: order.cityId }),
@@ -432,9 +459,7 @@ export class DispatchService implements OnModuleInit {
       candidates.map(async (candidate) => {
         const inRange = !candidate.reasons.includes('out_of_range');
         const distance = inRange
-          ? await this.geo.distance(candidate.position, restaurant.location, {
-              vehicle: candidate.vehicle,
-            })
+          ? await this.geo.distance(candidate.position, from, { vehicle: candidate.vehicle })
           : null;
         return {
           captainId: candidate.captainId,
@@ -496,7 +521,12 @@ export class DispatchService implements OnModuleInit {
     const order = await this.assignments.find(orderId);
     if (order === null) throw new Error(`order ${orderId} not found`);
     const [offer] = await this.database.db
-      .select({ id: offers.id, captainId: offers.captainId, expiresAt: offers.expiresAt })
+      .select({
+        id: offers.id,
+        captainId: offers.captainId,
+        expiresAt: offers.expiresAt,
+        handover: offers.handover,
+      })
       .from(offers)
       .where(
         and(eq(offers.orderId, orderId), eq(offers.status, 'open'), gt(offers.expiresAt, now)),
@@ -538,7 +568,20 @@ export class DispatchService implements OnModuleInit {
       if (repeat !== null) return true;
       if (locked.status !== 'open' || locked.expiresAt <= now) return false;
       const actor = { type: 'captain' as const, id: command.captainId, device: command.deviceId };
-      if (response === 'accepted') {
+      if (response === 'accepted' && locked.handover) {
+        // CA §9.10.1: the second captain has the handover; the order stays
+        // the first captain's until the receipt.
+        const handover = await this.assignments.openHandover(tx, order);
+        const free =
+          handover !== null &&
+          handover.offerId === offer.id &&
+          handover.assignedAt === null &&
+          HANDOVER_FROM.includes(order.status) &&
+          (await this.captainFree(tx, lockCaptain!, command.captainId));
+        if (!free) return false;
+        await closeOffer(tx, offer.id, 'accepted', now);
+        await this.assignments.assignHandover(tx, order, handover, actor, now);
+      } else if (response === 'accepted') {
         const free =
           order.captainId === null &&
           (order.status === 'accepted' || order.status === 'ready') &&
@@ -569,10 +612,12 @@ export class DispatchService implements OnModuleInit {
     order: DispatchOrder,
     captain: { position: Point; vehicle: Parameters<CaptainsService['orderPay']>[1] },
     now: Date,
+    // A handover's offer measures to the first captain (slice 2.12b).
+    to: Point | null = null,
   ) {
     const restaurant = await this.merchants.restaurant(order.restaurantId, now);
     if (!restaurant) throw new Error(`restaurant ${order.restaurantId} not found`);
-    const distance = await this.geo.distance(captain.position, restaurant.location, {
+    const distance = await this.geo.distance(captain.position, to ?? restaurant.location, {
       vehicle: captain.vehicle,
     });
     const pay =
@@ -589,6 +634,7 @@ export class DispatchService implements OnModuleInit {
     shown: { pickupMetres: number; pay: { amount: bigint; currency: string } | null },
     now: Date,
     expiresAt: Date,
+    handover = false,
   ): Promise<string> {
     const [opened] = await tx
       .insert(offers)
@@ -605,6 +651,7 @@ export class DispatchService implements OnModuleInit {
         pickupMetres: shown.pickupMetres,
         pay: shown.pay?.amount ?? null,
         payCurrency: shown.pay?.currency ?? null,
+        handover,
       })
       .returning({ id: offers.id });
     const job: OfferExpiryJob = {
@@ -672,6 +719,10 @@ export class DispatchService implements OnModuleInit {
       order.acceptedAt && order.prepMin !== null
         ? new Date(order.acceptedAt.getTime() + order.prepMin * 60_000)
         : null;
+    const handover =
+      offer.handover && order.captainId !== null
+        ? await this.handoverFrom(order.captainId, now)
+        : null;
     return {
       id: offer.id,
       status: offer.status,
@@ -690,10 +741,178 @@ export class DispatchService implements OnModuleInit {
         distanceMetres: offer.pickupMetres,
       },
       customer: { neighbourhood: order.neighbourhood, tripMetres: order.tripMetres },
-      pickupPayment: { amount: order.itemsValue, currency: order.currency },
+      // CA §9.10.1: «لا تدفع شيئاً» on a handover's offer.
+      pickupPayment: { amount: handover ? 0n : order.itemsValue, currency: order.currency },
       collect: { amount: order.total, currency: order.currency },
       preparation: { ready: order.readyAt !== null, readyAt: order.readyAt ?? prepDue },
+      handover,
     };
+  }
+
+  // CA §9.10.1: the first captain's name and latest point.
+  private async handoverFrom(captainId: string, now: Date) {
+    const [captain, point] = await Promise.all([
+      this.captains.captain(captainId, now),
+      this.captains.latestPoint(captainId),
+    ]);
+    if (!captain) throw new Error(`captain ${captainId} not found`);
+    return { fromCaptainName: captain.name, location: point };
+  }
+
+  // AP §9.3.2 «تسليم لكابتن آخر», CA §9.10.1 (slice 2.12b): operations hand a
+  // picked-up or arrived order from its captain to a second one, as a manual
+  // dispatch (owner decision 2026-11-10): with
+  // dispatch.manual_assign_requires_accept an offer marked «استلام من كابتن»
+  // for dispatch.offer_timeout_sec, else the handover is the captain's at
+  // once. The second captain must be eligible now, measured from the first
+  // captain's latest point (the restaurant without one); C4 does not apply
+  // (they pay nothing). The order stays the first captain's until the
+  // receipt (owner decision 2026-11-11).
+  async handover(command: AdminCommand & { reason: string }, now: Date): Promise<DispatchState> {
+    const hash = commandHash({
+      verb: 'handover',
+      orderId: command.orderId,
+      captainId: command.captainId,
+      reason: command.reason,
+    });
+    const earlier = await this.replay(
+      this.database.db,
+      command.admin.accountId,
+      command,
+      hash,
+      now,
+    );
+    if (earlier !== null) return this.state(earlier.orderId);
+    const order = await this.assignments.find(command.orderId);
+    if (order === null) throw new DispatchRefusedError('unknown_order', 'no such order');
+    // Checked again under the lock, where an open offer past its time
+    // expires first.
+    const before = await this.assignments.handoverProblem(
+      this.database.db,
+      order,
+      command.captainId,
+    );
+    if (before === 'same_captain') throw this.captainBusy();
+    if (before !== null) throw this.notHandoverable();
+    const captain = await this.captains.captain(command.captainId, now);
+    if (captain === null || captain.cityId !== order.cityId) {
+      throw new DispatchRefusedError('unknown_captain', 'no such captain');
+    }
+    if (order.captainId === null || !HANDOVER_FROM.includes(order.status)) {
+      throw this.notHandoverable();
+    }
+    const from = await this.handoverPoint(order, now);
+    const seen = (await this.captains.candidates(order.cityId, from, order.tripMetres, now)).find(
+      (candidate) => candidate.captainId === command.captainId,
+    );
+    if (!seen) {
+      throw new DispatchRefusedError('captain_not_eligible', 'the captain is not online', [
+        'offline',
+      ]);
+    }
+    if (seen.reasons.length > 0) {
+      throw new DispatchRefusedError(
+        'captain_not_eligible',
+        'the captain cannot take the order',
+        seen.reasons,
+      );
+    }
+    const [requiresAccept, timeoutSec] = await Promise.all([
+      this.settings.get('dispatch.manual_assign_requires_accept', { cityId: order.cityId }),
+      this.settings.get('dispatch.offer_timeout_sec', { cityId: order.cityId }),
+    ]);
+    const shown = requiresAccept ? await this.shown(order, seen, now, from) : null;
+    const lockCaptain = await this.captains.assignmentLock(order.cityId, now);
+
+    await this.jobs.ready();
+    const done = await this.database.db.transaction(async (tx) => {
+      const locked = await this.assignments.lock(tx, order.id, order.placedAt);
+      if (!locked) throw new Error(`order ${order.id} not found`);
+      const repeat = await this.replay(tx, command.admin.accountId, command, hash, now);
+      if (repeat !== null) return true;
+      const current = await this.expireLate(tx, locked, now);
+      const problem = await this.assignments.handoverProblem(tx, current, command.captainId);
+      if (problem === 'same_captain') throw this.captainBusy();
+      if (problem !== null) return false;
+      await this.lockFreeCaptain(tx, lockCaptain, command.captainId);
+      let offerId: string | null = null;
+      if (shown !== null) {
+        const expiresAt = new Date(now.getTime() + timeoutSec * 1000);
+        offerId = await this.openOffer(tx, current, command, shown, now, expiresAt, true);
+        await this.assignments.startHandover(
+          tx,
+          current,
+          {
+            toCaptainId: command.captainId,
+            note: command.reason,
+            adminId: command.admin.accountId,
+            offer: { id: offerId, pay: shown.pay, expiresAt },
+          },
+          now,
+        );
+      } else {
+        await this.assignments.startHandover(
+          tx,
+          current,
+          {
+            toCaptainId: command.captainId,
+            note: command.reason,
+            adminId: command.admin.accountId,
+            offer: null,
+          },
+          now,
+        );
+      }
+      await this.audit.recordWrite(
+        {
+          actor: {
+            type: 'admin',
+            id: command.admin.accountId,
+            role: command.admin.roles.join(','),
+          },
+          context: command.context,
+          cityId: order.cityId,
+          action: 'order.handover',
+          target: { type: 'order', id: order.id },
+          before: { captainId: current.captainId, status: current.status },
+          after: { toCaptainId: command.captainId, offerId },
+          reason: command.reason,
+        },
+        tx,
+      );
+      await keepKey(tx, command.admin.accountId, command.idempotencyKey, hash, order, offerId, now);
+      return true;
+    });
+    if (!done) throw this.notHandoverable();
+    return this.state(order.id);
+  }
+
+  private async restaurantOf(order: DispatchOrder, now: Date) {
+    const restaurant = await this.merchants.restaurant(order.restaurantId, now);
+    if (!restaurant) throw new Error(`restaurant ${order.restaurantId} not found`);
+    return restaurant;
+  }
+
+  // Where a handover's second captain is measured from: the first captain's
+  // latest point, or the restaurant without one.
+  private async handoverPoint(order: DispatchOrder, now: Date): Promise<Point> {
+    const point =
+      order.captainId === null ? null : await this.captains.latestPoint(order.captainId);
+    if (point) return { latitude: point.latitude, longitude: point.longitude };
+    return (await this.restaurantOf(order, now)).location;
+  }
+
+  private notHandoverable() {
+    return new DispatchRefusedError(
+      'order_not_handoverable',
+      'the order is not picked up or arrived with a captain, or has a handover open or an outcome waiting',
+    );
+  }
+
+  private captainBusy() {
+    return new DispatchRefusedError('captain_not_eligible', 'the order is already theirs', [
+      'busy',
+    ]);
   }
 
   private notAssignable() {

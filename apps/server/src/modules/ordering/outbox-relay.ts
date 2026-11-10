@@ -52,6 +52,8 @@ interface OutboxPayload {
   // about (an offer's, or the one assigned); absent before.
   captainTrack?: string | null;
   captainId?: string | null;
+  // From slice 2.12b: a handover's other captain, whose channel hears it too.
+  otherCaptainId?: string;
 }
 
 // What the apps receive (RA §4.3, CU §4.3): the event's type and the order's
@@ -94,6 +96,20 @@ const CUSTOMER_SKIPS = new Set([
   // RA §8.13: the restaurant's «اطلعت على التعديل»; the captain's pickup
   // waits for it, the customer's order does not change.
   'order.edit_acknowledged',
+  // AP §10, CA §9.10.1 (slice 2.12b): the handover's steps before the
+  // receipt are the captains' and operations'; the customer hears the
+  // receipt only.
+  'order.handover_offered',
+  'order.handover_assigned',
+  'order.handover_closed',
+]);
+
+// AP §10: the restaurant hears nothing of a handover but the receipt, which
+// changes the captain its board shows.
+const MERCHANT_SKIPS = new Set([
+  'order.handover_offered',
+  'order.handover_assigned',
+  'order.handover_closed',
 ]);
 
 // The restaurant's own steps the captain's channel never carries.
@@ -158,15 +174,19 @@ export class OutboxRelay {
           const payload = row.payload as OutboxPayload;
           try {
             // CA §15: the offer's captain, or the order's once assigned.
-            const captain =
-              payload.captainId && !CAPTAIN_SKIPS.has(row.type)
-                ? [captainChannel(payload.captainId)]
-                : [];
+            // A handover's event reaches both captains (slice 2.12b).
+            const captain = CAPTAIN_SKIPS.has(row.type)
+              ? []
+              : [payload.captainId, payload.otherCaptainId]
+                  .filter((id): id is string => typeof id === 'string' && id.length > 0)
+                  .map((id) => captainChannel(id));
             const ownReason = RESTAURANT_REASONS.has(row.type);
             const captainReason = CAPTAIN_REASONS.has(row.type);
             await this.publisher.broadcast(
               [
-                ...(captainReason ? [] : [merchantChannel(payload.restaurantId)]),
+                ...(captainReason || MERCHANT_SKIPS.has(row.type)
+                  ? []
+                  : [merchantChannel(payload.restaurantId)]),
                 // Architecture §6.2: the panel's board and detail of the city.
                 opsChannel(payload.cityId),
                 ...(ownReason ? [] : captain),

@@ -57,6 +57,7 @@ import 'package:core_api/src/model/admin_faq_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_faq_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output_customer_inner.dart';
+import 'package:core_api/src/model/admin_handover_dto.dart';
 import 'package:core_api/src/model/admin_image_set_dto_output.dart';
 import 'package:core_api/src/model/admin_new_upload_dto.dart';
 import 'package:core_api/src/model/admin_notification_resent_dto_output.dart';
@@ -217,6 +218,8 @@ import 'package:core_api/src/model/captain_current_offer_dto_output.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_collect.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_customer.dart';
+import 'package:core_api/src/model/captain_current_offer_dto_output_offer_handover.dart';
+import 'package:core_api/src/model/captain_current_offer_dto_output_offer_handover_location.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_pickup_payment.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_preparation.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_restaurant.dart';
@@ -480,6 +483,7 @@ part 'serializers.g.dart';
   AdminFaqDtoOutput,
   AdminFaqsDtoOutput,
   AdminFaqsDtoOutputCustomerInner,
+  AdminHandoverDto,
   AdminImageSetDtoOutput,
   AdminNewUploadDto,
   AdminNotificationResentDtoOutput,
@@ -640,6 +644,8 @@ part 'serializers.g.dart';
   CaptainCurrentOfferDtoOutputOffer,
   CaptainCurrentOfferDtoOutputOfferCollect,
   CaptainCurrentOfferDtoOutputOfferCustomer,
+  CaptainCurrentOfferDtoOutputOfferHandover,
+  CaptainCurrentOfferDtoOutputOfferHandoverLocation,
   CaptainCurrentOfferDtoOutputOfferPickupPayment,
   CaptainCurrentOfferDtoOutputOfferPreparation,
   CaptainCurrentOfferDtoOutputOfferRestaurant,

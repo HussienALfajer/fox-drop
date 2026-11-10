@@ -132,6 +132,7 @@ export class OrderingWorkerModule {}
 export {
   type AssignmentActor,
   type AssignmentChange,
+  type OpenHandover,
   type DispatchOrder,
   OrderAssignments,
   OrderAssignmentsModule,
@@ -153,3 +154,4 @@ export {
   QuoteService,
 } from './quote.service.js';
 export type { CartLine, PricedLine, QuoteMoney } from './quote.js';
+export { HANDOVER_FROM } from './handover.js';
