@@ -185,6 +185,16 @@ Map<String, Object?> cancelledJson({
   'at': now.toIso8601String(),
 };
 
+/// An order operations took from this captain before the pickup (CA §9.10,
+/// slice 2.12a), as `GET /v1/captain/orders/active` sends it.
+Map<String, Object?> withdrawnJson({String? cash}) => {
+  'orderId': orderId,
+  'number': '10423',
+  'reason': 'تأخر الكابتن',
+  'cash': cash,
+  'at': now.toIso8601String(),
+};
+
 /// An order of this captain operations ended with an outcome (CA §9.10,
 /// §9.12), as `GET /v1/captain/orders/active` sends it beside the active
 /// order.
@@ -376,12 +386,14 @@ class TestApp {
   DateTime clockNow = now;
 
   /// The answers of the three reads, consumed in order (the last repeats);
-  /// [cancelled] and [ended] go with every answer of the active order.
+  /// [cancelled], [withdrawn] and [ended] go with every answer of the active
+  /// order.
   void work({
     required List<Map<String, Object?>> availability,
     List<Map<String, Object?>?> offers = const [null],
     List<Map<String, Object?>?> orders = const [null],
     Map<String, Object?>? cancelled,
+    Map<String, Object?>? withdrawn,
     Map<String, Object?>? ended,
   }) {
     server.on('/v1/captain/availability', [
@@ -392,7 +404,12 @@ class TestApp {
     ]);
     server.on('/v1/captain/orders/active', [
       for (final o in orders)
-        FakeAnswer(200, {'order': o, 'cancelled': cancelled, 'ended': ended}),
+        FakeAnswer(200, {
+          'order': o,
+          'cancelled': cancelled,
+          'withdrawn': withdrawn,
+          'ended': ended,
+        }),
     ]);
   }
 

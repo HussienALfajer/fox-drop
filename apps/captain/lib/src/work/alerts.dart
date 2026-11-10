@@ -138,6 +138,13 @@ class OrderCancelled extends Alert {
   final Cancelled cancelled;
 }
 
+/// «سُحب منك الطلب: {السبب}» (CA §9.10, §14 #11, slice 2.12a): the withdrawal
+/// card shows it, with the cancellation sound instead of the chime.
+class OrderWithdrawn extends Alert {
+  const OrderWithdrawn(this.withdrawn) : super(chimes: false);
+  final Withdrawn withdrawn;
+}
+
 /// «أنهت العمليات الطلب: {النتيجة}.» (CA §9.10, slice 2.11a): the outcome card
 /// shows it, with a chime.
 class OutcomeSet extends Alert {
@@ -206,6 +213,12 @@ List<Alert> alertStep(
   final cancelled = after.cancelled;
   if (cancelled != null && before.cancelled?.orderId != cancelled.orderId) {
     alerts.add(OrderCancelled(cancelled));
+  }
+  final withdrawn = after.withdrawn;
+  if (withdrawn != null &&
+      (before.withdrawn?.orderId != withdrawn.orderId ||
+          before.withdrawn?.at != withdrawn.at)) {
+    alerts.add(OrderWithdrawn(withdrawn));
   }
   final ended = after.ended;
   if (ended != null && before.ended?.orderId != ended.orderId) {

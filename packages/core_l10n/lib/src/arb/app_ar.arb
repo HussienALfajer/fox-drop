@@ -1028,6 +1028,8 @@
   "@merchantOk": {"description": "Acknowledges operations' cancellation and stops the ring on every device (RA §8.14, §18)."},
   "captainTaskCancelled": "أُلغيت المهمة: {reason}",
   "@captainTaskCancelled": {"description": "The cancellation card after operations cancelled the captain's order (CA §9.10, §14 #11); {reason} is the reason's label.", "placeholders": {"reason": {"type": "String"}}},
+  "captainOrderWithdrawn": "سُحب منك الطلب: {reason}",
+  "@captainOrderWithdrawn": {"description": "The withdrawal card after operations took the order from the captain before the pickup (CA §9.10, §14 #11, slice 2.12a); {reason} is the reassignment reason's label.", "placeholders": {"reason": {"type": "String"}}},
   "captainCashTakeBack": "استرجع المبلغ من المطعم",
   "@captainCashTakeBack": {"description": "The cancellation card when the restaurant returned the pickup payment (CA §9.10; owner decision 2026-11-09)."},
   "captainCashKeepWithRestaurant": "لا تسترجع المبلغ، يُخصم من المطعم في التسوية",

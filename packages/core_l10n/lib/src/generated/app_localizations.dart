@@ -3178,6 +3178,12 @@ abstract class AppLocalizations {
   /// **'أُلغيت المهمة: {reason}'**
   String captainTaskCancelled(String reason);
 
+  /// The withdrawal card after operations took the order from the captain before the pickup (CA §9.10, §14 #11, slice 2.12a); {reason} is the reassignment reason's label.
+  ///
+  /// In ar, this message translates to:
+  /// **'سُحب منك الطلب: {reason}'**
+  String captainOrderWithdrawn(String reason);
+
   /// The cancellation card when the restaurant returned the pickup payment (CA §9.10; owner decision 2026-11-09).
   ///
   /// In ar, this message translates to:

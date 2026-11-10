@@ -141,6 +141,7 @@ extension CaptainTexts on AppLocalizations {
     PickupRefused(:final request) => refusalText(request),
     PickupDisputed() => captainPickupDisputed,
     OrderCancelled(:final cancelled) => captainTaskCancelled(cancelled.reason),
+    OrderWithdrawn(:final withdrawn) => captainOrderWithdrawn(withdrawn.reason),
     OutcomeSet(:final ended) => captainOutcomeSet(
       outcomeText(this, ended.outcome),
     ),
@@ -163,6 +164,14 @@ extension CaptainTexts on AppLocalizations {
   String? cashText(CancelledCash? cash) => switch (cash) {
     CancelledCash.returned => captainCashTakeBack,
     CancelledCash.notReturned => captainCashKeepWithRestaurant,
+    _ => null,
+  };
+
+  /// The same on an order operations took from the captain (CA §9.10, AP
+  /// §8.1).
+  String? withdrawnCashText(WithdrawnCash? cash) => switch (cash) {
+    WithdrawnCash.returned => captainCashTakeBack,
+    WithdrawnCash.notReturned => captainCashKeepWithRestaurant,
     _ => null,
   };
 

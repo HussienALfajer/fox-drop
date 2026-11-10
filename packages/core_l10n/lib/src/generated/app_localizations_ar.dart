@@ -1903,6 +1903,11 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String captainOrderWithdrawn(String reason) {
+    return 'سُحب منك الطلب: $reason';
+  }
+
+  @override
   String get captainCashTakeBack => 'استرجع المبلغ من المطعم';
 
   @override
