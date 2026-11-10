@@ -304,6 +304,7 @@ export class CaptainOrders {
           // K9: an outcome waiting for its collection is the payment screen.
           inArray(orders.status, ['delivered', 'failed']),
           isNull(orderOutcomeRows.captainSeenAt),
+          isNull(orderOutcomeRows.replacedAt),
           gt(sql`coalesce(${orderOutcomeRows.collectedAt}, ${orderOutcomeRows.setAt})`, since),
           // An order ends after the pickup within hours of placing.
           gt(orders.placedAt, new Date(since.getTime() - CANCELLED_AFTER_PLACING_MS)),
@@ -338,6 +339,7 @@ export class CaptainOrders {
         and(
           eq(orders.id, orderOutcomeRows.orderId),
           eq(orders.placedAt, orderOutcomeRows.orderPlacedAt),
+          isNull(orderOutcomeRows.replacedAt),
         ),
       )
       .where(and(eq(orders.id, orderId), eq(orders.captainId, captainId)));

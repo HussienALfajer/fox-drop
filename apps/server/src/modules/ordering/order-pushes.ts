@@ -60,6 +60,10 @@ export interface OrderPushFacts {
     merchantDebit: string | null;
     amountToCollect: string | null;
     awaitingCollection: boolean;
+    // «تغيير النتيجة» (slice 2.11c): which parties the change moved (the
+    // customer's status or dues, the dues gone altogether, the captain's pay
+    // or charge, the restaurant's debit).
+    change?: { customer: boolean; duesCancelled: boolean; captain: boolean; merchant: boolean };
   } | null;
 }
 
@@ -271,6 +275,38 @@ export function orderPushes(
       // captain hears it only when operations recorded it.
       const outcome = facts.outcome;
       return outcome === null ? [] : outcomePushes(outcome, facts.actor === 'admin');
+    }
+    case 'order.outcome_changed': {
+      // AP §8.9 «تغيير النتيجة» (slice 2.11c; owner decision 2026-11-10):
+      // only the parties whose part moved (the texts ours, to confirm with
+      // the owner).
+      const outcome = facts.outcome;
+      const change = outcome?.change;
+      if (!outcome || !change) return [];
+      const failed = outcome.status === 'failed';
+      return [
+        ...(change.customer
+          ? [
+              change.duesCancelled
+                ? customer('customer.outcome_dues_cancelled', number)
+                : customer('customer.outcome_changed', {
+                    ...number,
+                    السبب: failed ? (outcome.customerText ?? '') : 'تم التسليم',
+                  }),
+            ]
+          : []),
+        ...(change.merchant
+          ? [
+              outcome.merchantDebit === null
+                ? owners('merchant.outcome_changed', { النتيجة: outcome.label })
+                : owners('merchant.outcome_changed_debited', {
+                    النتيجة: outcome.label,
+                    المبلغ: outcome.merchantDebit,
+                  }),
+            ]
+          : []),
+        ...(change.captain ? captain('captain.outcome_changed', { النتيجة: outcome.label }) : []),
+      ];
     }
     case 'order.item_reported':
       // CU §11.6, §14 #10: FOX DROP will call the customer.

@@ -4,13 +4,14 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_outcome_history_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'admin_order_dto_output_order_outcome.g.dart';
 
-/// AP §9.3.2 «تحديد النتيجة»: the outcome operations set (AP §8.9).
+/// AP §9.3.2 «تحديد النتيجة»: the outcome in force (AP §8.9), the last one set or changed.
 ///
 /// Properties:
 /// * [at]
@@ -28,6 +29,7 @@ part 'admin_order_dto_output_order_outcome.g.dart';
 /// * [customerText] - What the customer sees of a failed order.
 /// * [note] - Operations' internal note.
 /// * [setBy] - The admin who set it.
+/// * [history] - The outcomes «تغيير النتيجة» replaced, oldest first (slice 2.11c).
 @BuiltValue()
 abstract class AdminOrderDtoOutputOrderOutcome
     implements
@@ -89,6 +91,10 @@ abstract class AdminOrderDtoOutputOrderOutcome
   /// The admin who set it.
   @BuiltValueField(wireName: r'setBy')
   String get setBy;
+
+  /// The outcomes «تغيير النتيجة» replaced, oldest first (slice 2.11c).
+  @BuiltValueField(wireName: r'history')
+  BuiltList<AdminOrderDtoOutputOrderOutcomeHistoryInner> get history;
 
   AdminOrderDtoOutputOrderOutcome._();
 
@@ -224,6 +230,13 @@ class _$AdminOrderDtoOutputOrderOutcomeSerializer
     yield serializers.serialize(
       object.setBy,
       specifiedType: const FullType(String),
+    );
+    yield r'history';
+    yield serializers.serialize(
+      object.history,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminOrderDtoOutputOrderOutcomeHistoryInner),
+      ]),
     );
   }
 
@@ -412,6 +425,17 @@ class _$AdminOrderDtoOutputOrderOutcomeSerializer
                   )
                   as String;
           result.setBy = valueDes;
+          break;
+        case r'history':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminOrderDtoOutputOrderOutcomeHistoryInner),
+                    ]),
+                  )
+                  as BuiltList<AdminOrderDtoOutputOrderOutcomeHistoryInner>;
+          result.history.replace(valueDes);
           break;
         default:
           unhandled.add(key);

@@ -3,6 +3,7 @@ import {
   CHARGE_RETURNED_REASON,
   COMMISSION_RESTORED_REASON,
   FEE_CUT_RETURNED_REASON,
+  outcomeChangeProblem,
   outcomeEntries,
   PAY_OFFSET_REASON,
   PICKUP_RETURNED_REASON,
@@ -641,5 +642,88 @@ describe('outcomeEntries', () => {
       booked(outcomeEntries({ ...facts, pay: null }, failed({ responsible: 'captain' })))
         .captainPay,
     ).toBe(0n);
+  });
+});
+
+// AP §8.9 «Changing an outcome», AP §9.3.2 «تغيير النتيجة» (slice 2.11c;
+// owner decisions 2026-11-10): OWN changes the outcome or its party within
+// order.outcome_change_days of the first outcome set, as often as needed; an
+// amount collected stays, so it changes only to a delivered outcome.
+describe('outcomeChangeProblem', () => {
+  const firstSetAt = new Date('2026-11-01T10:00:00Z');
+  const current = {
+    outcome: 'fake' as const,
+    responsible: 'customer' as const,
+    status: 'failed' as const,
+    food: 'kept_by_captain' as const,
+    amountToCollect: 0n,
+    firstSetAt,
+    posted: true,
+  };
+  const day = 24 * 60 * 60 * 1000;
+  const within = new Date(firstSetAt.getTime() + 7 * day);
+  const toPlatform = failed({ outcome: 'failed_other', responsible: 'platform' });
+
+  it('allows another outcome or party within the days of the first outcome', () => {
+    expect(outcomeChangeProblem(current, toPlatform, within, 7)).toBeNull();
+    // A failed order delivered after all, and the other way.
+    expect(
+      outcomeChangeProblem(
+        current,
+        { ...toPlatform, outcome: 'free', delivered: true, food: null },
+        within,
+        7,
+      ),
+    ).toBeNull();
+    // Only the food moves: still a change.
+    expect(
+      outcomeChangeProblem(
+        { ...current, outcome: 'failed_other', responsible: 'restaurant' },
+        { ...toPlatform, responsible: 'restaurant', food: 'returned_to_restaurant' },
+        within,
+        7,
+      ),
+    ).toBeNull();
+  });
+
+  it('closes after the days, counted from the first outcome', () => {
+    const late = new Date(within.getTime() + 1);
+    expect(outcomeChangeProblem(current, toPlatform, late, 7)).toBe('outcome_change_closed');
+    expect(outcomeChangeProblem(current, toPlatform, late, 8)).toBeNull();
+  });
+
+  it('refuses an outcome still waiting for its collection, or posted before its journals were kept', () => {
+    expect(outcomeChangeProblem({ ...current, posted: false }, toPlatform, within, 7)).toBe(
+      'outcome_change_closed',
+    );
+  });
+
+  it('refuses the same outcome again', () => {
+    expect(
+      outcomeChangeProblem(
+        current,
+        failed({ outcome: 'fake', responsible: 'customer' }),
+        within,
+        7,
+      ),
+    ).toBe('invalid_outcome');
+  });
+
+  it('keeps an amount collected, so only a delivered outcome may follow', () => {
+    const collected = {
+      ...current,
+      outcome: 'free' as const,
+      responsible: 'platform' as const,
+      status: 'delivered' as const,
+      food: null,
+      amountToCollect: 5_000n,
+    };
+    const damaged = { ...toPlatform, outcome: 'damaged' as const, delivered: true, food: null };
+    expect(
+      outcomeChangeProblem(collected, { ...damaged, amountToCollect: 5_000n }, within, 7),
+    ).toBeNull();
+    expect(
+      outcomeChangeProblem(collected, { ...damaged, amountToCollect: 4_000n }, within, 7),
+    ).toBe('invalid_outcome');
   });
 });

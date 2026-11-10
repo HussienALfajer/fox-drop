@@ -32,4 +32,5 @@ export {
   LedgerRefusal,
   LedgerService,
   type PostJournal,
+  type PostedJournal,
 } from './ledger.service.js';

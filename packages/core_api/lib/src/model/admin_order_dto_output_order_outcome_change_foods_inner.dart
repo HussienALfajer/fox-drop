@@ -7,66 +7,66 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_order_dto_output_order_outcome_choices_foods_inner.g.dart';
+part 'admin_order_dto_output_order_outcome_change_foods_inner.g.dart';
 
-/// AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner
+/// AdminOrderDtoOutputOrderOutcomeChangeFoodsInner
 ///
 /// Properties:
 /// * [code]
 /// * [label]
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner
+abstract class AdminOrderDtoOutputOrderOutcomeChangeFoodsInner
     implements
         Built<
-          AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner,
-          AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerBuilder
+          AdminOrderDtoOutputOrderOutcomeChangeFoodsInner,
+          AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerBuilder
         > {
   @BuiltValueField(wireName: r'code')
-  AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum get code;
+  AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnum get code;
   // enum codeEnum {  kept_by_captain,  returned_to_restaurant,  destroyed,  };
 
   @BuiltValueField(wireName: r'label')
   String get label;
 
-  AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner._();
+  AdminOrderDtoOutputOrderOutcomeChangeFoodsInner._();
 
-  factory AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner([
-    void updates(AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerBuilder b),
-  ]) = _$AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner;
+  factory AdminOrderDtoOutputOrderOutcomeChangeFoodsInner([
+    void updates(AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerBuilder b),
+  ]) = _$AdminOrderDtoOutputOrderOutcomeChangeFoodsInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(
-    AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerBuilder b,
+    AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerBuilder b,
   ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner>
+  static Serializer<AdminOrderDtoOutputOrderOutcomeChangeFoodsInner>
   get serializer =>
-      _$AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerSerializer();
+      _$AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerSerializer
+class _$AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerSerializer
     implements
-        PrimitiveSerializer<AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner> {
+        PrimitiveSerializer<AdminOrderDtoOutputOrderOutcomeChangeFoodsInner> {
   @override
   final Iterable<Type> types = const [
-    AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner,
-    _$AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner,
+    AdminOrderDtoOutputOrderOutcomeChangeFoodsInner,
+    _$AdminOrderDtoOutputOrderOutcomeChangeFoodsInner,
   ];
 
   @override
-  final String wireName = r'AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner';
+  final String wireName = r'AdminOrderDtoOutputOrderOutcomeChangeFoodsInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner object, {
+    AdminOrderDtoOutputOrderOutcomeChangeFoodsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'code';
     yield serializers.serialize(
       object.code,
       specifiedType: const FullType(
-        AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum,
+        AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnum,
       ),
     );
     yield r'label';
@@ -79,7 +79,7 @@ class _$AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner object, {
+    AdminOrderDtoOutputOrderOutcomeChangeFoodsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -94,7 +94,7 @@ class _$AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerBuilder result,
+    required AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -106,10 +106,10 @@ class _$AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum,
+                      AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnum,
                     ),
                   )
-                  as AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum;
+                  as AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnum;
           result.code = valueDes;
           break;
         case r'label':
@@ -130,12 +130,12 @@ class _$AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerSerializer
   }
 
   @override
-  AdminOrderDtoOutputOrderOutcomeChoicesFoodsInner deserialize(
+  AdminOrderDtoOutputOrderOutcomeChangeFoodsInner deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerBuilder();
+    final result = AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
@@ -150,32 +150,31 @@ class _$AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerSerializer
   }
 }
 
-class AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum
+class AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnum
     extends EnumClass {
   @BuiltValueEnumConst(wireName: r'kept_by_captain')
-  static const AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum
+  static const AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnum
   keptByCaptain =
-      _$adminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum_keptByCaptain;
+      _$adminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnum_keptByCaptain;
   @BuiltValueEnumConst(wireName: r'returned_to_restaurant')
-  static const AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum
+  static const AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnum
   returnedToRestaurant =
-      _$adminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum_returnedToRestaurant;
+      _$adminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnum_returnedToRestaurant;
   @BuiltValueEnumConst(wireName: r'destroyed')
-  static const AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum
+  static const AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnum
   destroyed =
-      _$adminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum_destroyed;
+      _$adminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnum_destroyed;
 
-  static Serializer<AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum>
+  static Serializer<AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnum>
   get serializer =>
-      _$adminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnumSerializer;
+      _$adminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnumSerializer;
 
-  const AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum._(String name)
+  const AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnum._(String name)
     : super(name);
 
-  static BuiltSet<AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum>
-  get values =>
-      _$adminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnumValues;
-  static AdminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnum valueOf(
+  static BuiltSet<AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnum>
+  get values => _$adminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnumValues;
+  static AdminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnum valueOf(
     String name,
-  ) => _$adminOrderDtoOutputOrderOutcomeChoicesFoodsInnerCodeEnumValueOf(name);
+  ) => _$adminOrderDtoOutputOrderOutcomeChangeFoodsInnerCodeEnumValueOf(name);
 }

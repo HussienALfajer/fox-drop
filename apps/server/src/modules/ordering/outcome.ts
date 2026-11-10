@@ -36,6 +36,10 @@ export const COMMISSION_RESTORED_REASON = 'إلغاء استرداد العمو�
 // owner).
 export const PAY_OFFSET_REASON = 'ما دفعه الزبون يغطّي أجر الكابتن';
 
+// AP §8.9 «تغيير النتيجة» (slice 2.11c): the reason of each reversal of the
+// old outcome's journals (to confirm with the owner).
+export const OUTCOME_CHANGE_REASON = 'تغيير النتيجة';
+
 const FAILED_ONLY: readonly SetOutcome[] = ['fake', 'wrong_refused', 'failed_other'];
 
 export type DuesRule = 'fee_plus_merchant_net' | 'fee_plus_items_value' | 'fixed';
@@ -313,6 +317,52 @@ export function outcomeEntries(
     merchantDebit,
     captainPay,
   };
+}
+
+// The outcome in force on a finished order, as «تغيير النتيجة» reads it.
+// `posted` is false while it waits for its collection (K9) and for an outcome
+// posted before slice 2.11c kept its journals, which cannot be reversed.
+export interface CurrentOutcome {
+  outcome: SetOutcome;
+  responsible: ResponsibleParty;
+  status: 'delivered' | 'failed';
+  food: OutcomeFood | null;
+  amountToCollect: bigint;
+  // The order's first outcome: the days count from it, not from a change.
+  firstSetAt: Date;
+  posted: boolean;
+}
+
+export type OutcomeChangeProblem = 'outcome_change_closed' | 'invalid_outcome';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// AP §8.9 «Changing an outcome», AP §9.3.2 «تغيير النتيجة» (slice 2.11c,
+// owner decisions 2026-11-10): within order.outcome_change_days of the first
+// outcome, as often as needed, to another outcome, party or food. The amount
+// collected stays (its custody lines are cash that really moved), so the new
+// outcome counts the same amount, which outcomeEntries allows on a delivered
+// outcome only.
+export function outcomeChangeProblem(
+  current: CurrentOutcome,
+  choices: OutcomeChoices,
+  now: Date,
+  changeDays: number,
+): OutcomeChangeProblem | null {
+  if (!current.posted) return 'outcome_change_closed';
+  if (now > outcomeChangeUntil(current.firstSetAt, changeDays)) return 'outcome_change_closed';
+  if (choices.amountToCollect !== current.amountToCollect) return 'invalid_outcome';
+  const same =
+    choices.outcome === current.outcome &&
+    choices.responsible === current.responsible &&
+    choices.delivered === (current.status === 'delivered') &&
+    choices.food === current.food;
+  return same ? 'invalid_outcome' : null;
+}
+
+// The last moment «تغيير النتيجة» is open.
+export function outcomeChangeUntil(firstSetAt: Date, changeDays: number): Date {
+  return new Date(firstSetAt.getTime() + changeDays * DAY_MS);
 }
 
 // AP §8.8 customer.fake_order_dues_rule, in the base currency: the fee plus

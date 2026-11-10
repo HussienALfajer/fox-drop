@@ -2132,6 +2132,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders/{orderId}/outcome-change": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersChangeOutcome"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/outcome-change-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersOutcomeChangePreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/record-arrival": {
         parameters: {
             query?: never;
@@ -5754,6 +5786,102 @@ export interface components {
                 };
             }[];
         };
+        AdminChangeOutcomeDto: {
+            /**
+             * @description AP §8.9; fake needs the customer responsible, and only fake takes the customer.
+             * @enum {string}
+             */
+            outcome: "free" | "fake" | "damaged" | "wrong_refused" | "failed_other";
+            /** @enum {string} */
+            responsible: "restaurant" | "captain" | "customer" | "platform";
+            /** @description Free is delivered, fake, wrong_refused and failed_other failed; damaged either. */
+            delivered: boolean;
+            /** @description A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible. */
+            food: ("kept_by_captain" | "returned_to_restaurant" | "destroyed") | null;
+            /** @description The order's version the dialog previewed (AP §8.9 «Preview»); any other is 409 order_state_changed. */
+            version: number;
+            /** @description Required (AP §8.9): why the outcome changes, never shown to the apps. */
+            reason: string;
+        };
+        AdminOutcomeChangePreviewDto: {
+            /**
+             * @description AP §8.9; fake needs the customer responsible, and only fake takes the customer.
+             * @enum {string}
+             */
+            outcome: "free" | "fake" | "damaged" | "wrong_refused" | "failed_other";
+            /** @enum {string} */
+            responsible: "restaurant" | "captain" | "customer" | "platform";
+            /** @description Free is delivered, fake, wrong_refused and failed_other failed; damaged either. */
+            delivered: boolean;
+            /** @description A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible. */
+            food: ("kept_by_captain" | "returned_to_restaurant" | "destroyed") | null;
+        };
+        AdminOutcomeChangePreviewAnswerDto_Output: {
+            /** @enum {string} */
+            status: "delivered" | "failed";
+            /** @description With an amount to collect: the entries are posted from the payment recorded (AP §9.3.2), the custody line as the collection books it. */
+            provisional: boolean;
+            /** @description docs/domain/09 rule 3: what the responsible party bears for the food. */
+            loss: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+            /** @description The customer's dues (AP §8.8), with the customer responsible. */
+            dues: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            } | null;
+            /** @description The captain's pay, 0 when the captain is responsible. */
+            captainPay: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+            /** @description Every entry the outcome would post (AP §8.9 «Preview»). */
+            entries: {
+                /** @description The journal type, such as dues.charge. */
+                type: string;
+                /** @description The journal's reason, its line on the party's account (RA §12.5). */
+                reason: string | null;
+                /** @description The account purpose, such as customer.dues. */
+                account: string;
+                party: {
+                    /** @enum {string} */
+                    kind: "merchant" | "captain" | "customer" | "platform";
+                    id: string | null;
+                    name: string | null;
+                };
+                /** @description From the platform's side: + a debit, − a credit. */
+                amount: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+            }[];
+            /** @description Every entry of the outcome in force reversed (AP §8.9 «Changing an outcome»), before the new outcome's entries. */
+            reversed: {
+                /** @description The journal type, such as dues.charge. */
+                type: string;
+                /** @description The journal's reason, its line on the party's account (RA §12.5). */
+                reason: string | null;
+                /** @description The account purpose, such as customer.dues. */
+                account: string;
+                party: {
+                    /** @enum {string} */
+                    kind: "merchant" | "captain" | "customer" | "platform";
+                    id: string | null;
+                    name: string | null;
+                };
+                /** @description From the platform's side: + a debit, − a credit. */
+                amount: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+            }[];
+        };
         AdminRecordArrivalDto: {
             /** @description Required (AP §9.3.2). */
             reason: string;
@@ -6019,7 +6147,7 @@ export interface components {
                         label: string;
                     }[];
                 } | null;
-                /** @description AP §9.3.2 «تحديد النتيجة»: the outcome operations set (AP §8.9). */
+                /** @description AP §9.3.2 «تحديد النتيجة»: the outcome in force (AP §8.9), the last one set or changed. */
                 outcome: {
                     /** Format: date-time */
                     at: string;
@@ -6072,6 +6200,41 @@ export interface components {
                      * @description The admin who set it.
                      */
                     setBy: string;
+                    /** @description The outcomes «تغيير النتيجة» replaced, oldest first (slice 2.11c). */
+                    history: {
+                        /** Format: date-time */
+                        at: string;
+                        /** Format: date-time */
+                        replacedAt: string;
+                        /**
+                         * @description AP §8.9; fake needs the customer responsible, and only fake takes the customer.
+                         * @enum {string}
+                         */
+                        outcome: "free" | "fake" | "damaged" | "wrong_refused" | "failed_other";
+                        /** @enum {string} */
+                        status: "delivered" | "failed";
+                        /** @enum {string} */
+                        responsible: "restaurant" | "captain" | "customer" | "platform";
+                        /** @description A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible. */
+                        food: ("kept_by_captain" | "returned_to_restaurant" | "destroyed") | null;
+                        note: string;
+                        /** Format: uuid */
+                        setBy: string;
+                    }[];
+                } | null;
+                /** @description AP §8.9 «تغيير النتيجة» (OWN only, orders.change_outcome): while the outcome can change; null otherwise. */
+                outcomeChange: {
+                    /**
+                     * Format: date-time
+                     * @description order.outcome_change_days after the first outcome.
+                     */
+                    until: string;
+                    /** @description Content's food_after_failed list, in order (AP Appendix B). */
+                    foods: {
+                        /** @enum {string} */
+                        code: "kept_by_captain" | "returned_to_restaurant" | "destroyed";
+                        label: string;
+                    }[];
                 } | null;
                 /** @description While picked up or arrived: the choices of «تحديد النتيجة» (AP §9.3.2). */
                 outcomeChoices: {
@@ -10691,6 +10854,61 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminOutcomePreviewAnswerDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersChangeOutcome: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminChangeOutcomeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCardDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersOutcomeChangePreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminOutcomeChangePreviewDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOutcomeChangePreviewAnswerDto_Output"];
                 };
             };
         };

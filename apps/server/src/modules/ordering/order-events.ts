@@ -92,7 +92,11 @@ export type OrderEventType =
   // captain's payment screen opens; order.outcome_collected is the payment
   // recorded and the outcome posted (status delivered, track done).
   | 'order.outcome_set'
-  | 'order.outcome_collected';
+  | 'order.outcome_collected'
+  // AP §8.9 «تغيير النتيجة» (slice 2.11c): OWN changed a finished order's
+  // outcome; the status follows it (delivered or failed). The new outcome is
+  // its reason.
+  | 'order.outcome_changed';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that

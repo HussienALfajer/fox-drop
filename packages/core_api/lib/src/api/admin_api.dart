@@ -18,6 +18,7 @@ import 'package:core_api/src/model/admin_board_dto_output.dart';
 import 'package:core_api/src/model/admin_cancel_dto.dart';
 import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_cancel_preview_dto.dart';
+import 'package:core_api/src/model/admin_change_outcome_dto.dart';
 import 'package:core_api/src/model/admin_change_time_dto.dart';
 import 'package:core_api/src/model/admin_cities_dto_output.dart';
 import 'package:core_api/src/model/admin_close_item_report_dto.dart';
@@ -40,6 +41,8 @@ import 'package:core_api/src/model/admin_notification_text_dto_output.dart';
 import 'package:core_api/src/model/admin_notification_texts_dto_output.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output.dart';
 import 'package:core_api/src/model/admin_order_dto_output.dart';
+import 'package:core_api/src/model/admin_outcome_change_preview_answer_dto_output.dart';
+import 'package:core_api/src/model/admin_outcome_change_preview_dto.dart';
 import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_outcome_preview_dto.dart';
 import 'package:core_api/src/model/admin_picker_dto_output.dart';
@@ -2574,6 +2577,113 @@ class AdminApi {
     );
   }
 
+  /// adminOrdersChangeOutcome
+  ///
+  ///
+  /// Parameters:
+  /// * [orderId]
+  /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
+  /// * [adminChangeOutcomeDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminOrderCardDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminOrderCardDtoOutput>> adminOrdersChangeOutcome({
+    required String orderId,
+    required String idempotencyKey,
+    required AdminChangeOutcomeDto adminChangeOutcomeDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/orders/{orderId}/outcome-change'.replaceAll(
+      '{'
+      r'orderId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        orderId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminChangeOutcomeDto);
+      _bodyData = _serializers.serialize(
+        adminChangeOutcomeDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminOrderCardDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminOrderCardDtoOutput),
+                )
+                as AdminOrderCardDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminOrderCardDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// adminOrdersChangeTime
   ///
   ///
@@ -3280,6 +3390,112 @@ class AdminApi {
     }
 
     return Response<AdminOrderDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminOrdersOutcomeChangePreview
+  ///
+  ///
+  /// Parameters:
+  /// * [orderId]
+  /// * [adminOutcomeChangePreviewDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminOutcomeChangePreviewAnswerDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminOutcomeChangePreviewAnswerDtoOutput>>
+  adminOrdersOutcomeChangePreview({
+    required String orderId,
+    required AdminOutcomeChangePreviewDto adminOutcomeChangePreviewDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/orders/{orderId}/outcome-change-preview'
+        .replaceAll(
+          '{'
+          r'orderId'
+          '}',
+          encodeQueryParameter(
+            _serializers,
+            orderId,
+            const FullType(String),
+          ).toString(),
+        );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminOutcomeChangePreviewDto);
+      _bodyData = _serializers.serialize(
+        adminOutcomeChangePreviewDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminOutcomeChangePreviewAnswerDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    AdminOutcomeChangePreviewAnswerDtoOutput,
+                  ),
+                )
+                as AdminOutcomeChangePreviewAnswerDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminOutcomeChangePreviewAnswerDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

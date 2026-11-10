@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, count, eq, gt, inArray, max, type SQL } from 'drizzle-orm';
+import { and, count, eq, gt, inArray, isNull, max, type SQL } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -56,7 +56,7 @@ export class ActiveOrders {
   // D23: the delivered orders with outcome normal (AP §8.9) make a customer
   // trusted; a fake outcome removes the trust and starts the count again
   // (docs/domain/08, slice 2.11a), so only the deliveries after the latest
-  // one count.
+  // one count. A fake outcome changed since (slice 2.11c) counts no more.
   async customer(
     accountId: string,
     rules: CustomerLimitRules,
@@ -73,7 +73,7 @@ export class ActiveOrders {
           eq(orders.placedAt, orderOutcomeRows.orderPlacedAt),
         ),
       )
-      .where(and(whose, eq(orderOutcomeRows.outcome, 'fake')));
+      .where(and(whose, eq(orderOutcomeRows.outcome, 'fake'), isNull(orderOutcomeRows.replacedAt)));
     const delivered = await countOrders(
       executor,
       and(

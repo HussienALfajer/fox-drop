@@ -6,27 +6,28 @@
 import 'package:core_api/src/model/admin_order_dto_output_order_edits_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf.dart';
-import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_outcome_choices.dart';
-import 'package:core_api/src/model/admin_order_dto_output_order_rejection.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices.dart';
-import 'package:core_api/src/model/admin_order_dto_output_order_delivery.dart';
-import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.dart';
-import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
-import 'package:core_api/src/model/admin_order_dto_output_order_cancellation.dart';
-import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_outcome_change.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_removed_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_moments.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_money.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_captain.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_item_report.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_time_change.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_rejection.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_delivery.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices.dart';
+import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_cancellation.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_outcome.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_restaurant.dart';
-import 'package:core_api/src/model/admin_order_dto_output_order_item_report.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup.dart';
-import 'package:core_api/src/model/admin_order_dto_output_order_time_change.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -56,6 +57,7 @@ part 'admin_order_dto_output_order.g.dart';
 /// * [cancellation]
 /// * [cancelChoices]
 /// * [outcome]
+/// * [outcomeChange]
 /// * [outcomeChoices]
 /// * [itemReport]
 /// * [timeChange]
@@ -147,6 +149,9 @@ abstract class AdminOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'outcome')
   AdminOrderDtoOutputOrderOutcome? get outcome;
+
+  @BuiltValueField(wireName: r'outcomeChange')
+  AdminOrderDtoOutputOrderOutcomeChange? get outcomeChange;
 
   @BuiltValueField(wireName: r'outcomeChoices')
   AdminOrderDtoOutputOrderOutcomeChoices? get outcomeChoices;
@@ -360,6 +365,15 @@ class _$AdminOrderDtoOutputOrderSerializer
             object.outcome,
             specifiedType: const FullType.nullable(
               AdminOrderDtoOutputOrderOutcome,
+            ),
+          );
+    yield r'outcomeChange';
+    yield object.outcomeChange == null
+        ? null
+        : serializers.serialize(
+            object.outcomeChange,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderOutcomeChange,
             ),
           );
     yield r'outcomeChoices';
@@ -720,6 +734,18 @@ class _$AdminOrderDtoOutputOrderSerializer
                   as AdminOrderDtoOutputOrderOutcome?;
           if (valueDes == null) continue;
           result.outcome.replace(valueDes);
+          break;
+        case r'outcomeChange':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderOutcomeChange,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderOutcomeChange?;
+          if (valueDes == null) continue;
+          result.outcomeChange.replace(valueDes);
           break;
         case r'outcomeChoices':
           final valueDes =

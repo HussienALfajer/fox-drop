@@ -352,6 +352,8 @@ class _$AdminOrderDtoOutputOrderOutcome
   final String note;
   @override
   final String setBy;
+  @override
+  final BuiltList<AdminOrderDtoOutputOrderOutcomeHistoryInner> history;
 
   factory _$AdminOrderDtoOutputOrderOutcome([
     void Function(AdminOrderDtoOutputOrderOutcomeBuilder)? updates,
@@ -373,6 +375,7 @@ class _$AdminOrderDtoOutputOrderOutcome
     this.customerText,
     required this.note,
     required this.setBy,
+    required this.history,
   }) : super._();
   @override
   AdminOrderDtoOutputOrderOutcome rebuild(
@@ -401,7 +404,8 @@ class _$AdminOrderDtoOutputOrderOutcome
         captainPay == other.captainPay &&
         customerText == other.customerText &&
         note == other.note &&
-        setBy == other.setBy;
+        setBy == other.setBy &&
+        history == other.history;
   }
 
   @override
@@ -422,6 +426,7 @@ class _$AdminOrderDtoOutputOrderOutcome
     _$hash = $jc(_$hash, customerText.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, setBy.hashCode);
+    _$hash = $jc(_$hash, history.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -443,7 +448,8 @@ class _$AdminOrderDtoOutputOrderOutcome
           ..add('captainPay', captainPay)
           ..add('customerText', customerText)
           ..add('note', note)
-          ..add('setBy', setBy))
+          ..add('setBy', setBy)
+          ..add('history', history))
         .toString();
   }
 }
@@ -534,6 +540,14 @@ class AdminOrderDtoOutputOrderOutcomeBuilder
   String? get setBy => _$this._setBy;
   set setBy(String? setBy) => _$this._setBy = setBy;
 
+  ListBuilder<AdminOrderDtoOutputOrderOutcomeHistoryInner>? _history;
+  ListBuilder<AdminOrderDtoOutputOrderOutcomeHistoryInner> get history =>
+      _$this._history ??=
+          ListBuilder<AdminOrderDtoOutputOrderOutcomeHistoryInner>();
+  set history(
+    ListBuilder<AdminOrderDtoOutputOrderOutcomeHistoryInner>? history,
+  ) => _$this._history = history;
+
   AdminOrderDtoOutputOrderOutcomeBuilder() {
     AdminOrderDtoOutputOrderOutcome._defaults(this);
   }
@@ -556,6 +570,7 @@ class AdminOrderDtoOutputOrderOutcomeBuilder
       _customerText = $v.customerText;
       _note = $v.note;
       _setBy = $v.setBy;
+      _history = $v.history.toBuilder();
       _$v = null;
     }
     return this;
@@ -623,6 +638,7 @@ class AdminOrderDtoOutputOrderOutcomeBuilder
               r'AdminOrderDtoOutputOrderOutcome',
               'setBy',
             ),
+            history: history.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -637,6 +653,9 @@ class AdminOrderDtoOutputOrderOutcomeBuilder
         _merchantDebit?.build();
         _$failedField = 'captainPay';
         _captainPay?.build();
+
+        _$failedField = 'history';
+        history.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminOrderDtoOutputOrderOutcome',

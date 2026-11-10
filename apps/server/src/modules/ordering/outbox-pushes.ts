@@ -271,8 +271,10 @@ export class OutboxPushes {
           ? await this.merchantDebit(order, new Date(payload.at), currencies)
           : null,
       outcome:
-        type === 'order.outcome_set' || type === 'order.outcome_collected'
-          ? await this.outcome(order, currencies, type === 'order.outcome_set')
+        type === 'order.outcome_set' ||
+        type === 'order.outcome_collected' ||
+        type === 'order.outcome_changed'
+          ? await this.outcome(order, currencies, type, new Date(payload.at))
           : null,
     };
   }
@@ -302,31 +304,47 @@ export class OutboxPushes {
   // text of a failed order and what the restaurant returns.
   // With an amount to collect (slice 2.11b), order.outcome_set tells only the
   // captain to collect, unless the payment was recorded since (then the
-  // collection's own event tells the rest).
+  // collection's own event tells the rest). The outcome is the one in force
+  // at the event's time; for «تغيير النتيجة» (slice 2.11c), what it moved
+  // from the outcome it replaced.
   private async outcome(
     order: typeof orders.$inferSelect,
     currencies: Currencies,
-    setNow: boolean,
+    type: string,
+    at: Date,
   ) {
-    const [row] = await this.database.db
-      .select({
-        outcome: orderOutcomeRows.outcome,
-        status: orderOutcomeRows.status,
-        customerText: orderOutcomeRows.customerText,
-        merchantDebit: orderOutcomeRows.merchantDebit,
-        amountToCollect: orderOutcomeRows.amountToCollect,
-        collectedAt: orderOutcomeRows.collectedAt,
-        currency: orderOutcomeRows.currency,
-      })
+    const rows = await this.database.db
+      .select()
       .from(orderOutcomeRows)
       .where(
         and(
           eq(orderOutcomeRows.orderId, order.id),
           eq(orderOutcomeRows.orderPlacedAt, order.placedAt),
+          lte(orderOutcomeRows.setAt, at),
         ),
-      );
+      )
+      .orderBy(desc(orderOutcomeRows.setAt));
+    const row = rows[0];
     if (!row) return null;
+    const setNow = type === 'order.outcome_set';
+    const before =
+      type === 'order.outcome_changed'
+        ? rows.find((each) => each.id === row.replacesId)
+        : undefined;
+    // Rules 4, 5: what the captain earns from the order, a charge below 0.
+    const captainMoney = (each: typeof row) =>
+      each.responsible === 'captain' ? -each.loss : each.captainPay;
     return {
+      ...(before
+        ? {
+            change: {
+              customer: before.status !== row.status || before.dues !== row.dues,
+              duesCancelled: before.dues !== null && row.dues === null,
+              captain: captainMoney(before) !== captainMoney(row),
+              merchant: before.merchantDebit !== row.merchantDebit,
+            },
+          }
+        : {}),
       label: OUTCOME_LABELS[row.outcome],
       status: row.status,
       customerText: row.customerText,

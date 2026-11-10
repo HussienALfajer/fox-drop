@@ -180,6 +180,76 @@ describe('the pushes of an order event', () => {
     ).toEqual([captain, 'captain.outcome_set', { رقم: '10002', النتيجة: 'مجاني' }]);
   });
 
+  // AP §8.9 «تغيير النتيجة» (slice 2.11c; owner decision 2026-11-10): only the
+  // parties the change moves hear it.
+  it('tells only the parties an outcome change moves', () => {
+    const owners = { ...restaurant, owners: true };
+    const changed = {
+      label: 'تعذّر التسليم',
+      status: 'failed' as const,
+      customerText: 'تعذّر الوصول إليك أو إلى العنوان',
+      merchantDebit: null,
+      amountToCollect: null,
+      awaitingCollection: false,
+      change: { customer: true, duesCancelled: true, captain: false, merchant: false },
+    };
+    // A fake order changed to failed_other with the platform responsible:
+    // the customer's dues are gone; the captain keeps the same pay.
+    expect(
+      sent('order.outcome_changed', 'failed_other', { actor: 'admin', outcome: changed }),
+    ).toEqual([[customer, 'customer.outcome_dues_cancelled', { رقم: '10002' }]]);
+    // Delivered after all, the restaurant now returning the payment and the
+    // captain charged.
+    expect(
+      sent('order.outcome_changed', 'damaged', {
+        actor: 'admin',
+        outcome: {
+          ...changed,
+          label: 'تالف',
+          status: 'delivered',
+          customerText: null,
+          merchantDebit: '400 ₺',
+          change: { customer: true, duesCancelled: false, captain: true, merchant: true },
+        },
+      }),
+    ).toEqual([
+      [customer, 'customer.outcome_changed', { رقم: '10002', السبب: 'تم التسليم' }],
+      [
+        owners,
+        'merchant.outcome_changed_debited',
+        { رقم: '10002', النتيجة: 'تالف', المبلغ: '400 ₺' },
+      ],
+      [captain, 'captain.outcome_changed', { رقم: '10002', النتيجة: 'تالف' }],
+    ]);
+    // The restaurant's debit cleared; the customer's failed text.
+    expect(
+      sent('order.outcome_changed', 'failed_other', {
+        actor: 'admin',
+        outcome: {
+          ...changed,
+          change: { customer: true, duesCancelled: false, captain: false, merchant: true },
+        },
+      }),
+    ).toEqual([
+      [
+        customer,
+        'customer.outcome_changed',
+        { رقم: '10002', السبب: 'تعذّر الوصول إليك أو إلى العنوان' },
+      ],
+      [owners, 'merchant.outcome_changed', { رقم: '10002', النتيجة: 'تعذّر التسليم' }],
+    ]);
+    // Nothing anyone sees moved: no push.
+    expect(
+      sent('order.outcome_changed', 'failed_other', {
+        actor: 'admin',
+        outcome: {
+          ...changed,
+          change: { customer: false, duesCancelled: false, captain: false, merchant: false },
+        },
+      }),
+    ).toEqual([]);
+  });
+
   it('rings every device of the restaurant with a new order (RA §16 #1)', () => {
     expect(sent('order.placed', null, { captainId: null })).toEqual([
       [restaurant, 'merchant.new_order', { رقم: '10002' }],

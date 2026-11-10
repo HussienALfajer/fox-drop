@@ -247,10 +247,17 @@ export class DeliveryBooking {
       { accountId: await account('platform.order_clearing', base), currency: base, amount: -gap },
       { accountId: await account('platform.fx_rounding', base), currency: base, amount: gap },
     ]);
-    await postOrderJournals(tx, this.ledger, order, ledgerActor, outcome.journals);
+    const journalIds = await postOrderJournals(
+      tx,
+      this.ledger,
+      order,
+      ledgerActor,
+      outcome.journals,
+    );
     await tx
       .update(orderOutcomeRows)
       .set({
+        journalIds,
         loss: outcome.loss,
         merchantDebit: outcome.merchantDebit,
         captainPay: outcome.captainPay,

@@ -431,6 +431,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
   @override
   final AdminOrderDtoOutputOrderOutcome? outcome;
   @override
+  final AdminOrderDtoOutputOrderOutcomeChange? outcomeChange;
+  @override
   final AdminOrderDtoOutputOrderOutcomeChoices? outcomeChoices;
   @override
   final AdminOrderDtoOutputOrderItemReport? itemReport;
@@ -487,6 +489,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     this.cancellation,
     this.cancelChoices,
     this.outcome,
+    this.outcomeChange,
     this.outcomeChoices,
     this.itemReport,
     this.timeChange,
@@ -537,6 +540,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
         cancellation == other.cancellation &&
         cancelChoices == other.cancelChoices &&
         outcome == other.outcome &&
+        outcomeChange == other.outcomeChange &&
         outcomeChoices == other.outcomeChoices &&
         itemReport == other.itemReport &&
         timeChange == other.timeChange &&
@@ -578,6 +582,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     _$hash = $jc(_$hash, cancellation.hashCode);
     _$hash = $jc(_$hash, cancelChoices.hashCode);
     _$hash = $jc(_$hash, outcome.hashCode);
+    _$hash = $jc(_$hash, outcomeChange.hashCode);
     _$hash = $jc(_$hash, outcomeChoices.hashCode);
     _$hash = $jc(_$hash, itemReport.hashCode);
     _$hash = $jc(_$hash, timeChange.hashCode);
@@ -621,6 +626,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
           ..add('cancellation', cancellation)
           ..add('cancelChoices', cancelChoices)
           ..add('outcome', outcome)
+          ..add('outcomeChange', outcomeChange)
           ..add('outcomeChoices', outcomeChoices)
           ..add('itemReport', itemReport)
           ..add('timeChange', timeChange)
@@ -754,6 +760,13 @@ class AdminOrderDtoOutputOrderBuilder
   set outcome(AdminOrderDtoOutputOrderOutcomeBuilder? outcome) =>
       _$this._outcome = outcome;
 
+  AdminOrderDtoOutputOrderOutcomeChangeBuilder? _outcomeChange;
+  AdminOrderDtoOutputOrderOutcomeChangeBuilder get outcomeChange =>
+      _$this._outcomeChange ??= AdminOrderDtoOutputOrderOutcomeChangeBuilder();
+  set outcomeChange(
+    AdminOrderDtoOutputOrderOutcomeChangeBuilder? outcomeChange,
+  ) => _$this._outcomeChange = outcomeChange;
+
   AdminOrderDtoOutputOrderOutcomeChoicesBuilder? _outcomeChoices;
   AdminOrderDtoOutputOrderOutcomeChoicesBuilder get outcomeChoices =>
       _$this._outcomeChoices ??=
@@ -874,6 +887,7 @@ class AdminOrderDtoOutputOrderBuilder
       _cancellation = $v.cancellation?.toBuilder();
       _cancelChoices = $v.cancelChoices?.toBuilder();
       _outcome = $v.outcome?.toBuilder();
+      _outcomeChange = $v.outcomeChange?.toBuilder();
       _outcomeChoices = $v.outcomeChoices?.toBuilder();
       _itemReport = $v.itemReport?.toBuilder();
       _timeChange = $v.timeChange?.toBuilder();
@@ -962,6 +976,7 @@ class AdminOrderDtoOutputOrderBuilder
             cancellation: _cancellation?.build(),
             cancelChoices: _cancelChoices?.build(),
             outcome: _outcome?.build(),
+            outcomeChange: _outcomeChange?.build(),
             outcomeChoices: _outcomeChoices?.build(),
             itemReport: _itemReport?.build(),
             timeChange: _timeChange?.build(),
@@ -1004,6 +1019,8 @@ class AdminOrderDtoOutputOrderBuilder
         _cancelChoices?.build();
         _$failedField = 'outcome';
         _outcome?.build();
+        _$failedField = 'outcomeChange';
+        _outcomeChange?.build();
         _$failedField = 'outcomeChoices';
         _outcomeChoices?.build();
         _$failedField = 'itemReport';
