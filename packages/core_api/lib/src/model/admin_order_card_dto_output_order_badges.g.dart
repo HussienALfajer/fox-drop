@@ -17,6 +17,8 @@ class _$AdminOrderCardDtoOutputOrderBadges
   @override
   final bool pickupPending;
   @override
+  final bool awaitingCollection;
+  @override
   final bool itemReport;
 
   factory _$AdminOrderCardDtoOutputOrderBadges([
@@ -28,6 +30,7 @@ class _$AdminOrderCardDtoOutputOrderBadges
     required this.note,
     required this.newCustomer,
     required this.pickupPending,
+    required this.awaitingCollection,
     required this.itemReport,
   }) : super._();
   @override
@@ -47,6 +50,7 @@ class _$AdminOrderCardDtoOutputOrderBadges
         note == other.note &&
         newCustomer == other.newCustomer &&
         pickupPending == other.pickupPending &&
+        awaitingCollection == other.awaitingCollection &&
         itemReport == other.itemReport;
   }
 
@@ -57,6 +61,7 @@ class _$AdminOrderCardDtoOutputOrderBadges
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, newCustomer.hashCode);
     _$hash = $jc(_$hash, pickupPending.hashCode);
+    _$hash = $jc(_$hash, awaitingCollection.hashCode);
     _$hash = $jc(_$hash, itemReport.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -69,6 +74,7 @@ class _$AdminOrderCardDtoOutputOrderBadges
           ..add('note', note)
           ..add('newCustomer', newCustomer)
           ..add('pickupPending', pickupPending)
+          ..add('awaitingCollection', awaitingCollection)
           ..add('itemReport', itemReport))
         .toString();
   }
@@ -100,6 +106,11 @@ class AdminOrderCardDtoOutputOrderBadgesBuilder
   set pickupPending(bool? pickupPending) =>
       _$this._pickupPending = pickupPending;
 
+  bool? _awaitingCollection;
+  bool? get awaitingCollection => _$this._awaitingCollection;
+  set awaitingCollection(bool? awaitingCollection) =>
+      _$this._awaitingCollection = awaitingCollection;
+
   bool? _itemReport;
   bool? get itemReport => _$this._itemReport;
   set itemReport(bool? itemReport) => _$this._itemReport = itemReport;
@@ -115,6 +126,7 @@ class AdminOrderCardDtoOutputOrderBadgesBuilder
       _note = $v.note;
       _newCustomer = $v.newCustomer;
       _pickupPending = $v.pickupPending;
+      _awaitingCollection = $v.awaitingCollection;
       _itemReport = $v.itemReport;
       _$v = null;
     }
@@ -159,6 +171,11 @@ class AdminOrderCardDtoOutputOrderBadgesBuilder
             pickupPending,
             r'AdminOrderCardDtoOutputOrderBadges',
             'pickupPending',
+          ),
+          awaitingCollection: BuiltValueNullFieldError.checkNotNull(
+            awaitingCollection,
+            r'AdminOrderCardDtoOutputOrderBadges',
+            'awaitingCollection',
           ),
           itemReport: BuiltValueNullFieldError.checkNotNull(
             itemReport,

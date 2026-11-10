@@ -136,6 +136,11 @@ const customerOrder = z.object({
       amountToCollect: z
         .object({ amount: minor, currency: z.string().length(3) })
         .describe('CU §11.6: «المبلغ المطلوب الآن: {المبلغ}», or «لن تدفع شيئاً لهذا الطلب» at 0.'),
+      awaitingCollection: z
+        .boolean()
+        .describe(
+          'The captain has yet to collect the amount (K9): the order is still on its way or at the door.',
+        ),
     })
     .nullable()
     .describe('Once operations set an outcome other than normal (AP §8.9).'),
@@ -459,6 +464,7 @@ function orderBody(
         amount: text(order.outcome.amountToCollect),
         currency: order.outcome.currency,
       },
+      awaitingCollection: order.outcome.awaitingCollection,
     },
     delivery: order.delivery && {
       at: order.delivery.at.toISOString(),

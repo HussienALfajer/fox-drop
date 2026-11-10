@@ -16,6 +16,7 @@ part 'admin_outcome_preview_dto.g.dart';
 /// * [responsible]
 /// * [delivered] - Free is delivered, fake, wrong_refused and failed_other failed; damaged either.
 /// * [food] - A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible.
+/// * [amountToCollect] - What the customer still pays, in the base currency (K9): above 0 only on a delivered outcome and below the order total (owner decisions 2026-11-10), else 400 invalid_outcome. Above 0 the order waits «بانتظار تسجيل التحصيل» and the outcome is posted from the payment recorded.
 @BuiltValue()
 abstract class AdminOutcomePreviewDto
     implements Built<AdminOutcomePreviewDto, AdminOutcomePreviewDtoBuilder> {
@@ -37,6 +38,10 @@ abstract class AdminOutcomePreviewDto
   AdminOutcomePreviewDtoFoodEnum? get food;
   // enum foodEnum {  kept_by_captain,  returned_to_restaurant,  destroyed,  };
 
+  /// What the customer still pays, in the base currency (K9): above 0 only on a delivered outcome and below the order total (owner decisions 2026-11-10), else 400 invalid_outcome. Above 0 the order waits «بانتظار تسجيل التحصيل» and the outcome is posted from the payment recorded.
+  @BuiltValueField(wireName: r'amountToCollect')
+  String? get amountToCollect;
+
   AdminOutcomePreviewDto._();
 
   factory AdminOutcomePreviewDto([
@@ -44,7 +49,8 @@ abstract class AdminOutcomePreviewDto
   ]) = _$AdminOutcomePreviewDto;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminOutcomePreviewDtoBuilder b) => b;
+  static void _defaults(AdminOutcomePreviewDtoBuilder b) =>
+      b..amountToCollect = '0';
 
   @BuiltValueSerializer(custom: true)
   static Serializer<AdminOutcomePreviewDto> get serializer =>
@@ -91,6 +97,13 @@ class _$AdminOutcomePreviewDtoSerializer
               AdminOutcomePreviewDtoFoodEnum,
             ),
           );
+    if (object.amountToCollect != null) {
+      yield r'amountToCollect';
+      yield serializers.serialize(
+        object.amountToCollect,
+        specifiedType: const FullType(String),
+      );
+    }
   }
 
   @override
@@ -160,6 +173,16 @@ class _$AdminOutcomePreviewDtoSerializer
                   as AdminOutcomePreviewDtoFoodEnum?;
           if (valueDes == null) continue;
           result.food = valueDes;
+          break;
+        case r'amountToCollect':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.amountToCollect = valueDes;
           break;
         default:
           unhandled.add(key);

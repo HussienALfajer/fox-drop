@@ -14,6 +14,8 @@ part 'admin_order_dto_output_order_outcome.g.dart';
 ///
 /// Properties:
 /// * [at]
+/// * [awaitingCollection] - «بانتظار تسجيل التحصيل» (K9): the money below is provisional until the captain or operations record the payment.
+/// * [collectedAt]
 /// * [outcome] - AP §8.9; fake needs the customer responsible, and only fake takes the customer.
 /// * [status]
 /// * [responsible]
@@ -35,6 +37,13 @@ abstract class AdminOrderDtoOutputOrderOutcome
         > {
   @BuiltValueField(wireName: r'at')
   DateTime get at;
+
+  /// «بانتظار تسجيل التحصيل» (K9): the money below is provisional until the captain or operations record the payment.
+  @BuiltValueField(wireName: r'awaitingCollection')
+  bool get awaitingCollection;
+
+  @BuiltValueField(wireName: r'collectedAt')
+  DateTime? get collectedAt;
 
   /// AP §8.9; fake needs the customer responsible, and only fake takes the customer.
   @BuiltValueField(wireName: r'outcome')
@@ -116,6 +125,18 @@ class _$AdminOrderDtoOutputOrderOutcomeSerializer
       object.at,
       specifiedType: const FullType(DateTime),
     );
+    yield r'awaitingCollection';
+    yield serializers.serialize(
+      object.awaitingCollection,
+      specifiedType: const FullType(bool),
+    );
+    yield r'collectedAt';
+    yield object.collectedAt == null
+        ? null
+        : serializers.serialize(
+            object.collectedAt,
+            specifiedType: const FullType.nullable(DateTime),
+          );
     yield r'outcome';
     yield serializers.serialize(
       object.outcome,
@@ -239,6 +260,25 @@ class _$AdminOrderDtoOutputOrderOutcomeSerializer
                   )
                   as DateTime;
           result.at = valueDes;
+          break;
+        case r'awaitingCollection':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.awaitingCollection = valueDes;
+          break;
+        case r'collectedAt':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
+          if (valueDes == null) continue;
+          result.collectedAt = valueDes;
           break;
         case r'outcome':
           final valueDes =

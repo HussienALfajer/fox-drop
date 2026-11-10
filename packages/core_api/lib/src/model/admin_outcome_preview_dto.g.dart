@@ -260,6 +260,8 @@ class _$AdminOutcomePreviewDto extends AdminOutcomePreviewDto {
   final bool delivered;
   @override
   final AdminOutcomePreviewDtoFoodEnum? food;
+  @override
+  final String? amountToCollect;
 
   factory _$AdminOutcomePreviewDto([
     void Function(AdminOutcomePreviewDtoBuilder)? updates,
@@ -270,6 +272,7 @@ class _$AdminOutcomePreviewDto extends AdminOutcomePreviewDto {
     required this.responsible,
     required this.delivered,
     this.food,
+    this.amountToCollect,
   }) : super._();
   @override
   AdminOutcomePreviewDto rebuild(
@@ -287,7 +290,8 @@ class _$AdminOutcomePreviewDto extends AdminOutcomePreviewDto {
         outcome == other.outcome &&
         responsible == other.responsible &&
         delivered == other.delivered &&
-        food == other.food;
+        food == other.food &&
+        amountToCollect == other.amountToCollect;
   }
 
   @override
@@ -297,6 +301,7 @@ class _$AdminOutcomePreviewDto extends AdminOutcomePreviewDto {
     _$hash = $jc(_$hash, responsible.hashCode);
     _$hash = $jc(_$hash, delivered.hashCode);
     _$hash = $jc(_$hash, food.hashCode);
+    _$hash = $jc(_$hash, amountToCollect.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -307,7 +312,8 @@ class _$AdminOutcomePreviewDto extends AdminOutcomePreviewDto {
           ..add('outcome', outcome)
           ..add('responsible', responsible)
           ..add('delivered', delivered)
-          ..add('food', food))
+          ..add('food', food)
+          ..add('amountToCollect', amountToCollect))
         .toString();
   }
 }
@@ -334,6 +340,11 @@ class AdminOutcomePreviewDtoBuilder
   AdminOutcomePreviewDtoFoodEnum? get food => _$this._food;
   set food(AdminOutcomePreviewDtoFoodEnum? food) => _$this._food = food;
 
+  String? _amountToCollect;
+  String? get amountToCollect => _$this._amountToCollect;
+  set amountToCollect(String? amountToCollect) =>
+      _$this._amountToCollect = amountToCollect;
+
   AdminOutcomePreviewDtoBuilder() {
     AdminOutcomePreviewDto._defaults(this);
   }
@@ -345,6 +356,7 @@ class AdminOutcomePreviewDtoBuilder
       _responsible = $v.responsible;
       _delivered = $v.delivered;
       _food = $v.food;
+      _amountToCollect = $v.amountToCollect;
       _$v = null;
     }
     return this;
@@ -383,6 +395,7 @@ class AdminOutcomePreviewDtoBuilder
             'delivered',
           ),
           food: food,
+          amountToCollect: amountToCollect,
         );
     replace(_$result);
     return _$result;

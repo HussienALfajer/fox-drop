@@ -131,6 +131,15 @@ const activeOrder = z
       .describe(
         'Operations added items and the restaurant has not pressed «اطلعت على التعديل» (RA §8.13): the screen shows «بانتظار تأكيد المطعم للتعديل» and the pickup request waits (409 edit_unacknowledged) (CA §9 step 2).',
       ),
+    outcomeToCollect: z
+      .object({
+        outcome: z.enum(['free', 'damaged']),
+        amount: money.describe('The amount due on the payment screen (CA §9.7).'),
+      })
+      .nullable()
+      .describe(
+        'Operations ended the order with an amount to collect (CA §9.10, K9): «أنهت العمليات الطلب: {النتيجة}. اقبض {المبلغ}.», the payment screen for this amount and the badge «بانتظار تسجيل التحصيل»; record it with POST .../outcome-payment.',
+      ),
     itemCount: z.int(),
     lines: z
       .array(
@@ -420,6 +429,8 @@ class CaptainDeliverDto extends createZodDto(
   }),
 ) {}
 
+class CaptainOutcomePaymentDto extends createZodDto(z.object(doorPayment)) {}
+
 class CaptainDeliverySummaryDto extends createZodDto(
   z.object({
     summary: z
@@ -496,6 +507,12 @@ function activeOrderBody({
     arrival: order.captainArrival && { at: order.captainArrival.at.toISOString() },
     itemReportOpen: order.itemReport !== null,
     editUnacknowledged: order.pendingEdits.some((edit) => edit.addsItems),
+    outcomeToCollect: order.outcome?.awaitingCollection
+      ? {
+          outcome: order.outcome.outcome as 'free' | 'damaged',
+          amount: money(order.outcome.amountToCollect),
+        }
+      : null,
     itemCount: order.lines.reduce((sum, line) => sum + line.quantity, 0),
     lines: order.lines.map((line) => ({
       name: line.name,
@@ -710,6 +727,45 @@ export class CaptainOrdersController {
         ),
       ),
     );
+  }
+
+  // CA §9.10, §9.7 (K9): the payment of the amount operations set to collect
+  // with an outcome; the outcome is posted from it and the captain gets the
+  // summary. No fix: the screen opens wherever the captain is. 409
+  // shortfall_reason_required with `shortfall`, overpaid, amount_due_changed
+  // and order_state_changed (nothing waiting) with the order as it is now,
+  // currency_not_accepted; 400 invalid_lines; 404 unknown_order; 422
+  // idempotency_key_reused.
+  @Post(':orderId/outcome-payment')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CaptainDeliverySummaryDto })
+  async collectOutcome(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: CaptainOrderParamsDto,
+    @Body() body: CaptainOutcomePaymentDto,
+  ) {
+    const captainId = captainOf(session);
+    return refusalsAsHttp(captainId, this.orders, async () => {
+      const now = new Date();
+      const order = await this.orders.collectOutcome(
+        {
+          kind: 'captain',
+          command: {
+            orderId: params.orderId,
+            captainId,
+            accountId: session.accountId,
+            deviceId: session.deviceId,
+            idempotencyKey,
+          },
+        },
+        doorCollection(body),
+        now,
+      );
+      return summaryBody(await this.orders.deliverySummary(order, now));
+    });
   }
 
   // CA §9.4 «دفعت للمطعم واستلمت الطلب», at the restaurant: the request waits

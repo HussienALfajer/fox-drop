@@ -176,6 +176,8 @@ export 'package:core_api/src/model/captain_active_order_dto_output_order_custome
 export 'package:core_api/src/model/captain_active_order_dto_output_order_customer_arrival.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_customer_location.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_lines_inner.dart';
+export 'package:core_api/src/model/captain_active_order_dto_output_order_outcome_to_collect.dart';
+export 'package:core_api/src/model/captain_active_order_dto_output_order_outcome_to_collect_amount.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_pickup.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_payment.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_request.dart';
@@ -224,6 +226,7 @@ export 'package:core_api/src/model/captain_order_dto_output_order.dart';
 export 'package:core_api/src/model/captain_order_dto_output_order_customer.dart';
 export 'package:core_api/src/model/captain_order_dto_output_order_pickup.dart';
 export 'package:core_api/src/model/captain_order_dto_output_order_pickup_request.dart';
+export 'package:core_api/src/model/captain_outcome_payment_dto.dart';
 export 'package:core_api/src/model/captain_pickup_request_dto.dart';
 export 'package:core_api/src/model/captain_refresh_dto.dart';
 export 'package:core_api/src/model/captain_session_dto_output.dart';

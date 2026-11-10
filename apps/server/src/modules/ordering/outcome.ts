@@ -31,6 +31,11 @@ export const FEE_CUT_RETURNED_REASON = 'إلغاء خصم أجرة التوصي�
 // responsible for the order (to confirm with the owner).
 export const COMMISSION_RESTORED_REASON = 'إلغاء استرداد العمولة: المطعم مسؤول عن الطلب';
 
+// What the customer paid offsetting the captain's pay when the restaurant is
+// responsible (docs/domain/09 rule 5; slice 2.11b, to confirm with the
+// owner).
+export const PAY_OFFSET_REASON = 'ما دفعه الزبون يغطّي أجر الكابتن';
+
 const FAILED_ONLY: readonly SetOutcome[] = ['fake', 'wrong_refused', 'failed_other'];
 
 export type DuesRule = 'fee_plus_merchant_net' | 'fee_plus_items_value' | 'fixed';
@@ -49,6 +54,8 @@ export interface OutcomeFacts {
   itemsValue: bigint;
   deliveryFee: bigint;
   discount: bigint;
+  // The customer total now, which an amount to collect stays below.
+  total: bigint;
   // What the pickup paid and what the edits after it already booked against
   // the order clearing account (`frozenAtPickup`): each party's charges, and
   // the commission the restaurant's own edits reversed.
@@ -70,12 +77,15 @@ export interface OutcomeFacts {
 
 // AP §9.3.2 «تحديد النتيجة»: operations' choices. `delivered` says whether a
 // damaged order was delivered with a reduction or failed; free is always
-// delivered, the other outcomes always failed.
+// delivered, the other outcomes always failed. `amountToCollect`, in the base
+// currency, is what the customer still pays (K9): only on a delivered
+// outcome, below the order total (owner decisions 2026-11-10).
 export interface OutcomeChoices {
   outcome: OrderOutcome;
   responsible: ResponsibleParty;
   delivered: boolean;
   food: OutcomeFood | null;
+  amountToCollect: bigint;
 }
 
 export type OutcomeProblem = 'invalid_outcome' | 'dues_rule_unset' | 'captain_pay_unset';
@@ -110,10 +120,13 @@ export interface OutcomeBooking {
 
 // docs/domain/09: the one rule of every non-normal outcome's money, shared by
 // the preview and «تحديد النتيجة», so the panel shows exactly what is posted.
-// Nothing is collected yet (slice 2.11a; 2.11b adds the amount to collect).
 // The pickup put the items value on the order clearing account and the edits
-// after it took their charges off it; these journals take the rest back to
-// zero (owner decision 2026-11-10: nobody pays twice).
+// after it took their charges off it; the collection of an amount to collect
+// (slice 2.11b, K9) took what the customer paid off it, its custody lines
+// being the collection's own (rule 1). These journals take the rest back to
+// zero (owner decision 2026-11-10: nobody pays twice). A collection short of
+// the amount beyond rounding leaves the shortfall on the clearing account for
+// its own flow (AP §8.6), so the amount is what these journals count.
 export function outcomeEntries(
   facts: OutcomeFacts,
   choices: OutcomeChoices,
@@ -127,6 +140,10 @@ export function outcomeEntries(
   // the restaurant only when it is responsible.
   if (choices.delivered !== (choices.food === null)) return { problem: 'invalid_outcome' };
   if (choices.food === 'returned_to_restaurant' && responsible !== 'restaurant') {
+    return { problem: 'invalid_outcome' };
+  }
+  const collected = choices.amountToCollect;
+  if (collected < 0n || (collected > 0n && (!choices.delivered || collected >= facts.total))) {
     return { problem: 'invalid_outcome' };
   }
   if (facts.pay === null && responsible !== 'captain') return { problem: 'captain_pay_unset' };
@@ -157,6 +174,10 @@ export function outcomeEntries(
   let loss = 0n;
   let dues: bigint | null = null;
   let merchantDebit: bigint | null = null;
+  // What the customer paid beyond what the journals below settle, booked as
+  // delivery revenue at the end; with the restaurant responsible it first
+  // offsets the captain's pay (rule 5).
+  let surplus: bigint;
 
   if (responsible === 'restaurant') {
     // Rule 5: the restaurant returns the pickup payment, less what its edits
@@ -183,6 +204,7 @@ export function outcomeEntries(
       entry('platform.operating_cost', platform, -pickup.platformCharge),
       clearing(pickup.platformCharge),
     ]);
+    surplus = collected;
   } else {
     // No delivery fee is booked on such an outcome, so a lower fee an edit
     // after the pickup charged to its party is given back (nobody pays for a
@@ -217,8 +239,11 @@ export function outcomeEntries(
       pickup.captainCharge +
       pickup.platformCharge -
       (feeCuts.restaurant + feeCuts.captain + feeCuts.platform);
-    loss = pickup.itemsValue - itemCharges - (full - pickup.restaurantCommissionCut);
-    if (loss < 0n) throw new Error('the order clearing account would not settle');
+    const left = pickup.itemsValue - itemCharges - (full - pickup.restaurantCommissionCut);
+    if (left < 0n) throw new Error('the order clearing account would not settle');
+    // Rule 3: the loss less what the customer paid, floored at zero.
+    loss = left > collected ? left - collected : 0n;
+    surplus = collected - (left - loss);
     if (responsible === 'captain') {
       push('earn.charge', OUTCOME_LABELS[outcome], [
         entry('captain.earnings', captain, loss),
@@ -244,8 +269,9 @@ export function outcomeEntries(
   }
 
   // Rule 4: the captain is paid unless responsible; the platform bears the
-  // pay when it or the restaurant is responsible (nothing collected offsets
-  // it yet), the captain pay account otherwise.
+  // pay when it or the restaurant is responsible, the captain pay account
+  // otherwise. Rule 5: with the restaurant responsible, what the customer
+  // paid offsets the pay first.
   let captainPay = 0n;
   if (responsible !== 'captain' && facts.pay !== null) {
     const counter: AccountPurpose = facts.testOrder
@@ -263,7 +289,21 @@ export function outcomeEntries(
       ]);
       captainPay += amount;
     }
+    if (responsible === 'restaurant') {
+      // The pay's counter is the platform's cost (the ledger takes no pay
+      // against the clearing account), which the customer's money lowers.
+      const offset = surplus < captainPay ? surplus : captainPay;
+      push(platformCost, PAY_OFFSET_REASON, [
+        entry(platformCost, platform, -offset),
+        clearing(offset),
+      ]);
+      surplus -= offset;
+    }
   }
+  push('platform.revenue_delivery', null, [
+    clearing(surplus),
+    entry('platform.revenue_delivery', platform, -surplus),
+  ]);
 
   return {
     status: choices.delivered ? 'delivered' : 'failed',

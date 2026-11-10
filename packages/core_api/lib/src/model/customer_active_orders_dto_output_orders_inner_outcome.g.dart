@@ -196,6 +196,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerOutcome
   @override
   final CustomerActiveOrdersDtoOutputOrdersInnerOutcomeAmountToCollect
   amountToCollect;
+  @override
+  final bool awaitingCollection;
 
   factory _$CustomerActiveOrdersDtoOutputOrdersInnerOutcome([
     void Function(CustomerActiveOrdersDtoOutputOrdersInnerOutcomeBuilder)?
@@ -211,6 +213,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerOutcome
     required this.status,
     this.text,
     required this.amountToCollect,
+    required this.awaitingCollection,
   }) : super._();
   @override
   CustomerActiveOrdersDtoOutputOrdersInnerOutcome rebuild(
@@ -230,7 +233,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerOutcome
         outcome == other.outcome &&
         status == other.status &&
         text == other.text &&
-        amountToCollect == other.amountToCollect;
+        amountToCollect == other.amountToCollect &&
+        awaitingCollection == other.awaitingCollection;
   }
 
   @override
@@ -241,6 +245,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerOutcome
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, text.hashCode);
     _$hash = $jc(_$hash, amountToCollect.hashCode);
+    _$hash = $jc(_$hash, awaitingCollection.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -254,7 +259,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerOutcome
           ..add('outcome', outcome)
           ..add('status', status)
           ..add('text', text)
-          ..add('amountToCollect', amountToCollect))
+          ..add('amountToCollect', amountToCollect)
+          ..add('awaitingCollection', awaitingCollection))
         .toString();
   }
 }
@@ -299,6 +305,11 @@ class CustomerActiveOrdersDtoOutputOrdersInnerOutcomeBuilder
     amountToCollect,
   ) => _$this._amountToCollect = amountToCollect;
 
+  bool? _awaitingCollection;
+  bool? get awaitingCollection => _$this._awaitingCollection;
+  set awaitingCollection(bool? awaitingCollection) =>
+      _$this._awaitingCollection = awaitingCollection;
+
   CustomerActiveOrdersDtoOutputOrdersInnerOutcomeBuilder() {
     CustomerActiveOrdersDtoOutputOrdersInnerOutcome._defaults(this);
   }
@@ -311,6 +322,7 @@ class CustomerActiveOrdersDtoOutputOrdersInnerOutcomeBuilder
       _status = $v.status;
       _text = $v.text;
       _amountToCollect = $v.amountToCollect.toBuilder();
+      _awaitingCollection = $v.awaitingCollection;
       _$v = null;
     }
     return this;
@@ -355,6 +367,11 @@ class CustomerActiveOrdersDtoOutputOrdersInnerOutcomeBuilder
             ),
             text: text,
             amountToCollect: amountToCollect.build(),
+            awaitingCollection: BuiltValueNullFieldError.checkNotNull(
+              awaitingCollection,
+              r'CustomerActiveOrdersDtoOutputOrdersInnerOutcome',
+              'awaitingCollection',
+            ),
           );
     } catch (_) {
       late String _$failedField;

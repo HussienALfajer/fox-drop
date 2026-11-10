@@ -15,6 +15,7 @@ part 'admin_order_card_dto_output_order_badges.g.dart';
 /// * [note] - «ملاحظة».
 /// * [newCustomer] - «زبون جديد»: no delivered order yet.
 /// * [pickupPending] - «بانتظار تأكيد الاستلام» (AP §9.2.1).
+/// * [awaitingCollection] - «بانتظار تسجيل التحصيل»: an outcome with an amount to collect waits for the payment (CA §9.10, K9).
 /// * [itemReport] - «صنف نفد»: an open item-unavailable report (RA §8.12).
 @BuiltValue()
 abstract class AdminOrderCardDtoOutputOrderBadges
@@ -38,6 +39,10 @@ abstract class AdminOrderCardDtoOutputOrderBadges
   /// «بانتظار تأكيد الاستلام» (AP §9.2.1).
   @BuiltValueField(wireName: r'pickupPending')
   bool get pickupPending;
+
+  /// «بانتظار تسجيل التحصيل»: an outcome with an amount to collect waits for the payment (CA §9.10, K9).
+  @BuiltValueField(wireName: r'awaitingCollection')
+  bool get awaitingCollection;
 
   /// «صنف نفد»: an open item-unavailable report (RA §8.12).
   @BuiltValueField(wireName: r'itemReport')
@@ -91,6 +96,11 @@ class _$AdminOrderCardDtoOutputOrderBadgesSerializer
     yield r'pickupPending';
     yield serializers.serialize(
       object.pickupPending,
+      specifiedType: const FullType(bool),
+    );
+    yield r'awaitingCollection';
+    yield serializers.serialize(
+      object.awaitingCollection,
       specifiedType: const FullType(bool),
     );
     yield r'itemReport';
@@ -160,6 +170,15 @@ class _$AdminOrderCardDtoOutputOrderBadgesSerializer
                   )
                   as bool;
           result.pickupPending = valueDes;
+          break;
+        case r'awaitingCollection':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.awaitingCollection = valueDes;
           break;
         case r'itemReport':
           final valueDes =

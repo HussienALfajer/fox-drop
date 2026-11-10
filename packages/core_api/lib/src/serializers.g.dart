@@ -270,6 +270,14 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputOrderCustomerArrival.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderCustomerLocation.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderLinesInner.serializer)
+          ..add(CaptainActiveOrderDtoOutputOrderOutcomeToCollect.serializer)
+          ..add(
+            CaptainActiveOrderDtoOutputOrderOutcomeToCollectAmount.serializer,
+          )
+          ..add(
+            CaptainActiveOrderDtoOutputOrderOutcomeToCollectOutcomeEnum
+                .serializer,
+          )
           ..add(CaptainActiveOrderDtoOutputOrderPickup.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderPickupPayment.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderPickupRequest.serializer)
@@ -334,6 +342,7 @@ Serializers _$serializers =
           ..add(CaptainOrderDtoOutputOrderPickupRequestOutcomeEnum.serializer)
           ..add(CaptainOrderDtoOutputOrderPickupRequestStatusEnum.serializer)
           ..add(CaptainOrderDtoOutputOrderStatusEnum.serializer)
+          ..add(CaptainOutcomePaymentDto.serializer)
           ..add(CaptainPickupRequestDto.serializer)
           ..add(CaptainRefreshDto.serializer)
           ..add(CaptainSessionDtoOutput.serializer)
@@ -914,6 +923,18 @@ Serializers _$serializers =
             ]),
             () =>
                 ListBuilder<AdminReasonListsDtoOutputListsInnerReasonsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRecordDeliveryDtoReceivedInner),
+            ]),
+            () => ListBuilder<AdminRecordDeliveryDtoReceivedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRecordDeliveryDtoReceivedInner),
+            ]),
+            () => ListBuilder<AdminRecordDeliveryDtoReceivedInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

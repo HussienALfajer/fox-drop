@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/captain_active_order_dto_output_order_outcome_to_collect.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_preparation.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
 import 'package:built_collection/built_collection.dart';
@@ -31,6 +32,7 @@ part 'captain_active_order_dto_output_order.g.dart';
 /// * [arrival]
 /// * [itemReportOpen] - The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2).
 /// * [editUnacknowledged] - Operations added items and the restaurant has not pressed «اطلعت على التعديل» (RA §8.13): the screen shows «بانتظار تأكيد المطعم للتعديل» and the pickup request waits (409 edit_unacknowledged) (CA §9 step 2).
+/// * [outcomeToCollect]
 /// * [itemCount]
 /// * [lines] - The item check (C7): one tick box per line.
 /// * [note] - The customer's note.
@@ -82,6 +84,9 @@ abstract class CaptainActiveOrderDtoOutputOrder
   /// Operations added items and the restaurant has not pressed «اطلعت على التعديل» (RA §8.13): the screen shows «بانتظار تأكيد المطعم للتعديل» and the pickup request waits (409 edit_unacknowledged) (CA §9 step 2).
   @BuiltValueField(wireName: r'editUnacknowledged')
   bool get editUnacknowledged;
+
+  @BuiltValueField(wireName: r'outcomeToCollect')
+  CaptainActiveOrderDtoOutputOrderOutcomeToCollect? get outcomeToCollect;
 
   @BuiltValueField(wireName: r'itemCount')
   int get itemCount;
@@ -197,6 +202,15 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
       object.editUnacknowledged,
       specifiedType: const FullType(bool),
     );
+    yield r'outcomeToCollect';
+    yield object.outcomeToCollect == null
+        ? null
+        : serializers.serialize(
+            object.outcomeToCollect,
+            specifiedType: const FullType.nullable(
+              CaptainActiveOrderDtoOutputOrderOutcomeToCollect,
+            ),
+          );
     yield r'itemCount';
     yield serializers.serialize(
       object.itemCount,
@@ -367,6 +381,18 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
                   )
                   as bool;
           result.editUnacknowledged = valueDes;
+          break;
+        case r'outcomeToCollect':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainActiveOrderDtoOutputOrderOutcomeToCollect,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderOutcomeToCollect?;
+          if (valueDes == null) continue;
+          result.outcomeToCollect.replace(valueDes);
           break;
         case r'itemCount':
           final valueDes =

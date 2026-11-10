@@ -91,6 +91,11 @@ const card = z.object({
     note: z.boolean().describe('«ملاحظة».'),
     newCustomer: z.boolean().describe('«زبون جديد»: no delivered order yet.'),
     pickupPending: z.boolean().describe('«بانتظار تأكيد الاستلام» (AP §9.2.1).'),
+    awaitingCollection: z
+      .boolean()
+      .describe(
+        '«بانتظار تسجيل التحصيل»: an outcome with an amount to collect waits for the payment (CA §9.10, K9).',
+      ),
     itemReport: z.boolean().describe('«صنف نفد»: an open item-unavailable report (RA §8.12).'),
   }),
   moments: z
@@ -456,6 +461,11 @@ const outcomeChoices = {
     .describe(
       "A failed order's food (CA §9.12), null when delivered; returned_to_restaurant only with the restaurant responsible.",
     ),
+  amountToCollect: minor
+    .default('0')
+    .describe(
+      'What the customer still pays, in the base currency (K9): above 0 only on a delivered outcome and below the order total (owner decisions 2026-11-10), else 400 invalid_outcome. Above 0 the order waits «بانتظار تسجيل التحصيل» and the outcome is posted from the payment recorded.',
+    ),
 };
 
 class AdminSetOutcomeDto extends createZodDto(
@@ -480,6 +490,11 @@ class AdminOutcomePreviewDto extends createZodDto(z.object(outcomeChoices)) {}
 class AdminOutcomePreviewAnswerDto extends createZodDto(
   z.object({
     status: z.enum(['delivered', 'failed']),
+    provisional: z
+      .boolean()
+      .describe(
+        'With an amount to collect: the entries are posted from the payment recorded (AP §9.3.2), the custody line as the collection books it.',
+      ),
     loss: money.describe('docs/domain/09 rule 3: what the responsible party bears for the food.'),
     dues: money
       .nullable()
@@ -564,6 +579,12 @@ class AdminOrderDto extends createZodDto(
       outcome: z
         .object({
           at: z.iso.datetime(),
+          awaitingCollection: z
+            .boolean()
+            .describe(
+              '«بانتظار تسجيل التحصيل» (K9): the money below is provisional until the captain or operations record the payment.',
+            ),
+          collectedAt: z.iso.datetime().nullable(),
           outcome: outcomeChoices.outcome,
           status: z.enum(['delivered', 'failed']),
           responsible: outcomeChoices.responsible,
@@ -893,6 +914,7 @@ function cardBody(item: OperationsOrder) {
       note: order.note !== null,
       newCustomer: item.newCustomer,
       pickupPending: item.pickupPending,
+      awaitingCollection: item.awaitingCollection,
       itemReport: order.itemReport !== null,
     },
     moments: {
@@ -1341,6 +1363,7 @@ export class AdminOrdersController {
           responsible: body.responsible,
           delivered: body.delivered,
           food: body.food,
+          amountToCollect: BigInt(body.amountToCollect),
           version: body.version,
           reason: body.reason,
         },
@@ -1359,12 +1382,17 @@ export class AdminOrdersController {
   async outcomePreview(@Param() params: AdminOrderParamsDto, @Body() body: AdminOutcomePreviewDto) {
     let preview: OutcomePreview | undefined;
     await this.onBehalf(params.orderId, async () => {
-      preview = await this.commands.previewOutcome(params.orderId, body, new Date());
+      preview = await this.commands.previewOutcome(
+        params.orderId,
+        { ...body, amountToCollect: BigInt(body.amountToCollect) },
+        new Date(),
+      );
     });
-    const { status, loss, dues, captainPay, currency, entries } = preview!;
+    const { status, loss, dues, captainPay, currency, entries, provisional } = preview!;
     const amount = (value: bigint) => ({ amount: value.toString(), currency });
     return {
       status,
+      provisional,
       loss: amount(loss),
       dues: dues === null ? null : amount(dues),
       captainPay: amount(captainPay),
@@ -1486,8 +1514,8 @@ export class AdminOrdersController {
     @CurrentAdminSession() session: AdminSession,
     @Req() request: FastifyRequest,
   ) {
-    try {
-      await this.captainOrders.recordDelivery(
+    await this.doorRefusals(params.orderId, () =>
+      this.captainOrders.recordDelivery(
         {
           orderId: params.orderId,
           admin: { accountId: session.accountId, roles: session.roles },
@@ -1497,7 +1525,15 @@ export class AdminOrdersController {
           ...doorCollection(body),
         },
         new Date(),
-      );
+      ),
+    );
+    return { order: await this.card(params.orderId) };
+  }
+
+  // The door payment's refusals as HTTP answers, with the card.
+  private async doorRefusals(orderId: string, run: () => Promise<unknown>): Promise<void> {
+    try {
+      await run();
     } catch (error) {
       if (!(error instanceof CaptainOrderRefusedError)) throw error;
       if (error.refusal === 'unknown_order') {
@@ -1520,7 +1556,7 @@ export class AdminOrdersController {
       throw new ConflictException({
         statusCode: HttpStatus.CONFLICT,
         error: error.refusal,
-        order: await this.card(params.orderId),
+        order: await this.card(orderId),
         ...(error.shortfall
           ? {
               shortfall: {
@@ -1531,6 +1567,40 @@ export class AdminOrdersController {
           : {}),
       });
     }
+  }
+
+  // AP §9.3.2, CA §9.10 (K9): operations enter the payment of an outcome's
+  // amount to collect when the captain cannot, with a reason; the outcome is
+  // posted from it, audited as order.record_outcome_payment. The refusals of
+  // «تسجيل التسليم نيابة عن الكابتن».
+  @Post(':orderId/outcome-payment')
+  @RequirePermission('operations.manage')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOrderCardDto })
+  async collectOutcome(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminRecordDeliveryDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    await this.doorRefusals(params.orderId, () =>
+      this.captainOrders.collectOutcome(
+        {
+          kind: 'admin',
+          command: {
+            orderId: params.orderId,
+            admin: { accountId: session.accountId, roles: session.roles },
+            context: requestContext(request),
+            reason: body.reason,
+            idempotencyKey,
+          },
+        },
+        doorCollection(body),
+        new Date(),
+      ),
+    );
     return { order: await this.card(params.orderId) };
   }
 
@@ -1599,9 +1669,13 @@ export class AdminOrdersController {
       CANCELLABLE.includes(order.status) ? this.commands.cancelReasons() : null,
       cancellation?.byCustomer ? this.commands.customerCancelLabel(cancellation.reason) : null,
       TIME_CHANGEABLE.includes(order.status) ? this.commands.timeChangeChoices(order.cityId) : null,
-      EDITABLE.includes(order.status) ? this.commands.editChoices(order, now) : null,
+      EDITABLE.includes(order.status) && !order.outcome?.awaitingCollection
+        ? this.commands.editChoices(order, now)
+        : null,
       this.commands.editsOf(order),
-      AFTER_PICKUP.includes(order.status) ? this.commands.outcomeFoods() : null,
+      AFTER_PICKUP.includes(order.status) && order.outcome === null
+        ? this.commands.outcomeFoods()
+        : null,
     ]);
     const { acceptance } = order;
     // The cancellation itself, not its acknowledgement (RA §8.14).
@@ -1647,6 +1721,8 @@ export class AdminOrdersController {
         cancelChoices: cancelReasons && { reasons: cancelReasons },
         outcome: order.outcome && {
           at: order.outcome.at.toISOString(),
+          awaitingCollection: order.outcome.awaitingCollection,
+          collectedAt: order.outcome.collectedAt?.toISOString() ?? null,
           outcome: order.outcome.outcome,
           status: order.outcome.status,
           responsible: order.outcome.responsible,

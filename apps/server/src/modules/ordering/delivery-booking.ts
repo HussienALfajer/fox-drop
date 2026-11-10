@@ -14,10 +14,12 @@ import {
 import { commission, type DoorPayment } from './door-payment.js';
 import { frozenAtPickup } from './order-edits.js';
 import { type OrderRow, recordTransition } from './order-events.js';
-import { snapshotOf } from './order-views.js';
+import { orderKey, snapshotOf } from './order-views.js';
+import { postOrderJournals } from './outcome-facts.js';
+import type { OutcomeJournal, SetOutcome } from './outcome.js';
 import { type PaymentLine, storedLines } from './pickup-booking.js';
 import type { ChosenReason } from '../content/index.js';
-import { collections, orders } from './schema.js';
+import { collections, orderOutcomeRows, orders } from './schema.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 
@@ -62,6 +64,28 @@ export interface Delivery {
   commissionBp: number | null;
   // The total the payment was checked against; an edit since refuses it.
   amountDue: bigint;
+}
+
+// CA §9.10 (K9, slice 2.11b): the payment of an outcome's amount to collect
+// and the outcome's journals, worked out before the transaction from the
+// facts read at the order's version, which it compares under the lock.
+export interface OutcomeCollection {
+  received: PaymentLine[];
+  change: PaymentLine[];
+  payment: DoorPayment;
+  shortfall: ChosenReason | null;
+  // The pay parts the outcome pays (CA §9.8), null when it pays none.
+  pay: PayParts | null;
+  waitingMinutes: number;
+  outcome: {
+    id: string;
+    outcome: SetOutcome;
+    amountToCollect: bigint;
+    journals: OutcomeJournal[];
+    loss: bigint;
+    merchantDebit: bigint | null;
+    captainPay: bigint;
+  };
 }
 
 export interface DeliveredBy {
@@ -159,26 +183,122 @@ export class DeliveryBooking {
     });
   }
 
-  private async post(
+  // CA §9.10 (K9, slice 2.11b): the payment of an outcome's amount to
+  // collect, recorded by the captain or operations: the order delivered with
+  // its outcome (track done), its collection (the amount to collect as the
+  // amount due), the custody lines, the door's gap within rounding, the
+  // outcome's journals, and the outcome's row with the money it posted, in
+  // the transaction that holds the order's lock. A shortfall stays on the
+  // order clearing account for operations (AP §8.6), as at a delivery.
+  async completeOutcome(
     tx: Tx,
     order: DeliveryOrder,
-    captainId: string,
-    delivery: Delivery,
-    actor: DeliveredBy['actor'],
-    money: { commission: bigint | null; commissionToClearing: bigint; deliveryFee: bigint },
+    collection: OutcomeCollection,
+    by: DeliveredBy,
+    now: Date,
   ): Promise<void> {
-    const { cityId } = order;
+    if (order.captainId === null) throw new Error(`order ${order.id} has no captain`);
+    const version = order.version + 1;
+    const { outcome } = collection;
+    await tx
+      .update(orders)
+      .set({
+        status: 'delivered',
+        version,
+        captainTrack: 'done',
+        deliveredAt: now,
+        outcome: outcome.outcome,
+      })
+      .where(orderKey(order.id, order.placedAt));
+    const pay = collection.pay;
+    await tx.insert(collections).values({
+      orderId: order.id,
+      orderPlacedAt: order.placedAt,
+      cityId: order.cityId,
+      captainId: order.captainId,
+      currency: order.currency,
+      amountDue: outcome.amountToCollect,
+      receivedLines: storedLines(collection.received),
+      changeLines: storedLines(collection.change),
+      netReceived: collection.payment.netBase,
+      shortfall: collection.payment.shortfall,
+      shortfallReason: collection.shortfall?.code ?? null,
+      shortfallReasonLabel: collection.shortfall?.label ?? null,
+      shortfallNote: collection.shortfall?.note ?? null,
+      basePay: pay?.base ?? 0n,
+      distancePay: pay?.distance ?? 0n,
+      topUpPay: pay?.topUp ?? 0n,
+      waitingPay: pay?.waiting ?? 0n,
+      waitingMinutes: collection.waitingMinutes,
+      recordedAt: now,
+      recordedByType: by.actor.type,
+      recordedById: by.actor.id,
+      recordedByDevice: by.actor.device ?? null,
+      reason: by.reason,
+    });
+    const ledgerActor: LedgerActor = { type: by.actor.type, id: by.actor.id };
+    const { post, account } = this.poster(tx, order, ledgerActor);
+    await this.postCollection(tx, order, order.captainId, collection, ledgerActor);
+    // AP §8.6: the door's gap within rounding, so the clearing account
+    // counts the amount to collect as collected.
     const base = order.snapshot.baseCurrency;
+    const gap = collection.payment.roundingGap;
+    await post('platform.fx_rounding', [
+      { accountId: await account('platform.order_clearing', base), currency: base, amount: -gap },
+      { accountId: await account('platform.fx_rounding', base), currency: base, amount: gap },
+    ]);
+    await postOrderJournals(tx, this.ledger, order, ledgerActor, outcome.journals);
+    await tx
+      .update(orderOutcomeRows)
+      .set({
+        loss: outcome.loss,
+        merchantDebit: outcome.merchantDebit,
+        captainPay: outcome.captainPay,
+        collectedAt: now,
+        // The captain recorded it on the payment screen: no outcome card.
+        ...(by.actor.type === 'captain' ? { captainSeenAt: now } : {}),
+      })
+      .where(eq(orderOutcomeRows.id, outcome.id));
+    await recordTransition(tx, this.jobs, order, {
+      type: 'order.outcome_collected',
+      from: order.status,
+      to: 'delivered',
+      version,
+      actor: by.actor,
+      reason: by.reason,
+      publicReason: outcome.outcome,
+      at: now,
+      captainTrack: 'done',
+    });
+  }
+
+  private poster(tx: Tx, order: DeliveryOrder, actor: LedgerActor) {
+    const { cityId } = order;
     const source = { kind: 'order' as const, id: order.id };
-    const ledgerActor: LedgerActor = { type: actor.type, id: actor.id };
     const account = (purpose: AccountPurpose, currency: string, ownerId: string | null = null) =>
       this.ledger.openAccount({ cityId, purpose, ownerId, currency }, tx);
     const post = async (type: JournalType, entries: LedgerEntry[]) => {
       const nonZero = entries.filter((entry) => entry.amount !== 0n);
       if (nonZero.length > 0) {
-        await this.ledger.post({ cityId, type, source, actor: ledgerActor, entries: nonZero }, tx);
+        await this.ledger.post({ cityId, type, source, actor, entries: nonZero }, tx);
       }
     };
+    return { account, post };
+  }
+
+  // AP §8.5.1, §8.6: the custody lines of a door payment, one entry per
+  // currency received and per currency of change against the order clearing
+  // account, and what was collected in another currency brought into the
+  // base at the order's rates.
+  private async postCollection(
+    tx: Tx,
+    order: DeliveryOrder,
+    captainId: string,
+    delivery: Pick<Delivery, 'received' | 'change' | 'payment'>,
+    actor: LedgerActor,
+  ): Promise<void> {
+    const base = order.snapshot.baseCurrency;
+    const { account, post } = this.poster(tx, order, actor);
     const custodyAndClearing = async (lines: PaymentLine[], sign: 1n | -1n) => {
       const entries: LedgerEntry[] = [];
       for (const line of lines) {
@@ -191,7 +311,6 @@ export class DeliveryBooking {
       }
       return entries;
     };
-    // AP §8.5.1: one entry per currency received, and per currency of change.
     await post('custody.collect', await custodyAndClearing(delivery.received, 1n));
     await post('custody.change_given', await custodyAndClearing(delivery.change, -1n));
     // AP §8.6: what was collected in another currency is brought into the
@@ -227,6 +346,20 @@ export class DeliveryBooking {
       );
       await post('platform.fx_rounding', entries);
     }
+  }
+
+  private async post(
+    tx: Tx,
+    order: DeliveryOrder,
+    captainId: string,
+    delivery: Delivery,
+    actor: DeliveredBy['actor'],
+    money: { commission: bigint | null; commissionToClearing: bigint; deliveryFee: bigint },
+  ): Promise<void> {
+    const base = order.snapshot.baseCurrency;
+    const ledgerActor: LedgerActor = { type: actor.type, id: actor.id };
+    const { account, post } = this.poster(tx, order, ledgerActor);
+    await this.postCollection(tx, order, captainId, delivery, ledgerActor);
     const clearing = await account('platform.order_clearing', base);
     // AP §8.11: the delivery fee is the platform's revenue.
     await post('platform.revenue_delivery', [

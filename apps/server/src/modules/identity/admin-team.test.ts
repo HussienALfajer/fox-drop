@@ -474,6 +474,8 @@ const routeAccess: Record<string, Access> = {
     anyOf: ['operations.manage', 'operations.compensate'],
   },
   'POST /v1/admin/orders/{orderId}/record-delivery': 'operations.manage',
+  'POST /v1/admin/orders/{orderId}/outcome-payment': 'operations.manage',
+  'POST /v1/captain/orders/{orderId}/outcome-payment': 'app_session',
   'POST /v1/captain/orders/{orderId}/pickup-request': 'app_session',
   'POST /v1/merchant/orders/{orderId}/pickup/confirm': 'app_session',
   'POST /v1/merchant/orders/{orderId}/pickup/dispute': 'app_session',

@@ -46,8 +46,14 @@ import {
   pickupRequestsOf,
 } from './pickup-views.js';
 import { collections, orderOutcomeRows, orders, pickupRequests } from './schema.js';
-import type { OutcomeFood, SetOutcome } from './outcome.js';
-import { type Delivery, DeliveryBooking, lockForDelivery } from './delivery-booking.js';
+import { outcomeEntries, type OutcomeFood, type SetOutcome } from './outcome.js';
+import { pendingOutcome, readOutcomeFacts } from './outcome-facts.js';
+import {
+  type Delivery,
+  DeliveryBooking,
+  lockForDelivery,
+  type OutcomeCollection,
+} from './delivery-booking.js';
 import { checkDoorPayment } from './door-payment.js';
 import { captainPay } from './captain-pay.js';
 
@@ -295,6 +301,8 @@ export class CaptainOrders {
       .where(
         and(
           eq(orders.captainId, captainId),
+          // K9: an outcome waiting for its collection is the payment screen.
+          inArray(orders.status, ['delivered', 'failed']),
           isNull(orderOutcomeRows.captainSeenAt),
           gt(orderOutcomeRows.setAt, since),
           // An order ends after the pickup within hours of placing.
@@ -530,7 +538,7 @@ export class CaptainOrders {
     const earlier = await this.replay(command.accountId, command, requestHash, now);
     if (earlier !== null) return this.summary(earlier, now);
     const order = await this.captainsOrder(command);
-    if (!deliverable(order, command.captainId)) {
+    if (!deliverable(order, command.captainId) || (await pendingOutcome(this.database.db, order))) {
       throw await this.refusedState(order, command.accountId, command, requestHash, now);
     }
     const delivery = await this.prepareDelivery(order, command, now);
@@ -560,6 +568,8 @@ export class CaptainOrders {
         return true;
       }
       if (!deliverable(locked, command.captainId)) return false;
+      // K9 (slice 2.11b): an outcome waiting for its collection.
+      if (await pendingOutcome(tx, locked)) return false;
       const due = await lockForDelivery(tx, locked);
       // An edit since the payment was checked (AP §9.3.3).
       if (due.total !== delivery.amountDue) return false;
@@ -596,7 +606,7 @@ export class CaptainOrders {
     const earlier = await this.replay(accountId, command, requestHash, now);
     if (earlier !== null) return this.read(earlier);
     const order = await this.anyOrder(command.orderId);
-    if (!deliverableByOperations(order)) {
+    if (!deliverableByOperations(order) || (await pendingOutcome(this.database.db, order))) {
       throw await this.refusedState(order, accountId, command, requestHash, now);
     }
     const delivery = await this.prepareDelivery(order, command, now);
@@ -606,6 +616,7 @@ export class CaptainOrders {
       if (!locked) throw new Error(`order ${order.id} not found`);
       if ((await this.replay(accountId, command, requestHash, now, tx)) !== null) return true;
       if (!deliverableByOperations(locked) || locked.captainId !== order.captainId) return false;
+      if (await pendingOutcome(tx, locked)) return false;
       const due = await lockForDelivery(tx, locked);
       // An edit since the payment was checked (AP §9.3.3).
       if (due.total !== delivery.amountDue) return false;
@@ -641,6 +652,170 @@ export class CaptainOrders {
     });
     if (!done) throw await this.stateChanged(order);
     return this.read(order);
+  }
+
+  // CA §9.10, §9.7 (K9, slice 2.11b): the payment of the amount to collect
+  // operations set with an outcome, recorded by the captain on the payment
+  // screen or by operations instead (AP §9.3.2, with a reason), from picked
+  // up or arrived. The lines are checked against that amount as at the door
+  // (AP §8.6: a shortfall needs its reason and stays open for operations);
+  // the outcome is then posted from the facts at the order's version, so an
+  // order that moved since is order_state_changed. Answers the order.
+  async collectOutcome(
+    caller:
+      | { kind: 'captain'; command: CaptainOrderCommand }
+      | { kind: 'admin'; command: AdminOrderCommand },
+    collection: DoorCollection,
+    now: Date,
+  ): Promise<{ id: string; placedAt: Date }> {
+    const { command } = caller;
+    const accountId =
+      caller.kind === 'captain' ? caller.command.accountId : caller.command.admin.accountId;
+    const captainId = caller.kind === 'captain' ? caller.command.captainId : null;
+    const reason = caller.kind === 'admin' ? caller.command.reason : null;
+    const requestHash = commandHash({
+      verb: 'collect_outcome',
+      orderId: command.orderId,
+      ...collectionHash(collection),
+      reason,
+    });
+    const earlier = await this.replay(accountId, command, requestHash, now);
+    if (earlier !== null) return earlier;
+    const order =
+      caller.kind === 'captain'
+        ? await this.captainsOrder(caller.command)
+        : await this.anyOrder(command.orderId);
+    const pending = collectable(order, captainId)
+      ? await pendingOutcome(this.database.db, order)
+      : null;
+    if (pending === null) {
+      throw await this.refusedState(order, accountId, command, requestHash, now);
+    }
+    const snapshot = snapshotOf(order.rateSnapshot);
+    if (
+      collection.amountDue.amount !== pending.amountToCollect ||
+      collection.amountDue.currency !== snapshot.baseCurrency
+    ) {
+      throw new CaptainOrderRefusedError(
+        'amount_due_changed',
+        'the amount to collect changed',
+        await this.read(order),
+      );
+    }
+    const payment = checkDoorPayment(
+      snapshot,
+      collection.received,
+      collection.change,
+      pending.amountToCollect,
+    );
+    if (typeof payment === 'string') {
+      throw new CaptainOrderRefusedError(payment, 'the payment lines do not fit the amount due');
+    }
+    if (payment.shortfall > 0n && collection.shortfall === null) {
+      throw new CaptainOrderRefusedError(
+        'shortfall_reason_required',
+        'the net received is short of the amount to collect',
+        null,
+        null,
+        { amount: payment.shortfall, currency: snapshot.baseCurrency },
+      );
+    }
+    if (order.captainId === null) throw new Error(`order ${order.id} has no captain`);
+    const [read, paid] = await Promise.all([
+      readOutcomeFacts(this.database.db, this.captains, this.settings, order, now),
+      captainPay(this.database.db, this.captains, order, order.captainId, now),
+    ]);
+    const result = outcomeEntries(read.facts, {
+      outcome: pending.outcome,
+      responsible: pending.responsible,
+      delivered: pending.status === 'delivered',
+      food: pending.food,
+      amountToCollect: pending.amountToCollect,
+    });
+    // The choices passed these checks when the outcome was set, on the same
+    // order (it takes no edit while it waits).
+    if ('problem' in result) throw new Error(`order ${order.id}'s outcome is ${result.problem}`);
+    const booking: OutcomeCollection = {
+      received: collection.received,
+      change: collection.change,
+      payment,
+      shortfall:
+        payment.shortfall > 0n && collection.shortfall
+          ? await this.chosen('shortfall', collection.shortfall)
+          : null,
+      pay: result.captainPay > 0n ? paid.pay : null,
+      waitingMinutes: result.captainPay > 0n ? paid.waiting : 0,
+      outcome: {
+        id: pending.id,
+        outcome: pending.outcome as SetOutcome,
+        amountToCollect: pending.amountToCollect,
+        journals: result.journals,
+        loss: result.loss,
+        merchantDebit: result.merchantDebit,
+        captainPay: result.captainPay,
+      },
+    };
+    await this.jobs.ready();
+    const done = await this.database.db.transaction(async (tx) => {
+      const locked = await lockOrder(tx, order.id, order.placedAt);
+      if (!locked) throw new Error(`order ${order.id} not found`);
+      if ((await this.replay(accountId, command, requestHash, now, tx)) !== null) return true;
+      if (!collectable(locked, captainId) || locked.captainId !== order.captainId) return false;
+      if (locked.version !== read.version) return false;
+      if ((await pendingOutcome(tx, locked))?.id !== pending.id) return false;
+      const due = await lockForDelivery(tx, locked);
+      await this.booking.completeOutcome(
+        tx,
+        due,
+        booking,
+        caller.kind === 'captain'
+          ? {
+              actor: {
+                type: 'captain',
+                id: caller.command.captainId,
+                device: caller.command.deviceId,
+              },
+              reason: null,
+            }
+          : { actor: { type: 'admin', id: accountId }, reason },
+        now,
+      );
+      if (caller.kind === 'admin') {
+        await this.audit.recordWrite(
+          {
+            actor: {
+              type: 'admin',
+              id: accountId,
+              role: caller.command.admin.roles.join(','),
+            },
+            context: caller.command.context,
+            cityId: locked.cityId,
+            action: 'order.record_outcome_payment',
+            target: { type: 'order', id: locked.id },
+            before: { status: locked.status },
+            after: {
+              status: 'delivered',
+              outcome: pending.outcome,
+              receivedLines: storedLines(collection.received),
+              changeLines: storedLines(collection.change),
+              shortfall: payment.shortfall.toString(),
+            },
+            reason,
+          },
+          tx,
+        );
+      }
+      await keepKey(tx, accountId, command.idempotencyKey, requestHash, order, now);
+      return true;
+    });
+    if (!done) throw await this.stateChanged(order);
+    return order;
+  }
+
+  // The captain's summary of an order delivered with its collection (CA
+  // §9.8), for the outcome's payment screen too.
+  async deliverySummary(order: { id: string; placedAt: Date }, now: Date) {
+    return this.summary(order, now);
   }
 
   // The door payment checked and the order's money worked out before the
@@ -1201,6 +1376,19 @@ function deliverable(
 }
 
 // AP §9.3.2: operations record a delivery from picked_up or arrived.
+// K9: the order waiting for its collection, picked up or arrived with its
+// captain (the captain's own when one records it).
+function collectable(
+  order: Pick<OrderAtStart, 'status' | 'captainId'>,
+  captainId: string | null,
+): boolean {
+  return (
+    (order.status === 'picked_up' || order.status === 'arrived') &&
+    order.captainId !== null &&
+    (captainId === null || order.captainId === captainId)
+  );
+}
+
 function deliverableByOperations(
   order: Pick<OrderAtStart, 'status' | 'captainTrack' | 'captainId'>,
 ): boolean {
