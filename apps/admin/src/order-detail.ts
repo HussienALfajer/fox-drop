@@ -47,6 +47,8 @@ export const eventKeys = {
   'order.item_reported': 'order.event.itemReported',
   'order.item_report_withdrawn': 'order.event.itemReportWithdrawn',
   'order.item_report_closed': 'order.event.itemReportClosed',
+  'order.edited': 'order.event.edited',
+  'order.edit_acknowledged': 'order.event.editAcknowledged',
 } as const;
 
 export function eventKey(type: string | null): (typeof eventKeys)[keyof typeof eventKeys] | null {
