@@ -5,6 +5,8 @@ import { canAssign, OPERATIONS_MANAGE } from './assign-captain.js';
 import { chosenCity, citiesQuery } from './cities.js';
 import { formatMoney, formatTime } from './format.js';
 import { CancelOrder } from './order-cancel-page.js';
+import { ChangeOutcome } from './order-outcome-change-page.js';
+import { canChangeOutcome } from './order-outcome-change.js';
 import { SetOutcome } from './order-outcome-page.js';
 import { canSetOutcome } from './order-outcome.js';
 import { RecordOutcomePayment } from './order-outcome-payment-page.js';
@@ -231,6 +233,16 @@ export function OrderDetailPage() {
             payment: { amount: detail.money.pickupPayment, currency: detail.money.currency },
           }}
           total={{ amount: detail.money.total, currency: detail.money.currency }}
+        />
+      )}
+      {canChangeOutcome(session, detail) && (
+        <ChangeOutcome
+          key={[orderId, detail.version].join(':')}
+          orderId={orderId}
+          version={detail.version}
+          current={detail.outcome}
+          choices={detail.outcomeChange}
+          time={time}
         />
       )}
       {detail.outcome && canRecordOutcomePayment(session, detail) && (
@@ -590,6 +602,24 @@ function OutcomeSection({
         <p>{t('order.outcomeSet.customerText', { text: outcome.customerText })}</p>
       )}
       <p>{t('order.outcomeSet.note', { note: outcome.note })}</p>
+      {outcome.history.length > 0 && (
+        <>
+          <h4>{t('order.outcomeSet.history')}</h4>
+          <ul>
+            {outcome.history.map((each) => (
+              <li key={each.at}>
+                {t('order.outcomeSet.replaced', {
+                  outcome: t(outcomeKeys[each.outcome]),
+                  responsible: t(responsibleKeys[each.responsible]),
+                  from: time(each.at),
+                  to: time(each.replacedAt),
+                  note: each.note,
+                })}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </>
   );
 }

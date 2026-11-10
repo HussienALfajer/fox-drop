@@ -14,8 +14,8 @@ Slice 2.11c, «تغيير النتيجة» (`docs/roadmap.md`, Phase 2).
 - **To confirm with the owner:** the strings the spec gives no wording for (pushes, the panel's dialog, the ledger's reversal reason).
 - **Plan:**
   - [x] Server: the change with its preview, reversing the old outcome's journals and side effects and posting the new one; the history of outcomes; failing tests first.
-  - [ ] Panel: «تغيير النتيجة» for OWN within the window, the same dialog with the reversal in the preview, the history in the detail.
-  - [ ] Apps, if the owner wants the change told to them.
+  - [x] Panel: «تغيير النتيجة» for OWN within the window, the same dialog with the reversal in the preview, the history in the detail.
+  - [x] Apps: nothing to build; they read the order again on its event, and the server renders the pushes.
   - [ ] Review, hand over, pull request.
 
 ### Left from 2.11b (`feat/order-outcome-collection`)

@@ -266,19 +266,24 @@ export function outcomeLines(
   if (gap < 0n)
     lines.push({ key: 'custodyReimbursed', name: pickup.captainName, amount: gapMoney });
   if (gap > 0n) lines.push({ key: 'custodyHandIn', name: pickup.captainName, amount: gapMoney });
+  lines.push(...journalLines(preview.entries.filter((entry) => entry.type !== 'custody.collect')));
+  if (lines.length === 0) lines.push({ key: 'nothing' });
+  return lines;
+}
+
+// One sentence per journal of the entries, «تغيير النتيجة» included (slice
+// 2.11c): one journal per type and reason, since a fee cut given back and
+// the captain's charge are two earn.charge journals; a journal it cannot
+// name is `unknown`.
+export function journalLines(entries: readonly Entry[]): OutcomeLine[] {
   const journals = new Map<string, Entry[]>();
-  // One journal per type and reason: a fee cut given back and the
-  // captain's charge are two earn.charge journals.
-  for (const entry of preview.entries) {
-    if (entry.type === 'custody.collect') continue;
+  for (const entry of entries) {
     const key = JSON.stringify([entry.type, entry.reason]);
     journals.set(key, [...(journals.get(key) ?? []), entry]);
   }
-  for (const entries of journals.values()) {
-    lines.push(journalLine(entries[0]!.type, entries) ?? { key: 'unknown' });
-  }
-  if (lines.length === 0) lines.push({ key: 'nothing' });
-  return lines;
+  return [...journals.values()].map(
+    (each) => journalLine(each[0]!.type, each) ?? { key: 'unknown' as const },
+  );
 }
 
 function journalLine(type: string, entries: Entry[]): OutcomeLine | null {

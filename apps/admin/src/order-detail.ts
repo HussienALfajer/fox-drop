@@ -51,6 +51,7 @@ export const eventKeys = {
   'order.edit_acknowledged': 'order.event.editAcknowledged',
   'order.outcome_set': 'order.event.outcomeSet',
   'order.outcome_collected': 'order.event.outcomeCollected',
+  'order.outcome_changed': 'order.event.outcomeChanged',
 } as const;
 
 export function eventKey(type: string | null): (typeof eventKeys)[keyof typeof eventKeys] | null {
@@ -74,6 +75,17 @@ export function actorKey(type: string) {
 // Content list shows by its stored label in its own section (AP §9.13);
 // an operator's own reason is free text and shows as written. Any other
 // code stays hidden rather than show an English word.
+// AP Appendix C: an outcome set or changed (slice 2.11c) names its code.
+function outcomeReasonKeys() {
+  return {
+    free: 'order.outcome.free',
+    fake: 'order.outcome.fake',
+    damaged: 'order.outcome.damaged',
+    wrong_refused: 'order.outcome.wrongRefused',
+    failed_other: 'order.outcome.failedOther',
+  } as const;
+}
+
 const reasonKeysByType = {
   'order.offer_closed': {
     declined: 'order.reason.declined',
@@ -90,13 +102,8 @@ const reasonKeysByType = {
     operations: 'order.reason.byOperations',
   },
   'order.cancelled': { merchant_auto_cancel: 'order.reason.merchantAutoCancel' },
-  'order.outcome_set': {
-    free: 'order.outcome.free',
-    fake: 'order.outcome.fake',
-    damaged: 'order.outcome.damaged',
-    wrong_refused: 'order.outcome.wrongRefused',
-    failed_other: 'order.outcome.failedOther',
-  },
+  'order.outcome_set': outcomeReasonKeys(),
+  'order.outcome_changed': outcomeReasonKeys(),
 } as const;
 
 type ReasonKey = {
