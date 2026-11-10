@@ -972,7 +972,6 @@ export class AdminOrdersController {
   @ZodResponse({ status: 200, type: AdminEditPreviewAnswerDto })
   async editPreview(@Param() params: AdminOrderParamsDto, @Body() body: AdminEditPreviewDto) {
     let preview: EditPreview | undefined;
-    let currency = '';
     await this.onBehalf(params.orderId, async () => {
       preview = await this.commands.previewEdit(
         params.orderId,
@@ -986,7 +985,7 @@ export class AdminOrdersController {
       );
     });
     const card = await this.card(params.orderId);
-    currency = card.total.currency;
+    const currency = card.total.currency;
     const side = (money: EditPreview['before']) => ({
       itemsValue: money.itemsValue.toString(),
       deliveryFee: money.deliveryFee.toString(),

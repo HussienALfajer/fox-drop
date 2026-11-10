@@ -21,10 +21,6 @@ import {
 } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
-import { DATABASE } from '../../database/database.module.js';
-import { Jobs } from '../../jobs/jobs.module.js';
-import { AlertsService } from '../notifications/index.js';
-import { OrderAlerts } from './order-alerts.js';
 
 // AP §9.3.3 «تعديل الطلب» before the pickup, RA §8.13, §8.10, §8.12, CA §9.3,
 // §9.10, CU §11.6 (slice 2.10a; owner decisions 2026-11-10): operations edit
@@ -448,20 +444,6 @@ const report = (
     headers: { ...headers, 'idempotency-key': randomUUID() },
     payload: body,
   });
-
-const withdraw = (headers: Record<string, string>, orderId: string) =>
-  app.inject({
-    method: 'POST',
-    url: `/v1/merchant/orders/${orderId}/item-report/withdraw`,
-    headers: { ...headers, 'idempotency-key': randomUUID() },
-  });
-
-// The menu's own switch of the item and whether customers can order it.
-const menuItem = async (headers: Record<string, string>) =>
-  (await app.inject({ method: 'GET', url: '/v1/merchant/menu', headers }))
-    .json()
-    .categories.flatMap((category: { items: { id: string }[] }) => category.items)
-    .find((entry: { id: string }) => entry.id === item);
 
 // Every case orders the same item: switch it on again after a report that
 // leaves it off.
