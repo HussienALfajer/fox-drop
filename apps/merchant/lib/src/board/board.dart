@@ -15,6 +15,7 @@ typedef PickupRequestStatus =
 typedef PickupOutcome =
     MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum;
 typedef BoardCancellation = MerchantOrdersDtoOutputOrdersInnerCancellation;
+typedef BoardItemReport = MerchantOrdersDtoOutputOrdersInnerItemReport;
 
 /// The board's columns, right to left (RA §8.1–8.2).
 enum BoardColumn { incoming, preparing, ready, withCaptain }
@@ -47,6 +48,22 @@ PickupRequest? openRequest(BoardOrder order) {
   final request = order.pickup.request;
   return request?.status == PickupRequestStatus.open ? request : null;
 }
+
+/// Whether «صنف غير متوفر — اتصلوا بالزبون» is offered (RA §8.12, §8.10):
+/// an accepted or ready order, before pickup, with no pickup request open and
+/// no report open already.
+bool canReportItems(BoardOrder order) =>
+    (order.status == OrderStatus.accepted ||
+        order.status == OrderStatus.ready) &&
+    order.captainTrack != CaptainTrack.pickupPending &&
+    openRequest(order) == null &&
+    order.itemReport == null;
+
+/// Whether «تراجع — الصنف متوفر» is offered: the report is open and the
+/// order still accepted or ready (RA §8.12).
+bool canWithdrawItemReport(BoardOrder order) =>
+    order.itemReport != null &&
+    (order.status == OrderStatus.accepted || order.status == OrderStatus.ready);
 
 /// One column's orders in the order RA §8.2 sorts them.
 List<BoardOrder> columnOrders(Board board, BoardColumn column) {

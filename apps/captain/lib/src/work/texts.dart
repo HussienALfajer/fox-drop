@@ -101,6 +101,7 @@ extension CaptainTexts on AppLocalizations {
               ? captainStateChanged
               : captainAmountDueChanged(moneyOf(amountDue)),
         StateChanged() => captainStateChanged,
+        ItemReportOpen() => captainWaitingForOrderEdit,
         CommandFailed() => captainCommandFailed,
         ReasonChanged() => captainReasonChanged,
       };

@@ -482,6 +482,191 @@ void main() {
     });
   });
 
+  group("operations' time and report chimes (RA §16 #12, #37)", () {
+    test('a prep time change chimes with the time on the fetched board, and '
+        'the late chime starts again from it', () {
+      final memory = AlertMemory();
+      final late = orderJson(
+        status: 'accepted',
+        acceptedAfter: Duration.zero,
+        prepMin: 20,
+      );
+      final moved = {...late, 'version': 3, ..._prep(30)};
+      final now = placedAt.add(const Duration(minutes: 21));
+      final first = alertStep(
+        memory,
+        state: LiveState(value: board([late]), live: true),
+        events: const [],
+        now: now,
+      );
+      expect(first.notices.single, isA<PrepLate>());
+      // Operations added 10 minutes: due at 30, late again from then.
+      final changed = alertStep(
+        memory,
+        state: LiveState(value: board([moved]), live: true),
+        events: const [
+          {
+            'type': 'order.time_changed',
+            'orderId': a,
+            'number': '10001',
+            'reason': 'prep_time_changed',
+          },
+        ],
+        now: now,
+      );
+      expect(
+        changed.notices.single,
+        isA<PrepTimeChanged>()
+            .having((n) => n.number, 'number', '10001')
+            .having((n) => n.prepMin, 'prepMin', 30),
+      );
+      expect(changed.chime, isTrue);
+      final lateAgain = alertStep(
+        memory,
+        state: LiveState(value: board([moved]), live: true),
+        events: const [],
+        now: placedAt.add(const Duration(minutes: 30)),
+      );
+      expect(lateAgain.notices.single, isA<PrepLate>());
+    });
+
+    test('a promised time change alone says nothing to the restaurant', () {
+      final result = alertStep(
+        AlertMemory(),
+        state: LiveState(value: board([]), live: true),
+        events: const [
+          {
+            'type': 'order.time_changed',
+            'orderId': a,
+            'number': '10001',
+            'reason': 'promised_time_changed',
+          },
+        ],
+        now: placedAt,
+      );
+      expect(result.notices, isEmpty);
+    });
+
+    test("closing the report chimes with operations' reason", () {
+      final result = alertStep(
+        AlertMemory(),
+        state: LiveState(value: board([]), live: true),
+        events: const [
+          {
+            'type': 'order.item_report_closed',
+            'orderId': a,
+            'number': '10001',
+            'reason': 'الزبون يقبل الطلب بدون الصنف',
+          },
+          // Reporting and withdrawing only refresh the board.
+          {'type': 'order.item_reported', 'orderId': a, 'number': '10001'},
+          {
+            'type': 'order.item_report_withdrawn',
+            'orderId': a,
+            'number': '10001',
+          },
+        ],
+        now: placedAt,
+      );
+      expect(result.chime, isTrue);
+      expect(
+        result.notices.single,
+        isA<ItemReportClosed>()
+            .having((n) => n.number, 'number', '10001')
+            .having((n) => n.reason, 'reason', 'الزبون يقبل الطلب بدون الصنف'),
+      );
+    });
+  });
+
+  group('the item-unavailable report (RA §8.12, §8.10)', () {
+    BoardOrder one(Map<String, Object?> order) => board([order]).orders.single;
+
+    test('is offered on an accepted or ready order without a pickup request '
+        'or a report open', () {
+      expect(
+        canReportItems(
+          one(orderJson(status: 'accepted', acceptedAfter: Duration.zero)),
+        ),
+        isTrue,
+      );
+      // A request the restaurant refused no longer blocks it (RA §8.10
+      // item 7).
+      expect(
+        canReportItems(
+          one(
+            orderJson(
+              status: 'ready',
+              acceptedAfter: Duration.zero,
+              captainTrack: 'at_merchant',
+              captainName: 'سامر',
+              arrivedAt: placedAt,
+              request: requestJson(status: 'rejected', outcome: 'incomplete'),
+            ),
+          ),
+        ),
+        isTrue,
+      );
+      expect(canReportItems(one(orderJson())), isFalse);
+      expect(
+        canReportItems(
+          one(
+            orderJson(
+              status: 'ready',
+              acceptedAfter: Duration.zero,
+              captainTrack: 'pickup_pending',
+              request: requestJson(),
+            ),
+          ),
+        ),
+        isFalse,
+      );
+      expect(
+        canReportItems(
+          one(
+            orderJson(
+              status: 'picked_up',
+              acceptedAfter: Duration.zero,
+              pickedUpAt: placedAt,
+            ),
+          ),
+        ),
+        isFalse,
+      );
+      final reported = one(
+        orderJson(
+          status: 'accepted',
+          acceptedAfter: Duration.zero,
+          itemReport: itemReportJson(),
+        ),
+      );
+      expect(canReportItems(reported), isFalse);
+      expect(canWithdrawItemReport(reported), isTrue);
+      expect(
+        canWithdrawItemReport(
+          one(orderJson(status: 'accepted', acceptedAfter: Duration.zero)),
+        ),
+        isFalse,
+      );
+    });
+
+    test('needs one item at least; its body tells its choices apart', () {
+      expect(const ItemReport({}).complete, isFalse);
+      expect(const ItemReport({shawarmaId: true}).complete, isTrue);
+      expect(
+        const ItemReport({shawarmaId: true}).body,
+        isNot(const ItemReport({shawarmaId: false}).body),
+      );
+      expect(
+        const ItemReport({shawarmaId: true}).body,
+        isNot(
+          const ItemReport({
+            shawarmaId: true,
+          }, note: 'insufficient_quantity').body,
+        ),
+      );
+    });
+  });
+
   group('the rejection (RA §8.6)', () {
     test('needs items only for «صنف غير متوفر»', () {
       expect(const Rejection(RejectReason.itemUnavailable).complete, isFalse);
@@ -522,3 +707,14 @@ void main() {
     });
   });
 }
+
+/// The `acceptance` of an order accepted at [placedAt] with [prepMin].
+Map<String, Object?> _prep(int prepMin) => {
+  'acceptance': {
+    'at': placedAt.toIso8601String(),
+    'prepMin': prepMin,
+    'prepDueAt': placedAt.add(Duration(minutes: prepMin)).toIso8601String(),
+    'deviceName': 'كاشير 1',
+    'byOperations': false,
+  },
+};

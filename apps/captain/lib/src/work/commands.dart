@@ -97,6 +97,12 @@ class StateChanged extends Notice {
   const StateChanged();
 }
 
+/// The restaurant reported an item unavailable (`409 item_report_open`):
+/// «بانتظار تعديل الطلب من العمليات» (CA §9 step 2).
+class ItemReportOpen extends Notice {
+  const ItemReportOpen();
+}
+
 /// Any other refusal.
 class CommandFailed extends Notice {
   const CommandFailed();
@@ -455,6 +461,8 @@ Notice refusal(Object? body) {
     case 'amount_due_changed':
       final order = (body as Map)['order'];
       return AmountDueChanged(order is Map ? money(order['collect']) : null);
+    case 'item_report_open':
+      return const ItemReportOpen();
     case 'order_state_changed' || 'unknown_order':
       return const StateChanged();
     case 'unknown_reason' ||

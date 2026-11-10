@@ -95,6 +95,7 @@ Map<String, Object?> orderJson({
   Map<String, Object?>? request,
   DateTime? disputedAt,
   String? awayReason,
+  bool itemReportOpen = false,
 }) {
   final atRestaurant = track != 'assigned';
   final atCustomer = track == 'at_customer';
@@ -160,6 +161,7 @@ Map<String, Object?> orderJson({
           : null,
     },
     'radii': {'restaurantMetres': 150, 'customerMetres': 200},
+    'itemReportOpen': itemReportOpen,
   };
 }
 

@@ -95,6 +95,21 @@ void main() {
     });
   });
 
+  test('an open item-unavailable report holds the pickup (CA §9 step 2)', () {
+    expect(
+      pickupBlocked(
+        work(
+          order: orderJson(track: 'at_merchant', itemReportOpen: true),
+        ).order!,
+      ),
+      isTrue,
+    );
+    expect(
+      pickupBlocked(work(order: orderJson(track: 'at_merchant')).order!),
+      isFalse,
+    );
+  });
+
   group('the refusals (CA §4.6, §15)', () {
     test('map to what the screen explains', () {
       expect(refusal({'error': 'offer_unavailable'}), isA<OfferUnavailable>());
@@ -142,6 +157,7 @@ void main() {
         ),
       );
       expect(refusal({'error': 'weak_location'}), isA<WeakLocation>());
+      expect(refusal({'error': 'item_report_open'}), isA<ItemReportOpen>());
       expect(refusal('not json'), isA<CommandFailed>());
     });
   });

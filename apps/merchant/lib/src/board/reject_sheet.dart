@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'board.dart';
 import 'commands.dart';
+import 'items_picker.dart';
 import 'texts.dart';
 
 /// RA §8.6: «رفض» with one of the three reasons and its step: the order's
@@ -41,7 +42,7 @@ class _RejectSheet extends StatefulWidget {
 class _RejectSheetState extends State<_RejectSheet> {
   RejectReason? _reason;
   // The picked items: true «حتى الغد», false «حتى أعيده».
-  final Map<String, bool> _items = {};
+  Map<String, bool> _items = const {};
   TooBusyStep _step = const RejectOnly();
 
   Rejection? get _rejection {
@@ -58,10 +59,6 @@ class _RejectSheetState extends State<_RejectSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    // The order's items, each once, by the line that names it first.
-    final items = <String, String>{
-      for (final line in widget.order.lines.reversed) line.itemId: line.name,
-    };
     final rejection = _rejection;
     return SafeArea(
       child: ListView(
@@ -91,46 +88,13 @@ class _RejectSheetState extends State<_RejectSheet> {
               ],
             ),
           ),
-          if (_reason == RejectReason.itemUnavailable) ...[
-            ListTile(title: Text(l10n.merchantRejectPickItems)),
-            for (final MapEntry(key: itemId, value: name) in items.entries) ...[
-              CheckboxListTile(
-                key: Key('reject-item-$itemId'),
-                value: _items.containsKey(itemId),
-                onChanged: (on) => setState(() {
-                  if (on ?? false) {
-                    _items[itemId] = true;
-                  } else {
-                    _items.remove(itemId);
-                  }
-                }),
-                title: Text(name),
-              ),
-              if (_items.containsKey(itemId))
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 32),
-                  child: Wrap(
-                    spacing: 8,
-                    children: [
-                      ChoiceChip(
-                        key: Key('reject-tomorrow-$itemId'),
-                        label: Text(l10n.merchantRejectUntilTomorrow),
-                        selected: _items[itemId]!,
-                        onSelected: (_) =>
-                            setState(() => _items[itemId] = true),
-                      ),
-                      ChoiceChip(
-                        key: Key('reject-back-on-$itemId'),
-                        label: Text(l10n.merchantRejectUntilTurnedBackOn),
-                        selected: !_items[itemId]!,
-                        onSelected: (_) =>
-                            setState(() => _items[itemId] = false),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ],
+          if (_reason == RejectReason.itemUnavailable)
+            UnavailableItemsPicker(
+              order: widget.order,
+              picked: _items,
+              onChanged: (items) => setState(() => _items = items),
+              keyPrefix: 'reject',
+            ),
           if (_reason == RejectReason.restaurantClosed)
             ListTile(title: Text(l10n.merchantRejectClosedNote)),
           if (_reason == RejectReason.tooBusy)

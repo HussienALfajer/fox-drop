@@ -662,4 +662,299 @@ void main() {
     expect(find.byKey(const Key('reject-too_busy')), findsNothing);
     await app.done(tester);
   });
+
+  group('the item-unavailable report (RA §8.12)', () {
+    final accepted = orderJson(
+      status: 'accepted',
+      version: 2,
+      acceptedAfter: Duration.zero,
+    );
+    final reported = orderJson(
+      status: 'accepted',
+      version: 3,
+      acceptedAfter: Duration.zero,
+      itemReport: itemReportJson(),
+    );
+
+    Future<void> openDetail(WidgetTester tester, _Board app) async {
+      app.container.read(routerProvider).push('/orders/$_orderId');
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('the detail sends the report with a note of Content, shows '
+        'the badge, and withdraws it', (tester) async {
+      final app = _Board();
+      app.server.on('/v1/merchant/content', [
+        const FakeAnswer(200, {
+          'reasons': {
+            'merchant_rejection': <Object?>[],
+            'merchant_problem': <Object?>[],
+            'item_unavailable_note': [
+              {
+                'code': 'similar_alternative',
+                'label': 'لدينا بديل مشابه',
+                'note': 'none',
+              },
+            ],
+            'merchant_ticket_type': <Object?>[],
+          },
+          'faq': <Object?>[],
+        }),
+      ]);
+      await app.pump(tester, [
+        FakeAnswer(200, boardJson([accepted])),
+        FakeAnswer(200, boardJson([reported])),
+        FakeAnswer(
+          200,
+          boardJson([
+            {...accepted, 'version': 4},
+          ]),
+        ),
+      ]);
+      await app.up(tester);
+      await openDetail(tester, app);
+      expect(find.byKey(const Key('withdraw-item-report')), findsNothing);
+
+      await tester.tap(find.text('صنف غير متوفر — اتصلوا بالزبون'));
+      await tester.pumpAndSettle();
+      expect(find.text('صنف غير متوفر في الطلب #10001'), findsOneWidget);
+      // No item, nothing to send.
+      final confirm = find.byKey(const Key('report-confirm'));
+      expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+      await tester.tap(find.byKey(const Key('report-item-$falafelId')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('report-back-on-$falafelId')));
+      // Content's list only, with its label.
+      expect(
+        find.byKey(const Key('report-note-insufficient_quantity')),
+        findsNothing,
+      );
+      await tester.tap(find.text('لدينا بديل مشابه'));
+      await tester.pumpAndSettle();
+      app.server.on('/v1/merchant/orders/$_orderId/item-report', [
+        FakeAnswer(200, {'order': reported}),
+      ]);
+      await tester.tap(confirm);
+      await tester.pumpAndSettle();
+
+      final sent = app.server
+          .to('/v1/merchant/orders/$_orderId/item-report')
+          .single;
+      expect(sent.data, {
+        'items': [
+          {'itemId': falafelId, 'until': 'turned_back_on'},
+        ],
+        'note': 'similar_alternative',
+      });
+      expect(sent.headers['Idempotency-Key'], isNotEmpty);
+      expect(find.text('صنف نفد — بانتظار العمليات'), findsOneWidget);
+      expect(find.textContaining('العمليات تتواصل مع الزبون'), findsOneWidget);
+      // The note's label as the server kept it.
+      expect(find.textContaining('يوجد بديل مشابه'), findsOneWidget);
+      expect(find.byKey(const Key('report-items')), findsNothing);
+
+      app.server.on('/v1/merchant/orders/$_orderId/item-report/withdraw', [
+        FakeAnswer(200, {
+          'order': {...accepted, 'version': 4},
+        }),
+      ]);
+      await tester.tap(find.text('تراجع — الصنف متوفر'));
+      await tester.pumpAndSettle();
+      expect(
+        app.server
+            .to('/v1/merchant/orders/$_orderId/item-report/withdraw')
+            .single
+            .headers['Idempotency-Key'],
+        isNotEmpty,
+      );
+      expect(find.text('صنف نفد — بانتظار العمليات'), findsNothing);
+      expect(find.byKey(const Key('report-items')), findsOneWidget);
+      await app.done(tester);
+    });
+
+    testWidgets('without Content the built-in notes are offered; a note '
+        'Content removed is explained', (tester) async {
+      final app = _Board();
+      await app.pump(tester, [
+        FakeAnswer(200, boardJson([accepted])),
+      ]);
+      await app.up(tester);
+      await openDetail(tester, app);
+      await tester.tap(find.byKey(const Key('report-items')));
+      await tester.pumpAndSettle();
+      expect(find.text('يوجد بديل مشابه'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('report-item-$shawarmaId')));
+      await tester.tap(find.text('الكمية غير كافية'));
+      await tester.pumpAndSettle();
+      app.server.on('/v1/merchant/orders/$_orderId/item-report', [
+        const FakeAnswer(400, {'error': 'unknown_reason'}),
+      ]);
+      await tester.tap(find.byKey(const Key('report-confirm')));
+      await tester.pumpAndSettle();
+      expect(
+        app.server.to('/v1/merchant/orders/$_orderId/item-report').single.data,
+        {
+          'items': [
+            {'itemId': shawarmaId, 'until': 'tomorrow'},
+          ],
+          'note': 'insufficient_quantity',
+        },
+      );
+      expect(
+        find.text('تعذّر إرسال البلاغ بهذه الاختيارات، راجعها ثم أعد المحاولة'),
+        findsOneWidget,
+      );
+      await app.done(tester);
+    });
+
+    testWidgets('the card shows the badge and the line', (tester) async {
+      final app = _Board();
+      await app.pump(tester, [
+        FakeAnswer(200, boardJson([reported])),
+      ]);
+      await app.up(tester);
+      await tester.tap(find.byKey(const Key('tab-preparing')));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining(
+          'صنف نفد — بانتظار العمليات\nالعمليات تتواصل مع الزبون',
+        ),
+        findsOneWidget,
+      );
+      await app.done(tester);
+    });
+
+    testWidgets('a report refused while the pickup request opened is '
+        'explained', (tester) async {
+      final app = _Board();
+      final pending = orderJson(
+        status: 'accepted',
+        version: 3,
+        acceptedAfter: Duration.zero,
+        captainTrack: 'pickup_pending',
+        captainName: 'سامر',
+        arrivedAt: placedAt,
+        request: requestJson(),
+      );
+      await app.pump(tester, [
+        FakeAnswer(200, boardJson([accepted])),
+        FakeAnswer(200, boardJson([pending])),
+      ]);
+      await app.up(tester);
+      await openDetail(tester, app);
+      await tester.tap(find.byKey(const Key('report-items')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('report-item-$shawarmaId')));
+      await tester.pumpAndSettle();
+      app.server.on('/v1/merchant/orders/$_orderId/item-report', [
+        FakeAnswer(409, {'error': 'order_state_changed', 'order': pending}),
+      ]);
+      await tester.tap(find.byKey(const Key('report-confirm')));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('الكابتن يطلب تأكيد الاستلام، أجب على طلبه أولاً'),
+        findsOneWidget,
+      );
+      await app.done(tester);
+    });
+
+    testWidgets('a withdrawal after operations closed the report is '
+        'explained', (tester) async {
+      final app = _Board();
+      await app.pump(tester, [
+        FakeAnswer(200, boardJson([reported])),
+        FakeAnswer(
+          200,
+          boardJson([
+            {...accepted, 'version': 4},
+          ]),
+        ),
+      ]);
+      await app.up(tester);
+      await openDetail(tester, app);
+      app.server.on('/v1/merchant/orders/$_orderId/item-report/withdraw', [
+        FakeAnswer(409, {
+          'error': 'order_state_changed',
+          'order': {...accepted, 'version': 4},
+        }),
+      ]);
+      await tester.tap(find.byKey(const Key('withdraw-item-report')));
+      await tester.pumpAndSettle();
+      expect(find.text('أُغلق بلاغ الصنف قبل وصول تراجعك'), findsOneWidget);
+      await app.done(tester);
+    });
+
+    testWidgets("operations' prep time change chimes with the new time "
+        '(RA §16 #12)', (tester) async {
+      final app = _Board();
+      await app.pump(tester, [
+        FakeAnswer(200, boardJson([reported])),
+        FakeAnswer(
+          200,
+          boardJson([
+            orderJson(
+              status: 'accepted',
+              version: 4,
+              acceptedAfter: Duration.zero,
+              prepMin: 30,
+              itemReport: itemReportJson(),
+            ),
+          ]),
+        ),
+      ]);
+      await app.up(tester);
+      app.transport.send(
+        _channel,
+        const RealtimePublication({
+          'type': 'order.time_changed',
+          'orderId': _orderId,
+          'number': '10001',
+          'version': 4,
+          'reason': 'prep_time_changed',
+          'byOperations': true,
+        }),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('عدّلت العمليات وقت تحضير #10001 إلى 30 د'), findsOne);
+      expect(app.ringer.chimes, greaterThan(0));
+      await app.done(tester);
+    });
+
+    testWidgets("operations closing the report chime with their reason "
+        '(RA §16 #37)', (tester) async {
+      final app = _Board();
+      await app.pump(tester, [
+        FakeAnswer(200, boardJson([reported])),
+        FakeAnswer(
+          200,
+          boardJson([
+            {...accepted, 'version': 5},
+          ]),
+        ),
+      ]);
+      await app.up(tester);
+      final chimes = app.ringer.chimes;
+      app.transport.send(
+        _channel,
+        const RealtimePublication({
+          'type': 'order.item_report_closed',
+          'orderId': _orderId,
+          'number': '10001',
+          'version': 5,
+          'reason': 'الزبون يقبل الطلب بدون الصنف',
+          'byOperations': true,
+        }),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          'أغلقت العمليات بلاغ الصنف في الطلب #10001: '
+          'الزبون يقبل الطلب بدون الصنف',
+        ),
+        findsOneWidget,
+      );
+      expect(app.ringer.chimes, chimes + 1);
+      await app.done(tester);
+    });
+  });
 }

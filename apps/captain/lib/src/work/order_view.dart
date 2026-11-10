@@ -234,8 +234,15 @@ class _AtRestaurantState extends ConsumerState<_AtRestaurant> {
               ),
             ),
           if (order.note case final note?) Text(l10n.captainNote(note)),
+          // CA §9 step 2: an item-unavailable report holds the pickup until
+          // operations edit, cancel or close it.
+          if (pickupBlocked(order))
+            Text(
+              l10n.captainWaitingForOrderEdit,
+              key: const Key('waiting-for-order-edit'),
+            )
           // The payment shows once every item is ticked (C7).
-          if (allTicked) ...[
+          else if (allTicked) ...[
             Text(
               l10n.captainPayRestaurant(proposed.map(l10n.moneyOf).join(' + ')),
             ),

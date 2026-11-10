@@ -189,7 +189,7 @@ class _NewOrderPromptState extends ConsumerState<NewOrderPrompt> {
   Future<void> _reject() async {
     final status = ref.read(statusProvider).value?.value;
     final reasons = ref.read(rejectionReasonsProvider);
-    if (reasons.hasError) ref.invalidate(rejectionReasonsProvider);
+    if (reasons.hasError) ref.invalidate(merchantContentProvider);
     final rejection = await showRejectSheet(
       context,
       widget.order,

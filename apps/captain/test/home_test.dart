@@ -475,6 +475,63 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets('an item-unavailable report holds the pickup until it closes '
+      '(CA §9 step 2, RA §8.12)', (tester) async {
+    final app = TestApp();
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      // The opening read, the read when the channel comes up, then the
+      // read after the event.
+      orders: [
+        orderJson(track: 'at_merchant', itemReportOpen: true),
+        orderJson(track: 'at_merchant', itemReportOpen: true),
+        orderJson(track: 'at_merchant', version: 4),
+      ],
+    );
+    await app.pump(tester);
+    await app.live(tester);
+    await app.tapVisible(tester, find.text('2 × شاورما'));
+    await tester.pump();
+    expect(find.text('بانتظار تعديل الطلب من العمليات'), findsOneWidget);
+    expect(find.text('دفعت للمطعم واستلمت الطلب'), findsNothing);
+
+    // Operations closed the report: the event fetches the order again.
+    app.transport.send(
+      captainChannel,
+      const RealtimePublication({
+        'type': 'order.item_report_closed',
+        'orderId': orderId,
+        'number': '10423',
+        'version': 4,
+        'reason': 'الصنف متوفر بعد التحقق',
+      }),
+    );
+    await app.settle(tester);
+    expect(find.text('بانتظار تعديل الطلب من العمليات'), findsNothing);
+    expect(find.text('دفعت للمطعم واستلمت الطلب'), findsOneWidget);
+    await app.done(tester);
+  });
+
+  testWidgets('a pickup refused with item_report_open says the order waits '
+      'for operations (CA §9 step 2)', (tester) async {
+    final app = TestApp();
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [orderJson(track: 'at_merchant')],
+    );
+    await app.pump(tester);
+    await app.live(tester);
+    await app.tapVisible(tester, find.text('2 × شاورما'));
+    await tester.pump();
+    app.server.on('/v1/captain/orders/$orderId/pickup-request', [
+      const FakeAnswer(409, {'error': 'item_report_open'}),
+    ]);
+    await app.tapVisible(tester, find.text('دفعت للمطعم واستلمت الطلب'));
+    await app.settle(tester);
+    expect(find.text('بانتظار تعديل الطلب من العمليات'), findsOneWidget);
+    await app.done(tester);
+  });
+
   testWidgets('counts the pickup request down on the server clock (CA §9.4)', (
     tester,
   ) async {

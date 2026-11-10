@@ -103,6 +103,21 @@ class RejectedByOperations extends BoardNotice {
   final String reason;
 }
 
+/// «عدّلت العمليات وقت تحضير #{رقم} إلى {د} د» (RA §8.7, §16 #12).
+class PrepTimeChanged extends BoardNotice {
+  const PrepTimeChanged(this.number, this.prepMin);
+  final String number;
+  final int prepMin;
+}
+
+/// «أغلقت العمليات بلاغ الصنف في الطلب #{رقم}: {السبب}» (RA §8.12, §16
+/// #37), with operations' reason as written.
+class ItemReportClosed extends BoardNotice {
+  const ItemReportClosed(this.number, this.reason);
+  final String number;
+  final String reason;
+}
+
 /// «تحضير متأخر #{رقم} — اضغط «الطلب جاهز» فور الانتهاء».
 class PrepLate extends BoardNotice {
   const PrepLate(this.number);
@@ -223,6 +238,19 @@ AlertStep alertStep(
         if (prepMin != null) {
           notices.add(AcceptedByOperations(number, prepMin));
         }
+      // RA §16 #12: operations moved the prep time («تعديل الوقت»); the
+      // board fetched after the event has it. The late chime starts again
+      // from the new prep time.
+      case 'order.time_changed' when event['reason'] == 'prep_time_changed':
+        final order = board?.orders
+            .where((o) => o.id == event['orderId'])
+            .firstOrNull;
+        final prepMin = order?.acceptance?.prepMin;
+        if (order != null) memory.prepLateChimes.remove(order.id);
+        if (prepMin != null) notices.add(PrepTimeChanged(number, prepMin));
+      // RA §16 #37: operations closed the report without an edit.
+      case 'order.item_report_closed':
+        notices.add(ItemReportClosed(number, '${event['reason'] ?? ''}'));
     }
   }
 
