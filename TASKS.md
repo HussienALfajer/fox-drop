@@ -4,20 +4,27 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.9, time changes and items unavailable after acceptance (`docs/roadmap.md`, Phase 2).
+Slice 2.10, order edits (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** «تعديل الوقت» moving the promised time, the countdown and the search start; the restaurant's report, its alert, the pickup block and «إغلاق بلاغ صنف نفد» (AP §9.3.2, RA §8.12, CU §11.6). The restaurant reports an item and the pickup waits.
-- **Specs:** AP §9.3.2 (the rows «تعديل الوقت», `accepted`, `ready`, `picked_up`, and «إغلاق بلاغ صنف نفد»), AP §9.1.3 (the critical alert «صنف نفد بعد القبول»), AP §9.3.1 (the timeline: ETA changes, item reported unavailable and how the report was closed), docs/domain/03 (the promised time, the countdown, the search start), RA §8.12 (the button «صنف غير متوفر — اتصلوا بالزبون», its dialog, the menu switch-off, the alert, the withdrawal), RA §8.10 (no pickup request while a report is open), CU §11.6 (the item banner and push, «تغيّر موعد وصول طلبك إلى {الساعة}»), CA §9 (what the captain sees while a report blocks the pickup), and the definitions of done.
-- **Branch:** `feat/order-time-and-item-report`.
-- **Owner decisions (2026-11-10):** one pull request. «تعديل الوقت» adds whole minutes (chips +5, +10, +15, +20 or typed), at most 60 per change (a new city setting `order.eta_change_max_min`): on an `accepted` order it moves the prep due time (`prep_min`, the restaurant's countdown), `prep_late_alert_at`, a search start still ahead and the promised time together; once the food is ready (`ready`, `picked_up`) only the promised time. The captain's wording while a report blocks the pickup is CA §9's «بانتظار تعديل الطلب من العمليات».
-- **Plan:**
-  - [x] Server: «تعديل الوقت» (`POST /v1/admin/orders/{orderId}/change-time`), its event `order.time_changed`, audit and the customer's push «تغيّر موعد وصول طلبك إلى {الساعة}»; failing tests first.
-  - [x] Server: the item-unavailable report: the restaurant's report and withdrawal, the items switched off and back on, the critical alert, the customer's push, the pickup refused while open, operations' «إغلاق بلاغ صنف نفد», the cancellation clearing it, every party's read; regenerate the API.
-  - [ ] Restaurant app: «صنف غير متوفر — اتصلوا بالزبون», its dialog, the badge and «تراجع — الصنف متوفر».
-  - [ ] Captain app: «بانتظار تعديل الطلب من العمليات» with the pickup request blocked.
-  - [ ] Panel: «تعديل الوقت», the report on the detail and timeline, «إغلاق بلاغ صنف نفد», the board's badge and the alert.
-  - [ ] Customer app: the item banner (CU §11.6).
-  - [ ] Review, hand over to 2.10, pull request.
+- **Roadmap line:** recalculated money, the acknowledgement with its ring, a `ready` order back to `accepted` when items are added, the 3-minute alert, post-pickup removals with a responsible party and the commission cut once, the captain's blocks (AP §9.3.3, RA §8.13, CA §9.3, §9.10, CU §11.6). The owner adds an item to a ready order and it returns to preparing.
+- **Specs:** AP §9.3.3 (edits by operations, the money recalculated, before and after pickup), AP §9.3.2 (the edit row), AP §9.1.3 (the 3-minute unacknowledged-edit alert), RA §8.13 (`docs/product/v1/restaurant-app/08-orders/13-edits-by-operations.md`: the acknowledgement, its ring, back to preparing), RA §8.10 (no pickup while an edit adding items is unacknowledged), RA §8.12 (an edit clears an open item report), RA §16 #16–17, CA §9.3 and §9.10 (`docs/product/v1/captain-app/09-the-active-order/03-step-2-at-the-restaurant.md`, `10-changes-by-operations.md`: «بانتظار تأكيد المطعم للتعديل»), CU §11.6 and §14 #11 («عدّلت FOX DROP طلبك. المجموع الجديد: {المبلغ}»), docs/domain/04 and 09 (the money, the commission cut once, the responsible party), and the definitions of done.
+- **Branch:** `feat/order-edits`.
+- **Ask the owner first:** the split into pull requests (use the `slice-plan` skill; 2.9 went as one, 2.7 and 2.8 as two or three), and the open wording: the edit dialog (removing, replacing, adding items, quantities), how a post-pickup removal books its money, and what the customer sees of the new total.
+- **Plan (to confirm with the split):**
+  - [ ] Server: the edit before pickup (lines changed, money recalculated, the item report cleared, the restaurant's acknowledgement with its ring, a ready order back to accepted when items are added, the pickup blocked until acknowledged, the 3-minute alert); failing tests first.
+  - [ ] Server: post-pickup removals with the responsible party and the commission cut once (docs/domain/09).
+  - [ ] Restaurant app: the edit's ring and «تم» acknowledgement, the lines changed.
+  - [ ] Captain app: «بانتظار تأكيد المطعم للتعديل» and the new amounts.
+  - [ ] Panel: the edit dialog and its preview.
+  - [ ] Customer app: the new total (CU §11.6).
+  - [ ] Review, hand over to 2.11, pull request.
+
+### Left from 2.9 (`feat/order-time-and-item-report`)
+
+- **Before deploying to staging:** migration 0044 adds `ordering.item_reports` and `ordering.time_changes` (new tables only). The new restaurant APK shows «صنف غير متوفر — اتصلوا بالزبون» and chimes on «تعديل الوقت» and a closed report; the new captain APK shows «بانتظار تعديل الطلب من العمليات» (an older one gets `409 item_report_open` on its pickup request with no text for it); raise `app.captain.min_version` with this build.
+- **To check on staging:** in the panel, an accepted order's detail → «تعديل الوقت» → +10: the promised time moves 10 minutes, the restaurant app chimes «عدّلت العمليات وقت تحضير #{رقم} إلى 30 د» and its countdown moves, the customer gets «تغيّر موعد وصول طلبك إلى {الساعة}»; on a ready order only the promised time moves. In the restaurant app, an accepted order's detail → «صنف غير متوفر — اتصلوا بالزبون» → an item «حتى الغد» and «يوجد بديل مشابه»: the card shows «صنف نفد — بانتظار العمليات», the item is unavailable in the customer app, the panel rings «صنف نفد بعد القبول» and shows «صنف نفد» on the card, the customer sees the banner and the push, and the captain at the restaurant sees «بانتظار تعديل الطلب من العمليات» instead of the payment; «إغلاق بلاغ صنف نفد» with a reason chimes the restaurant «أغلقت العمليات بلاغ الصنف في الطلب #{رقم}: {السبب}» and frees the pickup; «تراجع — الصنف متوفر» switches the item on again.
+- **To confirm with the owner:** the captain's paid waiting counts from the prep time chosen at acceptance, so «تعديل الوقت» never shortens it (docs/domain/04); operations' close reason is shown to the restaurant (RA §16 #37) but not to the captain or the customer; «إغلاق بلاغ صنف نفد» leaves the menu as it is (the restaurant switches the item on itself); a withdrawal switches the items on even when another open report names them; «تعديل الوقت» rounds the new promised time up to the next 5 minutes and takes no negative minutes; the strings the spec gives no wording for (restaurant app: «صنف غير متوفر في الطلب #{رقم}», «ملاحظة (اختياري)», «إرسال البلاغ», «تعذّر إرسال البلاغ بهذه الاختيارات، راجعها ثم أعد المحاولة», «الكابتن يطلب تأكيد الاستلام، أجب على طلبه أولاً», «أُبلغ عن صنف غير متوفر في هذا الطلب من جهاز آخر», «أُغلق بلاغ الصنف قبل وصول تراجعك»; panel: the timeline lines «عُدّل الوقت», «أبلغ المطعم عن صنف نفد», «تراجع المطعم عن البلاغ: الصنف متوفر», «أُغلق بلاغ صنف نفد», «+{د} د، الوقت الموعود الجديد {الساعة}», «{الصنف}: {المدة}», and the dialog's «الطعام لم يجهز بعد: يتأخر وقت التحضير والوقت الموعود معاً.», «الطعام جاهز: يتأخر الوقت الموعود فقط.», «دقائق إضافية», «عدد صحيح من الدقائق بين 1 و{الحد}», «الوقت الموعود الآن: …», «يصبح: …», «ملاحظة (اختيارية)», «تأكيد تعديل الوقت», «عُدّل الوقت، وأُبلغ الزبون بالموعد الجديد», «تغيّرت حالة الطلب ولم يعد تعديل الوقت ممكناً», «عدد الدقائق غير مقبول، أعد المحاولة», «أبلغ المطعم الساعة …», «تأكيد إغلاق البلاغ», «البلاغ أُغلق قبل وصول طلبك»).
+- **Not yet:** an edit clearing an open report (2.10); the captain's message placed above the screen (the design); the closed report's summary on the detail outside the timeline.
 
 ### Left from 2.8c (`feat/order-cancel-panel`)
 
