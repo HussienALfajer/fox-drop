@@ -6,7 +6,7 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_cancel_preview_answer_dto_output_entries_inner_amount.g.dart';
+part 'admin_edit_preview_answer_dto_output_entries_inner_amount.g.dart';
 
 /// From the platform's side: + a debit, − a credit.
 ///
@@ -14,11 +14,11 @@ part 'admin_cancel_preview_answer_dto_output_entries_inner_amount.g.dart';
 /// * [amount] - Integer minor units (AP §8.6).
 /// * [currency]
 @BuiltValue()
-abstract class AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount
+abstract class AdminEditPreviewAnswerDtoOutputEntriesInnerAmount
     implements
         Built<
-          AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount,
-          AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder
+          AdminEditPreviewAnswerDtoOutputEntriesInnerAmount,
+          AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder
         > {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
@@ -27,41 +27,38 @@ abstract class AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount
   @BuiltValueField(wireName: r'currency')
   String get currency;
 
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount._();
+  AdminEditPreviewAnswerDtoOutputEntriesInnerAmount._();
 
-  factory AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount([
-    void updates(AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder b),
-  ]) = _$AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount;
+  factory AdminEditPreviewAnswerDtoOutputEntriesInnerAmount([
+    void updates(AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder b),
+  ]) = _$AdminEditPreviewAnswerDtoOutputEntriesInnerAmount;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(
-    AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder b,
+    AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder b,
   ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount>
+  static Serializer<AdminEditPreviewAnswerDtoOutputEntriesInnerAmount>
   get serializer =>
-      _$AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountSerializer();
+      _$AdminEditPreviewAnswerDtoOutputEntriesInnerAmountSerializer();
 }
 
-class _$AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountSerializer
+class _$AdminEditPreviewAnswerDtoOutputEntriesInnerAmountSerializer
     implements
-        PrimitiveSerializer<
-          AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount
-        > {
+        PrimitiveSerializer<AdminEditPreviewAnswerDtoOutputEntriesInnerAmount> {
   @override
   final Iterable<Type> types = const [
-    AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount,
-    _$AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount,
+    AdminEditPreviewAnswerDtoOutputEntriesInnerAmount,
+    _$AdminEditPreviewAnswerDtoOutputEntriesInnerAmount,
   ];
 
   @override
-  final String wireName =
-      r'AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount';
+  final String wireName = r'AdminEditPreviewAnswerDtoOutputEntriesInnerAmount';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount object, {
+    AdminEditPreviewAnswerDtoOutputEntriesInnerAmount object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'amount';
@@ -79,7 +76,7 @@ class _$AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount object, {
+    AdminEditPreviewAnswerDtoOutputEntriesInnerAmount object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -94,7 +91,7 @@ class _$AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder result,
+    required AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -128,12 +125,12 @@ class _$AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountSerializer
   }
 
   @override
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount deserialize(
+  AdminEditPreviewAnswerDtoOutputEntriesInnerAmount deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder();
+    final result = AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

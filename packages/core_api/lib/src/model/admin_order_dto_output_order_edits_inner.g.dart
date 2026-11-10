@@ -76,9 +76,46 @@ _$adminOrderDtoOutputOrderEditsInnerStatusEnumValues =
       ],
     );
 
+const AdminOrderDtoOutputOrderEditsInnerResponsibleEnum
+_$adminOrderDtoOutputOrderEditsInnerResponsibleEnum_restaurant =
+    const AdminOrderDtoOutputOrderEditsInnerResponsibleEnum._('restaurant');
+const AdminOrderDtoOutputOrderEditsInnerResponsibleEnum
+_$adminOrderDtoOutputOrderEditsInnerResponsibleEnum_captain =
+    const AdminOrderDtoOutputOrderEditsInnerResponsibleEnum._('captain');
+const AdminOrderDtoOutputOrderEditsInnerResponsibleEnum
+_$adminOrderDtoOutputOrderEditsInnerResponsibleEnum_platform =
+    const AdminOrderDtoOutputOrderEditsInnerResponsibleEnum._('platform');
+
+AdminOrderDtoOutputOrderEditsInnerResponsibleEnum
+_$adminOrderDtoOutputOrderEditsInnerResponsibleEnumValueOf(String name) {
+  switch (name) {
+    case 'restaurant':
+      return _$adminOrderDtoOutputOrderEditsInnerResponsibleEnum_restaurant;
+    case 'captain':
+      return _$adminOrderDtoOutputOrderEditsInnerResponsibleEnum_captain;
+    case 'platform':
+      return _$adminOrderDtoOutputOrderEditsInnerResponsibleEnum_platform;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AdminOrderDtoOutputOrderEditsInnerResponsibleEnum>
+_$adminOrderDtoOutputOrderEditsInnerResponsibleEnumValues =
+    BuiltSet<AdminOrderDtoOutputOrderEditsInnerResponsibleEnum>(
+      const <AdminOrderDtoOutputOrderEditsInnerResponsibleEnum>[
+        _$adminOrderDtoOutputOrderEditsInnerResponsibleEnum_restaurant,
+        _$adminOrderDtoOutputOrderEditsInnerResponsibleEnum_captain,
+        _$adminOrderDtoOutputOrderEditsInnerResponsibleEnum_platform,
+      ],
+    );
+
 Serializer<AdminOrderDtoOutputOrderEditsInnerStatusEnum>
 _$adminOrderDtoOutputOrderEditsInnerStatusEnumSerializer =
     _$AdminOrderDtoOutputOrderEditsInnerStatusEnumSerializer();
+Serializer<AdminOrderDtoOutputOrderEditsInnerResponsibleEnum>
+_$adminOrderDtoOutputOrderEditsInnerResponsibleEnumSerializer =
+    _$AdminOrderDtoOutputOrderEditsInnerResponsibleEnumSerializer();
 
 class _$AdminOrderDtoOutputOrderEditsInnerStatusEnumSerializer
     implements
@@ -130,6 +167,44 @@ class _$AdminOrderDtoOutputOrderEditsInnerStatusEnumSerializer
   );
 }
 
+class _$AdminOrderDtoOutputOrderEditsInnerResponsibleEnumSerializer
+    implements
+        PrimitiveSerializer<AdminOrderDtoOutputOrderEditsInnerResponsibleEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'restaurant': 'restaurant',
+    'captain': 'captain',
+    'platform': 'platform',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'restaurant': 'restaurant',
+    'captain': 'captain',
+    'platform': 'platform',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    AdminOrderDtoOutputOrderEditsInnerResponsibleEnum,
+  ];
+  @override
+  final String wireName = 'AdminOrderDtoOutputOrderEditsInnerResponsibleEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminOrderDtoOutputOrderEditsInnerResponsibleEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminOrderDtoOutputOrderEditsInnerResponsibleEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AdminOrderDtoOutputOrderEditsInnerResponsibleEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$AdminOrderDtoOutputOrderEditsInner
     extends AdminOrderDtoOutputOrderEditsInner {
   @override
@@ -151,6 +226,10 @@ class _$AdminOrderDtoOutputOrderEditsInner
   @override
   final int? extraPrepMin;
   @override
+  final AdminOrderDtoOutputOrderEditsInnerResponsibleEnum? responsible;
+  @override
+  final String? charge;
+  @override
   final DateTime? acknowledgedAt;
 
   factory _$AdminOrderDtoOutputOrderEditsInner([
@@ -167,6 +246,8 @@ class _$AdminOrderDtoOutputOrderEditsInner
     required this.deliveryFee,
     required this.total,
     this.extraPrepMin,
+    this.responsible,
+    this.charge,
     this.acknowledgedAt,
   }) : super._();
   @override
@@ -191,6 +272,8 @@ class _$AdminOrderDtoOutputOrderEditsInner
         deliveryFee == other.deliveryFee &&
         total == other.total &&
         extraPrepMin == other.extraPrepMin &&
+        responsible == other.responsible &&
+        charge == other.charge &&
         acknowledgedAt == other.acknowledgedAt;
   }
 
@@ -206,6 +289,8 @@ class _$AdminOrderDtoOutputOrderEditsInner
     _$hash = $jc(_$hash, deliveryFee.hashCode);
     _$hash = $jc(_$hash, total.hashCode);
     _$hash = $jc(_$hash, extraPrepMin.hashCode);
+    _$hash = $jc(_$hash, responsible.hashCode);
+    _$hash = $jc(_$hash, charge.hashCode);
     _$hash = $jc(_$hash, acknowledgedAt.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -223,6 +308,8 @@ class _$AdminOrderDtoOutputOrderEditsInner
           ..add('deliveryFee', deliveryFee)
           ..add('total', total)
           ..add('extraPrepMin', extraPrepMin)
+          ..add('responsible', responsible)
+          ..add('charge', charge)
           ..add('acknowledgedAt', acknowledgedAt))
         .toString();
   }
@@ -287,6 +374,17 @@ class AdminOrderDtoOutputOrderEditsInnerBuilder
   int? get extraPrepMin => _$this._extraPrepMin;
   set extraPrepMin(int? extraPrepMin) => _$this._extraPrepMin = extraPrepMin;
 
+  AdminOrderDtoOutputOrderEditsInnerResponsibleEnum? _responsible;
+  AdminOrderDtoOutputOrderEditsInnerResponsibleEnum? get responsible =>
+      _$this._responsible;
+  set responsible(
+    AdminOrderDtoOutputOrderEditsInnerResponsibleEnum? responsible,
+  ) => _$this._responsible = responsible;
+
+  String? _charge;
+  String? get charge => _$this._charge;
+  set charge(String? charge) => _$this._charge = charge;
+
   DateTime? _acknowledgedAt;
   DateTime? get acknowledgedAt => _$this._acknowledgedAt;
   set acknowledgedAt(DateTime? acknowledgedAt) =>
@@ -308,6 +406,8 @@ class AdminOrderDtoOutputOrderEditsInnerBuilder
       _deliveryFee = $v.deliveryFee.toBuilder();
       _total = $v.total.toBuilder();
       _extraPrepMin = $v.extraPrepMin;
+      _responsible = $v.responsible;
+      _charge = $v.charge;
       _acknowledgedAt = $v.acknowledgedAt;
       _$v = null;
     }
@@ -360,6 +460,8 @@ class AdminOrderDtoOutputOrderEditsInnerBuilder
             deliveryFee: deliveryFee.build(),
             total: total.build(),
             extraPrepMin: extraPrepMin,
+            responsible: responsible,
+            charge: charge,
             acknowledgedAt: acknowledgedAt,
           );
     } catch (_) {

@@ -101,6 +101,15 @@ const merchant: Entry[] = [
   ['pickup_confirmed_by_operations', '15', 'أكّدت العمليات استلام الكابتن للطلب #{رقم}', 'chime'],
   ['edited_items_added', '16', 'تم تعديل الطلب #{رقم} — أُضيفت أصناف', 'ring'],
   ['edited', '17', 'تم تعديل الطلب #{رقم}', 'chime'],
+  // RA §8.13, §12.5 give no text: the owners' silent push of an edit after
+  // the pickup with the restaurant responsible (slice 2.10b, to confirm with
+  // the owner); filed under the money-effect row.
+  [
+    'debited_after_pickup',
+    '19',
+    'عُدّل الطلب #{رقم} بعد الاستلام — يُقيَّد عليكم {المبلغ} في كشف السبت',
+    'silent',
+  ],
   ['cancelled_after_acceptance', '18', 'أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}', 'ring', true],
   ['admin_price_change', '21', 'عدّلت FOX DROP سعر {الصنف}: {القديم} ← {الجديد}', 'chime'],
   ['menu_change_approved', '22', 'قُبل تعديلك على {الصنف}', 'silent'],
@@ -140,6 +149,15 @@ const captain: Entry[] = [
     'تم تعديل الطلب #{رقم} — المبلغ الجديد للمطعم {للمطعم}، للتحصيل {للتحصيل}',
     'chime',
   ],
+  // CA §9.10: items removed after the pickup; a lower fee alone shows the
+  // new amount to collect (the text ours, to confirm with the owner).
+  [
+    'items_removed_after_pickup',
+    '10',
+    'حُذفت أصناف من الطلب — المبلغ الجديد للتحصيل {المبلغ}',
+    'chime',
+  ],
+  ['collect_lowered', '10', 'المبلغ الجديد للتحصيل للطلب #{رقم}: {المبلغ}', 'chime'],
   // CA §9.10.
   ['withdrawn', '11', 'سُحب منك الطلب: {السبب}', 'cancellation', true],
   ['cancelled', '11', 'أُلغيت المهمة: {السبب}', 'cancellation', true],

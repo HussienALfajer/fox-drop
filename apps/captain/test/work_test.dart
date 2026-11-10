@@ -226,6 +226,60 @@ void main() {
       },
     );
 
+    test(
+      'after the pickup, removed items and a lower fee chime the new amount to collect (CA §9.10)',
+      () {
+        final picked = orderJson(
+          status: 'picked_up',
+          track: 'picked_up',
+          pickedUp: true,
+        );
+        final removed = alertStep(
+          work(order: picked),
+          work(
+            order: orderJson(
+              status: 'picked_up',
+              track: 'picked_up',
+              pickedUp: true,
+              quantity: 1,
+              collect: '28000',
+            ),
+          ),
+          now,
+          answered,
+        );
+        expect(
+          removed.single,
+          isA<ItemsRemovedAfterPickup>().having(
+            (a) => a.collect.amount,
+            'collect',
+            '28000',
+          ),
+        );
+        final lowered = alertStep(
+          work(order: picked),
+          work(
+            order: orderJson(
+              status: 'picked_up',
+              track: 'picked_up',
+              pickedUp: true,
+              collect: '39000',
+            ),
+          ),
+          now,
+          answered,
+        );
+        expect(
+          lowered.single,
+          isA<CollectLowered>().having(
+            (a) => a.collect.amount,
+            'collect',
+            '39000',
+          ),
+        );
+      },
+    );
+
     test('an order not accepted here was assigned by operations', () {
       expect(
         alertStep(work(), work(order: orderJson()), now, answered).single,

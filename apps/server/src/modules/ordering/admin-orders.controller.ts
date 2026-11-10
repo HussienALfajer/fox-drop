@@ -31,7 +31,8 @@ import {
 } from './captain-orders.controller.js';
 import { ORDER_ALERT_CODES } from './order-alerts.js';
 import type { EditChange } from './order-edits.js';
-import { BEFORE_PICKUP } from './order-views.js';
+import { AFTER_PICKUP_PARTIES } from './order-edits.js';
+import { EDITABLE } from './order-views.js';
 import {
   CANCELLABLE,
   TIME_CHANGEABLE,
@@ -293,6 +294,13 @@ const editRequest = {
     .describe(
       'Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise).',
     ),
+  responsible: z
+    .enum(AFTER_PICKUP_PARTIES)
+    .nullable()
+    .default(null)
+    .describe(
+      'After the pickup (picked_up, arrived) only, and required then (400 invalid_edit otherwise; the preview answers without it): who bears the removed items and the lower fee (AP §9.3.3, docs/domain/09), «المطعم», «الكابتن» or «المنصة»; never the customer. After the pickup an edit only removes lines or lowers quantities and lowers the fee.',
+    ),
 };
 
 class AdminEditDto extends createZodDto(
@@ -343,6 +351,31 @@ class AdminEditPreviewAnswerDto extends createZodDto(
       .describe('The restaurant must acknowledge it before the pickup (RA §8.13).'),
     backToPreparing: z.boolean().describe('A ready order goes back to «قيد التحضير».'),
     promisedAt: z.iso.datetime().nullable().describe('The new promised time when it moves.'),
+    afterPickup: z
+      .boolean()
+      .describe('The order was picked up: the edit needs a responsible party (AP §9.3.3).'),
+    entries: z
+      .array(
+        z.object({
+          type: z.string().describe('The journal type, such as merchant.debit.'),
+          reason: z
+            .string()
+            .nullable()
+            .describe(
+              "The journal's reason, its line on the party's account (RA §12.5): «أصناف حُذفت بعد الاستلام», «خُفّضت أجرة التوصيل بعد الاستلام», «إلغاء عمولة».",
+            ),
+          account: z.string().describe('The account purpose, such as merchant.account.'),
+          party: z.object({
+            kind: z.enum(['merchant', 'captain', 'platform']),
+            id: z.uuid().nullable(),
+            name: z.string().nullable(),
+          }),
+          amount: money.describe("From the platform's side: + a debit, − a credit."),
+        }),
+      )
+      .describe(
+        'After the pickup, every entry the edit would post for the responsible party (docs/domain/09); empty before the pickup or until the party is chosen.',
+      ),
   }),
 ) {}
 
@@ -488,6 +521,11 @@ class AdminOrderDto extends createZodDto(
         .describe('While accepted, ready or picked up: «تعديل الوقت» (AP §9.3.2).'),
       editChoices: z
         .object({
+          afterPickup: z
+            .boolean()
+            .describe(
+              'Picked up or arrived: only lines removed or lowered and a lower fee, with a responsible party (no menu).',
+            ),
           extraPrepMaxMin: z.int().describe('order.eta_change_max_min.'),
           items: z
             .array(
@@ -512,7 +550,9 @@ class AdminOrderDto extends createZodDto(
             .describe('The items customers can order now, with their available options.'),
         })
         .nullable()
-        .describe('While placed, accepted or ready: «تعديل الطلب» (AP §9.3.3).'),
+        .describe(
+          'While placed, accepted, ready, picked up or arrived: «تعديل الطلب» (AP §9.3.3).',
+        ),
       edits: z
         .array(
           z.object({
@@ -525,6 +565,15 @@ class AdminOrderDto extends createZodDto(
             deliveryFee: z.object({ before: minor, after: minor }),
             total: z.object({ before: minor, after: minor }),
             extraPrepMin: z.int().nullable(),
+            responsible: z
+              .enum(AFTER_PICKUP_PARTIES)
+              .nullable()
+              .describe('After the pickup: who bore the edit.'),
+            charge: minor
+              .nullable()
+              .describe(
+                'After the pickup: what the responsible party bore (the removed value or its merchant net, and the fee cut).',
+              ),
             acknowledgedAt: z.iso
               .datetime()
               .nullable()
@@ -956,6 +1005,7 @@ export class AdminOrdersController {
           add: body.add,
           deliveryFee: body.deliveryFee === null ? null : BigInt(body.deliveryFee),
           extraPrepMin: body.extraPrepMin,
+          responsible: body.responsible,
           version: body.version,
         },
         new Date(),
@@ -980,6 +1030,7 @@ export class AdminOrdersController {
           add: body.add,
           deliveryFee: body.deliveryFee === null ? null : BigInt(body.deliveryFee),
           extraPrepMin: body.extraPrepMin,
+          responsible: body.responsible,
         },
         new Date(),
       );
@@ -1004,6 +1055,14 @@ export class AdminOrdersController {
       addsItems: answer.addsItems,
       backToPreparing: answer.backToPreparing,
       promisedAt: answer.promisedAt?.toISOString() ?? null,
+      afterPickup: answer.afterPickup,
+      entries: answer.entries.map((entry) => ({
+        type: entry.type,
+        reason: entry.reason,
+        account: entry.account,
+        party: entry.party,
+        amount: { amount: entry.amount.toString(), currency: entry.currency },
+      })),
     };
   }
 
@@ -1375,7 +1434,7 @@ export class AdminOrdersController {
       CANCELLABLE.includes(order.status) ? this.commands.cancelReasons() : null,
       cancellation?.byCustomer ? this.commands.customerCancelLabel(cancellation.reason) : null,
       TIME_CHANGEABLE.includes(order.status) ? this.commands.timeChangeChoices(order.cityId) : null,
-      BEFORE_PICKUP.includes(order.status) ? this.commands.editChoices(order, now) : null,
+      EDITABLE.includes(order.status) ? this.commands.editChoices(order, now) : null,
       this.commands.editsOf(order),
     ]);
     const { acceptance } = order;
@@ -1427,6 +1486,7 @@ export class AdminOrdersController {
         },
         timeChange,
         editChoices: editChoices && {
+          afterPickup: editChoices.afterPickup,
           extraPrepMaxMin: editChoices.extraPrepMaxMin,
           items: editChoices.items.map((entry) => ({
             ...entry,
@@ -1456,6 +1516,8 @@ export class AdminOrdersController {
           },
           total: { before: edit.totalBefore.toString(), after: edit.totalAfter.toString() },
           extraPrepMin: edit.extraPrepMin,
+          responsible: edit.responsible,
+          charge: edit.charge?.toString() ?? null,
           acknowledgedAt: edit.acknowledgedAt?.toISOString() ?? null,
         })),
         removedLines: order.removedLines.map((line) => ({
@@ -1511,7 +1573,11 @@ export class AdminOrdersController {
           discount: order.money.discount.toString(),
           rounding: order.money.rounding.toString(),
           total: order.money.total.toString(),
-          pickupPayment: order.money.itemsValue.toString(),
+          // AP §9.3.3: an edit after the pickup leaves what the captain paid.
+          pickupPayment: (
+            edits.find((edit) => edit.responsible !== null)?.itemsValueBefore ??
+            order.money.itemsValue
+          ).toString(),
         },
         pickup: {
           at: order.pickup?.at.toISOString() ?? null,

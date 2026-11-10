@@ -1,45 +1,44 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_cancel_preview_answer_dto_output_entries_inner_amount.dart';
+part of 'admin_edit_preview_answer_dto_output_entries_inner_amount.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount
-    extends AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount {
+class _$AdminEditPreviewAnswerDtoOutputEntriesInnerAmount
+    extends AdminEditPreviewAnswerDtoOutputEntriesInnerAmount {
   @override
   final String amount;
   @override
   final String currency;
 
-  factory _$AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount([
-    void Function(AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder)?
+  factory _$AdminEditPreviewAnswerDtoOutputEntriesInnerAmount([
+    void Function(AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder)?
     updates,
   ]) =>
-      (AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder()
+      (AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder()
             ..update(updates))
           ._build();
 
-  _$AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount._({
+  _$AdminEditPreviewAnswerDtoOutputEntriesInnerAmount._({
     required this.amount,
     required this.currency,
   }) : super._();
   @override
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount rebuild(
-    void Function(AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder)
+  AdminEditPreviewAnswerDtoOutputEntriesInnerAmount rebuild(
+    void Function(AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder)
     updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder toBuilder() =>
-      AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder()
-        ..replace(this);
+  AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder toBuilder() =>
+      AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount &&
+    return other is AdminEditPreviewAnswerDtoOutputEntriesInnerAmount &&
         amount == other.amount &&
         currency == other.currency;
   }
@@ -56,7 +55,7 @@ class _$AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount
   @override
   String toString() {
     return (newBuiltValueToStringHelper(
-            r'AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount',
+            r'AdminEditPreviewAnswerDtoOutputEntriesInnerAmount',
           )
           ..add('amount', amount)
           ..add('currency', currency))
@@ -64,13 +63,13 @@ class _$AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount
   }
 }
 
-class AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder
+class AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder
     implements
         Builder<
-          AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount,
-          AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder
+          AdminEditPreviewAnswerDtoOutputEntriesInnerAmount,
+          AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder
         > {
-  _$AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount? _$v;
+  _$AdminEditPreviewAnswerDtoOutputEntriesInnerAmount? _$v;
 
   String? _amount;
   String? get amount => _$this._amount;
@@ -80,11 +79,11 @@ class AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder
   String? get currency => _$this._currency;
   set currency(String? currency) => _$this._currency = currency;
 
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder() {
-    AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount._defaults(this);
+  AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder() {
+    AdminEditPreviewAnswerDtoOutputEntriesInnerAmount._defaults(this);
   }
 
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder get _$this {
+  AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _amount = $v.amount;
@@ -95,33 +94,33 @@ class AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder
   }
 
   @override
-  void replace(AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount other) {
-    _$v = other as _$AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount;
+  void replace(AdminEditPreviewAnswerDtoOutputEntriesInnerAmount other) {
+    _$v = other as _$AdminEditPreviewAnswerDtoOutputEntriesInnerAmount;
   }
 
   @override
   void update(
-    void Function(AdminCancelPreviewAnswerDtoOutputEntriesInnerAmountBuilder)?
+    void Function(AdminEditPreviewAnswerDtoOutputEntriesInnerAmountBuilder)?
     updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount build() => _build();
+  AdminEditPreviewAnswerDtoOutputEntriesInnerAmount build() => _build();
 
-  _$AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount _build() {
+  _$AdminEditPreviewAnswerDtoOutputEntriesInnerAmount _build() {
     final _$result =
         _$v ??
-        _$AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount._(
+        _$AdminEditPreviewAnswerDtoOutputEntriesInnerAmount._(
           amount: BuiltValueNullFieldError.checkNotNull(
             amount,
-            r'AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount',
+            r'AdminEditPreviewAnswerDtoOutputEntriesInnerAmount',
             'amount',
           ),
           currency: BuiltValueNullFieldError.checkNotNull(
             currency,
-            r'AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount',
+            r'AdminEditPreviewAnswerDtoOutputEntriesInnerAmount',
             'currency',
           ),
         );

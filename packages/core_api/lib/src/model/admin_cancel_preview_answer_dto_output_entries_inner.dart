@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner_amount.dart';
-import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner_party.dart';
+import 'package:core_api/src/model/admin_edit_preview_answer_dto_output_entries_inner_amount.dart';
+import 'package:core_api/src/model/admin_edit_preview_answer_dto_output_entries_inner_party.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -33,10 +33,10 @@ abstract class AdminCancelPreviewAnswerDtoOutputEntriesInner
   String get account;
 
   @BuiltValueField(wireName: r'party')
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerParty get party;
+  AdminEditPreviewAnswerDtoOutputEntriesInnerParty get party;
 
   @BuiltValueField(wireName: r'amount')
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount get amount;
+  AdminEditPreviewAnswerDtoOutputEntriesInnerAmount get amount;
 
   AdminCancelPreviewAnswerDtoOutputEntriesInner._();
 
@@ -85,14 +85,14 @@ class _$AdminCancelPreviewAnswerDtoOutputEntriesInnerSerializer
     yield serializers.serialize(
       object.party,
       specifiedType: const FullType(
-        AdminCancelPreviewAnswerDtoOutputEntriesInnerParty,
+        AdminEditPreviewAnswerDtoOutputEntriesInnerParty,
       ),
     );
     yield r'amount';
     yield serializers.serialize(
       object.amount,
       specifiedType: const FullType(
-        AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount,
+        AdminEditPreviewAnswerDtoOutputEntriesInnerAmount,
       ),
     );
   }
@@ -145,10 +145,10 @@ class _$AdminCancelPreviewAnswerDtoOutputEntriesInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      AdminCancelPreviewAnswerDtoOutputEntriesInnerParty,
+                      AdminEditPreviewAnswerDtoOutputEntriesInnerParty,
                     ),
                   )
-                  as AdminCancelPreviewAnswerDtoOutputEntriesInnerParty;
+                  as AdminEditPreviewAnswerDtoOutputEntriesInnerParty;
           result.party.replace(valueDes);
           break;
         case r'amount':
@@ -156,10 +156,10 @@ class _$AdminCancelPreviewAnswerDtoOutputEntriesInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount,
+                      AdminEditPreviewAnswerDtoOutputEntriesInnerAmount,
                     ),
                   )
-                  as AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount;
+                  as AdminEditPreviewAnswerDtoOutputEntriesInnerAmount;
           result.amount.replace(valueDes);
           break;
         default:

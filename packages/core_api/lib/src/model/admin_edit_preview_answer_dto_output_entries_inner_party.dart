@@ -7,23 +7,23 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_cancel_preview_answer_dto_output_entries_inner_party.g.dart';
+part 'admin_edit_preview_answer_dto_output_entries_inner_party.g.dart';
 
-/// AdminCancelPreviewAnswerDtoOutputEntriesInnerParty
+/// AdminEditPreviewAnswerDtoOutputEntriesInnerParty
 ///
 /// Properties:
 /// * [kind]
 /// * [id]
 /// * [name]
 @BuiltValue()
-abstract class AdminCancelPreviewAnswerDtoOutputEntriesInnerParty
+abstract class AdminEditPreviewAnswerDtoOutputEntriesInnerParty
     implements
         Built<
-          AdminCancelPreviewAnswerDtoOutputEntriesInnerParty,
-          AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyBuilder
+          AdminEditPreviewAnswerDtoOutputEntriesInnerParty,
+          AdminEditPreviewAnswerDtoOutputEntriesInnerPartyBuilder
         > {
   @BuiltValueField(wireName: r'kind')
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum get kind;
+  AdminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnum get kind;
   // enum kindEnum {  merchant,  captain,  platform,  };
 
   @BuiltValueField(wireName: r'id')
@@ -32,47 +32,45 @@ abstract class AdminCancelPreviewAnswerDtoOutputEntriesInnerParty
   @BuiltValueField(wireName: r'name')
   String? get name;
 
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerParty._();
+  AdminEditPreviewAnswerDtoOutputEntriesInnerParty._();
 
-  factory AdminCancelPreviewAnswerDtoOutputEntriesInnerParty([
-    void updates(AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyBuilder b),
-  ]) = _$AdminCancelPreviewAnswerDtoOutputEntriesInnerParty;
+  factory AdminEditPreviewAnswerDtoOutputEntriesInnerParty([
+    void updates(AdminEditPreviewAnswerDtoOutputEntriesInnerPartyBuilder b),
+  ]) = _$AdminEditPreviewAnswerDtoOutputEntriesInnerParty;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(
-    AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyBuilder b,
+    AdminEditPreviewAnswerDtoOutputEntriesInnerPartyBuilder b,
   ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminCancelPreviewAnswerDtoOutputEntriesInnerParty>
+  static Serializer<AdminEditPreviewAnswerDtoOutputEntriesInnerParty>
   get serializer =>
-      _$AdminCancelPreviewAnswerDtoOutputEntriesInnerPartySerializer();
+      _$AdminEditPreviewAnswerDtoOutputEntriesInnerPartySerializer();
 }
 
-class _$AdminCancelPreviewAnswerDtoOutputEntriesInnerPartySerializer
+class _$AdminEditPreviewAnswerDtoOutputEntriesInnerPartySerializer
     implements
-        PrimitiveSerializer<
-          AdminCancelPreviewAnswerDtoOutputEntriesInnerParty
-        > {
+        PrimitiveSerializer<AdminEditPreviewAnswerDtoOutputEntriesInnerParty> {
   @override
   final Iterable<Type> types = const [
-    AdminCancelPreviewAnswerDtoOutputEntriesInnerParty,
-    _$AdminCancelPreviewAnswerDtoOutputEntriesInnerParty,
+    AdminEditPreviewAnswerDtoOutputEntriesInnerParty,
+    _$AdminEditPreviewAnswerDtoOutputEntriesInnerParty,
   ];
 
   @override
-  final String wireName = r'AdminCancelPreviewAnswerDtoOutputEntriesInnerParty';
+  final String wireName = r'AdminEditPreviewAnswerDtoOutputEntriesInnerParty';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminCancelPreviewAnswerDtoOutputEntriesInnerParty object, {
+    AdminEditPreviewAnswerDtoOutputEntriesInnerParty object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'kind';
     yield serializers.serialize(
       object.kind,
       specifiedType: const FullType(
-        AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum,
+        AdminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnum,
       ),
     );
     yield r'id';
@@ -94,7 +92,7 @@ class _$AdminCancelPreviewAnswerDtoOutputEntriesInnerPartySerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminCancelPreviewAnswerDtoOutputEntriesInnerParty object, {
+    AdminEditPreviewAnswerDtoOutputEntriesInnerParty object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -109,7 +107,7 @@ class _$AdminCancelPreviewAnswerDtoOutputEntriesInnerPartySerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyBuilder result,
+    required AdminEditPreviewAnswerDtoOutputEntriesInnerPartyBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -121,10 +119,10 @@ class _$AdminCancelPreviewAnswerDtoOutputEntriesInnerPartySerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum,
+                      AdminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnum,
                     ),
                   )
-                  as AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum;
+                  as AdminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnum;
           result.kind = valueDes;
           break;
         case r'id':
@@ -156,12 +154,12 @@ class _$AdminCancelPreviewAnswerDtoOutputEntriesInnerPartySerializer
   }
 
   @override
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerParty deserialize(
+  AdminEditPreviewAnswerDtoOutputEntriesInnerParty deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyBuilder();
+    final result = AdminEditPreviewAnswerDtoOutputEntriesInnerPartyBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
@@ -176,34 +174,31 @@ class _$AdminCancelPreviewAnswerDtoOutputEntriesInnerPartySerializer
   }
 }
 
-class AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum
+class AdminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnum
     extends EnumClass {
   @BuiltValueEnumConst(wireName: r'merchant')
-  static const AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum
+  static const AdminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnum
   merchant =
-      _$adminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum_merchant;
+      _$adminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnum_merchant;
   @BuiltValueEnumConst(wireName: r'captain')
-  static const AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum
-  captain =
-      _$adminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum_captain;
+  static const AdminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnum
+  captain = _$adminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnum_captain;
   @BuiltValueEnumConst(wireName: r'platform')
-  static const AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum
+  static const AdminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnum
   platform =
-      _$adminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum_platform;
+      _$adminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnum_platform;
 
-  static Serializer<AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum>
+  static Serializer<AdminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnum>
   get serializer =>
-      _$adminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnumSerializer;
+      _$adminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnumSerializer;
 
-  const AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum._(
-    String name,
-  ) : super(name);
+  const AdminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnum._(String name)
+    : super(name);
 
-  static BuiltSet<AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum>
+  static BuiltSet<AdminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnum>
   get values =>
-      _$adminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnumValues;
-  static AdminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnum valueOf(
+      _$adminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnumValues;
+  static AdminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnum valueOf(
     String name,
-  ) =>
-      _$adminCancelPreviewAnswerDtoOutputEntriesInnerPartyKindEnumValueOf(name);
+  ) => _$adminEditPreviewAnswerDtoOutputEntriesInnerPartyKindEnumValueOf(name);
 }

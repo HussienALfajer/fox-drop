@@ -1,0 +1,6 @@
+ALTER TABLE "ordering"."order_edits" DROP CONSTRAINT "order_edits_status";--> statement-breakpoint
+ALTER TABLE "ordering"."order_edits" ADD COLUMN "responsible" text;--> statement-breakpoint
+ALTER TABLE "ordering"."order_edits" ADD COLUMN "charge" bigint;--> statement-breakpoint
+ALTER TABLE "ordering"."order_edits" ADD COLUMN "commission_cut" bigint;--> statement-breakpoint
+ALTER TABLE "ordering"."order_edits" ADD CONSTRAINT "order_edits_after_pickup" CHECK (("ordering"."order_edits"."status" IN ('picked_up', 'arrived')) = ("ordering"."order_edits"."responsible" IS NOT NULL) AND ("ordering"."order_edits"."responsible" IS NULL) = ("ordering"."order_edits"."charge" IS NULL) AND ("ordering"."order_edits"."responsible" IS NULL) = ("ordering"."order_edits"."commission_cut" IS NULL) AND ("ordering"."order_edits"."responsible" IS NULL OR "ordering"."order_edits"."responsible" IN ('restaurant', 'captain', 'platform')) AND "ordering"."order_edits"."charge" >= 0 AND "ordering"."order_edits"."commission_cut" >= 0 AND ("ordering"."order_edits"."responsible" IS NULL OR (NOT "ordering"."order_edits"."adds_items" AND "ordering"."order_edits"."acknowledged_at" IS NULL)));--> statement-breakpoint
+ALTER TABLE "ordering"."order_edits" ADD CONSTRAINT "order_edits_status" CHECK ("ordering"."order_edits"."status" IN ('placed', 'accepted', 'ready', 'picked_up', 'arrived'));

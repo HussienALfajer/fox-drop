@@ -21,7 +21,7 @@ import {
   type ReasonList,
 } from '../content/index.js';
 import { openItemReport } from './item-reports.js';
-import { unacknowledgedAdditionAt } from './order-edits.js';
+import { frozenAtPickup, unacknowledgedAdditionAt } from './order-edits.js';
 import { acceptedPrepMin } from './time-changes.js';
 import { CAPTAIN_ACTIVE } from './order-assignments.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
@@ -48,7 +48,7 @@ import {
 } from './pickup-views.js';
 import { collections, orders, pickupRequests } from './schema.js';
 import { type Delivery, DeliveryBooking, lockForDelivery } from './delivery-booking.js';
-import { checkDoorPayment, commission, waitingMinutes } from './door-payment.js';
+import { checkDoorPayment, waitingMinutes } from './door-payment.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 
@@ -467,9 +467,12 @@ export class CaptainOrders {
         return true;
       }
       if (!deliverable(locked, command.captainId)) return false;
+      const due = await lockForDelivery(tx, locked);
+      // An edit since the payment was checked (AP §9.3.3).
+      if (due.total !== delivery.amountDue) return false;
       await this.booking.complete(
         tx,
-        await lockForDelivery(tx, locked),
+        due,
         delivery,
         {
           actor: { type: 'captain', id: command.captainId, device: command.deviceId },
@@ -510,9 +513,12 @@ export class CaptainOrders {
       if (!locked) throw new Error(`order ${order.id} not found`);
       if ((await this.replay(accountId, command, requestHash, now, tx)) !== null) return true;
       if (!deliverableByOperations(locked) || locked.captainId !== order.captainId) return false;
+      const due = await lockForDelivery(tx, locked);
+      // An edit since the payment was checked (AP §9.3.3).
+      if (due.total !== delivery.amountDue) return false;
       await this.booking.complete(
         tx,
-        await lockForDelivery(tx, locked),
+        due,
         delivery,
         { actor: { type: 'admin', id: accountId }, reason: command.reason },
         now,
@@ -545,7 +551,8 @@ export class CaptainOrders {
   }
 
   // The door payment checked and the order's money worked out before the
-  // transaction: none of it changes after the pickup (AP §8.1 item 4).
+  // transaction (AP §8.1 item 4); an edit after the pickup (AP §9.3.3) changes
+  // the total, which the transaction compares again.
   private async prepareDelivery(
     order: OrderAtStart,
     collection: DoorCollection,
@@ -629,7 +636,8 @@ export class CaptainOrders {
       pay,
       waitingMinutes: waiting,
       // AP §9.6.3: a test order, flagged at placing, posts no commission.
-      commission: money.testOrder ? null : commission(order.itemsValue, money.commissionBp),
+      commissionBp: money.testOrder ? null : money.commissionBp,
+      amountDue: order.total,
     };
   }
 
@@ -641,6 +649,7 @@ export class CaptainOrders {
         number: orders.number,
         currency: orders.currency,
         itemsValue: orders.itemsValue,
+        deliveryFee: orders.deliveryFee,
         captainId: collections.captainId,
         netReceived: collections.netReceived,
         basePay: collections.basePay,
@@ -655,6 +664,8 @@ export class CaptainOrders {
       )
       .where(and(eq(collections.orderId, key.id), eq(collections.orderPlacedAt, key.placedAt)));
     if (!row) throw new Error(`order ${key.id} has no collection`);
+    // The pickup payment, which an edit after the pickup leaves as it was.
+    const paid = (await frozenAtPickup(this.database.db, { ...key, ...row })).itemsValue;
     const orderPay = row.basePay + row.distancePay + row.topUpPay;
     return {
       orderId: key.id,
@@ -667,7 +678,7 @@ export class CaptainOrders {
         waiting: row.waitingPay,
         total: orderPay + row.waitingPay,
       },
-      custodyChange: row.netReceived - row.itemsValue,
+      custodyChange: row.netReceived - paid,
       handInToday: await this.custodyTotal(row.captainId, now),
     };
   }

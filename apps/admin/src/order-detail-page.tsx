@@ -335,11 +335,21 @@ export function OrderDetailPage() {
                     </li>
                   ))}
                 </ul>
-                <p>
-                  {edit.acknowledgedAt
-                    ? t('order.editAcknowledgedAt', { time: time(edit.acknowledgedAt) })
-                    : t('order.editNotAcknowledged')}
-                </p>
+                {edit.responsible !== null ? (
+                  // AP §9.3.3: after the pickup, who bore it; no acknowledgement.
+                  <p>
+                    {t('order.editAfterPickup', {
+                      party: t(responsibleKeys[edit.responsible]),
+                      amount: money(edit.charge ?? '0'),
+                    })}
+                  </p>
+                ) : (
+                  <p>
+                    {edit.acknowledgedAt
+                      ? t('order.editAcknowledgedAt', { time: time(edit.acknowledgedAt) })
+                      : t('order.editNotAcknowledged')}
+                  </p>
+                )}
               </li>
             ))}
           </ul>

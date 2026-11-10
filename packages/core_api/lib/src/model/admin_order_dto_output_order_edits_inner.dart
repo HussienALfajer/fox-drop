@@ -23,6 +23,8 @@ part 'admin_order_dto_output_order_edits_inner.g.dart';
 /// * [deliveryFee]
 /// * [total]
 /// * [extraPrepMin]
+/// * [responsible] - After the pickup: who bore the edit.
+/// * [charge] - Integer minor units (AP §8.6).
 /// * [acknowledgedAt] - «اطلعت على التعديل» on a restaurant device (RA §8.13).
 @BuiltValue()
 abstract class AdminOrderDtoOutputOrderEditsInner
@@ -59,6 +61,15 @@ abstract class AdminOrderDtoOutputOrderEditsInner
 
   @BuiltValueField(wireName: r'extraPrepMin')
   int? get extraPrepMin;
+
+  /// After the pickup: who bore the edit.
+  @BuiltValueField(wireName: r'responsible')
+  AdminOrderDtoOutputOrderEditsInnerResponsibleEnum? get responsible;
+  // enum responsibleEnum {  restaurant,  captain,  platform,  };
+
+  /// Integer minor units (AP §8.6).
+  @BuiltValueField(wireName: r'charge')
+  String? get charge;
 
   /// «اطلعت على التعديل» on a restaurant device (RA §8.13).
   @BuiltValueField(wireName: r'acknowledgedAt')
@@ -150,6 +161,22 @@ class _$AdminOrderDtoOutputOrderEditsInnerSerializer
         : serializers.serialize(
             object.extraPrepMin,
             specifiedType: const FullType.nullable(int),
+          );
+    yield r'responsible';
+    yield object.responsible == null
+        ? null
+        : serializers.serialize(
+            object.responsible,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderEditsInnerResponsibleEnum,
+            ),
+          );
+    yield r'charge';
+    yield object.charge == null
+        ? null
+        : serializers.serialize(
+            object.charge,
+            specifiedType: const FullType.nullable(String),
           );
     yield r'acknowledgedAt';
     yield object.acknowledgedAt == null
@@ -277,6 +304,28 @@ class _$AdminOrderDtoOutputOrderEditsInnerSerializer
           if (valueDes == null) continue;
           result.extraPrepMin = valueDes;
           break;
+        case r'responsible':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderEditsInnerResponsibleEnum,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderEditsInnerResponsibleEnum?;
+          if (valueDes == null) continue;
+          result.responsible = valueDes;
+          break;
+        case r'charge':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.charge = valueDes;
+          break;
         case r'acknowledgedAt':
           final valueDes =
               serializers.deserialize(
@@ -356,4 +405,30 @@ class AdminOrderDtoOutputOrderEditsInnerStatusEnum extends EnumClass {
       _$adminOrderDtoOutputOrderEditsInnerStatusEnumValues;
   static AdminOrderDtoOutputOrderEditsInnerStatusEnum valueOf(String name) =>
       _$adminOrderDtoOutputOrderEditsInnerStatusEnumValueOf(name);
+}
+
+/// After the pickup: who bore the edit.
+class AdminOrderDtoOutputOrderEditsInnerResponsibleEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'restaurant')
+  static const AdminOrderDtoOutputOrderEditsInnerResponsibleEnum restaurant =
+      _$adminOrderDtoOutputOrderEditsInnerResponsibleEnum_restaurant;
+  @BuiltValueEnumConst(wireName: r'captain')
+  static const AdminOrderDtoOutputOrderEditsInnerResponsibleEnum captain =
+      _$adminOrderDtoOutputOrderEditsInnerResponsibleEnum_captain;
+  @BuiltValueEnumConst(wireName: r'platform')
+  static const AdminOrderDtoOutputOrderEditsInnerResponsibleEnum platform =
+      _$adminOrderDtoOutputOrderEditsInnerResponsibleEnum_platform;
+
+  static Serializer<AdminOrderDtoOutputOrderEditsInnerResponsibleEnum>
+  get serializer =>
+      _$adminOrderDtoOutputOrderEditsInnerResponsibleEnumSerializer;
+
+  const AdminOrderDtoOutputOrderEditsInnerResponsibleEnum._(String name)
+    : super(name);
+
+  static BuiltSet<AdminOrderDtoOutputOrderEditsInnerResponsibleEnum>
+  get values => _$adminOrderDtoOutputOrderEditsInnerResponsibleEnumValues;
+  static AdminOrderDtoOutputOrderEditsInnerResponsibleEnum valueOf(
+    String name,
+  ) => _$adminOrderDtoOutputOrderEditsInnerResponsibleEnumValueOf(name);
 }

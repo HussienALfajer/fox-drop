@@ -697,6 +697,7 @@ test('adds an item to a ready order with the extra prep time', async ({ page }) 
           ...detail,
           status: 'ready',
           editChoices: {
+            afterPickup: false,
             extraPrepMaxMin: 60,
             items: [
               { id: friesId, name: 'بطاطا', category: 'وجبات', price: '300', optionGroups: [] },
@@ -728,6 +729,8 @@ test('adds an item to a ready order with the extra prep time', async ({ page }) 
         addsItems: true,
         backToPreparing: true,
         promisedAt: later(30),
+        afterPickup: false,
+        entries: [],
       },
     }),
   );
@@ -757,6 +760,7 @@ test('adds an item to a ready order with the extra prep time', async ({ page }) 
     extraPrepMin: 10,
     version: card.version,
     reason: 'اتفقنا مع الزبون',
+    responsible: null,
   });
 });
 

@@ -6,6 +6,80 @@ part of 'admin_edit_preview_dto.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const AdminEditPreviewDtoResponsibleEnum
+_$adminEditPreviewDtoResponsibleEnum_restaurant =
+    const AdminEditPreviewDtoResponsibleEnum._('restaurant');
+const AdminEditPreviewDtoResponsibleEnum
+_$adminEditPreviewDtoResponsibleEnum_captain =
+    const AdminEditPreviewDtoResponsibleEnum._('captain');
+const AdminEditPreviewDtoResponsibleEnum
+_$adminEditPreviewDtoResponsibleEnum_platform =
+    const AdminEditPreviewDtoResponsibleEnum._('platform');
+
+AdminEditPreviewDtoResponsibleEnum _$adminEditPreviewDtoResponsibleEnumValueOf(
+  String name,
+) {
+  switch (name) {
+    case 'restaurant':
+      return _$adminEditPreviewDtoResponsibleEnum_restaurant;
+    case 'captain':
+      return _$adminEditPreviewDtoResponsibleEnum_captain;
+    case 'platform':
+      return _$adminEditPreviewDtoResponsibleEnum_platform;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AdminEditPreviewDtoResponsibleEnum>
+_$adminEditPreviewDtoResponsibleEnumValues =
+    BuiltSet<AdminEditPreviewDtoResponsibleEnum>(
+      const <AdminEditPreviewDtoResponsibleEnum>[
+        _$adminEditPreviewDtoResponsibleEnum_restaurant,
+        _$adminEditPreviewDtoResponsibleEnum_captain,
+        _$adminEditPreviewDtoResponsibleEnum_platform,
+      ],
+    );
+
+Serializer<AdminEditPreviewDtoResponsibleEnum>
+_$adminEditPreviewDtoResponsibleEnumSerializer =
+    _$AdminEditPreviewDtoResponsibleEnumSerializer();
+
+class _$AdminEditPreviewDtoResponsibleEnumSerializer
+    implements PrimitiveSerializer<AdminEditPreviewDtoResponsibleEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'restaurant': 'restaurant',
+    'captain': 'captain',
+    'platform': 'platform',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'restaurant': 'restaurant',
+    'captain': 'captain',
+    'platform': 'platform',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[AdminEditPreviewDtoResponsibleEnum];
+  @override
+  final String wireName = 'AdminEditPreviewDtoResponsibleEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminEditPreviewDtoResponsibleEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminEditPreviewDtoResponsibleEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AdminEditPreviewDtoResponsibleEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$AdminEditPreviewDto extends AdminEditPreviewDto {
   @override
   final BuiltList<AdminEditDtoKeepInner> keep;
@@ -15,6 +89,8 @@ class _$AdminEditPreviewDto extends AdminEditPreviewDto {
   final String? deliveryFee;
   @override
   final int? extraPrepMin;
+  @override
+  final AdminEditPreviewDtoResponsibleEnum? responsible;
 
   factory _$AdminEditPreviewDto([
     void Function(AdminEditPreviewDtoBuilder)? updates,
@@ -25,6 +101,7 @@ class _$AdminEditPreviewDto extends AdminEditPreviewDto {
     required this.add,
     this.deliveryFee,
     this.extraPrepMin,
+    this.responsible,
   }) : super._();
   @override
   AdminEditPreviewDto rebuild(
@@ -42,7 +119,8 @@ class _$AdminEditPreviewDto extends AdminEditPreviewDto {
         keep == other.keep &&
         add == other.add &&
         deliveryFee == other.deliveryFee &&
-        extraPrepMin == other.extraPrepMin;
+        extraPrepMin == other.extraPrepMin &&
+        responsible == other.responsible;
   }
 
   @override
@@ -52,6 +130,7 @@ class _$AdminEditPreviewDto extends AdminEditPreviewDto {
     _$hash = $jc(_$hash, add.hashCode);
     _$hash = $jc(_$hash, deliveryFee.hashCode);
     _$hash = $jc(_$hash, extraPrepMin.hashCode);
+    _$hash = $jc(_$hash, responsible.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -62,7 +141,8 @@ class _$AdminEditPreviewDto extends AdminEditPreviewDto {
           ..add('keep', keep)
           ..add('add', add)
           ..add('deliveryFee', deliveryFee)
-          ..add('extraPrepMin', extraPrepMin))
+          ..add('extraPrepMin', extraPrepMin)
+          ..add('responsible', responsible))
         .toString();
   }
 }
@@ -89,6 +169,11 @@ class AdminEditPreviewDtoBuilder
   int? get extraPrepMin => _$this._extraPrepMin;
   set extraPrepMin(int? extraPrepMin) => _$this._extraPrepMin = extraPrepMin;
 
+  AdminEditPreviewDtoResponsibleEnum? _responsible;
+  AdminEditPreviewDtoResponsibleEnum? get responsible => _$this._responsible;
+  set responsible(AdminEditPreviewDtoResponsibleEnum? responsible) =>
+      _$this._responsible = responsible;
+
   AdminEditPreviewDtoBuilder() {
     AdminEditPreviewDto._defaults(this);
   }
@@ -100,6 +185,7 @@ class AdminEditPreviewDtoBuilder
       _add = $v.add.toBuilder();
       _deliveryFee = $v.deliveryFee;
       _extraPrepMin = $v.extraPrepMin;
+      _responsible = $v.responsible;
       _$v = null;
     }
     return this;
@@ -128,6 +214,7 @@ class AdminEditPreviewDtoBuilder
             add: add.build(),
             deliveryFee: deliveryFee,
             extraPrepMin: extraPrepMin,
+            responsible: responsible,
           );
     } catch (_) {
       late String _$failedField;

@@ -5347,6 +5347,11 @@ export interface components {
             deliveryFee: string | null;
             /** @description Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise). */
             extraPrepMin: number | null;
+            /**
+             * @description After the pickup (picked_up, arrived) only, and required then (400 invalid_edit otherwise; the preview answers without it): who bears the removed items and the lower fee (AP §9.3.3, docs/domain/09), «المطعم», «الكابتن» or «المنصة»; never the customer. After the pickup an edit only removes lines or lowers quantities and lowers the fee.
+             * @default null
+             */
+            responsible: ("restaurant" | "captain" | "platform") | null;
             /** @description The order's version the dialog showed; another is 409 order_state_changed, so the edit is the one previewed. */
             version: number;
             /** @description Required (AP §9.3.2): the internal note, never shown to the apps. */
@@ -5370,6 +5375,11 @@ export interface components {
             deliveryFee: string | null;
             /** @description Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise). */
             extraPrepMin: number | null;
+            /**
+             * @description After the pickup (picked_up, arrived) only, and required then (400 invalid_edit otherwise; the preview answers without it): who bears the removed items and the lower fee (AP §9.3.3, docs/domain/09), «المطعم», «الكابتن» or «المنصة»; never the customer. After the pickup an edit only removes lines or lowers quantities and lowers the fee.
+             * @default null
+             */
+            responsible: ("restaurant" | "captain" | "platform") | null;
         };
         AdminEditPreviewAnswerDto_Output: {
             currency: string;
@@ -5418,6 +5428,29 @@ export interface components {
             backToPreparing: boolean;
             /** @description The new promised time when it moves. */
             promisedAt: string | null;
+            /** @description The order was picked up: the edit needs a responsible party (AP §9.3.3). */
+            afterPickup: boolean;
+            /** @description After the pickup, every entry the edit would post for the responsible party (docs/domain/09); empty before the pickup or until the party is chosen. */
+            entries: {
+                /** @description The journal type, such as merchant.debit. */
+                type: string;
+                /** @description The journal's reason, its line on the party's account (RA §12.5): «أصناف حُذفت بعد الاستلام», «خُفّضت أجرة التوصيل بعد الاستلام», «إلغاء عمولة». */
+                reason: string | null;
+                /** @description The account purpose, such as merchant.account. */
+                account: string;
+                party: {
+                    /** @enum {string} */
+                    kind: "merchant" | "captain" | "platform";
+                    id: string | null;
+                    name: string | null;
+                };
+                /** @description From the platform's side: + a debit, − a credit. */
+                amount: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+            }[];
         };
         AdminChangeTimeDto: {
             /** @description Whole minutes added, from 1 to order.eta_change_max_min (owner decision 2026-11-10); 400 invalid_time_change otherwise. */
@@ -5796,8 +5829,10 @@ export interface components {
                     /** @description order.eta_change_max_min. */
                     maxMin: number;
                 } | null;
-                /** @description While placed, accepted or ready: «تعديل الطلب» (AP §9.3.3). */
+                /** @description While placed, accepted, ready, picked up or arrived: «تعديل الطلب» (AP §9.3.3). */
                 editChoices: {
+                    /** @description Picked up or arrived: only lines removed or lowered and a lower fee, with a responsible party (no menu). */
+                    afterPickup: boolean;
                     /** @description order.eta_change_max_min. */
                     extraPrepMaxMin: number;
                     /** @description The items customers can order now, with their available options. */
@@ -5864,6 +5899,10 @@ export interface components {
                         after: string;
                     };
                     extraPrepMin: number | null;
+                    /** @description After the pickup: who bore the edit. */
+                    responsible: ("restaurant" | "captain" | "platform") | null;
+                    /** @description After the pickup: what the responsible party bore (the removed value or its merchant net, and the fee cut). */
+                    charge: string | null;
                     /** @description «اطلعت على التعديل» on a restaurant device (RA §8.13). */
                     acknowledgedAt: string | null;
                 }[];

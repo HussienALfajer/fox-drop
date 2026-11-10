@@ -25,8 +25,6 @@ import 'package:core_api/src/model/admin_board_dto_output.dart';
 import 'package:core_api/src/model/admin_cancel_dto.dart';
 import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner.dart';
-import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner_amount.dart';
-import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner_party.dart';
 import 'package:core_api/src/model/admin_cancel_preview_dto.dart';
 import 'package:core_api/src/model/admin_change_time_dto.dart';
 import 'package:core_api/src/model/admin_cities_dto_output.dart';
@@ -43,6 +41,9 @@ import 'package:core_api/src/model/admin_edit_dto_keep_inner.dart';
 import 'package:core_api/src/model/admin_edit_preview_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_edit_preview_answer_dto_output_before.dart';
 import 'package:core_api/src/model/admin_edit_preview_answer_dto_output_changes_inner.dart';
+import 'package:core_api/src/model/admin_edit_preview_answer_dto_output_entries_inner.dart';
+import 'package:core_api/src/model/admin_edit_preview_answer_dto_output_entries_inner_amount.dart';
+import 'package:core_api/src/model/admin_edit_preview_answer_dto_output_entries_inner_party.dart';
 import 'package:core_api/src/model/admin_edit_preview_dto.dart';
 import 'package:core_api/src/model/admin_emergency_stop_dto_output.dart';
 import 'package:core_api/src/model/admin_emergency_stop_dto_output_stop.dart';
@@ -413,8 +414,6 @@ part 'serializers.g.dart';
   AdminCancelDto,
   AdminCancelPreviewAnswerDtoOutput,
   AdminCancelPreviewAnswerDtoOutputEntriesInner,
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerAmount,
-  AdminCancelPreviewAnswerDtoOutputEntriesInnerParty,
   AdminCancelPreviewDto,
   AdminChangeTimeDto,
   AdminCitiesDtoOutput,
@@ -431,6 +430,9 @@ part 'serializers.g.dart';
   AdminEditPreviewAnswerDtoOutput,
   AdminEditPreviewAnswerDtoOutputBefore,
   AdminEditPreviewAnswerDtoOutputChangesInner,
+  AdminEditPreviewAnswerDtoOutputEntriesInner,
+  AdminEditPreviewAnswerDtoOutputEntriesInnerAmount,
+  AdminEditPreviewAnswerDtoOutputEntriesInnerParty,
   AdminEditPreviewDto,
   AdminEmergencyStopDtoOutput,
   AdminEmergencyStopDtoOutputStop,
@@ -1153,6 +1155,12 @@ Serializers serializers =
               FullType(MerchantOrdersDtoOutputOrdersInnerLinesInner),
             ]),
             () => ListBuilder<MerchantOrdersDtoOutputOrdersInnerLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminEditPreviewAnswerDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminEditPreviewAnswerDtoOutputEntriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

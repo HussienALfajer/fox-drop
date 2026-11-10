@@ -26,6 +26,7 @@ const facts: OrderPushFacts = {
   receivedAmount: '100 ₺',
   offerPay: '25 ₺',
   unanswered: null,
+  merchantDebit: null,
 };
 
 const sent = (type: string, reason: string | null = null, more: Partial<OrderPushFacts> = {}) =>
@@ -76,6 +77,22 @@ describe('the pushes of an order event', () => {
       [captain, 'captain.order_edited', amounts],
     ]);
     expect(sent('order.edit_acknowledged')).toEqual([]);
+  });
+
+  it('tells the captain the new amount to collect after the pickup, and the owners the debit (CA §9.10, RA §8.13)', () => {
+    const owners = { ...restaurant, owners: true };
+    expect(
+      sent('order.edited', 'removed_after_pickup', { actor: 'admin', merchantDebit: '120 ₺' }),
+    ).toEqual([
+      [customer, 'customer.order_edited', { المبلغ: '160 ₺' }],
+      [owners, 'merchant.debited_after_pickup', { رقم: '10002', المبلغ: '120 ₺' }],
+      [captain, 'captain.items_removed_after_pickup', { رقم: '10002', المبلغ: '160 ₺' }],
+    ]);
+    // Another party responsible: the restaurant hears nothing.
+    expect(sent('order.edited', 'fee_lowered_after_pickup', { actor: 'admin' })).toEqual([
+      [customer, 'customer.order_edited', { المبلغ: '160 ₺' }],
+      [captain, 'captain.collect_lowered', { رقم: '10002', المبلغ: '160 ₺' }],
+    ]);
   });
 
   it('rings every device of the restaurant with a new order (RA §16 #1)', () => {

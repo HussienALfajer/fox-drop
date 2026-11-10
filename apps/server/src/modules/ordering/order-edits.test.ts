@@ -19,6 +19,7 @@ import {
   type DevelopmentCodeSender,
   MerchantAccountsService,
 } from '../identity/index.js';
+import { type AccountPurpose, LedgerService } from '../ledger/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 
@@ -888,5 +889,304 @@ describe('POST /v1/admin/orders/{orderId}/edit before the pickup (AP §9.3.3)', 
     expect(preparation.ready).toBe(false);
     expect(new Date(preparation.prepDueAt).getTime() - Date.now()).toBeGreaterThan(14 * MINUTE);
     expect((await customerOrder(order.customer, order.id)).edited).toBe(true);
+  });
+});
+
+// About 55 m north of the customer's pin, inside the 200 m.
+const atCustomer = { latitude: 36.5905, longitude: 37.046 };
+
+// An order the captain picked up (two shawarma, 24000; fee 4000; total
+// 28000), with the commands of the door.
+async function pickedUpOrder() {
+  const at = await captainAtRestaurant();
+  expect((await at.captain.requestPickup(at.order.id, '24000')).statusCode).toBe(200);
+  const confirmed = await app.inject({
+    method: 'POST',
+    url: `/v1/merchant/orders/${at.order.id}/pickup/confirm`,
+    headers: { ...at.order.cashier, 'idempotency-key': randomUUID() },
+  });
+  expect(confirmed.statusCode).toBe(200);
+  const fix = () => ({
+    ...atCustomer,
+    accuracyMetres: 10,
+    recordedAt: new Date().toISOString(),
+    simulated: false,
+  });
+  const captainCommand = (path: string, payload: object) =>
+    app.inject({
+      method: 'POST',
+      url: `/v1/captain/orders/${at.order.id}/${path}`,
+      headers: { ...at.captain.headers, 'idempotency-key': randomUUID() },
+      payload,
+    });
+  const arriveAtCustomer = () =>
+    captainCommand('arrive-at-customer', { location: fix(), away: null });
+  const deliver = (amount: string) =>
+    captainCommand('deliver', {
+      received: [{ currency: 'TRY', amount }],
+      change: [],
+      amountDue: { amount, currency: 'TRY' },
+      shortfall: null,
+      away: null,
+      location: fix(),
+    });
+  return { ...at, arriveAtCustomer, deliver };
+}
+
+// The balances an order after the pickup moves, as the specs show them
+// (the restaurant account − what it owes, earnings + what the captain is
+// owed, the platform's revenue + and its costs +). The cases run in turn, so
+// a delta is one order's.
+async function balances(captainId: string | null = null) {
+  const ledger = app.get(LedgerService);
+  const platform = async (purpose: AccountPurpose) =>
+    (
+      await ledger.balance(
+        await ledger.openAccount({ cityId: azaz, purpose, ownerId: null, currency: 'TRY' }),
+      )
+    ).amount;
+  const owned = async (ownerId: string, purpose: AccountPurpose) => {
+    const account = (await ledger.ownerAccounts(azaz, ownerId, purpose)).find(
+      (each) => each.currency === 'TRY',
+    );
+    return account ? (await ledger.balance(account.id)).amount : 0n;
+  };
+  return {
+    clearing: await platform('platform.order_clearing'),
+    commission: await platform('platform.revenue_commission'),
+    delivery: await platform('platform.revenue_delivery'),
+    operatingCost: await platform('platform.operating_cost'),
+    restaurant: await owned(restaurant, 'merchant.account'),
+    earnings: captainId === null ? 0n : await owned(captainId, 'captain.earnings'),
+  };
+}
+
+type Balances = Awaited<ReturnType<typeof balances>>;
+
+const moneyMoved = (before: Balances, after: Balances) =>
+  Object.fromEntries(
+    (Object.keys(before) as (keyof Balances)[]).map((key) => [key, after[key] - before[key]]),
+  );
+
+// One shawarma of the two removed: 12000 out; commission 15%.
+const oneShawarma = {
+  keep: [{ position: 0, quantity: 1 }],
+  add: [],
+  deliveryFee: null,
+  extraPrepMin: null,
+};
+
+// The captain's order pay on these short trips (the pay table's minimum).
+const ORDER_PAY = 2_500n;
+
+describe('POST /v1/admin/orders/{orderId}/edit after the pickup (AP §9.3.3)', () => {
+  it('books a removal with the restaurant responsible: the value returned, its commission reversed', async () => {
+    const before = await balances();
+    const order = await pickedUpOrder();
+    const preview = await order.ops.editPreview(order.order.id, {
+      ...oneShawarma,
+      responsible: 'restaurant',
+    });
+    expect(preview.statusCode).toBe(200);
+    expect(preview.json()).toMatchObject({ afterPickup: true, addsItems: false });
+    expect(
+      preview
+        .json()
+        .entries.map((entry: { type: string; account: string; amount: { amount: string } }) => [
+          entry.type,
+          entry.account,
+          entry.amount.amount,
+        ]),
+    ).toEqual([
+      ['merchant.debit', 'merchant.account', '12000'],
+      ['merchant.debit', 'platform.order_clearing', '-12000'],
+      ['merchant.commission', 'merchant.account', '-1800'],
+      ['merchant.commission', 'platform.revenue_commission', '1800'],
+    ]);
+    const answer = await order.ops.edit(order.order.id, {
+      ...oneShawarma,
+      responsible: 'restaurant',
+    });
+    expect(answer.statusCode).toBe(200);
+    expect(await money(order.order.id)).toMatchObject({ items_value: '12000', total: '16000' });
+    expect(await editRow(order.order.id)).toMatchObject({
+      status: 'picked_up',
+      responsible: 'restaurant',
+      charge: '12000',
+      commission_cut: '1800',
+    });
+    expect(await outboxReason(order.order.id, 'order.edited')).toBe('removed_after_pickup');
+    // The panel: what the captain paid stays, and the edit names its party.
+    const detail = await order.ops.detail(order.order.id);
+    expect(detail.money.pickupPayment).toBe('24000');
+    expect(detail.edits.at(-1)).toMatchObject({ responsible: 'restaurant', charge: '12000' });
+    expect(detail.editChoices).toMatchObject({ afterPickup: true, items: [] });
+    // The restaurant's prompt is for edits before the pickup only.
+    expect((await board(order.order.cashier, order.order.id)).edits).toEqual([]);
+    // The captain collects the new total, and the clearing account settles.
+    expect((await order.captain.active()).json().order.collect.amount).toBe('16000');
+    expect((await order.arriveAtCustomer()).statusCode).toBe(200);
+    expect((await order.deliver('16000')).statusCode).toBe(200);
+    expect(moneyMoved(before, await balances())).toMatchObject({
+      clearing: 0n,
+      // The restaurant returns 12000 and pays the commission on what it kept.
+      restaurant: -(12_000n + 1_800n),
+      commission: 1_800n,
+      delivery: 4_000n,
+      operatingCost: 0n,
+    });
+  });
+
+  it('charges the captain the merchant net and a lower fee, and the commission recovers the rest', async () => {
+    const before = await balances();
+    const order = await pickedUpOrder();
+    expect((await order.arriveAtCustomer()).statusCode).toBe(200);
+    const answer = await order.ops.edit(order.order.id, {
+      ...oneShawarma,
+      deliveryFee: '2000',
+      responsible: 'captain',
+    });
+    expect(answer.statusCode).toBe(200);
+    expect(await money(order.order.id)).toMatchObject({
+      items_value: '12000',
+      delivery_fee: '2000',
+      total: '14000',
+    });
+    expect(await editRow(order.order.id)).toMatchObject({
+      status: 'arrived',
+      responsible: 'captain',
+      // 12000 − 1800 of merchant net, and the 2000 off the fee.
+      charge: '12200',
+      commission_cut: '1800',
+    });
+    expect(await outboxReason(order.order.id, 'order.edited')).toBe('removed_after_pickup');
+    expect((await order.deliver('14000')).statusCode).toBe(200);
+    expect(moneyMoved(before, await balances(order.captain.captainId))).toMatchObject({
+      clearing: 0n,
+      earnings: ORDER_PAY - 12_200n,
+      // The restaurant was paid in full: it owes the commission on all
+      // 24000, of which the removed items' 1800 recovers the pickup payment.
+      restaurant: -3_600n,
+      commission: 1_800n,
+      // The fee at the pickup is the platform's revenue; the captain bore the cut.
+      delivery: 4_000n,
+      operatingCost: 0n,
+    });
+  });
+
+  it('books a lower fee alone on the platform as an operating cost', async () => {
+    const before = await balances();
+    const order = await pickedUpOrder();
+    const answer = await order.ops.edit(order.order.id, {
+      keep: [{ position: 0, quantity: 2 }],
+      add: [],
+      deliveryFee: '1000',
+      extraPrepMin: null,
+      responsible: 'platform',
+    });
+    expect(answer.statusCode).toBe(200);
+    expect(await outboxReason(order.order.id, 'order.edited')).toBe('fee_lowered_after_pickup');
+    expect(await money(order.order.id)).toMatchObject({ total: '25000' });
+    expect((await order.arriveAtCustomer()).statusCode).toBe(200);
+    expect((await order.deliver('25000')).statusCode).toBe(200);
+    expect(moneyMoved(before, await balances())).toMatchObject({
+      clearing: 0n,
+      operatingCost: 3_000n,
+      restaurant: -3_600n,
+      commission: 3_600n,
+      delivery: 4_000n,
+    });
+  });
+
+  it('settles several edits with different parties, and previews the frozen commission', async () => {
+    const before = await balances();
+    const order = await pickedUpOrder();
+    expect(
+      (await order.ops.edit(order.order.id, { ...oneShawarma, responsible: 'restaurant' }))
+        .statusCode,
+    ).toBe(200);
+    const lowerFee = {
+      keep: [{ position: 0, quantity: 1 }],
+      add: [],
+      deliveryFee: '1000',
+      extraPrepMin: null,
+      responsible: 'captain',
+    };
+    // The restaurant already gave back 12000 and its commission on them: it
+    // owes 1800 and keeps 10200, and the captain's fee cut changes neither.
+    const preview = (await order.ops.editPreview(order.order.id, lowerFee)).json();
+    expect(preview.before).toMatchObject({ commission: '1800', merchantNet: '10200' });
+    expect(preview.after).toMatchObject({ commission: '1800', merchantNet: '10200' });
+    expect(preview.entries.map((entry: { reason: string }) => entry.reason)).toEqual([
+      'خُفّضت أجرة التوصيل بعد الاستلام',
+      'خُفّضت أجرة التوصيل بعد الاستلام',
+    ]);
+    expect((await order.ops.edit(order.order.id, lowerFee)).statusCode).toBe(200);
+    expect(await money(order.order.id)).toMatchObject({ total: '13000' });
+    expect((await order.arriveAtCustomer()).statusCode).toBe(200);
+    expect((await order.deliver('13000')).statusCode).toBe(200);
+    expect(moneyMoved(before, await balances(order.captain.captainId))).toMatchObject({
+      clearing: 0n,
+      restaurant: -(12_000n + 3_600n - 1_800n),
+      earnings: ORDER_PAY - 3_000n,
+      commission: 1_800n,
+      delivery: 4_000n,
+    });
+  });
+
+  it('previews a captain-responsible removal with the commission left on the restaurant', async () => {
+    const order = await pickedUpOrder();
+    const preview = (
+      await order.ops.editPreview(order.order.id, { ...oneShawarma, responsible: 'captain' })
+    ).json();
+    expect(preview.before).toMatchObject({ commission: '3600', merchantNet: '20400' });
+    expect(preview.after).toMatchObject({ commission: '3600', merchantNet: '20400' });
+    expect(preview.entries[0]).toMatchObject({
+      type: 'earn.charge',
+      reason: 'أصناف حُذفت بعد الاستلام',
+      account: 'captain.earnings',
+      party: { kind: 'captain', name: 'كابتن التعديل' },
+      amount: { amount: '10200', currency: 'TRY' },
+    });
+    // A dialog shown before the order moved is refused as such.
+    const stale = await order.ops.edit(order.order.id, {
+      ...oneShawarma,
+      responsible: 'captain',
+      version: (await order.ops.detail(order.order.id)).version - 1,
+    });
+    expect(stale.statusCode).toBe(409);
+    expect(stale.json().error).toBe('order_state_changed');
+  });
+
+  it('refuses what an edit after the pickup cannot do', async () => {
+    const order = await pickedUpOrder();
+    const refused = async (body: object, status = 400) => {
+      const answer = await order.ops.edit(order.order.id, body);
+      expect(answer.statusCode).toBe(status);
+      return answer.json().error;
+    };
+    // No responsible party, or the customer.
+    expect(await refused(oneShawarma)).toBe('invalid_edit');
+    await refused({ ...oneShawarma, responsible: 'customer' });
+    // Additions, a raised quantity and a higher fee.
+    expect(await refused({ ...addFries, responsible: 'platform' })).toBe('invalid_edit');
+    expect(
+      await refused({
+        keep: [{ position: 0, quantity: 3 }],
+        add: [],
+        deliveryFee: null,
+        extraPrepMin: null,
+        responsible: 'platform',
+      }),
+    ).toBe('invalid_edit');
+    expect(await refused({ ...oneShawarma, deliveryFee: '5000', responsible: 'platform' })).toBe(
+      'invalid_edit',
+    );
+    expect(await editRow(order.order.id)).toBeUndefined();
+    // Before the pickup, a responsible party is refused.
+    const accepted = await acceptedOrder();
+    const before = await order.ops.edit(accepted.id, { ...addFries, responsible: 'restaurant' });
+    expect(before.statusCode).toBe(400);
+    expect(before.json().error).toBe('invalid_edit');
   });
 });

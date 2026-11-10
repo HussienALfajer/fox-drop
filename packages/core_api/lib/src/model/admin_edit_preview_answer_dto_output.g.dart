@@ -22,6 +22,10 @@ class _$AdminEditPreviewAnswerDtoOutput
   final bool backToPreparing;
   @override
   final DateTime? promisedAt;
+  @override
+  final bool afterPickup;
+  @override
+  final BuiltList<AdminEditPreviewAnswerDtoOutputEntriesInner> entries;
 
   factory _$AdminEditPreviewAnswerDtoOutput([
     void Function(AdminEditPreviewAnswerDtoOutputBuilder)? updates,
@@ -35,6 +39,8 @@ class _$AdminEditPreviewAnswerDtoOutput
     required this.addsItems,
     required this.backToPreparing,
     this.promisedAt,
+    required this.afterPickup,
+    required this.entries,
   }) : super._();
   @override
   AdminEditPreviewAnswerDtoOutput rebuild(
@@ -55,7 +61,9 @@ class _$AdminEditPreviewAnswerDtoOutput
         changes == other.changes &&
         addsItems == other.addsItems &&
         backToPreparing == other.backToPreparing &&
-        promisedAt == other.promisedAt;
+        promisedAt == other.promisedAt &&
+        afterPickup == other.afterPickup &&
+        entries == other.entries;
   }
 
   @override
@@ -68,6 +76,8 @@ class _$AdminEditPreviewAnswerDtoOutput
     _$hash = $jc(_$hash, addsItems.hashCode);
     _$hash = $jc(_$hash, backToPreparing.hashCode);
     _$hash = $jc(_$hash, promisedAt.hashCode);
+    _$hash = $jc(_$hash, afterPickup.hashCode);
+    _$hash = $jc(_$hash, entries.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -81,7 +91,9 @@ class _$AdminEditPreviewAnswerDtoOutput
           ..add('changes', changes)
           ..add('addsItems', addsItems)
           ..add('backToPreparing', backToPreparing)
-          ..add('promisedAt', promisedAt))
+          ..add('promisedAt', promisedAt)
+          ..add('afterPickup', afterPickup)
+          ..add('entries', entries))
         .toString();
   }
 }
@@ -131,6 +143,18 @@ class AdminEditPreviewAnswerDtoOutputBuilder
   DateTime? get promisedAt => _$this._promisedAt;
   set promisedAt(DateTime? promisedAt) => _$this._promisedAt = promisedAt;
 
+  bool? _afterPickup;
+  bool? get afterPickup => _$this._afterPickup;
+  set afterPickup(bool? afterPickup) => _$this._afterPickup = afterPickup;
+
+  ListBuilder<AdminEditPreviewAnswerDtoOutputEntriesInner>? _entries;
+  ListBuilder<AdminEditPreviewAnswerDtoOutputEntriesInner> get entries =>
+      _$this._entries ??=
+          ListBuilder<AdminEditPreviewAnswerDtoOutputEntriesInner>();
+  set entries(
+    ListBuilder<AdminEditPreviewAnswerDtoOutputEntriesInner>? entries,
+  ) => _$this._entries = entries;
+
   AdminEditPreviewAnswerDtoOutputBuilder() {
     AdminEditPreviewAnswerDtoOutput._defaults(this);
   }
@@ -145,6 +169,8 @@ class AdminEditPreviewAnswerDtoOutputBuilder
       _addsItems = $v.addsItems;
       _backToPreparing = $v.backToPreparing;
       _promisedAt = $v.promisedAt;
+      _afterPickup = $v.afterPickup;
+      _entries = $v.entries.toBuilder();
       _$v = null;
     }
     return this;
@@ -188,6 +214,12 @@ class AdminEditPreviewAnswerDtoOutputBuilder
               'backToPreparing',
             ),
             promisedAt: promisedAt,
+            afterPickup: BuiltValueNullFieldError.checkNotNull(
+              afterPickup,
+              r'AdminEditPreviewAnswerDtoOutput',
+              'afterPickup',
+            ),
+            entries: entries.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -198,6 +230,9 @@ class AdminEditPreviewAnswerDtoOutputBuilder
         after.build();
         _$failedField = 'changes';
         changes.build();
+
+        _$failedField = 'entries';
+        entries.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminEditPreviewAnswerDtoOutput',

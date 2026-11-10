@@ -147,6 +147,21 @@ class OrderEdited extends Alert {
   final Money collect;
 }
 
+/// «حُذفت أصناف من الطلب — المبلغ الجديد للتحصيل {المبلغ}»: operations
+/// removed items after the pickup, which the captain does not deliver (CA
+/// §9.10, §14 #10); the order shows its new lines.
+class ItemsRemovedAfterPickup extends Alert {
+  const ItemsRemovedAfterPickup(this.collect);
+  final Money collect;
+}
+
+/// The new amount to collect after operations lowered the delivery fee once
+/// the order was picked up (CA §9.10).
+class CollectLowered extends Alert {
+  const CollectLowered(this.collect);
+  final Money collect;
+}
+
 /// The offers and orders answered on this phone, whose closing it does not
 /// announce as another's.
 class Answered {
@@ -215,6 +230,16 @@ List<Alert> alertStep(
         Money(order.collect.amount, order.collect.currency),
       ),
     );
+  }
+  // CA §9.10: after the pickup operations only remove items or lower the
+  // fee (AP §9.3.3).
+  if (was.pickup.pickedUpAt != null && order.pickup.pickedUpAt != null) {
+    final collect = Money(order.collect.amount, order.collect.currency);
+    if (was.lines != order.lines) {
+      alerts.add(ItemsRemovedAfterPickup(collect));
+    } else if (was.collect.amount != order.collect.amount) {
+      alerts.add(CollectLowered(collect));
+    }
   }
   if (was.pickup.disputedAt == null && order.pickup.disputedAt != null) {
     alerts.add(const PickupDisputed());

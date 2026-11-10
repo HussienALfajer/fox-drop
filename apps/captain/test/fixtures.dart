@@ -99,6 +99,8 @@ Map<String, Object?> orderJson({
   bool editUnacknowledged = false,
   String pickupPayment = '40000',
   String collect = '41000',
+  int quantity = 2,
+  bool pickedUp = false,
 }) {
   final atRestaurant = track != 'assigned';
   final atCustomer = track == 'at_customer';
@@ -129,7 +131,7 @@ Map<String, Object?> orderJson({
     'lines': [
       {
         'name': 'شاورما',
-        'quantity': 2,
+        'quantity': quantity,
         'options': [
           {'name': 'كبير'},
         ],
@@ -142,7 +144,7 @@ Map<String, Object?> orderJson({
     'pickup': {
       'proposedLines': [moneyJson('40000')],
       'request': request,
-      'pickedUpAt': null,
+      'pickedUpAt': pickedUp ? now.toIso8601String() : null,
       'disputedAt': disputedAt?.toIso8601String(),
     },
     'customer': {
