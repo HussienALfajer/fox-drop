@@ -121,6 +121,10 @@ extension CaptainTexts on AppLocalizations {
       moneyOf(pay),
       moneyOf(collect),
     ),
+    ItemsRemovedAfterPickup(:final collect) => captainItemsRemovedAfterPickup(
+      moneyOf(collect),
+    ),
+    CollectLowered(:final collect) => captainCollectLowered(moneyOf(collect)),
   };
 
   /// What to do about the cash paid to the restaurant on a cancelled order

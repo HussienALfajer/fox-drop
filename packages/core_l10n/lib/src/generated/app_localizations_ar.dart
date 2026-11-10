@@ -2027,6 +2027,16 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String captainItemsRemovedAfterPickup(String collect) {
+    return 'حُذفت أصناف من الطلب — المبلغ الجديد للتحصيل $collect';
+  }
+
+  @override
+  String captainCollectLowered(String collect) {
+    return 'المبلغ الجديد للتحصيل: $collect';
+  }
+
+  @override
   String get customerLineAdded => 'أُضيف';
 
   @override

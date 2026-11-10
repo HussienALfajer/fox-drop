@@ -3364,6 +3364,18 @@ abstract class AppLocalizations {
   /// **'تم تعديل الطلب — المبلغ الجديد للمطعم {pay}، للتحصيل {collect}'**
   String captainOrderEdited(String pay, String collect);
 
+  /// The chime after operations removed items after the pickup (CA §9.10); the captain does not deliver them. The amount formatted with formatMoney.
+  ///
+  /// In ar, this message translates to:
+  /// **'حُذفت أصناف من الطلب — المبلغ الجديد للتحصيل {collect}'**
+  String captainItemsRemovedAfterPickup(String collect);
+
+  /// The chime after operations lowered the delivery fee after the pickup (CA §9.10: the new amount to collect; the wording ours, to confirm with the owner). The amount formatted with formatMoney.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ الجديد للتحصيل: {collect}'**
+  String captainCollectLowered(String collect);
+
   /// The mark of a line FOX DROP added (CU §11.6).
   ///
   /// In ar, this message translates to:
