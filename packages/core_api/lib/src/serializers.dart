@@ -106,6 +106,9 @@ import 'package:core_api/src/model/admin_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_dispute.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_requests_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_requests_inner_closed_by.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_reassign_choices.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_reassign_choices_reasons_inner.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_reassignments_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_rejection.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_removed_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_time_change.dart';
@@ -133,6 +136,10 @@ import 'package:core_api/src/model/admin_reason_lists_dto_output.dart';
 import 'package:core_api/src/model/admin_reason_lists_dto_output_lists_inner.dart';
 import 'package:core_api/src/model/admin_reason_lists_dto_output_lists_inner_reasons_inner.dart';
 import 'package:core_api/src/model/admin_reason_order_dto_output.dart';
+import 'package:core_api/src/model/admin_reassign_dto.dart';
+import 'package:core_api/src/model/admin_reassign_preview_answer_dto_output.dart';
+import 'package:core_api/src/model/admin_reassign_preview_answer_dto_output_entries_inner.dart';
+import 'package:core_api/src/model/admin_reassign_preview_dto.dart';
 import 'package:core_api/src/model/admin_record_arrival_dto.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_amount_due.dart';
@@ -191,6 +198,7 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_prepara
 import 'package:core_api/src/model/captain_active_order_dto_output_order_radii.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant_location.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_withdrawn.dart';
 import 'package:core_api/src/model/captain_arrive_at_customer_dto.dart';
 import 'package:core_api/src/model/captain_arrive_at_customer_dto_away.dart';
 import 'package:core_api/src/model/captain_arrive_dto.dart';
@@ -521,6 +529,9 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderPickupDispute,
   AdminOrderDtoOutputOrderPickupRequestsInner,
   AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy,
+  AdminOrderDtoOutputOrderReassignChoices,
+  AdminOrderDtoOutputOrderReassignChoicesReasonsInner,
+  AdminOrderDtoOutputOrderReassignmentsInner,
   AdminOrderDtoOutputOrderRejection,
   AdminOrderDtoOutputOrderRemovedLinesInner,
   AdminOrderDtoOutputOrderTimeChange,
@@ -548,6 +559,10 @@ part 'serializers.g.dart';
   AdminReasonListsDtoOutputListsInner,
   AdminReasonListsDtoOutputListsInnerReasonsInner,
   AdminReasonOrderDtoOutput,
+  AdminReassignDto,
+  AdminReassignPreviewAnswerDtoOutput,
+  AdminReassignPreviewAnswerDtoOutputEntriesInner,
+  AdminReassignPreviewDto,
   AdminRecordArrivalDto,
   AdminRecordDeliveryDto,
   AdminRecordDeliveryDtoAmountDue,
@@ -606,6 +621,7 @@ part 'serializers.g.dart';
   CaptainActiveOrderDtoOutputOrderRadii,
   CaptainActiveOrderDtoOutputOrderRestaurant,
   CaptainActiveOrderDtoOutputOrderRestaurantLocation,
+  CaptainActiveOrderDtoOutputWithdrawn,
   CaptainArriveAtCustomerDto,
   CaptainArriveAtCustomerDtoAway,
   CaptainArriveDto,
@@ -1162,6 +1178,15 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminOrderDtoOutputOrderReassignChoicesReasonsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderDtoOutputOrderReassignChoicesReasonsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(
                 AdminOrderDtoOutputOrderEditChoicesItemsInnerOptionGroupsInner,
               ),
@@ -1252,6 +1277,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminOrderDtoOutputOrderReassignmentsInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderReassignmentsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CustomerNotificationsDtoOutputNotificationsInner),
             ]),
             () =>
@@ -1300,6 +1331,13 @@ Serializers serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(AdminEditDtoAddInner)]),
             () => ListBuilder<AdminEditDtoAddInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminReassignPreviewAnswerDtoOutputEntriesInner),
+            ]),
+            () =>
+                ListBuilder<AdminReassignPreviewAnswerDtoOutputEntriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

@@ -45,7 +45,7 @@ import {
   type PickupRequestView,
   pickupRequestsOf,
 } from './pickup-views.js';
-import { collections, orderOutcomeRows, orders, pickupRequests } from './schema.js';
+import { collections, orderOutcomeRows, orders, pickupRequests, reassignments } from './schema.js';
 import { outcomeEntries, type OutcomeFood, type SetOutcome } from './outcome.js';
 import { pendingOutcome, readOutcomeFacts } from './outcome-facts.js';
 import {
@@ -162,6 +162,18 @@ export interface CaptainCancellation {
   at: Date;
 }
 
+// CA §9.10 (slice 2.12a): operations took the order from the captain before
+// the pickup: «سُحب منك الطلب: {السبب}», and the cash answer once they had
+// reached the restaurant (AP §8.1).
+export interface CaptainWithdrawal {
+  orderId: string;
+  number: bigint;
+  // The reassignment reason's label as chosen.
+  reason: string;
+  cash: 'returned' | 'not_returned' | 'not_paid' | null;
+  at: Date;
+}
+
 // CA §9.10, §9.12 (slice 2.11a): operations set the outcome of the
 // captain's order: «أنهت العمليات الطلب: {النتيجة}.», where the food goes
 // (null when delivered), and the pay or the charge it brought.
@@ -272,6 +284,60 @@ export class CaptainOrders {
         row.compensation === null ? null : { amount: row.compensation, currency: row.currency },
       at: row.at,
     };
+  }
+
+  // CA §9.10 (slice 2.12a): the captain's latest withdrawal within
+  // CANCELLED_CARD_MS that they have not acknowledged, for the card «سُحب
+  // منك الطلب: {السبب}» with the cash instruction; null otherwise.
+  async withdrawn(captainId: string, now: Date): Promise<CaptainWithdrawal | null> {
+    const since = new Date(now.getTime() - CANCELLED_CARD_MS);
+    const [row] = await this.database.db
+      .select({
+        orderId: reassignments.orderId,
+        number: orders.number,
+        reason: reassignments.reasonLabel,
+        cash: reassignments.cash,
+        at: reassignments.at,
+      })
+      .from(reassignments)
+      .innerJoin(
+        orders,
+        and(eq(orders.id, reassignments.orderId), eq(orders.placedAt, reassignments.orderPlacedAt)),
+      )
+      .where(
+        and(
+          eq(reassignments.captainId, captainId),
+          isNull(reassignments.captainSeenAt),
+          gt(reassignments.at, since),
+          // A withdrawal comes before the pickup, within hours of placing.
+          gt(orders.placedAt, new Date(since.getTime() - CANCELLED_AFTER_PLACING_MS)),
+        ),
+      )
+      .orderBy(desc(reassignments.at))
+      .limit(1);
+    return row ?? null;
+  }
+
+  // CA §9.10 «حسناً» on the withdrawal card: every withdrawal of this order
+  // from this captain keeps when they saw it, so the card shows no more.
+  // Idempotent by its nature, no fix. An order never taken from this captain
+  // is unknown_order.
+  async acknowledgeWithdrawal(captainId: string, orderId: string, now: Date): Promise<void> {
+    const rows = await this.database.db
+      .select({ id: reassignments.id })
+      .from(reassignments)
+      .where(and(eq(reassignments.orderId, orderId), eq(reassignments.captainId, captainId)));
+    if (rows.length === 0) throw new CaptainOrderRefusedError('unknown_order', 'no such order');
+    await this.database.db
+      .update(reassignments)
+      .set({ captainSeenAt: now })
+      .where(
+        and(
+          eq(reassignments.orderId, orderId),
+          eq(reassignments.captainId, captainId),
+          isNull(reassignments.captainSeenAt),
+        ),
+      );
   }
 
   // CA §9.10, §9.12 (slice 2.11a): the captain's latest order operations

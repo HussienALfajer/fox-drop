@@ -45,6 +45,12 @@ export interface OrderPushFacts {
   // RA §16 #2: the restaurant's unanswered orders of the business day and
   // the limit before the automatic pause.
   unanswered: { count: number; limit: number } | null;
+  // CA §9.10, §14 #11 (slice 2.12a): the reassignment reason's label of an
+  // order.reassigned; and whether an order.assigned follows a withdrawal, so
+  // the customer and the restaurant hear «تغيّر الكابتن» (CU §14 #13, RA §16
+  // #8) instead of the first assignment's push.
+  reassignLabel: string | null;
+  reassigned: boolean;
   // RA §8.13, §12.5: what an edit after the pickup debits the restaurant
   // when it is responsible; null otherwise.
   merchantDebit: string | null;
@@ -210,9 +216,17 @@ export function orderPushes(
         { الأجر: facts.offerPay ?? '', المطعم: facts.restaurantName },
         { target: 'offer', orderId: facts.orderId },
       );
+    case 'order.reassigned':
+      // CA §9.10, §14 #11: the withdrawn captain, with the cancellation sound.
+      return captain('captain.withdrawn', { السبب: facts.reassignLabel ?? '' });
     case 'order.assigned':
       return [
-        customer('customer.captain_assigned', { الاسم: captainName }),
+        ...(facts.reassigned
+          ? [
+              customer('customer.captain_changed', { الاسم: captainName }),
+              merchant('merchant.captain_changed', { الاسم: captainName }),
+            ]
+          : [customer('customer.captain_assigned', { الاسم: captainName })]),
         // CA §14 #4: assigned by operations without an offer; an offer the
         // captain accepted needs no push.
         ...(facts.actor === 'admin' ? captain('captain.assigned_by_operations') : []),

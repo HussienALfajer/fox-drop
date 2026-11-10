@@ -30,6 +30,7 @@ import {
   orders,
   outbox,
   pickupRequests,
+  reassignments,
 } from './schema.js';
 import { OUTCOME_LABELS } from './outcome.js';
 import { unansweredInBusinessDay } from './unanswered.js';
@@ -266,6 +267,7 @@ export class OutboxPushes {
         type === 'order.cancelled' && order.cancelReason === 'merchant_auto_cancel' && timeZone
           ? await this.unanswered(order, timeZone)
           : null,
+      ...(await this.reassignment(order, type, new Date(payload.at))),
       merchantDebit:
         type === 'order.edited'
           ? await this.merchantDebit(order, new Date(payload.at), currencies)
@@ -277,6 +279,36 @@ export class OutboxPushes {
           ? await this.outcome(order, currencies, type, new Date(payload.at))
           : null,
     };
+  }
+
+  // AP §9.3.2 «سحب وإعادة تعيين» (slice 2.12a): the withdrawal made at the
+  // event's time, and whether an assignment follows one.
+  private async reassignment(
+    order: typeof orders.$inferSelect,
+    type: string,
+    at: Date,
+  ): Promise<{ reassignLabel: string | null; reassigned: boolean }> {
+    if (type !== 'order.reassigned' && type !== 'order.assigned') {
+      return { reassignLabel: null, reassigned: false };
+    }
+    const [row] = await this.database.db
+      .select({ label: reassignments.reasonLabel, at: reassignments.at })
+      .from(reassignments)
+      .where(
+        and(
+          eq(reassignments.orderId, order.id),
+          eq(reassignments.orderPlacedAt, order.placedAt),
+          lte(reassignments.at, at),
+        ),
+      )
+      .orderBy(desc(reassignments.at))
+      .limit(1);
+    return type === 'order.reassigned'
+      ? {
+          reassignLabel: row && row.at.getTime() === at.getTime() ? row.label : null,
+          reassigned: false,
+        }
+      : { reassignLabel: null, reassigned: row !== undefined };
   }
 
   // RA §12.5: an edit after the pickup with the restaurant responsible, the

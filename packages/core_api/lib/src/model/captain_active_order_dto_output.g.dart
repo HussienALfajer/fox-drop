@@ -12,14 +12,20 @@ class _$CaptainActiveOrderDtoOutput extends CaptainActiveOrderDtoOutput {
   @override
   final CaptainActiveOrderDtoOutputCancelled? cancelled;
   @override
+  final CaptainActiveOrderDtoOutputWithdrawn? withdrawn;
+  @override
   final CaptainActiveOrderDtoOutputEnded? ended;
 
   factory _$CaptainActiveOrderDtoOutput([
     void Function(CaptainActiveOrderDtoOutputBuilder)? updates,
   ]) => (CaptainActiveOrderDtoOutputBuilder()..update(updates))._build();
 
-  _$CaptainActiveOrderDtoOutput._({this.order, this.cancelled, this.ended})
-    : super._();
+  _$CaptainActiveOrderDtoOutput._({
+    this.order,
+    this.cancelled,
+    this.withdrawn,
+    this.ended,
+  }) : super._();
   @override
   CaptainActiveOrderDtoOutput rebuild(
     void Function(CaptainActiveOrderDtoOutputBuilder) updates,
@@ -35,6 +41,7 @@ class _$CaptainActiveOrderDtoOutput extends CaptainActiveOrderDtoOutput {
     return other is CaptainActiveOrderDtoOutput &&
         order == other.order &&
         cancelled == other.cancelled &&
+        withdrawn == other.withdrawn &&
         ended == other.ended;
   }
 
@@ -43,6 +50,7 @@ class _$CaptainActiveOrderDtoOutput extends CaptainActiveOrderDtoOutput {
     var _$hash = 0;
     _$hash = $jc(_$hash, order.hashCode);
     _$hash = $jc(_$hash, cancelled.hashCode);
+    _$hash = $jc(_$hash, withdrawn.hashCode);
     _$hash = $jc(_$hash, ended.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -53,6 +61,7 @@ class _$CaptainActiveOrderDtoOutput extends CaptainActiveOrderDtoOutput {
     return (newBuiltValueToStringHelper(r'CaptainActiveOrderDtoOutput')
           ..add('order', order)
           ..add('cancelled', cancelled)
+          ..add('withdrawn', withdrawn)
           ..add('ended', ended))
         .toString();
   }
@@ -78,6 +87,12 @@ class CaptainActiveOrderDtoOutputBuilder
   set cancelled(CaptainActiveOrderDtoOutputCancelledBuilder? cancelled) =>
       _$this._cancelled = cancelled;
 
+  CaptainActiveOrderDtoOutputWithdrawnBuilder? _withdrawn;
+  CaptainActiveOrderDtoOutputWithdrawnBuilder get withdrawn =>
+      _$this._withdrawn ??= CaptainActiveOrderDtoOutputWithdrawnBuilder();
+  set withdrawn(CaptainActiveOrderDtoOutputWithdrawnBuilder? withdrawn) =>
+      _$this._withdrawn = withdrawn;
+
   CaptainActiveOrderDtoOutputEndedBuilder? _ended;
   CaptainActiveOrderDtoOutputEndedBuilder get ended =>
       _$this._ended ??= CaptainActiveOrderDtoOutputEndedBuilder();
@@ -93,6 +108,7 @@ class CaptainActiveOrderDtoOutputBuilder
     if ($v != null) {
       _order = $v.order?.toBuilder();
       _cancelled = $v.cancelled?.toBuilder();
+      _withdrawn = $v.withdrawn?.toBuilder();
       _ended = $v.ended?.toBuilder();
       _$v = null;
     }
@@ -120,6 +136,7 @@ class CaptainActiveOrderDtoOutputBuilder
           _$CaptainActiveOrderDtoOutput._(
             order: _order?.build(),
             cancelled: _cancelled?.build(),
+            withdrawn: _withdrawn?.build(),
             ended: _ended?.build(),
           );
     } catch (_) {
@@ -129,6 +146,8 @@ class CaptainActiveOrderDtoOutputBuilder
         _order?.build();
         _$failedField = 'cancelled';
         _cancelled?.build();
+        _$failedField = 'withdrawn';
+        _withdrawn?.build();
         _$failedField = 'ended';
         _ended?.build();
       } catch (e) {

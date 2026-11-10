@@ -96,7 +96,12 @@ export type OrderEventType =
   // AP §8.9 «تغيير النتيجة» (slice 2.11c): OWN changed a finished order's
   // outcome; the status follows it (delivered or failed). The new outcome is
   // its reason.
-  | 'order.outcome_changed';
+  | 'order.outcome_changed'
+  // AP §9.3.2 «سحب وإعادة تعيين» (slice 2.12a): operations took the order
+  // from its captain before the pickup (the status stays, the track back to
+  // searching); the event is about the withdrawn captain, and publishes the
+  // reason's code.
+  | 'order.reassigned';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that

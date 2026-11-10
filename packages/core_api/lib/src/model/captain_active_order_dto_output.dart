@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/captain_active_order_dto_output_ended.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_withdrawn.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_cancelled.dart';
 import 'package:built_value/built_value.dart';
@@ -16,6 +17,7 @@ part 'captain_active_order_dto_output.g.dart';
 /// Properties:
 /// * [order]
 /// * [cancelled]
+/// * [withdrawn]
 /// * [ended]
 @BuiltValue()
 abstract class CaptainActiveOrderDtoOutput
@@ -26,6 +28,9 @@ abstract class CaptainActiveOrderDtoOutput
 
   @BuiltValueField(wireName: r'cancelled')
   CaptainActiveOrderDtoOutputCancelled? get cancelled;
+
+  @BuiltValueField(wireName: r'withdrawn')
+  CaptainActiveOrderDtoOutputWithdrawn? get withdrawn;
 
   @BuiltValueField(wireName: r'ended')
   CaptainActiveOrderDtoOutputEnded? get ended;
@@ -76,6 +81,15 @@ class _$CaptainActiveOrderDtoOutputSerializer
             object.cancelled,
             specifiedType: const FullType.nullable(
               CaptainActiveOrderDtoOutputCancelled,
+            ),
+          );
+    yield r'withdrawn';
+    yield object.withdrawn == null
+        ? null
+        : serializers.serialize(
+            object.withdrawn,
+            specifiedType: const FullType.nullable(
+              CaptainActiveOrderDtoOutputWithdrawn,
             ),
           );
     yield r'ended';
@@ -137,6 +151,18 @@ class _$CaptainActiveOrderDtoOutputSerializer
                   as CaptainActiveOrderDtoOutputCancelled?;
           if (valueDes == null) continue;
           result.cancelled.replace(valueDes);
+          break;
+        case r'withdrawn':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainActiveOrderDtoOutputWithdrawn,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputWithdrawn?;
+          if (valueDes == null) continue;
+          result.withdrawn.replace(valueDes);
           break;
         case r'ended':
           final valueDes =

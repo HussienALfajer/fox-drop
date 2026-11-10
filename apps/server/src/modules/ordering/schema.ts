@@ -966,3 +966,44 @@ export const emergencyStopAttempts = ordering.table(
   },
   (table) => [primaryKey({ columns: [table.stopId, table.customerAccountId] })],
 );
+
+// AP §9.3.2 «سحب وإعادة تعيين» (slice 2.12a): operations took the order from
+// its captain before the pickup. One row per withdrawal: the captain, the
+// reason of Content's reassignment list with its label as chosen, the fault
+// (owner decision 2026-11-10: «بخطأ من الكابتن» counts as a captain
+// cancellation, CA §11.2; no charge in V1), the cash answer once the captain
+// reached the restaurant (AP §8.1), operations' note and the admin; the
+// captain's «حسناً» on the card «سُحب منك الطلب: {السبب}» (CA §9.10). The
+// application role may update only captain_seen_at.
+export const reassignments = ordering.table(
+  'reassignments',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    captainId: uuid('captain_id').notNull(),
+    reason: text('reason').notNull(),
+    reasonLabel: text('reason_label').notNull(),
+    captainFault: boolean('captain_fault').notNull(),
+    cash: text('cash', { enum: cashAnswers }),
+    note: text('note').notNull(),
+    adminId: uuid('admin_id').notNull(),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+    captainSeenAt: timestamp('captain_seen_at', { withTimezone: true }),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId, table.orderPlacedAt],
+      foreignColumns: [orders.id, orders.placedAt],
+    }),
+    index('reassignments_order').on(table.orderId, table.orderPlacedAt),
+    index('reassignments_captain').on(table.captainId, table.at),
+    check(
+      'reassignments_cash',
+      sql`${table.cash} IS NULL OR ${table.cash} IN ('returned', 'not_returned', 'not_paid')`,
+    ),
+  ],
+);

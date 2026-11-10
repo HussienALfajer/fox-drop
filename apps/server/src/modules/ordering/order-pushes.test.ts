@@ -27,6 +27,8 @@ const facts: OrderPushFacts = {
   offerPay: '25 ₺',
   unanswered: null,
   merchantDebit: null,
+  reassignLabel: null,
+  reassigned: false,
   outcome: null,
 };
 
@@ -253,6 +255,19 @@ describe('the pushes of an order event', () => {
   it('rings every device of the restaurant with a new order (RA §16 #1)', () => {
     expect(sent('order.placed', null, { captainId: null })).toEqual([
       [restaurant, 'merchant.new_order', { رقم: '10002' }],
+    ]);
+  });
+
+  it('tells the withdrawn captain, then the customer and the restaurant the new captain (slice 2.12a)', () => {
+    // CA §9.10, §14 #11: the event is about the withdrawn captain.
+    expect(sent('order.reassigned', 'captain_late', { reassignLabel: 'تأخر الكابتن' })).toEqual([
+      [captain, 'captain.withdrawn', { رقم: '10002', السبب: 'تأخر الكابتن' }],
+    ]);
+    // CU §14 #13, RA §16 #8: an assignment after a withdrawal.
+    expect(sent('order.assigned', null, { reassigned: true, actor: 'admin' })).toEqual([
+      [customer, 'customer.captain_changed', { الاسم: 'أحمد' }],
+      [restaurant, 'merchant.captain_changed', { رقم: '10002', الاسم: 'أحمد' }],
+      [captain, 'captain.assigned_by_operations', { رقم: '10002' }],
     ]);
   });
 

@@ -5221,6 +5221,110 @@
         ]
       }
     },
+    "/v1/admin/orders/{orderId}/reassign": {
+      "post": {
+        "operationId": "adminOrdersReassign",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminReassignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderCardDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/orders/{orderId}/reassign-preview": {
+      "post": {
+        "operationId": "adminOrdersReassignPreview",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminReassignPreviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminReassignPreviewAnswerDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/orders/{orderId}/outcome": {
       "post": {
         "operationId": "adminOrdersSetOutcome",
@@ -5777,6 +5881,43 @@
     "/v1/captain/orders/{orderId}/acknowledge-cancellation": {
       "post": {
         "operationId": "captainOrdersAcknowledgeCancellation",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainActiveOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/captain/orders/{orderId}/acknowledge-withdrawal": {
+      "post": {
+        "operationId": "captainOrdersAcknowledgeWithdrawal",
         "parameters": [
           {
             "name": "orderId",
@@ -18967,6 +19108,200 @@
         ],
         "additionalProperties": false
       },
+      "AdminReassignDto": {
+        "type": "object",
+        "properties": {
+          "reassignment": {
+            "type": "string",
+            "maxLength": 50,
+            "description": "A code of Content's reassignment list (AP Appendix B); 400 unknown_reason otherwise."
+          },
+          "captainFault": {
+            "type": "boolean",
+            "description": "«بخطأ من الكابتن» (counts as a captain cancellation, CA §11.2; no charge in V1) or «دون خطأ»; the dialog prefills the reason's default."
+          },
+          "cash": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "returned",
+                  "not_returned",
+                  "not_paid"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Required exactly when the captain reached the restaurant (409 cash_answer_required, cash_answer_not_allowed): returned «نعم», not_returned «لا» (the payment on the captain's custody and a merchant.debit), not_paid «لم يدفع الكابتن بعد»."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Required (AP §9.3.2): the internal note, never shown to the apps."
+          }
+        },
+        "required": [
+          "reassignment",
+          "captainFault",
+          "cash",
+          "reason"
+        ]
+      },
+      "AdminReassignPreviewDto": {
+        "type": "object",
+        "properties": {
+          "cash": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "returned",
+                  "not_returned",
+                  "not_paid"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Required exactly when the captain reached the restaurant (409 cash_answer_required, cash_answer_not_allowed): returned «نعم», not_returned «لا» (the payment on the captain's custody and a merchant.debit), not_paid «لم يدفع الكابتن بعد»."
+          }
+        },
+        "required": [
+          "cash"
+        ]
+      },
+      "AdminReassignPreviewAnswerDto_Output": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "The journal type, such as custody.pay_merchant."
+                },
+                "account": {
+                  "type": "string",
+                  "description": "The account purpose, such as captain.custody."
+                },
+                "party": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "merchant",
+                        "captain",
+                        "platform"
+                      ]
+                    },
+                    "id": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "id",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "amount": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false,
+                  "description": "From the platform's side: + a debit, − a credit."
+                }
+              },
+              "required": [
+                "type",
+                "account",
+                "party",
+                "amount"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Every entry the reassignment would post (docs/domain/09): the kept payment only."
+          },
+          "cashAsked": {
+            "type": "boolean",
+            "description": "The captain reached the restaurant: ask the cash question."
+          },
+          "cashLines": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "While asked: what the captain paid (the last pickup request's lines, or the items value)."
+          }
+        },
+        "required": [
+          "entries",
+          "cashAsked",
+          "cashLines"
+        ],
+        "additionalProperties": false
+      },
       "AdminSetOutcomeDto": {
         "type": "object",
         "properties": {
@@ -20887,6 +21222,129 @@
                   }
                 ],
                 "description": "While placed, accepted or ready: the choices of «إلغاء الطلب» (AP §9.3.2)."
+              },
+              "reassignChoices": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "reasons": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "captainFault": {
+                              "type": "boolean",
+                              "description": "The default fault the dialog prefills."
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "label",
+                            "captainFault"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "description": "Content's active reassignment reasons, in order (AP Appendix B)."
+                      }
+                    },
+                    "required": [
+                      "reasons"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "While accepted or ready with a captain: the choices of «سحب وإعادة تعيين» (AP §9.3.2); refused with 409 pickup_request_open while a request is open."
+              },
+              "reassignments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "captainId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "description": "The captain the order was taken from."
+                    },
+                    "reason": {
+                      "type": "string",
+                      "description": "The reassignment list's code."
+                    },
+                    "label": {
+                      "type": "string",
+                      "description": "The label as chosen."
+                    },
+                    "captainFault": {
+                      "type": "boolean",
+                      "description": "«بخطأ من الكابتن»."
+                    },
+                    "cash": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "returned",
+                            "not_returned",
+                            "not_paid"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "note": {
+                      "type": "string",
+                      "description": "Operations' internal note."
+                    },
+                    "adminId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "captainSeenAt": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The captain's «حسناً»."
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "captainId",
+                    "reason",
+                    "label",
+                    "captainFault",
+                    "cash",
+                    "note",
+                    "adminId",
+                    "captainSeenAt"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "AP §9.3.1: every «سحب وإعادة تعيين» of the order, oldest first."
               },
               "outcome": {
                 "anyOf": [
@@ -22904,6 +23362,8 @@
               "readyAt",
               "cancellation",
               "cancelChoices",
+              "reassignChoices",
+              "reassignments",
               "outcome",
               "outcomeChange",
               "outcomeChoices",
@@ -23775,6 +24235,61 @@
             ],
             "description": "The latest order operations cancelled within 12 hours that the captain has not acknowledged (POST …/acknowledge-cancellation); the app plays the cancellation sound when one appears."
           },
+          "withdrawn": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "number": {
+                    "type": "string",
+                    "description": "Shown as #10423 (AP §4.8)."
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "{السبب} of «سُحب منك الطلب: {السبب}»: the reason as operations chose it."
+                  },
+                  "cash": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "returned",
+                          "not_returned",
+                          "not_paid"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "returned «استرجع المبلغ من المطعم»; not_returned «لا تسترجع المبلغ، يُخصم من المطعم في التسوية»; not_paid or null: no cash line."
+                  },
+                  "at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "number",
+                  "reason",
+                  "cash",
+                  "at"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The latest order operations took from the captain within 12 hours that the captain has not acknowledged (POST …/acknowledge-withdrawal); the app plays the cancellation sound when one appears."
+          },
           "ended": {
             "anyOf": [
               {
@@ -23904,6 +24419,7 @@
         "required": [
           "order",
           "cancelled",
+          "withdrawn",
           "ended"
         ],
         "additionalProperties": false

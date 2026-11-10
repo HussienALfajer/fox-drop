@@ -25,6 +25,7 @@ import {
   type CashAnswer,
   type ResponsibleParty,
 } from './cancellation.js';
+import { REASSIGNABLE, type ReassignmentFacts, reassignmentEntries } from './reassignment.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
 import {
   type AfterPickupJournal,
@@ -36,7 +37,12 @@ import {
   pendingEdits,
   planEdit,
 } from './order-edits.js';
-import { lockOrder, type OrderEventType, recordTransition } from './order-events.js';
+import {
+  type CaptainTrack,
+  lockOrder,
+  type OrderEventType,
+  recordTransition,
+} from './order-events.js';
 import {
   currentOutcome,
   pendingOutcome,
@@ -85,6 +91,7 @@ import {
   orders,
   outcomeFoods,
   pickupRequests,
+  reassignments,
   timeChanges,
 } from './schema.js';
 
@@ -306,7 +313,8 @@ type Transition = {
     | 'close_item_report'
     | 'edit'
     | 'set_outcome'
-    | 'change_outcome';
+    | 'change_outcome'
+    | 'reassign';
   from: OrderView['status'][];
   to: 'accepted' | 'ready' | 'rejected' | 'cancelled' | null;
   event?: OrderEventType;
@@ -330,6 +338,10 @@ type Change = {
   // edit sends a ready order back to accepted, AP §9.3.3).
   to?: OrderView['status'];
   searchStartAt?: Date;
+  // The captain track the event publishes, when the change sets one (a
+  // withdrawal's searching, slice 2.12a); the event keeps the order's
+  // captain before the change, the one it is about.
+  captainTrack?: CaptainTrack | null;
   // What the apps' channels publish as the reason (RA §8.6: the rejection's
   // code); the restaurant's event keeps it too, operations' keeps their note.
   publicReason?: string;
@@ -671,6 +683,198 @@ export class OrderCommands {
       compensationAllowed: result.compensationAllowed,
       cashLines: result.cashAsked ? facts.cashLines : null,
       strike: result.strike,
+    };
+  }
+
+  // AP §9.3.2 «سحب وإعادة تعيين» (slice 2.12a; AP §8.1, docs/domain/01, 02):
+  // operations take an accepted or ready order from its captain before the
+  // pickup, with a reason of Content's reassignment list, the fault
+  // («بخطأ من الكابتن» or «دون خطأ», prefilled from the reason; owner decision
+  // 2026-11-10), the cash answer once the captain reached the restaurant and
+  // their note. In one transaction: the order without its captain, its
+  // assignment and its arrival, the track back to searching (the search
+  // started now when it had not), event order.reassigned about the withdrawn
+  // captain, the reassignments row, the kept payment's journals and the
+  // audit. The captain is free at once (K17: available again); operations
+  // then offer or assign the order again (dispatch). 400 unknown_reason; 409
+  // pickup_request_open, cash_answer_required, cash_answer_not_allowed,
+  // order_state_changed.
+  async reassign(
+    command: AdminOrderCommand & { code: string; captainFault: boolean; cash: CashAnswer | null },
+    now: Date,
+  ): Promise<OrderView> {
+    const actor = { type: 'admin' as const, id: command.admin.accountId };
+    return this.run(
+      { kind: 'admin', command },
+      { verb: 'reassign', from: REASSIGNABLE, to: null, event: 'order.reassigned' },
+      {
+        reassignment: command.code,
+        captainFault: command.captainFault,
+        cash: command.cash,
+        reason: command.reason,
+      },
+      now,
+      async (order) => {
+        const { label } = await this.reassignmentReason(command.code);
+        const read = await this.reassignmentFacts(this.database.db, order);
+        const result = reassignmentEntries(read.facts, command.cash);
+        if ('problem' in result) {
+          if (result.problem === 'order_state_changed') throw await this.stateChanged(order);
+          throw new OrderCommandRefusedError(
+            result.problem,
+            `the reassignment is ${result.problem}`,
+          );
+        }
+        const captainId = read.facts.captainId!;
+        // docs/domain/03: the order needs a captain now, «بحاجة لتعيين».
+        const searchStarted =
+          read.searchStartedAt === null
+            ? {
+                searchStartedAt: now,
+                searchAlertAt: new Date(
+                  now.getTime() +
+                    (await this.settings.get('dispatch.no_captain_alert_min', {
+                      cityId: order.cityId,
+                    })) *
+                      MINUTE_MS,
+                ),
+              }
+            : {};
+        return {
+          set: {
+            captainId: null,
+            assignedAt: null,
+            captainTrack: 'searching',
+            arrivedAtMerchantAt: null,
+            captainWaitingAlertAt: null,
+            ...searchStarted,
+          },
+          captainTrack: 'searching',
+          publicReason: command.code,
+          // The facts were read before the lock.
+          guard: async (tx) => (await this.ownFacts(tx, order)).key === read.key,
+          effects: async (tx) => {
+            await tx.insert(reassignments).values({
+              orderId: order.id,
+              orderPlacedAt: order.placedAt,
+              cityId: order.cityId,
+              captainId,
+              reason: command.code,
+              reasonLabel: label,
+              captainFault: command.captainFault,
+              cash: command.cash,
+              note: command.reason,
+              adminId: actor.id,
+              at: now,
+            });
+            await this.postJournals(tx, order, actor, result.journals);
+          },
+          audit: { before: { captainId }, after: { captainId: null } },
+        };
+      },
+    );
+  }
+
+  // AP §9.3.2, docs/domain/09: what a reassignment with this cash answer
+  // would book, for the dialog; it writes nothing. It never refuses a missing
+  // cash answer: cashAsked and cashLines tell the dialog to ask it.
+  async previewReassign(
+    orderId: string,
+    cash: CashAnswer | null,
+  ): Promise<Omit<CancellationPreview, 'compensationAllowed' | 'strike'>> {
+    const order = await this.find(orderId, {});
+    const { facts } = await this.reassignmentFacts(this.database.db, order);
+    const result = reassignmentEntries(facts, cash, { preview: true });
+    if ('problem' in result) {
+      if (result.problem === 'order_state_changed') throw await this.stateChanged(order);
+      throw new OrderCommandRefusedError(result.problem, `the reassignment is ${result.problem}`);
+    }
+    const [names, captain] = await Promise.all([
+      this.merchants.names([order.restaurantId]),
+      this.captains.captain(facts.captainId!, new Date()),
+    ]);
+    return {
+      entries: result.journals.flatMap((journal) =>
+        journal.entries.map((entry) => ({
+          type: journal.type,
+          ...entry,
+          party: {
+            ...entry.party,
+            name:
+              entry.party.kind === 'merchant'
+                ? (names.get(order.restaurantId)?.nameAr ?? null)
+                : entry.party.kind === 'captain'
+                  ? (captain?.name ?? null)
+                  : null,
+          },
+        })),
+      ),
+      cashAsked: result.cashAsked,
+      cashLines: result.cashAsked ? facts.cashLines : null,
+    };
+  }
+
+  // AP §9.3.2: the dialog's reasons, Content's active reassignment reasons in
+  // order, each with its default fault (AP Appendix B).
+  async reassignReasons(): Promise<{ code: string; label: string; captainFault: boolean }[]> {
+    return (await this.content.reasonsOf('reassignment'))
+      .filter((reason) => reason.active)
+      .map(({ code, label, captainFault }) => ({
+        code,
+        label,
+        captainFault: captainFault ?? false,
+      }));
+  }
+
+  // AP §9.3.1: the order's withdrawals, oldest first.
+  async reassignmentsOf(order: { id: string; placedAt: Date }) {
+    return this.database.db
+      .select({
+        at: reassignments.at,
+        captainId: reassignments.captainId,
+        reason: reassignments.reason,
+        label: reassignments.reasonLabel,
+        captainFault: reassignments.captainFault,
+        cash: reassignments.cash,
+        note: reassignments.note,
+        adminId: reassignments.adminId,
+        captainSeenAt: reassignments.captainSeenAt,
+      })
+      .from(reassignments)
+      .where(
+        and(eq(reassignments.orderId, order.id), eq(reassignments.orderPlacedAt, order.placedAt)),
+      )
+      .orderBy(reassignments.at);
+  }
+
+  private async reassignmentReason(code: string): Promise<{ label: string }> {
+    try {
+      return await this.content.choose('reassignment', { code, note: null });
+    } catch (error) {
+      if (!(error instanceof ContentRefusedError)) throw error;
+      throw new OrderCommandRefusedError('unknown_reason', error.message);
+    }
+  }
+
+  // What the reassignment depends on, read again under the lock (the key).
+  private async reassignmentFacts(
+    executor: Pick<Database['db'], 'select'>,
+    order: { id: string; placedAt: Date },
+  ): Promise<{ facts: ReassignmentFacts; key: string; searchStartedAt: Date | null }> {
+    const own = await this.ownFacts(executor, order);
+    const { row } = own;
+    return {
+      key: own.key,
+      searchStartedAt: row.searchStartedAt,
+      facts: {
+        status: row.status,
+        restaurantId: row.restaurantId,
+        captainId: row.captainId,
+        captainTrack: row.captainTrack,
+        arrivedAtMerchant: row.arrivedAtMerchantAt !== null,
+        currency: row.currency,
+        ...keptCash(own),
+      },
     };
   }
 
@@ -1206,17 +1410,7 @@ export class OrderCommands {
       );
       captainPay = parts?.base ?? null;
     }
-    const snapshot = snapshotOf(row.rateSnapshot);
-    // Owner decision 2026-11-09: the captain's last request's lines (what the
-    // restaurant says it received when it disputed the amount), else the
-    // items value in the base currency.
-    const cashLines = own.request
-      ? linesOf(
-          own.request.outcome === 'amount_incorrect'
-            ? own.request.receivedLines
-            : own.request.lines,
-        )
-      : [{ currency: row.currency, amount: row.itemsValue }];
+    const { cashLines, cashBase } = keptCash(own);
     return {
       key: own.key,
       customerAccountId: row.customerAccountId,
@@ -1231,7 +1425,7 @@ export class OrderCommands {
         commissionBp: row.commissionBp,
         testOrder: row.testOrder,
         cashLines,
-        cashBase: baseTotal(snapshot, cashLines),
+        cashBase,
         captainPay,
       },
     };
@@ -1247,6 +1441,8 @@ export class OrderCommands {
         customerAccountId: orders.customerAccountId,
         restaurantId: orders.restaurantId,
         captainId: orders.captainId,
+        captainTrack: orders.captainTrack,
+        searchStartedAt: orders.searchStartedAt,
         arrivedAtMerchantAt: orders.arrivedAtMerchantAt,
         currency: orders.currency,
         itemsValue: orders.itemsValue,
@@ -1277,6 +1473,7 @@ export class OrderCommands {
     const key = JSON.stringify([
       row.status,
       row.captainId,
+      row.captainTrack,
       row.arrivedAtMerchantAt?.toISOString() ?? null,
       request ? [request.id, request.status, request.outcome] : null,
     ]);
@@ -2378,6 +2575,7 @@ export class OrderCommands {
           caller.kind === 'admin' ? caller.command.reason : (prepared.eventReason ?? publicReason),
         publicReason,
         at: now,
+        ...(prepared.captainTrack === undefined ? {} : { captainTrack: prepared.captainTrack }),
       });
       if (prepared.searchStartAt) {
         // AP §8.3: the timer exists exactly when its moment does.
@@ -2622,4 +2820,20 @@ function outcomeChoicesOf(given: OutcomeChoices): OutcomeChoices {
 
 function isOutcomeFood(code: string): code is OutcomeFood {
   return (outcomeFoods as readonly string[]).includes(code);
+}
+
+// Owner decision 2026-11-09: what the captain paid the restaurant, for the
+// cash question: the captain's last request's lines (what the restaurant says
+// it received when it disputed the amount), else the items value in the base
+// currency; and their total in the base.
+function keptCash(own: {
+  row: { currency: string; itemsValue: bigint; rateSnapshot: unknown };
+  request: { outcome: string | null; lines: unknown; receivedLines: unknown } | null;
+}) {
+  const cashLines = own.request
+    ? linesOf(
+        own.request.outcome === 'amount_incorrect' ? own.request.receivedLines : own.request.lines,
+      )
+    : [{ currency: own.row.currency, amount: own.row.itemsValue }];
+  return { cashLines, cashBase: baseTotal(snapshotOf(own.row.rateSnapshot), cashLines) };
 }

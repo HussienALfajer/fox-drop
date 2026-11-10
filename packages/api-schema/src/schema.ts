@@ -2100,6 +2100,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders/{orderId}/reassign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersReassign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/reassign-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersReassignPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/outcome": {
         parameters: {
             query?: never;
@@ -2302,6 +2334,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["captainOrdersAcknowledgeCancellation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/orders/{orderId}/acknowledge-withdrawal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainOrdersAcknowledgeWithdrawal"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5719,6 +5767,49 @@ export interface components {
             /** @description The customer gets a late-cancellation strike (docs/domain/08): from accepted or ready with the customer responsible. */
             strike: boolean;
         };
+        AdminReassignDto: {
+            /** @description A code of Content's reassignment list (AP Appendix B); 400 unknown_reason otherwise. */
+            reassignment: string;
+            /** @description «بخطأ من الكابتن» (counts as a captain cancellation, CA §11.2; no charge in V1) or «دون خطأ»; the dialog prefills the reason's default. */
+            captainFault: boolean;
+            /** @description Required exactly when the captain reached the restaurant (409 cash_answer_required, cash_answer_not_allowed): returned «نعم», not_returned «لا» (the payment on the captain's custody and a merchant.debit), not_paid «لم يدفع الكابتن بعد». */
+            cash: ("returned" | "not_returned" | "not_paid") | null;
+            /** @description Required (AP §9.3.2): the internal note, never shown to the apps. */
+            reason: string;
+        };
+        AdminReassignPreviewDto: {
+            /** @description Required exactly when the captain reached the restaurant (409 cash_answer_required, cash_answer_not_allowed): returned «نعم», not_returned «لا» (the payment on the captain's custody and a merchant.debit), not_paid «لم يدفع الكابتن بعد». */
+            cash: ("returned" | "not_returned" | "not_paid") | null;
+        };
+        AdminReassignPreviewAnswerDto_Output: {
+            /** @description Every entry the reassignment would post (docs/domain/09): the kept payment only. */
+            entries: {
+                /** @description The journal type, such as custody.pay_merchant. */
+                type: string;
+                /** @description The account purpose, such as captain.custody. */
+                account: string;
+                party: {
+                    /** @enum {string} */
+                    kind: "merchant" | "captain" | "platform";
+                    id: string | null;
+                    name: string | null;
+                };
+                /** @description From the platform's side: + a debit, − a credit. */
+                amount: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+            }[];
+            /** @description The captain reached the restaurant: ask the cash question. */
+            cashAsked: boolean;
+            /** @description While asked: what the captain paid (the last pickup request's lines, or the items value). */
+            cashLines: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            }[] | null;
+        };
         AdminSetOutcomeDto: {
             /**
              * @description AP §8.9; fake needs the customer responsible, and only fake takes the customer.
@@ -6165,6 +6256,39 @@ export interface components {
                         label: string;
                     }[];
                 } | null;
+                /** @description While accepted or ready with a captain: the choices of «سحب وإعادة تعيين» (AP §9.3.2); refused with 409 pickup_request_open while a request is open. */
+                reassignChoices: {
+                    /** @description Content's active reassignment reasons, in order (AP Appendix B). */
+                    reasons: {
+                        code: string;
+                        label: string;
+                        /** @description The default fault the dialog prefills. */
+                        captainFault: boolean;
+                    }[];
+                } | null;
+                /** @description AP §9.3.1: every «سحب وإعادة تعيين» of the order, oldest first. */
+                reassignments: {
+                    /** Format: date-time */
+                    at: string;
+                    /**
+                     * Format: uuid
+                     * @description The captain the order was taken from.
+                     */
+                    captainId: string;
+                    /** @description The reassignment list's code. */
+                    reason: string;
+                    /** @description The label as chosen. */
+                    label: string;
+                    /** @description «بخطأ من الكابتن». */
+                    captainFault: boolean;
+                    cash: ("returned" | "not_returned" | "not_paid") | null;
+                    /** @description Operations' internal note. */
+                    note: string;
+                    /** Format: uuid */
+                    adminId: string;
+                    /** @description The captain's «حسناً». */
+                    captainSeenAt: string | null;
+                }[];
                 /** @description AP §9.3.2 «تحديد النتيجة»: the outcome in force (AP §8.9), the last one set or changed. */
                 outcome: {
                     /** Format: date-time */
@@ -6822,6 +6946,19 @@ export interface components {
                     amount: string;
                     currency: string;
                 } | null;
+                /** Format: date-time */
+                at: string;
+            } | null;
+            /** @description The latest order operations took from the captain within 12 hours that the captain has not acknowledged (POST …/acknowledge-withdrawal); the app plays the cancellation sound when one appears. */
+            withdrawn: {
+                /** Format: uuid */
+                orderId: string;
+                /** @description Shown as #10423 (AP §4.8). */
+                number: string;
+                /** @description {السبب} of «سُحب منك الطلب: {السبب}»: the reason as operations chose it. */
+                reason: string;
+                /** @description returned «استرجع المبلغ من المطعم»; not_returned «لا تسترجع المبلغ، يُخصم من المطعم في التسوية»; not_paid or null: no cash line. */
+                cash: ("returned" | "not_returned" | "not_paid") | null;
                 /** Format: date-time */
                 at: string;
             } | null;
@@ -10821,6 +10958,61 @@ export interface operations {
             };
         };
     };
+    adminOrdersReassign: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminReassignDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCardDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersReassignPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminReassignPreviewDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminReassignPreviewAnswerDto_Output"];
+                };
+            };
+        };
+    };
     adminOrdersSetOutcome: {
         parameters: {
             query?: never;
@@ -11127,6 +11319,28 @@ export interface operations {
         };
     };
     captainOrdersAcknowledgeCancellation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainActiveOrderDto_Output"];
+                };
+            };
+        };
+    };
+    captainOrdersAcknowledgeWithdrawal: {
         parameters: {
             query?: never;
             header?: never;

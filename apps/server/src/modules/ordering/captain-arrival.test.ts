@@ -322,7 +322,12 @@ const orderRow = async (id: string) =>
 describe('GET /v1/captain/orders/active (CA §9.1–9.3)', () => {
   it('answers null without an order, then the assigned order with what steps 1 and 2 show', async () => {
     const captain = await onlineCaptain();
-    expect((await captain.active()).json()).toEqual({ order: null, cancelled: null, ended: null });
+    expect((await captain.active()).json()).toEqual({
+      order: null,
+      cancelled: null,
+      withdrawn: null,
+      ended: null,
+    });
     const order = await acceptedOrder();
     expect((await (await admin(['OPS'])).assign(order.id, captain.captainId)).statusCode).toBe(200);
     const answer = await captain.active();
