@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
+import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
@@ -25,11 +26,20 @@ import {
   type ResponsibleParty,
 } from './cancellation.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
+import {
+  type CurrentLine,
+  type EditChange,
+  type EditRequest,
+  pendingEdits,
+  planEdit,
+} from './order-edits.js';
 import { lockOrder, type OrderEventType, recordTransition } from './order-events.js';
 import { OrderAssignments } from './order-assignments.js';
 import { baseTotal, linesOf } from './pickup-booking.js';
 import type { SearchStartJob } from './order-timers.js';
-import { orderKey, readOrders, snapshotOf, type OrderView } from './order-views.js';
+import { BEFORE_PICKUP, orderKey, readOrders, snapshotOf, type OrderView } from './order-views.js';
+import { commission } from './door-payment.js';
+import { priceLines, quoteMoney, type QuoteMoney } from './quote.js';
 import {
   type ItemReportNote,
   itemReportProblem,
@@ -37,7 +47,14 @@ import {
   openReportOf,
   type ReportedItem,
 } from './item-reports.js';
-import { itemReports, orders, pickupRequests, timeChanges } from './schema.js';
+import {
+  itemReports,
+  orderEdits,
+  orderLines,
+  orders,
+  pickupRequests,
+  timeChanges,
+} from './schema.js';
 
 const MINUTE_MS = 60_000;
 // docs/domain/03: the promised time is rounded up to the next 5 minutes.
@@ -70,7 +87,12 @@ export type OrderCommandRefusal =
   // RA §8.12: the report's items are one or more of the order's, each once.
   | 'invalid_item_report'
   // RA §8.10, §8.12: an open item report blocks the pickup.
-  | 'item_report_open';
+  | 'item_report_open'
+  // AP §9.3.3 «تعديل الطلب» (slice 2.10a, order-edits.ts): the lines, the fee
+  // or the extra prep time do not fit; no edit while a pickup request is
+  // open (RA §8.10).
+  | 'invalid_edit'
+  | 'pickup_request_open';
 
 // A restaurant command the order refuses; order_state_changed carries the
 // order as it is now, which the app explains (RA §4.7).
@@ -240,7 +262,8 @@ type Transition = {
     | 'change_time'
     | 'report_item'
     | 'withdraw_item_report'
-    | 'close_item_report';
+    | 'close_item_report'
+    | 'edit';
   from: OrderView['status'][];
   to: 'accepted' | 'ready' | 'rejected' | 'cancelled' | null;
   event?: OrderEventType;
@@ -260,6 +283,9 @@ type Caller =
 // transaction sends with it.
 type Change = {
   set: Partial<typeof orders.$inferInsert>;
+  // The status it leaves when the transition's `to` depends on the order (an
+  // edit sends a ready order back to accepted, AP §9.3.3).
+  to?: OrderView['status'];
   searchStartAt?: Date;
   // What the apps' channels publish as the reason (RA §8.6: the rejection's
   // code); the restaurant's event keeps it too, operations' keeps their note.
@@ -1240,6 +1266,455 @@ export class OrderCommands {
     );
   }
 
+  // AP §9.3.3 «تعديل الطلب» before the pickup (slice 2.10a; owner decisions
+  // 2026-11-10): the lines kept with their quantities (a raised quantity
+  // keeps the line's unit price), the lines added from the current menu at
+  // current prices, a new delivery fee or the same, and for items added to a
+  // ready order the extra prep time, which sends it back to accepted with the
+  // restaurant's countdown from now and the promised time moved by the same
+  // minutes, rounded up to the next 5. The money is recalculated from the
+  // order's snapshot (pickup payment, commission and merchant net follow the
+  // items value). In one transaction: the edit row, the lines, an open item
+  // report closed `edited` (RA §8.12), the order and order.edited, which
+  // rings the restaurant when items were added (RA §16 #16) and tells the
+  // customer the new total (CU §14 #11). 400 invalid_edit; 409
+  // pickup_request_open, order_state_changed.
+  async editOrder(
+    command: AdminOrderCommand & EditRequest & { version: number },
+    now: Date,
+  ): Promise<OrderView> {
+    const request: EditRequest = {
+      keep: command.keep,
+      add: command.add,
+      deliveryFee: command.deliveryFee,
+      extraPrepMin: command.extraPrepMin,
+    };
+    return this.run(
+      { kind: 'admin', command },
+      { verb: 'edit', from: BEFORE_PICKUP, to: null, event: 'order.edited' },
+      {
+        keep: request.keep,
+        add: request.add,
+        deliveryFee: request.deliveryFee?.toString() ?? null,
+        extraPrepMin: request.extraPrepMin,
+        version: command.version,
+      },
+      now,
+      async (order) => {
+        const edit = await this.prepareEdit(order, request, now);
+        // AP §9.3.3: the edit is the one previewed on the order as the
+        // dialog showed it; any change since is order_state_changed.
+        if (edit.version !== command.version) throw await this.stateChanged(order);
+        const { plan, before, after, times } = edit;
+        const editId = randomUUID();
+        return {
+          set: {
+            itemsValue: after.itemsValue,
+            deliveryFee: after.deliveryFee,
+            rounding: after.rounding,
+            total: after.total,
+            ...(times
+              ? {
+                  readyAt: null,
+                  noCaptainAlertAt: null,
+                  prepMin: times.prepMinAfter,
+                  prepLateAlertAt: times.prepLateAlertAt,
+                  promisedAt: times.promisedAfter,
+                }
+              : {}),
+          },
+          ...(times ? { to: 'accepted' as const } : {}),
+          publicReason: times
+            ? 'items_added_back_to_preparing'
+            : plan.addsItems
+              ? 'items_added'
+              : 'changed',
+          guard: async (tx) =>
+            (await this.editBasis(tx, order)) === edit.basis &&
+            (await lockOrder(tx, order.id, order.placedAt))?.version === command.version,
+          effects: async (tx) => {
+            await tx.insert(orderEdits).values({
+              id: editId,
+              orderId: order.id,
+              orderPlacedAt: order.placedAt,
+              cityId: order.cityId,
+              at: now,
+              adminId: command.admin.accountId,
+              status: edit.status,
+              changes: plan.changes,
+              addsItems: plan.addsItems,
+              currency: edit.currency,
+              itemsValueBefore: before.itemsValue,
+              itemsValueAfter: after.itemsValue,
+              deliveryFeeBefore: before.deliveryFee,
+              deliveryFeeAfter: after.deliveryFee,
+              totalBefore: before.total,
+              totalAfter: after.total,
+              ...(times
+                ? {
+                    extraPrepMin: times.extraPrepMin,
+                    prepMinBefore: times.prepMinBefore,
+                    prepMinAfter: times.prepMinAfter,
+                    promisedBefore: times.promisedBefore,
+                    promisedAfter: times.promisedAfter,
+                  }
+                : {}),
+            });
+            const line = (position: number) =>
+              and(
+                eq(orderLines.orderId, order.id),
+                eq(orderLines.orderPlacedAt, order.placedAt),
+                eq(orderLines.position, position),
+              );
+            for (const update of plan.updates) {
+              await tx
+                .update(orderLines)
+                .set({
+                  quantity: update.quantity,
+                  lineTotal: update.lineTotal,
+                  quantityBefore: update.quantityBefore,
+                })
+                .where(line(update.position));
+            }
+            for (const position of plan.removals) {
+              await tx.update(orderLines).set({ removedByEdit: editId }).where(line(position));
+            }
+            if (plan.additions.length > 0) {
+              await tx.insert(orderLines).values(
+                plan.additions.map((addition, index) => ({
+                  orderId: order.id,
+                  orderPlacedAt: order.placedAt,
+                  position: edit.nextPosition + index,
+                  cityId: order.cityId,
+                  itemId: addition.itemId,
+                  itemName: addition.name,
+                  quantity: addition.quantity,
+                  options: addition.options.map((option) => ({
+                    id: option.id,
+                    name: option.name,
+                    priceDelta: option.priceDelta.toString(),
+                  })),
+                  unitPrice: addition.unitPrice,
+                  lineTotal: addition.lineTotal,
+                  note: null,
+                  addedByEdit: editId,
+                })),
+              );
+            }
+            // RA §8.12: an edit clears an open item report.
+            await tx
+              .update(itemReports)
+              .set({
+                closedAt: now,
+                closedHow: 'edited',
+                closedByType: 'admin',
+                closedById: command.admin.accountId,
+              })
+              .where(
+                and(
+                  eq(itemReports.orderId, order.id),
+                  eq(itemReports.orderPlacedAt, order.placedAt),
+                  isNull(itemReports.closedAt),
+                ),
+              );
+          },
+          audit: {
+            before: { money: moneyAudit(before) },
+            after: { money: moneyAudit(after), changes: plan.changes },
+          },
+        };
+      },
+    );
+  }
+
+  // AP §9.3.3: the edit dialog's before-and-after money preview; it writes
+  // nothing, so it takes no key. 400 invalid_edit; 409 pickup_request_open,
+  // order_state_changed.
+  async previewEdit(orderId: string, request: EditRequest, now: Date): Promise<EditPreview> {
+    const order = await this.find(orderId, {});
+    if (!BEFORE_PICKUP.includes(order.status)) throw await this.stateChanged(order);
+    const { plan, before, after, times, commissionOf } = await this.prepareEdit(
+      order,
+      request,
+      now,
+    );
+    const side = (money: QuoteMoney) => {
+      const cut = commissionOf(money.itemsValue);
+      return { ...money, commission: cut, merchantNet: money.itemsValue - cut };
+    };
+    return {
+      before: side(before),
+      after: side(after),
+      changes: plan.changes,
+      addsItems: plan.addsItems,
+      backToPreparing: times !== null,
+      promisedAt: times?.promisedAfter ?? null,
+    };
+  }
+
+  // AP §9.3.3: what the edit dialog offers: the items customers can order
+  // now from the restaurant's menu, with their option groups, and the extra
+  // prep time of a ready order, whole minutes from 1 to
+  // order.eta_change_max_min.
+  async editChoices(order: { cityId: string; restaurantId: string }, now: Date) {
+    const [extraPrepMaxMin, menu] = await Promise.all([
+      this.settings.get('order.eta_change_max_min', { cityId: order.cityId }),
+      this.merchants.menu(order.restaurantId, now),
+    ]);
+    const items = menu.categories
+      .filter((category) => !category.hidden)
+      .flatMap((category) =>
+        category.items
+          .filter((item) => !item.hidden && item.available)
+          .map((item) => ({
+            id: item.id,
+            name: item.name,
+            category: category.name,
+            price: item.price.amount,
+            optionGroups: item.optionGroups.map((group) => ({
+              id: group.id,
+              name: group.name,
+              minChoices: group.minChoices,
+              maxChoices: group.maxChoices,
+              options: group.options
+                .filter((option) => option.available)
+                .map((option) => ({
+                  id: option.id,
+                  name: option.name,
+                  priceDelta: option.priceDelta.amount,
+                })),
+            })),
+          })),
+      );
+    return { extraPrepMaxMin, items };
+  }
+
+  // AP §9.3.1: the order's edits, oldest first, for the detail.
+  async editsOf(order: { id: string; placedAt: Date }) {
+    return this.database.db
+      .select()
+      .from(orderEdits)
+      .where(and(eq(orderEdits.orderId, order.id), eq(orderEdits.orderPlacedAt, order.placedAt)))
+      .orderBy(orderEdits.at);
+  }
+
+  // RA §8.13 «اطلعت على التعديل» on any device: every edit of the order not
+  // yet acknowledged, with the user and the device; order.edit_acknowledged
+  // (the status unchanged) stops the ring on every device and frees the
+  // captain's pickup request. Nothing to acknowledge, or an order past its
+  // pickup, is 409 order_state_changed.
+  async acknowledgeEdits(
+    command: MerchantCommand & { through: Date },
+    now: Date,
+  ): Promise<OrderView> {
+    const key = { accountId: command.accountId, idempotencyKey: command.idempotencyKey };
+    const requestHash = commandHash({
+      verb: 'acknowledge_edit',
+      orderId: command.orderId,
+      through: command.through.toISOString(),
+    });
+    const earlier = await this.replay(this.database.db, key, requestHash, now);
+    if (earlier !== null) return this.read(earlier);
+    const order = await this.find(command.orderId, { restaurantId: command.restaurantId });
+    // Only the edits the prompt showed: a newer one keeps ringing.
+    const waiting = async (executor: Pick<Database['db'], 'select'>) =>
+      (await pendingEdits(executor, [order]))
+        .filter((edit) => edit.at.getTime() <= command.through.getTime())
+        .map((edit) => edit.id);
+    if (!BEFORE_PICKUP.includes(order.status) || (await waiting(this.database.db)).length === 0) {
+      throw await this.stateChanged(order);
+    }
+    await this.jobs.ready();
+    const done = await this.database.db.transaction(async (tx) => {
+      const locked = await lockOrder(tx, order.id, order.placedAt);
+      if (!locked) throw new Error(`order ${order.id} not found`);
+      if ((await this.replay(tx, key, requestHash, now)) !== null) return true;
+      if (!BEFORE_PICKUP.includes(locked.status)) return false;
+      const ids = await waiting(tx);
+      if (ids.length === 0) return false;
+      await tx
+        .update(orderEdits)
+        .set({
+          acknowledgedAt: now,
+          acknowledgedBy: command.accountId,
+          acknowledgedDevice: command.deviceId,
+        })
+        .where(inArray(orderEdits.id, ids));
+      const version = locked.version + 1;
+      await tx.update(orders).set({ version }).where(orderKey(order.id, order.placedAt));
+      await recordTransition(tx, this.jobs, locked, {
+        type: 'order.edit_acknowledged',
+        from: locked.status,
+        to: locked.status,
+        version,
+        actor: { type: 'restaurant', id: command.accountId, device: command.deviceId },
+        reason: null,
+        at: now,
+      });
+      await keepKey(tx, command.accountId, command.idempotencyKey, requestHash, order, now);
+      return true;
+    });
+    if (!done) throw await this.stateChanged(order);
+    return this.read(order);
+  }
+
+  // The edit worked out from the order as it is, before the lock: its plan,
+  // the money before and after, and the times of a ready order sent back to
+  // accepted; `basis` is what the guard compares under the lock.
+  private async prepareEdit(order: OrderAtStart, request: EditRequest, now: Date) {
+    const [row] = await this.database.db
+      .select({
+        status: orders.status,
+        version: orders.version,
+        captainTrack: orders.captainTrack,
+        currency: orders.currency,
+        discount: orders.discount,
+        deliveryFee: orders.deliveryFee,
+        rateSnapshot: orders.rateSnapshot,
+        commissionBp: orders.commissionBp,
+        testOrder: orders.testOrder,
+      })
+      .from(orders)
+      .where(orderKey(order.id, order.placedAt));
+    if (!row || !BEFORE_PICKUP.includes(row.status)) throw await this.stateChanged(order);
+    // RA §8.10: no edit while the captain's pickup request is open.
+    if (row.captainTrack === 'pickup_pending') {
+      throw new OrderCommandRefusedError(
+        'pickup_request_open',
+        'a pickup request is open',
+        await this.read(order),
+      );
+    }
+    const basis = await this.editBasis(this.database.db, order);
+    const view = await this.read(order);
+    const allLines = await this.database.db
+      .select({ position: orderLines.position, quantityBefore: orderLines.quantityBefore })
+      .from(orderLines)
+      .where(and(eq(orderLines.orderId, order.id), eq(orderLines.orderPlacedAt, order.placedAt)));
+    const current: CurrentLine[] = view.lines.map((line) => ({
+      ...line,
+      quantityBefore:
+        allLines.find((entry) => entry.position === line.position)?.quantityBefore ?? null,
+    }));
+    const menu = await this.merchants.menu(order.restaurantId, now);
+    const priced = priceLines(
+      menu,
+      request.add.map((line) => ({
+        itemId: line.itemId,
+        optionIds: line.optionIds,
+        quantity: line.quantity,
+        note: null,
+        knownUnitPrice: 0n,
+      })),
+      row.currency,
+    );
+    const plan = planEdit(current, request, priced);
+    if (typeof plan === 'string') throw new OrderCommandRefusedError('invalid_edit', plan);
+    const deliveryFee = request.deliveryFee ?? row.deliveryFee;
+    if (deliveryFee < 0n) {
+      throw new OrderCommandRefusedError('invalid_edit', 'the delivery fee is not negative');
+    }
+    if (plan.changes.length === 0 && deliveryFee === row.deliveryFee) {
+      throw new OrderCommandRefusedError('invalid_edit', 'the edit changes nothing');
+    }
+    const backToPreparing = row.status === 'ready' && plan.addsItems;
+    const maxMin = await this.settings.get('order.eta_change_max_min', { cityId: order.cityId });
+    const extra = request.extraPrepMin;
+    if (backToPreparing) {
+      if (extra === null || !Number.isInteger(extra) || extra < 1 || extra > maxMin) {
+        throw new OrderCommandRefusedError(
+          'invalid_edit',
+          `items added to a ready order need the extra prep time, whole minutes from 1 to ${maxMin}`,
+        );
+      }
+    } else if (extra !== null) {
+      throw new OrderCommandRefusedError(
+        'invalid_edit',
+        'the extra prep time is for items added to a ready order',
+      );
+    }
+    const snapshot = snapshotOf(row.rateSnapshot);
+    const base = snapshot.currencies.find((entry) => entry.code === snapshot.baseCurrency);
+    const after = quoteMoney({
+      itemsValue: plan.itemsValue,
+      deliveryFee,
+      // Codes wait for Phase 2: the discount stays as placed (AP §9.3.3).
+      discount: row.discount,
+      rounding: base ? { unitMinor: base.roundingUnitMinor, mode: base.roundingMode } : null,
+    });
+    let times: EditTimes | null = null;
+    if (backToPreparing && extra !== null && view.acceptance) {
+      const at = await this.times(this.database.db, order);
+      const acceptedAt = view.acceptance.at.getTime();
+      // RA §8.13: the restaurant gets the extra minutes from now.
+      const prepMinAfter = Math.ceil((now.getTime() - acceptedAt) / MINUTE_MS) + extra;
+      const lateAfterDue = at.prepLateAlertAt.getTime() - (acceptedAt + at.prepMin * MINUTE_MS);
+      times = {
+        extraPrepMin: extra,
+        prepMinBefore: at.prepMin,
+        prepMinAfter,
+        prepLateAlertAt: new Date(acceptedAt + prepMinAfter * MINUTE_MS + lateAfterDue),
+        promisedBefore: at.promisedAt,
+        promisedAfter: new Date(
+          Math.ceil((at.promisedAt.getTime() + extra * MINUTE_MS) / PROMISE_STEP_MS) *
+            PROMISE_STEP_MS,
+        ),
+      };
+    }
+    const positions = allLines.map((entry) => entry.position);
+    return {
+      plan,
+      before: view.money,
+      after,
+      times,
+      basis,
+      version: row.version,
+      status: row.status,
+      currency: row.currency,
+      nextPosition: positions.length === 0 ? 0 : Math.max(...positions) + 1,
+      // AP §8.4; none on a test order (AP §9.6.3).
+      commissionOf: (itemsValue: bigint) =>
+        row.testOrder ? 0n : commission(itemsValue, row.commissionBp),
+    };
+  }
+
+  // What an edit was worked out from: the status, the money, the times, the
+  // current lines and whether a pickup request is open.
+  private async editBasis(
+    executor: Pick<Database['db'], 'select'>,
+    order: { id: string; placedAt: Date },
+  ): Promise<string> {
+    const [row] = await executor
+      .select({
+        status: orders.status,
+        captainTrack: orders.captainTrack,
+        itemsValue: orders.itemsValue,
+        deliveryFee: orders.deliveryFee,
+        promisedAt: orders.promisedAt,
+        prepMin: orders.prepMin,
+      })
+      .from(orders)
+      .where(orderKey(order.id, order.placedAt));
+    const lines = await executor
+      .select({
+        position: orderLines.position,
+        quantity: orderLines.quantity,
+        removed: orderLines.removedByEdit,
+      })
+      .from(orderLines)
+      .where(and(eq(orderLines.orderId, order.id), eq(orderLines.orderPlacedAt, order.placedAt)))
+      .orderBy(orderLines.position);
+    return JSON.stringify([
+      row?.status,
+      row?.captainTrack === 'pickup_pending',
+      row?.itemsValue.toString(),
+      row?.deliveryFee.toString(),
+      row?.promisedAt?.toISOString() ?? null,
+      row?.prepMin,
+      lines.map((line) => [line.position, line.quantity, line.removed]),
+    ]);
+  }
+
   private async times(
     executor: Database['db'] | Tx,
     order: { id: string; placedAt: Date },
@@ -1322,7 +1797,7 @@ export class OrderCommands {
         current = (await lockOrder(tx, order.id, order.placedAt))!;
       }
       const version = current.version + 1;
-      const to = transition.to ?? current.status;
+      const to = prepared.to ?? transition.to ?? current.status;
       await tx
         .update(orders)
         .set({ ...prepared.set, status: to, version })
@@ -1503,3 +1978,32 @@ type OrderAtStart = {
   tripMetres: number | null;
   searchStartAt: Date | null;
 };
+
+// AP §9.3.3: a ready order sent back to accepted by an edit that adds items.
+type EditTimes = {
+  extraPrepMin: number;
+  prepMinBefore: number;
+  prepMinAfter: number;
+  prepLateAlertAt: Date;
+  promisedBefore: Date;
+  promisedAfter: Date;
+};
+
+// AP §9.3.3: the edit dialog's before-and-after money, with the commission
+// and the merchant net (owners' net, RA §8.13).
+export interface EditPreview {
+  before: QuoteMoney & { commission: bigint; merchantNet: bigint };
+  after: QuoteMoney & { commission: bigint; merchantNet: bigint };
+  changes: EditChange[];
+  addsItems: boolean;
+  backToPreparing: boolean;
+  promisedAt: Date | null;
+}
+
+function moneyAudit(money: QuoteMoney) {
+  return {
+    itemsValue: money.itemsValue.toString(),
+    deliveryFee: money.deliveryFee.toString(),
+    total: money.total.toString(),
+  };
+}

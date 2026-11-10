@@ -49,6 +49,9 @@ const detail = {
   cancelChoices: null,
   itemReport: null,
   timeChange: null,
+  editChoices: null,
+  edits: [],
+  removedLines: [],
   customer: {
     name: 'أحمد',
     address: {
@@ -67,8 +70,11 @@ const detail = {
   lines: [
     {
       itemId: '01900000-0000-7000-8000-0000000000b1',
+      position: 0,
       name: 'شاورما',
       quantity: 2,
+      added: false,
+      quantityBefore: null,
       options: [],
       note: null,
       unitPrice: '500',
@@ -676,6 +682,82 @@ test('moves the promised time of a ready order', async ({ page }) => {
 
   await expect(change.getByRole('status')).toHaveText('عُدّل الوقت، وأُبلغ الزبون بالموعد الجديد');
   expect(sent).toEqual({ addMin: 7, reason: null });
+});
+
+// AP §9.3.3 «تعديل الطلب»: a line raised, an item added from the menu, the
+// extra prep time of a ready order, the preview before and after, the note.
+test('adds an item to a ready order with the extra prep time', async ({ page }) => {
+  await fakeSession(page, ['operations.read', 'operations.manage']);
+  await fakeOperations(page);
+  const friesId = '01900000-0000-7000-8000-0000000000c1';
+  await page.route(`**/v1/admin/orders/${orderId}`, (route) =>
+    route.fulfill({
+      json: {
+        order: {
+          ...detail,
+          status: 'ready',
+          editChoices: {
+            extraPrepMaxMin: 60,
+            items: [
+              { id: friesId, name: 'بطاطا', category: 'وجبات', price: '300', optionGroups: [] },
+            ],
+          },
+        },
+      },
+    }),
+  );
+  const side = (itemsValue: string, total: string) => ({
+    itemsValue,
+    deliveryFee: '250',
+    discount: '0',
+    rounding: '0',
+    total,
+    commission: '0',
+    merchantNet: itemsValue,
+  });
+  await page.route(`**/v1/admin/orders/${orderId}/edit-preview`, (route) =>
+    route.fulfill({
+      json: {
+        currency: 'USD',
+        before: side('1000', '1250'),
+        after: side('1800', '2050'),
+        changes: [
+          { kind: 'quantity', name: 'شاورما', options: [], quantity: 3, quantityBefore: 2 },
+          { kind: 'added', name: 'بطاطا', options: [], quantity: 1 },
+        ],
+        addsItems: true,
+        backToPreparing: true,
+        promisedAt: later(30),
+      },
+    }),
+  );
+  let sent: unknown;
+  await page.route(`**/v1/admin/orders/${orderId}/edit`, (route) => {
+    sent = route.request().postDataJSON();
+    return route.fulfill({ json: { order: card } });
+  });
+  await page.goto(`/orders/${orderId}`);
+
+  const edit = page.getByRole('form', { name: 'تعديل الطلب' });
+  await edit.getByRole('spinbutton', { name: 'شاورما' }).fill('3');
+  await edit.getByRole('combobox', { name: 'الصنف' }).selectOption(friesId);
+  await edit.getByRole('button', { name: 'إضافة', exact: true }).click();
+  await edit.getByRole('spinbutton', { name: /وقت تحضير إضافي/ }).fill('10');
+  await expect(edit.getByText('شاورما: 2 ← 3')).toBeVisible();
+  await expect(edit.getByText(/يعود الطلب إلى «قيد التحضير»/)).toBeVisible();
+  await expect(edit.getByRole('button', { name: 'تأكيد التعديل' })).toBeDisabled();
+  await edit.getByRole('textbox', { name: 'ملاحظة العمليات (مطلوبة)' }).fill('اتفقنا مع الزبون');
+  await edit.getByRole('button', { name: 'تأكيد التعديل' }).click();
+
+  await expect(edit.getByRole('status')).toHaveText('عُدّل الطلب، وأُبلغ الزبون والمطعم والكابتن');
+  expect(sent).toEqual({
+    keep: [{ position: 0, quantity: 3 }],
+    add: [{ itemId: friesId, optionIds: [], quantity: 1 }],
+    deliveryFee: null,
+    extraPrepMin: 10,
+    version: card.version,
+    reason: 'اتفقنا مع الزبون',
+  });
 });
 
 // RA §8.12, AP §9.3.2 «إغلاق بلاغ صنف نفد»: the report's items and note, then

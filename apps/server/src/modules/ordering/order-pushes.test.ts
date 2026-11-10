@@ -13,6 +13,7 @@ const facts: OrderPushFacts = {
   recipientName: null,
   promisedTime: '9:45 م',
   total: '160 ₺',
+  itemsValue: '120 ₺',
   cancelText: null,
   cancelReason: null,
   cancelLabel: null,
@@ -55,6 +56,26 @@ describe('the pushes of an order event', () => {
     expect(sent('order.time_changed', 'promised_time_changed', { actor: 'admin' })).toEqual([
       [customer, 'customer.time_changed', { الساعة: '9:45 م' }],
     ]);
+  });
+
+  it('tells every party of an edit: the customer the new total, the restaurant a ring or a chime, the captain the new amounts (CU §14 #11, RA §16 #16–17, CA §14 #10)', () => {
+    const amounts = { رقم: '10002', للمطعم: '120 ₺', للتحصيل: '160 ₺' };
+    expect(sent('order.edited', 'items_added', { actor: 'admin' })).toEqual([
+      [customer, 'customer.order_edited', { المبلغ: '160 ₺' }],
+      [restaurant, 'merchant.edited_items_added', { رقم: '10002' }],
+      [captain, 'captain.order_edited', amounts],
+    ]);
+    expect(sent('order.edited', 'changed', { actor: 'admin', captainId: null })).toEqual([
+      [customer, 'customer.order_edited', { المبلغ: '160 ₺' }],
+      [restaurant, 'merchant.edited', { رقم: '10002' }],
+    ]);
+    expect(sent('order.edited', 'items_added_back_to_preparing', { actor: 'admin' })).toEqual([
+      [customer, 'customer.order_edited', { المبلغ: '160 ₺' }],
+      [customer, 'customer.time_changed', { الساعة: '9:45 م' }],
+      [restaurant, 'merchant.edited_items_added', { رقم: '10002' }],
+      [captain, 'captain.order_edited', amounts],
+    ]);
+    expect(sent('order.edit_acknowledged')).toEqual([]);
   });
 
   it('rings every device of the restaurant with a new order (RA §16 #1)', () => {

@@ -147,6 +147,40 @@ const boardOrder = z.object({
     .describe(
       'RA §8.12: the open item-unavailable report: the badge «صنف نفد — بانتظار العمليات», the line «العمليات تتواصل مع الزبون» and «تراجع — الصنف متوفر» (POST …/item-report/withdraw); pickup requests wait until it closes (RA §8.10). Null otherwise.',
     ),
+  edits: z
+    .array(
+      z.object({
+        at: z.iso.datetime(),
+        addsItems: z
+          .boolean()
+          .describe(
+            'Items added or a quantity raised: every device rings «تم تعديل الطلب #{رقم} — أُضيفت أصناف» until «اطلعت على التعديل», and pickup requests wait (RA §8.10, §16 #16); otherwise it chimes «تم تعديل الطلب #{رقم}» once and stays on the card (RA §16 #17).',
+          ),
+        changes: z
+          .array(
+            z.object({
+              kind: z
+                .enum(['added', 'removed', 'quantity'])
+                .describe('A line whose options changed is removed and added again.'),
+              name: z.string(),
+              options: z.array(z.string()),
+              quantity: z.int(),
+              quantityBefore: z.int().optional().describe('quantity: the quantity before.'),
+            }),
+          )
+          .describe('The prompt lists them (RA §8.13).'),
+        itemsValue: minor.describe('The new items value after this edit.'),
+        extraPrepMin: z
+          .int()
+          .nullable()
+          .describe(
+            'Items added to a ready order: back to «قيد التحضير» with this many minutes from the edit (RA §8.13); null otherwise.',
+          ),
+      }),
+    )
+    .describe(
+      'RA §8.13: the edits by operations not yet acknowledged, oldest first; «اطلعت على التعديل» (POST …/acknowledge-edit) acknowledges them all. Empty after the pickup.',
+    ),
   cancellation: z
     .object({
       at: z.iso.datetime(),
@@ -265,6 +299,16 @@ class MerchantRejectDto extends createZodDto(
 ) {}
 
 class MerchantOrderParamsDto extends createZodDto(z.object({ orderId: z.uuid() })) {}
+
+class MerchantAcknowledgeEditDto extends createZodDto(
+  z.object({
+    through: z.iso
+      .datetime()
+      .describe(
+        "The newest edit's `at` the prompt showed: the edits up to it are acknowledged, a newer one keeps ringing (RA §8.13).",
+      ),
+  }),
+) {}
 
 class MerchantPickupDisputeDto extends createZodDto(
   z.object({
@@ -485,6 +529,28 @@ export class MerchantOrdersController {
     );
   }
 
+  // RA §8.13 «اطلعت على التعديل» (slice 2.10a): every edit by operations not
+  // yet acknowledged, on any device; the ring stops everywhere and the
+  // captain's pickup request is free (order.edit_acknowledged). 409
+  // order_state_changed with nothing to acknowledge; 404 unknown_order; 422
+  // idempotency_key_reused.
+  @Post('orders/:orderId/acknowledge-edit')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: MerchantOrderDto })
+  async acknowledgeEdit(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: MerchantOrderParamsDto,
+    @Body() body: MerchantAcknowledgeEditDto,
+  ) {
+    const command = await this.command(session, idempotencyKey, params.orderId);
+    return this.answer(command.restaurantId, () =>
+      this.commands.acknowledgeEdits({ ...command, through: new Date(body.through) }, new Date()),
+    );
+  }
+
   // RA §8.12 «صنف غير متوفر — اتصلوا بالزبون»: on an accepted or ready
   // order with no pickup request open, the items switched off at once,
   // operations alerted and the customer told FOX DROP will call; the
@@ -697,6 +763,13 @@ export class MerchantOrdersController {
         items: order.itemReport.items,
         note: order.itemReport.note,
       },
+      edits: order.pendingEdits.map((edit) => ({
+        at: edit.at.toISOString(),
+        addsItems: edit.addsItems,
+        changes: edit.changes,
+        itemsValue: edit.itemsValueAfter.toString(),
+        extraPrepMin: edit.extraPrepMin,
+      })),
       // RA §8.14: only while it rings, until «حسناً» on any device.
       cancellation:
         order.cancellation &&

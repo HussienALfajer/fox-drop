@@ -9,6 +9,7 @@ import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_accep
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_edits_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain_arrival.dart';
@@ -38,6 +39,7 @@ part 'merchant_orders_dto_output_orders_inner.g.dart';
 /// * [captain]
 /// * [captainArrival]
 /// * [itemReport]
+/// * [edits] - RA §8.13: the edits by operations not yet acknowledged, oldest first; «اطلعت على التعديل» (POST …/acknowledge-edit) acknowledges them all. Empty after the pickup.
 /// * [cancellation]
 /// * [pickup]
 @BuiltValue()
@@ -111,6 +113,10 @@ abstract class MerchantOrdersDtoOutputOrdersInner
 
   @BuiltValueField(wireName: r'itemReport')
   MerchantOrdersDtoOutputOrdersInnerItemReport? get itemReport;
+
+  /// RA §8.13: the edits by operations not yet acknowledged, oldest first; «اطلعت على التعديل» (POST …/acknowledge-edit) acknowledges them all. Empty after the pickup.
+  @BuiltValueField(wireName: r'edits')
+  BuiltList<MerchantOrdersDtoOutputOrdersInnerEditsInner> get edits;
 
   @BuiltValueField(wireName: r'cancellation')
   MerchantOrdersDtoOutputOrdersInnerCancellation? get cancellation;
@@ -270,6 +276,13 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
               MerchantOrdersDtoOutputOrdersInnerItemReport,
             ),
           );
+    yield r'edits';
+    yield serializers.serialize(
+      object.edits,
+      specifiedType: const FullType(BuiltList, [
+        FullType(MerchantOrdersDtoOutputOrdersInnerEditsInner),
+      ]),
+    );
     yield r'cancellation';
     yield object.cancellation == null
         ? null
@@ -494,6 +507,17 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
                   as MerchantOrdersDtoOutputOrdersInnerItemReport?;
           if (valueDes == null) continue;
           result.itemReport.replace(valueDes);
+          break;
+        case r'edits':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(MerchantOrdersDtoOutputOrdersInnerEditsInner),
+                    ]),
+                  )
+                  as BuiltList<MerchantOrdersDtoOutputOrdersInnerEditsInner>;
+          result.edits.replace(valueDes);
           break;
         case r'cancellation':
           final valueDes =

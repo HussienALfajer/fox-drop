@@ -174,6 +174,9 @@ _$adminOrderDtoOutputOrderAlertsEnum_awayFromAddress =
 const AdminOrderDtoOutputOrderAlertsEnum
 _$adminOrderDtoOutputOrderAlertsEnum_itemUnavailable =
     const AdminOrderDtoOutputOrderAlertsEnum._('itemUnavailable');
+const AdminOrderDtoOutputOrderAlertsEnum
+_$adminOrderDtoOutputOrderAlertsEnum_editUnacknowledged =
+    const AdminOrderDtoOutputOrderAlertsEnum._('editUnacknowledged');
 
 AdminOrderDtoOutputOrderAlertsEnum _$adminOrderDtoOutputOrderAlertsEnumValueOf(
   String name,
@@ -201,6 +204,8 @@ AdminOrderDtoOutputOrderAlertsEnum _$adminOrderDtoOutputOrderAlertsEnumValueOf(
       return _$adminOrderDtoOutputOrderAlertsEnum_awayFromAddress;
     case 'itemUnavailable':
       return _$adminOrderDtoOutputOrderAlertsEnum_itemUnavailable;
+    case 'editUnacknowledged':
+      return _$adminOrderDtoOutputOrderAlertsEnum_editUnacknowledged;
     default:
       throw ArgumentError(name);
   }
@@ -221,6 +226,7 @@ _$adminOrderDtoOutputOrderAlertsEnumValues =
         _$adminOrderDtoOutputOrderAlertsEnum_collectionShortfall,
         _$adminOrderDtoOutputOrderAlertsEnum_awayFromAddress,
         _$adminOrderDtoOutputOrderAlertsEnum_itemUnavailable,
+        _$adminOrderDtoOutputOrderAlertsEnum_editUnacknowledged,
       ],
     );
 
@@ -342,6 +348,7 @@ class _$AdminOrderDtoOutputOrderAlertsEnumSerializer
     'collectionShortfall': 'collection_shortfall',
     'awayFromAddress': 'away_from_address',
     'itemUnavailable': 'item_unavailable',
+    'editUnacknowledged': 'edit_unacknowledged',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -355,6 +362,7 @@ class _$AdminOrderDtoOutputOrderAlertsEnumSerializer
     'collection_shortfall': 'collectionShortfall',
     'away_from_address': 'awayFromAddress',
     'item_unavailable': 'itemUnavailable',
+    'edit_unacknowledged': 'editUnacknowledged',
   };
 
   @override
@@ -425,6 +433,12 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
   @override
   final AdminOrderDtoOutputOrderTimeChange? timeChange;
   @override
+  final AdminOrderDtoOutputOrderEditChoices? editChoices;
+  @override
+  final BuiltList<AdminOrderDtoOutputOrderEditsInner> edits;
+  @override
+  final BuiltList<AdminOrderDtoOutputOrderRemovedLinesInner> removedLines;
+  @override
   final AdminOrderDtoOutputOrderRejection? rejection;
   @override
   final AdminOrderDtoOutputOrderOnBehalf? onBehalf;
@@ -470,6 +484,9 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     this.cancelChoices,
     this.itemReport,
     this.timeChange,
+    this.editChoices,
+    required this.edits,
+    required this.removedLines,
     this.rejection,
     this.onBehalf,
     required this.customer,
@@ -515,6 +532,9 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
         cancelChoices == other.cancelChoices &&
         itemReport == other.itemReport &&
         timeChange == other.timeChange &&
+        editChoices == other.editChoices &&
+        edits == other.edits &&
+        removedLines == other.removedLines &&
         rejection == other.rejection &&
         onBehalf == other.onBehalf &&
         customer == other.customer &&
@@ -551,6 +571,9 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     _$hash = $jc(_$hash, cancelChoices.hashCode);
     _$hash = $jc(_$hash, itemReport.hashCode);
     _$hash = $jc(_$hash, timeChange.hashCode);
+    _$hash = $jc(_$hash, editChoices.hashCode);
+    _$hash = $jc(_$hash, edits.hashCode);
+    _$hash = $jc(_$hash, removedLines.hashCode);
     _$hash = $jc(_$hash, rejection.hashCode);
     _$hash = $jc(_$hash, onBehalf.hashCode);
     _$hash = $jc(_$hash, customer.hashCode);
@@ -589,6 +612,9 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
           ..add('cancelChoices', cancelChoices)
           ..add('itemReport', itemReport)
           ..add('timeChange', timeChange)
+          ..add('editChoices', editChoices)
+          ..add('edits', edits)
+          ..add('removedLines', removedLines)
           ..add('rejection', rejection)
           ..add('onBehalf', onBehalf)
           ..add('customer', customer)
@@ -722,6 +748,26 @@ class AdminOrderDtoOutputOrderBuilder
   set timeChange(AdminOrderDtoOutputOrderTimeChangeBuilder? timeChange) =>
       _$this._timeChange = timeChange;
 
+  AdminOrderDtoOutputOrderEditChoicesBuilder? _editChoices;
+  AdminOrderDtoOutputOrderEditChoicesBuilder get editChoices =>
+      _$this._editChoices ??= AdminOrderDtoOutputOrderEditChoicesBuilder();
+  set editChoices(AdminOrderDtoOutputOrderEditChoicesBuilder? editChoices) =>
+      _$this._editChoices = editChoices;
+
+  ListBuilder<AdminOrderDtoOutputOrderEditsInner>? _edits;
+  ListBuilder<AdminOrderDtoOutputOrderEditsInner> get edits =>
+      _$this._edits ??= ListBuilder<AdminOrderDtoOutputOrderEditsInner>();
+  set edits(ListBuilder<AdminOrderDtoOutputOrderEditsInner>? edits) =>
+      _$this._edits = edits;
+
+  ListBuilder<AdminOrderDtoOutputOrderRemovedLinesInner>? _removedLines;
+  ListBuilder<AdminOrderDtoOutputOrderRemovedLinesInner> get removedLines =>
+      _$this._removedLines ??=
+          ListBuilder<AdminOrderDtoOutputOrderRemovedLinesInner>();
+  set removedLines(
+    ListBuilder<AdminOrderDtoOutputOrderRemovedLinesInner>? removedLines,
+  ) => _$this._removedLines = removedLines;
+
   AdminOrderDtoOutputOrderRejectionBuilder? _rejection;
   AdminOrderDtoOutputOrderRejectionBuilder get rejection =>
       _$this._rejection ??= AdminOrderDtoOutputOrderRejectionBuilder();
@@ -803,6 +849,9 @@ class AdminOrderDtoOutputOrderBuilder
       _cancelChoices = $v.cancelChoices?.toBuilder();
       _itemReport = $v.itemReport?.toBuilder();
       _timeChange = $v.timeChange?.toBuilder();
+      _editChoices = $v.editChoices?.toBuilder();
+      _edits = $v.edits.toBuilder();
+      _removedLines = $v.removedLines.toBuilder();
       _rejection = $v.rejection?.toBuilder();
       _onBehalf = $v.onBehalf?.toBuilder();
       _customer = $v.customer.toBuilder();
@@ -886,6 +935,9 @@ class AdminOrderDtoOutputOrderBuilder
             cancelChoices: _cancelChoices?.build(),
             itemReport: _itemReport?.build(),
             timeChange: _timeChange?.build(),
+            editChoices: _editChoices?.build(),
+            edits: edits.build(),
+            removedLines: removedLines.build(),
             rejection: _rejection?.build(),
             onBehalf: _onBehalf?.build(),
             customer: customer.build(),
@@ -924,6 +976,12 @@ class AdminOrderDtoOutputOrderBuilder
         _itemReport?.build();
         _$failedField = 'timeChange';
         _timeChange?.build();
+        _$failedField = 'editChoices';
+        _editChoices?.build();
+        _$failedField = 'edits';
+        edits.build();
+        _$failedField = 'removedLines';
+        removedLines.build();
         _$failedField = 'rejection';
         _rejection?.build();
         _$failedField = 'onBehalf';

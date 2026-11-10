@@ -3,12 +3,14 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { equivalent, type RateSnapshot } from '../fx/index.js';
 import type { Point } from '../geo/index.js';
 import { type ItemReportNote, type ItemReportUntil, openItemReports } from './item-reports.js';
+import { type PendingEdit, pendingEdits } from './order-edits.js';
 import type { CaptainTrack } from './order-events.js';
 import type { QuoteMoney } from './quote.js';
 import {
   collections,
   type orderOutcomes,
   orderEvents,
+  orderEdits,
   orderLines,
   orders,
   type orderStatuses,
@@ -143,7 +145,11 @@ export interface OrderView {
   // The total in the city's other accepted currencies, by the order's own
   // rates (AP §8.6), each by its own rounding.
   equivalents: { currency: string; amount: bigint }[];
+  // The current lines, with the position operations' edit names them by
+  // (AP §9.3.3), whether an edit added the line («أُضيف») and its quantity
+  // before an edit changed it (CU §11.6).
   lines: {
+    position: number;
     itemId: string;
     name: string;
     quantity: number;
@@ -151,7 +157,16 @@ export interface OrderView {
     options: { id: string; name: string; priceDelta: bigint }[];
     unitPrice: bigint;
     lineTotal: bigint;
+    added: boolean;
+    quantityBefore: number | null;
   }[];
+  // CU §11.6: the lines an edit removed, struck through as «حُذف».
+  removedLines: { name: string; quantity: number; options: { name: string }[] }[];
+  // RA §8.13: the edits the restaurant has not acknowledged, oldest first,
+  // while the order is before its pickup; empty otherwise.
+  pendingEdits: PendingEdit[];
+  // CU §11.6: operations edited the order at least once.
+  edited: boolean;
   payIn: string | null;
   note: string | null;
   estimate: { fromMin: number; toMin: number };
@@ -170,6 +185,9 @@ export interface OrderView {
 
 // The orders matching `where` with their lines, oldest first, or newest
 // first with `newestFirst`.
+// AP §9.3.3: an order operations may edit before its pickup.
+export const BEFORE_PICKUP: OrderStatus[] = ['placed', 'accepted', 'ready'];
+
 export async function readOrders(
   executor: Executor,
   where: SQL | undefined,
@@ -309,6 +327,29 @@ export async function readOrders(
   const reports = await openItemReports(
     executor,
     rows.filter((row) => row.acceptedAt !== null),
+  );
+  const edits = await pendingEdits(
+    executor,
+    rows.filter((row) => BEFORE_PICKUP.includes(row.status)),
+  );
+  const editedIds = new Set(
+    (
+      await executor
+        .select({ orderId: orderEdits.orderId })
+        .from(orderEdits)
+        .where(
+          and(
+            inArray(
+              orderEdits.orderId,
+              rows.map((row) => row.id),
+            ),
+            inArray(
+              orderEdits.orderPlacedAt,
+              rows.map((row) => row.placedAt),
+            ),
+          ),
+        )
+    ).map((row) => row.orderId),
   );
   const delivered = rows.filter((row) => row.deliveredAt !== null);
   const deliveries =
@@ -462,9 +503,10 @@ export async function readOrders(
           currency: entry.code,
           amount: equivalent(snapshot, row.total, entry.code),
         })),
-      lines: lines
-        .filter((line) => line.orderId === row.id)
+      lines: ownLines
+        .filter((line) => line.removedByEdit === null)
         .map((line) => ({
+          position: line.position,
           itemId: line.itemId,
           name: line.itemName,
           quantity: line.quantity,
@@ -474,7 +516,23 @@ export async function readOrders(
           ),
           unitPrice: line.unitPrice,
           lineTotal: line.lineTotal,
+          added: line.addedByEdit !== null,
+          quantityBefore:
+            line.quantityBefore === null || line.quantityBefore === line.quantity
+              ? null
+              : line.quantityBefore,
         })),
+      removedLines: ownLines
+        .filter((line) => line.removedByEdit !== null)
+        .map((line) => ({
+          name: line.itemName,
+          quantity: line.quantity,
+          options: (line.options as { name: string }[]).map((option) => ({ name: option.name })),
+        })),
+      pendingEdits: BEFORE_PICKUP.includes(row.status)
+        ? edits.filter((edit) => edit.orderId === row.id)
+        : [],
+      edited: editedIds.has(row.id),
       payIn: row.payIn,
       note: row.note,
       estimate: { fromMin: row.estimateFromMin, toMin: row.estimateToMin },

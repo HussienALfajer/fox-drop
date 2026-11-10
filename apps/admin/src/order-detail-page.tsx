@@ -16,12 +16,15 @@ import {
   outcomeKeys,
   requestStatusKeys,
   responsibleKeys,
+  type OrderDetail,
 } from './order-detail.js';
 import { statusKeys, trackKeys, vehicleKey } from './order-labels.js';
 import { DecideOnBehalf } from './order-on-behalf-page.js';
 import { canDecide } from './order-on-behalf.js';
 import { CloseItemReport, ItemReportSection, ReportedItems } from './order-item-report-page.js';
 import { canCloseItemReport } from './order-item-report.js';
+import { EditChangeText, EditOrder } from './order-edit-page.js';
+import { canEdit } from './order-edit.js';
 import { ChangeTime } from './order-time-change-page.js';
 import { canChangeTime } from './order-time-change.js';
 import { Badges } from './orders-board-page.js';
@@ -195,6 +198,15 @@ export function OrderDetailPage() {
           time={time}
         />
       )}
+      {canEdit(session, detail) && (
+        <EditOrder
+          key={editKey(orderId, detail)}
+          orderId={orderId}
+          detail={detail}
+          choices={detail.editChoices}
+          time={time}
+        />
+      )}
       {canDecide(session, detail) && (
         <DecideOnBehalf
           key={orderId}
@@ -267,6 +279,10 @@ export function OrderDetailPage() {
         {detail.lines.map((line, index) => (
           <li key={index}>
             {t('order.line', { quantity: line.quantity, name: line.name })} {money(line.lineTotal)}
+            {line.added && <strong> {t('order.lineAdded')}</strong>}
+            {line.quantityBefore !== null && (
+              <span> {t('order.lineQuantityBefore', { quantity: line.quantityBefore })}</span>
+            )}
             {line.options.length > 0 && (
               <ul>
                 {line.options.map((option, each) => (
@@ -278,6 +294,57 @@ export function OrderDetailPage() {
           </li>
         ))}
       </ul>
+
+      {detail.removedLines.length > 0 && (
+        <ul>
+          {detail.removedLines.map((line, index) => (
+            <li key={index}>
+              <del>{t('order.removedLine', { quantity: line.quantity, name: line.name })}</del>
+            </li>
+          ))}
+        </ul>
+      )}
+      {detail.edits.length > 0 && (
+        <>
+          <h3>{t('order.edits')}</h3>
+          <ul>
+            {detail.edits.map((edit, index) => (
+              <li key={index}>
+                {t('order.editEntry', {
+                  time: time(edit.at),
+                  itemsBefore: money(edit.itemsValue.before),
+                  itemsAfter: money(edit.itemsValue.after),
+                  totalBefore: money(edit.total.before),
+                  totalAfter: money(edit.total.after),
+                })}
+                {edit.deliveryFee.before !== edit.deliveryFee.after && (
+                  <p>
+                    {t('order.editFee', {
+                      before: money(edit.deliveryFee.before),
+                      after: money(edit.deliveryFee.after),
+                    })}
+                  </p>
+                )}
+                {edit.extraPrepMin !== null && (
+                  <p>{t('order.editExtraPrep', { minutes: edit.extraPrepMin })}</p>
+                )}
+                <ul>
+                  {edit.changes.map((change, each) => (
+                    <li key={each}>
+                      <EditChangeText change={change} />
+                    </li>
+                  ))}
+                </ul>
+                <p>
+                  {edit.acknowledgedAt
+                    ? t('order.editAcknowledgedAt', { time: time(edit.acknowledgedAt) })
+                    : t('order.editNotAcknowledged')}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
 
       <h3>{t('order.money')}</h3>
       <dl>
@@ -436,5 +503,13 @@ function ResendNotification({ orderId, targets }: { orderId: string; targets: Re
         </p>
       )}
     </section>
+  );
+}
+
+// The edit form starts again from the order's lines whenever they change (an
+// edit made, here or elsewhere), and keeps what is typed otherwise.
+function editKey(orderId: string, detail: OrderDetail): string {
+  return [orderId, ...detail.lines.map((line) => [line.position, line.quantity].join(':'))].join(
+    '|',
   );
 }

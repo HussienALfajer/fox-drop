@@ -19,6 +19,8 @@ export interface OrderPushFacts {
   // Formatted for the push: «9:45 م», «120 ₺».
   promisedTime: string | null;
   total: string;
+  // CA §9.10: the pickup payment (the items value), «للمطعم».
+  itemsValue: string;
   // CU §14 #8: the customer text of the cancellation's reason.
   cancelText: string | null;
   cancelReason: string | null;
@@ -213,6 +215,22 @@ export function orderPushes(
         ...(reason === 'prep_time_changed'
           ? [merchant('merchant.prep_time_changed', { د: String(facts.prepMin ?? '') })]
           : []),
+      ];
+    case 'order.edited':
+      return [
+        // CU §11.6, §14 #11: the new total; a ready order back to preparing
+        // also moved the promised time (CU §14 #12).
+        customer('customer.order_edited', { المبلغ: facts.total }),
+        ...(reason === 'items_added_back_to_preparing'
+          ? [customer('customer.time_changed', { الساعة: facts.promisedTime ?? '' })]
+          : []),
+        // RA §8.13, §16 #16–17: an addition rings until acknowledged.
+        merchant(reason === 'changed' ? 'merchant.edited' : 'merchant.edited_items_added'),
+        // CA §9.10, §14 #10: the new amounts to pay and to collect.
+        ...captain('captain.order_edited', {
+          للمطعم: facts.itemsValue,
+          للتحصيل: facts.total,
+        }),
       ];
     default:
       // The search and an offer closing are silent (CA §14 #2).

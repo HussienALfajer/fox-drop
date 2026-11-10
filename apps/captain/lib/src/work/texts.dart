@@ -102,6 +102,7 @@ extension CaptainTexts on AppLocalizations {
               : captainAmountDueChanged(moneyOf(amountDue)),
         StateChanged() => captainStateChanged,
         ItemReportOpen() => captainWaitingForOrderEdit,
+        EditUnacknowledged() => captainWaitingForEditAcknowledgement,
         CommandFailed() => captainCommandFailed,
         ReasonChanged() => captainReasonChanged,
       };
@@ -116,6 +117,10 @@ extension CaptainTexts on AppLocalizations {
     PickupRefused(:final request) => refusalText(request),
     PickupDisputed() => captainPickupDisputed,
     OrderCancelled(:final cancelled) => captainTaskCancelled(cancelled.reason),
+    OrderEdited(:final pay, :final collect) => captainOrderEdited(
+      moneyOf(pay),
+      moneyOf(collect),
+    ),
   };
 
   /// What to do about the cash paid to the restaurant on a cancelled order

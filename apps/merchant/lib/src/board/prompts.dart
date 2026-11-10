@@ -53,6 +53,10 @@ class RingingPrompt extends StatelessWidget {
                 order: order,
                 cancellation: cancellation,
               ),
+            EditRinging(:final order) => EditPrompt(
+              key: ValueKey('edit-${order.id}'),
+              order: order,
+            ),
           },
         ],
       ),
@@ -351,3 +355,84 @@ class CancelledPrompt extends ConsumerWidget {
     );
   }
 }
+
+/// RA §8.13: operations' edits not yet acknowledged, each with its changes,
+/// the new items value and, for a ready order sent back, the extra minutes;
+/// «اطلعت على التعديل» acknowledges them all on every device. It rings when
+/// one added items (RA §16 #16) and shows on the order otherwise (#17).
+class EditPrompt extends ConsumerWidget {
+  const EditPrompt({super.key, required this.order});
+
+  final BoardOrder order;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final sending = ref.watch(boardCommandsProvider).contains(order.id);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          editRings(order)
+              ? l10n.merchantOrderEditedItemsAdded(order.number)
+              : l10n.merchantOrderEdited(order.number),
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        for (final edit in order.edits) ...[
+          for (final change in edit.changes)
+            ListTile(
+              title: Text(editChangeText(l10n, change)),
+              subtitle: change.options.isEmpty
+                  ? null
+                  : Text(change.options.join('، ')),
+            ),
+          if (edit.extraPrepMin != null)
+            ListTile(
+              title: Text(l10n.merchantEditBackToPreparing(edit.extraPrepMin!)),
+            ),
+        ],
+        ListTile(
+          title: Text(
+            l10n.merchantEditItemsValue(
+              l10n.formatMoney(order.edits.last.itemsValue, order.currency),
+            ),
+          ),
+        ),
+        FilledButton(
+          key: const Key('acknowledge-edit'),
+          onPressed: sending
+              ? null
+              : () async {
+                  final notice = await ref
+                      .read(boardCommandsProvider.notifier)
+                      .acknowledgeEdit(order.id, order.edits.last.at);
+                  if (notice != null && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(commandText(l10n, notice))),
+                    );
+                  }
+                },
+          child: Text(
+            sending ? l10n.merchantSending : l10n.merchantAcknowledgeEdit,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// One change of an edit (RA §8.13): «أُضيف: 2 × شاورما», «حُذف: …» or
+/// «شاورما: 2 ← 3».
+String editChangeText(AppLocalizations l10n, BoardEditChange change) =>
+    switch (change.kind) {
+      EditChangeKind.added => l10n.orderEditAdded(change.quantity, change.name),
+      EditChangeKind.removed => l10n.orderEditRemoved(
+        change.quantity,
+        change.name,
+      ),
+      _ => l10n.orderEditQuantity(
+        change.name,
+        change.quantityBefore ?? change.quantity,
+        change.quantity,
+      ),
+    };

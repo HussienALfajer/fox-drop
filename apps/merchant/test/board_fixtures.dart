@@ -28,6 +28,7 @@ Map<String, Object?> orderJson({
   DateTime? disputeUntil,
   Map<String, Object?>? cancellation,
   Map<String, Object?>? itemReport,
+  List<Map<String, Object?>> edits = const [],
 }) {
   final at = placed ?? placedAt;
   final accepted = acceptedAfter == null ? null : at.add(acceptedAfter);
@@ -98,8 +99,42 @@ Map<String, Object?> orderJson({
     },
     'cancellation': cancellation,
     'itemReport': itemReport,
+    'edits': edits,
   };
 }
+
+/// An edit by operations not yet acknowledged, as the board gives it (RA
+/// §8.13): by default one fries added and the shawarma raised to three.
+Map<String, Object?> editJson({bool addsItems = true, int? extraPrepMin}) => {
+  'at': placedAt.add(const Duration(minutes: 12)).toIso8601String(),
+  'addsItems': addsItems,
+  'changes': addsItems
+      ? [
+          {
+            'kind': 'quantity',
+            'name': 'شاورما',
+            'options': ['كبير'],
+            'quantity': 3,
+            'quantityBefore': 2,
+          },
+          {
+            'kind': 'added',
+            'name': 'بطاطا',
+            'options': <Object?>[],
+            'quantity': 1,
+          },
+        ]
+      : [
+          {
+            'kind': 'removed',
+            'name': 'فلافل',
+            'options': <Object?>[],
+            'quantity': 1,
+          },
+        ],
+  'itemsValue': addsItems ? '43300' : '24000',
+  'extraPrepMin': extraPrepMin,
+};
 
 /// An open item-unavailable report as the board gives it (RA §8.12).
 Map<String, Object?> itemReportJson({

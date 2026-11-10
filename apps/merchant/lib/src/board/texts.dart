@@ -86,6 +86,7 @@ String noticeText(
     l10n.merchantPrepTimeChanged(number, prepMin),
   ItemReportClosed(:final number, :final reason) =>
     l10n.merchantItemReportClosed(number, reason),
+  OrderEdited(:final number) => l10n.merchantOrderEdited(number),
   PrepLate(:final number) => l10n.merchantPrepLateChime(number),
   CaptainArrived(:final name, :final number) => l10n.merchantCaptainArrived(
     name,

@@ -95,6 +95,24 @@ void main() {
     });
   });
 
+  test(
+    'an unacknowledged edit that added items holds the pickup (RA §8.13)',
+    () {
+      expect(
+        pickupBlocked(
+          work(
+            order: orderJson(track: 'at_merchant', editUnacknowledged: true),
+          ).order!,
+        ),
+        isTrue,
+      );
+      expect(
+        refusal({'error': 'edit_unacknowledged'}),
+        isA<EditUnacknowledged>(),
+      );
+    },
+  );
+
   test('an open item-unavailable report holds the pickup (CA §9 step 2)', () {
     expect(
       pickupBlocked(
@@ -185,6 +203,26 @@ void main() {
         // Answered here: nothing to announce.
         final mine = Answered()..offers.add(offerId);
         expect(alertStep(offered, work(), now, mine), isEmpty);
+      },
+    );
+
+    test(
+      'an edit before the pickup chimes with the new amounts (CA §9.10)',
+      () {
+        final edited = alertStep(
+          work(order: orderJson()),
+          work(
+            order: orderJson(pickupPayment: '43300', collect: '47500'),
+          ),
+          now,
+          answered,
+        );
+        expect(
+          edited.single,
+          isA<OrderEdited>()
+              .having((a) => a.pay.amount, 'pay', '43300')
+              .having((a) => a.collect.amount, 'collect', '47500'),
+        );
       },
     );
 

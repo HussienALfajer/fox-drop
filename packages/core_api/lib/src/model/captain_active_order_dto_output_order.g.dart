@@ -265,6 +265,8 @@ class _$CaptainActiveOrderDtoOutputOrder
   @override
   final bool itemReportOpen;
   @override
+  final bool editUnacknowledged;
+  @override
   final int itemCount;
   @override
   final BuiltList<CaptainActiveOrderDtoOutputOrderLinesInner> lines;
@@ -295,6 +297,7 @@ class _$CaptainActiveOrderDtoOutputOrder
     required this.preparation,
     this.arrival,
     required this.itemReportOpen,
+    required this.editUnacknowledged,
     required this.itemCount,
     required this.lines,
     this.note,
@@ -326,6 +329,7 @@ class _$CaptainActiveOrderDtoOutputOrder
         preparation == other.preparation &&
         arrival == other.arrival &&
         itemReportOpen == other.itemReportOpen &&
+        editUnacknowledged == other.editUnacknowledged &&
         itemCount == other.itemCount &&
         lines == other.lines &&
         note == other.note &&
@@ -348,6 +352,7 @@ class _$CaptainActiveOrderDtoOutputOrder
     _$hash = $jc(_$hash, preparation.hashCode);
     _$hash = $jc(_$hash, arrival.hashCode);
     _$hash = $jc(_$hash, itemReportOpen.hashCode);
+    _$hash = $jc(_$hash, editUnacknowledged.hashCode);
     _$hash = $jc(_$hash, itemCount.hashCode);
     _$hash = $jc(_$hash, lines.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
@@ -372,6 +377,7 @@ class _$CaptainActiveOrderDtoOutputOrder
           ..add('preparation', preparation)
           ..add('arrival', arrival)
           ..add('itemReportOpen', itemReportOpen)
+          ..add('editUnacknowledged', editUnacknowledged)
           ..add('itemCount', itemCount)
           ..add('lines', lines)
           ..add('note', note)
@@ -443,6 +449,11 @@ class CaptainActiveOrderDtoOutputOrderBuilder
   set itemReportOpen(bool? itemReportOpen) =>
       _$this._itemReportOpen = itemReportOpen;
 
+  bool? _editUnacknowledged;
+  bool? get editUnacknowledged => _$this._editUnacknowledged;
+  set editUnacknowledged(bool? editUnacknowledged) =>
+      _$this._editUnacknowledged = editUnacknowledged;
+
   int? _itemCount;
   int? get itemCount => _$this._itemCount;
   set itemCount(int? itemCount) => _$this._itemCount = itemCount;
@@ -506,6 +517,7 @@ class CaptainActiveOrderDtoOutputOrderBuilder
       _preparation = $v.preparation.toBuilder();
       _arrival = $v.arrival?.toBuilder();
       _itemReportOpen = $v.itemReportOpen;
+      _editUnacknowledged = $v.editUnacknowledged;
       _itemCount = $v.itemCount;
       _lines = $v.lines.toBuilder();
       _note = $v.note;
@@ -570,6 +582,11 @@ class CaptainActiveOrderDtoOutputOrderBuilder
               itemReportOpen,
               r'CaptainActiveOrderDtoOutputOrder',
               'itemReportOpen',
+            ),
+            editUnacknowledged: BuiltValueNullFieldError.checkNotNull(
+              editUnacknowledged,
+              r'CaptainActiveOrderDtoOutputOrder',
+              'editUnacknowledged',
             ),
             itemCount: BuiltValueNullFieldError.checkNotNull(
               itemCount,

@@ -10,6 +10,7 @@ import 'board_screen.dart';
 import 'commands.dart';
 import 'dispute_sheet.dart';
 import 'item_report_sheet.dart';
+import 'prompts.dart';
 import 'texts.dart';
 
 /// The order detail (RA §8.4) from the board's state: header, customer,
@@ -85,6 +86,10 @@ class OrderScreen extends ConsumerWidget {
                   ].join('\n'),
                 ),
               ),
+            // RA §8.13: an edit that added nothing stays on the order until
+            // «اطلعت على التعديل»; one that added items rings with the same
+            // prompt.
+            if (order.edits.isNotEmpty) EditPrompt(order: order),
             ListTile(
               title: Text(
                 l10n.merchantCustomer(

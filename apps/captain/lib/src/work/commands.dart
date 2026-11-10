@@ -103,6 +103,13 @@ class ItemReportOpen extends Notice {
   const ItemReportOpen();
 }
 
+/// The restaurant has not acknowledged an edit that added items (`409
+/// edit_unacknowledged`): «بانتظار تأكيد المطعم للتعديل» (CA §9 step 2, RA
+/// §8.13).
+class EditUnacknowledged extends Notice {
+  const EditUnacknowledged();
+}
+
 /// Any other refusal.
 class CommandFailed extends Notice {
   const CommandFailed();
@@ -463,6 +470,8 @@ Notice refusal(Object? body) {
       return AmountDueChanged(order is Map ? money(order['collect']) : null);
     case 'item_report_open':
       return const ItemReportOpen();
+    case 'edit_unacknowledged':
+      return const EditUnacknowledged();
     case 'order_state_changed' || 'unknown_order':
       return const StateChanged();
     case 'unknown_reason' ||

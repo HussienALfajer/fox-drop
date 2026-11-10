@@ -106,6 +106,12 @@ class OrderScreen extends ConsumerWidget {
                 key: const Key('item-report-banner'),
                 title: Text(l10n.customerItemReportBanner),
               ),
+            // CU §11.6: FOX DROP edited the order, with the new total.
+            if (!ended && order.edited)
+              ListTile(
+                key: const Key('order-edited-banner'),
+                title: Text(l10n.customerOrderEditedBanner(total())),
+              ),
             // CU §4.4: notifications refused at the first order.
             if (!ended) const NotificationsOffBanner(),
             if (step != null)
@@ -162,18 +168,41 @@ class OrderScreen extends ConsumerWidget {
             for (final line in order.lines)
               ListTile(
                 title: Text('${line.quantity} × ${line.name}'),
-                subtitle: line.options.isEmpty && line.note == null
+                subtitle:
+                    line.options.isEmpty &&
+                        line.note == null &&
+                        !line.added &&
+                        line.quantityBefore == null
                     ? null
                     : Text(
                         [
                           if (line.options.isNotEmpty)
                             line.options.map((o) => o.name).join('، '),
                           ?line.note,
+                          // CU §11.6: the edit's marks.
+                          if (line.added) l10n.customerLineAdded,
+                          if (line.quantityBefore case final before?)
+                            l10n.orderEditQuantity(
+                              line.name,
+                              before,
+                              line.quantity,
+                            ),
                         ].join('\n'),
                       ),
                 trailing: Text(
                   l10n.formatMoney(line.lineTotal, order.currency),
                 ),
+              ),
+            // CU §11.6: the lines FOX DROP removed, struck through.
+            for (final line in order.removedLines)
+              ListTile(
+                title: Text(
+                  '${line.quantity} × ${line.name}',
+                  style: const TextStyle(
+                    decoration: TextDecoration.lineThrough,
+                  ),
+                ),
+                subtitle: Text(l10n.customerLineRemoved),
               ),
             ListTile(
               title: Text(order.address.street),

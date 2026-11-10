@@ -91,6 +91,9 @@ const CUSTOMER_SKIPS = new Set([
   'order.pickup_disputed',
   // RA §8.14: the restaurant's «حسناً», for its devices only.
   'order.cancellation_acknowledged',
+  // RA §8.13: the restaurant's «اطلعت على التعديل»; the captain's pickup
+  // waits for it, the customer's order does not change.
+  'order.edit_acknowledged',
 ]);
 
 // The restaurant's own steps the captain's channel never carries.

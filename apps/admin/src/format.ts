@@ -52,3 +52,16 @@ export function formatDistance(metres: number): string {
     maximumFractionDigits: 1,
   }).format(metres >= 1000 ? metres / 1000 : metres);
 }
+
+// An amount typed in the currency's major units («40» or «40.50», Western
+// digits, at most its minor-unit digits) as minor units, or null when it is
+// not one.
+export function minorOf(typed: string, currency: string): string | null {
+  const digits = digitsOf(currency);
+  const match = /^(\d{1,12})(?:\.(\d+))?$/.exec(typed.trim());
+  if (!match) return null;
+  const fraction = match[2] ?? '';
+  if (fraction.length > digits) return null;
+  const minor = `${match[1]}${fraction.padEnd(digits, '0')}`.replace(/^0+(?=\d)/, '');
+  return minor;
+}

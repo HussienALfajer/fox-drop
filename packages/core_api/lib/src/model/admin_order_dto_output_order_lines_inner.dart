@@ -14,8 +14,11 @@ part 'admin_order_dto_output_order_lines_inner.g.dart';
 ///
 /// Properties:
 /// * [itemId] - «رفض نيابة عن المطعم» picks the unavailable items by it.
+/// * [position] - «تعديل الطلب» names the line by it.
 /// * [name]
 /// * [quantity]
+/// * [added] - Added by an edit.
+/// * [quantityBefore] - The quantity before an edit changed it.
 /// * [options]
 /// * [note]
 /// * [unitPrice] - Integer minor units (AP §8.6).
@@ -31,11 +34,23 @@ abstract class AdminOrderDtoOutputOrderLinesInner
   @BuiltValueField(wireName: r'itemId')
   String get itemId;
 
+  /// «تعديل الطلب» names the line by it.
+  @BuiltValueField(wireName: r'position')
+  int get position;
+
   @BuiltValueField(wireName: r'name')
   String get name;
 
   @BuiltValueField(wireName: r'quantity')
   int get quantity;
+
+  /// Added by an edit.
+  @BuiltValueField(wireName: r'added')
+  bool get added;
+
+  /// The quantity before an edit changed it.
+  @BuiltValueField(wireName: r'quantityBefore')
+  int? get quantityBefore;
 
   @BuiltValueField(wireName: r'options')
   BuiltList<AdminOrderDtoOutputOrderLinesInnerOptionsInner> get options;
@@ -86,6 +101,11 @@ class _$AdminOrderDtoOutputOrderLinesInnerSerializer
       object.itemId,
       specifiedType: const FullType(String),
     );
+    yield r'position';
+    yield serializers.serialize(
+      object.position,
+      specifiedType: const FullType(int),
+    );
     yield r'name';
     yield serializers.serialize(
       object.name,
@@ -96,6 +116,18 @@ class _$AdminOrderDtoOutputOrderLinesInnerSerializer
       object.quantity,
       specifiedType: const FullType(int),
     );
+    yield r'added';
+    yield serializers.serialize(
+      object.added,
+      specifiedType: const FullType(bool),
+    );
+    yield r'quantityBefore';
+    yield object.quantityBefore == null
+        ? null
+        : serializers.serialize(
+            object.quantityBefore,
+            specifiedType: const FullType.nullable(int),
+          );
     yield r'options';
     yield serializers.serialize(
       object.options,
@@ -156,6 +188,12 @@ class _$AdminOrderDtoOutputOrderLinesInnerSerializer
                   as String;
           result.itemId = valueDes;
           break;
+        case r'position':
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
+          result.position = valueDes;
+          break;
         case r'name':
           final valueDes =
               serializers.deserialize(
@@ -170,6 +208,25 @@ class _$AdminOrderDtoOutputOrderLinesInnerSerializer
               serializers.deserialize(value, specifiedType: const FullType(int))
                   as int;
           result.quantity = valueDes;
+          break;
+        case r'added':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.added = valueDes;
+          break;
+        case r'quantityBefore':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(int),
+                  )
+                  as int?;
+          if (valueDes == null) continue;
+          result.quantityBefore = valueDes;
           break;
         case r'options':
           final valueDes =

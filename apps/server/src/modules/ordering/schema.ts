@@ -340,9 +340,17 @@ export const orderLines = ordering.table(
     unitPrice: bigint('unit_price', { mode: 'bigint' }).notNull(),
     lineTotal: bigint('line_total', { mode: 'bigint' }).notNull(),
     note: text('note'),
+    // AP §9.3.3, CU §11.6 (slice 2.10a): operations' edits. The edit that
+    // added the line («أُضيف»), the edit that removed it («حُذف»: the row
+    // stays, out of the order's lines and money), and the quantity before an
+    // edit first changed it (null while unchanged).
+    addedByEdit: uuid('added_by_edit'),
+    removedByEdit: uuid('removed_by_edit'),
+    quantityBefore: smallint('quantity_before'),
   },
   (table) => [
     primaryKey({ columns: [table.orderId, table.orderPlacedAt, table.position] }),
+    check('order_lines_quantity_before', sql`${table.quantityBefore} BETWEEN 1 AND 20`),
     foreignKey({
       columns: [table.orderId, table.orderPlacedAt],
       foreignColumns: [orders.id, orders.placedAt],
@@ -552,7 +560,7 @@ export const timeChanges = ordering.table(
 // open per order (a partial unique index). It blocks the pickup until it is
 // closed: withdrawn by the restaurant («تراجع — الصنف متوفر»), closed by
 // operations without an edit («إغلاق بلاغ صنف نفد», with their reason), or
-// cleared by the order's cancellation (and, from 2.10, its edit).
+// cleared by the order's cancellation or edit.
 export const itemReports = ordering.table(
   'item_reports',
   {
@@ -574,8 +582,9 @@ export const itemReports = ordering.table(
     device: text('device').notNull(),
     reportedAt: timestamp('reported_at', { withTimezone: true }).notNull(),
     closedAt: timestamp('closed_at', { withTimezone: true }),
-    // withdrawn (the restaurant), closed (operations, with their reason) or
-    // cancelled (the order's cancellation).
+    // withdrawn (the restaurant), closed (operations, with their reason),
+    // cancelled (the order's cancellation) or edited (operations' edit, slice
+    // 2.10a).
     closedHow: text('closed_how'),
     closedByType: text('closed_by_type'),
     closedById: uuid('closed_by_id'),
@@ -593,7 +602,78 @@ export const itemReports = ordering.table(
     check('item_reports_note_label', sql`(${table.note} IS NULL) = (${table.noteLabel} IS NULL)`),
     check(
       'item_reports_closed',
-      sql`(${table.closedAt} IS NULL) = (${table.closedHow} IS NULL) AND (${table.closedHow} IS NULL OR ${table.closedHow} IN ('withdrawn', 'closed', 'cancelled')) AND (${table.closedHow} IS NOT DISTINCT FROM 'closed') = (${table.closeReason} IS NOT NULL) AND (${table.closedHow} IS NULL OR (${table.closedByType} IS NOT NULL AND ${table.closedById} IS NOT NULL))`,
+      sql`(${table.closedAt} IS NULL) = (${table.closedHow} IS NULL) AND (${table.closedHow} IS NULL OR ${table.closedHow} IN ('withdrawn', 'closed', 'cancelled', 'edited')) AND (${table.closedHow} IS NOT DISTINCT FROM 'closed') = (${table.closeReason} IS NOT NULL) AND (${table.closedHow} IS NULL OR (${table.closedByType} IS NOT NULL AND ${table.closedById} IS NOT NULL))`,
+    ),
+  ],
+);
+
+// AP §9.3.3, RA §8.13 (slice 2.10a): «تعديل الطلب» before the pickup, one
+// row per edit: what changed (the restaurant's prompt and the panel's
+// timeline), the money before and after, and, for items added to a ready
+// order, the extra prep time and the times it moved. The restaurant
+// acknowledges it with «اطلعت على التعديل» on any device; until then an edit
+// that adds items rings, blocks the pickup request (RA §8.10) and raises
+// «المطعم لم يؤكد التعديل» after order.merchant_accept_alert_min (AP §9.1.3).
+// Only the acknowledgement columns ever change.
+export const orderEdits = ordering.table(
+  'order_edits',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+    adminId: uuid('admin_id').notNull(),
+    // The order's status when edited (placed, accepted or ready).
+    status: text('status', { enum: orderStatuses }).notNull(),
+    // [{ kind: 'added' | 'removed' | 'quantity', name, options: [name],
+    // quantity, quantityBefore }], as order-edits.ts writes them.
+    changes: jsonb('changes').notNull(),
+    // Items added or a quantity raised: it rings and blocks the pickup.
+    addsItems: boolean('adds_items').notNull(),
+    currency: text('currency').notNull(),
+    itemsValueBefore: bigint('items_value_before', { mode: 'bigint' }).notNull(),
+    itemsValueAfter: bigint('items_value_after', { mode: 'bigint' }).notNull(),
+    deliveryFeeBefore: bigint('delivery_fee_before', { mode: 'bigint' }).notNull(),
+    deliveryFeeAfter: bigint('delivery_fee_after', { mode: 'bigint' }).notNull(),
+    totalBefore: bigint('total_before', { mode: 'bigint' }).notNull(),
+    totalAfter: bigint('total_after', { mode: 'bigint' }).notNull(),
+    // A ready order back to accepted: the extra prep time operations entered,
+    // the prep time and the promised time before and after.
+    extraPrepMin: smallint('extra_prep_min'),
+    prepMinBefore: smallint('prep_min_before'),
+    prepMinAfter: smallint('prep_min_after'),
+    promisedBefore: timestamp('promised_before', { withTimezone: true }),
+    promisedAfter: timestamp('promised_after', { withTimezone: true }),
+    // RA §8.13 «اطلعت على التعديل»: the restaurant user and the app
+    // installation.
+    acknowledgedAt: timestamp('acknowledged_at', { withTimezone: true }),
+    acknowledgedBy: uuid('acknowledged_by'),
+    acknowledgedDevice: text('acknowledged_device'),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId, table.orderPlacedAt],
+      foreignColumns: [orders.id, orders.placedAt],
+    }),
+    index('order_edits_order').on(table.orderId, table.orderPlacedAt),
+    index('order_edits_unacknowledged')
+      .on(table.orderId)
+      .where(sql`${table.acknowledgedAt} IS NULL`),
+    check('order_edits_status', sql`${table.status} IN ('placed', 'accepted', 'ready')`),
+    check(
+      'order_edits_money',
+      sql`${table.itemsValueBefore} >= 0 AND ${table.itemsValueAfter} >= 0 AND ${table.deliveryFeeBefore} >= 0 AND ${table.deliveryFeeAfter} >= 0 AND ${table.totalBefore} >= 0 AND ${table.totalAfter} >= 0`,
+    ),
+    check(
+      'order_edits_back_to_preparing',
+      sql`(${table.extraPrepMin} IS NULL) = (${table.prepMinBefore} IS NULL) AND (${table.extraPrepMin} IS NULL) = (${table.prepMinAfter} IS NULL) AND (${table.extraPrepMin} IS NULL) = (${table.promisedBefore} IS NULL) AND (${table.extraPrepMin} IS NULL) = (${table.promisedAfter} IS NULL) AND ${table.extraPrepMin} > 0 AND (${table.extraPrepMin} IS NULL OR (${table.status} = 'ready' AND ${table.addsItems}))`,
+    ),
+    check(
+      'order_edits_acknowledged',
+      sql`(${table.acknowledgedAt} IS NULL) = (${table.acknowledgedBy} IS NULL) AND (${table.acknowledgedAt} IS NULL) = (${table.acknowledgedDevice} IS NULL)`,
     ),
   ],
 );

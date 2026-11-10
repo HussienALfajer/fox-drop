@@ -13,7 +13,9 @@ class _$CaptainActiveOrderDtoOutputOrderLinesInner
   @override
   final int quantity;
   @override
-  final BuiltList<MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner>
+  final BuiltList<
+    CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInnerOptionsInner
+  >
   options;
   @override
   final String? note;
@@ -88,13 +90,21 @@ class CaptainActiveOrderDtoOutputOrderLinesInnerBuilder
   int? get quantity => _$this._quantity;
   set quantity(int? quantity) => _$this._quantity = quantity;
 
-  ListBuilder<MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner>?
+  ListBuilder<
+    CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInnerOptionsInner
+  >?
   _options;
-  ListBuilder<MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner>
+  ListBuilder<
+    CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInnerOptionsInner
+  >
   get options => _$this._options ??=
-      ListBuilder<MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner>();
+      ListBuilder<
+        CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInnerOptionsInner
+      >();
   set options(
-    ListBuilder<MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner>?
+    ListBuilder<
+      CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInnerOptionsInner
+    >?
     options,
   ) => _$this._options = options;
 

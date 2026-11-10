@@ -96,6 +96,9 @@ Map<String, Object?> orderJson({
   DateTime? disputedAt,
   String? awayReason,
   bool itemReportOpen = false,
+  bool editUnacknowledged = false,
+  String pickupPayment = '40000',
+  String collect = '41000',
 }) {
   final atRestaurant = track != 'assigned';
   final atCustomer = track == 'at_customer';
@@ -134,8 +137,8 @@ Map<String, Object?> orderJson({
       },
     ],
     'note': null,
-    'pickupPayment': moneyJson('40000'),
-    'collect': moneyJson('41000'),
+    'pickupPayment': moneyJson(pickupPayment),
+    'collect': moneyJson(collect),
     'pickup': {
       'proposedLines': [moneyJson('40000')],
       'request': request,
@@ -162,6 +165,7 @@ Map<String, Object?> orderJson({
     },
     'radii': {'restaurantMetres': 150, 'customerMetres': 200},
     'itemReportOpen': itemReportOpen,
+    'editUnacknowledged': editUnacknowledged,
   };
 }
 

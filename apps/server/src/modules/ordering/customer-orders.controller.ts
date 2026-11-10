@@ -174,8 +174,27 @@ const customerOrder = z.object({
       options: z.array(z.object({ id: z.uuid(), name: z.string(), priceDelta: minor })),
       unitPrice: minor,
       lineTotal: minor,
+      added: z.boolean().describe('Added by an edit of FOX DROP: marked «أُضيف» (CU §11.6).'),
+      quantityBefore: z
+        .int()
+        .nullable()
+        .describe('The quantity before an edit changed it, shown beside the new one (CU §11.6).'),
     }),
   ),
+  removedLines: z
+    .array(
+      z.object({
+        name: z.string(),
+        quantity: z.int(),
+        options: z.array(z.object({ name: z.string() })),
+      }),
+    )
+    .describe('Lines an edit of FOX DROP removed, struck through as «حُذف» (CU §11.6).'),
+  edited: z
+    .boolean()
+    .describe(
+      'FOX DROP edited the order: the banner «عدّلت FOX DROP طلبك. المجموع الجديد: {المبلغ}» (CU §11.6).',
+    ),
   payIn: z.string().length(3).nullable().describe('«سأدفع بـ»; null for «لم أحدد».'),
   note: z.string().nullable(),
   estimate: z
@@ -455,6 +474,8 @@ function orderBody(
       unitPrice: text(line.unitPrice),
       lineTotal: text(line.lineTotal),
     })),
+    removedLines: order.removedLines,
+    edited: order.edited,
     payIn: order.payIn,
     note: order.note,
     estimate: order.estimate,

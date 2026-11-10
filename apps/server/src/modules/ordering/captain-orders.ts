@@ -21,6 +21,7 @@ import {
   type ReasonList,
 } from '../content/index.js';
 import { openItemReport } from './item-reports.js';
+import { unacknowledgedAdditionAt } from './order-edits.js';
 import { acceptedPrepMin } from './time-changes.js';
 import { CAPTAIN_ACTIVE } from './order-assignments.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
@@ -86,6 +87,9 @@ export type CaptainOrderRefusal =
   // RA §8.10, §8.12: an open item report blocks the pickup (CA §9 step 2:
   // «بانتظار تعديل الطلب من العمليات»).
   | 'item_report_open'
+  // RA §8.10, §8.13: an edit that added items, not yet acknowledged by the
+  // restaurant (CA §9 step 2: «بانتظار تأكيد المطعم للتعديل»).
+  | 'edit_unacknowledged'
   | 'idempotency_key_reused';
 
 // A command on an order that the order or the captain refuses;
@@ -729,6 +733,12 @@ export class CaptainOrders {
       if (!requestable(locked, command.captainId)) return false;
       if ((await openItemReport(tx, order.id, order.placedAt)) !== null) {
         throw new CaptainOrderRefusedError('item_report_open', 'an item report is open');
+      }
+      if ((await unacknowledgedAdditionAt(tx, order.id, order.placedAt)) !== null) {
+        throw new CaptainOrderRefusedError(
+          'edit_unacknowledged',
+          'the restaurant has not acknowledged an edit that added items',
+        );
       }
       const confirmBy = new Date(now.getTime() + timeoutSec * 1000);
       const [request] = await tx

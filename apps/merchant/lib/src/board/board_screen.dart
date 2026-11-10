@@ -329,6 +329,9 @@ class OrderCard extends ConsumerWidget {
                   l10n.merchantItemReportBadge,
                   l10n.merchantItemReportOperationsCalling,
                 ],
+                // RA §8.13: an edit not yet acknowledged.
+                if (order.edits.isNotEmpty)
+                  l10n.merchantOrderEdited(order.number),
                 if (line != null) captainLineText(l10n, line, now),
                 ?timer,
               ].join('\n'),

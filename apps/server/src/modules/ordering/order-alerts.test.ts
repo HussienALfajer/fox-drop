@@ -23,6 +23,7 @@ const placed: OrderAlertInput = {
   away: false,
   shortfall: false,
   itemReportOpen: false,
+  editAlertAt: null,
 };
 
 describe('orderAlerts (AP §9.1.3)', () => {
@@ -120,6 +121,20 @@ describe('orderAlerts (AP §9.1.3)', () => {
       'item_unavailable',
     ]);
     expect(orderAlerts(reported, now).open).toEqual([]);
+  });
+
+  it('raises «المطعم لم يؤكد التعديل» 3 minutes after an unacknowledged addition, before the pickup only (RA §8.13)', () => {
+    const edited = { ...placed, status: 'ready' as const, acceptAlertAt: null };
+    expect(orderAlerts({ ...edited, editAlertAt: at(-1) }, now).open).toEqual([
+      'edit_unacknowledged',
+    ]);
+    expect(orderAlerts({ ...edited, editAlertAt: at(2) }, now)).toEqual({
+      open: [],
+      next: at(2),
+    });
+    expect(orderAlerts({ ...edited, status: 'picked_up', editAlertAt: at(-1) }, now).open).toEqual(
+      [],
+    );
   });
 
   it('times the soonest moment still ahead', () => {

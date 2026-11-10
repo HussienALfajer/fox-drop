@@ -3303,6 +3303,84 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'المطعم أبلغ أن صنفاً في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن.'**
   String get customerItemReportBanner;
+
+  /// The ring prompt of an edit by operations that added items, until «اطلعت على التعديل» on any device (RA §8.13, §16 #16).
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تعديل الطلب #{number} — أُضيفت أصناف'**
+  String merchantOrderEditedItemsAdded(String number);
+
+  /// The chime and the card's note of an edit by operations that added nothing, until acknowledged (RA §8.13, §16 #17).
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تعديل الطلب #{number}'**
+  String merchantOrderEdited(String number);
+
+  /// Acknowledges operations' edits on every device and frees the pickup (RA §8.13, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'اطلعت على التعديل'**
+  String get merchantAcknowledgeEdit;
+
+  /// The edit prompt's new items value, which the captain pays at pickup (RA §8.13); {amount} is formatted with formatMoney; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيمة الأصناف الجديدة: {amount}'**
+  String merchantEditItemsValue(String amount);
+
+  /// The edit prompt when items were added to a ready order (RA §8.13); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'عاد الطلب إلى «قيد التحضير»: {minutes} د إضافية'**
+  String merchantEditBackToPreparing(int minutes);
+
+  /// A line an edit by operations added (RA §8.13, CU §11.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'أُضيف: {quantity} × {name}'**
+  String orderEditAdded(int quantity, String name);
+
+  /// A line an edit by operations removed (RA §8.13, CU §11.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'حُذف: {quantity} × {name}'**
+  String orderEditRemoved(int quantity, String name);
+
+  /// A quantity an edit by operations changed, before then after (RA §8.13, CU §11.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{name}: {before} ← {after}'**
+  String orderEditQuantity(String name, int before, int after);
+
+  /// At the restaurant while an edit that added items is not acknowledged, and for 409 edit_unacknowledged: the pickup waits (CA §9 step 2, RA §8.13).
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار تأكيد المطعم للتعديل'**
+  String get captainWaitingForEditAcknowledgement;
+
+  /// The chime after operations edited the order before pickup (CA §9.10); both amounts formatted with formatMoney.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تعديل الطلب — المبلغ الجديد للمطعم {pay}، للتحصيل {collect}'**
+  String captainOrderEdited(String pay, String collect);
+
+  /// The mark of a line FOX DROP added (CU §11.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'أُضيف'**
+  String get customerLineAdded;
+
+  /// The mark of a line FOX DROP removed, shown struck through (CU §11.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'حُذف'**
+  String get customerLineRemoved;
+
+  /// The order screen's banner after an edit by operations (CU §11.6, §14 #11); {amount} is formatted with formatMoney.
+  ///
+  /// In ar, this message translates to:
+  /// **'عدّلت FOX DROP طلبك. المجموع الجديد: {amount}'**
+  String customerOrderEditedBanner(String amount);
 }
 
 class _AppLocalizationsDelegate

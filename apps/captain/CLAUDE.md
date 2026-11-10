@@ -17,7 +17,7 @@ The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, 
 
 ## The item-unavailable report (slice 2.9; CA §9 step 2, RA §8.12, §8.10)
 
-- While the active order's `itemReportOpen` (`pickupBlocked`), the at-restaurant step keeps the item check but shows «بانتظار تعديل الطلب من العمليات» in place of the payment and «دفعت للمطعم واستلمت الطلب»; a pickup request refused with `409 item_report_open` (`ItemReportOpen`) says the same. The order events of slice 2.9 (`order.item_reported`, `order.item_report_withdrawn`, `order.item_report_closed`, `order.time_changed`) carry a newer version, so the feed reads the active order again like any event; `alertStep` compares states only, so they add no chime.
+- While the active order's `itemReportOpen` (`pickupBlocked`), the at-restaurant step keeps the item check but shows «بانتظار تعديل الطلب من العمليات» in place of the payment and «دفعت للمطعم واستلمت الطلب»; a pickup request refused with `409 item_report_open` (`ItemReportOpen`) says the same. The order events of slice 2.9 (`order.item_reported`, `order.item_report_withdrawn`, `order.item_report_closed`, `order.time_changed`) carry a newer version, so the feed reads the active order again like any event; `alertStep` compares states only, so they add no chime. Slice 2.10a: while `editUnacknowledged` (operations added items and the restaurant has not acknowledged), `pickupBlocked` holds the pickup with «بانتظار تأكيد المطعم للتعديل» (also for `409 edit_unacknowledged`, `EditUnacknowledged`), and an edit before the pickup that changes the amounts or the lines chimes «تم تعديل الطلب — المبلغ الجديد للمطعم {المبلغ}، للتحصيل {المبلغ}» (`OrderEdited`); the item check shows the new lines.
 
 ## Push (slice 2.3c; CA §14, CA §4.4–4.5; `packages/core_push/CLAUDE.md`)
 
@@ -36,7 +36,7 @@ The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, 
 
 ## Not yet (slice 1.14g)
 
-- The suggestion of «وصلت» when entering the customer's radius (CA §9.6), the block «بانتظار تأكيد المطعم للتعديل» (CA §9.3, with operations' edits), the peak bonus lines and the K2 over-limit text (with their server fields).
+- The suggestion of «وصلت» when entering the customer's radius (CA §9.6), the peak bonus lines and the K2 over-limit text (with their server fields).
 - The map and the route (Phase 2), the ETA to the restaurant, «بدأ احتساب أجر الانتظار», the record of each call or WhatsApp tap (CA §9.2–9.5, with their server fields); «مشكلة» and «طوارئ» (CA §9.11), the customer not answering (§9.9), operations' changes other than the cancellation (§9.10), last-order mode «لا أريد طلبات جديدة» (§7.3), the earnings, custody and support screens.
 - The office hours and map in the hand-in reminder (CA §7.5, with the office fields), the device check and the yellow banner (CA §4.5), the vibration, the full-screen offer over the lock screen and the bundled sounds (`core_alerts`, architecture §14.2), and the iOS behaviour (Android only for now, owner decision 2026-11-07).
 - A batch the server refuses with a `400` (a point past its clock skew) is dropped whole; dropping only the bad points needs the refusal to name them.

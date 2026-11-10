@@ -154,6 +154,51 @@ void main() {
     });
   });
 
+  group('edits by operations (RA §8.13)', () {
+    test('an edit that added items rings; one that added nothing does not', () {
+      final adds = orderJson(
+        id: 'a',
+        status: 'ready',
+        acceptedAfter: Duration.zero,
+        edits: [editJson()],
+      );
+      final other = orderJson(
+        id: 'b',
+        status: 'accepted',
+        acceptedAfter: Duration.zero,
+        edits: [editJson(addsItems: false)],
+      );
+      final rings = ringing(board([adds, other]));
+      expect(rings.map((r) => r.order.id), ['a']);
+      expect(rings.single, isA<EditRinging>());
+    });
+
+    test('an edit of a placed order adding items rings as the edit', () {
+      final placed = orderJson(id: 'a', edits: [editJson()]);
+      expect(ringing(board([placed])).single, isA<EditRinging>());
+    });
+
+    test('an edit that added nothing chimes «تم تعديل الطلب #{رقم}»', () {
+      final memory = AlertMemory();
+      final order = orderJson(
+        status: 'accepted',
+        acceptedAfter: Duration.zero,
+        edits: [editJson(addsItems: false)],
+      );
+      final result = alertStep(
+        memory,
+        state: LiveState(value: board([order]), live: true),
+        events: [
+          {'type': 'order.edited', 'number': '10001', 'reason': 'changed'},
+        ],
+        now: placedAt,
+      );
+      expect(result.ring, isFalse);
+      expect(result.chime, isTrue);
+      expect(result.notices.single, isA<OrderEdited>());
+    });
+  });
+
   group('alerts (RA §4.7, §8.3, §8.7, §8.9, §8.10)', () {
     AlertStep step(
       AlertMemory memory,

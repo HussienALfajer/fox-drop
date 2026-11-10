@@ -37,6 +37,13 @@ import 'package:core_api/src/model/admin_contact_dto_output.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order_offer.dart';
+import 'package:core_api/src/model/admin_edit_dto.dart';
+import 'package:core_api/src/model/admin_edit_dto_add_inner.dart';
+import 'package:core_api/src/model/admin_edit_dto_keep_inner.dart';
+import 'package:core_api/src/model/admin_edit_preview_answer_dto_output.dart';
+import 'package:core_api/src/model/admin_edit_preview_answer_dto_output_before.dart';
+import 'package:core_api/src/model/admin_edit_preview_answer_dto_output_changes_inner.dart';
+import 'package:core_api/src/model/admin_edit_preview_dto.dart';
 import 'package:core_api/src/model/admin_emergency_stop_dto_output.dart';
 import 'package:core_api/src/model/admin_emergency_stop_dto_output_stop.dart';
 import 'package:core_api/src/model/admin_emergency_stop_resumed_dto_output.dart';
@@ -76,6 +83,11 @@ import 'package:core_api/src/model/admin_order_dto_output_order_delivery.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_delivery_net_received.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_delivery_recorded_by.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_delivery_shortfall.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices_items_inner.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices_items_inner_option_groups_inner.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_edits_inner.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_edits_inner_items_value.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_item_report.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_item_report_items_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
@@ -88,6 +100,7 @@ import 'package:core_api/src/model/admin_order_dto_output_order_pickup_dispute.d
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_requests_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup_requests_inner_closed_by.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_rejection.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_removed_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_time_change.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_actor.dart';
@@ -221,6 +234,8 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_money.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_rejection.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_removed_lines_inner.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_removed_lines_inner_options_inner.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_restaurant.dart';
 import 'package:core_api/src/model/customer_address_deleted_dto_output.dart';
 import 'package:core_api/src/model/customer_address_dto_output.dart';
@@ -287,6 +302,7 @@ import 'package:core_api/src/model/done_dto_output.dart';
 import 'package:core_api/src/model/emergency_sign_in_code_dto_output.dart';
 import 'package:core_api/src/model/emergency_sign_in_code_request_dto.dart';
 import 'package:core_api/src/model/merchant_accept_dto.dart';
+import 'package:core_api/src/model/merchant_acknowledge_edit_dto.dart';
 import 'package:core_api/src/model/merchant_availability_dto.dart';
 import 'package:core_api/src/model/merchant_availability_saved_dto_output.dart';
 import 'package:core_api/src/model/merchant_busy_mode_dto.dart';
@@ -323,11 +339,12 @@ import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_cance
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain_arrival.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_edits_inner.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_edits_inner_changes_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_items_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_note.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
-import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner_options_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup_request.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_prep_time.dart';
@@ -408,6 +425,13 @@ part 'serializers.g.dart';
   AdminDispatchStateDtoOutput,
   AdminDispatchStateDtoOutputOrder,
   AdminDispatchStateDtoOutputOrderOffer,
+  AdminEditDto,
+  AdminEditDtoAddInner,
+  AdminEditDtoKeepInner,
+  AdminEditPreviewAnswerDtoOutput,
+  AdminEditPreviewAnswerDtoOutputBefore,
+  AdminEditPreviewAnswerDtoOutputChangesInner,
+  AdminEditPreviewDto,
   AdminEmergencyStopDtoOutput,
   AdminEmergencyStopDtoOutputStop,
   AdminEmergencyStopResumedDtoOutput,
@@ -447,6 +471,11 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderDeliveryNetReceived,
   AdminOrderDtoOutputOrderDeliveryRecordedBy,
   AdminOrderDtoOutputOrderDeliveryShortfall,
+  AdminOrderDtoOutputOrderEditChoices,
+  AdminOrderDtoOutputOrderEditChoicesItemsInner,
+  AdminOrderDtoOutputOrderEditChoicesItemsInnerOptionGroupsInner,
+  AdminOrderDtoOutputOrderEditsInner,
+  AdminOrderDtoOutputOrderEditsInnerItemsValue,
   AdminOrderDtoOutputOrderItemReport,
   AdminOrderDtoOutputOrderItemReportItemsInner,
   AdminOrderDtoOutputOrderLinesInner,
@@ -459,6 +488,7 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderPickupRequestsInner,
   AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy,
   AdminOrderDtoOutputOrderRejection,
+  AdminOrderDtoOutputOrderRemovedLinesInner,
   AdminOrderDtoOutputOrderTimeChange,
   AdminOrderDtoOutputOrderTimelineInner,
   AdminOrderDtoOutputOrderTimelineInnerActor,
@@ -592,6 +622,8 @@ part 'serializers.g.dart';
   CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
   CustomerActiveOrdersDtoOutputOrdersInnerMoney,
   CustomerActiveOrdersDtoOutputOrdersInnerRejection,
+  CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner,
+  CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInnerOptionsInner,
   CustomerActiveOrdersDtoOutputOrdersInnerRestaurant,
   CustomerAddressDeletedDtoOutput,
   CustomerAddressDtoOutput,
@@ -658,6 +690,7 @@ part 'serializers.g.dart';
   EmergencySignInCodeDtoOutput,
   EmergencySignInCodeRequestDto,
   MerchantAcceptDto,
+  MerchantAcknowledgeEditDto,
   MerchantAvailabilityDto,
   MerchantAvailabilitySavedDtoOutput,
   MerchantBusyModeDto,
@@ -694,11 +727,12 @@ part 'serializers.g.dart';
   MerchantOrdersDtoOutputOrdersInnerCaptain,
   MerchantOrdersDtoOutputOrdersInnerCaptainArrival,
   MerchantOrdersDtoOutputOrdersInnerCustomer,
+  MerchantOrdersDtoOutputOrdersInnerEditsInner,
+  MerchantOrdersDtoOutputOrdersInnerEditsInnerChangesInner,
   MerchantOrdersDtoOutputOrdersInnerItemReport,
   MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner,
   MerchantOrdersDtoOutputOrdersInnerItemReportNote,
   MerchantOrdersDtoOutputOrdersInnerLinesInner,
-  MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner,
   MerchantOrdersDtoOutputOrdersInnerPickup,
   MerchantOrdersDtoOutputOrdersInnerPickupRequest,
   MerchantOrdersDtoOutputPrepTime,
@@ -931,6 +965,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminOrderDtoOutputOrderEditChoicesItemsInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderEditChoicesItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CustomerRestaurantPageDtoOutputScheduleInner),
             ]),
             () => ListBuilder<CustomerRestaurantPageDtoOutputScheduleInner>(),
@@ -950,6 +990,10 @@ Serializers serializers =
               FullType(MerchantScheduleDtoPeriodsInner),
             ]),
             () => ListBuilder<MerchantScheduleDtoPeriodsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(AdminEditDtoKeepInner)]),
+            () => ListBuilder<AdminEditDtoKeepInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -972,17 +1016,6 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
-              FullType(
-                MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
               FullType(CustomerQuoteDtoOutputLinesInner),
             ]),
             () => ListBuilder<CustomerQuoteDtoOutputLinesInner>(),
@@ -995,9 +1028,21 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(MerchantOrdersDtoOutputOrdersInnerEditsInner),
+            ]),
+            () => ListBuilder<MerchantOrdersDtoOutputOrdersInnerEditsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(RoleMatrixDtoOutputRolesInner),
             ]),
             () => ListBuilder<RoleMatrixDtoOutputRolesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminEditPreviewAnswerDtoOutputChangesInner),
+            ]),
+            () => ListBuilder<AdminEditPreviewAnswerDtoOutputChangesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1050,6 +1095,28 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(
+                AdminOrderDtoOutputOrderEditChoicesItemsInnerOptionGroupsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderDtoOutputOrderEditChoicesItemsInnerOptionGroupsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(
+                CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInnerOptionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminOrderDtoOutputOrderLinesInnerOptionsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderLinesInnerOptionsInner>(),
@@ -1089,6 +1156,17 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(
+                CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminCitiesDtoOutputCitiesInner),
             ]),
             () => ListBuilder<AdminCitiesDtoOutputCitiesInner>(),
@@ -1099,6 +1177,29 @@ Serializers serializers =
             ]),
             () =>
                 ListBuilder<CustomerNotificationsDtoOutputNotificationsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminOrderDtoOutputOrderEditsInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderEditsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminOrderDtoOutputOrderRemovedLinesInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderRemovedLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(
+                MerchantOrdersDtoOutputOrdersInnerEditsInnerChangesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantOrdersDtoOutputOrdersInnerEditsInnerChangesInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1116,6 +1217,10 @@ Serializers serializers =
                 ListBuilder<
                   MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(AdminEditDtoAddInner)]),
+            () => ListBuilder<AdminEditDtoAddInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

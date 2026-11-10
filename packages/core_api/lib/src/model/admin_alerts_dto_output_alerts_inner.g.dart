@@ -49,6 +49,9 @@ const AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnum_itemUnavailable =
     const AdminAlertsDtoOutputAlertsInnerCodeEnum._('itemUnavailable');
 const AdminAlertsDtoOutputAlertsInnerCodeEnum
+_$adminAlertsDtoOutputAlertsInnerCodeEnum_editUnacknowledged =
+    const AdminAlertsDtoOutputAlertsInnerCodeEnum._('editUnacknowledged');
+const AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused =
     const AdminAlertsDtoOutputAlertsInnerCodeEnum._('restaurantAutoPaused');
 
@@ -83,6 +86,8 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_awayFromAddress;
     case 'itemUnavailable':
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_itemUnavailable;
+    case 'editUnacknowledged':
+      return _$adminAlertsDtoOutputAlertsInnerCodeEnum_editUnacknowledged;
     case 'restaurantAutoPaused':
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused;
     default:
@@ -108,6 +113,7 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValues =
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_codeNumberStopped,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_awayFromAddress,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_itemUnavailable,
+        _$adminAlertsDtoOutputAlertsInnerCodeEnum_editUnacknowledged,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused,
       ],
     );
@@ -219,6 +225,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'codeNumberStopped': 'code_number_stopped',
     'awayFromAddress': 'away_from_address',
     'itemUnavailable': 'item_unavailable',
+    'editUnacknowledged': 'edit_unacknowledged',
     'restaurantAutoPaused': 'restaurant_auto_paused',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
@@ -236,6 +243,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'code_number_stopped': 'codeNumberStopped',
     'away_from_address': 'awayFromAddress',
     'item_unavailable': 'itemUnavailable',
+    'edit_unacknowledged': 'editUnacknowledged',
     'restaurant_auto_paused': 'restaurantAutoPaused',
   };
 

@@ -4520,6 +4520,63 @@
         ]
       }
     },
+    "/v1/merchant/orders/{orderId}/acknowledge-edit": {
+      "post": {
+        "operationId": "merchantOrdersAcknowledgeEdit",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantAcknowledgeEditDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
     "/v1/merchant/orders/{orderId}/item-report": {
       "post": {
         "operationId": "merchantOrdersReportItems",
@@ -4827,6 +4884,110 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminOrderCardDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/orders/{orderId}/edit": {
+      "post": {
+        "operationId": "adminOrdersEdit",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminEditDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderCardDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/orders/{orderId}/edit-preview": {
+      "post": {
+        "operationId": "adminOrdersEditPreview",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminEditPreviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminEditPreviewAnswerDto_Output"
                 }
               }
             },
@@ -14057,6 +14218,23 @@
                         "type": "string",
                         "pattern": "^-?\\d+$",
                         "description": "Integer minor units (AP §8.6)."
+                      },
+                      "added": {
+                        "type": "boolean",
+                        "description": "Added by an edit of FOX DROP: marked «أُضيف» (CU §11.6)."
+                      },
+                      "quantityBefore": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "The quantity before an edit changed it, shown beside the new one (CU §11.6)."
                       }
                     },
                     "required": [
@@ -14066,10 +14244,54 @@
                       "note",
                       "options",
                       "unitPrice",
-                      "lineTotal"
+                      "lineTotal",
+                      "added",
+                      "quantityBefore"
                     ],
                     "additionalProperties": false
                   }
+                },
+                "removedLines": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "quantity": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "options": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "quantity",
+                      "options"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "Lines an edit of FOX DROP removed, struck through as «حُذف» (CU §11.6)."
+                },
+                "edited": {
+                  "type": "boolean",
+                  "description": "FOX DROP edited the order: the banner «عدّلت FOX DROP طلبك. المجموع الجديد: {المبلغ}» (CU §11.6)."
                 },
                 "payIn": {
                   "anyOf": [
@@ -14212,6 +14434,8 @@
                 "money",
                 "equivalents",
                 "lines",
+                "removedLines",
+                "edited",
                 "payIn",
                 "note",
                 "estimate",
@@ -14647,6 +14871,23 @@
                       "type": "string",
                       "pattern": "^-?\\d+$",
                       "description": "Integer minor units (AP §8.6)."
+                    },
+                    "added": {
+                      "type": "boolean",
+                      "description": "Added by an edit of FOX DROP: marked «أُضيف» (CU §11.6)."
+                    },
+                    "quantityBefore": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The quantity before an edit changed it, shown beside the new one (CU §11.6)."
                     }
                   },
                   "required": [
@@ -14656,10 +14897,54 @@
                     "note",
                     "options",
                     "unitPrice",
-                    "lineTotal"
+                    "lineTotal",
+                    "added",
+                    "quantityBefore"
                   ],
                   "additionalProperties": false
                 }
+              },
+              "removedLines": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "quantity",
+                    "options"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "Lines an edit of FOX DROP removed, struck through as «حُذف» (CU §11.6)."
+              },
+              "edited": {
+                "type": "boolean",
+                "description": "FOX DROP edited the order: the banner «عدّلت FOX DROP طلبك. المجموع الجديد: {المبلغ}» (CU §11.6)."
               },
               "payIn": {
                 "anyOf": [
@@ -14802,6 +15087,8 @@
               "money",
               "equivalents",
               "lines",
+              "removedLines",
+              "edited",
               "payIn",
               "note",
               "estimate",
@@ -15456,6 +15743,95 @@
                   ],
                   "description": "RA §8.12: the open item-unavailable report: the badge «صنف نفد — بانتظار العمليات», the line «العمليات تتواصل مع الزبون» and «تراجع — الصنف متوفر» (POST …/item-report/withdraw); pickup requests wait until it closes (RA §8.10). Null otherwise."
                 },
+                "edits": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "addsItems": {
+                        "type": "boolean",
+                        "description": "Items added or a quantity raised: every device rings «تم تعديل الطلب #{رقم} — أُضيفت أصناف» until «اطلعت على التعديل», and pickup requests wait (RA §8.10, §16 #16); otherwise it chimes «تم تعديل الطلب #{رقم}» once and stays on the card (RA §16 #17)."
+                      },
+                      "changes": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "added",
+                                "removed",
+                                "quantity"
+                              ],
+                              "description": "A line whose options changed is removed and added again."
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "options": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "quantity": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "quantityBefore": {
+                              "description": "quantity: the quantity before.",
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "name",
+                            "options",
+                            "quantity"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "description": "The prompt lists them (RA §8.13)."
+                      },
+                      "itemsValue": {
+                        "type": "string",
+                        "pattern": "^-?\\d+$",
+                        "description": "The new items value after this edit."
+                      },
+                      "extraPrepMin": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "Items added to a ready order: back to «قيد التحضير» with this many minutes from the edit (RA §8.13); null otherwise."
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "addsItems",
+                      "changes",
+                      "itemsValue",
+                      "extraPrepMin"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "RA §8.13: the edits by operations not yet acknowledged, oldest first; «اطلعت على التعديل» (POST …/acknowledge-edit) acknowledges them all. Empty after the pickup."
+                },
                 "cancellation": {
                   "anyOf": [
                     {
@@ -15710,6 +16086,7 @@
                 "captain",
                 "captainArrival",
                 "itemReport",
+                "edits",
                 "cancellation",
                 "pickup"
               ],
@@ -16165,6 +16542,95 @@
                 ],
                 "description": "RA §8.12: the open item-unavailable report: the badge «صنف نفد — بانتظار العمليات», the line «العمليات تتواصل مع الزبون» and «تراجع — الصنف متوفر» (POST …/item-report/withdraw); pickup requests wait until it closes (RA §8.10). Null otherwise."
               },
+              "edits": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "addsItems": {
+                      "type": "boolean",
+                      "description": "Items added or a quantity raised: every device rings «تم تعديل الطلب #{رقم} — أُضيفت أصناف» until «اطلعت على التعديل», and pickup requests wait (RA §8.10, §16 #16); otherwise it chimes «تم تعديل الطلب #{رقم}» once and stays on the card (RA §16 #17)."
+                    },
+                    "changes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "added",
+                              "removed",
+                              "quantity"
+                            ],
+                            "description": "A line whose options changed is removed and added again."
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "options": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "quantityBefore": {
+                            "description": "quantity: the quantity before.",
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "name",
+                          "options",
+                          "quantity"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "description": "The prompt lists them (RA §8.13)."
+                    },
+                    "itemsValue": {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "The new items value after this edit."
+                    },
+                    "extraPrepMin": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Items added to a ready order: back to «قيد التحضير» with this many minutes from the edit (RA §8.13); null otherwise."
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "addsItems",
+                    "changes",
+                    "itemsValue",
+                    "extraPrepMin"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "RA §8.13: the edits by operations not yet acknowledged, oldest first; «اطلعت على التعديل» (POST …/acknowledge-edit) acknowledges them all. Empty after the pickup."
+              },
               "cancellation": {
                 "anyOf": [
                   {
@@ -16419,6 +16885,7 @@
               "captain",
               "captainArrival",
               "itemReport",
+              "edits",
               "cancellation",
               "pickup"
             ],
@@ -16530,6 +16997,20 @@
         },
         "required": [
           "receivedLines"
+        ]
+      },
+      "MerchantAcknowledgeEditDto": {
+        "type": "object",
+        "properties": {
+          "through": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "The newest edit's `at` the prompt showed: the edits up to it are acknowledged, a newer one keeps ringing (RA §8.13)."
+          }
+        },
+        "required": [
+          "through"
         ]
       },
       "MerchantItemReportDto": {
@@ -16953,7 +17434,8 @@
                     "delivery_late",
                     "collection_shortfall",
                     "away_from_address",
-                    "item_unavailable"
+                    "item_unavailable",
+                    "edit_unacknowledged"
                   ]
                 },
                 "description": "AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active."
@@ -17018,6 +17500,392 @@
         "required": [
           "reason"
         ]
+      },
+      "AdminEditDto": {
+        "type": "object",
+        "properties": {
+          "keep": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "position": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "A current line's position (the detail's lines)."
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20
+                }
+              },
+              "required": [
+                "position",
+                "quantity"
+              ]
+            },
+            "description": "The current lines kept, each with its quantity; a line left out is removed. A raised quantity keeps the unit price and counts as items added."
+          },
+          "add": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "optionIds": {
+                  "maxItems": 30,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20
+                }
+              },
+              "required": [
+                "itemId",
+                "optionIds",
+                "quantity"
+              ]
+            },
+            "description": "Lines added from the restaurant's current menu at current prices, available only (400 invalid_edit). A line whose options change is left out of keep and added again."
+          },
+          "deliveryFee": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{1,15}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A new delivery fee in minor units, or null to keep it (the threshold is not checked again)."
+          },
+          "extraPrepMin": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise)."
+          },
+          "version": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "The order's version the dialog showed; another is 409 order_state_changed, so the edit is the one previewed."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Required (AP §9.3.2): the internal note, never shown to the apps."
+          }
+        },
+        "required": [
+          "keep",
+          "add",
+          "deliveryFee",
+          "extraPrepMin",
+          "version",
+          "reason"
+        ]
+      },
+      "AdminEditPreviewDto": {
+        "type": "object",
+        "properties": {
+          "keep": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "position": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "A current line's position (the detail's lines)."
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20
+                }
+              },
+              "required": [
+                "position",
+                "quantity"
+              ]
+            },
+            "description": "The current lines kept, each with its quantity; a line left out is removed. A raised quantity keeps the unit price and counts as items added."
+          },
+          "add": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "optionIds": {
+                  "maxItems": 30,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20
+                }
+              },
+              "required": [
+                "itemId",
+                "optionIds",
+                "quantity"
+              ]
+            },
+            "description": "Lines added from the restaurant's current menu at current prices, available only (400 invalid_edit). A line whose options change is left out of keep and added again."
+          },
+          "deliveryFee": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{1,15}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A new delivery fee in minor units, or null to keep it (the threshold is not checked again)."
+          },
+          "extraPrepMin": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise)."
+          }
+        },
+        "required": [
+          "keep",
+          "add",
+          "deliveryFee",
+          "extraPrepMin"
+        ]
+      },
+      "AdminEditPreviewAnswerDto_Output": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "before": {
+            "type": "object",
+            "properties": {
+              "itemsValue": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Also the pickup payment (D26)."
+              },
+              "deliveryFee": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "discount": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "rounding": {
+                "type": "string",
+                "pattern": "^-?\\d+$"
+              },
+              "total": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "commission": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "merchantNet": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Integer minor units (AP §8.6)."
+              }
+            },
+            "required": [
+              "itemsValue",
+              "deliveryFee",
+              "discount",
+              "rounding",
+              "total",
+              "commission",
+              "merchantNet"
+            ],
+            "additionalProperties": false
+          },
+          "after": {
+            "type": "object",
+            "properties": {
+              "itemsValue": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Also the pickup payment (D26)."
+              },
+              "deliveryFee": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "discount": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "rounding": {
+                "type": "string",
+                "pattern": "^-?\\d+$"
+              },
+              "total": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "commission": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "merchantNet": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Integer minor units (AP §8.6)."
+              }
+            },
+            "required": [
+              "itemsValue",
+              "deliveryFee",
+              "discount",
+              "rounding",
+              "total",
+              "commission",
+              "merchantNet"
+            ],
+            "additionalProperties": false
+          },
+          "changes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "added",
+                    "removed",
+                    "quantity"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                },
+                "options": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "quantityBefore": {
+                  "description": "quantity: the quantity before.",
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "kind",
+                "name",
+                "options",
+                "quantity"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "addsItems": {
+            "type": "boolean",
+            "description": "The restaurant must acknowledge it before the pickup (RA §8.13)."
+          },
+          "backToPreparing": {
+            "type": "boolean",
+            "description": "A ready order goes back to «قيد التحضير»."
+          },
+          "promisedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The new promised time when it moves."
+          }
+        },
+        "required": [
+          "currency",
+          "before",
+          "after",
+          "changes",
+          "addsItems",
+          "backToPreparing",
+          "promisedAt"
+        ],
+        "additionalProperties": false
       },
       "AdminChangeTimeDto": {
         "type": "object",
@@ -17939,7 +18807,8 @@
                       "delivery_late",
                       "collection_shortfall",
                       "away_from_address",
-                      "item_unavailable"
+                      "item_unavailable",
+                      "edit_unacknowledged"
                     ]
                   },
                   "description": "AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active."
@@ -18274,7 +19143,8 @@
                     "delivery_late",
                     "collection_shortfall",
                     "away_from_address",
-                    "item_unavailable"
+                    "item_unavailable",
+                    "edit_unacknowledged"
                   ]
                 },
                 "description": "AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active."
@@ -18678,6 +19548,324 @@
                 ],
                 "description": "While accepted, ready or picked up: «تعديل الوقت» (AP §9.3.2)."
               },
+              "editChoices": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "extraPrepMaxMin": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "description": "order.eta_change_max_min."
+                      },
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string"
+                            },
+                            "price": {
+                              "type": "string",
+                              "pattern": "^-?\\d+$",
+                              "description": "Integer minor units (AP §8.6)."
+                            },
+                            "optionGroups": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "minChoices": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "maxChoices": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "options": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "string",
+                                          "format": "uuid",
+                                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                        },
+                                        "name": {
+                                          "type": "string"
+                                        },
+                                        "priceDelta": {
+                                          "type": "string",
+                                          "pattern": "^-?\\d+$",
+                                          "description": "Integer minor units (AP §8.6)."
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "name",
+                                        "priceDelta"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name",
+                                  "minChoices",
+                                  "maxChoices",
+                                  "options"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "category",
+                            "price",
+                            "optionGroups"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "description": "The items customers can order now, with their available options."
+                      }
+                    },
+                    "required": [
+                      "extraPrepMaxMin",
+                      "items"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "While placed, accepted or ready: «تعديل الطلب» (AP §9.3.3)."
+              },
+              "edits": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "adminId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "placed",
+                        "accepted",
+                        "ready",
+                        "picked_up",
+                        "arrived",
+                        "delivered",
+                        "rejected",
+                        "cancelled",
+                        "failed"
+                      ],
+                      "description": "The status when edited."
+                    },
+                    "changes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "added",
+                              "removed",
+                              "quantity"
+                            ]
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "options": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "quantityBefore": {
+                            "description": "quantity: the quantity before.",
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "name",
+                          "options",
+                          "quantity"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "addsItems": {
+                      "type": "boolean"
+                    },
+                    "itemsValue": {
+                      "type": "object",
+                      "properties": {
+                        "before": {
+                          "type": "string",
+                          "pattern": "^-?\\d+$",
+                          "description": "Integer minor units (AP §8.6)."
+                        },
+                        "after": {
+                          "type": "string",
+                          "pattern": "^-?\\d+$",
+                          "description": "Integer minor units (AP §8.6)."
+                        }
+                      },
+                      "required": [
+                        "before",
+                        "after"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "deliveryFee": {
+                      "type": "object",
+                      "properties": {
+                        "before": {
+                          "type": "string",
+                          "pattern": "^-?\\d+$",
+                          "description": "Integer minor units (AP §8.6)."
+                        },
+                        "after": {
+                          "type": "string",
+                          "pattern": "^-?\\d+$",
+                          "description": "Integer minor units (AP §8.6)."
+                        }
+                      },
+                      "required": [
+                        "before",
+                        "after"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "total": {
+                      "type": "object",
+                      "properties": {
+                        "before": {
+                          "type": "string",
+                          "pattern": "^-?\\d+$",
+                          "description": "Integer minor units (AP §8.6)."
+                        },
+                        "after": {
+                          "type": "string",
+                          "pattern": "^-?\\d+$",
+                          "description": "Integer minor units (AP §8.6)."
+                        }
+                      },
+                      "required": [
+                        "before",
+                        "after"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "extraPrepMin": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "acknowledgedAt": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "«اطلعت على التعديل» on a restaurant device (RA §8.13)."
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "adminId",
+                    "status",
+                    "changes",
+                    "addsItems",
+                    "itemsValue",
+                    "deliveryFee",
+                    "total",
+                    "extraPrepMin",
+                    "acknowledgedAt"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "The order's edits by operations, oldest first (AP §9.3.1)."
+              },
+              "removedLines": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "quantity"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "Lines an edit removed."
+              },
               "rejection": {
                 "anyOf": [
                   {
@@ -18978,6 +20166,12 @@
                       "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                       "description": "«رفض نيابة عن المطعم» picks the unavailable items by it."
                     },
+                    "position": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "«تعديل الطلب» names the line by it."
+                    },
                     "name": {
                       "type": "string"
                     },
@@ -18985,6 +20179,23 @@
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991
+                    },
+                    "added": {
+                      "type": "boolean",
+                      "description": "Added by an edit."
+                    },
+                    "quantityBefore": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The quantity before an edit changed it."
                     },
                     "options": {
                       "type": "array",
@@ -19026,8 +20237,11 @@
                   },
                   "required": [
                     "itemId",
+                    "position",
                     "name",
                     "quantity",
+                    "added",
+                    "quantityBefore",
                     "options",
                     "note",
                     "unitPrice",
@@ -19815,6 +21029,9 @@
               "cancelChoices",
               "itemReport",
               "timeChange",
+              "editChoices",
+              "edits",
+              "removedLines",
               "rejection",
               "onBehalf",
               "customer",
@@ -19988,6 +21205,10 @@
                   "itemReportOpen": {
                     "type": "boolean",
                     "description": "The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2)."
+                  },
+                  "editUnacknowledged": {
+                    "type": "boolean",
+                    "description": "Operations added items and the restaurant has not pressed «اطلعت على التعديل» (RA §8.13): the screen shows «بانتظار تأكيد المطعم للتعديل» and the pickup request waits (409 edit_unacknowledged) (CA §9 step 2)."
                   },
                   "itemCount": {
                     "type": "integer",
@@ -20499,6 +21720,7 @@
                   "preparation",
                   "arrival",
                   "itemReportOpen",
+                  "editUnacknowledged",
                   "itemCount",
                   "lines",
                   "note",
@@ -20805,6 +22027,10 @@
               "itemReportOpen": {
                 "type": "boolean",
                 "description": "The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2)."
+              },
+              "editUnacknowledged": {
+                "type": "boolean",
+                "description": "Operations added items and the restaurant has not pressed «اطلعت على التعديل» (RA §8.13): the screen shows «بانتظار تأكيد المطعم للتعديل» and the pickup request waits (409 edit_unacknowledged) (CA §9 step 2)."
               },
               "itemCount": {
                 "type": "integer",
@@ -21316,6 +22542,7 @@
               "preparation",
               "arrival",
               "itemReportOpen",
+              "editUnacknowledged",
               "itemCount",
               "lines",
               "note",
@@ -22231,6 +23458,7 @@
                     "code_number_stopped",
                     "away_from_address",
                     "item_unavailable",
+                    "edit_unacknowledged",
                     "restaurant_auto_paused"
                   ],
                   "description": "The rule of AP §9.1.3."
@@ -22379,6 +23607,7 @@
               "code_number_stopped",
               "away_from_address",
               "item_unavailable",
+              "edit_unacknowledged",
               "restaurant_auto_paused"
             ],
             "description": "The rule of AP §9.1.3."

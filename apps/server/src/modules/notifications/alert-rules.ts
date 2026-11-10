@@ -41,6 +41,10 @@ export const alertCodes = [
   // «صنف نفد بعد القبول»: the restaurant's open item-unavailable report (RA
   // §8.12), until it is withdrawn, closed or the order cancelled.
   'item_unavailable',
+  // «المطعم لم يؤكد التعديل»: an edit that added items, not acknowledged by
+  // the restaurant within order.merchant_accept_alert_min (AP §9.3.3, RA
+  // §8.13), until it is acknowledged, the order is picked up or ends.
+  'edit_unacknowledged',
   // «مطعم أوقف تلقائياً»: merchant.auto_pause_unanswered_count unanswered
   // orders in a business day (AP §9.6.5), until operations resume it.
   'restaurant_auto_paused',
@@ -77,6 +81,7 @@ export const ALERT_RULES: Record<AlertCode, AlertRule> = {
   code_number_stopped: rule('warning', ['OWN'], 'otp_number'),
   away_from_address: { ...rule('information', OPERATIONS, 'order'), resolvesItself: false },
   item_unavailable: rule('critical', OPERATIONS, 'order'),
+  edit_unacknowledged: rule('critical', OPERATIONS, 'order'),
   restaurant_auto_paused: rule('warning', OPERATIONS, 'restaurant'),
 };
 

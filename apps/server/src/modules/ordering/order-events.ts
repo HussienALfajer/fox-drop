@@ -79,7 +79,12 @@ export type OrderEventType =
   // accepting, withdrew its report, or operations closed it without an edit.
   | 'order.item_reported'
   | 'order.item_report_withdrawn'
-  | 'order.item_report_closed';
+  | 'order.item_report_closed'
+  // AP §9.3.3, RA §8.13 (slice 2.10a): operations edited the order before its
+  // pickup (a ready order back to accepted when items were added), and the
+  // restaurant's «اطلعت على التعديل».
+  | 'order.edited'
+  | 'order.edit_acknowledged';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that

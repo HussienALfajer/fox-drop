@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner_options_inner.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_removed_lines_inner_options_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -37,7 +37,9 @@ abstract class MerchantOrdersDtoOutputOrdersInnerLinesInner
   int get quantity;
 
   @BuiltValueField(wireName: r'options')
-  BuiltList<MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner>
+  BuiltList<
+    CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInnerOptionsInner
+  >
   get options;
 
   @BuiltValueField(wireName: r'note')
@@ -99,7 +101,9 @@ class _$MerchantOrdersDtoOutputOrdersInnerLinesInnerSerializer
     yield serializers.serialize(
       object.options,
       specifiedType: const FullType(BuiltList, [
-        FullType(MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner),
+        FullType(
+          CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInnerOptionsInner,
+        ),
       ]),
     );
     yield r'note';
@@ -171,12 +175,12 @@ class _$MerchantOrdersDtoOutputOrdersInnerLinesInnerSerializer
                     value,
                     specifiedType: const FullType(BuiltList, [
                       FullType(
-                        MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner,
+                        CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInnerOptionsInner,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner
+                    CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInnerOptionsInner
                   >;
           result.options.replace(valueDes);
           break;
