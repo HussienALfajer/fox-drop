@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/captain_active_order_dto_output_ended.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_cancelled.dart';
 import 'package:built_value/built_value.dart';
@@ -15,6 +16,7 @@ part 'captain_active_order_dto_output.g.dart';
 /// Properties:
 /// * [order]
 /// * [cancelled]
+/// * [ended]
 @BuiltValue()
 abstract class CaptainActiveOrderDtoOutput
     implements
@@ -24,6 +26,9 @@ abstract class CaptainActiveOrderDtoOutput
 
   @BuiltValueField(wireName: r'cancelled')
   CaptainActiveOrderDtoOutputCancelled? get cancelled;
+
+  @BuiltValueField(wireName: r'ended')
+  CaptainActiveOrderDtoOutputEnded? get ended;
 
   CaptainActiveOrderDtoOutput._();
 
@@ -71,6 +76,15 @@ class _$CaptainActiveOrderDtoOutputSerializer
             object.cancelled,
             specifiedType: const FullType.nullable(
               CaptainActiveOrderDtoOutputCancelled,
+            ),
+          );
+    yield r'ended';
+    yield object.ended == null
+        ? null
+        : serializers.serialize(
+            object.ended,
+            specifiedType: const FullType.nullable(
+              CaptainActiveOrderDtoOutputEnded,
             ),
           );
   }
@@ -123,6 +137,18 @@ class _$CaptainActiveOrderDtoOutputSerializer
                   as CaptainActiveOrderDtoOutputCancelled?;
           if (valueDes == null) continue;
           result.cancelled.replace(valueDes);
+          break;
+        case r'ended':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainActiveOrderDtoOutputEnded,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputEnded?;
+          if (valueDes == null) continue;
+          result.ended.replace(valueDes);
           break;
         default:
           unhandled.add(key);

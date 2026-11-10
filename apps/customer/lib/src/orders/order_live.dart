@@ -87,7 +87,11 @@ class AtDoor extends OrderTitle {
 
 /// «تم التسليم» — «بالعافية!».
 class Delivered extends OrderTitle {
-  const Delivered();
+  const Delivered({this.paidNothing = false});
+
+  /// CU §11.9: a free or damaged order operations delivered with nothing to
+  /// pay, «لم تدفع شيئاً لهذا الطلب» (AP §8.9).
+  final bool paidNothing;
 }
 
 /// CU §11.9: «لم يرد المطعم على طلبك، نعتذر» (AP §8.3), its own wording.
@@ -116,9 +120,12 @@ class CancelledByYou extends OrderTitle {
   const CancelledByYou();
 }
 
-/// CU §11.9: «تعذّر التسليم».
+/// CU §11.9: «تعذّر التسليم», with the reason the outcome kept from Content
+/// (CU Appendix C).
 class Failed extends OrderTitle {
-  const Failed();
+  const Failed(this.text);
+
+  final String? text;
 }
 
 OrderTitle titleOf(CustomerOrder order) {
@@ -133,9 +140,11 @@ OrderTitle titleOf(CustomerOrder order) {
     'ready' => ReadyForCaptain(captainThere: captain?.atRestaurant ?? false),
     'pickedUp' || 'picked_up' => OnTheWay(captain?.firstName ?? ''),
     'arrived' => const AtDoor(),
-    'delivered' => const Delivered(),
+    'delivered' => Delivered(
+      paidNothing: order.outcome?.amountToCollect.amount == '0',
+    ),
     'rejected' => Rejected(order.rejection?.text),
-    'failed' => const Failed(),
+    'failed' => Failed(order.outcome?.text),
     _ =>
       order.cancellation?.byCustomer ?? false
           ? const CancelledByYou()

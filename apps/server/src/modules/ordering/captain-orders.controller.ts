@@ -21,6 +21,7 @@ import type { PickupRequestView } from './pickup-views.js';
 import {
   type CaptainActiveOrder,
   type CaptainCancellation,
+  type CaptainOutcome,
   CaptainOrderRefusedError,
   CaptainOrders,
   type DeliverySummary,
@@ -239,6 +240,48 @@ const cancelledTask = z
     'The latest order operations cancelled within 12 hours that the captain has not acknowledged (POST …/acknowledge-cancellation); the app plays the cancellation sound when one appears.',
   );
 
+const minorMoney = z.object({ amount: z.string().regex(/^\d+$/), currency: z.string().length(3) });
+
+const endedTask = z
+  .object({
+    orderId: z.uuid(),
+    number: z.string(),
+    outcome: z
+      .enum(['free', 'fake', 'damaged', 'wrong_refused', 'failed_other'])
+      .describe('«أنهت العمليات الطلب: {النتيجة}.» with the label of AP Appendix C.'),
+    status: z.enum(['delivered', 'failed']),
+    food: z
+      .enum(['kept_by_captain', 'returned_to_restaurant', 'destroyed'])
+      .nullable()
+      .describe("Where a failed order's food goes (CA §9.12), by Content's food_after_failed."),
+    pay: minorMoney.nullable().describe('The pay the order still brings (CA §9.12).'),
+    charge: minorMoney
+      .nullable()
+      .describe('With the captain responsible: the charge on the earnings (CA §10.6).'),
+    at: z.iso.datetime(),
+  })
+  .nullable()
+  .describe(
+    'The latest order operations ended with an outcome within 12 hours that the captain has not acknowledged (POST …/acknowledge-outcome).',
+  );
+
+function endedBody(ended: CaptainOutcome | null) {
+  const text = (value: { amount: bigint; currency: string } | null) =>
+    value && { amount: value.amount.toString(), currency: value.currency };
+  return (
+    ended && {
+      orderId: ended.orderId,
+      number: ended.number.toString(),
+      outcome: ended.outcome,
+      status: ended.status,
+      food: ended.food,
+      pay: text(ended.pay),
+      charge: text(ended.charge),
+      at: ended.at.toISOString(),
+    }
+  );
+}
+
 function cancelledBody(cancelled: CaptainCancellation | null) {
   return (
     cancelled && {
@@ -259,6 +302,7 @@ class CaptainActiveOrderDto extends createZodDto(
   z.object({
     order: activeOrder.nullable().describe('Null without an active order.'),
     cancelled: cancelledTask,
+    ended: endedTask,
   }),
 ) {}
 
@@ -507,11 +551,35 @@ export class CaptainOrdersController {
   async active(@CurrentAppSession() session: AppSession) {
     const captainId = captainOf(session);
     const now = new Date();
-    const [active, cancelled] = await Promise.all([
+    const [active, cancelled, ended] = await Promise.all([
       this.orders.active(captainId, now),
       this.orders.cancelled(captainId, now),
+      this.orders.outcome(captainId, now),
     ]);
-    return { order: active && activeOrderBody(active), cancelled: cancelledBody(cancelled) };
+    return {
+      order: active && activeOrderBody(active),
+      cancelled: cancelledBody(cancelled),
+      ended: endedBody(ended),
+    };
+  }
+
+  // CA §9.12 «حسناً» on the outcome card (slice 2.11a): answers the active
+  // read without it. Idempotent by its nature, so it takes no key, and it
+  // needs no fix. 409 order_state_changed for an order without an outcome
+  // operations set; 404 unknown_order for another captain's.
+  @Post(':orderId/acknowledge-outcome')
+  @AppSignedIn()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CaptainActiveOrderDto })
+  async acknowledgeOutcome(
+    @CurrentAppSession() session: AppSession,
+    @Param() params: CaptainOrderParamsDto,
+  ) {
+    const captainId = captainOf(session);
+    return refusalsAsHttp(captainId, this.orders, async () => {
+      await this.orders.acknowledgeOutcome(captainId, params.orderId, new Date());
+      return this.active(session);
+    });
   }
 
   // CA §9.10 «حسناً» on the cancellation card (slice 2.8b): answers the

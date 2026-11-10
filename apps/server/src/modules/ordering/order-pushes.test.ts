@@ -27,6 +27,7 @@ const facts: OrderPushFacts = {
   offerPay: '25 ₺',
   unanswered: null,
   merchantDebit: null,
+  outcome: null,
 };
 
 const sent = (type: string, reason: string | null = null, more: Partial<OrderPushFacts> = {}) =>
@@ -92,6 +93,52 @@ describe('the pushes of an order event', () => {
     expect(sent('order.edited', 'fee_lowered_after_pickup', { actor: 'admin' })).toEqual([
       [customer, 'customer.order_edited', { المبلغ: '160 ₺' }],
       [captain, 'captain.collect_lowered', { رقم: '10002', المبلغ: '160 ₺' }],
+    ]);
+  });
+
+  it('tells everyone an outcome set by operations (CU §14 #6, #9, RA §16 #19, CA §9.10)', () => {
+    const owners = { ...restaurant, owners: true };
+    const failed = {
+      label: 'تعذّر التسليم',
+      status: 'failed' as const,
+      customerText: 'تعذّر الوصول إليك أو إلى العنوان',
+      merchantDebit: null,
+    };
+    expect(sent('order.outcome_set', 'failed_other', { actor: 'admin', outcome: failed })).toEqual([
+      [customer, 'customer.failed', { السبب: 'تعذّر الوصول إليك أو إلى العنوان' }],
+      [owners, 'merchant.order_failed', { رقم: '10002', النتيجة: 'تعذّر التسليم' }],
+      [captain, 'captain.outcome_set', { رقم: '10002', النتيجة: 'تعذّر التسليم' }],
+    ]);
+    expect(
+      sent('order.outcome_set', 'wrong_refused', {
+        actor: 'admin',
+        outcome: { ...failed, label: 'خطأ ورفضه الزبون', merchantDebit: '400 ₺' },
+      })[1],
+    ).toEqual([
+      owners,
+      'merchant.order_failed_debited',
+      { رقم: '10002', النتيجة: 'خطأ ورفضه الزبون', المبلغ: '400 ₺' },
+    ]);
+    const free = { label: 'مجاني', status: 'delivered' as const, customerText: null };
+    // Delivered: the restaurant hears only what it returns.
+    expect(
+      sent('order.outcome_set', 'free', {
+        actor: 'admin',
+        outcome: { ...free, merchantDebit: null },
+      }),
+    ).toEqual([
+      [customer, 'customer.delivered', {}],
+      [captain, 'captain.outcome_set', { رقم: '10002', النتيجة: 'مجاني' }],
+    ]);
+    expect(
+      sent('order.outcome_set', 'free', {
+        actor: 'admin',
+        outcome: { ...free, merchantDebit: '400 ₺' },
+      })[1],
+    ).toEqual([
+      owners,
+      'merchant.outcome_debited',
+      { رقم: '10002', النتيجة: 'مجاني', المبلغ: '400 ₺' },
     ]);
   });
 

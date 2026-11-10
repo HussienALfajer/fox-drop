@@ -124,6 +124,21 @@ const customerOrder = z.object({
     })
     .nullable()
     .describe('While rejected (CU §11.9).'),
+  outcome: z
+    .object({
+      at: z.iso.datetime(),
+      outcome: z.enum(['free', 'fake', 'damaged', 'wrong_refused', 'failed_other']),
+      status: z.enum(['delivered', 'failed']),
+      text: z
+        .string()
+        .nullable()
+        .describe('A failed order: «تعذّر التسليم» with this reason (CU §11.9, Appendix C).'),
+      amountToCollect: z
+        .object({ amount: minor, currency: z.string().length(3) })
+        .describe('CU §11.6: «المبلغ المطلوب الآن: {المبلغ}», or «لن تدفع شيئاً لهذا الطلب» at 0.'),
+    })
+    .nullable()
+    .describe('Once operations set an outcome other than normal (AP §8.9).'),
   delivery: z
     .object({
       at: z.iso.datetime().describe('«تم التسليم».'),
@@ -434,6 +449,16 @@ function orderBody(
       reason: order.cancellation.reason,
       text: order.cancellation.customerText ?? GENERIC_CUSTOMER_TEXT,
       byCustomer: order.cancellation.byCustomer,
+    },
+    outcome: order.outcome && {
+      at: order.outcome.at.toISOString(),
+      outcome: order.outcome.outcome,
+      status: order.outcome.status,
+      text: order.outcome.customerText,
+      amountToCollect: {
+        amount: text(order.outcome.amountToCollect),
+        currency: order.outcome.currency,
+      },
     },
     delivery: order.delivery && {
       at: order.delivery.at.toISOString(),

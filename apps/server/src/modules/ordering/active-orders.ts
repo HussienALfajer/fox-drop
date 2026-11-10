@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, count, eq, inArray, type SQL } from 'drizzle-orm';
+import { and, count, eq, gt, inArray, max, type SQL } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { SettingsService } from '../settings/index.js';
-import { orders, type orderStatuses } from './schema.js';
+import { orderOutcomeRows, orders, type orderStatuses } from './schema.js';
 
 type OrderStatus = (typeof orderStatuses)[number];
 type Executor = Pick<NodePgDatabase, 'select'>;
@@ -54,16 +54,35 @@ export class ActiveOrders {
   }
 
   // D23: the delivered orders with outcome normal (AP §8.9) make a customer
-  // trusted.
+  // trusted; a fake outcome removes the trust and starts the count again
+  // (docs/domain/08, slice 2.11a), so only the deliveries after the latest
+  // one count.
   async customer(
     accountId: string,
     rules: CustomerLimitRules,
     executor: Executor = this.database.db,
   ): Promise<CustomerLimit> {
     const whose = eq(orders.customerAccountId, accountId);
-    const delivered = await countOrders(executor, and(whose, eq(orders.outcome, 'normal'))!, [
-      'delivered',
-    ]);
+    const [lastFake] = await executor
+      .select({ at: max(orderOutcomeRows.setAt) })
+      .from(orderOutcomeRows)
+      .innerJoin(
+        orders,
+        and(
+          eq(orders.id, orderOutcomeRows.orderId),
+          eq(orders.placedAt, orderOutcomeRows.orderPlacedAt),
+        ),
+      )
+      .where(and(whose, eq(orderOutcomeRows.outcome, 'fake')));
+    const delivered = await countOrders(
+      executor,
+      and(
+        whose,
+        eq(orders.outcome, 'normal'),
+        lastFake?.at ? gt(orders.deliveredAt, lastFake.at) : undefined,
+      )!,
+      ['delivered'],
+    );
     const trusted = delivered >= rules.trustedAfter;
     const limit = trusted ? rules.trustedMax : rules.newMax;
     const active = await countOrders(executor, whose, UNTIL_ENDED);

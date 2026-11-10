@@ -765,6 +765,62 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets('shows the outcome operations set, the food and the pay, '
+      'until «حسناً» (CA §9.10, §9.12)', (tester) async {
+    final app = TestApp();
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [orderJson(status: 'picked_up', track: 'picked_up')],
+    );
+    await app.pump(tester);
+    await app.live(tester);
+
+    app.work(
+      availability: [availabilityJson(state: 'online_available')],
+      ended: endedJson(pay: moneyJson('2500')),
+    );
+    app.transport.event('order.outcome_set', 6);
+    await app.settle(tester);
+    expect(find.text('أنهت العمليات الطلب: تعذّر التسليم.'), findsOneWidget);
+    expect(find.text('أعِد الطعام إلى المطعم'), findsOneWidget);
+    expect(find.text('أجرك من الطلب: 25 ₺'), findsOneWidget);
+    expect(app.ringer.chimes, 1);
+
+    app.server.on('/v1/captain/orders/$orderId/acknowledge-outcome', [
+      const FakeAnswer(200, {'order': null, 'cancelled': null, 'ended': null}),
+    ]);
+    app.work(availability: [availabilityJson(state: 'online_available')]);
+    await app.tapVisible(tester, find.byKey(const Key('outcome-ok')));
+    await app.settle(tester);
+    expect(
+      app.server.to('/v1/captain/orders/$orderId/acknowledge-outcome'),
+      hasLength(1),
+    );
+    expect(find.textContaining('أنهت العمليات'), findsNothing);
+    await app.done(tester);
+  });
+
+  testWidgets('shows the charge when the captain is responsible (CA §10.6)', (
+    tester,
+  ) async {
+    final app = TestApp();
+    app.work(
+      availability: [availabilityJson()],
+      ended: endedJson(
+        outcome: 'damaged',
+        food: 'destroyed',
+        charge: moneyJson('20400'),
+      ),
+    );
+    await app.pump(tester);
+    await app.live(tester);
+    expect(find.text('أنهت العمليات الطلب: تالف.'), findsOneWidget);
+    expect(find.text('أتلف الطعام'), findsOneWidget);
+    expect(find.text('خُصم من مستحقاتك 204 ₺: تالف'), findsOneWidget);
+    expect(find.textContaining('أجرك'), findsNothing);
+    await app.done(tester);
+  });
+
   testWidgets('a cancellation waiting on opening shows without its sound, '
       'with the cash kept by the restaurant (CA §9.10)', (tester) async {
     final app = TestApp();

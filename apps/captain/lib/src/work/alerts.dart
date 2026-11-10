@@ -138,6 +138,13 @@ class OrderCancelled extends Alert {
   final Cancelled cancelled;
 }
 
+/// «أنهت العمليات الطلب: {النتيجة}.» (CA §9.10, slice 2.11a): the outcome card
+/// shows it, with a chime.
+class OutcomeSet extends Alert {
+  const OutcomeSet(this.ended);
+  final Ended ended;
+}
+
 /// «تم تعديل الطلب — المبلغ الجديد للمطعم {المبلغ}، للتحصيل {المبلغ}»: operations
 /// edited the order before the pickup (CA §9.10, §14 #10); the item
 /// checklist shows the new lines.
@@ -191,6 +198,10 @@ List<Alert> alertStep(
   final cancelled = after.cancelled;
   if (cancelled != null && before.cancelled?.orderId != cancelled.orderId) {
     alerts.add(OrderCancelled(cancelled));
+  }
+  final ended = after.ended;
+  if (ended != null && before.ended?.orderId != ended.orderId) {
+    alerts.add(OutcomeSet(ended));
   }
   final was = before.order;
   final order = after.order;

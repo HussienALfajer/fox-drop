@@ -5,9 +5,12 @@ import type { Point } from '../geo/index.js';
 import { type ItemReportNote, type ItemReportUntil, openItemReports } from './item-reports.js';
 import { type PendingEdit, pendingEdits } from './order-edits.js';
 import type { CaptainTrack } from './order-events.js';
+import type { ResponsibleParty } from './cancellation.js';
+import type { OutcomeFood, SetOutcome } from './outcome.js';
 import type { QuoteMoney } from './quote.js';
 import {
   collections,
+  orderOutcomeRows,
   type orderOutcomes,
   orderEvents,
   orderEdits,
@@ -95,6 +98,25 @@ export interface OrderView {
     // «نقص في التحصيل» (AP §8.6), with the captain's reason (K16).
     shortfall: ({ amount: bigint } & RecordedReason) | null;
     recordedBy: { type: string; id: string; reason: string | null };
+  } | null;
+  // AP §9.3.2 «تحديد النتيجة» (slice 2.11a): the outcome operations set,
+  // with what it booked, the customer's text of a failed order (CU Appendix
+  // C) and operations' note; null for a normal delivery and before the end.
+  outcome: {
+    at: Date;
+    outcome: SetOutcome;
+    status: 'delivered' | 'failed';
+    responsible: ResponsibleParty;
+    food: OutcomeFood | null;
+    currency: string;
+    amountToCollect: bigint;
+    loss: bigint;
+    dues: bigint | null;
+    merchantDebit: bigint | null;
+    captainPay: bigint;
+    customerText: string | null;
+    note: string;
+    setBy: string;
   } | null;
   // The customer's text for it (CU Appendix C), copied at the cancellation;
   // byCustomer for the customer's own while placed (CU §11.4, §11.9).
@@ -355,6 +377,25 @@ export async function readOrders(
         )
     ).map((row) => row.orderId),
   );
+  const ended = rows.filter((row) => row.outcome !== null && row.outcome !== 'normal');
+  const outcomes =
+    ended.length === 0
+      ? []
+      : await executor
+          .select()
+          .from(orderOutcomeRows)
+          .where(
+            and(
+              inArray(
+                orderOutcomeRows.orderId,
+                ended.map((row) => row.id),
+              ),
+              inArray(
+                orderOutcomeRows.orderPlacedAt,
+                ended.map((row) => row.placedAt),
+              ),
+            ),
+          );
   const delivered = rows.filter((row) => row.deliveredAt !== null);
   const deliveries =
     delivered.length === 0
@@ -376,6 +417,7 @@ export async function readOrders(
           );
   return rows.map((row) => {
     const collection = deliveries.find((each) => each.orderId === row.id);
+    const outcome = outcomes.find((each) => each.orderId === row.id);
     const report = reports.find((each) => each.orderId === row.id);
     const ownLines = lines.filter((line) => line.orderId === row.id);
     const snapshot = snapshotOf(row.rateSnapshot);
@@ -421,6 +463,25 @@ export async function readOrders(
             note: row.awayNote,
           }
         : null,
+      outcome:
+        outcome && outcome.outcome !== 'normal'
+          ? {
+              at: outcome.setAt,
+              outcome: outcome.outcome,
+              status: outcome.status,
+              responsible: outcome.responsible,
+              food: outcome.food,
+              currency: outcome.currency,
+              amountToCollect: outcome.amountToCollect,
+              loss: outcome.loss,
+              dues: outcome.dues,
+              merchantDebit: outcome.merchantDebit,
+              captainPay: outcome.captainPay,
+              customerText: outcome.customerText,
+              note: outcome.note,
+              setBy: outcome.setBy,
+            }
+          : null,
       delivery:
         row.deliveredAt && row.outcome && collection
           ? {

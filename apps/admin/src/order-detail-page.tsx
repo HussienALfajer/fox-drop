@@ -5,6 +5,8 @@ import { canAssign, OPERATIONS_MANAGE } from './assign-captain.js';
 import { chosenCity, citiesQuery } from './cities.js';
 import { formatMoney, formatTime } from './format.js';
 import { CancelOrder } from './order-cancel-page.js';
+import { SetOutcome } from './order-outcome-page.js';
+import { canSetOutcome } from './order-outcome.js';
 import { canCancel } from './order-cancel.js';
 import {
   actorKey,
@@ -213,6 +215,19 @@ export function OrderDetailPage() {
           orderId={orderId}
           choices={detail.onBehalf}
           lines={detail.lines}
+        />
+      )}
+      {detail.outcome && <OutcomeSection outcome={detail.outcome} time={time} />}
+      {canSetOutcome(session, detail) && (
+        <SetOutcome
+          key={orderId}
+          orderId={orderId}
+          version={detail.version}
+          choices={detail.outcomeChoices}
+          pickup={{
+            captainName: detail.captain?.name ?? null,
+            payment: { amount: detail.money.pickupPayment, currency: detail.money.currency },
+          }}
         />
       )}
       {canCancel(session, detail) && (
@@ -523,3 +538,48 @@ function editKey(orderId: string, detail: OrderDetail): string {
     '|',
   );
 }
+
+// AP §9.3.2 «تحديد النتيجة» (slice 2.11a): the outcome operations set, with
+// what it booked, what the customer sees and the note.
+function OutcomeSection({
+  outcome,
+  time,
+}: {
+  outcome: NonNullable<OrderDetail['outcome']>;
+  time: (iso: string) => string;
+}) {
+  const { t } = useTranslation();
+  const food = outcome.food && foodKeys[outcome.food];
+  return (
+    <>
+      <p>
+        {t('order.outcomeSet.title', {
+          outcome: t(outcomeKeys[outcome.outcome]),
+          responsible: t(responsibleKeys[outcome.responsible]),
+        })}
+      </p>
+      <p>{t('order.outcomeSet.at', { time: time(outcome.at) })}</p>
+      {food && <p>{t('order.outcomeSet.food', { food: t(food) })}</p>}
+      {outcome.loss.amount !== '0' && (
+        <p>{t('order.outcomeSet.loss', { amount: formatMoney(outcome.loss) })}</p>
+      )}
+      {outcome.dues && <p>{t('order.outcomeSet.dues', { amount: formatMoney(outcome.dues) })}</p>}
+      {outcome.merchantDebit && (
+        <p>{t('order.outcomeSet.merchantDebit', { amount: formatMoney(outcome.merchantDebit) })}</p>
+      )}
+      <p>{t('order.outcomeSet.captainPay', { amount: formatMoney(outcome.captainPay) })}</p>
+      {outcome.customerText && (
+        <p>{t('order.outcomeSet.customerText', { text: outcome.customerText })}</p>
+      )}
+      <p>{t('order.outcomeSet.note', { note: outcome.note })}</p>
+    </>
+  );
+}
+
+// AP Appendix B «Food after a failed order»: the labels as the panel shows
+// them (the dialog shows Content's own).
+const foodKeys = {
+  kept_by_captain: 'order.food.keptByCaptain',
+  returned_to_restaurant: 'order.food.returnedToRestaurant',
+  destroyed: 'order.food.destroyed',
+} as const satisfies Record<NonNullable<NonNullable<OrderDetail['outcome']>['food']>, string>;

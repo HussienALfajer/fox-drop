@@ -149,6 +149,8 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
   @override
   final CustomerActiveOrdersDtoOutputOrdersInnerRejection? rejection;
   @override
+  final CustomerActiveOrdersDtoOutputOrdersInnerOutcome? outcome;
+  @override
   final CustomerOrderDtoOutputOrderDelivery? delivery;
   @override
   final CustomerActiveOrdersDtoOutputOrdersInnerRestaurant restaurant;
@@ -190,6 +192,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     this.itemReport,
     this.cancellation,
     this.rejection,
+    this.outcome,
     this.delivery,
     required this.restaurant,
     this.captain,
@@ -226,6 +229,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
         itemReport == other.itemReport &&
         cancellation == other.cancellation &&
         rejection == other.rejection &&
+        outcome == other.outcome &&
         delivery == other.delivery &&
         restaurant == other.restaurant &&
         captain == other.captain &&
@@ -253,6 +257,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     _$hash = $jc(_$hash, itemReport.hashCode);
     _$hash = $jc(_$hash, cancellation.hashCode);
     _$hash = $jc(_$hash, rejection.hashCode);
+    _$hash = $jc(_$hash, outcome.hashCode);
     _$hash = $jc(_$hash, delivery.hashCode);
     _$hash = $jc(_$hash, restaurant.hashCode);
     _$hash = $jc(_$hash, captain.hashCode);
@@ -282,6 +287,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
           ..add('itemReport', itemReport)
           ..add('cancellation', cancellation)
           ..add('rejection', rejection)
+          ..add('outcome', outcome)
           ..add('delivery', delivery)
           ..add('restaurant', restaurant)
           ..add('captain', captain)
@@ -355,6 +361,14 @@ class CustomerOrderDtoOutputOrderBuilder
   set rejection(
     CustomerActiveOrdersDtoOutputOrdersInnerRejectionBuilder? rejection,
   ) => _$this._rejection = rejection;
+
+  CustomerActiveOrdersDtoOutputOrdersInnerOutcomeBuilder? _outcome;
+  CustomerActiveOrdersDtoOutputOrdersInnerOutcomeBuilder get outcome =>
+      _$this._outcome ??=
+          CustomerActiveOrdersDtoOutputOrdersInnerOutcomeBuilder();
+  set outcome(
+    CustomerActiveOrdersDtoOutputOrdersInnerOutcomeBuilder? outcome,
+  ) => _$this._outcome = outcome;
 
   CustomerOrderDtoOutputOrderDeliveryBuilder? _delivery;
   CustomerOrderDtoOutputOrderDeliveryBuilder get delivery =>
@@ -458,6 +472,7 @@ class CustomerOrderDtoOutputOrderBuilder
       _itemReport = $v.itemReport?.toBuilder();
       _cancellation = $v.cancellation?.toBuilder();
       _rejection = $v.rejection?.toBuilder();
+      _outcome = $v.outcome?.toBuilder();
       _delivery = $v.delivery?.toBuilder();
       _restaurant = $v.restaurant.toBuilder();
       _captain = $v.captain?.toBuilder();
@@ -524,6 +539,7 @@ class CustomerOrderDtoOutputOrderBuilder
             itemReport: _itemReport?.build(),
             cancellation: _cancellation?.build(),
             rejection: _rejection?.build(),
+            outcome: _outcome?.build(),
             delivery: _delivery?.build(),
             restaurant: restaurant.build(),
             captain: _captain?.build(),
@@ -555,6 +571,8 @@ class CustomerOrderDtoOutputOrderBuilder
         _cancellation?.build();
         _$failedField = 'rejection';
         _rejection?.build();
+        _$failedField = 'outcome';
+        _outcome?.build();
         _$failedField = 'delivery';
         _delivery?.build();
         _$failedField = 'restaurant';

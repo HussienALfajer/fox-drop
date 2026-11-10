@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { LedgerService } from '../ledger/index.js';
+import { customerDues } from './customer-dues.js';
 import { CaptainsService } from '../captains/index.js';
 import { CustomersService } from '../customers/index.js';
 import { TermsService } from '../content/index.js';
@@ -55,6 +57,9 @@ export type QuoteProblemCode =
   // docs/domain/08 (slice 2.8b): late cancellations stopped the account's
   // ordering, «حسابك موقوف حتى مراجعة فريق الدعم».
   | 'review_stop'
+  // docs/domain/08 (slice 2.11a): a fake order's dues are unpaid, «عليك
+  // {المبلغ} لـ FOX DROP. ادفعه في المكتب ليُفك الحظر تلقائياً.» (CU §5.5).
+  | 'dues_unpaid'
   | LineProblem;
 
 export interface QuoteProblem {
@@ -65,6 +70,8 @@ export interface QuoteProblem {
   opensAt: Date | null;
   // emergency_stop: the browsing message the stop's dialog set.
   message: string | null;
+  // dues_unpaid: what the customer owes, in the base currency.
+  amount: { amount: bigint; currency: string } | null;
 }
 
 export interface QuoteRequest {
@@ -149,6 +156,7 @@ export class QuoteService {
     private readonly terms: TermsService,
     private readonly emergencyStops: EmergencyStops,
     private readonly customers: CustomersService,
+    private readonly ledger: LedgerService,
   ) {}
 
   async quote(request: QuoteRequest, now: Date): Promise<Quote> {
@@ -170,7 +178,8 @@ export class QuoteService {
       line: number | null = null,
       opensAt: Date | null = null,
       message: string | null = null,
-    ) => problems.push({ code, line, opensAt, message });
+      amount: QuoteProblem['amount'] = null,
+    ) => problems.push({ code, line, opensAt, message, amount });
 
     const [
       maintenance,
@@ -225,6 +234,9 @@ export class QuoteService {
       if (limit.reached) problem(limit.trusted ? 'active_order_limit' : 'one_order_at_a_time');
       if (await this.terms.pending('customer', request.customerAccountId)) problem('terms_pending');
       if (await this.customers.reviewStopped(request.customerAccountId)) problem('review_stop');
+      // AP §8.8: the dues block lifts by itself once the balance is 0 or less.
+      const owed = await customerDues(this.ledger, cityId, request.customerAccountId);
+      if (owed !== null) problem('dues_unpaid', null, null, null, owed);
     }
 
     const baseCurrency = snapshot?.baseCurrency ?? (await this.fx.baseCurrency(cityId));

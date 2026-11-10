@@ -6,6 +6,24 @@ import 'door_payment.dart';
 import 'location.dart';
 import 'work.dart';
 
+/// AP Appendix C: the outcomes' labels.
+String outcomeText(AppLocalizations l10n, EndedOutcome outcome) =>
+    switch (outcome) {
+      EndedOutcome.free => l10n.captainOutcomeFree,
+      EndedOutcome.fake => l10n.captainOutcomeFake,
+      EndedOutcome.damaged => l10n.captainOutcomeDamaged,
+      EndedOutcome.wrongRefused => l10n.captainOutcomeWrongRefused,
+      _ => l10n.captainOutcomeFailedOther,
+    };
+
+/// CA §9.12, K10: what the captain does with a failed order's food.
+String? foodText(AppLocalizations l10n, EndedFood? food) => switch (food) {
+  EndedFood.keptByCaptain => l10n.captainFoodKept,
+  EndedFood.returnedToRestaurant => l10n.captainFoodReturned,
+  EndedFood.destroyed => l10n.captainFoodDestroyed,
+  _ => null,
+};
+
 /// Every string the captain's screens map from a state, a refusal or an
 /// alert (CA §7–§9, Appendix B).
 extension CaptainTexts on AppLocalizations {
@@ -117,6 +135,9 @@ extension CaptainTexts on AppLocalizations {
     PickupRefused(:final request) => refusalText(request),
     PickupDisputed() => captainPickupDisputed,
     OrderCancelled(:final cancelled) => captainTaskCancelled(cancelled.reason),
+    OutcomeSet(:final ended) => captainOutcomeSet(
+      outcomeText(this, ended.outcome),
+    ),
     OrderEdited(:final pay, :final collect) => captainOrderEdited(
       moneyOf(pay),
       moneyOf(collect),

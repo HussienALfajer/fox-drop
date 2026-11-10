@@ -429,6 +429,10 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
   @override
   final AdminOrderDtoOutputOrderCancelChoices? cancelChoices;
   @override
+  final AdminOrderDtoOutputOrderOutcome? outcome;
+  @override
+  final AdminOrderDtoOutputOrderOutcomeChoices? outcomeChoices;
+  @override
   final AdminOrderDtoOutputOrderItemReport? itemReport;
   @override
   final AdminOrderDtoOutputOrderTimeChange? timeChange;
@@ -482,6 +486,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     this.readyAt,
     this.cancellation,
     this.cancelChoices,
+    this.outcome,
+    this.outcomeChoices,
     this.itemReport,
     this.timeChange,
     this.editChoices,
@@ -530,6 +536,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
         readyAt == other.readyAt &&
         cancellation == other.cancellation &&
         cancelChoices == other.cancelChoices &&
+        outcome == other.outcome &&
+        outcomeChoices == other.outcomeChoices &&
         itemReport == other.itemReport &&
         timeChange == other.timeChange &&
         editChoices == other.editChoices &&
@@ -569,6 +577,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     _$hash = $jc(_$hash, readyAt.hashCode);
     _$hash = $jc(_$hash, cancellation.hashCode);
     _$hash = $jc(_$hash, cancelChoices.hashCode);
+    _$hash = $jc(_$hash, outcome.hashCode);
+    _$hash = $jc(_$hash, outcomeChoices.hashCode);
     _$hash = $jc(_$hash, itemReport.hashCode);
     _$hash = $jc(_$hash, timeChange.hashCode);
     _$hash = $jc(_$hash, editChoices.hashCode);
@@ -610,6 +620,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
           ..add('readyAt', readyAt)
           ..add('cancellation', cancellation)
           ..add('cancelChoices', cancelChoices)
+          ..add('outcome', outcome)
+          ..add('outcomeChoices', outcomeChoices)
           ..add('itemReport', itemReport)
           ..add('timeChange', timeChange)
           ..add('editChoices', editChoices)
@@ -736,6 +748,20 @@ class AdminOrderDtoOutputOrderBuilder
     AdminOrderDtoOutputOrderCancelChoicesBuilder? cancelChoices,
   ) => _$this._cancelChoices = cancelChoices;
 
+  AdminOrderDtoOutputOrderOutcomeBuilder? _outcome;
+  AdminOrderDtoOutputOrderOutcomeBuilder get outcome =>
+      _$this._outcome ??= AdminOrderDtoOutputOrderOutcomeBuilder();
+  set outcome(AdminOrderDtoOutputOrderOutcomeBuilder? outcome) =>
+      _$this._outcome = outcome;
+
+  AdminOrderDtoOutputOrderOutcomeChoicesBuilder? _outcomeChoices;
+  AdminOrderDtoOutputOrderOutcomeChoicesBuilder get outcomeChoices =>
+      _$this._outcomeChoices ??=
+          AdminOrderDtoOutputOrderOutcomeChoicesBuilder();
+  set outcomeChoices(
+    AdminOrderDtoOutputOrderOutcomeChoicesBuilder? outcomeChoices,
+  ) => _$this._outcomeChoices = outcomeChoices;
+
   AdminOrderDtoOutputOrderItemReportBuilder? _itemReport;
   AdminOrderDtoOutputOrderItemReportBuilder get itemReport =>
       _$this._itemReport ??= AdminOrderDtoOutputOrderItemReportBuilder();
@@ -847,6 +873,8 @@ class AdminOrderDtoOutputOrderBuilder
       _readyAt = $v.readyAt;
       _cancellation = $v.cancellation?.toBuilder();
       _cancelChoices = $v.cancelChoices?.toBuilder();
+      _outcome = $v.outcome?.toBuilder();
+      _outcomeChoices = $v.outcomeChoices?.toBuilder();
       _itemReport = $v.itemReport?.toBuilder();
       _timeChange = $v.timeChange?.toBuilder();
       _editChoices = $v.editChoices?.toBuilder();
@@ -933,6 +961,8 @@ class AdminOrderDtoOutputOrderBuilder
             readyAt: readyAt,
             cancellation: _cancellation?.build(),
             cancelChoices: _cancelChoices?.build(),
+            outcome: _outcome?.build(),
+            outcomeChoices: _outcomeChoices?.build(),
             itemReport: _itemReport?.build(),
             timeChange: _timeChange?.build(),
             editChoices: _editChoices?.build(),
@@ -972,6 +1002,10 @@ class AdminOrderDtoOutputOrderBuilder
         _cancellation?.build();
         _$failedField = 'cancelChoices';
         _cancelChoices?.build();
+        _$failedField = 'outcome';
+        _outcome?.build();
+        _$failedField = 'outcomeChoices';
+        _outcomeChoices?.build();
         _$failedField = 'itemReport';
         _itemReport?.build();
         _$failedField = 'timeChange';

@@ -286,6 +286,7 @@
       "itemReportWithdrawn": "تراجع المطعم عن البلاغ: الصنف متوفر",
       "itemReportClosed": "أُغلق بلاغ صنف نفد",
       "edited": "عُدّل الطلب",
+      "outcomeSet": "حُدّدت النتيجة",
       "editAcknowledged": "اطلع المطعم على التعديل"
     },
     "actor": {
@@ -311,6 +312,11 @@
       "automatic": "تأكيد تلقائي",
       "byOperations": "أكّدته العمليات",
       "merchantAutoCancel": "المطعم لم يستجب"
+    },
+    "food": {
+      "keptByCaptain": "يبقى مع الكابتن",
+      "returnedToRestaurant": "أُعيد إلى المطعم",
+      "destroyed": "أُتلف"
     },
     "outcome": {
       "normal": "عادي",
@@ -411,6 +417,43 @@
         "nothing": "لا قيود مالية لهذا الإلغاء.",
         "unknown": "قيد لا تعرضه اللوحة بعد؛ لا يمكن التأكيد."
       }
+    },
+    "setOutcome": {
+      "title": "تحديد النتيجة",
+      "outcome": "النتيجة",
+      "damagedDelivered": "سُلّم الطلب للزبون رغم التلف",
+      "responsible": "المسؤول",
+      "food": "أين ذهب الطعام؟",
+      "nothingToCollect": "لا يُحصَّل شيء من الزبون.",
+      "pick": "اختر النتيجة والمسؤول لتظهر القيود",
+      "confirm": "تأكيد النتيجة",
+      "captainPayUnset": "لا أجر لمركبة الكابتن في جدول أجور الطلب",
+      "duesRuleUnset": "قاعدة مستحقات الطلب الوهمي «مبلغ ثابت» بلا مبلغ؛ حدّده في الإعدادات أولاً",
+      "entry": {
+        "custodyReimbursed": "سيُعاد للكابتن «{{name}}» {{amount}} (عهدة): دفعة الاستلام.",
+        "commission": "تُسجَّل عمولة {{amount}} على المطعم «{{name}}» (حساب المطعم).",
+        "merchantDebit": "يُسجَّل على المطعم «{{name}}» {{amount}} (حساب المطعم): استرداد مبلغ الاستلام.",
+        "commissionRestored": "تُلغى عمولة {{amount}} أعيدت للمطعم «{{name}}» في تعديل بعد الاستلام (حساب المطعم)، فلا يبقى له شيء من الطلب.",
+        "merchantDebitReturned": "يُعاد للمطعم «{{name}}» {{amount}} (حساب المطعم): خصم أجرة توصيل لم تُحصَّل.",
+        "dues": "سيُحظر الزبون «{{name}}» حتى دفع {{amount}} (مستحقات الزبون).",
+        "captainPay": "يُقيَّد للكابتن «{{name}}» أجر {{amount}} (مستحقات).",
+        "captainCharge": "يُخصم من مستحقات الكابتن «{{name}}» {{amount}}: {{reason}}.",
+        "captainChargeReturned": "يُعاد للكابتن «{{name}}» {{amount}} (مستحقات): خصم تعديل بعد الاستلام.",
+        "testCost": "تُسجَّل {{amount}} على كلفة الطلبات التجريبية.",
+        "platformCostReturned": "تُلغى كلفة تشغيلية {{amount}} تحمّلتها المنصة في تعديل بعد الاستلام.",
+        "nothing": "لا قيود مالية لهذه النتيجة."
+      }
+    },
+    "outcomeSet": {
+      "title": "النتيجة: {{outcome}}، المسؤول: {{responsible}}",
+      "at": "حُدّدت الساعة {{time}}",
+      "food": "الطعام: {{food}}",
+      "loss": "الخسارة على المسؤول: {{amount}}",
+      "dues": "مستحقات على الزبون: {{amount}}",
+      "merchantDebit": "يُعيد المطعم: {{amount}}",
+      "captainPay": "أجر الكابتن: {{amount}}",
+      "customerText": "ما يراه الزبون: {{text}}",
+      "note": "ملاحظة العمليات: {{note}}"
     },
     "changeTime": {
       "title": "تعديل الوقت",
@@ -600,6 +643,9 @@
           "edited_items_added": "تعديل بإضافة أصناف",
           "edited": "تعديل آخر",
           "debited_after_pickup": "قيد على المطعم بعد تعديل بعد الاستلام",
+          "order_failed": "طلب لم يُسلَّم",
+          "order_failed_debited": "طلب لم يُسلَّم مع قيد على المطعم",
+          "outcome_debited": "نتيجة مع قيد على المطعم",
           "cancelled_after_acceptance": "إلغاء بعد القبول",
           "admin_price_change": "تعديل الإدارة لسعر",
           "menu_change_approved": "قبول تعديل القائمة",
@@ -623,6 +669,7 @@
           "order_edited": "تعديل الطلب",
           "items_removed_after_pickup": "حذف أصناف بعد الاستلام",
           "collect_lowered": "خفض مبلغ التحصيل بعد الاستلام",
+          "outcome_set": "إنهاء العمليات للطلب بنتيجة",
           "picked_up": "تأكيد الاستلام",
           "pickup_amount_incorrect": "المطعم يعترض على المبلغ",
           "pickup_incomplete": "المطعم يفيد بأن الطلب غير مكتمل",

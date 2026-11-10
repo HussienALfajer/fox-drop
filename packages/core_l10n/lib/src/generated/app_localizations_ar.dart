@@ -1915,6 +1915,53 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String customerDuesUnpaid(String amount) {
+    return 'عليك $amount لـ FOX DROP. ادفعه في المكتب ليُفك الحظر تلقائياً.';
+  }
+
+  @override
+  String get customerPaidNothing => 'لم تدفع شيئاً لهذا الطلب';
+
+  @override
+  String captainOutcomeSet(String outcome) {
+    return 'أنهت العمليات الطلب: $outcome.';
+  }
+
+  @override
+  String get captainOutcomeFree => 'مجاني';
+
+  @override
+  String get captainOutcomeFake => 'وهمي';
+
+  @override
+  String get captainOutcomeDamaged => 'تالف';
+
+  @override
+  String get captainOutcomeWrongRefused => 'خطأ ورفضه الزبون';
+
+  @override
+  String get captainOutcomeFailedOther => 'تعذّر التسليم';
+
+  @override
+  String get captainFoodKept => 'الطعام يبقى معك';
+
+  @override
+  String get captainFoodReturned => 'أعِد الطعام إلى المطعم';
+
+  @override
+  String get captainFoodDestroyed => 'أتلف الطعام';
+
+  @override
+  String captainOutcomePay(String amount) {
+    return 'أجرك من الطلب: $amount';
+  }
+
+  @override
+  String captainOutcomeCharge(String amount, String reason) {
+    return 'خُصم من مستحقاتك $amount: $reason';
+  }
+
+  @override
   String get customerReviewStop => 'حسابك موقوف حتى مراجعة فريق الدعم';
 
   @override

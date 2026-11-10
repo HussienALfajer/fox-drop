@@ -330,6 +330,13 @@
       "when": 1794288366736,
       "tag": "0046_ordering_edits_after_pickup",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1794297561083,
+      "tag": "0047_ordering_outcomes",
+      "breakpoints": true
     }
   ]
 }

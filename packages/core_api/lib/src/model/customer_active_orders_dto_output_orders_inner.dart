@@ -12,6 +12,7 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address.dart';
 import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_estimate.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_outcome.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_rejection.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_removed_lines_inner.dart';
 import 'package:built_collection/built_collection.dart';
@@ -33,6 +34,7 @@ part 'customer_active_orders_dto_output_orders_inner.g.dart';
 /// * [itemReport]
 /// * [cancellation]
 /// * [rejection]
+/// * [outcome]
 /// * [delivery]
 /// * [restaurant]
 /// * [captain]
@@ -84,6 +86,9 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInner
 
   @BuiltValueField(wireName: r'rejection')
   CustomerActiveOrdersDtoOutputOrdersInnerRejection? get rejection;
+
+  @BuiltValueField(wireName: r'outcome')
+  CustomerActiveOrdersDtoOutputOrdersInnerOutcome? get outcome;
 
   @BuiltValueField(wireName: r'delivery')
   CustomerActiveOrdersDtoOutputOrdersInnerDelivery? get delivery;
@@ -218,6 +223,15 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerSerializer
             object.rejection,
             specifiedType: const FullType.nullable(
               CustomerActiveOrdersDtoOutputOrdersInnerRejection,
+            ),
+          );
+    yield r'outcome';
+    yield object.outcome == null
+        ? null
+        : serializers.serialize(
+            object.outcome,
+            specifiedType: const FullType.nullable(
+              CustomerActiveOrdersDtoOutputOrdersInnerOutcome,
             ),
           );
     yield r'delivery';
@@ -427,6 +441,18 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerSerializer
                   as CustomerActiveOrdersDtoOutputOrdersInnerRejection?;
           if (valueDes == null) continue;
           result.rejection.replace(valueDes);
+          break;
+        case r'outcome':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerActiveOrdersDtoOutputOrdersInnerOutcome,
+                    ),
+                  )
+                  as CustomerActiveOrdersDtoOutputOrdersInnerOutcome?;
+          if (valueDes == null) continue;
+          result.outcome.replace(valueDes);
           break;
         case r'delivery':
           final valueDes =

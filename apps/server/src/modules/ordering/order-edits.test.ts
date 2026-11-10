@@ -22,11 +22,14 @@ import {
 import { type AccountPurpose, LedgerService } from '../ledger/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
+import { ActiveOrders } from './active-orders.js';
 
 // AP §9.3.3 «تعديل الطلب» before the pickup, RA §8.13, §8.10, §8.12, CA §9.3,
 // §9.10, CU §11.6 (slice 2.10a; owner decisions 2026-11-10): operations edit
 // an order's lines and delivery fee, the money is recalculated, the
 // restaurant acknowledges, and an unacknowledged addition blocks the pickup.
+// Also «تحديد النتيجة» (AP §9.3.2, §8.9, slice 2.11a), whose money counts the
+// edits after the pickup, so it shares this file's picked-up orders.
 
 vi.setConfig({ testTimeout: 30_000 });
 
@@ -221,6 +224,27 @@ async function admin(roles: string[]) {
         key,
       );
     },
+    // The dialog sends the order's version it previewed (AP §8.9).
+    outcome: async (orderId: string, body: object, key?: string) => {
+      const shown = await app.inject({
+        method: 'GET',
+        url: `/v1/admin/orders/${orderId}`,
+        cookies,
+      });
+      const version = shown.statusCode === 200 ? shown.json().order.version : 1;
+      return post(
+        `/v1/admin/orders/${orderId}/outcome`,
+        { reason: 'اتصلنا بالزبون', version, ...body },
+        key,
+      );
+    },
+    outcomePreview: (orderId: string, body: object) =>
+      app.inject({
+        method: 'POST',
+        url: `/v1/admin/orders/${orderId}/outcome-preview`,
+        cookies,
+        payload: body,
+      }),
     editPreview: (orderId: string, body: object) =>
       app.inject({
         method: 'POST',
@@ -377,8 +401,8 @@ async function onlineCaptain(point: Point = captainSpot) {
 }
 
 // An accepted order whose captain is at the restaurant.
-async function captainAtRestaurant() {
-  const order = await acceptedOrder();
+async function captainAtRestaurant(customer?: Record<string, string>) {
+  const order = await acceptedOrder(customer);
   const captain = await onlineCaptain();
   const ops = await admin(['OPS']);
   expect((await ops.assign(order.id, captain.captainId)).statusCode).toBe(200);
@@ -897,8 +921,8 @@ const atCustomer = { latitude: 36.5905, longitude: 37.046 };
 
 // An order the captain picked up (two shawarma, 24000; fee 4000; total
 // 28000), with the commands of the door.
-async function pickedUpOrder() {
-  const at = await captainAtRestaurant();
+async function pickedUpOrder(customer?: Record<string, string>) {
+  const at = await captainAtRestaurant(customer);
   expect((await at.captain.requestPickup(at.order.id, '24000')).statusCode).toBe(200);
   const confirmed = await app.inject({
     method: 'POST',
@@ -958,7 +982,15 @@ async function balances(captainId: string | null = null) {
     operatingCost: await platform('platform.operating_cost'),
     restaurant: await owned(restaurant, 'merchant.account'),
     earnings: captainId === null ? 0n : await owned(captainId, 'captain.earnings'),
+    captainPay: await platform('platform.captain_pay'),
   };
+}
+
+// AP §8.8: what a customer owes, from their dues account.
+async function duesOf(customerAccountId: string) {
+  const ledger = app.get(LedgerService);
+  const [account] = await ledger.ownerAccounts(azaz, customerAccountId, 'customer.dues');
+  return account ? (await ledger.balance(account.id)).amount : 0n;
 }
 
 type Balances = Awaited<ReturnType<typeof balances>>;
@@ -1188,5 +1220,311 @@ describe('POST /v1/admin/orders/{orderId}/edit after the pickup (AP §9.3.3)', (
     const before = await order.ops.edit(accepted.id, { ...addFries, responsible: 'restaurant' });
     expect(before.statusCode).toBe(400);
     expect(before.json().error).toBe('invalid_edit');
+  });
+});
+
+const outcomeRow = async (orderId: string) =>
+  (await sql.query('SELECT * FROM ordering.order_outcomes WHERE order_id = $1', [orderId])).rows[0];
+
+const orderRow = async (orderId: string) =>
+  (
+    await sql.query(
+      'SELECT status, outcome, captain_track, customer_account_id, delivered_at FROM ordering.orders WHERE id = $1',
+      [orderId],
+    )
+  ).rows[0];
+
+type PreviewEntry = { type: string; account: string; amount: { amount: string } };
+const previewLines = (entries: PreviewEntry[]) =>
+  entries.map((entry) => [entry.type, entry.account, entry.amount.amount]);
+
+// The order of pickedUpOrder: items 24000, fee 4000, commission 15 % 3600,
+// merchant net 20400; the captain's pay 2500.
+describe('POST /v1/admin/orders/{orderId}/outcome (AP §9.3.2, §8.9)', () => {
+  const fake = {
+    outcome: 'fake',
+    responsible: 'customer',
+    delivered: false,
+    food: 'kept_by_captain',
+  };
+
+  it('fails a fake order: the entries match the preview, and the customer owes and is blocked', async () => {
+    const before = await balances();
+    const order = await pickedUpOrder();
+    expect((await order.arriveAtCustomer()).statusCode).toBe(200);
+    const preview = await order.ops.outcomePreview(order.order.id, fake);
+    expect(preview.statusCode).toBe(200);
+    const expected = [
+      ['merchant.commission', 'merchant.account', '3600'],
+      ['merchant.commission', 'platform.order_clearing', '-3600'],
+      ['dues.charge', 'customer.dues', '24400'],
+      ['dues.charge', 'platform.order_clearing', '-20400'],
+      ['dues.charge', 'platform.revenue_delivery', '-4000'],
+      ['earn.order_pay', 'captain.earnings', '-2500'],
+      ['earn.order_pay', 'platform.captain_pay', '2500'],
+    ];
+    expect(previewLines(preview.json().entries)).toEqual(expected);
+    expect(preview.json()).toMatchObject({
+      status: 'failed',
+      loss: { amount: '20400' },
+      dues: { amount: '24400' },
+      captainPay: { amount: '2500' },
+    });
+    const key = randomUUID();
+    const shownVersion = (await order.ops.detail(order.order.id)).version;
+    const answer = await order.ops.outcome(order.order.id, { ...fake, version: shownVersion }, key);
+    expect(answer.statusCode).toBe(200);
+    const row = await orderRow(order.order.id);
+    expect(row).toMatchObject({ status: 'failed', outcome: 'fake', captain_track: 'done' });
+    expect(await outcomeRow(order.order.id)).toMatchObject({
+      outcome: 'fake',
+      responsible: 'customer',
+      status: 'failed',
+      food: 'kept_by_captain',
+      loss: '20400',
+      dues: '24400',
+      merchant_debit: null,
+      captain_pay: '2500',
+      customer_text: 'لم يُستلم الطلب',
+      note: 'اتصلنا بالزبون',
+    });
+    // AP §8.4's check: the platform recovers its costs, without its margin.
+    expect(moneyMoved(before, await balances(order.captain.captainId))).toMatchObject({
+      clearing: 0n,
+      restaurant: -3_600n,
+      commission: 0n,
+      delivery: 4_000n,
+      captainPay: 2_500n,
+      earnings: 2_500n,
+    });
+    expect(await duesOf(row.customer_account_id)).toBe(24_400n);
+    expect(await outboxReason(order.order.id, 'order.outcome_set')).toBe('fake');
+    // The customer: «تعذّر التسليم» with the reason, then blocked at checkout.
+    expect((await customerOrder(order.order.customer, order.order.id)).outcome).toMatchObject({
+      outcome: 'fake',
+      status: 'failed',
+      text: 'لم يُستلم الطلب',
+      amountToCollect: { amount: '0', currency: 'TRY' },
+    });
+    const quote = (await quoteFor(order.order.customer)).json();
+    expect(quote.problems).toContainEqual({
+      code: 'dues_unpaid',
+      line: null,
+      opensAt: null,
+      message: null,
+      amount: { amount: '24400', currency: 'TRY' },
+    });
+    // The captain is free, with the card until «حسناً».
+    const active = (await order.captain.active()).json();
+    expect(active.order).toBeNull();
+    expect(active.ended).toMatchObject({
+      orderId: order.order.id,
+      outcome: 'fake',
+      status: 'failed',
+      food: 'kept_by_captain',
+      pay: { amount: '2500', currency: 'TRY' },
+      charge: null,
+    });
+    const seen = await app.inject({
+      method: 'POST',
+      url: `/v1/captain/orders/${order.order.id}/acknowledge-outcome`,
+      headers: order.captain.headers,
+    });
+    expect(seen.statusCode).toBe(200);
+    expect(seen.json().ended).toBeNull();
+    // The panel's detail.
+    const detail = await order.ops.detail(order.order.id);
+    expect(detail.outcome).toMatchObject({
+      outcome: 'fake',
+      responsible: 'customer',
+      dues: { amount: '24400' },
+      customerText: 'لم يُستلم الطلب',
+    });
+    expect(detail.outcomeChoices).toBeNull();
+    // A repeat of the key answers the same; another outcome is refused.
+    const repeat = await order.ops.outcome(order.order.id, { ...fake, version: shownVersion }, key);
+    expect(repeat.statusCode).toBe(200);
+    expect(repeat.json().order.status).toBe('failed');
+    expect((await order.ops.outcome(order.order.id, fake)).statusCode).toBe(409);
+    // «حسناً» on another captain's order, or one without an outcome.
+    const other = await onlineCaptain();
+    const foreign = await app.inject({
+      method: 'POST',
+      url: `/v1/captain/orders/${order.order.id}/acknowledge-outcome`,
+      headers: other.headers,
+    });
+    expect(foreign.statusCode).toBe(404);
+  });
+
+  it('refuses «حسناً» on an order without an outcome', async () => {
+    const order = await pickedUpOrder();
+    const early = await app.inject({
+      method: 'POST',
+      url: `/v1/captain/orders/${order.order.id}/acknowledge-outcome`,
+      headers: order.captain.headers,
+    });
+    expect(early.statusCode).toBe(409);
+    expect(early.json().error).toBe('order_state_changed');
+  });
+
+  it('refuses an outcome previewed on an older version of the order', async () => {
+    const order = await pickedUpOrder();
+    const stale = (await order.ops.detail(order.order.id)).version;
+    expect(
+      (await order.ops.edit(order.order.id, { ...oneShawarma, responsible: 'platform' }))
+        .statusCode,
+    ).toBe(200);
+    const answer = await order.ops.outcome(order.order.id, { ...fake, version: stale });
+    expect(answer.statusCode).toBe(409);
+    expect(answer.json().error).toBe('order_state_changed');
+    expect(await outcomeRow(order.order.id)).toBeUndefined();
+  });
+
+  // docs/domain/08: a fake outcome removes the trust and starts the count
+  // again (D23).
+  it('removes the trust of a customer with a fake order', async () => {
+    const settings = app.get(SettingsService);
+    await settings.update('customer.trusted_after_delivered_orders', { cityId: azaz }, 1, bySystem);
+    try {
+      const first = await pickedUpOrder();
+      expect((await first.arriveAtCustomer()).statusCode).toBe(200);
+      expect((await first.deliver('28000')).statusCode).toBe(200);
+      const customerId = (await orderRow(first.order.id)).customer_account_id;
+      const limit = async () =>
+        app.get(ActiveOrders).customer(customerId, await app.get(ActiveOrders).rules(azaz));
+      expect((await limit()).trusted).toBe(true);
+      const second = await pickedUpOrder(first.order.customer);
+      expect((await second.ops.outcome(second.order.id, fake)).statusCode).toBe(200);
+      expect((await limit()).trusted).toBe(false);
+    } finally {
+      await settings.update(
+        'customer.trusted_after_delivered_orders',
+        { cityId: azaz },
+        3,
+        bySystem,
+      );
+    }
+  });
+
+  it('has the restaurant return the pickup payment, and the food go back to it', async () => {
+    const before = await balances();
+    const order = await pickedUpOrder();
+    const choices = {
+      outcome: 'wrong_refused',
+      responsible: 'restaurant',
+      delivered: false,
+      food: 'returned_to_restaurant',
+    };
+    const preview = await order.ops.outcomePreview(order.order.id, choices);
+    expect(previewLines(preview.json().entries)).toEqual([
+      ['merchant.debit', 'merchant.account', '24000'],
+      ['merchant.debit', 'platform.order_clearing', '-24000'],
+      ['earn.order_pay', 'captain.earnings', '-2500'],
+      ['earn.order_pay', 'platform.operating_cost', '2500'],
+    ]);
+    expect(preview.json().entries[0].reason).toBe('استرداد مبلغ الاستلام');
+    expect((await order.ops.outcome(order.order.id, choices)).statusCode).toBe(200);
+    expect(moneyMoved(before, await balances())).toMatchObject({
+      clearing: 0n,
+      restaurant: -24_000n,
+      commission: 0n,
+      operatingCost: 2_500n,
+    });
+    expect(await outcomeRow(order.order.id)).toMatchObject({ merchant_debit: '24000', loss: '0' });
+  });
+
+  it('counts an edit after the pickup: nobody pays twice (owner decision 2026-11-10)', async () => {
+    const before = await balances();
+    const order = await pickedUpOrder();
+    expect(
+      (await order.ops.edit(order.order.id, { ...oneShawarma, responsible: 'restaurant' }))
+        .statusCode,
+    ).toBe(200);
+    const choices = {
+      outcome: 'failed_other',
+      responsible: 'restaurant',
+      delivered: false,
+      food: 'destroyed',
+    };
+    expect((await order.ops.outcome(order.order.id, choices)).statusCode).toBe(200);
+    // The edit debited 12000 and reversed 1800; the outcome returns the
+    // other 12000 and restores the 1800: the restaurant ends with nothing.
+    expect(moneyMoved(before, await balances())).toMatchObject({
+      clearing: 0n,
+      restaurant: -24_000n,
+      commission: 0n,
+    });
+  });
+
+  it('delivers a free order with the platform bearing the loss and the pay', async () => {
+    const before = await balances();
+    const order = await pickedUpOrder();
+    const choices = { outcome: 'free', responsible: 'platform', delivered: true, food: null };
+    expect((await order.ops.outcome(order.order.id, choices)).statusCode).toBe(200);
+    const row = await orderRow(order.order.id);
+    expect(row).toMatchObject({ status: 'delivered', outcome: 'free' });
+    expect(row.delivered_at).not.toBeNull();
+    expect(moneyMoved(before, await balances())).toMatchObject({
+      clearing: 0n,
+      restaurant: -3_600n,
+      operatingCost: 20_400n + 2_500n,
+    });
+    const seen = await customerOrder(order.order.customer, order.order.id);
+    expect(seen.status).toBe('delivered');
+    expect(seen.outcome).toMatchObject({ outcome: 'free', status: 'delivered', text: null });
+  });
+
+  it('charges the captain the loss without pay when the captain is responsible', async () => {
+    // A new captain's earnings start at 0.
+    const before = await balances();
+    const order = await pickedUpOrder();
+    const choices = {
+      outcome: 'damaged',
+      responsible: 'captain',
+      delivered: false,
+      food: 'destroyed',
+    };
+    expect((await order.ops.outcome(order.order.id, choices)).statusCode).toBe(200);
+    expect(moneyMoved(before, await balances(order.captain.captainId))).toMatchObject({
+      clearing: 0n,
+      earnings: -20_400n,
+      restaurant: -3_600n,
+    });
+    expect((await order.captain.active()).json().ended).toMatchObject({
+      pay: null,
+      charge: { amount: '20400', currency: 'TRY' },
+    });
+  });
+
+  it('refuses choices that do not fit, and an order not picked up', async () => {
+    const order = await pickedUpOrder();
+    const refused = async (body: object) => {
+      const answer = await order.ops.outcome(order.order.id, body);
+      expect(answer.statusCode).toBe(400);
+      return answer.json().error;
+    };
+    expect(await refused({ ...fake, responsible: 'platform' })).toBe('invalid_outcome');
+    expect(await refused({ ...fake, outcome: 'failed_other' })).toBe('invalid_outcome');
+    expect(
+      await refused({
+        ...fake,
+        outcome: 'failed_other',
+        responsible: 'captain',
+        food: 'returned_to_restaurant',
+      }),
+    ).toBe('invalid_outcome');
+    expect(await outcomeRow(order.order.id)).toBeUndefined();
+    expect((await order.ops.detail(order.order.id)).outcomeChoices.foods).toEqual([
+      { code: 'kept_by_captain', label: 'يبقى مع الكابتن' },
+      { code: 'returned_to_restaurant', label: 'أُعيد إلى المطعم' },
+      { code: 'destroyed', label: 'أُتلف' },
+    ]);
+    const accepted = await acceptedOrder();
+    const early = await order.ops.outcome(accepted.id, fake);
+    expect(early.statusCode).toBe(409);
+    expect(early.json().error).toBe('order_state_changed');
+    // SUP cannot set an outcome.
+    const sup = await admin(['SUP']);
+    expect((await sup.outcome(order.order.id, fake)).statusCode).toBe(403);
   });
 });
