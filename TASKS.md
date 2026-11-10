@@ -4,15 +4,23 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.12, «Reassignment, handover and devices» (`docs/roadmap.md`, Phase 2).
+Slice 2.12a, «سحب وإعادة تعيين» before the pickup (`docs/roadmap.md`, Phase 2; 2.12 split into 2.12a-c, owner approval 2026-11-10).
 
-- **Roadmap line:** «سحب وإعادة تعيين» with the fault, «تسليم لكابتن آخر» from `picked_up` and `arrived` with the first captain reimbursed, «تحرير الجهاز» and one device during an active order (AP §9.3.2, §9.7.5, CA §4.9, §9.10). The owner hands a picked-up order to a second captain who delivers it.
-- **Specs:** AP §9.3.2 rows «سحب وإعادة تعيين» and «تسليم لكابتن آخر» (`docs/product/v1/admin-panel/09-modules/03-order-detail-and-order-actions.md`), AP §9.7.5 «تحرير الجهاز», CA §4.9 (one device), CA §9.10 and §9.10.1 (the captain's withdrawn and handed-over cards), AP §8.1 (the cash question when a captain is withdrawn at the restaurant), AP Appendix B (the reassignment reasons and their fault), docs/domain/02 (the captain track), and the definitions of done.
-- **Branch:** to name once split (`feat/order-reassignment` for the first slice).
-- **Split it first** with the `slice-plan` skill, as 2.11 was, and get the owner's approval: it is three features (reassignment before the pickup, the handover after it, the device release) across the server, the panel and the captain app.
-- **Builds on:** the assignment (`order-assignments.ts`, dispatch's `assign`), operations' cancellation (the open request voided and the cash question, slice 2.8b), the captain's cancelled card (`CANCELLED_CARD_MS`), `PickupBooking` and the delivery's custody lines, Content's reassignment reasons (slice 2.1), the captain's devices (identity).
-- **Ask the owner first:** whether each reassignment reason carries a default fault (AP Appendix B «each with a fault yes/no», still open since slice 2.1); what the fault does in V1 (a count only, or a charge); and the strings the spec gives no wording for.
-- **Plan:** written once the split is approved.
+- **Roadmap line:** from `accepted` or `ready` with a captain and no pickup request open, a reason of Content's reassignment list with its default fault, «بخطأ من الكابتن» recorded as a captain cancellation (a count only), the cash question and its entries when the captain reached the restaurant, the arrival cleared, the order back to dispatch or to a picked captain, the captain available again (K17), the captain's «سُحب منك الطلب: {السبب}» card, «تغيّر الكابتن» to the customer and the restaurant. The owner withdraws an assigned order and a second captain takes it.
+- **Specs:** AP §9.3.2 row «سحب وإعادة تعيين» (`docs/product/v1/admin-panel/09-modules/03-order-detail-and-order-actions.md`), AP §8.1 and docs/domain/01 (the cash question «هل أعاد المطعم المبلغ للكابتن؟»), docs/domain/02 (the captain track), AP Appendix B (the reassignment reasons), AP §10 (what the panel pushes), CA §9.10 row «Withdrawn before pickup», CA §14 #11, K17, CU §14 #13, and the definitions of done (AP §14 and CA §19: the cash question on a reassignment).
+- **Branch:** `feat/order-reassignment`.
+- **Owner decisions 2026-11-10:** three slices (2.12a reassignment, 2.12b handover, 2.12c device release); each reassignment reason has a default fault the dialog prefills and the admin may change («طلب الكابتن» and «تأخر الكابتن» with the fault, the others without), editable in Content; «بخطأ من الكابتن» is a count only in V1 (the captain's cancellations of CA §11.2, shown with 2.36), no charge; the handover reaches the second captain as a manual dispatch (offer or direct assignment).
+- **Builds on:** `OrderAssignments` and dispatch's `onCancel` hook (an open offer withdrawn), operations' cancellation (`cancellationEntries`' cash part, the open request voided, the captain's cancelled card and `CANCELLED_CARD_MS`), the picker and `assign` (dispatch), Content's `reassignment` list (slice 2.1), the pushes (`order-pushes.ts`, the `captain_changed` templates CU #13 and RA #8).
+- **Must clear** `arrived_at_merchant_at` and `captain_waiting_alert_at` on the withdrawal (ordering's `CLAUDE.md`, "Not yet"), or the next captain shows the first one's arrival.
+
+### Plan
+
+- [ ] Content: each reassignment reason's default fault (a `content.reasons` column, seeded from the owner's decision), shown and edited in the panel's Content screen.
+- [ ] Server rule first (failing test): the reassignment's rule and the cash entries shared with the cancellation (`cancellation.ts`): allowed from `accepted` or `ready` with a captain, refused with a pickup request open (`409 pickup_request_open`), the cash answer required exactly when the captain reached the restaurant.
+- [ ] Server command: `POST /v1/admin/orders/{orderId}/reassign` and `.../reassign-preview` (`operations.manage`, `Idempotency-Key`): an `ordering.reassignments` row (the captain, reason, label, fault, cash, admin, note, `captain_seen_at`), the order's captain, assignment and arrival cleared, the track back to `searching`, event `order.reassigned` with the withdrawn captain, the cash journals, the audit; the captain free at once (K17); the pushes (the captain's CA #11 «سُحب منك الطلب: {السبب}», then CU #13 and RA #8 on the next assignment); `pnpm generate:api`.
+- [ ] Captain app: the withdrawn card (cancellation sound, the reason, the cash answer) in the active read until acknowledged, then the order leaves the app.
+- [ ] Panel: the «سحب وإعادة تعيين» dialog in the order detail (the reason with its prefilled fault, «بخطأ من الكابتن» or «دون خطأ», the cash question when asked, the entries' preview, then back to dispatch or the picker to choose a captain), the timeline line and the detail's reassignments.
+- [ ] Docs: the modules' `CLAUDE.md` (ordering, dispatch, content, the apps), the reviewer, the handover to 2.12b.
 
 ### Left from 2.11c (`feat/order-outcome-change`)
 
