@@ -444,6 +444,7 @@ Serializers _$serializers =
           ..add(EmergencySignInCodeRequestDto.serializer)
           ..add(EmergencySignInCodeRequestDtoPartyEnum.serializer)
           ..add(MerchantAcceptDto.serializer)
+          ..add(MerchantAcknowledgeEditDto.serializer)
           ..add(MerchantAvailabilityDto.serializer)
           ..add(MerchantAvailabilityDtoTypeEnum.serializer)
           ..add(MerchantAvailabilityDtoUntilEnum.serializer)

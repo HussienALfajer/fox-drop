@@ -1080,8 +1080,6 @@
   "@merchantEditItemsValue": {"description": "The edit prompt's new items value, which the captain pays at pickup (RA §8.13); {amount} is formatted with formatMoney; the spec gives no wording.", "placeholders": {"amount": {"type": "String"}}},
   "merchantEditBackToPreparing": "عاد الطلب إلى «قيد التحضير»: {minutes} د إضافية",
   "@merchantEditBackToPreparing": {"description": "The edit prompt when items were added to a ready order (RA §8.13); the spec gives no wording.", "placeholders": {"minutes": {"type": "int"}}},
-  "merchantEditAcknowledgedElsewhere": "اطّلع جهاز آخر على التعديل",
-  "@merchantEditAcknowledgedElsewhere": {"description": "409 on «اطلعت على التعديل» after another device acknowledged it; the spec gives no wording."},
   "orderEditAdded": "أُضيف: {quantity} × {name}",
   "@orderEditAdded": {"description": "A line an edit by operations added (RA §8.13, CU §11.6).", "placeholders": {"quantity": {"type": "int"}, "name": {"type": "String"}}},
   "orderEditRemoved": "حُذف: {quantity} × {name}",

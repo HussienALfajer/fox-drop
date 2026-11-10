@@ -207,7 +207,8 @@ List<Alert> alertStep(
   // CA §9.10: an edit before the pickup changes the amounts.
   if (order.pickup.pickedUpAt == null &&
       (was.pickupPayment.amount != order.pickupPayment.amount ||
-          was.collect.amount != order.collect.amount)) {
+          was.collect.amount != order.collect.amount ||
+          was.lines != order.lines)) {
     alerts.add(
       OrderEdited(
         Money(order.pickupPayment.amount, order.pickupPayment.currency),

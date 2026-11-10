@@ -99,9 +99,9 @@ describe('the edit request', () => {
 
   it("needs operations' note for the command", () => {
     const changed = request({ ...initialForm(lines), quantities: { 0: 1, 1: 1 } });
-    expect(editBody(changed, '  ')).toBeNull();
-    expect(editBody(changed, ' اتفقنا ')?.reason).toBe('اتفقنا');
-    expect(editBody(null, 'اتفقنا')).toBeNull();
+    expect(editBody(changed, '  ', 4)).toBeNull();
+    expect(editBody(changed, ' اتفقنا ', 4)).toMatchObject({ reason: 'اتفقنا', version: 4 });
+    expect(editBody(null, 'اتفقنا', 4)).toBeNull();
   });
 });
 

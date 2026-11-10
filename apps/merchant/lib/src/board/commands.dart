@@ -329,17 +329,22 @@ class BoardCommands extends Notifier<Set<String>> {
     ),
   );
 
-  /// «اطلعت على التعديل» (RA §8.13): every edit not yet acknowledged; the
-  /// ring stops on every device and the captain's pickup is free.
-  Future<CommandNotice?> acknowledgeEdit(String orderId) => _send(
-    orderId,
-    CommandKind.acknowledgeEdit,
-    '',
-    (key) => _api.merchantOrdersAcknowledgeEdit(
-      orderId: orderId,
-      idempotencyKey: key,
-    ),
-  );
+  /// «اطلعت على التعديل» (RA §8.13): the edits up to the newest one the
+  /// prompt showed ([through]); the ring stops on every device and the
+  /// captain's pickup is free, while a newer edit keeps ringing.
+  Future<CommandNotice?> acknowledgeEdit(String orderId, DateTime through) =>
+      _send(
+        orderId,
+        CommandKind.acknowledgeEdit,
+        through.toIso8601String(),
+        (key) => _api.merchantOrdersAcknowledgeEdit(
+          orderId: orderId,
+          idempotencyKey: key,
+          merchantAcknowledgeEditDto: MerchantAcknowledgeEditDto(
+            (b) => b..through = through.toUtc(),
+          ),
+        ),
+      );
 
   /// «صنف غير متوفر — اتصلوا بالزبون» (RA §8.12).
   Future<CommandNotice?> reportItems(String orderId, ItemReport report) =>

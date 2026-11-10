@@ -119,11 +119,17 @@ export function editRequest(
   return { keep, add: form.added, deliveryFee, extraPrepMin };
 }
 
-// The command's body, or null without a complete request and the note.
-export function editBody(request: PreviewBody | null, reason: string): EditBody | null {
+// The command's body, or null without a complete request and the note. It
+// carries the order's version the dialog previewed, so an order that moved
+// since is refused rather than edited from a stale view (AP §9.3.3).
+export function editBody(
+  request: PreviewBody | null,
+  reason: string,
+  version: number,
+): EditBody | null {
   const note = reason.trim();
   if (request === null || note === '') return null;
-  return { ...request, reason: note };
+  return { ...request, version, reason: note };
 }
 
 // order_state_changed: the order left the statuses an edit allows or moved

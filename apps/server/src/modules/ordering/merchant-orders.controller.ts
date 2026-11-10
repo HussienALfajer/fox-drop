@@ -300,6 +300,16 @@ class MerchantRejectDto extends createZodDto(
 
 class MerchantOrderParamsDto extends createZodDto(z.object({ orderId: z.uuid() })) {}
 
+class MerchantAcknowledgeEditDto extends createZodDto(
+  z.object({
+    through: z.iso
+      .datetime()
+      .describe(
+        "The newest edit's `at` the prompt showed: the edits up to it are acknowledged, a newer one keeps ringing (RA §8.13).",
+      ),
+  }),
+) {}
+
 class MerchantPickupDisputeDto extends createZodDto(
   z.object({
     receivedLines: paymentLines.describe(
@@ -533,10 +543,11 @@ export class MerchantOrdersController {
     @CurrentAppSession() session: AppSession,
     @IdempotencyKey() idempotencyKey: string,
     @Param() params: MerchantOrderParamsDto,
+    @Body() body: MerchantAcknowledgeEditDto,
   ) {
     const command = await this.command(session, idempotencyKey, params.orderId);
     return this.answer(command.restaurantId, () =>
-      this.commands.acknowledgeEdits(command, new Date()),
+      this.commands.acknowledgeEdits({ ...command, through: new Date(body.through) }, new Date()),
     );
   }
 

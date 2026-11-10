@@ -8290,7 +8290,7 @@
         },
         "order_edits_money": {
           "name": "order_edits_money",
-          "value": "\"ordering\".\"order_edits\".\"items_value_before\" >= 0 AND \"ordering\".\"order_edits\".\"items_value_after\" > 0 AND \"ordering\".\"order_edits\".\"delivery_fee_before\" >= 0 AND \"ordering\".\"order_edits\".\"delivery_fee_after\" >= 0 AND \"ordering\".\"order_edits\".\"total_before\" >= 0 AND \"ordering\".\"order_edits\".\"total_after\" >= 0"
+          "value": "\"ordering\".\"order_edits\".\"items_value_before\" >= 0 AND \"ordering\".\"order_edits\".\"items_value_after\" >= 0 AND \"ordering\".\"order_edits\".\"delivery_fee_before\" >= 0 AND \"ordering\".\"order_edits\".\"delivery_fee_after\" >= 0 AND \"ordering\".\"order_edits\".\"total_before\" >= 0 AND \"ordering\".\"order_edits\".\"total_after\" >= 0"
         },
         "order_edits_back_to_preparing": {
           "name": "order_edits_back_to_preparing",

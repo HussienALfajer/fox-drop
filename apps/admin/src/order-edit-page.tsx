@@ -79,7 +79,7 @@ export function EditOrder({
   const request = editRequest(form, lines, status, currency, choices.extraPrepMaxMin);
   const preview = useQuery(editPreviewQuery(orderId, version, request));
   const edit = useEditOrder(orderId);
-  const body = editBody(request, form.reason);
+  const body = editBody(request, form.reason, version);
   const shown = preview.data?.status === 'preview' ? preview.data.preview : null;
   const ready =
     body !== null && shown !== null && !preview.isPlaceholderData && !preview.isFetching;

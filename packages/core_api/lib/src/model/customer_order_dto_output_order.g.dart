@@ -166,6 +166,8 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
   final BuiltList<CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner>
   removedLines;
   @override
+  final bool edited;
+  @override
   final String? payIn;
   @override
   final String? note;
@@ -196,6 +198,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     required this.equivalents,
     required this.lines,
     required this.removedLines,
+    required this.edited,
     this.payIn,
     this.note,
     required this.estimate,
@@ -231,6 +234,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
         equivalents == other.equivalents &&
         lines == other.lines &&
         removedLines == other.removedLines &&
+        edited == other.edited &&
         payIn == other.payIn &&
         note == other.note &&
         estimate == other.estimate &&
@@ -257,6 +261,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     _$hash = $jc(_$hash, equivalents.hashCode);
     _$hash = $jc(_$hash, lines.hashCode);
     _$hash = $jc(_$hash, removedLines.hashCode);
+    _$hash = $jc(_$hash, edited.hashCode);
     _$hash = $jc(_$hash, payIn.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, estimate.hashCode);
@@ -285,6 +290,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
           ..add('equivalents', equivalents)
           ..add('lines', lines)
           ..add('removedLines', removedLines)
+          ..add('edited', edited)
           ..add('payIn', payIn)
           ..add('note', note)
           ..add('estimate', estimate)
@@ -408,6 +414,10 @@ class CustomerOrderDtoOutputOrderBuilder
     removedLines,
   ) => _$this._removedLines = removedLines;
 
+  bool? _edited;
+  bool? get edited => _$this._edited;
+  set edited(bool? edited) => _$this._edited = edited;
+
   String? _payIn;
   String? get payIn => _$this._payIn;
   set payIn(String? payIn) => _$this._payIn = payIn;
@@ -456,6 +466,7 @@ class CustomerOrderDtoOutputOrderBuilder
       _equivalents = $v.equivalents.toBuilder();
       _lines = $v.lines.toBuilder();
       _removedLines = $v.removedLines.toBuilder();
+      _edited = $v.edited;
       _payIn = $v.payIn;
       _note = $v.note;
       _estimate = $v.estimate.toBuilder();
@@ -525,6 +536,11 @@ class CustomerOrderDtoOutputOrderBuilder
             equivalents: equivalents.build(),
             lines: lines.build(),
             removedLines: removedLines.build(),
+            edited: BuiltValueNullFieldError.checkNotNull(
+              edited,
+              r'CustomerOrderDtoOutputOrder',
+              'edited',
+            ),
             payIn: payIn,
             note: note,
             estimate: estimate.build(),

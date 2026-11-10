@@ -16,6 +16,8 @@ class _$AdminEditDto extends AdminEditDto {
   @override
   final int? extraPrepMin;
   @override
+  final int version;
+  @override
   final String reason;
 
   factory _$AdminEditDto([void Function(AdminEditDtoBuilder)? updates]) =>
@@ -26,6 +28,7 @@ class _$AdminEditDto extends AdminEditDto {
     required this.add,
     this.deliveryFee,
     this.extraPrepMin,
+    required this.version,
     required this.reason,
   }) : super._();
   @override
@@ -43,6 +46,7 @@ class _$AdminEditDto extends AdminEditDto {
         add == other.add &&
         deliveryFee == other.deliveryFee &&
         extraPrepMin == other.extraPrepMin &&
+        version == other.version &&
         reason == other.reason;
   }
 
@@ -53,6 +57,7 @@ class _$AdminEditDto extends AdminEditDto {
     _$hash = $jc(_$hash, add.hashCode);
     _$hash = $jc(_$hash, deliveryFee.hashCode);
     _$hash = $jc(_$hash, extraPrepMin.hashCode);
+    _$hash = $jc(_$hash, version.hashCode);
     _$hash = $jc(_$hash, reason.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -65,6 +70,7 @@ class _$AdminEditDto extends AdminEditDto {
           ..add('add', add)
           ..add('deliveryFee', deliveryFee)
           ..add('extraPrepMin', extraPrepMin)
+          ..add('version', version)
           ..add('reason', reason))
         .toString();
   }
@@ -92,6 +98,10 @@ class AdminEditDtoBuilder
   int? get extraPrepMin => _$this._extraPrepMin;
   set extraPrepMin(int? extraPrepMin) => _$this._extraPrepMin = extraPrepMin;
 
+  int? _version;
+  int? get version => _$this._version;
+  set version(int? version) => _$this._version = version;
+
   String? _reason;
   String? get reason => _$this._reason;
   set reason(String? reason) => _$this._reason = reason;
@@ -107,6 +117,7 @@ class AdminEditDtoBuilder
       _add = $v.add.toBuilder();
       _deliveryFee = $v.deliveryFee;
       _extraPrepMin = $v.extraPrepMin;
+      _version = $v.version;
       _reason = $v.reason;
       _$v = null;
     }
@@ -136,6 +147,11 @@ class AdminEditDtoBuilder
             add: add.build(),
             deliveryFee: deliveryFee,
             extraPrepMin: extraPrepMin,
+            version: BuiltValueNullFieldError.checkNotNull(
+              version,
+              r'AdminEditDto',
+              'version',
+            ),
             reason: BuiltValueNullFieldError.checkNotNull(
               reason,
               r'AdminEditDto',

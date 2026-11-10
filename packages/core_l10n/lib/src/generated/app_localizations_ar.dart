@@ -2003,9 +2003,6 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get merchantEditAcknowledgedElsewhere => 'اطّلع جهاز آخر على التعديل';
-
-  @override
   String orderEditAdded(int quantity, String name) {
     return 'أُضيف: $quantity × $name';
   }

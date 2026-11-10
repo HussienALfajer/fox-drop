@@ -3334,12 +3334,6 @@ abstract class AppLocalizations {
   /// **'عاد الطلب إلى «قيد التحضير»: {minutes} د إضافية'**
   String merchantEditBackToPreparing(int minutes);
 
-  /// 409 on «اطلعت على التعديل» after another device acknowledged it; the spec gives no wording.
-  ///
-  /// In ar, this message translates to:
-  /// **'اطّلع جهاز آخر على التعديل'**
-  String get merchantEditAcknowledgedElsewhere;
-
   /// A line an edit by operations added (RA §8.13, CU §11.6).
   ///
   /// In ar, this message translates to:

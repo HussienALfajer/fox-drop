@@ -107,7 +107,7 @@ class OrderScreen extends ConsumerWidget {
                 title: Text(l10n.customerItemReportBanner),
               ),
             // CU §11.6: FOX DROP edited the order, with the new total.
-            if (!ended && edited(order))
+            if (!ended && order.edited)
               ListTile(
                 key: const Key('order-edited-banner'),
                 title: Text(l10n.customerOrderEditedBanner(total())),
@@ -282,9 +282,3 @@ String statusText(AppLocalizations l10n, String status) => switch (status) {
   'arrived' => l10n.customerStatusArrived,
   _ => l10n.customerStatusDelivered,
 };
-
-/// CU §11.6: whether FOX DROP edited the order (a line added, removed or its
-/// quantity changed).
-bool edited(CustomerOrder order) =>
-    order.removedLines.isNotEmpty ||
-    order.lines.any((line) => line.added || line.quantityBefore != null);

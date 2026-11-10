@@ -103,6 +103,7 @@ Map<String, Object?> _order() => {
       },
     ],
     'removedLines': <Object>[],
+    'edited': false,
     'payIn': null,
     'note': null,
     'estimate': {'fromMin': 30, 'toMin': 40},

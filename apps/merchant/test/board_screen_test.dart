@@ -376,7 +376,10 @@ void main() {
     expect(find.text('تم تعديل الطلب #10001 — أُضيفت أصناف'), findsOneWidget);
     expect(find.text('شاورما: 2 ← 3'), findsOneWidget);
     expect(find.text('أُضيف: 1 × بطاطا'), findsOneWidget);
-    expect(find.text('عاد الطلب إلى «قيد التحضير»: 10 د إضافية'), findsOneWidget);
+    expect(
+      find.text('عاد الطلب إلى «قيد التحضير»: 10 د إضافية'),
+      findsOneWidget,
+    );
     expect(find.text('قيمة الأصناف الجديدة: 433 ₺'), findsOneWidget);
     expect(app.ringer.ringing, isTrue);
     app.server.on('/v1/merchant/orders/$_orderId/acknowledge-edit', [
@@ -389,6 +392,8 @@ void main() {
         .to('/v1/merchant/orders/$_orderId/acknowledge-edit')
         .single;
     expect(sent.headers['Idempotency-Key'], isNotEmpty);
+    // The edits the prompt showed, through the newest one.
+    expect(sent.data, {'through': editJson()['at']});
     expect(find.byKey(const Key('ringing-prompt')), findsNothing);
     expect(app.ringer.ringing, isFalse);
     await app.done(tester);

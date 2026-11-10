@@ -10,6 +10,7 @@ import {
   collections,
   type orderOutcomes,
   orderEvents,
+  orderEdits,
   orderLines,
   orders,
   type orderStatuses,
@@ -164,6 +165,8 @@ export interface OrderView {
   // RA §8.13: the edits the restaurant has not acknowledged, oldest first,
   // while the order is before its pickup; empty otherwise.
   pendingEdits: PendingEdit[];
+  // CU §11.6: operations edited the order at least once.
+  edited: boolean;
   payIn: string | null;
   note: string | null;
   estimate: { fromMin: number; toMin: number };
@@ -328,6 +331,25 @@ export async function readOrders(
   const edits = await pendingEdits(
     executor,
     rows.filter((row) => BEFORE_PICKUP.includes(row.status)),
+  );
+  const editedIds = new Set(
+    (
+      await executor
+        .select({ orderId: orderEdits.orderId })
+        .from(orderEdits)
+        .where(
+          and(
+            inArray(
+              orderEdits.orderId,
+              rows.map((row) => row.id),
+            ),
+            inArray(
+              orderEdits.orderPlacedAt,
+              rows.map((row) => row.placedAt),
+            ),
+          ),
+        )
+    ).map((row) => row.orderId),
   );
   const delivered = rows.filter((row) => row.deliveredAt !== null);
   const deliveries =
@@ -510,6 +532,7 @@ export async function readOrders(
       pendingEdits: BEFORE_PICKUP.includes(row.status)
         ? edits.filter((edit) => edit.orderId === row.id)
         : [],
+      edited: editedIds.has(row.id),
       payIn: row.payIn,
       note: row.note,
       estimate: { fromMin: row.estimateFromMin, toMin: row.estimateToMin },

@@ -755,6 +755,7 @@ test('adds an item to a ready order with the extra prep time', async ({ page }) 
     add: [{ itemId: friesId, optionIds: [], quantity: 1 }],
     deliveryFee: null,
     extraPrepMin: 10,
+    version: card.version,
     reason: 'اتفقنا مع الزبون',
   });
 });

@@ -1279,7 +1279,10 @@ export class OrderCommands {
   // rings the restaurant when items were added (RA §16 #16) and tells the
   // customer the new total (CU §14 #11). 400 invalid_edit; 409
   // pickup_request_open, order_state_changed.
-  async editOrder(command: AdminOrderCommand & EditRequest, now: Date): Promise<OrderView> {
+  async editOrder(
+    command: AdminOrderCommand & EditRequest & { version: number },
+    now: Date,
+  ): Promise<OrderView> {
     const request: EditRequest = {
       keep: command.keep,
       add: command.add,
@@ -1294,10 +1297,14 @@ export class OrderCommands {
         add: request.add,
         deliveryFee: request.deliveryFee?.toString() ?? null,
         extraPrepMin: request.extraPrepMin,
+        version: command.version,
       },
       now,
       async (order) => {
         const edit = await this.prepareEdit(order, request, now);
+        // AP §9.3.3: the edit is the one previewed on the order as the
+        // dialog showed it; any change since is order_state_changed.
+        if (edit.version !== command.version) throw await this.stateChanged(order);
         const { plan, before, after, times } = edit;
         const editId = randomUUID();
         return {
@@ -1322,7 +1329,9 @@ export class OrderCommands {
             : plan.addsItems
               ? 'items_added'
               : 'changed',
-          guard: async (tx) => (await this.editBasis(tx, order)) === edit.basis,
+          guard: async (tx) =>
+            (await this.editBasis(tx, order)) === edit.basis &&
+            (await lockOrder(tx, order.id, order.placedAt))?.version === command.version,
           effects: async (tx) => {
             await tx.insert(orderEdits).values({
               id: editId,
@@ -1494,14 +1503,24 @@ export class OrderCommands {
   // (the status unchanged) stops the ring on every device and frees the
   // captain's pickup request. Nothing to acknowledge, or an order past its
   // pickup, is 409 order_state_changed.
-  async acknowledgeEdits(command: MerchantCommand, now: Date): Promise<OrderView> {
+  async acknowledgeEdits(
+    command: MerchantCommand & { through: Date },
+    now: Date,
+  ): Promise<OrderView> {
     const key = { accountId: command.accountId, idempotencyKey: command.idempotencyKey };
-    const requestHash = commandHash({ verb: 'acknowledge_edit', orderId: command.orderId });
+    const requestHash = commandHash({
+      verb: 'acknowledge_edit',
+      orderId: command.orderId,
+      through: command.through.toISOString(),
+    });
     const earlier = await this.replay(this.database.db, key, requestHash, now);
     if (earlier !== null) return this.read(earlier);
     const order = await this.find(command.orderId, { restaurantId: command.restaurantId });
+    // Only the edits the prompt showed: a newer one keeps ringing.
     const waiting = async (executor: Pick<Database['db'], 'select'>) =>
-      (await pendingEdits(executor, [order])).map((edit) => edit.id);
+      (await pendingEdits(executor, [order]))
+        .filter((edit) => edit.at.getTime() <= command.through.getTime())
+        .map((edit) => edit.id);
     if (!BEFORE_PICKUP.includes(order.status) || (await waiting(this.database.db)).length === 0) {
       throw await this.stateChanged(order);
     }
@@ -1546,6 +1565,7 @@ export class OrderCommands {
     const [row] = await this.database.db
       .select({
         status: orders.status,
+        version: orders.version,
         captainTrack: orders.captainTrack,
         currency: orders.currency,
         discount: orders.discount,
@@ -1648,6 +1668,7 @@ export class OrderCommands {
       after,
       times,
       basis,
+      version: row.version,
       status: row.status,
       currency: row.currency,
       nextPosition: positions.length === 0 ? 0 : Math.max(...positions) + 1,

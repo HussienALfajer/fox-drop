@@ -4570,6 +4570,8 @@ export interface components {
                         name: string;
                     }[];
                 }[];
+                /** @description FOX DROP edited the order: the banner «عدّلت FOX DROP طلبك. المجموع الجديد: {المبلغ}» (CU §11.6). */
+                edited: boolean;
                 /** @description «سأدفع بـ»; null for «لم أحدد». */
                 payIn: string | null;
                 note: string | null;
@@ -4727,6 +4729,8 @@ export interface components {
                         name: string;
                     }[];
                 }[];
+                /** @description FOX DROP edited the order: the banner «عدّلت FOX DROP طلبك. المجموع الجديد: {المبلغ}» (CU §11.6). */
+                edited: boolean;
                 /** @description «سأدفع بـ»; null for «لم أحدد». */
                 payIn: string | null;
                 note: string | null;
@@ -5203,6 +5207,13 @@ export interface components {
                 currency: string;
             }[];
         };
+        MerchantAcknowledgeEditDto: {
+            /**
+             * Format: date-time
+             * @description The newest edit's `at` the prompt showed: the edits up to it are acknowledged, a newer one keeps ringing (RA §8.13).
+             */
+            through: string;
+        };
         MerchantItemReportDto: {
             /** @description One or more of the order's items, each once, switched off in the menu at once. */
             items: {
@@ -5336,6 +5347,8 @@ export interface components {
             deliveryFee: string | null;
             /** @description Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise). */
             extraPrepMin: number | null;
+            /** @description The order's version the dialog showed; another is 409 order_state_changed, so the edit is the one previewed. */
+            version: number;
             /** @description Required (AP §9.3.2): the internal note, never shown to the apps. */
             reason: string;
         };
@@ -9860,7 +9873,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantAcknowledgeEditDto"];
+            };
+        };
         responses: {
             200: {
                 headers: {

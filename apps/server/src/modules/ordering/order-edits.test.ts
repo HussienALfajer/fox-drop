@@ -210,8 +210,20 @@ async function admin(roles: string[]) {
       post(`/v1/admin/orders/${orderId}/change-time`, body, key),
     closeItemReport: (orderId: string, body: object) =>
       post(`/v1/admin/orders/${orderId}/item-report/close`, body),
-    edit: (orderId: string, body: object, key?: string) =>
-      post(`/v1/admin/orders/${orderId}/edit`, { reason: 'اتفقنا مع الزبون', ...body }, key),
+    // The dialog sends the order's version it showed (AP §9.3.3).
+    edit: async (orderId: string, body: object, key?: string) => {
+      const shown = await app.inject({
+        method: 'GET',
+        url: `/v1/admin/orders/${orderId}`,
+        cookies,
+      });
+      const version = shown.statusCode === 200 ? shown.json().order.version : 1;
+      return post(
+        `/v1/admin/orders/${orderId}/edit`,
+        { reason: 'اتفقنا مع الزبون', version, ...body },
+        key,
+      );
+    },
     editPreview: (orderId: string, body: object) =>
       app.inject({
         method: 'POST',
@@ -474,12 +486,17 @@ const reportRow = async (orderId: string) =>
 
 const boardOrder = board;
 
-const acknowledge = (headers: Record<string, string>, orderId: string) =>
-  app.inject({
+// «اطلعت على التعديل» on the edits the prompt showed: through the newest one
+// on the board, or the time given.
+const acknowledge = async (headers: Record<string, string>, orderId: string, through?: string) => {
+  const card = await board(headers, orderId);
+  return app.inject({
     method: 'POST',
     url: `/v1/merchant/orders/${orderId}/acknowledge-edit`,
     headers: { ...headers, 'idempotency-key': randomUUID() },
+    payload: { through: through ?? card?.edits.at(-1)?.at ?? new Date().toISOString() },
   });
+};
 
 const money = async (orderId: string) =>
   (
@@ -770,8 +787,9 @@ describe('POST /v1/admin/orders/{orderId}/edit before the pickup (AP §9.3.3)', 
     const order = await acceptedOrder();
     const ops = await admin(['OPS']);
     const key = randomUUID();
-    expect((await ops.edit(order.id, addFries, key)).statusCode).toBe(200);
-    expect((await ops.edit(order.id, addFries, key)).statusCode).toBe(200);
+    const body = { ...addFries, version: (await ops.detail(order.id)).version };
+    expect((await ops.edit(order.id, body, key)).statusCode).toBe(200);
+    expect((await ops.edit(order.id, body, key)).statusCode).toBe(200);
     const count = await sql.query(
       'SELECT count(*)::int AS n FROM ordering.order_edits WHERE order_id = $1',
       [order.id],
@@ -792,5 +810,101 @@ describe('POST /v1/admin/orders/{orderId}/edit before the pickup (AP §9.3.3)', 
     expect(detail.edits[0]).toMatchObject({ addsItems: true, acknowledgedAt: null });
     expect(detail.timeline.at(-1)).toMatchObject({ type: 'order.edited' });
     expect(detail.editChoices).toMatchObject({ extraPrepMaxMin: expect.any(Number) });
+  });
+
+  it('acknowledges only the edits the prompt showed; a newer addition keeps blocking', async () => {
+    const { order, captain } = await captainAtRestaurant();
+    const ops = await admin(['OPS']);
+    expect((await ops.edit(order.id, addFries)).statusCode).toBe(200);
+    const shown = (await boardOrder(order.cashier, order.id)).edits[0].at;
+    const more = await ops.edit(order.id, {
+      keep: [
+        { position: 0, quantity: 3 },
+        { position: 1, quantity: 2 },
+      ],
+      add: [],
+      deliveryFee: null,
+      extraPrepMin: null,
+    });
+    expect(more.statusCode).toBe(200);
+    expect((await acknowledge(order.cashier, order.id, shown)).statusCode).toBe(200);
+    const card = await boardOrder(order.cashier, order.id);
+    expect(card.edits).toHaveLength(1);
+    expect(card.edits[0].addsItems).toBe(true);
+    expect((await captain.requestPickup(order.id, '50600')).json().error).toBe(
+      'edit_unacknowledged',
+    );
+  });
+
+  it('refuses an edit of an order that moved since the dialog showed it', async () => {
+    const order = await acceptedOrder();
+    const ops = await admin(['OPS']);
+    const shown = (await ops.detail(order.id)).version;
+    expect((await ops.edit(order.id, addFries)).statusCode).toBe(200);
+    const stale = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/orders/${order.id}/edit`,
+      cookies: ops.cookies,
+      headers: { 'idempotency-key': randomUUID() },
+      payload: { ...addFries, keep: [{ position: 0, quantity: 1 }], version: shown, reason: 'x' },
+    });
+    expect(stale.statusCode).toBe(409);
+    expect(stale.json().error).toBe('order_state_changed');
+    expect((await money(order.id)).items_value).toBe('43300');
+    const huge = await ops.edit(order.id, { ...addFries, deliveryFee: '9'.repeat(30) });
+    expect(huge.statusCode).toBe(400);
+  });
+
+  it('answers unknown_order for an unknown order and for another restaurant', async () => {
+    const ops = await admin(['OPS']);
+    const unknown = randomUUID();
+    expect((await ops.edit(unknown, addFries)).statusCode).toBe(404);
+    expect((await ops.editPreview(unknown, addFries)).statusCode).toBe(404);
+    const order = await acceptedOrder();
+    expect((await ops.edit(order.id, addFries)).statusCode).toBe(200);
+    const merchants = app.get(MerchantsService);
+    const other = await merchants.createRestaurant(
+      azaz,
+      {
+        nameAr: 'مطعم آخر',
+        address: 'شارع آخر',
+        location: centre,
+        coverage: { kind: 'radius', radiusMetres: 1000 },
+        minimumOrder: { amount: 10_000n, currency: 'TRY' },
+        commissionBp: 1500,
+        defaultPrepMin: 20,
+      },
+      change,
+    );
+    await merchants.setAccountStatus(other, 'active', change);
+    const stranger = await acknowledge(await cashier(other), order.id, new Date().toISOString());
+    expect(stranger.statusCode).toBe(404);
+  });
+
+  it('raises «المطعم لم يؤكد التعديل» after order.merchant_accept_alert_min', async () => {
+    const order = await acceptedOrder();
+    const ops = await admin(['OPS']);
+    expect((await ops.edit(order.id, addFries)).statusCode).toBe(200);
+    expect((await ops.detail(order.id)).alerts).not.toContain('edit_unacknowledged');
+    const owner = new pg.Pool({ connectionString: database.migratorUrl });
+    await owner.query(
+      "UPDATE ordering.order_edits SET at = at - interval '4 minutes' WHERE order_id = $1",
+      [order.id],
+    );
+    await owner.end();
+    expect((await ops.detail(order.id)).alerts).toContain('edit_unacknowledged');
+    expect((await acknowledge(order.cashier, order.id)).statusCode).toBe(200);
+    expect((await ops.detail(order.id)).alerts).not.toContain('edit_unacknowledged');
+  });
+
+  it("moves the assigned captain's prep due time when a ready order goes back to preparing", async () => {
+    const { order, captain, ops } = await captainAtRestaurant();
+    expect((await ready(order.cashier, order.id)).statusCode).toBe(200);
+    expect((await captain.active()).json().order.preparation.ready).toBe(true);
+    expect((await ops.edit(order.id, { ...addFries, extraPrepMin: 15 })).statusCode).toBe(200);
+    const preparation = (await captain.active()).json().order.preparation;
+    expect(preparation.ready).toBe(false);
+    expect(new Date(preparation.prepDueAt).getTime() - Date.now()).toBeGreaterThan(14 * MINUTE);
+    expect((await customerOrder(order.customer, order.id)).edited).toBe(true);
   });
 });

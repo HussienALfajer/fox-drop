@@ -665,7 +665,7 @@ export const orderEdits = ordering.table(
     check('order_edits_status', sql`${table.status} IN ('placed', 'accepted', 'ready')`),
     check(
       'order_edits_money',
-      sql`${table.itemsValueBefore} >= 0 AND ${table.itemsValueAfter} > 0 AND ${table.deliveryFeeBefore} >= 0 AND ${table.deliveryFeeAfter} >= 0 AND ${table.totalBefore} >= 0 AND ${table.totalAfter} >= 0`,
+      sql`${table.itemsValueBefore} >= 0 AND ${table.itemsValueAfter} >= 0 AND ${table.deliveryFeeBefore} >= 0 AND ${table.deliveryFeeAfter} >= 0 AND ${table.totalBefore} >= 0 AND ${table.totalAfter} >= 0`,
     ),
     check(
       'order_edits_back_to_preparing',

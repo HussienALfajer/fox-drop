@@ -405,7 +405,7 @@ class EditPrompt extends ConsumerWidget {
               : () async {
                   final notice = await ref
                       .read(boardCommandsProvider.notifier)
-                      .acknowledgeEdit(order.id);
+                      .acknowledgeEdit(order.id, order.edits.last.at);
                   if (notice != null && context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(commandText(l10n, notice))),

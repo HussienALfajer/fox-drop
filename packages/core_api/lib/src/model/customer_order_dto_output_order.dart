@@ -41,6 +41,7 @@ part 'customer_order_dto_output_order.g.dart';
 /// * [equivalents] - The total in the city's other currencies, by the order's own rates (CU §11.1).
 /// * [lines]
 /// * [removedLines] - Lines an edit of FOX DROP removed, struck through as «حُذف» (CU §11.6).
+/// * [edited] - FOX DROP edited the order: the banner «عدّلت FOX DROP طلبك. المجموع الجديد: {المبلغ}» (CU §11.6).
 /// * [payIn] - «سأدفع بـ»; null for «لم أحدد».
 /// * [note]
 /// * [estimate]
@@ -107,6 +108,10 @@ abstract class CustomerOrderDtoOutputOrder
   @BuiltValueField(wireName: r'removedLines')
   BuiltList<CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner>
   get removedLines;
+
+  /// FOX DROP edited the order: the banner «عدّلت FOX DROP طلبك. المجموع الجديد: {المبلغ}» (CU §11.6).
+  @BuiltValueField(wireName: r'edited')
+  bool get edited;
 
   /// «سأدفع بـ»; null for «لم أحدد».
   @BuiltValueField(wireName: r'payIn')
@@ -267,6 +272,11 @@ class _$CustomerOrderDtoOutputOrderSerializer
       specifiedType: const FullType(BuiltList, [
         FullType(CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner),
       ]),
+    );
+    yield r'edited';
+    yield serializers.serialize(
+      object.edited,
+      specifiedType: const FullType(bool),
     );
     yield r'payIn';
     yield object.payIn == null
@@ -508,6 +518,15 @@ class _$CustomerOrderDtoOutputOrderSerializer
                     CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner
                   >;
           result.removedLines.replace(valueDes);
+          break;
+        case r'edited':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.edited = valueDes;
           break;
         case r'payIn':
           final valueDes =

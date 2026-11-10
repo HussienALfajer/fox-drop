@@ -280,7 +280,9 @@ const editRequest = {
     .describe(
       "Lines added from the restaurant's current menu at current prices, available only (400 invalid_edit). A line whose options change is left out of keep and added again.",
     ),
-  deliveryFee: minor
+  deliveryFee: z
+    .string()
+    .regex(/^\d{1,15}$/)
     .nullable()
     .describe(
       'A new delivery fee in minor units, or null to keep it (the threshold is not checked again).',
@@ -296,6 +298,11 @@ const editRequest = {
 class AdminEditDto extends createZodDto(
   z.object({
     ...editRequest,
+    version: z
+      .int()
+      .describe(
+        "The order's version the dialog showed; another is 409 order_state_changed, so the edit is the one previewed.",
+      ),
     reason: z
       .string()
       .trim()
@@ -949,6 +956,7 @@ export class AdminOrdersController {
           add: body.add,
           deliveryFee: body.deliveryFee === null ? null : BigInt(body.deliveryFee),
           extraPrepMin: body.extraPrepMin,
+          version: body.version,
         },
         new Date(),
       ),

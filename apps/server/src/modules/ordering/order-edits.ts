@@ -58,6 +58,8 @@ export interface EditPlan {
 }
 
 export const EDIT_MAX_QUANTITY = 20;
+// The route takes at most this many kept lines, so an edit never leaves more.
+export const EDIT_MAX_LINES = 50;
 
 // The plan of an edit, or why it cannot be made (400 invalid_edit). `priced`
 // are the request's additions priced at the menu's current prices, in order.
@@ -93,6 +95,9 @@ export function planEdit(
     });
   }
   if (kept.size + additions.length === 0) return 'an edit leaves at least one line';
+  if (kept.size + additions.length > EDIT_MAX_LINES) {
+    return `an order keeps at most ${EDIT_MAX_LINES} lines`;
+  }
 
   const changes: EditChange[] = [];
   const updates: EditPlan['updates'] = [];

@@ -59,6 +59,7 @@ Map<String, Object?> _order({
         },
       ],
   'removedLines': removedLines,
+  'edited': removedLines.isNotEmpty,
   'payIn': null,
   'note': null,
   'estimate': {'fromMin': 30, 'toMin': 40},

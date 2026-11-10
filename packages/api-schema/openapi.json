@@ -4545,6 +4545,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantAcknowledgeEditDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "",
@@ -14279,6 +14289,10 @@
                   },
                   "description": "Lines an edit of FOX DROP removed, struck through as «حُذف» (CU §11.6)."
                 },
+                "edited": {
+                  "type": "boolean",
+                  "description": "FOX DROP edited the order: the banner «عدّلت FOX DROP طلبك. المجموع الجديد: {المبلغ}» (CU §11.6)."
+                },
                 "payIn": {
                   "anyOf": [
                     {
@@ -14421,6 +14435,7 @@
                 "equivalents",
                 "lines",
                 "removedLines",
+                "edited",
                 "payIn",
                 "note",
                 "estimate",
@@ -14927,6 +14942,10 @@
                 },
                 "description": "Lines an edit of FOX DROP removed, struck through as «حُذف» (CU §11.6)."
               },
+              "edited": {
+                "type": "boolean",
+                "description": "FOX DROP edited the order: the banner «عدّلت FOX DROP طلبك. المجموع الجديد: {المبلغ}» (CU §11.6)."
+              },
               "payIn": {
                 "anyOf": [
                   {
@@ -15069,6 +15088,7 @@
               "equivalents",
               "lines",
               "removedLines",
+              "edited",
               "payIn",
               "note",
               "estimate",
@@ -16979,6 +16999,20 @@
           "receivedLines"
         ]
       },
+      "MerchantAcknowledgeEditDto": {
+        "type": "object",
+        "properties": {
+          "through": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "The newest edit's `at` the prompt showed: the edits up to it are acknowledged, a newer one keeps ringing (RA §8.13)."
+          }
+        },
+        "required": [
+          "through"
+        ]
+      },
       "MerchantItemReportDto": {
         "type": "object",
         "properties": {
@@ -17533,8 +17567,7 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^-?\\d+$",
-                "description": "Integer minor units (AP §8.6)."
+                "pattern": "^\\d{1,15}$"
               },
               {
                 "type": "null"
@@ -17555,6 +17588,12 @@
             ],
             "description": "Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise)."
           },
+          "version": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "The order's version the dialog showed; another is 409 order_state_changed, so the edit is the one previewed."
+          },
           "reason": {
             "type": "string",
             "minLength": 1,
@@ -17567,6 +17606,7 @@
           "add",
           "deliveryFee",
           "extraPrepMin",
+          "version",
           "reason"
         ]
       },
@@ -17636,8 +17676,7 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^-?\\d+$",
-                "description": "Integer minor units (AP §8.6)."
+                "pattern": "^\\d{1,15}$"
               },
               {
                 "type": "null"

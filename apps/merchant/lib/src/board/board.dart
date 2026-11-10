@@ -17,7 +17,8 @@ typedef PickupOutcome =
 typedef BoardCancellation = MerchantOrdersDtoOutputOrdersInnerCancellation;
 typedef BoardItemReport = MerchantOrdersDtoOutputOrdersInnerItemReport;
 typedef BoardEdit = MerchantOrdersDtoOutputOrdersInnerEditsInner;
-typedef BoardEditChange = MerchantOrdersDtoOutputOrdersInnerEditsInnerChangesInner;
+typedef BoardEditChange =
+    MerchantOrdersDtoOutputOrdersInnerEditsInnerChangesInner;
 typedef EditChangeKind =
     MerchantOrdersDtoOutputOrdersInnerEditsInnerChangesInnerKindEnum;
 

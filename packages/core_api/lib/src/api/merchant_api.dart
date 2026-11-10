@@ -11,6 +11,7 @@ import 'package:dio/dio.dart';
 import 'package:core_api/src/api_util.dart';
 import 'package:core_api/src/model/contact_dto_output.dart';
 import 'package:core_api/src/model/merchant_accept_dto.dart';
+import 'package:core_api/src/model/merchant_acknowledge_edit_dto.dart';
 import 'package:core_api/src/model/merchant_availability_dto.dart';
 import 'package:core_api/src/model/merchant_availability_saved_dto_output.dart';
 import 'package:core_api/src/model/merchant_busy_mode_dto.dart';
@@ -1210,6 +1211,7 @@ class MerchantApi {
   /// Parameters:
   /// * [orderId]
   /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
+  /// * [merchantAcknowledgeEditDto]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1222,6 +1224,7 @@ class MerchantApi {
   Future<Response<MerchantOrderDtoOutput>> merchantOrdersAcknowledgeEdit({
     required String orderId,
     required String idempotencyKey,
+    required MerchantAcknowledgeEditDto merchantAcknowledgeEditDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1246,11 +1249,30 @@ class MerchantApi {
         ...?headers,
       },
       extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
       validateStatus: validateStatus,
     );
 
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(MerchantAcknowledgeEditDto);
+      _bodyData = _serializers.serialize(
+        merchantAcknowledgeEditDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
     final _response = await _dio.request<Object>(
       _path,
+      data: _bodyData,
       options: _options,
       cancelToken: cancelToken,
       onSendProgress: onSendProgress,

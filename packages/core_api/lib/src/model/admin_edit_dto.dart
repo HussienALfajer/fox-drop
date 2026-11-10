@@ -16,8 +16,9 @@ part 'admin_edit_dto.g.dart';
 /// Properties:
 /// * [keep] - The current lines kept, each with its quantity; a line left out is removed. A raised quantity keeps the unit price and counts as items added.
 /// * [add] - Lines added from the restaurant's current menu at current prices, available only (400 invalid_edit). A line whose options change is left out of keep and added again.
-/// * [deliveryFee] - Integer minor units (AP §8.6).
+/// * [deliveryFee] - A new delivery fee in minor units, or null to keep it (the threshold is not checked again).
 /// * [extraPrepMin] - Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise).
+/// * [version] - The order's version the dialog showed; another is 409 order_state_changed, so the edit is the one previewed.
 /// * [reason] - Required (AP §9.3.2): the internal note, never shown to the apps.
 @BuiltValue()
 abstract class AdminEditDto
@@ -30,13 +31,17 @@ abstract class AdminEditDto
   @BuiltValueField(wireName: r'add')
   BuiltList<AdminEditDtoAddInner> get add;
 
-  /// Integer minor units (AP §8.6).
+  /// A new delivery fee in minor units, or null to keep it (the threshold is not checked again).
   @BuiltValueField(wireName: r'deliveryFee')
   String? get deliveryFee;
 
   /// Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise).
   @BuiltValueField(wireName: r'extraPrepMin')
   int? get extraPrepMin;
+
+  /// The order's version the dialog showed; another is 409 order_state_changed, so the edit is the one previewed.
+  @BuiltValueField(wireName: r'version')
+  int get version;
 
   /// Required (AP §9.3.2): the internal note, never shown to the apps.
   @BuiltValueField(wireName: r'reason')
@@ -93,6 +98,11 @@ class _$AdminEditDtoSerializer implements PrimitiveSerializer<AdminEditDto> {
             object.extraPrepMin,
             specifiedType: const FullType.nullable(int),
           );
+    yield r'version';
+    yield serializers.serialize(
+      object.version,
+      specifiedType: const FullType(int),
+    );
     yield r'reason';
     yield serializers.serialize(
       object.reason,
@@ -166,6 +176,12 @@ class _$AdminEditDtoSerializer implements PrimitiveSerializer<AdminEditDto> {
                   as int?;
           if (valueDes == null) continue;
           result.extraPrepMin = valueDes;
+          break;
+        case r'version':
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
+          result.version = valueDes;
           break;
         case r'reason':
           final valueDes =

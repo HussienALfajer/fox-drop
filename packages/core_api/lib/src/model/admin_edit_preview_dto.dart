@@ -16,7 +16,7 @@ part 'admin_edit_preview_dto.g.dart';
 /// Properties:
 /// * [keep] - The current lines kept, each with its quantity; a line left out is removed. A raised quantity keeps the unit price and counts as items added.
 /// * [add] - Lines added from the restaurant's current menu at current prices, available only (400 invalid_edit). A line whose options change is left out of keep and added again.
-/// * [deliveryFee] - Integer minor units (AP §8.6).
+/// * [deliveryFee] - A new delivery fee in minor units, or null to keep it (the threshold is not checked again).
 /// * [extraPrepMin] - Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise).
 @BuiltValue()
 abstract class AdminEditPreviewDto
@@ -29,7 +29,7 @@ abstract class AdminEditPreviewDto
   @BuiltValueField(wireName: r'add')
   BuiltList<AdminEditDtoAddInner> get add;
 
-  /// Integer minor units (AP §8.6).
+  /// A new delivery fee in minor units, or null to keep it (the threshold is not checked again).
   @BuiltValueField(wireName: r'deliveryFee')
   String? get deliveryFee;
 
