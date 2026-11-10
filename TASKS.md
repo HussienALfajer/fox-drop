@@ -4,19 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.10b, edits after pickup (`docs/roadmap.md`, Phase 2).
+Slice 2.11, outcomes and failed orders (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** removing items and lowering the delivery fee in `picked_up` and `arrived` with a responsible party (restaurant: `merchant.debit` and the reversing `merchant.commission` once; captain: `earn.charge`; platform: operating cost; never the customer), the new amount to collect, the captain's «حُذفت أصناف من الطلب — المبلغ الجديد للتحصيل {المبلغ}», the owners' silent push. The owner removes an item after pickup with the restaurant responsible and the restaurant's account shows the debit.
-- **Specs:** AP §9.3.3 (after pickup: removals and a lower fee, with a responsible party; the pickup payment and the commission base frozen), AP §8.1, §8.9, docs/domain/01, 07, 09 and 11 (the entries and their counter-accounts, `apps/server/src/modules/ledger/CLAUDE.md`), RA §8.13 («After pickup»), RA §12.5 (the amount returned on Saturday), CA §9.10 («حُذفت أصناف…», «Lower delivery fee after pickup»), CU §11.6, and the definitions of done.
-- **Branch:** `feat/order-edits-after-pickup`.
-- **Builds on 2.10a:** `POST /v1/admin/orders/{orderId}/edit` and its preview (`order-edits.ts`, `planEdit`), `ordering.order_edits`, the lines' `removed_by_edit`, the panel's «تعديل الطلب» dialog (`apps/admin/src/order-edit*.ts`), the customer's marks and the captain's `OrderEdited` chime.
-- **Ask the owner first:** how the door collection books after a removal (the total drops while the clearing account holds the full pickup payment), whether the commission reversal is on the removed items' value only, and the preview's sentences for each party (as «إلغاء الطلب» shows them).
-- **Plan (to confirm):**
-  - [x] Server: removals and a lower fee after pickup with the responsible party and their entries, once per edit; failing tests first.
-  - [x] Captain app: «حُذفت أصناف من الطلب — المبلغ الجديد للتحصيل {المبلغ}» and the new amount at the door.
-  - [x] Panel: the responsible party and the entries' preview in the dialog after pickup.
-  - [x] Restaurant: the owners' silent push with the amount (RA §12.5): sent by the server on the existing `silent` channel, nothing in the app.
-  - [ ] Review, hand over to 2.11, pull request.
+- **Roadmap line:** «تحديد النتيجة» with the preview of its entries for each responsible party, the captain's payment screen for an amount to collect (K9), where the food went, OWN's «تغيير النتيجة» within 7 days reversing every side effect (AP §8.9, §9.3.2, CA §9.12, `docs/domain/09`). The owner sets an outcome and the entries match the preview.
+- **Specs:** AP §9.3.2 «تحديد النتيجة» and «تغيير النتيجة», AP §8.9 (`docs/domain/09`: the outcomes, the one rule of their money, the preview, the food, the change within `order.outcome_change_days`), docs/domain/08 (the customer's dues and strike for a fake order), docs/domain/07 and 11, CA §9.10 («Outcome set by OPS with an amount to collect», K9) and CA §9.12, CU §11.6 («المبلغ المطلوب الآن»), RA §16 #19 (the owners' silent push), RA §12.5 («استرداد مبلغ الاستلام»), AP Appendix C (the outcomes' labels), and the definitions of done.
+- **Branch:** `feat/order-outcomes`.
+- **Builds on 2.10b:** the clearing account's frozen pickup values (`frozenAtPickup` in `order-edits.ts`): an order edited after the pickup and then failed must book from the pickup payment and count the edits' entries already posted (a restaurant-responsible edit reversed part of a commission no delivery will post). The preview sentences of «إلغاء الطلب» and «تعديل الطلب» (`previewLines`, `afterPickupLines` in the panel).
+- **Ask the owner first:** the split into pull requests (the roadmap line holds the outcome, the captain's payment screen and the change of an outcome: run the `slice-plan` skill), the customer's dues before the dues ledger exists (AP §8.8), and how an outcome books after an edit after the pickup.
+- **Plan (to confirm after the split):**
+  - [ ] Server: «تحديد النتيجة» with its preview for each outcome and party; failing tests first.
+  - [ ] Captain app: the payment screen for an amount to collect (K9) and «بانتظار تسجيل التحصيل».
+  - [ ] Panel: the outcome dialog with the entries' preview and where the food went.
+  - [ ] «تغيير النتيجة» within `order.outcome_change_days`, reversing every side effect.
+  - [ ] Review, hand over, pull request.
+
+### Left from 2.10b (`feat/order-edits-after-pickup`)
+
+- **Before deploying to staging:** migration 0046 adds three nullable columns and two `CHECK`s to `ordering.order_edits` (a small table). The new captain APK chimes the new amount to collect after the pickup; an older one shows the new total without the chime. The panel and the server deploy together.
+- **To check on staging:** a picked-up order's detail → «تعديل الطلب»: the dialog says only removals and a lower fee are possible, «المسؤول عن التعديل» → «المطعم», one item fewer: the entries read «يُسجَّل على المطعم «…» … (حساب المطعم): أصناف حُذفت بعد الاستلام.» and «تُلغى عمولة … عن الأصناف المحذوفة (حساب المطعم).», with «المبلغ الجديد للتحصيل»; after «تأكيد التعديل» the captain hears «حُذفت أصناف من الطلب — المبلغ الجديد للتحصيل {المبلغ}» and the door payment shows the new amount, the customer gets the new total, the restaurant owners' phones get the silent «عُدّل الطلب #{رقم} بعد الاستلام — يُقيَّد عليكم {المبلغ} في كشف السبت», and the detail's edits list shows «بعد الاستلام، المسؤول: المطعم — يتحمّل …». The restaurant's account screen comes with 2.19; until then the debit shows in the panel's preview and the ledger.
+- **To confirm with the owner:** the strings the spec gives no wording for (the owners' push text and its place under RA §16 #19; the captain's «المبلغ الجديد للتحصيل: {المبلغ}» for a lower fee alone; the fee cut's account line «خُفّضت أجرة التوصيل بعد الاستلام»; the panel's «استلم الكابتن الطلب: يمكن حذف أصناف أو إنقاص كمياتها وتخفيض أجرة التوصيل فقط، ويتحمّل المسؤول المبلغ.», «أجرة توصيل أقل (اتركها فارغة لإبقاء …)», «المسؤول عن التعديل», «المبلغ الجديد للتحصيل: …», the entries' sentences and «بعد الاستلام، المسؤول: … — يتحمّل …»); the owners' push names the debit (the removed value and the fee cut), not the debit less the reversed commission; the restaurant's devices are not rung after the pickup (RA §8.13 names only the owners' push).
+- **Not yet:** the captain's charge push «خُصم من مستحقاتك» (CA §14 #14) and earnings line for an edit after the pickup (with the earnings screens); the captain's «تدفع للمطعم» still follows the items value after such an edit (shown before the pickup only); a test of an edit committing between the delivery's payment check and its transaction (the delivery reads the frozen values under the lock, and its total check refuses a changed total).
 
 ### Left from 2.10a (`feat/order-edits`)
 
