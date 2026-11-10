@@ -725,6 +725,47 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets('shows the order operations took away until «حسناً» (CA §9.10)', (
+    tester,
+  ) async {
+    final app = TestApp();
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [orderJson(track: 'at_merchant')],
+    );
+    await app.pump(tester);
+    await app.live(tester);
+    expect(find.text('الخطوة 2 من 4: عند المطعم'), findsOneWidget);
+
+    app.work(
+      availability: [availabilityJson(state: 'online_available')],
+      withdrawn: withdrawnJson(cash: 'not_returned'),
+    );
+    app.transport.event('order.reassigned', 4);
+    await app.settle(tester);
+    expect(find.text('سُحب منك الطلب: تأخر الكابتن'), findsOneWidget);
+    expect(
+      find.text('لا تسترجع المبلغ، يُخصم من المطعم في التسوية'),
+      findsOneWidget,
+    );
+    expect(app.ringer.cancellations, 1);
+    expect(app.ringer.chimes, 0);
+
+    app.server.on('/v1/captain/orders/$orderId/acknowledge-withdrawal', [
+      const FakeAnswer(200, {'order': null, 'withdrawn': null}),
+    ]);
+    app.work(availability: [availabilityJson(state: 'online_available')]);
+    await app.tapVisible(tester, find.text('حسناً'));
+    await app.settle(tester);
+    expect(
+      app.server.to('/v1/captain/orders/$orderId/acknowledge-withdrawal'),
+      hasLength(1),
+    );
+    expect(find.textContaining('سُحب منك الطلب'), findsNothing);
+    expect(find.text('متصل متاح'), findsOneWidget);
+    await app.done(tester);
+  });
+
   testWidgets('shows the order operations cancelled until «حسناً» (CA §9.10)', (
     tester,
   ) async {

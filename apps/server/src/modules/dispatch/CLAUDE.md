@@ -21,6 +21,6 @@ Eligibility, ranking, offers, assignments and handovers (architecture §4.2). So
 
 ## Not yet
 
-- Automatic and mixed dispatch (ranking, one offer at a time, `dispatch.max_offers_before_manual`), the maximum pickup amount and its override (C4, K2), the peak bonus on the offer (D15), withdrawing an offer when operations reassign, reassignment and handover (AP §9.3.2), the offers log and acceptance rate screens (AP §9.7.4, CA §11.1).
+- Automatic and mixed dispatch (ranking, one offer at a time, `dispatch.max_offers_before_manual`), the maximum pickup amount and its override (C4, K2), the peak bonus on the offer (D15), the handover after the pickup (AP §9.3.2, slice 2.12b; the reassignment before it is ordering's since slice 2.12a, and the order then comes back to dispatch «بحاجة لتعيين»), the offers log and acceptance rate screens (AP §9.7.4, CA §11.1).
 - The captain's location on the offer answers (CA §15; the order commands in `ordering` record it since slice 1.12), the C3 message «لم ترد على 3 عروض متتالية» on the captain's channel (CA §7.4, with push), the open offer and the captain's phone, live position and cash in the order detail (AP §9.3.1), reading `dispatch.no_captain_alert_min` when the search starts rather than at acceptance.
 - `offers` is not partitioned; partition it by month with the orders before its volume matters.

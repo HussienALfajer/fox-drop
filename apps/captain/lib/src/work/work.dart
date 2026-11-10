@@ -17,6 +17,8 @@ typedef RequestOutcome =
 typedef Summary = CaptainDeliverySummaryDtoOutputSummary;
 typedef Cancelled = CaptainActiveOrderDtoOutputCancelled;
 typedef CancelledCash = CaptainActiveOrderDtoOutputCancelledCashEnum;
+typedef Withdrawn = CaptainActiveOrderDtoOutputWithdrawn;
+typedef WithdrawnCash = CaptainActiveOrderDtoOutputWithdrawnCashEnum;
 typedef Ended = CaptainActiveOrderDtoOutputEnded;
 typedef EndedOutcome = CaptainActiveOrderDtoOutputEndedOutcomeEnum;
 typedef CollectOutcome =
@@ -25,14 +27,15 @@ typedef EndedFood = CaptainActiveOrderDtoOutputEndedFoodEnum;
 
 /// What the captain's screens show, always as the server answered it: the
 /// availability (CA §7), the open offer (CA §8), the active order (CA §9)
-/// and an order operations cancelled, or ended with an outcome, that the
-/// captain has not yet seen (CA §9.10, §9.12).
+/// and an order operations cancelled, took from the captain, or ended with
+/// an outcome, that the captain has not yet seen (CA §9.10, §9.12).
 class Work {
   const Work({
     required this.availability,
     this.offer,
     this.order,
     this.cancelled,
+    this.withdrawn,
     this.ended,
   });
 
@@ -40,6 +43,7 @@ class Work {
   final Offer? offer;
   final ActiveOrder? order;
   final Cancelled? cancelled;
+  final Withdrawn? withdrawn;
   final Ended? ended;
 
   AvailabilityState get state => availability.availability.state;
@@ -102,6 +106,7 @@ final workFeedProvider = Provider.autoDispose<LiveFeed<Work>?>((ref) {
         offer: offer.data!.offer,
         order: order.data!.order,
         cancelled: order.data!.cancelled,
+        withdrawn: order.data!.withdrawn,
         ended: order.data!.ended,
       );
     },

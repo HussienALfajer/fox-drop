@@ -21,6 +21,7 @@ import type { PickupRequestView } from './pickup-views.js';
 import {
   type CaptainActiveOrder,
   type CaptainCancellation,
+  type CaptainWithdrawal,
   type CaptainOutcome,
   CaptainOrderRefusedError,
   CaptainOrders,
@@ -252,6 +253,28 @@ const cancelledTask = z
     'The latest order operations cancelled within 12 hours that the captain has not acknowledged (POST …/acknowledge-cancellation); the app plays the cancellation sound when one appears.',
   );
 
+// CA §9.10 (slice 2.12a): the order operations took from the captain before
+// the pickup, until the captain's «حسناً».
+const withdrawnTask = z
+  .object({
+    orderId: z.uuid(),
+    number: z.string().describe('Shown as #10423 (AP §4.8).'),
+    reason: z
+      .string()
+      .describe('{السبب} of «سُحب منك الطلب: {السبب}»: the reason as operations chose it.'),
+    cash: z
+      .enum(cashAnswers)
+      .nullable()
+      .describe(
+        'returned «استرجع المبلغ من المطعم»; not_returned «لا تسترجع المبلغ، يُخصم من المطعم في التسوية»; not_paid or null: no cash line.',
+      ),
+    at: z.iso.datetime(),
+  })
+  .nullable()
+  .describe(
+    'The latest order operations took from the captain within 12 hours that the captain has not acknowledged (POST …/acknowledge-withdrawal); the app plays the cancellation sound when one appears.',
+  );
+
 const minorMoney = z.object({ amount: z.string().regex(/^\d+$/), currency: z.string().length(3) });
 
 const endedTask = z
@@ -294,6 +317,18 @@ function endedBody(ended: CaptainOutcome | null) {
   );
 }
 
+function withdrawnBody(withdrawn: CaptainWithdrawal | null) {
+  return (
+    withdrawn && {
+      orderId: withdrawn.orderId,
+      number: withdrawn.number.toString(),
+      reason: withdrawn.reason,
+      cash: withdrawn.cash,
+      at: withdrawn.at.toISOString(),
+    }
+  );
+}
+
 function cancelledBody(cancelled: CaptainCancellation | null) {
   return (
     cancelled && {
@@ -314,6 +349,7 @@ class CaptainActiveOrderDto extends createZodDto(
   z.object({
     order: activeOrder.nullable().describe('Null without an active order.'),
     cancelled: cancelledTask,
+    withdrawn: withdrawnTask,
     ended: endedTask,
   }),
 ) {}
@@ -584,14 +620,16 @@ export class CaptainOrdersController {
   async active(@CurrentAppSession() session: AppSession) {
     const captainId = captainOf(session);
     const now = new Date();
-    const [active, cancelled, ended] = await Promise.all([
+    const [active, cancelled, withdrawn, ended] = await Promise.all([
       this.orders.active(captainId, now),
       this.orders.cancelled(captainId, now),
+      this.orders.withdrawn(captainId, now),
       this.orders.outcome(captainId, now),
     ]);
     return {
       order: active && activeOrderBody(active),
       cancelled: cancelledBody(cancelled),
+      withdrawn: withdrawnBody(withdrawn),
       ended: endedBody(ended),
     };
   }
@@ -632,6 +670,25 @@ export class CaptainOrdersController {
     return refusalsAsHttp(captainId, this.orders, async () => {
       const now = new Date();
       await this.orders.acknowledgeCancellation(captainId, params.orderId, now);
+      return this.active(session);
+    });
+  }
+
+  // CA §9.10 «حسناً» on the withdrawal card (slice 2.12a): answers the
+  // active read without it. Idempotent by its nature, so it takes no key, and
+  // it needs no fix. 404 unknown_order for an order never taken from this
+  // captain.
+  @Post(':orderId/acknowledge-withdrawal')
+  @AppSignedIn()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CaptainActiveOrderDto })
+  async acknowledgeWithdrawal(
+    @CurrentAppSession() session: AppSession,
+    @Param() params: CaptainOrderParamsDto,
+  ) {
+    const captainId = captainOf(session);
+    return refusalsAsHttp(captainId, this.orders, async () => {
+      await this.orders.acknowledgeWithdrawal(captainId, params.orderId, new Date());
       return this.active(session);
     });
   }

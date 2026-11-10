@@ -290,7 +290,8 @@
       "outcomeSet": "حُدّدت النتيجة",
       "editAcknowledged": "اطلع المطعم على التعديل",
       "outcomeCollected": "سُجّل التحصيل وانتهى الطلب بنتيجته",
-      "outcomeChanged": "تغيّرت النتيجة"
+      "outcomeChanged": "تغيّرت النتيجة",
+      "reassigned": "سُحب من الكابتن"
     },
     "actor": {
       "system": "النظام",
@@ -519,6 +520,23 @@
       "overpaid": "سجّل الباقي الذي أعدته للزبون",
       "amountDueChanged": "تغيّر المبلغ المطلوب؛ أعد فتح الطلب",
       "refused": "تعذّر تسجيل التحصيل بهذه المبالغ"
+    },
+    "reassign": {
+      "title": "سحب وإعادة تعيين",
+      "reasonList": "سبب السحب",
+      "fault": "الخطأ",
+      "captainFault": "بخطأ من الكابتن",
+      "noFault": "دون خطأ",
+      "next": "بعد السحب",
+      "toDispatch": "إعادة الطلب للتوزيع",
+      "pickCaptain": "اختيار كابتن آخر الآن",
+      "nothing": "لا قيود مالية لهذا السحب.",
+      "confirm": "تأكيد السحب",
+      "pickupRequestOpen": "طلب الاستلام مفتوح عند المطعم؛ انتظر ردّه ثم اسحب الطلب"
+    },
+    "reassignments": {
+      "title": "سحب الطلب من الكباتن",
+      "line": "{{time}}: «{{label}}» — {{fault}}."
     }
   },
   "assign": {
@@ -561,6 +579,7 @@
     "label": "النص",
     "customerText": "النص للزبون",
     "genericApology": "نعتذر، لم نتمكن من إكمال طلبك",
+    "captainFault": "بخطأ من الكابتن افتراضياً",
     "active": "معروض",
     "fixed": "ثابت (لا يُحذف)",
     "reasons": {

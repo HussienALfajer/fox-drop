@@ -38,6 +38,10 @@ export const reasons = content.table(
     // A reason the code acts on (such as «مشكلة في مبلغ الاستلام», which
     // opens a pickup-dispute ticket) cannot be deactivated.
     fixed: boolean('fixed').notNull().default(false),
+    // AP Appendix B, owner decision 2026-11-10: a reassignment reason's
+    // default fault, «بخطأ من الكابتن» or «دون خطأ», which the dialog
+    // prefills; set exactly on the reassignment list's reasons.
+    captainFault: boolean('captain_fault'),
     active: boolean('active').notNull().default(true),
     position: integer('position').notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -52,6 +56,10 @@ export const reasons = content.table(
     ),
     check('reasons_note', sql`${table.note} IN ('none', 'optional', 'required')`),
     check('reasons_fixed_active', sql`NOT ${table.fixed} OR ${table.active}`),
+    check(
+      'reasons_captain_fault',
+      sql`(${table.list} = 'reassignment') = (${table.captainFault} IS NOT NULL)`,
+    ),
   ],
 );
 

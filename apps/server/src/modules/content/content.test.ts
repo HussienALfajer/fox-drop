@@ -112,7 +112,13 @@ describe('choosing a reason', () => {
     await content.updateReason(
       'reassignment',
       'connection_lost',
-      { label: 'انقطاع الاتصال', customerText: null, note: 'none', active: false },
+      {
+        label: 'انقطاع الاتصال',
+        customerText: null,
+        note: 'none',
+        captainFault: false,
+        active: false,
+      },
       edit,
     );
     expect(
@@ -121,6 +127,36 @@ describe('choosing a reason', () => {
     const all = await content.allLists();
     const reassignment = all.find((list) => list.list === 'reassignment')!.reasons;
     expect(reassignment.find((reason) => reason.code === 'connection_lost')?.active).toBe(false);
+  });
+});
+
+describe("the reassignment reasons' fault", () => {
+  it('seeds each default fault and keeps it to the reassignment list', async () => {
+    const reasons = await content.reasonsOf('reassignment');
+    expect(Object.fromEntries(reasons.map((reason) => [reason.code, reason.captainFault]))).toEqual(
+      {
+        vehicle_breakdown: false,
+        accident: false,
+        captain_request: true,
+        captain_late: true,
+        connection_lost: false,
+        other: false,
+      },
+    );
+    const fields = { label: 'الكابتن لم يتحرك', customerText: null, note: 'none' as const };
+    expect(await refusal(content.addReason('reassignment', fields, edit))).toBe('invalid_value');
+    expect(
+      await refusal(content.addReason('shortfall', { ...fields, captainFault: true }, edit)),
+    ).toBe('invalid_value');
+    const added = await content.addReason('reassignment', { ...fields, captainFault: true }, edit);
+    expect(added.captainFault).toBe(true);
+    const changed = await content.updateReason(
+      'reassignment',
+      'accident',
+      { label: 'حادث', customerText: null, note: 'none', captainFault: true, active: true },
+      edit,
+    );
+    expect(changed.captainFault).toBe(true);
   });
 });
 

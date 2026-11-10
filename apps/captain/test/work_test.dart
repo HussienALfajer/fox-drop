@@ -15,6 +15,7 @@ Work work({
   Map<String, Object?>? offer,
   Map<String, Object?>? order,
   Map<String, Object?>? cancelled,
+  Map<String, Object?>? withdrawn,
   Map<String, Object?>? ended,
 }) => Work(
   availability: standardSerializers.deserializeWith(
@@ -44,6 +45,12 @@ Work work({
       : standardSerializers.deserializeWith(
           CaptainActiveOrderDtoOutputCancelled.serializer,
           cancelled,
+        ),
+  withdrawn: withdrawn == null
+      ? null
+      : standardSerializers.deserializeWith(
+          CaptainActiveOrderDtoOutputWithdrawn.serializer,
+          withdrawn,
         ),
 );
 
@@ -357,6 +364,22 @@ void main() {
         ).single,
         isA<PickupDisputed>(),
       );
+    });
+
+    test('an order taken from the captain rings once (CA §9.10, §14 #11)', () {
+      final busy = work(
+        state: 'busy',
+        order: orderJson(track: 'assigned'),
+      );
+      final withdrawn = work(withdrawn: withdrawnJson());
+      expect(
+        alertStep(busy, withdrawn, now, answered).single,
+        isA<OrderWithdrawn>()
+            .having((a) => a.withdrawn.reason, 'reason', 'تأخر الكابتن')
+            .having((a) => a.chimes, 'chimes', false),
+      );
+      expect(alertStep(withdrawn, withdrawn, now, answered), isEmpty);
+      expect(alertStep(withdrawn, work(), now, answered), isEmpty);
     });
 
     test('an order cancelled by operations rings once (CA §9.10, §14)', () {

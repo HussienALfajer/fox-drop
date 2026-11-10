@@ -251,8 +251,8 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
         now,
         ref.read(answeredProvider),
       )) {
-        // The cancellation card says it, with its own sound.
-        if (alert is OrderCancelled) {
+        // The cancellation and withdrawal cards say it, with their sound.
+        if (alert is OrderCancelled || alert is OrderWithdrawn) {
           _ringer.cancellation();
           continue;
         }
@@ -301,6 +301,8 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
             Positioned.fill(child: _HandInCard(amount: handIn)),
           if (work?.cancelled case final cancelled?)
             Positioned.fill(child: _CancelledCard(cancelled: cancelled)),
+          if (work?.withdrawn case final withdrawn?)
+            Positioned.fill(child: _WithdrawnCard(withdrawn: withdrawn)),
           if (work?.ended case final ended?)
             Positioned.fill(child: _EndedCard(ended: ended)),
           if (offer != null) Positioned.fill(child: OfferSheet(offer: offer)),
@@ -374,6 +376,50 @@ class _CancelledCard extends ConsumerWidget {
                     final notice = await ref
                         .read(commandsProvider.notifier)
                         .acknowledgeCancellation(cancelled.orderId);
+                    if (notice != null) {
+                      messenger.showSnackBar(
+                        SnackBar(content: Text(l10n.noticeText(notice))),
+                      );
+                    }
+                  },
+            child: Text(sending ? l10n.captainSending : l10n.captainOk),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// CA §9.10 (slice 2.12a): the order operations took from the captain before
+/// the pickup, and what to do about the cash paid to the restaurant, until
+/// «حسناً»; the availability shows under it.
+class _WithdrawnCard extends ConsumerWidget {
+  const _WithdrawnCard({required this.withdrawn});
+
+  final Withdrawn withdrawn;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final sending = ref.watch(commandsProvider).contains(withdrawn.orderId);
+    final cash = l10n.withdrawnCashText(withdrawn.cash);
+    return Material(
+      child: ListView(
+        padding: const EdgeInsetsDirectional.all(16),
+        children: [
+          Text(
+            l10n.captainOrderWithdrawn(withdrawn.reason),
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          if (cash != null) Text(cash),
+          FilledButton(
+            onPressed: sending
+                ? null
+                : () async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    final notice = await ref
+                        .read(commandsProvider.notifier)
+                        .acknowledgeWithdrawal(withdrawn.orderId);
                     if (notice != null) {
                       messenger.showSnackBar(
                         SnackBar(content: Text(l10n.noticeText(notice))),

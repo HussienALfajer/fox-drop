@@ -49,6 +49,12 @@ const reason = z.object({
   note: z.enum(noteModes).describe('Whether the choice takes a note: none, optional, required.'),
   fixed: z.boolean().describe('The code acts on it: it cannot be removed.'),
   active: z.boolean().describe('False once removed: hidden from new choices, kept on orders.'),
+  captainFault: z
+    .boolean()
+    .nullable()
+    .describe(
+      "The reassignment list's default fault («بخطأ من الكابتن»), which the dialog prefills; null in the other lists.",
+    ),
 });
 
 class AdminReasonDto extends createZodDto(reason) {}
@@ -61,6 +67,7 @@ class AdminReasonListsDto extends createZodDto(
         apps: z.array(z.enum(['merchant', 'captain', 'customer'])),
         customerText: z.boolean().describe('Its reasons may carry «نص للزبون».'),
         closed: z.boolean().describe('No reason can be added.'),
+        fault: z.boolean().describe('Its reasons carry their default fault (reassignment).'),
         reasons: z.array(reason),
       }),
     ),
@@ -83,6 +90,11 @@ const reasonFields = {
   note: z
     .enum(noteModes)
     .describe('none, optional or required («أخرى» with its text); none in a closed list.'),
+  captainFault: z
+    .boolean()
+    .nullable()
+    .default(null)
+    .describe('Required in the reassignment list (its default fault), null in the others.'),
 };
 
 class AddReasonDto extends createZodDto(z.object(reasonFields)) {}
@@ -216,6 +228,7 @@ export class AdminContentController {
           apps: [...definition.apps],
           customerText: definition.customerText ?? false,
           closed: definition.closed ?? false,
+          fault: list === 'reassignment',
           reasons,
         };
       }),

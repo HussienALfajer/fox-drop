@@ -15,6 +15,7 @@ part 'add_reason_dto.g.dart';
 /// * [label]
 /// * [customerText] - Only in the lists with customer texts; null shows the generic apology.
 /// * [note] - none, optional or required («أخرى» with its text); none in a closed list.
+/// * [captainFault] - Required in the reassignment list (its default fault), null in the others.
 @BuiltValue()
 abstract class AddReasonDto
     implements Built<AddReasonDto, AddReasonDtoBuilder> {
@@ -29,6 +30,10 @@ abstract class AddReasonDto
   @BuiltValueField(wireName: r'note')
   AddReasonDtoNoteEnum get note;
   // enum noteEnum {  none,  optional,  required,  };
+
+  /// Required in the reassignment list (its default fault), null in the others.
+  @BuiltValueField(wireName: r'captainFault')
+  bool? get captainFault;
 
   AddReasonDto._();
 
@@ -70,6 +75,13 @@ class _$AddReasonDtoSerializer implements PrimitiveSerializer<AddReasonDto> {
       object.note,
       specifiedType: const FullType(AddReasonDtoNoteEnum),
     );
+    if (object.captainFault != null) {
+      yield r'captainFault';
+      yield serializers.serialize(
+        object.captainFault,
+        specifiedType: const FullType.nullable(bool),
+      );
+    }
   }
 
   @override
@@ -124,6 +136,16 @@ class _$AddReasonDtoSerializer implements PrimitiveSerializer<AddReasonDto> {
                   )
                   as AddReasonDtoNoteEnum;
           result.note = valueDes;
+          break;
+        case r'captainFault':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(bool),
+                  )
+                  as bool?;
+          if (valueDes == null) continue;
+          result.captainFault = valueDes;
           break;
         default:
           unhandled.add(key);

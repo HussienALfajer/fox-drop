@@ -38,6 +38,22 @@ export interface PickupDisputeView {
   receivedLines: PaymentLine[];
 }
 
+// AP §8.1, slice 2.12a: the requests of the order's current assignment,
+// newest first: its captain's, opened since they were assigned. A withdrawn
+// captain's requests stay in operations' history only, so the next captain,
+// the restaurant's board, the alerts and the cash question never read them.
+export function currentRequests<Request extends { captainId: string; openedAt: Date }>(
+  requests: Request[] | undefined,
+  order: { captainId: string | null; assignedAt: Date | null },
+): Request[] {
+  return (requests ?? []).filter(
+    (request) =>
+      request.captainId === order.captainId &&
+      order.assignedAt !== null &&
+      request.openedAt >= order.assignedAt,
+  );
+}
+
 // Each order's requests, newest first.
 export async function pickupRequestsOf(
   executor: Executor,

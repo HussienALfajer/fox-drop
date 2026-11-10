@@ -103,9 +103,14 @@ const CAPTAIN_SKIPS = new Set(['order.cancellation_acknowledged']);
 // the captain's and the customer's channels carry them without it (AP §10).
 const RESTAURANT_REASONS = new Set(['order.item_report_closed']);
 
+// Events whose reason is for operations and the captain only (AP §10, slice
+// 2.12a): the withdrawal's reason code reaches the restaurant's and the
+// customer's channels without it; they hear only that the captain changed.
+const CAPTAIN_REASONS = new Set(['order.reassigned']);
+
 function customerPublication(type: string, payload: OutboxPayload) {
   const { schema, orderId, number, restaurantId, status, version, at } = payload;
-  const reason = RESTAURANT_REASONS.has(type) ? null : payload.reason;
+  const reason = RESTAURANT_REASONS.has(type) || CAPTAIN_REASONS.has(type) ? null : payload.reason;
   return { type, schema, orderId, number, restaurantId, status, version, reason, at };
 }
 
@@ -158,9 +163,10 @@ export class OutboxRelay {
                 ? [captainChannel(payload.captainId)]
                 : [];
             const ownReason = RESTAURANT_REASONS.has(row.type);
+            const captainReason = CAPTAIN_REASONS.has(row.type);
             await this.publisher.broadcast(
               [
-                merchantChannel(payload.restaurantId),
+                ...(captainReason ? [] : [merchantChannel(payload.restaurantId)]),
                 // Architecture §6.2: the panel's board and detail of the city.
                 opsChannel(payload.cityId),
                 ...(ownReason ? [] : captain),
@@ -168,6 +174,13 @@ export class OutboxRelay {
               publication(row.type, payload),
               `outbox:${row.id}`,
             );
+            if (captainReason) {
+              await this.publisher.broadcast(
+                [merchantChannel(payload.restaurantId)],
+                { ...publication(row.type, payload), reason: null },
+                `outbox:${row.id}:merchant`,
+              );
+            }
             if (ownReason && captain.length > 0) {
               await this.publisher.broadcast(
                 captain,

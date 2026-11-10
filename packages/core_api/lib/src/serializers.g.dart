@@ -180,6 +180,10 @@ Serializers _$serializers =
           ..add(
             AdminOrderDtoOutputOrderPickupRequestsInnerStatusEnum.serializer,
           )
+          ..add(AdminOrderDtoOutputOrderReassignChoices.serializer)
+          ..add(AdminOrderDtoOutputOrderReassignChoicesReasonsInner.serializer)
+          ..add(AdminOrderDtoOutputOrderReassignmentsInner.serializer)
+          ..add(AdminOrderDtoOutputOrderReassignmentsInnerCashEnum.serializer)
           ..add(AdminOrderDtoOutputOrderRejection.serializer)
           ..add(AdminOrderDtoOutputOrderRemovedLinesInner.serializer)
           ..add(AdminOrderDtoOutputOrderStatusEnum.serializer)
@@ -230,6 +234,12 @@ Serializers _$serializers =
             AdminReasonListsDtoOutputListsInnerReasonsInnerNoteEnum.serializer,
           )
           ..add(AdminReasonOrderDtoOutput.serializer)
+          ..add(AdminReassignDto.serializer)
+          ..add(AdminReassignDtoCashEnum.serializer)
+          ..add(AdminReassignPreviewAnswerDtoOutput.serializer)
+          ..add(AdminReassignPreviewAnswerDtoOutputEntriesInner.serializer)
+          ..add(AdminReassignPreviewDto.serializer)
+          ..add(AdminReassignPreviewDtoCashEnum.serializer)
           ..add(AdminRecordArrivalDto.serializer)
           ..add(AdminRecordDeliveryDto.serializer)
           ..add(AdminRecordDeliveryDtoAmountDue.serializer)
@@ -317,6 +327,8 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputOrderRestaurant.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderRestaurantLocation.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderStatusEnum.serializer)
+          ..add(CaptainActiveOrderDtoOutputWithdrawn.serializer)
+          ..add(CaptainActiveOrderDtoOutputWithdrawnCashEnum.serializer)
           ..add(CaptainArriveAtCustomerDto.serializer)
           ..add(CaptainArriveAtCustomerDtoAway.serializer)
           ..add(CaptainArriveDto.serializer)
@@ -823,6 +835,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminOrderDtoOutputOrderReassignmentsInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderReassignmentsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminOrderDtoOutputOrderEditsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderEditsInner>(),
@@ -924,6 +942,17 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(
+                AdminOrderDtoOutputOrderReassignChoicesReasonsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderDtoOutputOrderReassignChoicesReasonsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminOutcomePreviewAnswerDtoOutputEntriesInner),
             ]),
             () => ListBuilder<AdminOutcomePreviewAnswerDtoOutputEntriesInner>(),
@@ -977,6 +1006,19 @@ Serializers _$serializers =
             ]),
             () =>
                 ListBuilder<AdminReasonListsDtoOutputListsInnerReasonsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminReassignPreviewAnswerDtoOutputEntriesInner),
+            ]),
+            () =>
+                ListBuilder<AdminReassignPreviewAnswerDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+            ]),
+            () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

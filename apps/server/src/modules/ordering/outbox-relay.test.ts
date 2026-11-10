@@ -53,7 +53,8 @@ interface Row {
     | 'order.cancelled'
     | 'order.offered'
     | 'order.assigned'
-    | 'order.item_report_closed';
+    | 'order.item_report_closed'
+    | 'order.reassigned';
   version: number;
   captainTrack?: string;
   captainId?: string;
@@ -115,6 +116,28 @@ describe('the outbox relay (architecture §5.5, E4)', () => {
     expect(await reasonOn(`merchant:${order.restaurantId}`)).toEqual(['وجد المطعم الصنف']);
     expect(await reasonOn(`ops:city.${city}`)).toContain('وجد المطعم الصنف');
     expect(await reasonOn(`captain:${captainId}`)).toEqual([null]);
+    expect(await reasonOn(`order:${order.orderId}`)).toEqual([null]);
+  });
+
+  it("keeps a withdrawal's reason to operations and the withdrawn captain (AP §10, slice 2.12a)", async () => {
+    const order = { orderId: randomUUID(), restaurantId: randomUUID() };
+    const captainId = randomUUID();
+    await insert({
+      ...order,
+      type: 'order.reassigned',
+      version: 6,
+      captainTrack: 'searching',
+      captainId,
+      reason: 'captain_late',
+    });
+    await relay.drain(new Date());
+    const reasonOn = async (channel: string) =>
+      ((await centrifugo.history(channel)) as { reason: string | null }[]).map(
+        (data) => data.reason,
+      );
+    expect(await reasonOn(`captain:${captainId}`)).toEqual(['captain_late']);
+    expect(await reasonOn(`ops:city.${city}`)).toContain('captain_late');
+    expect(await reasonOn(`merchant:${order.restaurantId}`)).toEqual([null]);
     expect(await reasonOn(`order:${order.orderId}`)).toEqual([null]);
   });
 

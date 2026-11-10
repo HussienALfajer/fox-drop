@@ -13,6 +13,7 @@ import {
   type PickupDisputeView,
   pickupDisputesOf,
   type PickupRequestView,
+  currentRequests,
   pickupRequestsOf,
 } from './pickup-views.js';
 import type { ItemReportNote, ItemReportUntil, ReportedItem } from './item-reports.js';
@@ -298,7 +299,7 @@ export class OperationsViews {
           assignedAt: more.assignedAt,
           lastFixAt: more.captainId === null ? null : (fixes.get(more.captainId) ?? null),
           gpsStaleMin: rule.gpsStaleMin,
-          amountDisputed: (requests.get(view.id) ?? []).some(
+          amountDisputed: currentRequests(requests.get(view.id), view).some(
             (request) => request.outcome === 'amount_incorrect',
           ),
           away: view.away !== null,

@@ -45,6 +45,7 @@ import {
   type Rejection,
 } from './order-commands.js';
 import { PickupCommands } from './pickup-commands.js';
+import { REASSIGNABLE } from './reassignment.js';
 import { ResendNotification, ResendRefusedError } from './resend-notification.js';
 import { minor } from './customer-quote.controller.js';
 import { type OperationsOrder, OperationsViews } from './operations-views.js';
@@ -448,6 +449,65 @@ class AdminCancelPreviewAnswerDto extends createZodDto(
   }),
 ) {}
 
+// AP §9.3.2 «سحب وإعادة تعيين» (slice 2.12a): «هل أعاد المطعم المبلغ للكابتن؟».
+const reassignmentCash = z
+  .enum(cashAnswers)
+  .nullable()
+  .describe(
+    "Required exactly when the captain reached the restaurant (409 cash_answer_required, cash_answer_not_allowed): returned «نعم», not_returned «لا» (the payment on the captain's custody and a merchant.debit), not_paid «لم يدفع الكابتن بعد».",
+  );
+
+class AdminReassignDto extends createZodDto(
+  z.object({
+    reassignment: z
+      .string()
+      .max(50)
+      .describe(
+        "A code of Content's reassignment list (AP Appendix B); 400 unknown_reason otherwise.",
+      ),
+    captainFault: z
+      .boolean()
+      .describe(
+        "«بخطأ من الكابتن» (counts as a captain cancellation, CA §11.2; no charge in V1) or «دون خطأ»; the dialog prefills the reason's default.",
+      ),
+    cash: reassignmentCash,
+    reason: z
+      .string()
+      .trim()
+      .min(1)
+      .max(500)
+      .describe('Required (AP §9.3.2): the internal note, never shown to the apps.'),
+  }),
+) {}
+
+class AdminReassignPreviewDto extends createZodDto(z.object({ cash: reassignmentCash })) {}
+
+class AdminReassignPreviewAnswerDto extends createZodDto(
+  z.object({
+    entries: z
+      .array(
+        z.object({
+          type: z.string().describe('The journal type, such as custody.pay_merchant.'),
+          account: z.string().describe('The account purpose, such as captain.custody.'),
+          party: z.object({
+            kind: z.enum(['merchant', 'captain', 'platform']),
+            id: z.uuid().nullable(),
+            name: z.string().nullable(),
+          }),
+          amount: money.describe("From the platform's side: + a debit, − a credit."),
+        }),
+      )
+      .describe('Every entry the reassignment would post (docs/domain/09): the kept payment only.'),
+    cashAsked: z.boolean().describe('The captain reached the restaurant: ask the cash question.'),
+    cashLines: z
+      .array(money)
+      .nullable()
+      .describe(
+        "While asked: what the captain paid (the last pickup request's lines, or the items value).",
+      ),
+  }),
+) {}
+
 const outcomeChoices = {
   outcome: z
     .enum(['free', 'fake', 'damaged', 'wrong_refused', 'failed_other'])
@@ -613,6 +673,38 @@ class AdminOrderDto extends createZodDto(
         })
         .nullable()
         .describe('While placed, accepted or ready: the choices of «إلغاء الطلب» (AP §9.3.2).'),
+      reassignChoices: z
+        .object({
+          reasons: z
+            .array(
+              z.object({
+                code: z.string(),
+                label: z.string(),
+                captainFault: z.boolean().describe('The default fault the dialog prefills.'),
+              }),
+            )
+            .describe("Content's active reassignment reasons, in order (AP Appendix B)."),
+        })
+        .nullable()
+        .describe(
+          'While accepted or ready with a captain: the choices of «سحب وإعادة تعيين» (AP §9.3.2); refused with 409 pickup_request_open while a request is open.',
+        ),
+      reassignments: z
+        .array(
+          z.object({
+            at: z.iso.datetime(),
+            captainId: z.uuid().describe('The captain the order was taken from.'),
+            captainName: z.string().nullable(),
+            reason: z.string().describe("The reassignment list's code."),
+            label: z.string().describe('The label as chosen.'),
+            captainFault: z.boolean().describe('«بخطأ من الكابتن».'),
+            cash: z.enum(cashAnswers).nullable(),
+            note: z.string().describe("Operations' internal note."),
+            adminId: z.uuid(),
+            captainSeenAt: z.iso.datetime().nullable().describe("The captain's «حسناً»."),
+          }),
+        )
+        .describe('AP §9.3.1: every «سحب وإعادة تعيين» of the order, oldest first.'),
       outcome: z
         .object({
           at: z.iso.datetime(),
@@ -1426,6 +1518,71 @@ export class AdminOrdersController {
     };
   }
 
+  // AP §9.3.2 «سحب وإعادة تعيين» (slice 2.12a): an accepted or ready order
+  // taken from its captain before the pickup, with a reassignment reason, the
+  // fault, the cash answer and the internal note; the order goes back to
+  // «بحاجة لتعيين», and operations offer or assign it again. 400
+  // unknown_reason; 409 pickup_request_open, cash_answer_required,
+  // cash_answer_not_allowed, order_state_changed, each with the order as it
+  // is now; 404 unknown_order; 422 idempotency_key_reused.
+  @Post(':orderId/reassign')
+  @RequirePermission('operations.manage')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOrderCardDto })
+  async reassign(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminReassignDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.onBehalf(params.orderId, () =>
+      this.commands.reassign(
+        {
+          orderId: params.orderId,
+          admin: { accountId: session.accountId, roles: session.roles },
+          context: requestContext(request),
+          idempotencyKey,
+          code: body.reassignment,
+          captainFault: body.captainFault,
+          cash: body.cash,
+          reason: body.reason,
+        },
+        new Date(),
+      ),
+    );
+  }
+
+  // docs/domain/09: what the reassignment's cash answer would post; it
+  // writes nothing, so it takes no key, and answers before the question is
+  // answered (cashAsked says to ask it). 409 pickup_request_open,
+  // order_state_changed.
+  @Post(':orderId/reassign-preview')
+  @RequirePermission('operations.manage')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminReassignPreviewAnswerDto })
+  async reassignPreview(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminReassignPreviewDto,
+  ) {
+    let preview: Awaited<ReturnType<OrderCommands['previewReassign']>> | undefined;
+    await this.onBehalf(params.orderId, async () => {
+      preview = await this.commands.previewReassign(params.orderId, body.cash);
+    });
+    const { entries, cashAsked, cashLines } = preview!;
+    return {
+      entries: entries.map((entry) => ({
+        type: entry.type,
+        account: entry.account,
+        party: entry.party,
+        amount: { amount: entry.amount.toString(), currency: entry.currency },
+      })),
+      cashAsked,
+      cashLines: cashLines && linesBody(cashLines),
+    };
+  }
+
   // AP §9.3.2 «تحديد النتيجة», AP §8.9 (slice 2.11a): a picked-up or
   // arrived order ended with an outcome, the responsible party, whether a
   // damaged order was delivered, where a failed order's food went and the
@@ -1795,6 +1952,8 @@ export class AdminOrdersController {
       edits,
       outcomeFoods,
       outcomeChange,
+      reassignReasons,
+      reassignmentRows,
     ] = await Promise.all([
       this.customers.profile(order.customerAccountId),
       this.views.timeline(order),
@@ -1812,6 +1971,10 @@ export class AdminOrdersController {
         ? this.commands.outcomeFoods()
         : null,
       this.commands.outcomeChangeChoices(order, now),
+      REASSIGNABLE.includes(order.status) && item.captain !== null
+        ? this.commands.reassignReasons()
+        : null,
+      this.commands.reassignmentsOf(order),
     ]);
     const { acceptance } = order;
     // The cancellation itself, not its acknowledgement (RA §8.14).
@@ -1855,6 +2018,12 @@ export class AdminOrdersController {
           captainSeenAt: cancellation.captainSeenAt?.toISOString() ?? null,
         },
         cancelChoices: cancelReasons && { reasons: cancelReasons },
+        reassignChoices: reassignReasons && { reasons: reassignReasons },
+        reassignments: reassignmentRows.map((each) => ({
+          ...each,
+          at: each.at.toISOString(),
+          captainSeenAt: each.captainSeenAt?.toISOString() ?? null,
+        })),
         outcome: order.outcome && {
           at: order.outcome.at.toISOString(),
           awaitingCollection: order.outcome.awaitingCollection,

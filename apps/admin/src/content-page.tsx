@@ -164,6 +164,7 @@ function ReasonRow({
       label: String(form.get('label')),
       customerText: String(form.get('customerText') ?? ''),
       note: noteMode(form.get('note')),
+      captainFault: list.fault ? form.get('captainFault') === 'on' : null,
       active: form.get('active') === 'on',
     });
   }
@@ -186,6 +187,7 @@ function ReasonRow({
           </label>
         )}
         {!list.closed && <NoteSelect value={reason.note} />}
+        {list.fault && <CaptainFault value={reason.captainFault === true} />}
         <label>
           <input
             type="checkbox"
@@ -201,6 +203,18 @@ function ReasonRow({
       </fieldset>
       <Outcome result={update.data} failed={update.isError} />
     </form>
+  );
+}
+
+// AP Appendix B: a reassignment reason's default fault, which the
+// reassignment dialog prefills (owner decision 2026-11-10).
+function CaptainFault({ value }: { value: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <label>
+      <input type="checkbox" name="captainFault" defaultChecked={value} />
+      {t('content.captainFault')}
+    </label>
   );
 }
 
@@ -232,6 +246,7 @@ function AddReason({ list }: { list: ReasonListEntry }) {
         label: String(form.get('label')),
         customerText: String(form.get('customerText') ?? ''),
         note: noteMode(form.get('note')),
+        captainFault: list.fault ? form.get('captainFault') === 'on' : null,
       },
       { onSuccess: (result) => result.status === 'saved' && element.reset() },
     );
@@ -251,6 +266,7 @@ function AddReason({ list }: { list: ReasonListEntry }) {
           </label>
         )}
         <NoteSelect value="none" />
+        {list.fault && <CaptainFault value={false} />}
         <button type="submit">{t('content.add')}</button>
       </fieldset>
       <Outcome result={add.data} failed={add.isError} />

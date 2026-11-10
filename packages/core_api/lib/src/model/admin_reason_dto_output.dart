@@ -18,6 +18,7 @@ part 'admin_reason_dto_output.g.dart';
 /// * [note] - Whether the choice takes a note: none, optional, required.
 /// * [fixed] - The code acts on it: it cannot be removed.
 /// * [active] - False once removed: hidden from new choices, kept on orders.
+/// * [captainFault] - The reassignment list's default fault («بخطأ من الكابتن»), which the dialog prefills; null in the other lists.
 @BuiltValue()
 abstract class AdminReasonDtoOutput
     implements Built<AdminReasonDtoOutput, AdminReasonDtoOutputBuilder> {
@@ -42,6 +43,10 @@ abstract class AdminReasonDtoOutput
   /// False once removed: hidden from new choices, kept on orders.
   @BuiltValueField(wireName: r'active')
   bool get active;
+
+  /// The reassignment list's default fault («بخطأ من الكابتن»), which the dialog prefills; null in the other lists.
+  @BuiltValueField(wireName: r'captainFault')
+  bool? get captainFault;
 
   AdminReasonDtoOutput._();
 
@@ -104,6 +109,13 @@ class _$AdminReasonDtoOutputSerializer
       object.active,
       specifiedType: const FullType(bool),
     );
+    yield r'captainFault';
+    yield object.captainFault == null
+        ? null
+        : serializers.serialize(
+            object.captainFault,
+            specifiedType: const FullType.nullable(bool),
+          );
   }
 
   @override
@@ -185,6 +197,16 @@ class _$AdminReasonDtoOutputSerializer
                   )
                   as bool;
           result.active = valueDes;
+          break;
+        case r'captainFault':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(bool),
+                  )
+                  as bool?;
+          if (valueDes == null) continue;
+          result.captainFault = valueDes;
           break;
         default:
           unhandled.add(key);

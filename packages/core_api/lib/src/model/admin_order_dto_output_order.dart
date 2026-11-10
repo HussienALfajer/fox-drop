@@ -21,10 +21,12 @@ import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart'
 import 'package:core_api/src/model/admin_order_dto_output_order_rejection.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_delivery.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_reassign_choices.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancellation.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_reassignments_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_outcome.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup.dart';
@@ -56,6 +58,8 @@ part 'admin_order_dto_output_order.g.dart';
 /// * [readyAt]
 /// * [cancellation]
 /// * [cancelChoices]
+/// * [reassignChoices]
+/// * [reassignments] - AP §9.3.1: every «سحب وإعادة تعيين» of the order, oldest first.
 /// * [outcome]
 /// * [outcomeChange]
 /// * [outcomeChoices]
@@ -146,6 +150,13 @@ abstract class AdminOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'cancelChoices')
   AdminOrderDtoOutputOrderCancelChoices? get cancelChoices;
+
+  @BuiltValueField(wireName: r'reassignChoices')
+  AdminOrderDtoOutputOrderReassignChoices? get reassignChoices;
+
+  /// AP §9.3.1: every «سحب وإعادة تعيين» of the order, oldest first.
+  @BuiltValueField(wireName: r'reassignments')
+  BuiltList<AdminOrderDtoOutputOrderReassignmentsInner> get reassignments;
 
   @BuiltValueField(wireName: r'outcome')
   AdminOrderDtoOutputOrderOutcome? get outcome;
@@ -358,6 +369,22 @@ class _$AdminOrderDtoOutputOrderSerializer
               AdminOrderDtoOutputOrderCancelChoices,
             ),
           );
+    yield r'reassignChoices';
+    yield object.reassignChoices == null
+        ? null
+        : serializers.serialize(
+            object.reassignChoices,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderReassignChoices,
+            ),
+          );
+    yield r'reassignments';
+    yield serializers.serialize(
+      object.reassignments,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminOrderDtoOutputOrderReassignmentsInner),
+      ]),
+    );
     yield r'outcome';
     yield object.outcome == null
         ? null
@@ -722,6 +749,29 @@ class _$AdminOrderDtoOutputOrderSerializer
                   as AdminOrderDtoOutputOrderCancelChoices?;
           if (valueDes == null) continue;
           result.cancelChoices.replace(valueDes);
+          break;
+        case r'reassignChoices':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderReassignChoices,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderReassignChoices?;
+          if (valueDes == null) continue;
+          result.reassignChoices.replace(valueDes);
+          break;
+        case r'reassignments':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminOrderDtoOutputOrderReassignmentsInner),
+                    ]),
+                  )
+                  as BuiltList<AdminOrderDtoOutputOrderReassignmentsInner>;
+          result.reassignments.replace(valueDes);
           break;
         case r'outcome':
           final valueDes =

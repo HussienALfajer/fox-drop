@@ -31,6 +31,8 @@ export interface Reason {
   note: NoteMode;
   fixed: boolean;
   active: boolean;
+  // The reassignment list's default fault (AP Appendix B); null elsewhere.
+  captainFault: boolean | null;
 }
 
 // A reason as an app offers it: the active ones, in their order.
@@ -100,6 +102,9 @@ export interface ReasonFields {
   label: string;
   customerText: string | null;
   note: NoteMode;
+  // The reassignment list's reasons carry their default fault (AP Appendix
+  // B, owner decision 2026-11-10); the other lists' none.
+  captainFault?: boolean | null;
 }
 
 const E164 = /^\+[1-9]\d{7,14}$/;
@@ -146,9 +151,16 @@ export class ContentService {
 
   // One list's reasons in order, inactive ones included: the panel names a
   // reason an order kept by its code, and offers only the active ones.
-  async reasonsOf(list: ReasonList): Promise<{ code: string; label: string; active: boolean }[]> {
+  async reasonsOf(
+    list: ReasonList,
+  ): Promise<{ code: string; label: string; active: boolean; captainFault: boolean | null }[]> {
     return this.database.db
-      .select({ code: reasons.code, label: reasons.label, active: reasons.active })
+      .select({
+        code: reasons.code,
+        label: reasons.label,
+        active: reasons.active,
+        captainFault: reasons.captainFault,
+      })
       .from(reasons)
       .where(eq(reasons.list, list))
       .orderBy(asc(reasons.position));
@@ -425,7 +437,15 @@ export class ContentService {
     if (fields.note !== 'none' && listDefinition(list).closed) {
       throw new ContentRefusedError('invalid_value', `${list} takes no notes`);
     }
-    return { label, customerText, note: fields.note };
+    const captainFault = fields.captainFault ?? null;
+    const faultList = list === 'reassignment';
+    if (faultList !== (captainFault !== null)) {
+      throw new ContentRefusedError(
+        'invalid_value',
+        faultList ? 'a reassignment reason has its default fault' : `${list} has no fault`,
+      );
+    }
+    return { label, customerText, note: fields.note, captainFault };
   }
 
   // Two active reasons of a list never read the same.
@@ -481,5 +501,6 @@ function reasonOf(row: typeof reasons.$inferSelect): Reason {
     note: row.note,
     fixed: row.fixed,
     active: row.active,
+    captainFault: row.captainFault,
   };
 }

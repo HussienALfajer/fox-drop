@@ -207,7 +207,10 @@ export type PreviewLine =
 // know included, is `unknown`, since the preview must be whole and right
 // before anyone confirms. The order clearing account («طلبات قيد التسليم»)
 // only carries each journal through and nets to zero, so it is not repeated.
-export function previewLines(preview: CancelPreview): PreviewLine[] {
+// The reassignment's preview (slice 2.12a) has the same entries and no strike.
+export function previewLines(
+  preview: Pick<CancelPreview, 'entries'> & { strike?: boolean },
+): PreviewLine[] {
   const journals = new Map<string, CancelPreview['entries']>();
   for (const entry of preview.entries) {
     journals.set(entry.type, [...(journals.get(entry.type) ?? []), entry]);

@@ -372,6 +372,14 @@ class Commands extends Notifier<Set<String>> {
     (_) => _api.captainOrdersAcknowledgeCancellation(orderId: orderId),
   )).$2;
 
+  /// «حسناً» on an order operations took from the captain (CA §9.10): no key
+  /// and no location, as the cancellation's.
+  Future<Notice?> acknowledgeWithdrawal(String orderId) async => (await _send(
+    orderId,
+    'acknowledge-withdrawal',
+    (_) => _api.captainOrdersAcknowledgeWithdrawal(orderId: orderId),
+  )).$2;
+
   /// «حسناً» on an order operations ended with an outcome (CA §9.12): no key
   /// and no location, as the cancellation's.
   Future<Notice?> acknowledgeOutcome(String orderId) async => (await _send(
