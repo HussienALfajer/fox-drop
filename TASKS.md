@@ -4,20 +4,19 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.10, order edits (`docs/roadmap.md`, Phase 2).
+Slice 2.10a, edits before pickup (`docs/roadmap.md`, Phase 2; 2.10 split in two on 2026-11-10: 2.10a before pickup with the panel, 2.10b after pickup).
 
-- **Roadmap line:** recalculated money, the acknowledgement with its ring, a `ready` order back to `accepted` when items are added, the 3-minute alert, post-pickup removals with a responsible party and the commission cut once, the captain's blocks (AP §9.3.3, RA §8.13, CA §9.3, §9.10, CU §11.6). The owner adds an item to a ready order and it returns to preparing.
-- **Specs:** AP §9.3.3 (edits by operations, the money recalculated, before and after pickup), AP §9.3.2 (the edit row), AP §9.1.3 (the 3-minute unacknowledged-edit alert), RA §8.13 (`docs/product/v1/restaurant-app/08-orders/13-edits-by-operations.md`: the acknowledgement, its ring, back to preparing), RA §8.10 (no pickup while an edit adding items is unacknowledged), RA §8.12 (an edit clears an open item report), RA §16 #16–17, CA §9.3 and §9.10 (`docs/product/v1/captain-app/09-the-active-order/03-step-2-at-the-restaurant.md`, `10-changes-by-operations.md`: «بانتظار تأكيد المطعم للتعديل»), CU §11.6 and §14 #11 («عدّلت FOX DROP طلبك. المجموع الجديد: {المبلغ}»), docs/domain/04 and 09 (the money, the commission cut once, the responsible party), and the definitions of done.
+- **Roadmap line:** «تعديل الطلب» in `placed`, `accepted` and `ready` with the before-and-after money preview, the money recalculated from the snapshots, an open item report cleared, the restaurant's acknowledgement with its ring, a `ready` order back to `accepted`, the 3-minute alert, the captain's block and the customer's new total. The owner adds an item to a ready order and it returns to preparing.
+- **Specs:** AP §9.3.3, §9.3.2 (the edit row), §9.1.3 («المطعم لم يؤكد التعديل»), RA §8.13, §8.10, §8.12, RA §16, CA §9.3, §9.10, CU §11.6, §14 #11, docs/domain/01 and 04, and the definitions of done.
 - **Branch:** `feat/order-edits`.
-- **Ask the owner first:** the split into pull requests (use the `slice-plan` skill; 2.9 went as one, 2.7 and 2.8 as two or three), and the open wording: the edit dialog (removing, replacing, adding items, quantities), how a post-pickup removal books its money, and what the customer sees of the new total.
-- **Plan (to confirm with the split):**
-  - [ ] Server: the edit before pickup (lines changed, money recalculated, the item report cleared, the restaurant's acknowledgement with its ring, a ready order back to accepted when items are added, the pickup blocked until acknowledged, the 3-minute alert); failing tests first.
-  - [ ] Server: post-pickup removals with the responsible party and the commission cut once (docs/domain/09).
-  - [ ] Restaurant app: the edit's ring and «تم» acknowledgement, the lines changed.
-  - [ ] Captain app: «بانتظار تأكيد المطعم للتعديل» and the new amounts.
-  - [ ] Panel: the edit dialog and its preview.
-  - [ ] Customer app: the new total (CU §11.6).
-  - [ ] Review, hand over to 2.11, pull request.
+- **Owner decisions (2026-11-10):** two pull requests (2.10a, 2.10b). A higher quantity on an existing line keeps the line's original unit price and counts as an addition (it rings and blocks the pickup until acknowledged); a line whose options change is replaced by a new line at the current menu's prices. The delivery fee stays as placed unless operations type a new one (the free-delivery threshold is not re-checked). Items added to a `ready` order send it back to `accepted` with the extra prep time operations enter, and the promised time moves by the same minutes, rounded up to the next 5 as «تعديل الوقت» does, with the customer told the new time.
+- **Plan:**
+  - [ ] Server: the edit command and its preview (lines, money, the item report cleared, `ready` back to `accepted`, the acknowledgement state, the pickup blocked, the 3-minute alert); failing tests first.
+  - [ ] Restaurant app: the edit prompt with its ring or chime and «اطلعت على التعديل».
+  - [ ] Captain app: «بانتظار تأكيد المطعم للتعديل» and «تم تعديل الطلب — …».
+  - [ ] Customer app: the push and the summary's «أُضيف» and «حُذف».
+  - [ ] Panel: «تعديل الطلب» with its preview, and the edit on the detail.
+  - [ ] Review, hand over to 2.10b, pull request.
 
 ### Left from 2.9 (`feat/order-time-and-item-report`)
 
