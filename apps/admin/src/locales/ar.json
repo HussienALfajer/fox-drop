@@ -561,6 +561,7 @@
     "label": "النص",
     "customerText": "النص للزبون",
     "genericApology": "نعتذر، لم نتمكن من إكمال طلبك",
+    "captainFault": "بخطأ من الكابتن افتراضياً",
     "active": "معروض",
     "fixed": "ثابت (لا يُحذف)",
     "reasons": {

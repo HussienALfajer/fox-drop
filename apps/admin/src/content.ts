@@ -108,6 +108,8 @@ export interface ReasonForm {
   label: string;
   customerText: string;
   note: NoteMode;
+  // The reassignment list's default fault (AP Appendix B); null elsewhere.
+  captainFault: boolean | null;
 }
 
 // The form's select gives one of the three modes; anything else is none.
@@ -121,6 +123,7 @@ function fields(form: ReasonForm) {
     label: form.label.trim(),
     customerText: form.customerText.trim() === '' ? null : form.customerText.trim(),
     note: form.note,
+    captainFault: form.captainFault,
   };
 }
 

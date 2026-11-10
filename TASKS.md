@@ -15,7 +15,7 @@ Slice 2.12a, «سحب وإعادة تعيين» before the pickup (`docs/roadmap
 
 ### Plan
 
-- [ ] Content: each reassignment reason's default fault (a `content.reasons` column, seeded from the owner's decision), shown and edited in the panel's Content screen.
+- [x] Content: each reassignment reason's default fault (a `content.reasons` column, seeded from the owner's decision), shown and edited in the panel's Content screen.
 - [ ] Server rule first (failing test): the reassignment's rule and the cash entries shared with the cancellation (`cancellation.ts`): allowed from `accepted` or `ready` with a captain, refused with a pickup request open (`409 pickup_request_open`), the cash answer required exactly when the captain reached the restaurant.
 - [ ] Server command: `POST /v1/admin/orders/{orderId}/reassign` and `.../reassign-preview` (`operations.manage`, `Idempotency-Key`): an `ordering.reassignments` row (the captain, reason, label, fault, cash, admin, note, `captain_seen_at`), the order's captain, assignment and arrival cleared, the track back to `searching`, event `order.reassigned` with the withdrawn captain, the cash journals, the audit; the captain free at once (K17); the pushes (the captain's CA #11 «سُحب منك الطلب: {السبب}», then CU #13 and RA #8 on the next assignment); `pnpm generate:api`.
 - [ ] Captain app: the withdrawn card (cancellation sound, the reason, the cash answer) in the active read until acknowledged, then the order leaves the app.

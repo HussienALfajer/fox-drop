@@ -78,12 +78,18 @@ class _$AddReasonDto extends AddReasonDto {
   final String? customerText;
   @override
   final AddReasonDtoNoteEnum note;
+  @override
+  final bool? captainFault;
 
   factory _$AddReasonDto([void Function(AddReasonDtoBuilder)? updates]) =>
       (AddReasonDtoBuilder()..update(updates))._build();
 
-  _$AddReasonDto._({required this.label, this.customerText, required this.note})
-    : super._();
+  _$AddReasonDto._({
+    required this.label,
+    this.customerText,
+    required this.note,
+    this.captainFault,
+  }) : super._();
   @override
   AddReasonDto rebuild(void Function(AddReasonDtoBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -97,7 +103,8 @@ class _$AddReasonDto extends AddReasonDto {
     return other is AddReasonDto &&
         label == other.label &&
         customerText == other.customerText &&
-        note == other.note;
+        note == other.note &&
+        captainFault == other.captainFault;
   }
 
   @override
@@ -106,6 +113,7 @@ class _$AddReasonDto extends AddReasonDto {
     _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, customerText.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
+    _$hash = $jc(_$hash, captainFault.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -115,7 +123,8 @@ class _$AddReasonDto extends AddReasonDto {
     return (newBuiltValueToStringHelper(r'AddReasonDto')
           ..add('label', label)
           ..add('customerText', customerText)
-          ..add('note', note))
+          ..add('note', note)
+          ..add('captainFault', captainFault))
         .toString();
   }
 }
@@ -136,6 +145,10 @@ class AddReasonDtoBuilder
   AddReasonDtoNoteEnum? get note => _$this._note;
   set note(AddReasonDtoNoteEnum? note) => _$this._note = note;
 
+  bool? _captainFault;
+  bool? get captainFault => _$this._captainFault;
+  set captainFault(bool? captainFault) => _$this._captainFault = captainFault;
+
   AddReasonDtoBuilder() {
     AddReasonDto._defaults(this);
   }
@@ -146,6 +159,7 @@ class AddReasonDtoBuilder
       _label = $v.label;
       _customerText = $v.customerText;
       _note = $v.note;
+      _captainFault = $v.captainFault;
       _$v = null;
     }
     return this;
@@ -179,6 +193,7 @@ class AddReasonDtoBuilder
             r'AddReasonDto',
             'note',
           ),
+          captainFault: captainFault,
         );
     replace(_$result);
     return _$result;

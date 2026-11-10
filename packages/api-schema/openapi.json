@@ -11197,6 +11197,10 @@
                   "type": "boolean",
                   "description": "No reason can be added."
                 },
+                "fault": {
+                  "type": "boolean",
+                  "description": "Its reasons carry their default fault (reassignment)."
+                },
                 "reasons": {
                   "type": "array",
                   "items": {
@@ -11230,6 +11234,13 @@
                       "active": {
                         "type": "boolean",
                         "description": "False once removed: hidden from new choices, kept on orders."
+                      },
+                      "captainFault": {
+                        "description": "The reassignment list's default fault («بخطأ من الكابتن»), which the dialog prefills; null in the other lists.",
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
                       }
                     },
                     "required": [
@@ -11238,7 +11249,8 @@
                       "customerText",
                       "note",
                       "fixed",
-                      "active"
+                      "active",
+                      "captainFault"
                     ],
                     "additionalProperties": false
                   }
@@ -11249,6 +11261,7 @@
                 "apps",
                 "customerText",
                 "closed",
+                "fault",
                 "reasons"
               ],
               "additionalProperties": false
@@ -11288,6 +11301,14 @@
               "required"
             ],
             "description": "none, optional or required («أخرى» with its text); none in a closed list."
+          },
+          "captainFault": {
+            "default": null,
+            "description": "Required in the reassignment list (its default fault), null in the others.",
+            "type": [
+              "boolean",
+              "null"
+            ]
           }
         },
         "required": [
@@ -11327,6 +11348,13 @@
           "active": {
             "type": "boolean",
             "description": "False once removed: hidden from new choices, kept on orders."
+          },
+          "captainFault": {
+            "description": "The reassignment list's default fault («بخطأ من الكابتن»), which the dialog prefills; null in the other lists.",
+            "type": [
+              "boolean",
+              "null"
+            ]
           }
         },
         "required": [
@@ -11335,7 +11363,8 @@
           "customerText",
           "note",
           "fixed",
-          "active"
+          "active",
+          "captainFault"
         ],
         "additionalProperties": false
       },
@@ -11367,6 +11396,14 @@
               "required"
             ],
             "description": "none, optional or required («أخرى» with its text); none in a closed list."
+          },
+          "captainFault": {
+            "default": null,
+            "description": "Required in the reassignment list (its default fault), null in the others.",
+            "type": [
+              "boolean",
+              "null"
+            ]
           },
           "active": {
             "type": "boolean",
@@ -11433,6 +11470,13 @@
                 "active": {
                   "type": "boolean",
                   "description": "False once removed: hidden from new choices, kept on orders."
+                },
+                "captainFault": {
+                  "description": "The reassignment list's default fault («بخطأ من الكابتن»), which the dialog prefills; null in the other lists.",
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
                 }
               },
               "required": [
@@ -11441,7 +11485,8 @@
                 "customerText",
                 "note",
                 "fixed",
-                "active"
+                "active",
+                "captainFault"
               ],
               "additionalProperties": false
             }

@@ -3838,6 +3838,8 @@ export interface components {
                 customerText: boolean;
                 /** @description No reason can be added. */
                 closed: boolean;
+                /** @description Its reasons carry their default fault (reassignment). */
+                fault: boolean;
                 reasons: {
                     code: string;
                     label: string;
@@ -3851,6 +3853,8 @@ export interface components {
                     fixed: boolean;
                     /** @description False once removed: hidden from new choices, kept on orders. */
                     active: boolean;
+                    /** @description The reassignment list's default fault («بخطأ من الكابتن»), which the dialog prefills; null in the other lists. */
+                    captainFault: boolean | null;
                 }[];
             }[];
         };
@@ -3863,6 +3867,11 @@ export interface components {
              * @enum {string}
              */
             note: "none" | "optional" | "required";
+            /**
+             * @description Required in the reassignment list (its default fault), null in the others.
+             * @default null
+             */
+            captainFault: boolean | null;
         };
         AdminReasonDto_Output: {
             code: string;
@@ -3877,6 +3886,8 @@ export interface components {
             fixed: boolean;
             /** @description False once removed: hidden from new choices, kept on orders. */
             active: boolean;
+            /** @description The reassignment list's default fault («بخطأ من الكابتن»), which the dialog prefills; null in the other lists. */
+            captainFault: boolean | null;
         };
         UpdateReasonDto: {
             label: string;
@@ -3887,6 +3898,11 @@ export interface components {
              * @enum {string}
              */
             note: "none" | "optional" | "required";
+            /**
+             * @description Required in the reassignment list (its default fault), null in the others.
+             * @default null
+             */
+            captainFault: boolean | null;
             /** @description False removes it from the list. */
             active: boolean;
         };
@@ -3908,6 +3924,8 @@ export interface components {
                 fixed: boolean;
                 /** @description False once removed: hidden from new choices, kept on orders. */
                 active: boolean;
+                /** @description The reassignment list's default fault («بخطأ من الكابتن»), which the dialog prefills; null in the other lists. */
+                captainFault: boolean | null;
             }[];
         };
         AdminFaqsDto_Output: {

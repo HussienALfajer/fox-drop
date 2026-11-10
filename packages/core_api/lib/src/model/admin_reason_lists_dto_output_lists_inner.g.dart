@@ -354,6 +354,8 @@ class _$AdminReasonListsDtoOutputListsInner
   @override
   final bool closed;
   @override
+  final bool fault;
+  @override
   final BuiltList<AdminReasonListsDtoOutputListsInnerReasonsInner> reasons;
 
   factory _$AdminReasonListsDtoOutputListsInner([
@@ -366,6 +368,7 @@ class _$AdminReasonListsDtoOutputListsInner
     required this.apps,
     required this.customerText,
     required this.closed,
+    required this.fault,
     required this.reasons,
   }) : super._();
   @override
@@ -385,6 +388,7 @@ class _$AdminReasonListsDtoOutputListsInner
         apps == other.apps &&
         customerText == other.customerText &&
         closed == other.closed &&
+        fault == other.fault &&
         reasons == other.reasons;
   }
 
@@ -395,6 +399,7 @@ class _$AdminReasonListsDtoOutputListsInner
     _$hash = $jc(_$hash, apps.hashCode);
     _$hash = $jc(_$hash, customerText.hashCode);
     _$hash = $jc(_$hash, closed.hashCode);
+    _$hash = $jc(_$hash, fault.hashCode);
     _$hash = $jc(_$hash, reasons.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -407,6 +412,7 @@ class _$AdminReasonListsDtoOutputListsInner
           ..add('apps', apps)
           ..add('customerText', customerText)
           ..add('closed', closed)
+          ..add('fault', fault)
           ..add('reasons', reasons))
         .toString();
   }
@@ -440,6 +446,10 @@ class AdminReasonListsDtoOutputListsInnerBuilder
   bool? get closed => _$this._closed;
   set closed(bool? closed) => _$this._closed = closed;
 
+  bool? _fault;
+  bool? get fault => _$this._fault;
+  set fault(bool? fault) => _$this._fault = fault;
+
   ListBuilder<AdminReasonListsDtoOutputListsInnerReasonsInner>? _reasons;
   ListBuilder<AdminReasonListsDtoOutputListsInnerReasonsInner> get reasons =>
       _$this._reasons ??=
@@ -459,6 +469,7 @@ class AdminReasonListsDtoOutputListsInnerBuilder
       _apps = $v.apps.toBuilder();
       _customerText = $v.customerText;
       _closed = $v.closed;
+      _fault = $v.fault;
       _reasons = $v.reasons.toBuilder();
       _$v = null;
     }
@@ -501,6 +512,11 @@ class AdminReasonListsDtoOutputListsInnerBuilder
               closed,
               r'AdminReasonListsDtoOutputListsInner',
               'closed',
+            ),
+            fault: BuiltValueNullFieldError.checkNotNull(
+              fault,
+              r'AdminReasonListsDtoOutputListsInner',
+              'fault',
             ),
             reasons: reasons.build(),
           );

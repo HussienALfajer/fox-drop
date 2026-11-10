@@ -8,6 +8,7 @@ const reasons = {
       apps: ['captain'],
       customerText: false,
       closed: false,
+      fault: false,
       reasons: [
         {
           code: 'pin_inaccurate',
@@ -16,6 +17,7 @@ const reasons = {
           note: 'none',
           fixed: false,
           active: true,
+          captainFault: null,
         },
       ],
     },
@@ -82,6 +84,7 @@ test('edits a reason of a list', async ({ page }) => {
     label: 'الدبوس بعيد',
     customerText: null,
     note: 'none',
+    captainFault: null,
     active: true,
   });
 });

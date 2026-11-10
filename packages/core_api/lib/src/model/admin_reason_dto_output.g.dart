@@ -88,6 +88,8 @@ class _$AdminReasonDtoOutput extends AdminReasonDtoOutput {
   final bool fixed;
   @override
   final bool active;
+  @override
+  final bool? captainFault;
 
   factory _$AdminReasonDtoOutput([
     void Function(AdminReasonDtoOutputBuilder)? updates,
@@ -100,6 +102,7 @@ class _$AdminReasonDtoOutput extends AdminReasonDtoOutput {
     required this.note,
     required this.fixed,
     required this.active,
+    this.captainFault,
   }) : super._();
   @override
   AdminReasonDtoOutput rebuild(
@@ -119,7 +122,8 @@ class _$AdminReasonDtoOutput extends AdminReasonDtoOutput {
         customerText == other.customerText &&
         note == other.note &&
         fixed == other.fixed &&
-        active == other.active;
+        active == other.active &&
+        captainFault == other.captainFault;
   }
 
   @override
@@ -131,6 +135,7 @@ class _$AdminReasonDtoOutput extends AdminReasonDtoOutput {
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, fixed.hashCode);
     _$hash = $jc(_$hash, active.hashCode);
+    _$hash = $jc(_$hash, captainFault.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -143,7 +148,8 @@ class _$AdminReasonDtoOutput extends AdminReasonDtoOutput {
           ..add('customerText', customerText)
           ..add('note', note)
           ..add('fixed', fixed)
-          ..add('active', active))
+          ..add('active', active)
+          ..add('captainFault', captainFault))
         .toString();
   }
 }
@@ -176,6 +182,10 @@ class AdminReasonDtoOutputBuilder
   bool? get active => _$this._active;
   set active(bool? active) => _$this._active = active;
 
+  bool? _captainFault;
+  bool? get captainFault => _$this._captainFault;
+  set captainFault(bool? captainFault) => _$this._captainFault = captainFault;
+
   AdminReasonDtoOutputBuilder() {
     AdminReasonDtoOutput._defaults(this);
   }
@@ -189,6 +199,7 @@ class AdminReasonDtoOutputBuilder
       _note = $v.note;
       _fixed = $v.fixed;
       _active = $v.active;
+      _captainFault = $v.captainFault;
       _$v = null;
     }
     return this;
@@ -237,6 +248,7 @@ class AdminReasonDtoOutputBuilder
             r'AdminReasonDtoOutput',
             'active',
           ),
+          captainFault: captainFault,
         );
     replace(_$result);
     return _$result;

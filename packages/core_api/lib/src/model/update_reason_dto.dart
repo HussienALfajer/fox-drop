@@ -15,6 +15,7 @@ part 'update_reason_dto.g.dart';
 /// * [label]
 /// * [customerText] - Only in the lists with customer texts; null shows the generic apology.
 /// * [note] - none, optional or required («أخرى» with its text); none in a closed list.
+/// * [captainFault] - Required in the reassignment list (its default fault), null in the others.
 /// * [active] - False removes it from the list.
 @BuiltValue()
 abstract class UpdateReasonDto
@@ -30,6 +31,10 @@ abstract class UpdateReasonDto
   @BuiltValueField(wireName: r'note')
   UpdateReasonDtoNoteEnum get note;
   // enum noteEnum {  none,  optional,  required,  };
+
+  /// Required in the reassignment list (its default fault), null in the others.
+  @BuiltValueField(wireName: r'captainFault')
+  bool? get captainFault;
 
   /// False removes it from the list.
   @BuiltValueField(wireName: r'active')
@@ -78,6 +83,13 @@ class _$UpdateReasonDtoSerializer
       object.note,
       specifiedType: const FullType(UpdateReasonDtoNoteEnum),
     );
+    if (object.captainFault != null) {
+      yield r'captainFault';
+      yield serializers.serialize(
+        object.captainFault,
+        specifiedType: const FullType.nullable(bool),
+      );
+    }
     yield r'active';
     yield serializers.serialize(
       object.active,
@@ -137,6 +149,16 @@ class _$UpdateReasonDtoSerializer
                   )
                   as UpdateReasonDtoNoteEnum;
           result.note = valueDes;
+          break;
+        case r'captainFault':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(bool),
+                  )
+                  as bool?;
+          if (valueDes == null) continue;
+          result.captainFault = valueDes;
           break;
         case r'active':
           final valueDes =

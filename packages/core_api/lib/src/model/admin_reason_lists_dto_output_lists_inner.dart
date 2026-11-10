@@ -17,6 +17,7 @@ part 'admin_reason_lists_dto_output_lists_inner.g.dart';
 /// * [apps]
 /// * [customerText] - Its reasons may carry «نص للزبون».
 /// * [closed] - No reason can be added.
+/// * [fault] - Its reasons carry their default fault (reassignment).
 /// * [reasons]
 @BuiltValue()
 abstract class AdminReasonListsDtoOutputListsInner
@@ -40,6 +41,10 @@ abstract class AdminReasonListsDtoOutputListsInner
   /// No reason can be added.
   @BuiltValueField(wireName: r'closed')
   bool get closed;
+
+  /// Its reasons carry their default fault (reassignment).
+  @BuiltValueField(wireName: r'fault')
+  bool get fault;
 
   @BuiltValueField(wireName: r'reasons')
   BuiltList<AdminReasonListsDtoOutputListsInnerReasonsInner> get reasons;
@@ -96,6 +101,11 @@ class _$AdminReasonListsDtoOutputListsInnerSerializer
     yield r'closed';
     yield serializers.serialize(
       object.closed,
+      specifiedType: const FullType(bool),
+    );
+    yield r'fault';
+    yield serializers.serialize(
+      object.fault,
       specifiedType: const FullType(bool),
     );
     yield r'reasons';
@@ -171,6 +181,15 @@ class _$AdminReasonListsDtoOutputListsInnerSerializer
                   )
                   as bool;
           result.closed = valueDes;
+          break;
+        case r'fault':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.fault = valueDes;
           break;
         case r'reasons':
           final valueDes =

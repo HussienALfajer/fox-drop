@@ -101,6 +101,8 @@ class _$AdminReasonListsDtoOutputListsInnerReasonsInner
   final bool fixed;
   @override
   final bool active;
+  @override
+  final bool? captainFault;
 
   factory _$AdminReasonListsDtoOutputListsInnerReasonsInner([
     void Function(AdminReasonListsDtoOutputListsInnerReasonsInnerBuilder)?
@@ -117,6 +119,7 @@ class _$AdminReasonListsDtoOutputListsInnerReasonsInner
     required this.note,
     required this.fixed,
     required this.active,
+    this.captainFault,
   }) : super._();
   @override
   AdminReasonListsDtoOutputListsInnerReasonsInner rebuild(
@@ -137,7 +140,8 @@ class _$AdminReasonListsDtoOutputListsInnerReasonsInner
         customerText == other.customerText &&
         note == other.note &&
         fixed == other.fixed &&
-        active == other.active;
+        active == other.active &&
+        captainFault == other.captainFault;
   }
 
   @override
@@ -149,6 +153,7 @@ class _$AdminReasonListsDtoOutputListsInnerReasonsInner
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, fixed.hashCode);
     _$hash = $jc(_$hash, active.hashCode);
+    _$hash = $jc(_$hash, captainFault.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -163,7 +168,8 @@ class _$AdminReasonListsDtoOutputListsInnerReasonsInner
           ..add('customerText', customerText)
           ..add('note', note)
           ..add('fixed', fixed)
-          ..add('active', active))
+          ..add('active', active)
+          ..add('captainFault', captainFault))
         .toString();
   }
 }
@@ -202,6 +208,10 @@ class AdminReasonListsDtoOutputListsInnerReasonsInnerBuilder
   bool? get active => _$this._active;
   set active(bool? active) => _$this._active = active;
 
+  bool? _captainFault;
+  bool? get captainFault => _$this._captainFault;
+  set captainFault(bool? captainFault) => _$this._captainFault = captainFault;
+
   AdminReasonListsDtoOutputListsInnerReasonsInnerBuilder() {
     AdminReasonListsDtoOutputListsInnerReasonsInner._defaults(this);
   }
@@ -215,6 +225,7 @@ class AdminReasonListsDtoOutputListsInnerReasonsInnerBuilder
       _note = $v.note;
       _fixed = $v.fixed;
       _active = $v.active;
+      _captainFault = $v.captainFault;
       _$v = null;
     }
     return this;
@@ -266,6 +277,7 @@ class AdminReasonListsDtoOutputListsInnerReasonsInnerBuilder
             r'AdminReasonListsDtoOutputListsInnerReasonsInner',
             'active',
           ),
+          captainFault: captainFault,
         );
     replace(_$result);
     return _$result;

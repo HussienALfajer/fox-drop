@@ -79,6 +79,8 @@ class _$UpdateReasonDto extends UpdateReasonDto {
   @override
   final UpdateReasonDtoNoteEnum note;
   @override
+  final bool? captainFault;
+  @override
   final bool active;
 
   factory _$UpdateReasonDto([void Function(UpdateReasonDtoBuilder)? updates]) =>
@@ -88,6 +90,7 @@ class _$UpdateReasonDto extends UpdateReasonDto {
     required this.label,
     this.customerText,
     required this.note,
+    this.captainFault,
     required this.active,
   }) : super._();
   @override
@@ -104,6 +107,7 @@ class _$UpdateReasonDto extends UpdateReasonDto {
         label == other.label &&
         customerText == other.customerText &&
         note == other.note &&
+        captainFault == other.captainFault &&
         active == other.active;
   }
 
@@ -113,6 +117,7 @@ class _$UpdateReasonDto extends UpdateReasonDto {
     _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, customerText.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
+    _$hash = $jc(_$hash, captainFault.hashCode);
     _$hash = $jc(_$hash, active.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -124,6 +129,7 @@ class _$UpdateReasonDto extends UpdateReasonDto {
           ..add('label', label)
           ..add('customerText', customerText)
           ..add('note', note)
+          ..add('captainFault', captainFault)
           ..add('active', active))
         .toString();
   }
@@ -145,6 +151,10 @@ class UpdateReasonDtoBuilder
   UpdateReasonDtoNoteEnum? get note => _$this._note;
   set note(UpdateReasonDtoNoteEnum? note) => _$this._note = note;
 
+  bool? _captainFault;
+  bool? get captainFault => _$this._captainFault;
+  set captainFault(bool? captainFault) => _$this._captainFault = captainFault;
+
   bool? _active;
   bool? get active => _$this._active;
   set active(bool? active) => _$this._active = active;
@@ -159,6 +169,7 @@ class UpdateReasonDtoBuilder
       _label = $v.label;
       _customerText = $v.customerText;
       _note = $v.note;
+      _captainFault = $v.captainFault;
       _active = $v.active;
       _$v = null;
     }
@@ -193,6 +204,7 @@ class UpdateReasonDtoBuilder
             r'UpdateReasonDto',
             'note',
           ),
+          captainFault: captainFault,
           active: BuiltValueNullFieldError.checkNotNull(
             active,
             r'UpdateReasonDto',
