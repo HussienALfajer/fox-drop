@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_note.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_items_inner.dart';
 import 'package:built_value/built_value.dart';
@@ -15,7 +16,7 @@ part 'merchant_orders_dto_output_orders_inner_item_report.g.dart';
 /// Properties:
 /// * [at]
 /// * [items]
-/// * [note] - «يوجد بديل مشابه» or «الكمية غير كافية».
+/// * [note]
 @BuiltValue()
 abstract class MerchantOrdersDtoOutputOrdersInnerItemReport
     implements
@@ -29,10 +30,8 @@ abstract class MerchantOrdersDtoOutputOrdersInnerItemReport
   @BuiltValueField(wireName: r'items')
   BuiltList<MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner> get items;
 
-  /// «يوجد بديل مشابه» or «الكمية غير كافية».
   @BuiltValueField(wireName: r'note')
-  MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum? get note;
-  // enum noteEnum {  similar_substitute,  not_enough,  };
+  MerchantOrdersDtoOutputOrdersInnerItemReportNote? get note;
 
   MerchantOrdersDtoOutputOrdersInnerItemReport._();
 
@@ -85,7 +84,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerItemReportSerializer
         : serializers.serialize(
             object.note,
             specifiedType: const FullType.nullable(
-              MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum,
+              MerchantOrdersDtoOutputOrdersInnerItemReportNote,
             ),
           );
   }
@@ -144,12 +143,12 @@ class _$MerchantOrdersDtoOutputOrdersInnerItemReportSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum,
+                      MerchantOrdersDtoOutputOrdersInnerItemReportNote,
                     ),
                   )
-                  as MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum?;
+                  as MerchantOrdersDtoOutputOrdersInnerItemReportNote?;
           if (valueDes == null) continue;
-          result.note = valueDes;
+          result.note.replace(valueDes);
           break;
         default:
           unhandled.add(key);
@@ -178,28 +177,4 @@ class _$MerchantOrdersDtoOutputOrdersInnerItemReportSerializer
     );
     return result.build();
   }
-}
-
-/// «يوجد بديل مشابه» or «الكمية غير كافية».
-class MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum extends EnumClass {
-  @BuiltValueEnumConst(wireName: r'similar_substitute')
-  static const MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum
-  similarSubstitute =
-      _$merchantOrdersDtoOutputOrdersInnerItemReportNoteEnum_similarSubstitute;
-  @BuiltValueEnumConst(wireName: r'not_enough')
-  static const MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum notEnough =
-      _$merchantOrdersDtoOutputOrdersInnerItemReportNoteEnum_notEnough;
-
-  static Serializer<MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum>
-  get serializer =>
-      _$merchantOrdersDtoOutputOrdersInnerItemReportNoteEnumSerializer;
-
-  const MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum._(String name)
-    : super(name);
-
-  static BuiltSet<MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum>
-  get values => _$merchantOrdersDtoOutputOrdersInnerItemReportNoteEnumValues;
-  static MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum valueOf(
-    String name,
-  ) => _$merchantOrdersDtoOutputOrdersInnerItemReportNoteEnumValueOf(name);
 }

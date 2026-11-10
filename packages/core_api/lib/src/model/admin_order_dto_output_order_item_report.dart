@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_note.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_item_report_items_inner.dart';
 import 'package:built_value/built_value.dart';
@@ -15,7 +16,7 @@ part 'admin_order_dto_output_order_item_report.g.dart';
 /// Properties:
 /// * [at]
 /// * [items]
-/// * [note] - «يوجد بديل مشابه» or «الكمية غير كافية».
+/// * [note]
 @BuiltValue()
 abstract class AdminOrderDtoOutputOrderItemReport
     implements
@@ -29,10 +30,8 @@ abstract class AdminOrderDtoOutputOrderItemReport
   @BuiltValueField(wireName: r'items')
   BuiltList<AdminOrderDtoOutputOrderItemReportItemsInner> get items;
 
-  /// «يوجد بديل مشابه» or «الكمية غير كافية».
   @BuiltValueField(wireName: r'note')
-  AdminOrderDtoOutputOrderItemReportNoteEnum? get note;
-  // enum noteEnum {  similar_substitute,  not_enough,  };
+  MerchantOrdersDtoOutputOrdersInnerItemReportNote? get note;
 
   AdminOrderDtoOutputOrderItemReport._();
 
@@ -82,7 +81,7 @@ class _$AdminOrderDtoOutputOrderItemReportSerializer
         : serializers.serialize(
             object.note,
             specifiedType: const FullType.nullable(
-              AdminOrderDtoOutputOrderItemReportNoteEnum,
+              MerchantOrdersDtoOutputOrdersInnerItemReportNote,
             ),
           );
   }
@@ -137,12 +136,12 @@ class _$AdminOrderDtoOutputOrderItemReportSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      AdminOrderDtoOutputOrderItemReportNoteEnum,
+                      MerchantOrdersDtoOutputOrdersInnerItemReportNote,
                     ),
                   )
-                  as AdminOrderDtoOutputOrderItemReportNoteEnum?;
+                  as MerchantOrdersDtoOutputOrdersInnerItemReportNote?;
           if (valueDes == null) continue;
-          result.note = valueDes;
+          result.note.replace(valueDes);
           break;
         default:
           unhandled.add(key);
@@ -171,24 +170,4 @@ class _$AdminOrderDtoOutputOrderItemReportSerializer
     );
     return result.build();
   }
-}
-
-/// «يوجد بديل مشابه» or «الكمية غير كافية».
-class AdminOrderDtoOutputOrderItemReportNoteEnum extends EnumClass {
-  @BuiltValueEnumConst(wireName: r'similar_substitute')
-  static const AdminOrderDtoOutputOrderItemReportNoteEnum similarSubstitute =
-      _$adminOrderDtoOutputOrderItemReportNoteEnum_similarSubstitute;
-  @BuiltValueEnumConst(wireName: r'not_enough')
-  static const AdminOrderDtoOutputOrderItemReportNoteEnum notEnough =
-      _$adminOrderDtoOutputOrderItemReportNoteEnum_notEnough;
-
-  static Serializer<AdminOrderDtoOutputOrderItemReportNoteEnum>
-  get serializer => _$adminOrderDtoOutputOrderItemReportNoteEnumSerializer;
-
-  const AdminOrderDtoOutputOrderItemReportNoteEnum._(String name) : super(name);
-
-  static BuiltSet<AdminOrderDtoOutputOrderItemReportNoteEnum> get values =>
-      _$adminOrderDtoOutputOrderItemReportNoteEnumValues;
-  static AdminOrderDtoOutputOrderItemReportNoteEnum valueOf(String name) =>
-      _$adminOrderDtoOutputOrderItemReportNoteEnumValueOf(name);
 }

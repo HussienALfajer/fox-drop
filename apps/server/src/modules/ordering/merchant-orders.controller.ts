@@ -139,9 +139,9 @@ const boardOrder = z.object({
         }),
       ),
       note: z
-        .enum(['similar_substitute', 'not_enough'])
+        .object({ code: z.string(), label: z.string() })
         .nullable()
-        .describe('«يوجد بديل مشابه» or «الكمية غير كافية».'),
+        .describe("A reason of Content's item_unavailable_note list, its label as chosen."),
     })
     .nullable()
     .describe(
@@ -289,9 +289,12 @@ class MerchantItemReportDto extends createZodDto(
       .max(50)
       .describe("One or more of the order's items, each once, switched off in the menu at once."),
     note: z
-      .enum(['similar_substitute', 'not_enough'])
+      .string()
+      .max(50)
       .nullable()
-      .describe('Optional: «يوجد بديل مشابه» or «الكمية غير كافية».'),
+      .describe(
+        "Optional: a code of Content's item_unavailable_note list (GET /v1/merchant/content); 400 unknown_reason otherwise.",
+      ),
   }),
 ) {}
 

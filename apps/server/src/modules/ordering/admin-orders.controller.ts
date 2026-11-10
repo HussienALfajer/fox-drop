@@ -380,9 +380,9 @@ class AdminOrderDto extends createZodDto(
             }),
           ),
           note: z
-            .enum(['similar_substitute', 'not_enough'])
+            .object({ code: z.string(), label: z.string() })
             .nullable()
-            .describe('«يوجد بديل مشابه» or «الكمية غير كافية».'),
+            .describe("A reason of Content's item_unavailable_note list, its label as chosen."),
         })
         .nullable()
         .describe(
@@ -555,6 +555,26 @@ class AdminOrderDto extends createZodDto(
           actor: z.object({ type: z.string(), id: z.uuid().nullable() }),
           captainId: z.uuid().nullable().describe("The offer's captain, or the one assigned."),
           reason: z.string().nullable(),
+          timeChange: z
+            .object({ addMin: z.int(), promisedAt: z.iso.datetime() })
+            .nullable()
+            .describe('order.time_changed: the minutes added and the new promised time.'),
+          itemReport: z
+            .object({
+              items: z.array(
+                z.object({
+                  itemId: z.uuid(),
+                  name: z.string(),
+                  until: z.enum(['tomorrow', 'turned_back_on']),
+                }),
+              ),
+              note: z
+                .object({ code: z.string(), label: z.string() })
+                .nullable()
+                .describe("A reason of Content's item_unavailable_note list, its label as chosen."),
+            })
+            .nullable()
+            .describe('order.item_reported: the items reported and the note.'),
         }),
       ),
     }),
@@ -1263,7 +1283,14 @@ export class AdminOrdersController {
             reason: order.delivery.recordedBy.reason,
           },
         },
-        timeline: timeline.map((event) => ({ ...event, at: event.at.toISOString() })),
+        timeline: timeline.map((event) => ({
+          ...event,
+          at: event.at.toISOString(),
+          timeChange: event.timeChange && {
+            addMin: event.timeChange.addMin,
+            promisedAt: event.timeChange.promisedAt.toISOString(),
+          },
+        })),
       },
     };
   }

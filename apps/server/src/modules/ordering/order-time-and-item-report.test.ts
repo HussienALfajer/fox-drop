@@ -21,6 +21,10 @@ import {
 } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
+import { DATABASE } from '../../database/database.module.js';
+import { Jobs } from '../../jobs/jobs.module.js';
+import { AlertsService } from '../notifications/index.js';
+import { OrderAlerts } from './order-alerts.js';
 
 // AP §9.3.2 «تعديل الوقت» and «إغلاق بلاغ صنف نفد», RA §8.12, §8.10, CU §11.6,
 // CA §9, docs/domain/03 (slice 2.9): operations move an order's times, and the
@@ -492,7 +496,10 @@ describe('POST /v1/admin/orders/{orderId}/change-time (AP §9.3.2, docs/domain/0
 const report = (
   headers: Record<string, string>,
   orderId: string,
-  body: object = { items: [{ itemId: item, until: 'turned_back_on' }], note: 'not_enough' },
+  body: object = {
+    items: [{ itemId: item, until: 'turned_back_on' }],
+    note: 'insufficient_quantity',
+  },
 ) =>
   app.inject({
     method: 'POST',
@@ -544,7 +551,7 @@ describe('the item-unavailable report (RA §8.12)', () => {
     expect(answer.json().order.itemReport).toEqual({
       at: expect.any(String),
       items: [{ itemId: item, name: 'شاورما', until: 'turned_back_on' }],
-      note: 'not_enough',
+      note: { code: 'insufficient_quantity', label: 'الكمية غير كافية' },
     });
     expect(await menuItem(order.cashier)).toMatchObject({
       available: false,
@@ -576,6 +583,12 @@ describe('the item-unavailable report (RA §8.12)', () => {
     });
     expect(foreign.statusCode).toBe(400);
     expect(foreign.json().error).toBe('invalid_item_report');
+    const unknownNote = await report(order.cashier, order.id, {
+      items: [{ itemId: item, until: 'tomorrow' }],
+      note: 'not_on_the_list',
+    });
+    expect(unknownNote.statusCode).toBe(400);
+    expect(unknownNote.json().error).toBe('unknown_reason');
     expect((await captain.requestPickup(order.id)).statusCode).toBe(200);
     const during = await report(order.cashier, order.id);
     expect(during.statusCode).toBe(409);
@@ -661,5 +674,137 @@ describe('the item-unavailable report (RA §8.12)', () => {
       closed_by_type: 'admin',
     });
     await switchOn(order.cashier);
+  });
+});
+
+describe('slice 2.9: the remaining branches', () => {
+  const orderAlerts = () =>
+    new OrderAlerts(
+      app.get(DATABASE),
+      app.get(Jobs),
+      app.get(AlertsService),
+      app.get(CaptainsService),
+      app.get(SettingsService),
+    );
+  const storedAlerts = async (orderId: string) =>
+    (
+      await sql.query(
+        'SELECT code, resolved_at FROM notifications.alerts WHERE subject_id = $1 ORDER BY raised_at',
+        [orderId],
+      )
+    ).rows;
+
+  it('leaves a search start already due, and moves only the promised time once picked up', async () => {
+    const order = await acceptedOrder();
+    // A search start already due (a captain from an earlier case may be online).
+    await sql.query(
+      "UPDATE ordering.orders SET search_start_at = now() - interval '1 minute' WHERE id = $1",
+      [order.id],
+    );
+    const before = await times(order.id);
+    const ops = await admin(['OPS']);
+    expect((await ops.changeTime(order.id, { addMin: 5, reason: null })).statusCode).toBe(200);
+    const after = await times(order.id);
+    expect(after.search_start_at).toEqual(before.search_start_at);
+    expect(after.prep_min).toBe(25);
+    const { rows: jobs } = await sql.query(
+      `SELECT 1 FROM pgboss.job WHERE name = 'ordering-search-start' AND data->>'orderId' = $1`,
+      [order.id],
+    );
+    expect(jobs.length).toBeLessThanOrEqual(1);
+
+    const picked = await captainAtRestaurant();
+    expect((await picked.captain.requestPickup(picked.order.id)).statusCode).toBe(200);
+    const confirmed = await app.inject({
+      method: 'POST',
+      url: `/v1/merchant/orders/${picked.order.id}/pickup/confirm`,
+      headers: { ...picked.order.cashier, 'idempotency-key': randomUUID() },
+    });
+    expect(confirmed.statusCode).toBe(200);
+    const atPickup = await times(picked.order.id);
+    expect(atPickup.status).toBe('picked_up');
+    expect((await ops.changeTime(picked.order.id, { addMin: 15, reason: null })).statusCode).toBe(
+      200,
+    );
+    const later = await times(picked.order.id);
+    expect(later.prep_min).toBe(20);
+    expect(moved(later.promised_at, atPickup.promised_at)).toBe(15);
+    // The timeline shows the minutes and the new time (AP §9.3.1).
+    const event = (await ops.detail(picked.order.id)).timeline.at(-1);
+    expect(event.type).toBe('order.time_changed');
+    expect(event.timeChange).toEqual({
+      addMin: 15,
+      promisedAt: later.promised_at.toISOString(),
+    });
+  });
+
+  it("answers unknown_order for another restaurant's order and an unknown one", async () => {
+    const order = await acceptedOrder();
+    const merchants = app.get(MerchantsService);
+    const other = await merchants.createRestaurant(
+      azaz,
+      {
+        nameAr: 'مطعم آخر',
+        location: centre,
+        coverage: { kind: 'radius', radiusMetres: 1000 },
+        minimumOrder: { amount: 10_000n, currency: 'TRY' },
+        commissionBp: 1500,
+        defaultPrepMin: 20,
+      },
+      change,
+    );
+    await merchants.setAccountStatus(other, 'active', change);
+    const stranger = await cashier(other);
+    expect((await report(stranger, order.id)).statusCode).toBe(404);
+    expect((await withdraw(stranger, order.id)).statusCode).toBe(404);
+    const ops = await admin(['OPS']);
+    expect((await ops.changeTime(randomUUID(), { addMin: 5, reason: null })).statusCode).toBe(404);
+    expect((await ops.closeItemReport(randomUUID(), { reason: 'x' })).statusCode).toBe(404);
+  });
+
+  it('reports on a ready order again after a withdrawal, and raises then resolves the stored alert', async () => {
+    const order = await acceptedOrder();
+    expect((await ready(order.cashier, order.id)).statusCode).toBe(200);
+    expect((await report(order.cashier, order.id)).statusCode).toBe(200);
+    const placedAt = (
+      await sql.query('SELECT placed_at FROM ordering.orders WHERE id = $1', [order.id])
+    ).rows[0].placed_at as Date;
+    const job = { orderId: order.id, placedAt: placedAt.toISOString() };
+    await orderAlerts().sync(job, new Date());
+    expect(await storedAlerts(order.id)).toEqual([{ code: 'item_unavailable', resolved_at: null }]);
+    expect((await withdraw(order.cashier, order.id)).statusCode).toBe(200);
+    await orderAlerts().sync(job, new Date());
+    expect((await storedAlerts(order.id))[0].resolved_at).not.toBeNull();
+    // A second report once the first closed: one open per order only.
+    expect((await report(order.cashier, order.id)).statusCode).toBe(200);
+    const { rows } = await sql.query(
+      'SELECT closed_how FROM ordering.item_reports WHERE order_id = $1 ORDER BY reported_at',
+      [order.id],
+    );
+    expect(rows).toEqual([{ closed_how: 'withdrawn' }, { closed_how: null }]);
+    expect((await withdraw(order.cashier, order.id)).statusCode).toBe(200);
+    // The timeline names the reported items (AP §9.3.1).
+    const reported = (await (await admin(['OPS'])).detail(order.id)).timeline.find(
+      (event: { type: string }) => event.type === 'order.item_reported',
+    );
+    expect(reported.itemReport).toEqual({
+      items: [{ itemId: item, name: 'شاورما', until: 'turned_back_on' }],
+      note: { code: 'insufficient_quantity', label: 'الكمية غير كافية' },
+    });
+  });
+
+  it('lets the application role change only how a report closed, and never a time change', async () => {
+    const order = await acceptedOrder();
+    expect((await report(order.cashier, order.id)).statusCode).toBe(200);
+    await expect(
+      sql.query("UPDATE ordering.item_reports SET items = '[]' WHERE order_id = $1", [order.id]),
+    ).rejects.toThrow(/permission denied/);
+    expect((await withdraw(order.cashier, order.id)).statusCode).toBe(200);
+    expect(
+      (await (await admin(['OPS'])).changeTime(order.id, { addMin: 5, reason: null })).statusCode,
+    ).toBe(200);
+    await expect(
+      sql.query('UPDATE ordering.time_changes SET add_min = 1 WHERE order_id = $1', [order.id]),
+    ).rejects.toThrow(/permission denied/);
   });
 });

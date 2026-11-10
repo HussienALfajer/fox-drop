@@ -6,75 +6,11 @@ part of 'merchant_item_report_dto.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const MerchantItemReportDtoNoteEnum
-_$merchantItemReportDtoNoteEnum_similarSubstitute =
-    const MerchantItemReportDtoNoteEnum._('similarSubstitute');
-const MerchantItemReportDtoNoteEnum _$merchantItemReportDtoNoteEnum_notEnough =
-    const MerchantItemReportDtoNoteEnum._('notEnough');
-
-MerchantItemReportDtoNoteEnum _$merchantItemReportDtoNoteEnumValueOf(
-  String name,
-) {
-  switch (name) {
-    case 'similarSubstitute':
-      return _$merchantItemReportDtoNoteEnum_similarSubstitute;
-    case 'notEnough':
-      return _$merchantItemReportDtoNoteEnum_notEnough;
-    default:
-      throw ArgumentError(name);
-  }
-}
-
-final BuiltSet<MerchantItemReportDtoNoteEnum>
-_$merchantItemReportDtoNoteEnumValues = BuiltSet<MerchantItemReportDtoNoteEnum>(
-  const <MerchantItemReportDtoNoteEnum>[
-    _$merchantItemReportDtoNoteEnum_similarSubstitute,
-    _$merchantItemReportDtoNoteEnum_notEnough,
-  ],
-);
-
-Serializer<MerchantItemReportDtoNoteEnum>
-_$merchantItemReportDtoNoteEnumSerializer =
-    _$MerchantItemReportDtoNoteEnumSerializer();
-
-class _$MerchantItemReportDtoNoteEnumSerializer
-    implements PrimitiveSerializer<MerchantItemReportDtoNoteEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'similarSubstitute': 'similar_substitute',
-    'notEnough': 'not_enough',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'similar_substitute': 'similarSubstitute',
-    'not_enough': 'notEnough',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[MerchantItemReportDtoNoteEnum];
-  @override
-  final String wireName = 'MerchantItemReportDtoNoteEnum';
-
-  @override
-  Object serialize(
-    Serializers serializers,
-    MerchantItemReportDtoNoteEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
-
-  @override
-  MerchantItemReportDtoNoteEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => MerchantItemReportDtoNoteEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
-}
-
 class _$MerchantItemReportDto extends MerchantItemReportDto {
   @override
   final BuiltList<MerchantRejectDtoItemsInner> items;
   @override
-  final MerchantItemReportDtoNoteEnum? note;
+  final String? note;
 
   factory _$MerchantItemReportDto([
     void Function(MerchantItemReportDtoBuilder)? updates,
@@ -126,9 +62,9 @@ class MerchantItemReportDtoBuilder
   set items(ListBuilder<MerchantRejectDtoItemsInner>? items) =>
       _$this._items = items;
 
-  MerchantItemReportDtoNoteEnum? _note;
-  MerchantItemReportDtoNoteEnum? get note => _$this._note;
-  set note(MerchantItemReportDtoNoteEnum? note) => _$this._note = note;
+  String? _note;
+  String? get note => _$this._note;
+  set note(String? note) => _$this._note = note;
 
   MerchantItemReportDtoBuilder() {
     MerchantItemReportDto._defaults(this);

@@ -6,79 +6,6 @@ part of 'merchant_orders_dto_output_orders_inner_item_report.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum
-_$merchantOrdersDtoOutputOrdersInnerItemReportNoteEnum_similarSubstitute =
-    const MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum._(
-      'similarSubstitute',
-    );
-const MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum
-_$merchantOrdersDtoOutputOrdersInnerItemReportNoteEnum_notEnough =
-    const MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum._('notEnough');
-
-MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum
-_$merchantOrdersDtoOutputOrdersInnerItemReportNoteEnumValueOf(String name) {
-  switch (name) {
-    case 'similarSubstitute':
-      return _$merchantOrdersDtoOutputOrdersInnerItemReportNoteEnum_similarSubstitute;
-    case 'notEnough':
-      return _$merchantOrdersDtoOutputOrdersInnerItemReportNoteEnum_notEnough;
-    default:
-      throw ArgumentError(name);
-  }
-}
-
-final BuiltSet<MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum>
-_$merchantOrdersDtoOutputOrdersInnerItemReportNoteEnumValues =
-    BuiltSet<MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum>(const <
-      MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum
-    >[
-      _$merchantOrdersDtoOutputOrdersInnerItemReportNoteEnum_similarSubstitute,
-      _$merchantOrdersDtoOutputOrdersInnerItemReportNoteEnum_notEnough,
-    ]);
-
-Serializer<MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum>
-_$merchantOrdersDtoOutputOrdersInnerItemReportNoteEnumSerializer =
-    _$MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnumSerializer();
-
-class _$MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnumSerializer
-    implements
-        PrimitiveSerializer<
-          MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum
-        > {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'similarSubstitute': 'similar_substitute',
-    'notEnough': 'not_enough',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'similar_substitute': 'similarSubstitute',
-    'not_enough': 'notEnough',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum,
-  ];
-  @override
-  final String wireName =
-      'MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum';
-
-  @override
-  Object serialize(
-    Serializers serializers,
-    MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
-
-  @override
-  MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
-}
-
 class _$MerchantOrdersDtoOutputOrdersInnerItemReport
     extends MerchantOrdersDtoOutputOrdersInnerItemReport {
   @override
@@ -86,7 +13,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerItemReport
   @override
   final BuiltList<MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner> items;
   @override
-  final MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum? note;
+  final MerchantOrdersDtoOutputOrdersInnerItemReportNote? note;
 
   factory _$MerchantOrdersDtoOutputOrdersInnerItemReport([
     void Function(MerchantOrdersDtoOutputOrdersInnerItemReportBuilder)? updates,
@@ -158,10 +85,11 @@ class MerchantOrdersDtoOutputOrdersInnerItemReportBuilder
     ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner>? items,
   ) => _$this._items = items;
 
-  MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum? _note;
-  MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum? get note =>
-      _$this._note;
-  set note(MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum? note) =>
+  MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder? _note;
+  MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder get note =>
+      _$this._note ??=
+          MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder();
+  set note(MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder? note) =>
       _$this._note = note;
 
   MerchantOrdersDtoOutputOrdersInnerItemReportBuilder() {
@@ -173,7 +101,7 @@ class MerchantOrdersDtoOutputOrdersInnerItemReportBuilder
     if ($v != null) {
       _at = $v.at;
       _items = $v.items.toBuilder();
-      _note = $v.note;
+      _note = $v.note?.toBuilder();
       _$v = null;
     }
     return this;
@@ -206,13 +134,15 @@ class MerchantOrdersDtoOutputOrdersInnerItemReportBuilder
               'at',
             ),
             items: items.build(),
-            note: note,
+            note: _note?.build(),
           );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'items';
         items.build();
+        _$failedField = 'note';
+        _note?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'MerchantOrdersDtoOutputOrdersInnerItemReport',

@@ -28,7 +28,7 @@ platform_margin     = commission + delivery_fee − platform_funded_discount
 - Commission is calculated on the items value after restaurant-funded **item** discounts and before platform-funded discounts. A restaurant-funded delivery discount does not reduce the commission base; it only goes to `merchant.discount_share`.
 - **Captain pay parts:**
   - `min_pay` applies to `order_pay` only, so it never absorbs waiting pay or the peak bonus.
-  - Waiting pay counts from the later of the captain's arrival at the restaurant and `accepted_at` + the chosen prep time, after the first `captain.waiting_threshold_min` (10) minutes. A captain who arrives early is not paid for waiting before the food was due.
+  - Waiting pay counts from the later of the captain's arrival at the restaurant and `accepted_at` + the chosen prep time, after the first `captain.waiting_threshold_min` (10) minutes. A captain who arrives early is not paid for waiting before the food was due. The chosen prep time is the one at acceptance: «تعديل الوقت» never moves the start of paid waiting (slice 2.9, to confirm with the owner).
   - The peak bonus applies when the order is delivered inside an active peak window for the restaurant's zone (§9.12.5).
 - `custody_delta` is usually small and can be negative, for example when a platform code is larger than the delivery fee. A negative custody is reimbursed at the desk (§8.5.1).
 - The captain must carry enough cash to pay the full items value at pickup. The captain app shows the pickup payment on every offer before the captain accepts.

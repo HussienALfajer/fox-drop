@@ -4827,8 +4827,11 @@ export interface components {
                         /** @enum {string} */
                         until: "tomorrow" | "turned_back_on";
                     }[];
-                    /** @description «يوجد بديل مشابه» or «الكمية غير كافية». */
-                    note: ("similar_substitute" | "not_enough") | null;
+                    /** @description A reason of Content's item_unavailable_note list, its label as chosen. */
+                    note: {
+                        code: string;
+                        label: string;
+                    } | null;
                 } | null;
                 /** @description RA §8.14: operations cancelled the accepted order; every device rings with «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» until «حسناً» on any of them (POST …/acknowledge-cancellation), then the board drops the order. Null otherwise, and once acknowledged. */
                 cancellation: {
@@ -4994,8 +4997,11 @@ export interface components {
                         /** @enum {string} */
                         until: "tomorrow" | "turned_back_on";
                     }[];
-                    /** @description «يوجد بديل مشابه» or «الكمية غير كافية». */
-                    note: ("similar_substitute" | "not_enough") | null;
+                    /** @description A reason of Content's item_unavailable_note list, its label as chosen. */
+                    note: {
+                        code: string;
+                        label: string;
+                    } | null;
                 } | null;
                 /** @description RA §8.14: operations cancelled the accepted order; every device rings with «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» until «حسناً» on any of them (POST …/acknowledge-cancellation), then the board drops the order. Null otherwise, and once acknowledged. */
                 cancellation: {
@@ -5088,8 +5094,8 @@ export interface components {
                  */
                 until: "tomorrow" | "turned_back_on";
             }[];
-            /** @description Optional: «يوجد بديل مشابه» or «الكمية غير كافية». */
-            note: ("similar_substitute" | "not_enough") | null;
+            /** @description Optional: a code of Content's item_unavailable_note list (GET /v1/merchant/content); 400 unknown_reason otherwise. */
+            note: string | null;
         };
         AdminResendNotificationDto: {
             /**
@@ -5558,8 +5564,11 @@ export interface components {
                          */
                         until: "tomorrow" | "turned_back_on";
                     }[];
-                    /** @description «يوجد بديل مشابه» or «الكمية غير كافية». */
-                    note: ("similar_substitute" | "not_enough") | null;
+                    /** @description A reason of Content's item_unavailable_note list, its label as chosen. */
+                    note: {
+                        code: string;
+                        label: string;
+                    } | null;
                 } | null;
                 /** @description While accepted, ready or picked up: «تعديل الوقت» (AP §9.3.2). */
                 timeChange: {
@@ -5786,6 +5795,27 @@ export interface components {
                     /** @description The offer's captain, or the one assigned. */
                     captainId: string | null;
                     reason: string | null;
+                    /** @description order.time_changed: the minutes added and the new promised time. */
+                    timeChange: {
+                        addMin: number;
+                        /** Format: date-time */
+                        promisedAt: string;
+                    } | null;
+                    /** @description order.item_reported: the items reported and the note. */
+                    itemReport: {
+                        items: {
+                            /** Format: uuid */
+                            itemId: string;
+                            name: string;
+                            /** @enum {string} */
+                            until: "tomorrow" | "turned_back_on";
+                        }[];
+                        /** @description A reason of Content's item_unavailable_note list, its label as chosen. */
+                        note: {
+                            code: string;
+                            label: string;
+                        } | null;
+                    } | null;
                 }[];
             };
         };

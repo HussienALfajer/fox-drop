@@ -36,5 +36,5 @@ promised_time     = accepted_at + chosen prep time + trip_min + order.eta_buffer
 
 - Before an order is placed, the customer sees `estimate_min` as a 10-minute range (customer-app spec §8.4).
 - The promised time is set when the restaurant accepts, or OPS accept on its behalf. Before acceptance an order has no promised time.
-- «تعديل الوقت» (§9.3.2) changes the promised time.
+- «تعديل الوقت» (§9.3.2) changes the promised time (owner decision 2026-11-10): operations add 1 to `order.eta_change_max_min` whole minutes, and the promised time moves by them, rounded up to the next 5 minutes. While the order is `accepted` the prep time moves with it: the restaurant's countdown, the prep-late alert and a search start still ahead. Once the food is ready, only the promised time moves.
 - The late-delivery alert, the automatic late code (above) and the captain's on-time rate (captain-app spec §11.2) all count from the promised time.

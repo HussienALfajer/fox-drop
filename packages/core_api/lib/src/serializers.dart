@@ -91,6 +91,8 @@ import 'package:core_api/src/model/admin_order_dto_output_order_rejection.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_time_change.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_actor.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_item_report.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_time_change.dart';
 import 'package:core_api/src/model/admin_picker_dto_output.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody.dart';
@@ -323,6 +325,7 @@ import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_capta
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_items_inner.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_note.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner_options_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup.dart';
@@ -459,6 +462,8 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderTimeChange,
   AdminOrderDtoOutputOrderTimelineInner,
   AdminOrderDtoOutputOrderTimelineInnerActor,
+  AdminOrderDtoOutputOrderTimelineInnerItemReport,
+  AdminOrderDtoOutputOrderTimelineInnerTimeChange,
   AdminPickerDtoOutput,
   AdminPickerDtoOutputCaptainsInner,
   AdminPickerDtoOutputCaptainsInnerCustody,
@@ -691,6 +696,7 @@ part 'serializers.g.dart';
   MerchantOrdersDtoOutputOrdersInnerCustomer,
   MerchantOrdersDtoOutputOrdersInnerItemReport,
   MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner,
+  MerchantOrdersDtoOutputOrdersInnerItemReportNote,
   MerchantOrdersDtoOutputOrdersInnerLinesInner,
   MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner,
   MerchantOrdersDtoOutputOrdersInnerPickup,

@@ -271,6 +271,10 @@ class _$AdminOrderDtoOutputOrderTimelineInner
   final String? captainId;
   @override
   final String? reason;
+  @override
+  final AdminOrderDtoOutputOrderTimelineInnerTimeChange? timeChange;
+  @override
+  final AdminOrderDtoOutputOrderTimelineInnerItemReport? itemReport;
 
   factory _$AdminOrderDtoOutputOrderTimelineInner([
     void Function(AdminOrderDtoOutputOrderTimelineInnerBuilder)? updates,
@@ -286,6 +290,8 @@ class _$AdminOrderDtoOutputOrderTimelineInner
     required this.actor,
     this.captainId,
     this.reason,
+    this.timeChange,
+    this.itemReport,
   }) : super._();
   @override
   AdminOrderDtoOutputOrderTimelineInner rebuild(
@@ -307,7 +313,9 @@ class _$AdminOrderDtoOutputOrderTimelineInner
         to == other.to &&
         actor == other.actor &&
         captainId == other.captainId &&
-        reason == other.reason;
+        reason == other.reason &&
+        timeChange == other.timeChange &&
+        itemReport == other.itemReport;
   }
 
   @override
@@ -321,6 +329,8 @@ class _$AdminOrderDtoOutputOrderTimelineInner
     _$hash = $jc(_$hash, actor.hashCode);
     _$hash = $jc(_$hash, captainId.hashCode);
     _$hash = $jc(_$hash, reason.hashCode);
+    _$hash = $jc(_$hash, timeChange.hashCode);
+    _$hash = $jc(_$hash, itemReport.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -337,7 +347,9 @@ class _$AdminOrderDtoOutputOrderTimelineInner
           ..add('to', to)
           ..add('actor', actor)
           ..add('captainId', captainId)
-          ..add('reason', reason))
+          ..add('reason', reason)
+          ..add('timeChange', timeChange)
+          ..add('itemReport', itemReport))
         .toString();
   }
 }
@@ -385,6 +397,22 @@ class AdminOrderDtoOutputOrderTimelineInnerBuilder
   String? get reason => _$this._reason;
   set reason(String? reason) => _$this._reason = reason;
 
+  AdminOrderDtoOutputOrderTimelineInnerTimeChangeBuilder? _timeChange;
+  AdminOrderDtoOutputOrderTimelineInnerTimeChangeBuilder get timeChange =>
+      _$this._timeChange ??=
+          AdminOrderDtoOutputOrderTimelineInnerTimeChangeBuilder();
+  set timeChange(
+    AdminOrderDtoOutputOrderTimelineInnerTimeChangeBuilder? timeChange,
+  ) => _$this._timeChange = timeChange;
+
+  AdminOrderDtoOutputOrderTimelineInnerItemReportBuilder? _itemReport;
+  AdminOrderDtoOutputOrderTimelineInnerItemReportBuilder get itemReport =>
+      _$this._itemReport ??=
+          AdminOrderDtoOutputOrderTimelineInnerItemReportBuilder();
+  set itemReport(
+    AdminOrderDtoOutputOrderTimelineInnerItemReportBuilder? itemReport,
+  ) => _$this._itemReport = itemReport;
+
   AdminOrderDtoOutputOrderTimelineInnerBuilder() {
     AdminOrderDtoOutputOrderTimelineInner._defaults(this);
   }
@@ -400,6 +428,8 @@ class AdminOrderDtoOutputOrderTimelineInnerBuilder
       _actor = $v.actor.toBuilder();
       _captainId = $v.captainId;
       _reason = $v.reason;
+      _timeChange = $v.timeChange?.toBuilder();
+      _itemReport = $v.itemReport?.toBuilder();
       _$v = null;
     }
     return this;
@@ -446,12 +476,19 @@ class AdminOrderDtoOutputOrderTimelineInnerBuilder
             actor: actor.build(),
             captainId: captainId,
             reason: reason,
+            timeChange: _timeChange?.build(),
+            itemReport: _itemReport?.build(),
           );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'actor';
         actor.build();
+
+        _$failedField = 'timeChange';
+        _timeChange?.build();
+        _$failedField = 'itemReport';
+        _itemReport?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminOrderDtoOutputOrderTimelineInner',

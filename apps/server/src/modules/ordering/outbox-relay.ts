@@ -96,8 +96,13 @@ const CUSTOMER_SKIPS = new Set([
 // The restaurant's own steps the captain's channel never carries.
 const CAPTAIN_SKIPS = new Set(['order.cancellation_acknowledged']);
 
+// Events whose reason is operations' text for the restaurant (RA §16 #37):
+// the captain's and the customer's channels carry them without it (AP §10).
+const RESTAURANT_REASONS = new Set(['order.item_report_closed']);
+
 function customerPublication(type: string, payload: OutboxPayload) {
-  const { schema, orderId, number, restaurantId, status, version, reason, at } = payload;
+  const { schema, orderId, number, restaurantId, status, version, at } = payload;
+  const reason = RESTAURANT_REASONS.has(type) ? null : payload.reason;
   return { type, schema, orderId, number, restaurantId, status, version, reason, at };
 }
 
@@ -144,19 +149,29 @@ export class OutboxRelay {
         for (const row of rows) {
           const payload = row.payload as OutboxPayload;
           try {
+            // CA §15: the offer's captain, or the order's once assigned.
+            const captain =
+              payload.captainId && !CAPTAIN_SKIPS.has(row.type)
+                ? [captainChannel(payload.captainId)]
+                : [];
+            const ownReason = RESTAURANT_REASONS.has(row.type);
             await this.publisher.broadcast(
               [
                 merchantChannel(payload.restaurantId),
                 // Architecture §6.2: the panel's board and detail of the city.
                 opsChannel(payload.cityId),
-                // CA §15: the offer's captain, or the order's once assigned.
-                ...(payload.captainId && !CAPTAIN_SKIPS.has(row.type)
-                  ? [captainChannel(payload.captainId)]
-                  : []),
+                ...(ownReason ? [] : captain),
               ],
               publication(row.type, payload),
               `outbox:${row.id}`,
             );
+            if (ownReason && captain.length > 0) {
+              await this.publisher.broadcast(
+                captain,
+                { ...publication(row.type, payload), reason: null },
+                `outbox:${row.id}:captain`,
+              );
+            }
             if (!CUSTOMER_SKIPS.has(row.type)) {
               await this.publisher.broadcast(
                 [orderChannel(payload.orderId)],

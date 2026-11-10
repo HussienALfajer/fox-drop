@@ -92,6 +92,8 @@ export 'package:core_api/src/model/admin_order_dto_output_order_rejection.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_time_change.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_actor.dart';
+export 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_item_report.dart';
+export 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_time_change.dart';
 export 'package:core_api/src/model/admin_picker_dto_output.dart';
 export 'package:core_api/src/model/admin_picker_dto_output_captains_inner.dart';
 export 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody.dart';
@@ -324,6 +326,7 @@ export 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_capta
 export 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
 export 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report.dart';
 export 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_items_inner.dart';
+export 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_note.dart';
 export 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
 export 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner_options_inner.dart';
 export 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup.dart';

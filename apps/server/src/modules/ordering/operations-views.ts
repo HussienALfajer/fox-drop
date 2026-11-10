@@ -15,7 +15,8 @@ import {
   type PickupRequestView,
   pickupRequestsOf,
 } from './pickup-views.js';
-import { collections, orderEvents, orders } from './schema.js';
+import type { ItemReportNote, ItemReportUntil, ReportedItem } from './item-reports.js';
+import { collections, itemReports, orderEvents, orders, timeChanges } from './schema.js';
 
 // AP §9.1.3: the alerts the board shows on a card, the same conditions as
 // the alerts list (order-alerts.ts).
@@ -64,6 +65,13 @@ export interface TimelineEvent {
   actor: { type: string; id: string | null };
   captainId: string | null;
   reason: string | null;
+  // AP §9.3.1 (slice 2.9): «تعديل الوقت»'s minutes and new promised time,
+  // and the items an item-unavailable report named.
+  timeChange: { addMin: number; promisedAt: Date } | null;
+  itemReport: {
+    items: { itemId: string; name: string; until: ItemReportUntil }[];
+    note: ItemReportNote | null;
+  } | null;
 }
 
 // Operations' reads of the orders (AP §9.2, §9.3.1).
@@ -145,12 +153,52 @@ export class OperationsViews {
   }
 
   async timeline(order: OrderView): Promise<TimelineEvent[]> {
-    const rows = await this.database.db
-      .select()
-      .from(orderEvents)
-      .where(and(eq(orderEvents.orderId, order.id), eq(orderEvents.orderPlacedAt, order.placedAt)))
-      .orderBy(asc(orderEvents.version));
-    return rows.map((row) => ({
+    const ofOrder = (table: typeof timeChanges | typeof itemReports) =>
+      and(eq(table.orderId, order.id), eq(table.orderPlacedAt, order.placedAt));
+    const [rows, changes, reports] = await Promise.all([
+      this.database.db
+        .select()
+        .from(orderEvents)
+        .where(
+          and(eq(orderEvents.orderId, order.id), eq(orderEvents.orderPlacedAt, order.placedAt)),
+        )
+        .orderBy(asc(orderEvents.version)),
+      this.database.db.select().from(timeChanges).where(ofOrder(timeChanges)),
+      this.database.db.select().from(itemReports).where(ofOrder(itemReports)),
+    ]);
+    // Each row was written in its event's transaction, at its moment.
+    const same = (a: Date, b: Date) => a.getTime() === b.getTime();
+    return rows.map((row) => {
+      const change =
+        row.type === 'order.time_changed'
+          ? changes.find((each) => same(each.at, row.at))
+          : undefined;
+      const report =
+        row.type === 'order.item_reported'
+          ? reports.find((each) => same(each.reportedAt, row.at))
+          : undefined;
+      return {
+        ...this.event(row),
+        timeChange: change ? { addMin: change.addMin, promisedAt: change.promisedAfter } : null,
+        itemReport: report
+          ? {
+              items: (report.items as ReportedItem[]).map((item) => ({
+                itemId: item.itemId,
+                name: order.lines.find((line) => line.itemId === item.itemId)?.name ?? '',
+                until: item.until,
+              })),
+              note:
+                report.note && report.noteLabel
+                  ? { code: report.note, label: report.noteLabel }
+                  : null,
+            }
+          : null,
+      };
+    });
+  }
+
+  private event(row: typeof orderEvents.$inferSelect) {
+    return {
       version: row.version,
       at: row.at,
       type: row.type,
@@ -159,7 +207,7 @@ export class OperationsViews {
       actor: { type: row.actorType, id: row.actorId },
       captainId: row.captainId,
       reason: row.reason,
-    }));
+    };
   }
 
   private async operations(views: OrderView[], now: Date): Promise<OperationsOrder[]> {

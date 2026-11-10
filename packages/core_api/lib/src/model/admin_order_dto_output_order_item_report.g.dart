@@ -6,73 +6,6 @@ part of 'admin_order_dto_output_order_item_report.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const AdminOrderDtoOutputOrderItemReportNoteEnum
-_$adminOrderDtoOutputOrderItemReportNoteEnum_similarSubstitute =
-    const AdminOrderDtoOutputOrderItemReportNoteEnum._('similarSubstitute');
-const AdminOrderDtoOutputOrderItemReportNoteEnum
-_$adminOrderDtoOutputOrderItemReportNoteEnum_notEnough =
-    const AdminOrderDtoOutputOrderItemReportNoteEnum._('notEnough');
-
-AdminOrderDtoOutputOrderItemReportNoteEnum
-_$adminOrderDtoOutputOrderItemReportNoteEnumValueOf(String name) {
-  switch (name) {
-    case 'similarSubstitute':
-      return _$adminOrderDtoOutputOrderItemReportNoteEnum_similarSubstitute;
-    case 'notEnough':
-      return _$adminOrderDtoOutputOrderItemReportNoteEnum_notEnough;
-    default:
-      throw ArgumentError(name);
-  }
-}
-
-final BuiltSet<AdminOrderDtoOutputOrderItemReportNoteEnum>
-_$adminOrderDtoOutputOrderItemReportNoteEnumValues =
-    BuiltSet<AdminOrderDtoOutputOrderItemReportNoteEnum>(
-      const <AdminOrderDtoOutputOrderItemReportNoteEnum>[
-        _$adminOrderDtoOutputOrderItemReportNoteEnum_similarSubstitute,
-        _$adminOrderDtoOutputOrderItemReportNoteEnum_notEnough,
-      ],
-    );
-
-Serializer<AdminOrderDtoOutputOrderItemReportNoteEnum>
-_$adminOrderDtoOutputOrderItemReportNoteEnumSerializer =
-    _$AdminOrderDtoOutputOrderItemReportNoteEnumSerializer();
-
-class _$AdminOrderDtoOutputOrderItemReportNoteEnumSerializer
-    implements PrimitiveSerializer<AdminOrderDtoOutputOrderItemReportNoteEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'similarSubstitute': 'similar_substitute',
-    'notEnough': 'not_enough',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'similar_substitute': 'similarSubstitute',
-    'not_enough': 'notEnough',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    AdminOrderDtoOutputOrderItemReportNoteEnum,
-  ];
-  @override
-  final String wireName = 'AdminOrderDtoOutputOrderItemReportNoteEnum';
-
-  @override
-  Object serialize(
-    Serializers serializers,
-    AdminOrderDtoOutputOrderItemReportNoteEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
-
-  @override
-  AdminOrderDtoOutputOrderItemReportNoteEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => AdminOrderDtoOutputOrderItemReportNoteEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
-}
-
 class _$AdminOrderDtoOutputOrderItemReport
     extends AdminOrderDtoOutputOrderItemReport {
   @override
@@ -80,7 +13,7 @@ class _$AdminOrderDtoOutputOrderItemReport
   @override
   final BuiltList<AdminOrderDtoOutputOrderItemReportItemsInner> items;
   @override
-  final AdminOrderDtoOutputOrderItemReportNoteEnum? note;
+  final MerchantOrdersDtoOutputOrdersInnerItemReportNote? note;
 
   factory _$AdminOrderDtoOutputOrderItemReport([
     void Function(AdminOrderDtoOutputOrderItemReportBuilder)? updates,
@@ -148,9 +81,11 @@ class AdminOrderDtoOutputOrderItemReportBuilder
   set items(ListBuilder<AdminOrderDtoOutputOrderItemReportItemsInner>? items) =>
       _$this._items = items;
 
-  AdminOrderDtoOutputOrderItemReportNoteEnum? _note;
-  AdminOrderDtoOutputOrderItemReportNoteEnum? get note => _$this._note;
-  set note(AdminOrderDtoOutputOrderItemReportNoteEnum? note) =>
+  MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder? _note;
+  MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder get note =>
+      _$this._note ??=
+          MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder();
+  set note(MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder? note) =>
       _$this._note = note;
 
   AdminOrderDtoOutputOrderItemReportBuilder() {
@@ -162,7 +97,7 @@ class AdminOrderDtoOutputOrderItemReportBuilder
     if ($v != null) {
       _at = $v.at;
       _items = $v.items.toBuilder();
-      _note = $v.note;
+      _note = $v.note?.toBuilder();
       _$v = null;
     }
     return this;
@@ -195,13 +130,15 @@ class AdminOrderDtoOutputOrderItemReportBuilder
               'at',
             ),
             items: items.build(),
-            note: note,
+            note: _note?.build(),
           );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'items';
         items.build();
+        _$failedField = 'note';
+        _note?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminOrderDtoOutputOrderItemReport',

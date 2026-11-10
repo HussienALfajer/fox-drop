@@ -14,7 +14,7 @@ part 'merchant_item_report_dto.g.dart';
 ///
 /// Properties:
 /// * [items] - One or more of the order's items, each once, switched off in the menu at once.
-/// * [note] - Optional: «يوجد بديل مشابه» or «الكمية غير كافية».
+/// * [note] - Optional: a code of Content's item_unavailable_note list (GET /v1/merchant/content); 400 unknown_reason otherwise.
 @BuiltValue()
 abstract class MerchantItemReportDto
     implements Built<MerchantItemReportDto, MerchantItemReportDtoBuilder> {
@@ -22,10 +22,9 @@ abstract class MerchantItemReportDto
   @BuiltValueField(wireName: r'items')
   BuiltList<MerchantRejectDtoItemsInner> get items;
 
-  /// Optional: «يوجد بديل مشابه» or «الكمية غير كافية».
+  /// Optional: a code of Content's item_unavailable_note list (GET /v1/merchant/content); 400 unknown_reason otherwise.
   @BuiltValueField(wireName: r'note')
-  MerchantItemReportDtoNoteEnum? get note;
-  // enum noteEnum {  similar_substitute,  not_enough,  };
+  String? get note;
 
   MerchantItemReportDto._();
 
@@ -69,9 +68,7 @@ class _$MerchantItemReportDtoSerializer
         ? null
         : serializers.serialize(
             object.note,
-            specifiedType: const FullType.nullable(
-              MerchantItemReportDtoNoteEnum,
-            ),
+            specifiedType: const FullType.nullable(String),
           );
   }
 
@@ -115,11 +112,9 @@ class _$MerchantItemReportDtoSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType.nullable(
-                      MerchantItemReportDtoNoteEnum,
-                    ),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as MerchantItemReportDtoNoteEnum?;
+                  as String?;
           if (valueDes == null) continue;
           result.note = valueDes;
           break;
@@ -150,24 +145,4 @@ class _$MerchantItemReportDtoSerializer
     );
     return result.build();
   }
-}
-
-/// Optional: «يوجد بديل مشابه» or «الكمية غير كافية».
-class MerchantItemReportDtoNoteEnum extends EnumClass {
-  @BuiltValueEnumConst(wireName: r'similar_substitute')
-  static const MerchantItemReportDtoNoteEnum similarSubstitute =
-      _$merchantItemReportDtoNoteEnum_similarSubstitute;
-  @BuiltValueEnumConst(wireName: r'not_enough')
-  static const MerchantItemReportDtoNoteEnum notEnough =
-      _$merchantItemReportDtoNoteEnum_notEnough;
-
-  static Serializer<MerchantItemReportDtoNoteEnum> get serializer =>
-      _$merchantItemReportDtoNoteEnumSerializer;
-
-  const MerchantItemReportDtoNoteEnum._(String name) : super(name);
-
-  static BuiltSet<MerchantItemReportDtoNoteEnum> get values =>
-      _$merchantItemReportDtoNoteEnumValues;
-  static MerchantItemReportDtoNoteEnum valueOf(String name) =>
-      _$merchantItemReportDtoNoteEnumValueOf(name);
 }

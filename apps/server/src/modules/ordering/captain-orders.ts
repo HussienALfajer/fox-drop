@@ -21,6 +21,7 @@ import {
   type ReasonList,
 } from '../content/index.js';
 import { openItemReport } from './item-reports.js';
+import { acceptedPrepMin } from './time-changes.js';
 import { CAPTAIN_ACTIVE } from './order-assignments.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
 import { lockOrder, type OrderRow, recordTransition } from './order-events.js';
@@ -597,7 +598,10 @@ export class CaptainOrders {
     if (money.payTableId === null) throw new Error(`order ${order.id} kept no pay table`);
     const waiting = waitingMinutes({
       acceptedAt: money.acceptedAt,
-      prepMin: money.prepMin,
+      // docs/domain/04 (slice 2.9, to confirm with the owner): «تعديل الوقت»
+      // never shortens the captain's paid waiting; it counts from the prep
+      // time chosen at acceptance.
+      prepMin: (await acceptedPrepMin(this.database.db, order)) ?? money.prepMin,
       arrivedAtMerchantAt: money.arrivedAtMerchantAt,
       captainWaitingAlertAt: money.captainWaitingAlertAt,
       pickedUpAt: money.pickedUpAt,

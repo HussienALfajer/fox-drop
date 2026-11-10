@@ -3,8 +3,10 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_time_change.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_actor.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_item_report.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -21,6 +23,8 @@ part 'admin_order_dto_output_order_timeline_inner.g.dart';
 /// * [actor]
 /// * [captainId] - The offer's captain, or the one assigned.
 /// * [reason]
+/// * [timeChange]
+/// * [itemReport]
 @BuiltValue()
 abstract class AdminOrderDtoOutputOrderTimelineInner
     implements
@@ -55,6 +59,12 @@ abstract class AdminOrderDtoOutputOrderTimelineInner
 
   @BuiltValueField(wireName: r'reason')
   String? get reason;
+
+  @BuiltValueField(wireName: r'timeChange')
+  AdminOrderDtoOutputOrderTimelineInnerTimeChange? get timeChange;
+
+  @BuiltValueField(wireName: r'itemReport')
+  AdminOrderDtoOutputOrderTimelineInnerItemReport? get itemReport;
 
   AdminOrderDtoOutputOrderTimelineInner._();
 
@@ -137,6 +147,24 @@ class _$AdminOrderDtoOutputOrderTimelineInnerSerializer
         : serializers.serialize(
             object.reason,
             specifiedType: const FullType.nullable(String),
+          );
+    yield r'timeChange';
+    yield object.timeChange == null
+        ? null
+        : serializers.serialize(
+            object.timeChange,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderTimelineInnerTimeChange,
+            ),
+          );
+    yield r'itemReport';
+    yield object.itemReport == null
+        ? null
+        : serializers.serialize(
+            object.itemReport,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderTimelineInnerItemReport,
+            ),
           );
   }
 
@@ -243,6 +271,30 @@ class _$AdminOrderDtoOutputOrderTimelineInnerSerializer
                   as String?;
           if (valueDes == null) continue;
           result.reason = valueDes;
+          break;
+        case r'timeChange':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderTimelineInnerTimeChange,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderTimelineInnerTimeChange?;
+          if (valueDes == null) continue;
+          result.timeChange.replace(valueDes);
+          break;
+        case r'itemReport':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderTimelineInnerItemReport,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderTimelineInnerItemReport?;
+          if (valueDes == null) continue;
+          result.itemReport.replace(valueDes);
           break;
         default:
           unhandled.add(key);

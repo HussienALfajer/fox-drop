@@ -15421,17 +15421,26 @@
                         "note": {
                           "anyOf": [
                             {
-                              "type": "string",
-                              "enum": [
-                                "similar_substitute",
-                                "not_enough"
-                              ]
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "type": "string"
+                                },
+                                "label": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "code",
+                                "label"
+                              ],
+                              "additionalProperties": false
                             },
                             {
                               "type": "null"
                             }
                           ],
-                          "description": "«يوجد بديل مشابه» or «الكمية غير كافية»."
+                          "description": "A reason of Content's item_unavailable_note list, its label as chosen."
                         }
                       },
                       "required": [
@@ -16121,17 +16130,26 @@
                       "note": {
                         "anyOf": [
                           {
-                            "type": "string",
-                            "enum": [
-                              "similar_substitute",
-                              "not_enough"
-                            ]
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "code",
+                              "label"
+                            ],
+                            "additionalProperties": false
                           },
                           {
                             "type": "null"
                           }
                         ],
-                        "description": "«يوجد بديل مشابه» or «الكمية غير كافية»."
+                        "description": "A reason of Content's item_unavailable_note list, its label as chosen."
                       }
                     },
                     "required": [
@@ -16549,16 +16567,13 @@
             "anyOf": [
               {
                 "type": "string",
-                "enum": [
-                  "similar_substitute",
-                  "not_enough"
-                ]
+                "maxLength": 50
               },
               {
                 "type": "null"
               }
             ],
-            "description": "Optional: «يوجد بديل مشابه» or «الكمية غير كافية»."
+            "description": "Optional: a code of Content's item_unavailable_note list (GET /v1/merchant/content); 400 unknown_reason otherwise."
           }
         },
         "required": [
@@ -18605,17 +18620,26 @@
                       "note": {
                         "anyOf": [
                           {
-                            "type": "string",
-                            "enum": [
-                              "similar_substitute",
-                              "not_enough"
-                            ]
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "code",
+                              "label"
+                            ],
+                            "additionalProperties": false
                           },
                           {
                             "type": "null"
                           }
                         ],
-                        "description": "«يوجد بديل مشابه» or «الكمية غير كافية»."
+                        "description": "A reason of Content's item_unavailable_note list, its label as chosen."
                       }
                     },
                     "required": [
@@ -19651,6 +19675,105 @@
                         "string",
                         "null"
                       ]
+                    },
+                    "timeChange": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "addMin": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "promisedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "addMin",
+                            "promisedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "order.time_changed: the minutes added and the new promised time."
+                    },
+                    "itemReport": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "itemId": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "until": {
+                                    "type": "string",
+                                    "enum": [
+                                      "tomorrow",
+                                      "turned_back_on"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "itemId",
+                                  "name",
+                                  "until"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "note": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "code": {
+                                      "type": "string"
+                                    },
+                                    "label": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "code",
+                                    "label"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "A reason of Content's item_unavailable_note list, its label as chosen."
+                            }
+                          },
+                          "required": [
+                            "items",
+                            "note"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "order.item_reported: the items reported and the note."
                     }
                   },
                   "required": [
@@ -19661,7 +19784,9 @@
                     "to",
                     "actor",
                     "captainId",
-                    "reason"
+                    "reason",
+                    "timeChange",
+                    "itemReport"
                   ],
                   "additionalProperties": false
                 }

@@ -6,9 +6,12 @@ type Executor = Pick<NodePgDatabase, 'select'>;
 
 // RA §8.12: «حتى الغد» (default) or «حتى أعيده», per item.
 export type ItemReportUntil = 'tomorrow' | 'turned_back_on';
-// «يوجد بديل مشابه», «الكمية غير كافية».
-export const ITEM_REPORT_NOTES = ['similar_substitute', 'not_enough'] as const;
-export type ItemReportNote = (typeof ITEM_REPORT_NOTES)[number];
+// RA §8.12: the optional note, a reason of Content's item_unavailable_note
+// list («يوجد بديل مشابه», «الكمية غير كافية»), its label as chosen.
+export interface ItemReportNote {
+  code: string;
+  label: string;
+}
 
 export interface ReportedItem {
   itemId: string;
@@ -63,7 +66,7 @@ export async function openItemReports(
     orderId: row.orderId,
     at: row.reportedAt,
     items: row.items as ReportedItem[],
-    note: row.note as ItemReportNote | null,
+    note: row.note && row.noteLabel ? { code: row.note, label: row.noteLabel } : null,
     accountId: row.accountId,
     device: row.device,
   }));

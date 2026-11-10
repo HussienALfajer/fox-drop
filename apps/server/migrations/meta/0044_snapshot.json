@@ -1,5 +1,5 @@
 {
-  "id": "5bb21ac1-f3f4-4545-ae5b-9961aca4462f",
+  "id": "bc711153-2e5f-4198-ae21-d57740ecfbac",
   "prevId": "1d5e728b-7376-4c96-b518-c6b311f1f860",
   "version": "7",
   "dialect": "postgresql",
@@ -7946,6 +7946,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "note_label": {
+          "name": "note_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "account_id": {
           "name": "account_id",
           "type": "uuid",
@@ -8056,9 +8062,9 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
-        "item_reports_note_values": {
-          "name": "item_reports_note_values",
-          "value": "\"ordering\".\"item_reports\".\"note\" IS NULL OR \"ordering\".\"item_reports\".\"note\" IN ('similar_substitute', 'not_enough')"
+        "item_reports_note_label": {
+          "name": "item_reports_note_label",
+          "value": "(\"ordering\".\"item_reports\".\"note\" IS NULL) = (\"ordering\".\"item_reports\".\"note_label\" IS NULL)"
         },
         "item_reports_closed": {
           "name": "item_reports_closed",
@@ -9471,6 +9477,130 @@
         "pickup_requests_amount": {
           "name": "pickup_requests_amount",
           "value": "\"ordering\".\"pickup_requests\".\"amount\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "ordering.time_changes": {
+      "name": "time_changes",
+      "schema": "ordering",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "order_id": {
+          "name": "order_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order_placed_at": {
+          "name": "order_placed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "city_id": {
+          "name": "city_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "at": {
+          "name": "at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "admin_id": {
+          "name": "admin_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "add_min": {
+          "name": "add_min",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "promised_before": {
+          "name": "promised_before",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "promised_after": {
+          "name": "promised_after",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prep_min_before": {
+          "name": "prep_min_before",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prep_min_after": {
+          "name": "prep_min_after",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "time_changes_order": {
+          "name": "time_changes_order",
+          "columns": [
+            {
+              "expression": "order_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "order_placed_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "time_changes_order_id_order_placed_at_orders_id_placed_at_fk": {
+          "name": "time_changes_order_id_order_placed_at_orders_id_placed_at_fk",
+          "tableFrom": "time_changes",
+          "tableTo": "orders",
+          "schemaTo": "ordering",
+          "columnsFrom": [
+            "order_id",
+            "order_placed_at"
+          ],
+          "columnsTo": [
+            "id",
+            "placed_at"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "time_changes_moved": {
+          "name": "time_changes_moved",
+          "value": "\"ordering\".\"time_changes\".\"add_min\" > 0 AND \"ordering\".\"time_changes\".\"promised_after\" > \"ordering\".\"time_changes\".\"promised_before\" AND \"ordering\".\"time_changes\".\"prep_min_after\" >= \"ordering\".\"time_changes\".\"prep_min_before\""
         }
       },
       "isRLSEnabled": false

@@ -37,7 +37,7 @@ import {
   openReportOf,
   type ReportedItem,
 } from './item-reports.js';
-import { itemReports, orders, pickupRequests } from './schema.js';
+import { itemReports, orders, pickupRequests, timeChanges } from './schema.js';
 
 const MINUTE_MS = 60_000;
 // docs/domain/03: the promised time is rounded up to the next 5 minutes.
@@ -1028,6 +1028,7 @@ export class OrderCommands {
           Math.ceil((times.promisedAt.getTime() + add) / PROMISE_STEP_MS) * PROMISE_STEP_MS,
         );
         const preparing = times.status === 'accepted';
+        const prepMin = preparing ? times.prepMin + command.addMin : times.prepMin;
         // A search already started, or due now, stays as it is.
         const searchStartAt =
           preparing &&
@@ -1039,10 +1040,7 @@ export class OrderCommands {
           set: {
             promisedAt,
             ...(preparing
-              ? {
-                  prepMin: times.prepMin + command.addMin,
-                  prepLateAlertAt: new Date(times.prepLateAlertAt.getTime() + add),
-                }
+              ? { prepMin, prepLateAlertAt: new Date(times.prepLateAlertAt.getTime() + add) }
               : {}),
             ...(searchStartAt ? { searchStartAt } : {}),
           },
@@ -1051,11 +1049,25 @@ export class OrderCommands {
           publicReason: preparing ? 'prep_time_changed' : 'promised_time_changed',
           // The times were read before the lock.
           guard: async (tx) => sameTimes(await this.times(tx, order), times),
+          effects: async (tx) => {
+            await tx.insert(timeChanges).values({
+              orderId: order.id,
+              orderPlacedAt: order.placedAt,
+              cityId: order.cityId,
+              at: now,
+              adminId: command.admin.accountId,
+              addMin: command.addMin,
+              promisedBefore: times.promisedAt,
+              promisedAfter: promisedAt,
+              prepMinBefore: times.prepMin,
+              prepMinAfter: prepMin,
+            });
+          },
           audit: {
             before: { promisedAt: times.promisedAt.toISOString(), prepMin: times.prepMin },
             after: {
               promisedAt: promisedAt.toISOString(),
-              prepMin: preparing ? times.prepMin + command.addMin : times.prepMin,
+              prepMin,
             },
           },
         };
@@ -1073,7 +1085,7 @@ export class OrderCommands {
   // §11.6, §14 #10). The pickup waits until the report is closed. 400
   // invalid_item_report; 409 order_state_changed.
   async reportItems(
-    command: MerchantCommand & { items: ReportedItem[]; note: ItemReportNote | null },
+    command: MerchantCommand & { items: ReportedItem[]; note: string | null },
     now: Date,
   ): Promise<OrderView> {
     const change = merchantChange(command);
@@ -1089,6 +1101,19 @@ export class OrderCommands {
           view.lines.map((line) => line.itemId),
         );
         if (problem !== null) throw new OrderCommandRefusedError('invalid_item_report', problem);
+        let note: ItemReportNote | null = null;
+        if (command.note !== null) {
+          try {
+            const chosen = await this.content.choose('item_unavailable_note', {
+              code: command.note,
+              note: null,
+            });
+            note = { code: chosen.code, label: chosen.label };
+          } catch (error) {
+            if (!(error instanceof ContentRefusedError)) throw error;
+            throw new OrderCommandRefusedError('unknown_reason', error.message);
+          }
+        }
         const switches = await Promise.all(
           command.items.map(async (item) => ({
             itemId: item.itemId,
@@ -1114,7 +1139,8 @@ export class OrderCommands {
               orderPlacedAt: order.placedAt,
               cityId: order.cityId,
               items: command.items.map(({ itemId, until }) => ({ itemId, until })),
-              note: command.note,
+              note: note?.code ?? null,
+              noteLabel: note?.label ?? null,
               accountId: command.accountId,
               device: command.deviceId,
               reportedAt: now,

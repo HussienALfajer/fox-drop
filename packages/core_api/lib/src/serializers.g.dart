@@ -118,7 +118,6 @@ Serializers _$serializers =
           ..add(
             AdminOrderDtoOutputOrderItemReportItemsInnerUntilEnum.serializer,
           )
-          ..add(AdminOrderDtoOutputOrderItemReportNoteEnum.serializer)
           ..add(AdminOrderDtoOutputOrderLinesInner.serializer)
           ..add(AdminOrderDtoOutputOrderLinesInnerOptionsInner.serializer)
           ..add(AdminOrderDtoOutputOrderMoney.serializer)
@@ -140,6 +139,8 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderTimelineInner.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerActor.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerFromEnum.serializer)
+          ..add(AdminOrderDtoOutputOrderTimelineInnerItemReport.serializer)
+          ..add(AdminOrderDtoOutputOrderTimelineInnerTimeChange.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerToEnum.serializer)
           ..add(AdminPickerDtoOutput.serializer)
           ..add(AdminPickerDtoOutputCaptainsInner.serializer)
@@ -447,7 +448,6 @@ Serializers _$serializers =
           ..add(MerchantHoursDtoOutputCoverageKindEnum.serializer)
           ..add(MerchantHoursDtoOutputPeriodsInner.serializer)
           ..add(MerchantItemReportDto.serializer)
-          ..add(MerchantItemReportDtoNoteEnum.serializer)
           ..add(MerchantMenuDtoOutput.serializer)
           ..add(MerchantMenuDtoOutputCategoriesInner.serializer)
           ..add(MerchantMenuDtoOutputCategoriesInnerItemsInner.serializer)
@@ -487,7 +487,7 @@ Serializers _$serializers =
             MerchantOrdersDtoOutputOrdersInnerItemReportItemsInnerUntilEnum
                 .serializer,
           )
-          ..add(MerchantOrdersDtoOutputOrdersInnerItemReportNoteEnum.serializer)
+          ..add(MerchantOrdersDtoOutputOrdersInnerItemReportNote.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerLinesInner.serializer)
           ..add(
             MerchantOrdersDtoOutputOrdersInnerLinesInnerOptionsInner.serializer,
@@ -1299,6 +1299,17 @@ Serializers _$serializers =
               const FullType(MerchantOrdersDtoOutputOrdersInner),
             ]),
             () => ListBuilder<MerchantOrdersDtoOutputOrdersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
