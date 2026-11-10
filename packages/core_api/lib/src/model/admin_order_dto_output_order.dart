@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_order_dto_output_order_edits_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
@@ -10,11 +11,13 @@ import 'package:core_api/src/model/admin_order_dto_output_order_rejection.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_delivery.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancellation.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_removed_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_moments.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_money.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_captain.dart';
@@ -52,6 +55,9 @@ part 'admin_order_dto_output_order.g.dart';
 /// * [cancelChoices]
 /// * [itemReport]
 /// * [timeChange]
+/// * [editChoices]
+/// * [edits] - The order's edits by operations, oldest first (AP §9.3.1).
+/// * [removedLines] - Lines an edit removed.
 /// * [rejection]
 /// * [onBehalf]
 /// * [customer]
@@ -118,7 +124,7 @@ abstract class AdminOrderDtoOutputOrder
   /// AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active.
   @BuiltValueField(wireName: r'alerts')
   BuiltList<AdminOrderDtoOutputOrderAlertsEnum> get alerts;
-  // enum alertsEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  away_from_address,  item_unavailable,  };
+  // enum alertsEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  away_from_address,  item_unavailable,  edit_unacknowledged,  };
 
   @BuiltValueField(wireName: r'promisedAt')
   DateTime? get promisedAt;
@@ -140,6 +146,17 @@ abstract class AdminOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'timeChange')
   AdminOrderDtoOutputOrderTimeChange? get timeChange;
+
+  @BuiltValueField(wireName: r'editChoices')
+  AdminOrderDtoOutputOrderEditChoices? get editChoices;
+
+  /// The order's edits by operations, oldest first (AP §9.3.1).
+  @BuiltValueField(wireName: r'edits')
+  BuiltList<AdminOrderDtoOutputOrderEditsInner> get edits;
+
+  /// Lines an edit removed.
+  @BuiltValueField(wireName: r'removedLines')
+  BuiltList<AdminOrderDtoOutputOrderRemovedLinesInner> get removedLines;
 
   @BuiltValueField(wireName: r'rejection')
   AdminOrderDtoOutputOrderRejection? get rejection;
@@ -344,6 +361,29 @@ class _$AdminOrderDtoOutputOrderSerializer
               AdminOrderDtoOutputOrderTimeChange,
             ),
           );
+    yield r'editChoices';
+    yield object.editChoices == null
+        ? null
+        : serializers.serialize(
+            object.editChoices,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderEditChoices,
+            ),
+          );
+    yield r'edits';
+    yield serializers.serialize(
+      object.edits,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminOrderDtoOutputOrderEditsInner),
+      ]),
+    );
+    yield r'removedLines';
+    yield serializers.serialize(
+      object.removedLines,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminOrderDtoOutputOrderRemovedLinesInner),
+      ]),
+    );
     yield r'rejection';
     yield object.rejection == null
         ? null
@@ -665,6 +705,40 @@ class _$AdminOrderDtoOutputOrderSerializer
           if (valueDes == null) continue;
           result.timeChange.replace(valueDes);
           break;
+        case r'editChoices':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderEditChoices,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderEditChoices?;
+          if (valueDes == null) continue;
+          result.editChoices.replace(valueDes);
+          break;
+        case r'edits':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminOrderDtoOutputOrderEditsInner),
+                    ]),
+                  )
+                  as BuiltList<AdminOrderDtoOutputOrderEditsInner>;
+          result.edits.replace(valueDes);
+          break;
+        case r'removedLines':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminOrderDtoOutputOrderRemovedLinesInner),
+                    ]),
+                  )
+                  as BuiltList<AdminOrderDtoOutputOrderRemovedLinesInner>;
+          result.removedLines.replace(valueDes);
+          break;
         case r'rejection':
           final valueDes =
               serializers.deserialize(
@@ -908,6 +982,9 @@ class AdminOrderDtoOutputOrderAlertsEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'item_unavailable')
   static const AdminOrderDtoOutputOrderAlertsEnum itemUnavailable =
       _$adminOrderDtoOutputOrderAlertsEnum_itemUnavailable;
+  @BuiltValueEnumConst(wireName: r'edit_unacknowledged')
+  static const AdminOrderDtoOutputOrderAlertsEnum editUnacknowledged =
+      _$adminOrderDtoOutputOrderAlertsEnum_editUnacknowledged;
 
   static Serializer<AdminOrderDtoOutputOrderAlertsEnum> get serializer =>
       _$adminOrderDtoOutputOrderAlertsEnumSerializer;

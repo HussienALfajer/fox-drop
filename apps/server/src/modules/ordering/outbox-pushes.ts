@@ -239,6 +239,7 @@ export class OutboxPushes {
       recipientName: order.recipientName,
       promisedTime: order.promisedAt && timeZone ? formatTime(order.promisedAt, timeZone) : null,
       total: formatMoney(order.total, order.currency, currencies),
+      itemsValue: formatMoney(order.itemsValue, order.currency, currencies),
       cancelText:
         order.status === 'cancelled' ? (order.cancelCustomerText ?? GENERIC_CUSTOMER_TEXT) : null,
       cancelReason: order.cancelReason,

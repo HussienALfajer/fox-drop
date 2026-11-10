@@ -133,6 +133,13 @@ const captain: Entry[] = [
   ],
   ['pickup_incomplete', '8', 'المطعم يفيد بأن الطلب غير مكتمل. راجع الأصناف معه.', 'chime'],
   ['pickup_disputed', '9', 'فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات', 'chime'],
+  // CA §9.10 gives the text; the variable names are ours (two amounts).
+  [
+    'order_edited',
+    '10',
+    'تم تعديل الطلب #{رقم} — المبلغ الجديد للمطعم {للمطعم}، للتحصيل {للتحصيل}',
+    'chime',
+  ],
   // CA §9.10.
   ['withdrawn', '11', 'سُحب منك الطلب: {السبب}', 'cancellation', true],
   ['cancelled', '11', 'أُلغيت المهمة: {السبب}', 'cancellation', true],

@@ -30,6 +30,7 @@ part 'captain_active_order_dto_output_order.g.dart';
 /// * [preparation]
 /// * [arrival]
 /// * [itemReportOpen] - The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2).
+/// * [editUnacknowledged] - Operations added items and the restaurant has not pressed «اطلعت على التعديل» (RA §8.13): the screen shows «بانتظار تأكيد المطعم للتعديل» and the pickup request waits (409 edit_unacknowledged) (CA §9 step 2).
 /// * [itemCount]
 /// * [lines] - The item check (C7): one tick box per line.
 /// * [note] - The customer's note.
@@ -77,6 +78,10 @@ abstract class CaptainActiveOrderDtoOutputOrder
   /// The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2).
   @BuiltValueField(wireName: r'itemReportOpen')
   bool get itemReportOpen;
+
+  /// Operations added items and the restaurant has not pressed «اطلعت على التعديل» (RA §8.13): the screen shows «بانتظار تأكيد المطعم للتعديل» and the pickup request waits (409 edit_unacknowledged) (CA §9 step 2).
+  @BuiltValueField(wireName: r'editUnacknowledged')
+  bool get editUnacknowledged;
 
   @BuiltValueField(wireName: r'itemCount')
   int get itemCount;
@@ -185,6 +190,11 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
     yield r'itemReportOpen';
     yield serializers.serialize(
       object.itemReportOpen,
+      specifiedType: const FullType(bool),
+    );
+    yield r'editUnacknowledged';
+    yield serializers.serialize(
+      object.editUnacknowledged,
       specifiedType: const FullType(bool),
     );
     yield r'itemCount';
@@ -348,6 +358,15 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
                   )
                   as bool;
           result.itemReportOpen = valueDes;
+          break;
+        case r'editUnacknowledged':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.editUnacknowledged = valueDes;
           break;
         case r'itemCount':
           final valueDes =

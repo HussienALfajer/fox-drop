@@ -3,17 +3,18 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_estimate.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_lines_inner.dart';
-import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_rejection.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_custody_limit.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_restaurant.dart';
-import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation.dart';
-import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_captain.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_money.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_item_report.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_estimate.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_rejection.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_removed_lines_inner.dart';
+import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_captain.dart';
 import 'package:core_api/src/model/customer_order_dto_output_order_delivery.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -39,6 +40,7 @@ part 'customer_order_dto_output_order.g.dart';
 /// * [money]
 /// * [equivalents] - The total in the city's other currencies, by the order's own rates (CU §11.1).
 /// * [lines]
+/// * [removedLines] - Lines an edit of FOX DROP removed, struck through as «حُذف» (CU §11.6).
 /// * [payIn] - «سأدفع بـ»; null for «لم أحدد».
 /// * [note]
 /// * [estimate]
@@ -100,6 +102,11 @@ abstract class CustomerOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'lines')
   BuiltList<CustomerActiveOrdersDtoOutputOrdersInnerLinesInner> get lines;
+
+  /// Lines an edit of FOX DROP removed, struck through as «حُذف» (CU §11.6).
+  @BuiltValueField(wireName: r'removedLines')
+  BuiltList<CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner>
+  get removedLines;
 
   /// «سأدفع بـ»; null for «لم أحدد».
   @BuiltValueField(wireName: r'payIn')
@@ -252,6 +259,13 @@ class _$CustomerOrderDtoOutputOrderSerializer
       object.lines,
       specifiedType: const FullType(BuiltList, [
         FullType(CustomerActiveOrdersDtoOutputOrdersInnerLinesInner),
+      ]),
+    );
+    yield r'removedLines';
+    yield serializers.serialize(
+      object.removedLines,
+      specifiedType: const FullType(BuiltList, [
+        FullType(CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner),
       ]),
     );
     yield r'payIn';
@@ -479,6 +493,21 @@ class _$CustomerOrderDtoOutputOrderSerializer
                     CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
                   >;
           result.lines.replace(valueDes);
+          break;
+        case r'removedLines':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(
+                        CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner,
+                      ),
+                    ]),
+                  )
+                  as BuiltList<
+                    CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner
+                  >;
+          result.removedLines.replace(valueDes);
           break;
         case r'payIn':
           final valueDes =

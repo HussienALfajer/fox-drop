@@ -163,6 +163,9 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
   @override
   final BuiltList<CustomerActiveOrdersDtoOutputOrdersInnerLinesInner> lines;
   @override
+  final BuiltList<CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner>
+  removedLines;
+  @override
   final String? payIn;
   @override
   final String? note;
@@ -192,6 +195,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     required this.money,
     required this.equivalents,
     required this.lines,
+    required this.removedLines,
     this.payIn,
     this.note,
     required this.estimate,
@@ -226,6 +230,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
         money == other.money &&
         equivalents == other.equivalents &&
         lines == other.lines &&
+        removedLines == other.removedLines &&
         payIn == other.payIn &&
         note == other.note &&
         estimate == other.estimate &&
@@ -251,6 +256,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     _$hash = $jc(_$hash, money.hashCode);
     _$hash = $jc(_$hash, equivalents.hashCode);
     _$hash = $jc(_$hash, lines.hashCode);
+    _$hash = $jc(_$hash, removedLines.hashCode);
     _$hash = $jc(_$hash, payIn.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, estimate.hashCode);
@@ -278,6 +284,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
           ..add('money', money)
           ..add('equivalents', equivalents)
           ..add('lines', lines)
+          ..add('removedLines', removedLines)
           ..add('payIn', payIn)
           ..add('note', note)
           ..add('estimate', estimate)
@@ -391,6 +398,16 @@ class CustomerOrderDtoOutputOrderBuilder
     ListBuilder<CustomerActiveOrdersDtoOutputOrdersInnerLinesInner>? lines,
   ) => _$this._lines = lines;
 
+  ListBuilder<CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner>?
+  _removedLines;
+  ListBuilder<CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner>
+  get removedLines => _$this._removedLines ??=
+      ListBuilder<CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner>();
+  set removedLines(
+    ListBuilder<CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner>?
+    removedLines,
+  ) => _$this._removedLines = removedLines;
+
   String? _payIn;
   String? get payIn => _$this._payIn;
   set payIn(String? payIn) => _$this._payIn = payIn;
@@ -438,6 +455,7 @@ class CustomerOrderDtoOutputOrderBuilder
       _money = $v.money.toBuilder();
       _equivalents = $v.equivalents.toBuilder();
       _lines = $v.lines.toBuilder();
+      _removedLines = $v.removedLines.toBuilder();
       _payIn = $v.payIn;
       _note = $v.note;
       _estimate = $v.estimate.toBuilder();
@@ -506,6 +524,7 @@ class CustomerOrderDtoOutputOrderBuilder
             money: money.build(),
             equivalents: equivalents.build(),
             lines: lines.build(),
+            removedLines: removedLines.build(),
             payIn: payIn,
             note: note,
             estimate: estimate.build(),
@@ -533,6 +552,8 @@ class CustomerOrderDtoOutputOrderBuilder
         equivalents.build();
         _$failedField = 'lines';
         lines.build();
+        _$failedField = 'removedLines';
+        removedLines.build();
 
         _$failedField = 'estimate';
         estimate.build();

@@ -254,11 +254,12 @@ export class OperationsViews {
     const [rules, fixes, shortfalls] = await Promise.all([
       Promise.all(
         cityIds.map(async (cityId) => {
-          const [lateMin, gpsStaleMin] = await Promise.all([
+          const [lateMin, gpsStaleMin, editAlertMin] = await Promise.all([
             this.settings.get('order.delivery_late_alert_min', { cityId }),
             this.settings.get('captain.gps_stale_alert_min', { cityId }),
+            this.settings.get('order.merchant_accept_alert_min', { cityId }),
           ]);
-          return [cityId, { lateMin, gpsStaleMin }] as const;
+          return [cityId, { lateMin, gpsStaleMin, editAlertMin }] as const;
         }),
       ).then((entries) => new Map(entries)),
       this.captains.lastFixes(captainIds, new Date(now.getTime() - 60 * 60_000)),
@@ -301,6 +302,7 @@ export class OperationsViews {
           away: view.away !== null,
           shortfall: shortfalls.has(view.id),
           itemReportOpen: view.itemReport !== null,
+          editAlertAt: editAlertAt(view, rule.editAlertMin),
         },
         now,
       );
@@ -357,4 +359,11 @@ export class OperationsViews {
       };
     });
   }
+}
+
+// RA §8.13: the oldest pending edit that added items, plus
+// order.merchant_accept_alert_min.
+function editAlertAt(view: OrderView, alertMin: number): Date | null {
+  const edit = view.pendingEdits.find((entry) => entry.addsItems);
+  return edit ? new Date(edit.at.getTime() + alertMin * 60_000) : null;
 }

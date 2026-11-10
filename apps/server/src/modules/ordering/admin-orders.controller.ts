@@ -30,10 +30,13 @@ import {
   paymentLines,
 } from './captain-orders.controller.js';
 import { ORDER_ALERT_CODES } from './order-alerts.js';
+import type { EditChange } from './order-edits.js';
+import { BEFORE_PICKUP } from './order-views.js';
 import {
   CANCELLABLE,
   TIME_CHANGEABLE,
   type CancellationPreview,
+  type EditPreview,
   OrderCommandRefusedError,
   OrderCommands,
   type Rejection,
@@ -252,6 +255,88 @@ const cancellationChoices = {
     ),
 };
 
+// AP §9.3.3 «تعديل الطلب» (slice 2.10a): the order's lines after the edit.
+const editRequest = {
+  keep: z
+    .array(
+      z.object({
+        position: z.int().describe("A current line's position (the detail's lines)."),
+        quantity: z.int().min(1).max(20),
+      }),
+    )
+    .max(50)
+    .describe(
+      'The current lines kept, each with its quantity; a line left out is removed. A raised quantity keeps the unit price and counts as items added.',
+    ),
+  add: z
+    .array(
+      z.object({
+        itemId: z.uuid(),
+        optionIds: z.array(z.uuid()).max(30),
+        quantity: z.int().min(1).max(20),
+      }),
+    )
+    .max(20)
+    .describe(
+      "Lines added from the restaurant's current menu at current prices, available only (400 invalid_edit). A line whose options change is left out of keep and added again.",
+    ),
+  deliveryFee: minor
+    .nullable()
+    .describe('A new delivery fee in minor units, or null to keep it (the threshold is not checked again).'),
+  extraPrepMin: z
+    .int()
+    .nullable()
+    .describe(
+      'Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise).',
+    ),
+};
+
+class AdminEditDto extends createZodDto(
+  z.object({
+    ...editRequest,
+    reason: z
+      .string()
+      .trim()
+      .min(1)
+      .max(500)
+      .describe('Required (AP §9.3.2): the internal note, never shown to the apps.'),
+  }),
+) {}
+
+class AdminEditPreviewDto extends createZodDto(z.object(editRequest)) {}
+
+const editChange = z.object({
+  kind: z.enum(['added', 'removed', 'quantity']),
+  name: z.string(),
+  options: z.array(z.string()),
+  quantity: z.int(),
+  quantityBefore: z.int().optional().describe('quantity: the quantity before.'),
+});
+
+const editSide = z.object({
+  itemsValue: minor.describe('Also the pickup payment (D26).'),
+  deliveryFee: minor,
+  discount: minor,
+  rounding: z.string().regex(/^-?\d+$/),
+  total: minor,
+  commission: minor,
+  merchantNet: minor,
+});
+
+class AdminEditPreviewAnswerDto extends createZodDto(
+  z.object({
+    currency: z.string().length(3),
+    before: editSide,
+    after: editSide,
+    changes: z.array(editChange),
+    addsItems: z
+      .boolean()
+      .describe('The restaurant must acknowledge it before the pickup (RA §8.13).'),
+    backToPreparing: z.boolean().describe('A ready order goes back to «قيد التحضير».'),
+    promisedAt: z.iso.datetime().nullable().describe('The new promised time when it moves.'),
+  }),
+) {}
+
 class AdminCancelDto extends createZodDto(
   z.object({
     cancellation: z
@@ -392,6 +477,55 @@ class AdminOrderDto extends createZodDto(
         .object({ maxMin: z.int().describe('order.eta_change_max_min.') })
         .nullable()
         .describe('While accepted, ready or picked up: «تعديل الوقت» (AP §9.3.2).'),
+      editChoices: z
+        .object({
+          extraPrepMaxMin: z.int().describe('order.eta_change_max_min.'),
+          items: z
+            .array(
+              z.object({
+                id: z.uuid(),
+                name: z.string(),
+                category: z.string(),
+                price: minor,
+                optionGroups: z.array(
+                  z.object({
+                    id: z.uuid(),
+                    name: z.string(),
+                    minChoices: z.int(),
+                    maxChoices: z.int(),
+                    options: z.array(
+                      z.object({ id: z.uuid(), name: z.string(), priceDelta: minor }),
+                    ),
+                  }),
+                ),
+              }),
+            )
+            .describe("The items customers can order now, with their available options."),
+        })
+        .nullable()
+        .describe('While placed, accepted or ready: «تعديل الطلب» (AP §9.3.3).'),
+      edits: z
+        .array(
+          z.object({
+            at: z.iso.datetime(),
+            adminId: z.uuid(),
+            status: z.enum(orderStatuses).describe('The status when edited.'),
+            changes: z.array(editChange),
+            addsItems: z.boolean(),
+            itemsValue: z.object({ before: minor, after: minor }),
+            deliveryFee: z.object({ before: minor, after: minor }),
+            total: z.object({ before: minor, after: minor }),
+            extraPrepMin: z.int().nullable(),
+            acknowledgedAt: z.iso
+              .datetime()
+              .nullable()
+              .describe('«اطلعت على التعديل» on a restaurant device (RA §8.13).'),
+          }),
+        )
+        .describe("The order's edits by operations, oldest first (AP §9.3.1)."),
+      removedLines: z
+        .array(z.object({ name: z.string(), quantity: z.int() }))
+        .describe('Lines an edit removed.'),
       rejection: z
         .object({
           at: z.iso.datetime(),
@@ -458,8 +592,11 @@ class AdminOrderDto extends createZodDto(
       lines: z.array(
         z.object({
           itemId: z.uuid().describe('«رفض نيابة عن المطعم» picks the unavailable items by it.'),
+          position: z.int().describe('«تعديل الطلب» names the line by it.'),
           name: z.string(),
           quantity: z.int(),
+          added: z.boolean().describe('Added by an edit.'),
+          quantityBefore: z.int().nullable().describe('The quantity before an edit changed it.'),
           options: z.array(z.object({ name: z.string(), priceDelta: minor })),
           note: z.string().nullable(),
           unitPrice: minor,
@@ -779,6 +916,88 @@ export class AdminOrdersController {
     );
   }
 
+  // AP §9.3.3 «تعديل الطلب» before the pickup (slice 2.10a): the lines kept
+  // and added, a new delivery fee, and the extra prep time of a ready order
+  // with items added; the money recalculated, an open item report cleared,
+  // the restaurant prompted (RA §8.13), the captain and the customer told
+  // the new amounts (CA §9.10, CU §11.6). 400 invalid_edit; 409
+  // pickup_request_open, order_state_changed; 404 unknown_order; 422
+  // idempotency_key_reused.
+  @Post(':orderId/edit')
+  @RequirePermission('operations.manage')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOrderCardDto })
+  async edit(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminEditDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.onBehalf(params.orderId, () =>
+      this.commands.editOrder(
+        {
+          orderId: params.orderId,
+          admin: { accountId: session.accountId, roles: session.roles },
+          context: requestContext(request),
+          reason: body.reason,
+          idempotencyKey,
+          keep: body.keep,
+          add: body.add,
+          deliveryFee: body.deliveryFee === null ? null : BigInt(body.deliveryFee),
+          extraPrepMin: body.extraPrepMin,
+        },
+        new Date(),
+      ),
+    );
+  }
+
+  // AP §9.3.3: the edit dialog's before-and-after money; it writes nothing,
+  // so it takes no key. 400 invalid_edit; 409 pickup_request_open,
+  // order_state_changed; 404 unknown_order.
+  @Post(':orderId/edit-preview')
+  @RequirePermission('operations.manage')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminEditPreviewAnswerDto })
+  async editPreview(@Param() params: AdminOrderParamsDto, @Body() body: AdminEditPreviewDto) {
+    let preview: EditPreview | undefined;
+    let currency = '';
+    await this.onBehalf(params.orderId, async () => {
+      preview = await this.commands.previewEdit(
+        params.orderId,
+        {
+          keep: body.keep,
+          add: body.add,
+          deliveryFee: body.deliveryFee === null ? null : BigInt(body.deliveryFee),
+          extraPrepMin: body.extraPrepMin,
+        },
+        new Date(),
+      );
+    });
+    const card = await this.card(params.orderId);
+    currency = card.total.currency;
+    const side = (money: EditPreview['before']) => ({
+      itemsValue: money.itemsValue.toString(),
+      deliveryFee: money.deliveryFee.toString(),
+      discount: money.discount.toString(),
+      rounding: money.rounding.toString(),
+      total: money.total.toString(),
+      commission: money.commission.toString(),
+      merchantNet: money.merchantNet.toString(),
+    });
+    const answer = preview!;
+    return {
+      currency,
+      before: side(answer.before),
+      after: side(answer.after),
+      changes: answer.changes,
+      addsItems: answer.addsItems,
+      backToPreparing: answer.backToPreparing,
+      promisedAt: answer.promisedAt?.toISOString() ?? null,
+    };
+  }
+
   // AP §9.3.2 «تعديل الوقت» (owner decision 2026-11-10): minutes added to an
   // accepted, ready or picked-up order's promised time, and to its prep time
   // while accepted; the customer hears the new time (CU §14 #12). 409
@@ -951,7 +1170,8 @@ export class AdminOrdersController {
         refusal === 'invalid_item_report' ||
         refusal === 'unknown_reason' ||
         refusal === 'invalid_rejection' ||
-        refusal === 'invalid_cancellation'
+        refusal === 'invalid_cancellation' ||
+        refusal === 'invalid_edit'
       ) {
         throw new BadRequestException({
           statusCode: HttpStatus.BAD_REQUEST,
@@ -1128,7 +1348,7 @@ export class AdminOrdersController {
     }
     const { order } = item;
     const { cancellation } = order;
-    const [profile, timeline, onBehalf, cancelReasons, customerLabel, timeChange] =
+    const [profile, timeline, onBehalf, cancelReasons, customerLabel, timeChange, editChoices, edits] =
       await Promise.all([
         this.customers.profile(order.customerAccountId),
         this.views.timeline(order),
@@ -1140,6 +1360,8 @@ export class AdminOrdersController {
         TIME_CHANGEABLE.includes(order.status)
           ? this.commands.timeChangeChoices(order.cityId)
           : null,
+        BEFORE_PICKUP.includes(order.status) ? this.commands.editChoices(order, now) : null,
+        this.commands.editsOf(order),
       ]);
     const { acceptance } = order;
     // The cancellation itself, not its acknowledgement (RA §8.14).
@@ -1189,6 +1411,42 @@ export class AdminOrdersController {
           note: order.itemReport.note,
         },
         timeChange,
+        editChoices: editChoices && {
+          extraPrepMaxMin: editChoices.extraPrepMaxMin,
+          items: editChoices.items.map((entry) => ({
+            ...entry,
+            price: entry.price.toString(),
+            optionGroups: entry.optionGroups.map((group) => ({
+              ...group,
+              options: group.options.map((option) => ({
+                ...option,
+                priceDelta: option.priceDelta.toString(),
+              })),
+            })),
+          })),
+        },
+        edits: edits.map((edit) => ({
+          at: edit.at.toISOString(),
+          adminId: edit.adminId,
+          status: edit.status,
+          changes: edit.changes as EditChange[],
+          addsItems: edit.addsItems,
+          itemsValue: {
+            before: edit.itemsValueBefore.toString(),
+            after: edit.itemsValueAfter.toString(),
+          },
+          deliveryFee: {
+            before: edit.deliveryFeeBefore.toString(),
+            after: edit.deliveryFeeAfter.toString(),
+          },
+          total: { before: edit.totalBefore.toString(), after: edit.totalAfter.toString() },
+          extraPrepMin: edit.extraPrepMin,
+          acknowledgedAt: edit.acknowledgedAt?.toISOString() ?? null,
+        })),
+        removedLines: order.removedLines.map((line) => ({
+          name: line.name,
+          quantity: line.quantity,
+        })),
         rejection: order.rejection && {
           at: order.rejection.at.toISOString(),
           reason: order.rejection.reason,
@@ -1218,8 +1476,11 @@ export class AdminOrdersController {
         note: order.note,
         lines: order.lines.map((line) => ({
           itemId: line.itemId,
+          position: line.position,
           name: line.name,
           quantity: line.quantity,
+          added: line.added,
+          quantityBefore: line.quantityBefore,
           options: line.options.map((option) => ({
             name: option.name,
             priceDelta: option.priceDelta.toString(),

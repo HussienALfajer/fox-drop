@@ -18,6 +18,8 @@ import { type AlertCode, AlertsService } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
 import { UNTIL_ENDED } from './active-orders.js';
 import { openItemReport } from './item-reports.js';
+import { unacknowledgedAdditionAt } from './order-edits.js';
+import { BEFORE_PICKUP } from './order-views.js';
 import { type CaptainTrack, lockOrder } from './order-events.js';
 import { collections, type orderStatuses, orders, pickupRequests } from './schema.js';
 
@@ -39,6 +41,7 @@ export const ORDER_ALERT_CODES = [
   'collection_shortfall',
   'away_from_address',
   'item_unavailable',
+  'edit_unacknowledged',
 ] as const satisfies readonly AlertCode[];
 export type OrderAlertCode = (typeof ORDER_ALERT_CODES)[number];
 
@@ -64,6 +67,9 @@ export interface OrderAlertInput {
   shortfall: boolean;
   // RA §8.12: an open item-unavailable report.
   itemReportOpen: boolean;
+  // RA §8.13, AP §9.3.3: the oldest unacknowledged edit that added items,
+  // plus order.merchant_accept_alert_min; null with none.
+  editAlertAt: Date | null;
 }
 
 // The captain tracks of a captain on the order (AP §9.1.3 «أثناء طلب»).
@@ -124,6 +130,8 @@ export function orderAlerts(
   if (order.shortfall) open.push('collection_shortfall');
   if (order.away) open.push('away_from_address');
   if (order.itemReportOpen) open.push('item_unavailable');
+  // «المطعم لم يؤكد التعديل»: only before the pickup.
+  from('edit_unacknowledged', BEFORE_PICKUP.includes(order.status), order.editAlertAt);
   const next = ahead.reduce<Date | null>(
     (soonest, moment) => (soonest && soonest < moment ? soonest : moment),
     null,
@@ -164,8 +172,9 @@ export class OrderAlerts {
     if (!row) return;
     // Settings and the captain's points are read before the transaction (a
     // settings read may take a pool connection of its own).
-    const [lateMin, gpsStaleMin, fixes] = await Promise.all([
+    const [lateMin, editAlertMin, gpsStaleMin, fixes] = await Promise.all([
       this.settings.get('order.delivery_late_alert_min', { cityId: row.cityId }),
+      this.settings.get('order.merchant_accept_alert_min', { cityId: row.cityId }),
       this.settings.get('captain.gps_stale_alert_min', { cityId: row.cityId }),
       row.captainId === null
         ? Promise.resolve(new Map<string, Date>())
@@ -174,7 +183,7 @@ export class OrderAlerts {
     await this.database.db.transaction(async (tx) => {
       const order = await lockOrder(tx, job.orderId, placedAt);
       if (!order) return;
-      const input = await readInput(tx, order.id, placedAt, lateMin);
+      const input = await readInput(tx, order.id, placedAt, lateMin, editAlertMin);
       const { open, next } = orderAlerts(
         {
           ...input,
@@ -240,6 +249,7 @@ async function readInput(
   orderId: string,
   placedAt: Date,
   deliveryLateMin: number,
+  editAlertMin: number,
 ): Promise<Omit<OrderAlertInput, 'gpsStaleMin' | 'lastFixAt'>> {
   const [order] = await tx
     .select({
@@ -280,6 +290,7 @@ async function readInput(
     )
     .limit(1);
   const report = await openItemReport(tx, orderId, placedAt);
+  const edited = await unacknowledgedAdditionAt(tx, orderId, placedAt);
   const row = order!;
   return {
     status: row.status,
@@ -297,6 +308,7 @@ async function readInput(
     away: row.awayReason !== null,
     shortfall: short !== undefined,
     itemReportOpen: report !== null,
+    editAlertAt: edited && new Date(edited.getTime() + editAlertMin * MINUTE_MS),
   };
 }
 

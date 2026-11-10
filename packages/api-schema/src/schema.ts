@@ -1892,6 +1892,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/orders/{orderId}/acknowledge-edit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantOrdersAcknowledgeEdit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/orders/{orderId}/item-report": {
         parameters: {
             query?: never;
@@ -1982,6 +1998,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminOrdersCloseItemReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/edit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersEdit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/edit-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersEditPreview"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4509,6 +4557,18 @@ export interface components {
                     unitPrice: string;
                     /** @description Integer minor units (AP §8.6). */
                     lineTotal: string;
+                    /** @description Added by an edit of FOX DROP: marked «أُضيف» (CU §11.6). */
+                    added: boolean;
+                    /** @description The quantity before an edit changed it, shown beside the new one (CU §11.6). */
+                    quantityBefore: number | null;
+                }[];
+                /** @description Lines an edit of FOX DROP removed, struck through as «حُذف» (CU §11.6). */
+                removedLines: {
+                    name: string;
+                    quantity: number;
+                    options: {
+                        name: string;
+                    }[];
                 }[];
                 /** @description «سأدفع بـ»; null for «لم أحدد». */
                 payIn: string | null;
@@ -4654,6 +4714,18 @@ export interface components {
                     unitPrice: string;
                     /** @description Integer minor units (AP §8.6). */
                     lineTotal: string;
+                    /** @description Added by an edit of FOX DROP: marked «أُضيف» (CU §11.6). */
+                    added: boolean;
+                    /** @description The quantity before an edit changed it, shown beside the new one (CU §11.6). */
+                    quantityBefore: number | null;
+                }[];
+                /** @description Lines an edit of FOX DROP removed, struck through as «حُذف» (CU §11.6). */
+                removedLines: {
+                    name: string;
+                    quantity: number;
+                    options: {
+                        name: string;
+                    }[];
                 }[];
                 /** @description «سأدفع بـ»; null for «لم أحدد». */
                 payIn: string | null;
@@ -4833,6 +4905,30 @@ export interface components {
                         label: string;
                     } | null;
                 } | null;
+                /** @description RA §8.13: the edits by operations not yet acknowledged, oldest first; «اطلعت على التعديل» (POST …/acknowledge-edit) acknowledges them all. Empty after the pickup. */
+                edits: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description Items added or a quantity raised: every device rings «تم تعديل الطلب #{رقم} — أُضيفت أصناف» until «اطلعت على التعديل», and pickup requests wait (RA §8.10, §16 #16); otherwise it chimes «تم تعديل الطلب #{رقم}» once and stays on the card (RA §16 #17). */
+                    addsItems: boolean;
+                    /** @description The prompt lists them (RA §8.13). */
+                    changes: {
+                        /**
+                         * @description A line whose options changed is removed and added again.
+                         * @enum {string}
+                         */
+                        kind: "added" | "removed" | "quantity";
+                        name: string;
+                        options: string[];
+                        quantity: number;
+                        /** @description quantity: the quantity before. */
+                        quantityBefore?: number;
+                    }[];
+                    /** @description The new items value after this edit. */
+                    itemsValue: string;
+                    /** @description Items added to a ready order: back to «قيد التحضير» with this many minutes from the edit (RA §8.13); null otherwise. */
+                    extraPrepMin: number | null;
+                }[];
                 /** @description RA §8.14: operations cancelled the accepted order; every device rings with «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» until «حسناً» on any of them (POST …/acknowledge-cancellation), then the board drops the order. Null otherwise, and once acknowledged. */
                 cancellation: {
                     /** Format: date-time */
@@ -5003,6 +5099,30 @@ export interface components {
                         label: string;
                     } | null;
                 } | null;
+                /** @description RA §8.13: the edits by operations not yet acknowledged, oldest first; «اطلعت على التعديل» (POST …/acknowledge-edit) acknowledges them all. Empty after the pickup. */
+                edits: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description Items added or a quantity raised: every device rings «تم تعديل الطلب #{رقم} — أُضيفت أصناف» until «اطلعت على التعديل», and pickup requests wait (RA §8.10, §16 #16); otherwise it chimes «تم تعديل الطلب #{رقم}» once and stays on the card (RA §16 #17). */
+                    addsItems: boolean;
+                    /** @description The prompt lists them (RA §8.13). */
+                    changes: {
+                        /**
+                         * @description A line whose options changed is removed and added again.
+                         * @enum {string}
+                         */
+                        kind: "added" | "removed" | "quantity";
+                        name: string;
+                        options: string[];
+                        quantity: number;
+                        /** @description quantity: the quantity before. */
+                        quantityBefore?: number;
+                    }[];
+                    /** @description The new items value after this edit. */
+                    itemsValue: string;
+                    /** @description Items added to a ready order: back to «قيد التحضير» with this many minutes from the edit (RA §8.13); null otherwise. */
+                    extraPrepMin: number | null;
+                }[];
                 /** @description RA §8.14: operations cancelled the accepted order; every device rings with «أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}» until «حسناً» on any of them (POST …/acknowledge-cancellation), then the board drops the order. Null otherwise, and once acknowledged. */
                 cancellation: {
                     /** Format: date-time */
@@ -5185,7 +5305,7 @@ export interface components {
                     captainWaitingAlertAt: string | null;
                 };
                 /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
-                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable")[];
+                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable" | "edit_unacknowledged")[];
             };
         };
         AdminAcceptDto: {
@@ -5197,6 +5317,94 @@ export interface components {
         AdminCloseItemReportDto: {
             /** @description Required (AP §9.3.2). */
             reason: string;
+        };
+        AdminEditDto: {
+            /** @description The current lines kept, each with its quantity; a line left out is removed. A raised quantity keeps the unit price and counts as items added. */
+            keep: {
+                /** @description A current line's position (the detail's lines). */
+                position: number;
+                quantity: number;
+            }[];
+            /** @description Lines added from the restaurant's current menu at current prices, available only (400 invalid_edit). A line whose options change is left out of keep and added again. */
+            add: {
+                /** Format: uuid */
+                itemId: string;
+                optionIds: string[];
+                quantity: number;
+            }[];
+            /** @description A new delivery fee in minor units, or null to keep it (the threshold is not checked again). */
+            deliveryFee: string | null;
+            /** @description Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise). */
+            extraPrepMin: number | null;
+            /** @description Required (AP §9.3.2): the internal note, never shown to the apps. */
+            reason: string;
+        };
+        AdminEditPreviewDto: {
+            /** @description The current lines kept, each with its quantity; a line left out is removed. A raised quantity keeps the unit price and counts as items added. */
+            keep: {
+                /** @description A current line's position (the detail's lines). */
+                position: number;
+                quantity: number;
+            }[];
+            /** @description Lines added from the restaurant's current menu at current prices, available only (400 invalid_edit). A line whose options change is left out of keep and added again. */
+            add: {
+                /** Format: uuid */
+                itemId: string;
+                optionIds: string[];
+                quantity: number;
+            }[];
+            /** @description A new delivery fee in minor units, or null to keep it (the threshold is not checked again). */
+            deliveryFee: string | null;
+            /** @description Required exactly when items are added to a ready order: it goes back to accepted with this many minutes from now, and the promised time moves by them (400 invalid_edit otherwise). */
+            extraPrepMin: number | null;
+        };
+        AdminEditPreviewAnswerDto_Output: {
+            currency: string;
+            before: {
+                /** @description Also the pickup payment (D26). */
+                itemsValue: string;
+                /** @description Integer minor units (AP §8.6). */
+                deliveryFee: string;
+                /** @description Integer minor units (AP §8.6). */
+                discount: string;
+                rounding: string;
+                /** @description Integer minor units (AP §8.6). */
+                total: string;
+                /** @description Integer minor units (AP §8.6). */
+                commission: string;
+                /** @description Integer minor units (AP §8.6). */
+                merchantNet: string;
+            };
+            after: {
+                /** @description Also the pickup payment (D26). */
+                itemsValue: string;
+                /** @description Integer minor units (AP §8.6). */
+                deliveryFee: string;
+                /** @description Integer minor units (AP §8.6). */
+                discount: string;
+                rounding: string;
+                /** @description Integer minor units (AP §8.6). */
+                total: string;
+                /** @description Integer minor units (AP §8.6). */
+                commission: string;
+                /** @description Integer minor units (AP §8.6). */
+                merchantNet: string;
+            };
+            changes: {
+                /** @enum {string} */
+                kind: "added" | "removed" | "quantity";
+                name: string;
+                options: string[];
+                quantity: number;
+                /** @description quantity: the quantity before. */
+                quantityBefore?: number;
+            }[];
+            /** @description The restaurant must acknowledge it before the pickup (RA §8.13). */
+            addsItems: boolean;
+            /** @description A ready order goes back to «قيد التحضير». */
+            backToPreparing: boolean;
+            /** @description The new promised time when it moves. */
+            promisedAt: string | null;
         };
         AdminChangeTimeDto: {
             /** @description Whole minutes added, from 1 to order.eta_change_max_min (owner decision 2026-11-10); 400 invalid_time_change otherwise. */
@@ -5422,7 +5630,7 @@ export interface components {
                     captainWaitingAlertAt: string | null;
                 };
                 /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
-                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable")[];
+                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable" | "edit_unacknowledged")[];
             }[];
         };
         AdminOrderDto_Output: {
@@ -5492,7 +5700,7 @@ export interface components {
                     captainWaitingAlertAt: string | null;
                 };
                 /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
-                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable")[];
+                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable" | "edit_unacknowledged")[];
                 promisedAt: string | null;
                 acceptance: {
                     /** Format: date-time */
@@ -5575,6 +5783,82 @@ export interface components {
                     /** @description order.eta_change_max_min. */
                     maxMin: number;
                 } | null;
+                /** @description While placed, accepted or ready: «تعديل الطلب» (AP §9.3.3). */
+                editChoices: {
+                    /** @description order.eta_change_max_min. */
+                    extraPrepMaxMin: number;
+                    /** @description The items customers can order now, with their available options. */
+                    items: {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                        category: string;
+                        /** @description Integer minor units (AP §8.6). */
+                        price: string;
+                        optionGroups: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string;
+                            minChoices: number;
+                            maxChoices: number;
+                            options: {
+                                /** Format: uuid */
+                                id: string;
+                                name: string;
+                                /** @description Integer minor units (AP §8.6). */
+                                priceDelta: string;
+                            }[];
+                        }[];
+                    }[];
+                } | null;
+                /** @description The order's edits by operations, oldest first (AP §9.3.1). */
+                edits: {
+                    /** Format: date-time */
+                    at: string;
+                    /** Format: uuid */
+                    adminId: string;
+                    /**
+                     * @description The status when edited.
+                     * @enum {string}
+                     */
+                    status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                    changes: {
+                        /** @enum {string} */
+                        kind: "added" | "removed" | "quantity";
+                        name: string;
+                        options: string[];
+                        quantity: number;
+                        /** @description quantity: the quantity before. */
+                        quantityBefore?: number;
+                    }[];
+                    addsItems: boolean;
+                    itemsValue: {
+                        /** @description Integer minor units (AP §8.6). */
+                        before: string;
+                        /** @description Integer minor units (AP §8.6). */
+                        after: string;
+                    };
+                    deliveryFee: {
+                        /** @description Integer minor units (AP §8.6). */
+                        before: string;
+                        /** @description Integer minor units (AP §8.6). */
+                        after: string;
+                    };
+                    total: {
+                        /** @description Integer minor units (AP §8.6). */
+                        before: string;
+                        /** @description Integer minor units (AP §8.6). */
+                        after: string;
+                    };
+                    extraPrepMin: number | null;
+                    /** @description «اطلعت على التعديل» on a restaurant device (RA §8.13). */
+                    acknowledgedAt: string | null;
+                }[];
+                /** @description Lines an edit removed. */
+                removedLines: {
+                    name: string;
+                    quantity: number;
+                }[];
                 /** @description While rejected (AP §9.3.1 «rejected (with reason)»). */
                 rejection: {
                     /** Format: date-time */
@@ -5647,8 +5931,14 @@ export interface components {
                      * @description «رفض نيابة عن المطعم» picks the unavailable items by it.
                      */
                     itemId: string;
+                    /** @description «تعديل الطلب» names the line by it. */
+                    position: number;
                     name: string;
                     quantity: number;
+                    /** @description Added by an edit. */
+                    added: boolean;
+                    /** @description The quantity before an edit changed it. */
+                    quantityBefore: number | null;
                     options: {
                         name: string;
                         /** @description Integer minor units (AP §8.6). */
@@ -5866,6 +6156,8 @@ export interface components {
                 } | null;
                 /** @description The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2). */
                 itemReportOpen: boolean;
+                /** @description Operations added items and the restaurant has not pressed «اطلعت على التعديل» (RA §8.13): the screen shows «بانتظار تأكيد المطعم للتعديل» and the pickup request waits (409 edit_unacknowledged) (CA §9 step 2). */
+                editUnacknowledged: boolean;
                 itemCount: number;
                 /** @description The item check (C7): one tick box per line. */
                 lines: {
@@ -6065,6 +6357,8 @@ export interface components {
                 } | null;
                 /** @description The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2). */
                 itemReportOpen: boolean;
+                /** @description Operations added items and the restaurant has not pressed «اطلعت على التعديل» (RA §8.13): the screen shows «بانتظار تأكيد المطعم للتعديل» and the pickup request waits (409 edit_unacknowledged) (CA §9 step 2). */
+                editUnacknowledged: boolean;
                 itemCount: number;
                 /** @description The item check (C7): one tick box per line. */
                 lines: {
@@ -6402,7 +6696,7 @@ export interface components {
                  * @description The rule of AP §9.1.3.
                  * @enum {string}
                  */
-                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "restaurant_auto_paused";
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "restaurant_auto_paused";
                 /**
                  * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
                  * @enum {string}
@@ -6438,7 +6732,7 @@ export interface components {
              * @description The rule of AP §9.1.3.
              * @enum {string}
              */
-            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "restaurant_auto_paused";
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "restaurant_auto_paused";
             /**
              * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
              * @enum {string}
@@ -9554,6 +9848,31 @@ export interface operations {
             };
         };
     };
+    merchantOrdersAcknowledgeEdit: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderDto_Output"];
+                };
+            };
+        };
+    };
     merchantOrdersReportItems: {
         parameters: {
             query?: never;
@@ -9717,6 +10036,61 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminOrderCardDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersEdit: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminEditDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCardDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersEditPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminEditPreviewDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEditPreviewAnswerDto_Output"];
                 };
             };
         };

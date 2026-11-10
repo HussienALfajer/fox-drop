@@ -1,0 +1,796 @@
+import 'reflect-metadata';
+import { randomBytes, randomInt, randomUUID } from 'node:crypto';
+import type { NestFastifyApplication } from '@nestjs/platform-fastify';
+import pg from 'pg';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { ApiModule } from '../../api.module.js';
+import { createDatabase, type Database } from '../../database/database.js';
+import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
+import { createApiApp } from '../../http/create-api-app.js';
+import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
+import { CaptainsService } from '../captains/index.js';
+import { FxService } from '../fx/index.js';
+import { GeoService, type Point } from '../geo/index.js';
+import {
+  ADMIN_SESSION_COOKIE,
+  AdminSessionsService,
+  CaptainAccountsService,
+  CODE_SENDER,
+  type DevelopmentCodeSender,
+  MerchantAccountsService,
+} from '../identity/index.js';
+import { MerchantsService } from '../merchants/index.js';
+import { SettingsService } from '../settings/index.js';
+import { DATABASE } from '../../database/database.module.js';
+import { Jobs } from '../../jobs/jobs.module.js';
+import { AlertsService } from '../notifications/index.js';
+import { OrderAlerts } from './order-alerts.js';
+
+// AP §9.3.3 «تعديل الطلب» before the pickup, RA §8.13, §8.10, §8.12, CA §9.3,
+// §9.10, CU §11.6 (slice 2.10a; owner decisions 2026-11-10): operations edit
+// an order's lines and delivery fee, the money is recalculated, the
+// restaurant acknowledges, and an unacknowledged addition blocks the pickup.
+
+vi.setConfig({ testTimeout: 30_000 });
+
+let database: TestDatabase;
+let cache: TestValkey;
+let app: NestFastifyApplication;
+let sql: pg.Pool;
+let db: Database;
+let azaz: string;
+let restaurant: string;
+let item: string;
+let fries: string;
+let soldOut: string;
+
+const system = { type: 'system', id: null, role: null } as const;
+const change = { actor: system, context: { ipAddress: null, device: null }, reason: 'test' };
+const bySystem = { editor: 'system', context: change.context, reason: 'test' } as const;
+const centre = { latitude: 36.587, longitude: 37.046 };
+const home = { latitude: 36.59, longitude: 37.046 };
+const captainSpot = { latitude: 36.597, longitude: 37.046 };
+const atDoor = { latitude: 36.5875, longitude: 37.046 };
+const allWeek = [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, opensAt: 0, closesAt: 0 }));
+
+function square({ latitude, longitude }: Point, half = 0.05): Point[] {
+  return [
+    { latitude: latitude - half, longitude: longitude - half },
+    { latitude: latitude - half, longitude: longitude + half },
+    { latitude: latitude + half, longitude: longitude + half },
+    { latitude: latitude + half, longitude: longitude - half },
+  ];
+}
+
+beforeAll(async () => {
+  [database, cache] = await Promise.all([startTestDatabase(), startTestValkey()]);
+  process.env.DATABASE_URL = database.appUrl;
+  process.env.VALKEY_URL = cache.url;
+  process.env.IDENTITY_ENCRYPTION_KEY = randomBytes(32).toString('base64');
+  process.env.FOX_DROP_ENVIRONMENT = 'development';
+  sql = new pg.Pool({ connectionString: database.appUrl });
+  db = createDatabase(database.appUrl);
+  app = await createApiApp(ApiModule);
+  await app.init();
+  await app.getHttpAdapter().getInstance().ready();
+  azaz = (await sql.query("SELECT id FROM geo.cities WHERE code = 'AZ'")).rows[0].id;
+  const fx = app.get(FxService);
+  await fx.setCityCurrency(azaz, { currency: 'TRY', displayOrder: 1, enabled: true }, change);
+  await fx.setBaseCurrency(azaz, 'TRY', change);
+  const payRate = {
+    basePay: 2500n,
+    includedMetres: 3000,
+    perExtraKm: 500n,
+    waitingPerMinute: 0n,
+    minimumPay: 2500n,
+  };
+  await app.get(CaptainsService).setPayTable(
+    azaz,
+    {
+      currency: 'TRY',
+      rates: { walking: payRate, bicycle: payRate, motorbike: payRate, car: payRate },
+    },
+    change,
+  );
+  const settings = app.get(SettingsService);
+  await settings.update('dispatch.capacity_check', { cityId: azaz }, false, bySystem);
+  await settings.update(
+    'dispatch.manual_assign_requires_accept',
+    { cityId: azaz },
+    false,
+    bySystem,
+  );
+  await settings.update('customer.late_cancel_strikes', { cityId: azaz }, 2, bySystem);
+  await settings.update('otp.ip_hourly_max', {}, 1000, bySystem);
+  await settings.update(
+    'currency.<code>.rounding_unit',
+    { cityId: azaz, parameter: 'TRY' },
+    { amountMinor: 500 },
+    bySystem,
+  );
+  const geo = app.get(GeoService);
+  await geo.createZone(azaz, { name: 'المركز', area: square(centre), active: true }, change);
+  await geo.setDeliveryFeeRule(
+    azaz,
+    { kind: 'flat', currency: 'TRY', flatFee: 4000n, minimumFee: null, freeDeliveryFrom: null },
+    change,
+  );
+  const merchants = app.get(MerchantsService);
+  restaurant = await merchants.createRestaurant(
+    azaz,
+    {
+      nameAr: 'مطعم التعديل',
+      address: 'شارع المطاعم',
+      location: centre,
+      coverage: { kind: 'radius', radiusMetres: 1000 },
+      minimumOrder: { amount: 10_000n, currency: 'TRY' },
+      commissionBp: 1500,
+      defaultPrepMin: 20,
+    },
+    change,
+  );
+  await merchants.setAccountStatus(restaurant, 'active', change);
+  await merchants.setWeeklySchedule(restaurant, allWeek, change);
+  const category = await merchants.addCategory(restaurant, { name: 'وجبات' }, change);
+  item = await merchants.addItem(
+    restaurant,
+    { categoryId: category, name: 'شاورما', price: { amount: 12_000n, currency: 'TRY' } },
+    change,
+  );
+  fries = await merchants.addItem(
+    restaurant,
+    { categoryId: category, name: 'بطاطا', price: { amount: 7_300n, currency: 'TRY' } },
+    change,
+  );
+  soldOut = await merchants.addItem(
+    restaurant,
+    { categoryId: category, name: 'كبة', price: { amount: 5_000n, currency: 'TRY' } },
+    change,
+  );
+}, 300_000);
+
+afterAll(async () => {
+  await app?.close();
+  await db?.pool.end();
+  await sql?.end();
+  await Promise.all([database?.stop(), cache?.stop()]);
+});
+
+const phoneNumber = () => `+9639${randomInt(100_000_000).toString().padStart(8, '0')}`;
+
+async function appSignIn(party: 'customer' | 'merchant' | 'captain', phone: string) {
+  const deviceId = randomUUID();
+  await app.inject({ method: 'POST', url: `/v1/${party}/auth/code`, payload: { phone, deviceId } });
+  const code = app.get<DevelopmentCodeSender>(CODE_SENDER).lastCode(phone);
+  const answer = await app.inject({
+    method: 'POST',
+    url: `/v1/${party}/auth/sign-in`,
+    payload: { phone, deviceId, code },
+  });
+  expect(answer.statusCode).toBe(200);
+  if (party !== 'merchant') {
+    await app.inject({
+      method: 'POST',
+      url: `/v1/${party}/terms/accept`,
+      headers: { authorization: `Bearer ${answer.json().accessToken}` },
+      payload: { version: 1 },
+    });
+  }
+  return { authorization: `Bearer ${answer.json().accessToken}` };
+}
+
+let accounts = 0;
+async function admin(roles: string[]) {
+  accounts += 1;
+  const { rows } = await sql.query(
+    `INSERT INTO identity.admin_accounts (name, email, status, password_hash, totp_secret_encrypted)
+     VALUES ($1, $2, 'active', 'not used', 'not used') RETURNING id`,
+    [`Operator ${accounts}`, `operator${accounts}@example.test`],
+  );
+  const accountId: string = rows[0].id;
+  for (const role of roles) {
+    await sql.query(
+      'INSERT INTO identity.admin_account_roles (account_id, role_code) VALUES ($1, $2)',
+      [accountId, role],
+    );
+  }
+  const { token } = await app
+    .get(AdminSessionsService)
+    .start(db.db, accountId, { ipAddress: '203.0.113.9', device: 'test' }, new Date());
+  const cookies = { [ADMIN_SESSION_COOKIE]: token };
+  const post = (url: string, payload: object, key: string = randomUUID()) =>
+    app.inject({ method: 'POST', url, cookies, headers: { 'idempotency-key': key }, payload });
+  return {
+    accountId,
+    assign: (orderId: string, captainId: string) =>
+      post(`/v1/admin/orders/${orderId}/assign`, { captainId }),
+    cancel: (orderId: string, body: object, key?: string) =>
+      post(`/v1/admin/orders/${orderId}/cancel`, body, key),
+    changeTime: (orderId: string, body: object, key?: string) =>
+      post(`/v1/admin/orders/${orderId}/change-time`, body, key),
+    closeItemReport: (orderId: string, body: object) =>
+      post(`/v1/admin/orders/${orderId}/item-report/close`, body),
+    edit: (orderId: string, body: object, key?: string) =>
+      post(`/v1/admin/orders/${orderId}/edit`, { reason: 'اتفقنا مع الزبون', ...body }, key),
+    editPreview: (orderId: string, body: object) =>
+      app.inject({
+        method: 'POST',
+        url: `/v1/admin/orders/${orderId}/edit-preview`,
+        cookies,
+        payload: body,
+      }),
+    cookies,
+    detail: async (orderId: string) =>
+      (await app.inject({ method: 'GET', url: `/v1/admin/orders/${orderId}`, cookies })).json()
+        .order,
+    preview: (orderId: string, body: object) =>
+      app.inject({
+        method: 'POST',
+        url: `/v1/admin/orders/${orderId}/cancel-preview`,
+        cookies,
+        payload: body,
+      }),
+  };
+}
+
+function cartLines() {
+  return [{ itemId: item, optionIds: [], quantity: 2, note: null, knownUnitPrice: '12000' }];
+}
+
+const quoteFor = (customer: Record<string, string>) =>
+  app.inject({
+    method: 'POST',
+    url: '/v1/customer/quote',
+    headers: customer,
+    payload: {
+      restaurantId: restaurant,
+      location: home,
+      lines: cartLines(),
+      payIn: null,
+      appVersion: '1.0.0',
+    },
+  });
+
+async function place(customer: Record<string, string>) {
+  const quote = await quoteFor(customer);
+  return app.inject({
+    method: 'POST',
+    url: '/v1/customer/orders',
+    headers: { ...customer, 'idempotency-key': randomUUID() },
+    payload: {
+      restaurantId: restaurant,
+      lines: cartLines(),
+      payIn: null,
+      appVersion: '1.0.0',
+      quoteVersion: quote.json().version,
+      addressId: null,
+      unsavedAddress: {
+        location: home,
+        street: 'شارع السوق',
+        floor: null,
+        landmark: 'قرب الجامع',
+        contactPhone: null,
+        recipientName: null,
+        directions: null,
+      },
+      note: null,
+    },
+  });
+}
+
+async function cashier(restaurantId: string = restaurant) {
+  const phone = phoneNumber();
+  await app
+    .get(MerchantAccountsService)
+    .addAccount(restaurantId, { role: 'cashier', name: 'cashier', phone }, change);
+  const headers = await appSignIn('merchant', phone);
+  await app.inject({
+    method: 'PUT',
+    url: '/v1/merchant/auth/device',
+    headers,
+    payload: { name: 'كاشير', platform: 'android', appVersion: '1.0.0' },
+  });
+  return headers;
+}
+
+// A placed order, and its customer.
+async function placedOrder(customer?: Record<string, string>) {
+  const headers = customer ?? (await appSignIn('customer', phoneNumber()));
+  const placed = await place(headers);
+  expect(placed.statusCode).toBe(201);
+  return { id: placed.json().order.id as string, customer: headers };
+}
+
+// A placed order the restaurant accepted, with the cashier who accepted it.
+async function acceptedOrder(customer?: Record<string, string>) {
+  const order = await placedOrder(customer);
+  const restaurantUser = await cashier();
+  const accepted = await app.inject({
+    method: 'POST',
+    url: `/v1/merchant/orders/${order.id}/accept`,
+    headers: { ...restaurantUser, 'idempotency-key': randomUUID() },
+    payload: { prepMin: 20 },
+  });
+  expect(accepted.statusCode).toBe(200);
+  return { ...order, cashier: restaurantUser };
+}
+
+async function onlineCaptain(point: Point = captainSpot) {
+  const captains = app.get(CaptainsService);
+  const captainId = await captains.createCaptain(
+    azaz,
+    {
+      name: 'كابتن التعديل',
+      vehicle: 'motorbike',
+      plateNumber: randomUUID().slice(0, 6),
+      custodyLimit: { amount: 300_000n, currency: 'TRY' },
+    },
+    change,
+  );
+  const phone = phoneNumber();
+  await app.get(CaptainAccountsService).addAccount(captainId, phone, change);
+  const headers = await appSignIn('captain', phone);
+  const now = new Date();
+  await captains.goOnline(
+    captainId,
+    { appVersion: '1.0.0', simulatedLocation: false, termsPending: false },
+    now,
+  );
+  await captains.recordLocations(
+    captainId,
+    [{ ...point, accuracyMetres: 8, recordedAt: now, simulated: false }],
+    new Date(now.getTime() + 1),
+  );
+  const fix = () => ({
+    ...atDoor,
+    accuracyMetres: 10,
+    recordedAt: new Date().toISOString(),
+    simulated: false,
+  });
+  const command = (orderId: string, path: string, payload: object) =>
+    app.inject({
+      method: 'POST',
+      url: `/v1/captain/orders/${orderId}/${path}`,
+      headers: { ...headers, 'idempotency-key': randomUUID() },
+      payload,
+    });
+  return {
+    captainId,
+    headers,
+    arrive: (orderId: string) => command(orderId, 'arrive', { location: fix() }),
+    requestPickup: (orderId: string, amount = '24000') =>
+      command(orderId, 'pickup-request', {
+        lines: [{ currency: 'TRY', amount }],
+        location: fix(),
+      }),
+    active: () => app.inject({ method: 'GET', url: '/v1/captain/orders/active', headers }),
+  };
+}
+
+// An accepted order whose captain is at the restaurant.
+async function captainAtRestaurant() {
+  const order = await acceptedOrder();
+  const captain = await onlineCaptain();
+  const ops = await admin(['OPS']);
+  expect((await ops.assign(order.id, captain.captainId)).statusCode).toBe(200);
+  expect((await captain.arrive(order.id)).statusCode).toBe(200);
+  return { order, captain, ops };
+}
+
+const board = async (headers: Record<string, string>, orderId: string) =>
+  (await app.inject({ method: 'GET', url: '/v1/merchant/orders', headers }))
+    .json()
+    .orders.find((entry: { id: string }) => entry.id === orderId);
+
+const events = async (orderId: string) =>
+  (
+    await sql.query(
+      'SELECT type, actor_type, reason FROM ordering.order_events WHERE order_id = $1 ORDER BY version',
+      [orderId],
+    )
+  ).rows;
+
+// The newest event of the type.
+const outboxReason = async (orderId: string, type: string) =>
+  (
+    await sql.query(
+      "SELECT payload->>'reason' AS reason FROM ordering.outbox WHERE order_id = $1 AND type = $2 ORDER BY id DESC",
+      [orderId, type],
+    )
+  ).rows[0]?.reason;
+
+const times = async (orderId: string) =>
+  (
+    await sql.query(
+      `SELECT status, promised_at, prep_min, prep_late_alert_at, search_start_at, search_started_at
+         FROM ordering.orders WHERE id = $1`,
+      [orderId],
+    )
+  ).rows[0];
+
+const MINUTE = 60_000;
+const moved = (after: Date, before: Date) => (after.getTime() - before.getTime()) / MINUTE;
+
+const ready = (headers: Record<string, string>, orderId: string) =>
+  app.inject({
+    method: 'POST',
+    url: `/v1/merchant/orders/${orderId}/ready`,
+    headers: { ...headers, 'idempotency-key': randomUUID() },
+  });
+
+const customerOrder = async (headers: Record<string, string>, orderId: string) =>
+  (await app.inject({ method: 'GET', url: `/v1/customer/orders/${orderId}`, headers })).json()
+    .order;
+
+const report = (
+  headers: Record<string, string>,
+  orderId: string,
+  body: object = {
+    items: [{ itemId: item, until: 'turned_back_on' }],
+    note: 'insufficient_quantity',
+  },
+) =>
+  app.inject({
+    method: 'POST',
+    url: `/v1/merchant/orders/${orderId}/item-report`,
+    headers: { ...headers, 'idempotency-key': randomUUID() },
+    payload: body,
+  });
+
+const withdraw = (headers: Record<string, string>, orderId: string) =>
+  app.inject({
+    method: 'POST',
+    url: `/v1/merchant/orders/${orderId}/item-report/withdraw`,
+    headers: { ...headers, 'idempotency-key': randomUUID() },
+  });
+
+// The menu's own switch of the item and whether customers can order it.
+const menuItem = async (headers: Record<string, string>) =>
+  (await app.inject({ method: 'GET', url: '/v1/merchant/menu', headers }))
+    .json()
+    .categories.flatMap((category: { items: { id: string }[] }) => category.items)
+    .find((entry: { id: string }) => entry.id === item);
+
+// Every case orders the same item: switch it on again after a report that
+// leaves it off.
+const switchOn = async (headers: Record<string, string>) => {
+  const answer = await app.inject({
+    method: 'PUT',
+    url: '/v1/merchant/menu/availability',
+    headers,
+    payload: { type: 'item', id: item, available: true },
+  });
+  expect(answer.statusCode).toBe(200);
+};
+
+const reportRow = async (orderId: string) =>
+  (
+    await sql.query(
+      `SELECT items, note, closed_how, closed_by_type, close_reason
+         FROM ordering.item_reports WHERE order_id = $1 ORDER BY reported_at DESC`,
+      [orderId],
+    )
+  ).rows[0];
+
+const boardOrder = board;
+
+const acknowledge = (headers: Record<string, string>, orderId: string) =>
+  app.inject({
+    method: 'POST',
+    url: `/v1/merchant/orders/${orderId}/acknowledge-edit`,
+    headers: { ...headers, 'idempotency-key': randomUUID() },
+  });
+
+const money = async (orderId: string) =>
+  (
+    await sql.query(
+      'SELECT items_value, delivery_fee, rounding, total FROM ordering.orders WHERE id = $1',
+      [orderId],
+    )
+  ).rows[0];
+
+const editRow = async (orderId: string) =>
+  (
+    await sql.query('SELECT * FROM ordering.order_edits WHERE order_id = $1 ORDER BY at DESC', [
+      orderId,
+    ])
+  ).rows[0];
+
+// The order's two shawarma raised to three, and one fries added.
+const addFries = {
+  keep: [{ position: 0, quantity: 3 }],
+  add: [{ itemId: '', optionIds: [], quantity: 1 }],
+  deliveryFee: null,
+  extraPrepMin: null,
+};
+
+beforeAll(() => {
+  addFries.add[0]!.itemId = fries;
+});
+
+describe('POST /v1/admin/orders/{orderId}/edit before the pickup (AP §9.3.3)', () => {
+  it('recalculates the money from the lines and keeps a raised line at its unit price', async () => {
+    const order = await acceptedOrder();
+    const ops = await admin(['OPS']);
+    const answer = await ops.edit(order.id, addFries);
+    expect(answer.statusCode).toBe(200);
+    // 3 × 12000 + 7300 = 43300; the fee 4000; rounded to 500.
+    const after = await money(order.id);
+    expect(after.items_value).toBe('43300');
+    expect(after.delivery_fee).toBe('4000');
+    expect(BigInt(after.total)).toBe(43_300n + 4_000n + BigInt(after.rounding));
+    expect(BigInt(after.total) % 500n).toBe(0n);
+    const lines = (
+      await sql.query(
+        `SELECT position, quantity, line_total, quantity_before, added_by_edit IS NOT NULL AS added
+           FROM ordering.order_lines WHERE order_id = $1 ORDER BY position`,
+        [order.id],
+      )
+    ).rows;
+    expect(lines).toEqual([
+      { position: 0, quantity: 3, line_total: '36000', quantity_before: 2, added: false },
+      { position: 1, quantity: 1, line_total: '7300', quantity_before: null, added: true },
+    ]);
+    const edit = await editRow(order.id);
+    expect(edit).toMatchObject({
+      status: 'accepted',
+      adds_items: true,
+      items_value_before: '24000',
+      items_value_after: '43300',
+      extra_prep_min: null,
+      acknowledged_at: null,
+    });
+    expect(edit.changes).toEqual([
+      { kind: 'quantity', name: 'شاورما', options: [], quantity: 3, quantityBefore: 2 },
+      { kind: 'added', name: 'بطاطا', options: [], quantity: 1 },
+    ]);
+    expect((await events(order.id)).at(-1)).toEqual({
+      type: 'order.edited',
+      actor_type: 'admin',
+      reason: 'اتفقنا مع الزبون',
+    });
+    expect(await outboxReason(order.id, 'order.edited')).toBe('items_added');
+    // The customer's summary: the new total, «أُضيف» and the quantity change.
+    const seen = await customerOrder(order.customer, order.id);
+    expect(seen.money.total).toBe(after.total);
+    expect(
+      seen.lines.map((line: { name: string; added: boolean; quantityBefore: number | null }) => [
+        line.name,
+        line.added,
+        line.quantityBefore,
+      ]),
+    ).toEqual([
+      ['شاورما', false, 2],
+      ['بطاطا', true, null],
+    ]);
+    expect(seen.removedLines).toEqual([]);
+  });
+
+  it('removes a line, changes the delivery fee, and an edit without additions blocks nothing', async () => {
+    const { order, captain, ops } = await captainAtRestaurant();
+    expect((await ops.edit(order.id, addFries)).statusCode).toBe(200);
+    expect((await acknowledge(order.cashier, order.id)).statusCode).toBe(200);
+    // Fries out, the shawarma back to two, the fee down.
+    const answer = await ops.edit(order.id, {
+      keep: [{ position: 0, quantity: 2 }],
+      add: [],
+      deliveryFee: '2000',
+      extraPrepMin: null,
+    });
+    expect(answer.statusCode).toBe(200);
+    expect(await money(order.id)).toMatchObject({ items_value: '24000', delivery_fee: '2000' });
+    expect(await editRow(order.id)).toMatchObject({
+      adds_items: false,
+      delivery_fee_before: '4000',
+      delivery_fee_after: '2000',
+    });
+    expect(await outboxReason(order.id, 'order.edited')).toBe('changed');
+    const seen = await customerOrder(order.customer, order.id);
+    expect(seen.removedLines).toEqual([{ name: 'بطاطا', quantity: 1, options: [] }]);
+    // The line is back at its first quantity: no change shows.
+    expect(seen.lines[0].quantityBefore).toBeNull();
+    // Not acknowledged, but it added nothing: the pickup goes on at the new amount.
+    const card = await boardOrder(order.cashier, order.id);
+    expect(card.edits).toHaveLength(1);
+    expect(card.edits[0].addsItems).toBe(false);
+    expect((await captain.active()).json().order.editUnacknowledged).toBe(false);
+    expect((await captain.requestPickup(order.id, '24000')).statusCode).toBe(200);
+    // And no edit while the request is open.
+    const during = await ops.edit(order.id, addFries);
+    expect(during.statusCode).toBe(409);
+    expect(during.json().error).toBe('pickup_request_open');
+  });
+
+  it('blocks the pickup until «اطلعت على التعديل» when items were added, and clears an open item report', async () => {
+    const { order, captain } = await captainAtRestaurant();
+    const ops = await admin(['OPS']);
+    expect((await report(order.cashier, order.id)).statusCode).toBe(200);
+    // The reported shawarma replaced by fries.
+    const answer = await ops.edit(order.id, {
+      keep: [],
+      add: [{ itemId: fries, optionIds: [], quantity: 2 }],
+      deliveryFee: null,
+      extraPrepMin: null,
+    });
+    expect(answer.statusCode).toBe(200);
+    expect(await reportRow(order.id)).toMatchObject({
+      closed_how: 'edited',
+      closed_by_type: 'admin',
+    });
+    expect((await ops.detail(order.id)).alerts).not.toContain('item_unavailable');
+    expect((await captain.active()).json().order).toMatchObject({
+      itemReportOpen: false,
+      editUnacknowledged: true,
+    });
+    const blocked = await captain.requestPickup(order.id, '14600');
+    expect(blocked.statusCode).toBe(409);
+    expect(blocked.json().error).toBe('edit_unacknowledged');
+    const card = await boardOrder(order.cashier, order.id);
+    expect(card.edits).toEqual([
+      {
+        at: expect.any(String),
+        addsItems: true,
+        changes: [
+          { kind: 'removed', name: 'شاورما', options: [], quantity: 2 },
+          { kind: 'added', name: 'بطاطا', options: [], quantity: 2 },
+        ],
+        itemsValue: '14600',
+        extraPrepMin: null,
+      },
+    ]);
+    const acknowledged = await acknowledge(order.cashier, order.id);
+    expect(acknowledged.statusCode).toBe(200);
+    expect(acknowledged.json().order.edits).toEqual([]);
+    expect(await editRow(order.id)).toMatchObject({ acknowledged_device: expect.any(String) });
+    expect((await events(order.id)).at(-1)).toMatchObject({
+      type: 'order.edit_acknowledged',
+      actor_type: 'restaurant',
+    });
+    // A second acknowledgement has nothing to acknowledge.
+    expect((await acknowledge(order.cashier, order.id)).statusCode).toBe(409);
+    // The captain's request carries the new amount.
+    expect((await captain.requestPickup(order.id, '24000')).json().error).toBe('amount_mismatch');
+    expect((await captain.requestPickup(order.id, '14600')).statusCode).toBe(200);
+    await switchOn(order.cashier);
+  });
+
+  it('sends a ready order back to preparing with the extra prep time, and moves the promised time', async () => {
+    const order = await acceptedOrder();
+    expect((await ready(order.cashier, order.id)).statusCode).toBe(200);
+    const before = await times(order.id);
+    const ops = await admin(['OPS']);
+    const missing = await ops.edit(order.id, addFries);
+    expect(missing.statusCode).toBe(400);
+    expect(missing.json().error).toBe('invalid_edit');
+    const preview = await ops.editPreview(order.id, { ...addFries, extraPrepMin: 10 });
+    expect(preview.statusCode).toBe(200);
+    expect(preview.json()).toMatchObject({
+      before: {
+        itemsValue: '24000',
+        deliveryFee: '4000',
+        commission: '3600',
+        merchantNet: '20400',
+      },
+      after: {
+        itemsValue: '43300',
+        deliveryFee: '4000',
+        commission: '6495',
+        merchantNet: '36805',
+      },
+      addsItems: true,
+      backToPreparing: true,
+    });
+    expect(await money(order.id)).toMatchObject({ items_value: '24000' });
+    const answer = await ops.edit(order.id, { ...addFries, extraPrepMin: 10 });
+    expect(answer.statusCode).toBe(200);
+    const after = await times(order.id);
+    expect(after.status).toBe('accepted');
+    expect(moved(after.promised_at, before.promised_at)).toBeGreaterThanOrEqual(10);
+    expect(moved(after.promised_at, before.promised_at)).toBeLessThan(15);
+    expect(after.promised_at.getTime() % (5 * MINUTE)).toBe(0);
+    const row = (
+      await sql.query('SELECT ready_at, no_captain_alert_at FROM ordering.orders WHERE id = $1', [
+        order.id,
+      ])
+    ).rows[0];
+    expect(row).toEqual({ ready_at: null, no_captain_alert_at: null });
+    // The restaurant's countdown runs 10 minutes from now.
+    const card = await boardOrder(order.cashier, order.id);
+    const due = new Date(card.acceptance.prepDueAt).getTime();
+    expect(due - Date.now()).toBeGreaterThan(9 * MINUTE);
+    expect(due - Date.now()).toBeLessThanOrEqual(11 * MINUTE);
+    expect(card.edits[0].extraPrepMin).toBe(10);
+    expect(await editRow(order.id)).toMatchObject({
+      status: 'ready',
+      extra_prep_min: 10,
+      prep_min_before: 20,
+    });
+    expect(await outboxReason(order.id, 'order.edited')).toBe('items_added_back_to_preparing');
+  });
+
+  it('refuses what an edit cannot do', async () => {
+    const order = await acceptedOrder();
+    const ops = await admin(['OPS']);
+    const refused = async (body: object) => {
+      const answer = await ops.edit(order.id, body);
+      expect(answer.statusCode).toBe(400);
+      return answer.json().error;
+    };
+    const base = {
+      keep: [{ position: 0, quantity: 2 }],
+      add: [],
+      deliveryFee: null,
+      extraPrepMin: null,
+    };
+    // Nothing changed, no line left, an unknown or repeated line.
+    expect(await refused(base)).toBe('invalid_edit');
+    expect(await refused({ ...base, keep: [] })).toBe('invalid_edit');
+    expect(await refused({ ...base, keep: [{ position: 7, quantity: 1 }] })).toBe('invalid_edit');
+    expect(
+      await refused({
+        ...base,
+        keep: [
+          { position: 0, quantity: 1 },
+          { position: 0, quantity: 2 },
+        ],
+      }),
+    ).toBe('invalid_edit');
+    // Extra prep time only for a ready order with items added.
+    expect(await refused({ ...addFries, extraPrepMin: 10 })).toBe('invalid_edit');
+    // An item the menu has switched off.
+    const unavailable = await app.inject({
+      method: 'PUT',
+      url: '/v1/merchant/menu/availability',
+      headers: order.cashier,
+      payload: { type: 'item', id: soldOut, available: false, until: 'turned_back_on' },
+    });
+    expect(unavailable.statusCode).toBe(200);
+    expect(await refused({ ...base, add: [{ itemId: soldOut, optionIds: [], quantity: 1 }] })).toBe(
+      'invalid_edit',
+    );
+    // A role without operations.manage, and an ended order.
+    expect((await (await admin(['FIN'])).edit(order.id, addFries)).statusCode).toBe(403);
+    const placed = await placedOrder();
+    expect((await ops.edit(placed.id, addFries)).statusCode).toBe(200);
+    const cancelled = await ops.cancel(placed.id, {
+      cancellation: 'emergency',
+      responsible: 'platform',
+      foodPrepared: false,
+      compensateCaptain: false,
+      cash: null,
+      reason: 'ملاحظة',
+    });
+    expect(cancelled.statusCode).toBe(200);
+    const late = await ops.edit(placed.id, addFries);
+    expect(late.statusCode).toBe(409);
+    expect(late.json().error).toBe('order_state_changed');
+  });
+
+  it('answers a repeat of the key once', async () => {
+    const order = await acceptedOrder();
+    const ops = await admin(['OPS']);
+    const key = randomUUID();
+    expect((await ops.edit(order.id, addFries, key)).statusCode).toBe(200);
+    expect((await ops.edit(order.id, addFries, key)).statusCode).toBe(200);
+    const count = await sql.query(
+      'SELECT count(*)::int AS n FROM ordering.order_edits WHERE order_id = $1',
+      [order.id],
+    );
+    expect(count.rows[0].n).toBe(1);
+    expect((await money(order.id)).items_value).toBe('43300');
+  });
+
+  it("lets the application role change only an edit's acknowledgement, and the panel shows the edit", async () => {
+    const order = await acceptedOrder();
+    const ops = await admin(['OPS']);
+    expect((await ops.edit(order.id, addFries)).statusCode).toBe(200);
+    await expect(
+      sql.query("UPDATE ordering.order_edits SET changes = '[]' WHERE order_id = $1", [order.id]),
+    ).rejects.toThrow(/permission denied/);
+    const detail = await ops.detail(order.id);
+    expect(detail.edits).toHaveLength(1);
+    expect(detail.edits[0]).toMatchObject({ addsItems: true, acknowledgedAt: null });
+    expect(detail.timeline.at(-1)).toMatchObject({ type: 'order.edited' });
+    expect(detail.editChoices).toMatchObject({ extraPrepMaxMin: expect.any(Number) });
+  });
+});

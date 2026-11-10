@@ -22,6 +22,10 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
   final String unitPrice;
   @override
   final String lineTotal;
+  @override
+  final bool added;
+  @override
+  final int? quantityBefore;
 
   factory _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner([
     void Function(CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder)?
@@ -39,6 +43,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
     required this.options,
     required this.unitPrice,
     required this.lineTotal,
+    required this.added,
+    this.quantityBefore,
   }) : super._();
   @override
   CustomerActiveOrdersDtoOutputOrdersInnerLinesInner rebuild(
@@ -61,7 +67,9 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
         note == other.note &&
         options == other.options &&
         unitPrice == other.unitPrice &&
-        lineTotal == other.lineTotal;
+        lineTotal == other.lineTotal &&
+        added == other.added &&
+        quantityBefore == other.quantityBefore;
   }
 
   @override
@@ -74,6 +82,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
     _$hash = $jc(_$hash, options.hashCode);
     _$hash = $jc(_$hash, unitPrice.hashCode);
     _$hash = $jc(_$hash, lineTotal.hashCode);
+    _$hash = $jc(_$hash, added.hashCode);
+    _$hash = $jc(_$hash, quantityBefore.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -89,7 +99,9 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
           ..add('note', note)
           ..add('options', options)
           ..add('unitPrice', unitPrice)
-          ..add('lineTotal', lineTotal))
+          ..add('lineTotal', lineTotal)
+          ..add('added', added)
+          ..add('quantityBefore', quantityBefore))
         .toString();
   }
 }
@@ -134,6 +146,15 @@ class CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder
   String? get lineTotal => _$this._lineTotal;
   set lineTotal(String? lineTotal) => _$this._lineTotal = lineTotal;
 
+  bool? _added;
+  bool? get added => _$this._added;
+  set added(bool? added) => _$this._added = added;
+
+  int? _quantityBefore;
+  int? get quantityBefore => _$this._quantityBefore;
+  set quantityBefore(int? quantityBefore) =>
+      _$this._quantityBefore = quantityBefore;
+
   CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder() {
     CustomerActiveOrdersDtoOutputOrdersInnerLinesInner._defaults(this);
   }
@@ -148,6 +169,8 @@ class CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder
       _options = $v.options.toBuilder();
       _unitPrice = $v.unitPrice;
       _lineTotal = $v.lineTotal;
+      _added = $v.added;
+      _quantityBefore = $v.quantityBefore;
       _$v = null;
     }
     return this;
@@ -202,6 +225,12 @@ class CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder
               r'CustomerActiveOrdersDtoOutputOrdersInnerLinesInner',
               'lineTotal',
             ),
+            added: BuiltValueNullFieldError.checkNotNull(
+              added,
+              r'CustomerActiveOrdersDtoOutputOrdersInnerLinesInner',
+              'added',
+            ),
+            quantityBefore: quantityBefore,
           );
     } catch (_) {
       late String _$failedField;

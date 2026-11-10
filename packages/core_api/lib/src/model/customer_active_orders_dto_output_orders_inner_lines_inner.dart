@@ -20,6 +20,8 @@ part 'customer_active_orders_dto_output_orders_inner_lines_inner.g.dart';
 /// * [options]
 /// * [unitPrice] - Integer minor units (AP §8.6).
 /// * [lineTotal] - Integer minor units (AP §8.6).
+/// * [added] - Added by an edit of FOX DROP: marked «أُضيف» (CU §11.6).
+/// * [quantityBefore] - The quantity before an edit changed it, shown beside the new one (CU §11.6).
 @BuiltValue()
 abstract class CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
     implements
@@ -49,6 +51,14 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'lineTotal')
   String get lineTotal;
+
+  /// Added by an edit of FOX DROP: marked «أُضيف» (CU §11.6).
+  @BuiltValueField(wireName: r'added')
+  bool get added;
+
+  /// The quantity before an edit changed it, shown beside the new one (CU §11.6).
+  @BuiltValueField(wireName: r'quantityBefore')
+  int? get quantityBefore;
 
   CustomerActiveOrdersDtoOutputOrdersInnerLinesInner._();
 
@@ -125,6 +135,18 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerSerializer
       object.lineTotal,
       specifiedType: const FullType(String),
     );
+    yield r'added';
+    yield serializers.serialize(
+      object.added,
+      specifiedType: const FullType(bool),
+    );
+    yield r'quantityBefore';
+    yield object.quantityBefore == null
+        ? null
+        : serializers.serialize(
+            object.quantityBefore,
+            specifiedType: const FullType.nullable(int),
+          );
   }
 
   @override
@@ -214,6 +236,25 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerSerializer
                   )
                   as String;
           result.lineTotal = valueDes;
+          break;
+        case r'added':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.added = valueDes;
+          break;
+        case r'quantityBefore':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(int),
+                  )
+                  as int?;
+          if (valueDes == null) continue;
+          result.quantityBefore = valueDes;
           break;
         default:
           unhandled.add(key);

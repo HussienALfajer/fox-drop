@@ -564,6 +564,7 @@
           "auto_offline": "إيقاف تلقائي بعد 3 عروض",
           "assigned_by_operations": "تعيين من العمليات",
           "order_ready": "الطلب جاهز",
+          "order_edited": "تعديل الطلب",
           "picked_up": "تأكيد الاستلام",
           "pickup_amount_incorrect": "المطعم يعترض على المبلغ",
           "pickup_incomplete": "المطعم يفيد بأن الطلب غير مكتمل",
