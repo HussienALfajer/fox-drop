@@ -3201,6 +3201,108 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'حسابك موقوف حتى مراجعة فريق الدعم'**
   String get customerReviewStop;
+
+  /// The detail's button on an accepted or ready order before pickup, hidden while a pickup request or a report is open (RA §8.12, §8.10).
+  ///
+  /// In ar, this message translates to:
+  /// **'صنف غير متوفر — اتصلوا بالزبون'**
+  String get merchantItemReportButton;
+
+  /// The item-unavailable report sheet's title (RA §8.12); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'صنف غير متوفر في الطلب #{number}'**
+  String merchantItemReportTitle(String number);
+
+  /// The heading of the report's optional note (RA §8.12); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظة (اختياري)'**
+  String get merchantItemReportNote;
+
+  /// The report's optional note similar_alternative (RA §8.12), the built-in label used when Content's item_unavailable_note list could not be read.
+  ///
+  /// In ar, this message translates to:
+  /// **'يوجد بديل مشابه'**
+  String get merchantItemReportSimilar;
+
+  /// The report's optional note insufficient_quantity (RA §8.12), the built-in label used when Content's item_unavailable_note list could not be read.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكمية غير كافية'**
+  String get merchantItemReportNotEnough;
+
+  /// Sends the item-unavailable report (RA §8.12); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال البلاغ'**
+  String get merchantItemReportSend;
+
+  /// The card's and the detail's badge while the item-unavailable report is open (RA §8.12).
+  ///
+  /// In ar, this message translates to:
+  /// **'صنف نفد — بانتظار العمليات'**
+  String get merchantItemReportBadge;
+
+  /// The line under the badge while the item-unavailable report is open (RA §8.12).
+  ///
+  /// In ar, this message translates to:
+  /// **'العمليات تتواصل مع الزبون'**
+  String get merchantItemReportOperationsCalling;
+
+  /// Withdraws the open item-unavailable report before operations act; the items come back on (RA §8.12).
+  ///
+  /// In ar, this message translates to:
+  /// **'تراجع — الصنف متوفر'**
+  String get merchantItemReportWithdraw;
+
+  /// 400 invalid_item_report, or unknown_reason when the note left Content's list (it is read again); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر إرسال البلاغ بهذه الاختيارات، راجعها ثم أعد المحاولة'**
+  String get merchantItemReportRefused;
+
+  /// 409 on a report while the captain's pickup request is open (RA §8.10: the button is hidden then); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن يطلب تأكيد الاستلام، أجب على طلبه أولاً'**
+  String get merchantItemReportPickupOpen;
+
+  /// 409 on a report while another device's report is open; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أُبلغ عن صنف غير متوفر في هذا الطلب من جهاز آخر'**
+  String get merchantItemReportOpenFirst;
+
+  /// 409 on «تراجع — الصنف متوفر» after the report closed (operations, or another device); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أُغلق بلاغ الصنف قبل وصول تراجعك'**
+  String get merchantItemReportClosedFirst;
+
+  /// Chime when operations changed the prep time (RA §8.7, §16 #12).
+  ///
+  /// In ar, this message translates to:
+  /// **'عدّلت العمليات وقت تحضير #{number} إلى {minutes} د'**
+  String merchantPrepTimeChanged(String number, int minutes);
+
+  /// Chime when operations closed the item-unavailable report without an edit (RA §8.12, §16 #37); {reason} is operations' text.
+  ///
+  /// In ar, this message translates to:
+  /// **'أغلقت العمليات بلاغ الصنف في الطلب #{number}: {reason}'**
+  String merchantItemReportClosed(String number, String reason);
+
+  /// At the restaurant while the restaurant's item-unavailable report is open, and for 409 item_report_open: the pickup waits (CA §9 step 2, RA §8.12).
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار تعديل الطلب من العمليات'**
+  String get captainWaitingForOrderEdit;
+
+  /// The order screen's banner while the restaurant's item-unavailable report is open (CU §11.6, RA §8.12).
+  ///
+  /// In ar, this message translates to:
+  /// **'المطعم أبلغ أن صنفاً في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن.'**
+  String get customerItemReportBanner;
 }
 
 class _AppLocalizationsDelegate

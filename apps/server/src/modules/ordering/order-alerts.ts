@@ -17,6 +17,7 @@ import { CaptainsService } from '../captains/index.js';
 import { type AlertCode, AlertsService } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
 import { UNTIL_ENDED } from './active-orders.js';
+import { openItemReport } from './item-reports.js';
 import { type CaptainTrack, lockOrder } from './order-events.js';
 import { collections, type orderStatuses, orders, pickupRequests } from './schema.js';
 
@@ -37,6 +38,7 @@ export const ORDER_ALERT_CODES = [
   'delivery_late',
   'collection_shortfall',
   'away_from_address',
+  'item_unavailable',
 ] as const satisfies readonly AlertCode[];
 export type OrderAlertCode = (typeof ORDER_ALERT_CODES)[number];
 
@@ -60,6 +62,8 @@ export interface OrderAlertInput {
   amountDisputed: boolean;
   away: boolean;
   shortfall: boolean;
+  // RA §8.12: an open item-unavailable report.
+  itemReportOpen: boolean;
 }
 
 // The captain tracks of a captain on the order (AP §9.1.3 «أثناء طلب»).
@@ -119,6 +123,7 @@ export function orderAlerts(
   // AP §8.6: open until operations resolve it (not built yet).
   if (order.shortfall) open.push('collection_shortfall');
   if (order.away) open.push('away_from_address');
+  if (order.itemReportOpen) open.push('item_unavailable');
   const next = ahead.reduce<Date | null>(
     (soonest, moment) => (soonest && soonest < moment ? soonest : moment),
     null,
@@ -274,6 +279,7 @@ async function readInput(
       ),
     )
     .limit(1);
+  const report = await openItemReport(tx, orderId, placedAt);
   const row = order!;
   return {
     status: row.status,
@@ -290,6 +296,7 @@ async function readInput(
     amountDisputed: disputed !== undefined,
     away: row.awayReason !== null,
     shortfall: short !== undefined,
+    itemReportOpen: report !== null,
   };
 }
 

@@ -33,7 +33,7 @@ abstract class AdminAlertDtoOutput
   /// The rule of AP §9.1.3.
   @BuiltValueField(wireName: r'code')
   AdminAlertDtoOutputCodeEnum get code;
-  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  restaurant_auto_paused,  };
+  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  item_unavailable,  restaurant_auto_paused,  };
 
   /// critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
   @BuiltValueField(wireName: r'severity')
@@ -372,6 +372,9 @@ class AdminAlertDtoOutputCodeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'away_from_address')
   static const AdminAlertDtoOutputCodeEnum awayFromAddress =
       _$adminAlertDtoOutputCodeEnum_awayFromAddress;
+  @BuiltValueEnumConst(wireName: r'item_unavailable')
+  static const AdminAlertDtoOutputCodeEnum itemUnavailable =
+      _$adminAlertDtoOutputCodeEnum_itemUnavailable;
   @BuiltValueEnumConst(wireName: r'restaurant_auto_paused')
   static const AdminAlertDtoOutputCodeEnum restaurantAutoPaused =
       _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused;

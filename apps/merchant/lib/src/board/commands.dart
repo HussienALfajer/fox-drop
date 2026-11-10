@@ -19,6 +19,8 @@ enum CommandKind {
   disputePickup,
   incomplete,
   acknowledgeCancellation,
+  reportItems,
+  withdrawItemReport,
 }
 
 /// The three rejection reasons, the codes of the closed list (RA §8.6, R3).
@@ -85,6 +87,25 @@ class Rejection {
   ].join(' ');
 }
 
+/// «صنف غير متوفر — اتصلوا بالزبون» as the sheet sends it (RA §8.12): the
+/// items, each off «حتى الغد» (true) or «حتى أعيده» (false), and the
+/// optional note, a code of Content's `item_unavailable_note` list.
+class ItemReport {
+  const ItemReport(this.items, {this.note});
+
+  final Map<String, bool> items;
+  final String? note;
+
+  /// One item at least (RA §8.12: the items are required).
+  bool get complete => items.isNotEmpty;
+
+  /// The command's body, the same for each retry of its key.
+  String get body => [
+    for (final entry in items.entries) '${entry.key}:${entry.value}',
+    note ?? '',
+  ].join(' ');
+}
+
 /// What the screen says after a command, when it says anything.
 sealed class CommandNotice {
   const CommandNotice();
@@ -140,6 +161,30 @@ class LinesRefused extends CommandNotice {
 /// The dispute window was used already (`pickup_already_disputed`).
 class AlreadyDisputed extends CommandNotice {
   const AlreadyDisputed();
+}
+
+/// The report's choices were refused (`400 invalid_item_report`), or its
+/// note is no longer in Content's list (`400 unknown_reason`): the list is
+/// read again for the next report.
+class ItemReportRefused extends CommandNotice {
+  const ItemReportRefused();
+}
+
+/// The report came while the captain's pickup request was open (RA §8.10:
+/// the button is hidden then).
+class ReportWhilePickupOpen extends CommandNotice {
+  const ReportWhilePickupOpen();
+}
+
+/// Another device reported an item first: one report is open at a time.
+class ItemReportOpenFirst extends CommandNotice {
+  const ItemReportOpenFirst();
+}
+
+/// «تراجع — الصنف متوفر» came after the report closed: operations edited,
+/// cancelled or closed it, or another device withdrew it.
+class ItemReportClosedFirst extends CommandNotice {
+  const ItemReportClosedFirst();
 }
 
 /// Any other refusal.
@@ -283,6 +328,43 @@ class BoardCommands extends Notifier<Set<String>> {
     ),
   );
 
+  /// «صنف غير متوفر — اتصلوا بالزبون» (RA §8.12).
+  Future<CommandNotice?> reportItems(String orderId, ItemReport report) =>
+      _send(
+        orderId,
+        CommandKind.reportItems,
+        report.body,
+        (key) => _api.merchantOrdersReportItems(
+          orderId: orderId,
+          idempotencyKey: key,
+          merchantItemReportDto: MerchantItemReportDto(
+            (b) => b
+              ..items = ListBuilder([
+                for (final entry in report.items.entries)
+                  MerchantRejectDtoItemsInner(
+                    (i) => i
+                      ..itemId = entry.key
+                      ..until = entry.value
+                          ? MerchantRejectDtoItemsInnerUntilEnum.tomorrow
+                          : MerchantRejectDtoItemsInnerUntilEnum.turnedBackOn,
+                  ),
+              ])
+              ..note = report.note,
+          ),
+        ),
+      );
+
+  /// «تراجع — الصنف متوفر»: the items come back on (RA §8.12).
+  Future<CommandNotice?> withdrawItemReport(String orderId) => _send(
+    orderId,
+    CommandKind.withdrawItemReport,
+    '',
+    (key) => _api.merchantOrdersWithdrawItemReport(
+      orderId: orderId,
+      idempotencyKey: key,
+    ),
+  );
+
   // One command at a time per order. Its key belongs to the command's body:
   // a call without an answer (none, a 5xx, a 408 or a 429) is sent again
   // with the same key after a backoff until the server answers (RA §4.7),
@@ -352,13 +434,32 @@ class BoardCommands extends Notifier<Set<String>> {
         return const LinesRefused();
       case 'pickup_already_disputed':
         return const AlreadyDisputed();
+      case 'unknown_reason' when kind == CommandKind.reportItems:
+        return const ItemReportRefused();
       case 'unknown_reason' || 'invalid_rejection':
         return const RejectRefused();
+      case 'invalid_item_report':
+        return const ItemReportRefused();
       case 'order_state_changed':
         if (order is! Map) return const StateChanged();
         final status = order['status'];
         if (status == 'cancelled') return const CancelledFirst();
         if (status == 'rejected') return const RejectedFirst();
+        if (kind == CommandKind.withdrawItemReport) {
+          return order['itemReport'] == null
+              ? const ItemReportClosedFirst()
+              : const StateChanged();
+        }
+        if (kind == CommandKind.reportItems) {
+          final pickup = order['pickup'];
+          final request = pickup is Map ? pickup['request'] : null;
+          if (order['captainTrack'] == 'pickup_pending' ||
+              (request is Map && request['status'] == 'open')) {
+            return const ReportWhilePickupOpen();
+          }
+          if (order['itemReport'] != null) return const ItemReportOpenFirst();
+          return const StateChanged();
+        }
         if ((kind == CommandKind.accept || kind == CommandKind.reject) &&
             order['acceptance'] is Map) {
           final acceptance = order['acceptance'] as Map;

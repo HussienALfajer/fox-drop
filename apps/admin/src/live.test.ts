@@ -17,6 +17,15 @@ describe('the ops channel', () => {
       ['orders-board', city],
       ['order', 'o1'],
     ]);
+    // Slice 2.9: the item report and the time change are order events too.
+    for (const type of [
+      'order.time_changed',
+      'order.item_reported',
+      'order.item_report_withdrawn',
+      'order.item_report_closed',
+    ]) {
+      expect(staleQueries({ type, orderId: 'o1' }, city)).toContainEqual(['order', 'o1']);
+    }
   });
 
   it('refreshes the alerts and the cards that show them on an alert change', () => {

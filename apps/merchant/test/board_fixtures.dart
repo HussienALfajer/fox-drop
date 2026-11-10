@@ -27,6 +27,7 @@ Map<String, Object?> orderJson({
   DateTime? pickedUpAt,
   DateTime? disputeUntil,
   Map<String, Object?>? cancellation,
+  Map<String, Object?>? itemReport,
 }) {
   final at = placed ?? placedAt;
   final accepted = acceptedAfter == null ? null : at.add(acceptedAfter);
@@ -96,8 +97,23 @@ Map<String, Object?> orderJson({
       'disputedAt': null,
     },
     'cancellation': cancellation,
+    'itemReport': itemReport,
   };
 }
+
+/// An open item-unavailable report as the board gives it (RA §8.12).
+Map<String, Object?> itemReportJson({
+  Map<String, Object?>? note = const {
+    'code': 'similar_alternative',
+    'label': 'يوجد بديل مشابه',
+  },
+}) => {
+  'at': placedAt.add(const Duration(minutes: 10)).toIso8601String(),
+  'items': [
+    {'itemId': falafelId, 'name': 'فلافل', 'until': 'tomorrow'},
+  ],
+  'note': note,
+};
 
 /// An order's `cancellation` as the board gives it: only operations'
 /// cancellation after acceptance, until «حسناً» (RA §8.14).

@@ -154,6 +154,7 @@
       "captainWaiting": "كابتن ينتظر عند المطعم",
       "pickupDisputed": "خلاف على مبلغ الاستلام",
       "awayFromAddress": "تسليم بعيد عن العنوان",
+      "itemUnavailable": "صنف نفد بعد القبول",
       "captainGpsLost": "انقطع اتصال كابتن أثناء طلب",
       "deliveryLate": "توصيل متأخر",
       "collectionShortfall": "نقص في التحصيل",
@@ -166,7 +167,8 @@
       "needsAssignment": "بحاجة لتعيين",
       "note": "ملاحظة",
       "newCustomer": "زبون جديد",
-      "pickupPending": "بانتظار تأكيد الاستلام"
+      "pickupPending": "بانتظار تأكيد الاستلام",
+      "itemReport": "صنف نفد"
     },
     "vehicle": {
       "walking": "مشياً",
@@ -225,7 +227,11 @@
       "pickupDisputed": "خلاف على دفعة الاستلام",
       "arrivedAtCustomer": "الكابتن عند الزبون",
       "delivered": "تم التسليم",
-      "cancellationAcknowledged": "أكّد المطعم الإلغاء"
+      "cancellationAcknowledged": "أكّد المطعم الإلغاء",
+      "timeChanged": "عُدّل الوقت",
+      "itemReported": "أبلغ المطعم عن صنف نفد",
+      "itemReportWithdrawn": "تراجع المطعم عن البلاغ: الصنف متوفر",
+      "itemReportClosed": "أُغلق بلاغ صنف نفد"
     },
     "actor": {
       "system": "النظام",
@@ -350,6 +356,31 @@
         "nothing": "لا قيود مالية لهذا الإلغاء.",
         "unknown": "قيد لا تعرضه اللوحة بعد؛ لا يمكن التأكيد."
       }
+    },
+    "changeTime": {
+      "title": "تعديل الوقت",
+      "prepMoves": "الطعام لم يجهز بعد: يتأخر وقت التحضير والوقت الموعود معاً.",
+      "promiseOnly": "الطعام جاهز: يتأخر الوقت الموعود فقط.",
+      "chip": "+{{minutes}} د",
+      "minutes": "دقائق إضافية",
+      "outOfRange": "عدد صحيح من الدقائق بين 1 و{{max}}",
+      "current": "الوقت الموعود الآن: {{time}}",
+      "next": "يصبح: {{time}}",
+      "note": "ملاحظة (اختيارية)",
+      "confirm": "تأكيد تعديل الوقت",
+      "done": "عُدّل الوقت، وأُبلغ الزبون بالموعد الجديد",
+      "stateChanged": "تغيّرت حالة الطلب ولم يعد تعديل الوقت ممكناً",
+      "invalid": "عدد الدقائق غير مقبول، أعد المحاولة",
+      "event": "+{{minutes}} د، الوقت الموعود الجديد {{time}}"
+    },
+    "itemReport": {
+      "at": "أبلغ المطعم الساعة {{time}}",
+      "untilTomorrow": "حتى الغد",
+      "untilTurnedBackOn": "حتى أعيده",
+      "closeTitle": "إغلاق بلاغ صنف نفد",
+      "closeConfirm": "تأكيد إغلاق البلاغ",
+      "alreadyClosed": "البلاغ أُغلق قبل وصول طلبك",
+      "item": "{{name}}: {{until}}"
     }
   },
   "assign": {

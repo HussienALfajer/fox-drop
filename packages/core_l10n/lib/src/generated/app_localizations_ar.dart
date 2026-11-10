@@ -1916,4 +1916,66 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get customerReviewStop => 'حسابك موقوف حتى مراجعة فريق الدعم';
+
+  @override
+  String get merchantItemReportButton => 'صنف غير متوفر — اتصلوا بالزبون';
+
+  @override
+  String merchantItemReportTitle(String number) {
+    return 'صنف غير متوفر في الطلب #$number';
+  }
+
+  @override
+  String get merchantItemReportNote => 'ملاحظة (اختياري)';
+
+  @override
+  String get merchantItemReportSimilar => 'يوجد بديل مشابه';
+
+  @override
+  String get merchantItemReportNotEnough => 'الكمية غير كافية';
+
+  @override
+  String get merchantItemReportSend => 'إرسال البلاغ';
+
+  @override
+  String get merchantItemReportBadge => 'صنف نفد — بانتظار العمليات';
+
+  @override
+  String get merchantItemReportOperationsCalling => 'العمليات تتواصل مع الزبون';
+
+  @override
+  String get merchantItemReportWithdraw => 'تراجع — الصنف متوفر';
+
+  @override
+  String get merchantItemReportRefused =>
+      'تعذّر إرسال البلاغ بهذه الاختيارات، راجعها ثم أعد المحاولة';
+
+  @override
+  String get merchantItemReportPickupOpen =>
+      'الكابتن يطلب تأكيد الاستلام، أجب على طلبه أولاً';
+
+  @override
+  String get merchantItemReportOpenFirst =>
+      'أُبلغ عن صنف غير متوفر في هذا الطلب من جهاز آخر';
+
+  @override
+  String get merchantItemReportClosedFirst =>
+      'أُغلق بلاغ الصنف قبل وصول تراجعك';
+
+  @override
+  String merchantPrepTimeChanged(String number, int minutes) {
+    return 'عدّلت العمليات وقت تحضير #$number إلى $minutes د';
+  }
+
+  @override
+  String merchantItemReportClosed(String number, String reason) {
+    return 'أغلقت العمليات بلاغ الصنف في الطلب #$number: $reason';
+  }
+
+  @override
+  String get captainWaitingForOrderEdit => 'بانتظار تعديل الطلب من العمليات';
+
+  @override
+  String get customerItemReportBanner =>
+      'المطعم أبلغ أن صنفاً في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن.';
 }

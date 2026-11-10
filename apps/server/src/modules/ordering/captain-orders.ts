@@ -20,6 +20,8 @@ import {
   ContentService,
   type ReasonList,
 } from '../content/index.js';
+import { openItemReport } from './item-reports.js';
+import { acceptedPrepMin } from './time-changes.js';
 import { CAPTAIN_ACTIVE } from './order-assignments.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
 import { lockOrder, type OrderRow, recordTransition } from './order-events.js';
@@ -81,6 +83,9 @@ export type CaptainOrderRefusal =
   | 'unknown_reason'
   | 'reason_note_required'
   | 'reason_note_not_allowed'
+  // RA §8.10, §8.12: an open item report blocks the pickup (CA §9 step 2:
+  // «بانتظار تعديل الطلب من العمليات»).
+  | 'item_report_open'
   | 'idempotency_key_reused';
 
 // A command on an order that the order or the captain refuses;
@@ -593,7 +598,10 @@ export class CaptainOrders {
     if (money.payTableId === null) throw new Error(`order ${order.id} kept no pay table`);
     const waiting = waitingMinutes({
       acceptedAt: money.acceptedAt,
-      prepMin: money.prepMin,
+      // docs/domain/04 (slice 2.9, to confirm with the owner): «تعديل الوقت»
+      // never shortens the captain's paid waiting; it counts from the prep
+      // time chosen at acceptance.
+      prepMin: (await acceptedPrepMin(this.database.db, order)) ?? money.prepMin,
       arrivedAtMerchantAt: money.arrivedAtMerchantAt,
       captainWaitingAlertAt: money.captainWaitingAlertAt,
       pickedUpAt: money.pickedUpAt,
@@ -719,6 +727,9 @@ export class CaptainOrders {
         return true;
       }
       if (!requestable(locked, command.captainId)) return false;
+      if ((await openItemReport(tx, order.id, order.placedAt)) !== null) {
+        throw new CaptainOrderRefusedError('item_report_open', 'an item report is open');
+      }
       const confirmBy = new Date(now.getTime() + timeoutSec * 1000);
       const [request] = await tx
         .insert(pickupRequests)

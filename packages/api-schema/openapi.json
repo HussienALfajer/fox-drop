@@ -4520,6 +4520,110 @@
         ]
       }
     },
+    "/v1/merchant/orders/{orderId}/item-report": {
+      "post": {
+        "operationId": "merchantOrdersReportItems",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantItemReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/orders/{orderId}/item-report/withdraw": {
+      "post": {
+        "operationId": "merchantOrdersWithdrawItemReport",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
     "/v1/admin/orders/{orderId}/resend-notification": {
       "post": {
         "operationId": "adminOrdersResendNotification",
@@ -4655,6 +4759,120 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/AdminAcceptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderCardDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/orders/{orderId}/item-report/close": {
+      "post": {
+        "operationId": "adminOrdersCloseItemReport",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCloseItemReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderCardDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/orders/{orderId}/change-time": {
+      "post": {
+        "operationId": "adminOrdersChangeTime",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminChangeTimeDto"
               }
             }
           }
@@ -13473,6 +13691,28 @@
                   ],
                   "description": "«يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows."
                 },
+                "itemReport": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        }
+                      },
+                      "required": [
+                        "at"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "CU §11.6: the restaurant reported an item unavailable; the banner «المطعم أبلغ أن صنفاً في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن.» shows until the report is closed, withdrawn, or the order edited or cancelled. Null otherwise."
+                },
                 "cancellation": {
                   "anyOf": [
                     {
@@ -13962,6 +14202,7 @@
                 "version",
                 "placedAt",
                 "promisedAt",
+                "itemReport",
                 "cancellation",
                 "rejection",
                 "delivery",
@@ -14039,6 +14280,28 @@
                   }
                 ],
                 "description": "«يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows."
+              },
+              "itemReport": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      }
+                    },
+                    "required": [
+                      "at"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "CU §11.6: the restaurant reported an item unavailable; the banner «المطعم أبلغ أن صنفاً في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن.» shows until the report is closed, withdrawn, or the order edited or cancelled. Null otherwise."
               },
               "cancellation": {
                 "anyOf": [
@@ -14529,6 +14792,7 @@
               "version",
               "placedAt",
               "promisedAt",
+              "itemReport",
               "cancellation",
               "rejection",
               "delivery",
@@ -15115,6 +15379,83 @@
                   ],
                   "description": "While the captain waits at the restaurant for an accepted or ready order (RA §8.9), else null."
                 },
+                "itemReport": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "itemId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "until": {
+                                "type": "string",
+                                "enum": [
+                                  "tomorrow",
+                                  "turned_back_on"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "itemId",
+                              "name",
+                              "until"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "note": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "type": "string"
+                                },
+                                "label": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "code",
+                                "label"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "A reason of Content's item_unavailable_note list, its label as chosen."
+                        }
+                      },
+                      "required": [
+                        "at",
+                        "items",
+                        "note"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "RA §8.12: the open item-unavailable report: the badge «صنف نفد — بانتظار العمليات», the line «العمليات تتواصل مع الزبون» and «تراجع — الصنف متوفر» (POST …/item-report/withdraw); pickup requests wait until it closes (RA §8.10). Null otherwise."
+                },
                 "cancellation": {
                   "anyOf": [
                     {
@@ -15368,6 +15709,7 @@
                 "captainTrack",
                 "captain",
                 "captainArrival",
+                "itemReport",
                 "cancellation",
                 "pickup"
               ],
@@ -15746,6 +16088,83 @@
                 ],
                 "description": "While the captain waits at the restaurant for an accepted or ready order (RA §8.9), else null."
               },
+              "itemReport": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "itemId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "until": {
+                              "type": "string",
+                              "enum": [
+                                "tomorrow",
+                                "turned_back_on"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "itemId",
+                            "name",
+                            "until"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "note": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "code",
+                              "label"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "A reason of Content's item_unavailable_note list, its label as chosen."
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "items",
+                      "note"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "RA §8.12: the open item-unavailable report: the badge «صنف نفد — بانتظار العمليات», the line «العمليات تتواصل مع الزبون» and «تراجع — الصنف متوفر» (POST …/item-report/withdraw); pickup requests wait until it closes (RA §8.10). Null otherwise."
+              },
               "cancellation": {
                 "anyOf": [
                   {
@@ -15999,6 +16418,7 @@
               "captainTrack",
               "captain",
               "captainArrival",
+              "itemReport",
               "cancellation",
               "pickup"
             ],
@@ -16110,6 +16530,55 @@
         },
         "required": [
           "receivedLines"
+        ]
+      },
+      "MerchantItemReportDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "minItems": 1,
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "until": {
+                  "type": "string",
+                  "enum": [
+                    "tomorrow",
+                    "turned_back_on"
+                  ],
+                  "description": "«حتى الغد» (the default) or «حتى أعيده» (RA §9.3)."
+                }
+              },
+              "required": [
+                "itemId",
+                "until"
+              ]
+            },
+            "description": "One or more of the order's items, each once, switched off in the menu at once."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional: a code of Content's item_unavailable_note list (GET /v1/merchant/content); 400 unknown_reason otherwise."
+          }
+        },
+        "required": [
+          "items",
+          "note"
         ]
       },
       "AdminResendNotificationDto": {
@@ -16353,13 +16822,18 @@
                   "pickupPending": {
                     "type": "boolean",
                     "description": "«بانتظار تأكيد الاستلام» (AP §9.2.1)."
+                  },
+                  "itemReport": {
+                    "type": "boolean",
+                    "description": "«صنف نفد»: an open item-unavailable report (RA §8.12)."
                   }
                 },
                 "required": [
                   "needsAssignment",
                   "note",
                   "newCustomer",
-                  "pickupPending"
+                  "pickupPending",
+                  "itemReport"
                 ],
                 "additionalProperties": false
               },
@@ -16478,7 +16952,8 @@
                     "captain_waiting",
                     "delivery_late",
                     "collection_shortfall",
-                    "away_from_address"
+                    "away_from_address",
+                    "item_unavailable"
                   ]
                 },
                 "description": "AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active."
@@ -16527,6 +17002,48 @@
         },
         "required": [
           "prepMin",
+          "reason"
+        ]
+      },
+      "AdminCloseItemReportDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Required (AP §9.3.2)."
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "AdminChangeTimeDto": {
+        "type": "object",
+        "properties": {
+          "addMin": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Whole minutes added, from 1 to order.eta_change_max_min (owner decision 2026-11-10); 400 invalid_time_change otherwise."
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Operations' optional note (AP §9.3.2)."
+          }
+        },
+        "required": [
+          "addMin",
           "reason"
         ]
       },
@@ -17291,13 +17808,18 @@
                     "pickupPending": {
                       "type": "boolean",
                       "description": "«بانتظار تأكيد الاستلام» (AP §9.2.1)."
+                    },
+                    "itemReport": {
+                      "type": "boolean",
+                      "description": "«صنف نفد»: an open item-unavailable report (RA §8.12)."
                     }
                   },
                   "required": [
                     "needsAssignment",
                     "note",
                     "newCustomer",
-                    "pickupPending"
+                    "pickupPending",
+                    "itemReport"
                   ],
                   "additionalProperties": false
                 },
@@ -17416,7 +17938,8 @@
                       "captain_waiting",
                       "delivery_late",
                       "collection_shortfall",
-                      "away_from_address"
+                      "away_from_address",
+                      "item_unavailable"
                     ]
                   },
                   "description": "AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active."
@@ -17620,13 +18143,18 @@
                   "pickupPending": {
                     "type": "boolean",
                     "description": "«بانتظار تأكيد الاستلام» (AP §9.2.1)."
+                  },
+                  "itemReport": {
+                    "type": "boolean",
+                    "description": "«صنف نفد»: an open item-unavailable report (RA §8.12)."
                   }
                 },
                 "required": [
                   "needsAssignment",
                   "note",
                   "newCustomer",
-                  "pickupPending"
+                  "pickupPending",
+                  "itemReport"
                 ],
                 "additionalProperties": false
               },
@@ -17745,7 +18273,8 @@
                     "captain_waiting",
                     "delivery_late",
                     "collection_shortfall",
-                    "away_from_address"
+                    "away_from_address",
+                    "item_unavailable"
                   ]
                 },
                 "description": "AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active."
@@ -18047,6 +18576,107 @@
                   }
                 ],
                 "description": "While placed, accepted or ready: the choices of «إلغاء الطلب» (AP §9.3.2)."
+              },
+              "itemReport": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "itemId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "until": {
+                              "type": "string",
+                              "enum": [
+                                "tomorrow",
+                                "turned_back_on"
+                              ],
+                              "description": "«حتى الغد» or «حتى أعيده»."
+                            }
+                          },
+                          "required": [
+                            "itemId",
+                            "name",
+                            "until"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "note": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "code",
+                              "label"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "A reason of Content's item_unavailable_note list, its label as chosen."
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "items",
+                      "note"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "RA §8.12: the open item-unavailable report, which blocks the pickup; «إغلاق بلاغ صنف نفد» closes it (POST …/item-report/close). Null otherwise."
+              },
+              "timeChange": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "maxMin": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "description": "order.eta_change_max_min."
+                      }
+                    },
+                    "required": [
+                      "maxMin"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "While accepted, ready or picked up: «تعديل الوقت» (AP §9.3.2)."
               },
               "rejection": {
                 "anyOf": [
@@ -19045,6 +19675,105 @@
                         "string",
                         "null"
                       ]
+                    },
+                    "timeChange": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "addMin": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "promisedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "addMin",
+                            "promisedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "order.time_changed: the minutes added and the new promised time."
+                    },
+                    "itemReport": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "itemId": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "until": {
+                                    "type": "string",
+                                    "enum": [
+                                      "tomorrow",
+                                      "turned_back_on"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "itemId",
+                                  "name",
+                                  "until"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "note": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "code": {
+                                      "type": "string"
+                                    },
+                                    "label": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "code",
+                                    "label"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "A reason of Content's item_unavailable_note list, its label as chosen."
+                            }
+                          },
+                          "required": [
+                            "items",
+                            "note"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "order.item_reported: the items reported and the note."
                     }
                   },
                   "required": [
@@ -19055,7 +19784,9 @@
                     "to",
                     "actor",
                     "captainId",
-                    "reason"
+                    "reason",
+                    "timeChange",
+                    "itemReport"
                   ],
                   "additionalProperties": false
                 }
@@ -19082,6 +19813,8 @@
               "readyAt",
               "cancellation",
               "cancelChoices",
+              "itemReport",
+              "timeChange",
               "rejection",
               "onBehalf",
               "customer",
@@ -19251,6 +19984,10 @@
                       }
                     ],
                     "description": "Null until «وصلت إلى المطعم»."
+                  },
+                  "itemReportOpen": {
+                    "type": "boolean",
+                    "description": "The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2)."
                   },
                   "itemCount": {
                     "type": "integer",
@@ -19761,6 +20498,7 @@
                   "restaurant",
                   "preparation",
                   "arrival",
+                  "itemReportOpen",
                   "itemCount",
                   "lines",
                   "note",
@@ -20063,6 +20801,10 @@
                   }
                 ],
                 "description": "Null until «وصلت إلى المطعم»."
+              },
+              "itemReportOpen": {
+                "type": "boolean",
+                "description": "The restaurant reported an item unavailable (RA §8.12): the screen shows «بانتظار تعديل الطلب من العمليات» and the pickup request waits (409 item_report_open) until operations edit, cancel or close the report (CA §9 step 2)."
               },
               "itemCount": {
                 "type": "integer",
@@ -20573,6 +21315,7 @@
               "restaurant",
               "preparation",
               "arrival",
+              "itemReportOpen",
               "itemCount",
               "lines",
               "note",
@@ -21487,6 +22230,7 @@
                     "codes_cannot_send",
                     "code_number_stopped",
                     "away_from_address",
+                    "item_unavailable",
                     "restaurant_auto_paused"
                   ],
                   "description": "The rule of AP §9.1.3."
@@ -21634,6 +22378,7 @@
               "codes_cannot_send",
               "code_number_stopped",
               "away_from_address",
+              "item_unavailable",
               "restaurant_auto_paused"
             ],
             "description": "The rule of AP §9.1.3."

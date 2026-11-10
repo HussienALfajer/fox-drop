@@ -143,6 +143,8 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
   @override
   final DateTime? promisedAt;
   @override
+  final CustomerActiveOrdersDtoOutputOrdersInnerItemReport? itemReport;
+  @override
   final CustomerActiveOrdersDtoOutputOrdersInnerCancellation? cancellation;
   @override
   final CustomerActiveOrdersDtoOutputOrdersInnerRejection? rejection;
@@ -180,6 +182,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     required this.version,
     required this.placedAt,
     this.promisedAt,
+    this.itemReport,
     this.cancellation,
     this.rejection,
     this.delivery,
@@ -213,6 +216,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
         version == other.version &&
         placedAt == other.placedAt &&
         promisedAt == other.promisedAt &&
+        itemReport == other.itemReport &&
         cancellation == other.cancellation &&
         rejection == other.rejection &&
         delivery == other.delivery &&
@@ -237,6 +241,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     _$hash = $jc(_$hash, version.hashCode);
     _$hash = $jc(_$hash, placedAt.hashCode);
     _$hash = $jc(_$hash, promisedAt.hashCode);
+    _$hash = $jc(_$hash, itemReport.hashCode);
     _$hash = $jc(_$hash, cancellation.hashCode);
     _$hash = $jc(_$hash, rejection.hashCode);
     _$hash = $jc(_$hash, delivery.hashCode);
@@ -263,6 +268,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
           ..add('version', version)
           ..add('placedAt', placedAt)
           ..add('promisedAt', promisedAt)
+          ..add('itemReport', itemReport)
           ..add('cancellation', cancellation)
           ..add('rejection', rejection)
           ..add('delivery', delivery)
@@ -312,6 +318,14 @@ class CustomerOrderDtoOutputOrderBuilder
   DateTime? _promisedAt;
   DateTime? get promisedAt => _$this._promisedAt;
   set promisedAt(DateTime? promisedAt) => _$this._promisedAt = promisedAt;
+
+  CustomerActiveOrdersDtoOutputOrdersInnerItemReportBuilder? _itemReport;
+  CustomerActiveOrdersDtoOutputOrdersInnerItemReportBuilder get itemReport =>
+      _$this._itemReport ??=
+          CustomerActiveOrdersDtoOutputOrdersInnerItemReportBuilder();
+  set itemReport(
+    CustomerActiveOrdersDtoOutputOrdersInnerItemReportBuilder? itemReport,
+  ) => _$this._itemReport = itemReport;
 
   CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder? _cancellation;
   CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder
@@ -414,6 +428,7 @@ class CustomerOrderDtoOutputOrderBuilder
       _version = $v.version;
       _placedAt = $v.placedAt;
       _promisedAt = $v.promisedAt;
+      _itemReport = $v.itemReport?.toBuilder();
       _cancellation = $v.cancellation?.toBuilder();
       _rejection = $v.rejection?.toBuilder();
       _delivery = $v.delivery?.toBuilder();
@@ -477,6 +492,7 @@ class CustomerOrderDtoOutputOrderBuilder
               'placedAt',
             ),
             promisedAt: promisedAt,
+            itemReport: _itemReport?.build(),
             cancellation: _cancellation?.build(),
             rejection: _rejection?.build(),
             delivery: _delivery?.build(),
@@ -498,6 +514,8 @@ class CustomerOrderDtoOutputOrderBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'itemReport';
+        _itemReport?.build();
         _$failedField = 'cancellation';
         _cancellation?.build();
         _$failedField = 'rejection';

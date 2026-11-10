@@ -25,12 +25,19 @@ import {
   type ResponsibleParty,
 } from './cancellation.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
-import { lockOrder, recordTransition } from './order-events.js';
+import { lockOrder, type OrderEventType, recordTransition } from './order-events.js';
 import { OrderAssignments } from './order-assignments.js';
 import { baseTotal, linesOf } from './pickup-booking.js';
 import type { SearchStartJob } from './order-timers.js';
 import { orderKey, readOrders, snapshotOf, type OrderView } from './order-views.js';
-import { orders, pickupRequests } from './schema.js';
+import {
+  type ItemReportNote,
+  itemReportProblem,
+  openItemReport,
+  openReportOf,
+  type ReportedItem,
+} from './item-reports.js';
+import { itemReports, orders, pickupRequests, timeChanges } from './schema.js';
 
 const MINUTE_MS = 60_000;
 // docs/domain/03: the promised time is rounded up to the next 5 minutes.
@@ -57,7 +64,13 @@ export type OrderCommandRefusal =
   | 'compensation_not_allowed'
   | 'captain_pay_unset'
   | 'cash_answer_required'
-  | 'cash_answer_not_allowed';
+  | 'cash_answer_not_allowed'
+  // AP §9.3.2 «تعديل الوقت»: whole minutes from 1 to order.eta_change_max_min.
+  | 'invalid_time_change'
+  // RA §8.12: the report's items are one or more of the order's, each once.
+  | 'invalid_item_report'
+  // RA §8.10, §8.12: an open item report blocks the pickup.
+  | 'item_report_open';
 
 // A restaurant command the order refuses; order_state_changed carries the
 // order as it is now, which the app explains (RA §4.7).
@@ -108,6 +121,13 @@ export interface Rejection {
   busyExtraMin: number | null;
   pauseMin: number | null;
 }
+
+// AP §9.3.2 «تعديل الوقت»: accepted, ready or picked up.
+export const TIME_CHANGEABLE: OrderView['status'][] = ['accepted', 'ready', 'picked_up'];
+
+// RA §8.12: the restaurant reports an item on an accepted or ready order,
+// before pickup; operations close it while it is open.
+export const REPORTABLE: OrderView['status'][] = ['accepted', 'ready'];
 
 // AP §8.1, docs/domain/01: operations cancel before pickup.
 export const CANCELLABLE: OrderView['status'][] = ['placed', 'accepted', 'ready'];
@@ -208,11 +228,22 @@ export interface OnBehalfChoices {
   busyExtraOptionsMin: number[];
 }
 
-// The state a command needs and the one it leaves.
+// The state a command needs and the one it leaves: `to` null keeps the
+// order's status (a change within it, AP §9.3.2 «تعديل الوقت»), with its
+// event type.
 type Transition = {
-  verb: 'accept' | 'ready' | 'reject' | 'cancel';
+  verb:
+    | 'accept'
+    | 'ready'
+    | 'reject'
+    | 'cancel'
+    | 'change_time'
+    | 'report_item'
+    | 'withdraw_item_report'
+    | 'close_item_report';
   from: OrderView['status'][];
-  to: 'accepted' | 'ready' | 'rejected' | 'cancelled';
+  to: 'accepted' | 'ready' | 'rejected' | 'cancelled' | null;
+  event?: OrderEventType;
 };
 
 // Who runs a command: a user of the restaurant on its device (RA §18),
@@ -221,7 +252,8 @@ type Transition = {
 // (CU §11.4).
 type Caller =
   | { kind: 'restaurant'; command: MerchantCommand }
-  | { kind: 'admin'; command: AdminOrderCommand }
+  // «تعديل الوقت» takes an optional note (AP §9.3.2).
+  | { kind: 'admin'; command: Omit<AdminOrderCommand, 'reason'> & { reason: string | null } }
   | { kind: 'customer'; command: CustomerCommand };
 
 // A state change of the command (the columns it sets) and what the
@@ -243,6 +275,9 @@ type Change = {
   before?: (tx: Tx) => Promise<void>;
   // Written in the transaction after the order's own change (RA §8.6).
   effects?: (tx: Tx) => Promise<void>;
+  // What the audit keeps beside the status («تعديل الوقت»: the times it
+  // moved, before and after).
+  audit?: { before: Record<string, unknown>; after: Record<string, unknown> };
 };
 
 type Tx = Parameters<Parameters<Database['db']['transaction']>[0]>[0];
@@ -502,6 +537,16 @@ export class OrderCommands {
                   eq(pickupRequests.status, 'open'),
                 ),
               );
+            // RA §8.12: the cancellation clears an open item report.
+            await tx
+              .update(itemReports)
+              .set({
+                closedAt: now,
+                closedHow: 'cancelled',
+                closedByType: 'admin',
+                closedById: actor.id,
+              })
+              .where(openReportOf(order.id, order.placedAt));
             for (const journal of result.journals) {
               const entries = [];
               for (const entry of journal.entries) {
@@ -587,6 +632,11 @@ export class OrderCommands {
 
   // AP §9.3.2 «إلغاء الطلب» (slice 2.8c): the reasons the panel's dialog
   // offers, Content's active ops_cancel reasons in order (AP Appendix B).
+  // AP §9.3.2 «تعديل الوقت»: the most minutes one change adds.
+  async timeChangeChoices(cityId: string): Promise<{ maxMin: number }> {
+    return { maxMin: await this.settings.get('order.eta_change_max_min', { cityId }) };
+  }
+
   async cancelReasons(): Promise<{ code: string; label: string }[]> {
     return (await this.content.reasonsOf('ops_cancel'))
       .filter((reason) => reason.active)
@@ -944,6 +994,281 @@ export class OrderCommands {
     );
   }
 
+  // AP §9.3.2 «تعديل الوقت» (owner decision 2026-11-10): operations add
+  // whole minutes, from 1 to order.eta_change_max_min, to an accepted, ready
+  // or picked-up order. The promised time moves by them, rounded up to the
+  // next 5 minutes (docs/domain/03). While the food is still being prepared
+  // (accepted) the prep time moves too: the restaurant's countdown, the
+  // prep-late moment and a search start still ahead, with its timer. The
+  // customer hears the new time (CU §14 #12) and, when the prep time moved,
+  // the restaurant the new prep time (RA §16 #12). The note is optional.
+  // 400 invalid_time_change; 409 order_state_changed.
+  async changeTime(
+    command: Omit<AdminOrderCommand, 'reason'> & { reason: string | null; addMin: number },
+    now: Date,
+  ): Promise<OrderView> {
+    return this.run(
+      { kind: 'admin', command },
+      { verb: 'change_time', from: TIME_CHANGEABLE, to: null, event: 'order.time_changed' },
+      { addMin: command.addMin, reason: command.reason },
+      now,
+      async (order) => {
+        const maxMin = await this.settings.get('order.eta_change_max_min', {
+          cityId: order.cityId,
+        });
+        if (!Number.isInteger(command.addMin) || command.addMin < 1 || command.addMin > maxMin) {
+          throw new OrderCommandRefusedError(
+            'invalid_time_change',
+            `the minutes added are whole minutes from 1 to ${maxMin}`,
+          );
+        }
+        const times = await this.times(this.database.db, order);
+        const add = command.addMin * MINUTE_MS;
+        const promisedAt = new Date(
+          Math.ceil((times.promisedAt.getTime() + add) / PROMISE_STEP_MS) * PROMISE_STEP_MS,
+        );
+        const preparing = times.status === 'accepted';
+        const prepMin = preparing ? times.prepMin + command.addMin : times.prepMin;
+        // A search already started, or due now, stays as it is.
+        const searchStartAt =
+          preparing &&
+          times.searchStartedAt === null &&
+          times.searchStartAt.getTime() > now.getTime()
+            ? new Date(times.searchStartAt.getTime() + add)
+            : undefined;
+        return {
+          set: {
+            promisedAt,
+            ...(preparing
+              ? { prepMin, prepLateAlertAt: new Date(times.prepLateAlertAt.getTime() + add) }
+              : {}),
+            ...(searchStartAt ? { searchStartAt } : {}),
+          },
+          ...(searchStartAt ? { searchStartAt } : {}),
+          // The apps hear whether the prep time moved (RA §16 #12).
+          publicReason: preparing ? 'prep_time_changed' : 'promised_time_changed',
+          // The times were read before the lock.
+          guard: async (tx) => sameTimes(await this.times(tx, order), times),
+          effects: async (tx) => {
+            await tx.insert(timeChanges).values({
+              orderId: order.id,
+              orderPlacedAt: order.placedAt,
+              cityId: order.cityId,
+              at: now,
+              adminId: command.admin.accountId,
+              addMin: command.addMin,
+              promisedBefore: times.promisedAt,
+              promisedAfter: promisedAt,
+              prepMinBefore: times.prepMin,
+              prepMinAfter: prepMin,
+            });
+          },
+          audit: {
+            before: { promisedAt: times.promisedAt.toISOString(), prepMin: times.prepMin },
+            after: {
+              promisedAt: promisedAt.toISOString(),
+              prepMin,
+            },
+          },
+        };
+      },
+    );
+  }
+
+  // RA §8.12 «صنف غير متوفر — اتصلوا بالزبون»: on an accepted or ready order
+  // without an open pickup request (RA §8.10) or another open report, the
+  // restaurant reports one or more of the order's items, each «حتى الغد» or
+  // «حتى أعيده», with an optional note. In one transaction: the report, the
+  // items switched off in the menu (RA §9.3, audited as the restaurant's own
+  // switch) and the event order.item_reported, which raises operations'
+  // critical alert (AP §9.1.3) and tells the customer FOX DROP will call (CU
+  // §11.6, §14 #10). The pickup waits until the report is closed. 400
+  // invalid_item_report; 409 order_state_changed.
+  async reportItems(
+    command: MerchantCommand & { items: ReportedItem[]; note: string | null },
+    now: Date,
+  ): Promise<OrderView> {
+    const change = merchantChange(command);
+    return this.run(
+      { kind: 'restaurant', command },
+      { verb: 'report_item', from: REPORTABLE, to: null, event: 'order.item_reported' },
+      { items: command.items, note: command.note },
+      now,
+      async (order) => {
+        const view = await this.read(order);
+        const problem = itemReportProblem(
+          command.items,
+          view.lines.map((line) => line.itemId),
+        );
+        if (problem !== null) throw new OrderCommandRefusedError('invalid_item_report', problem);
+        let note: ItemReportNote | null = null;
+        if (command.note !== null) {
+          try {
+            const chosen = await this.content.choose('item_unavailable_note', {
+              code: command.note,
+              note: null,
+            });
+            note = { code: chosen.code, label: chosen.label };
+          } catch (error) {
+            if (!(error instanceof ContentRefusedError)) throw error;
+            throw new OrderCommandRefusedError('unknown_reason', error.message);
+          }
+        }
+        const switches = await Promise.all(
+          command.items.map(async (item) => ({
+            itemId: item.itemId,
+            until: await this.merchants.switchedOffUntil(order.restaurantId, item.until, now),
+          })),
+        );
+        return {
+          set: {},
+          // RA §8.12: no pickup request open and no report open, under the lock.
+          guard: async (tx) => {
+            const [row] = await tx
+              .select({ captainTrack: orders.captainTrack })
+              .from(orders)
+              .where(orderKey(order.id, order.placedAt));
+            return (
+              row?.captainTrack !== 'pickup_pending' &&
+              (await openItemReport(tx, order.id, order.placedAt)) === null
+            );
+          },
+          effects: async (tx) => {
+            await tx.insert(itemReports).values({
+              orderId: order.id,
+              orderPlacedAt: order.placedAt,
+              cityId: order.cityId,
+              items: command.items.map(({ itemId, until }) => ({ itemId, until })),
+              note: note?.code ?? null,
+              noteLabel: note?.label ?? null,
+              accountId: command.accountId,
+              device: command.deviceId,
+              reportedAt: now,
+            });
+            await this.merchants.switchOffForRejection(
+              tx,
+              order.restaurantId,
+              switches,
+              change,
+              now,
+            );
+          },
+        };
+      },
+    );
+  }
+
+  // RA §8.12 «تراجع — الصنف متوفر»: before operations act, the restaurant
+  // withdraws its open report; the items are switched on again and the
+  // pickup is free. 409 order_state_changed without an open report.
+  async withdrawItemReport(command: MerchantCommand, now: Date): Promise<OrderView> {
+    const change = merchantChange(command);
+    return this.run(
+      { kind: 'restaurant', command },
+      {
+        verb: 'withdraw_item_report',
+        from: REPORTABLE,
+        to: null,
+        event: 'order.item_report_withdrawn',
+      },
+      {},
+      now,
+      async (order) => {
+        const report = await openItemReport(this.database.db, order.id, order.placedAt);
+        if (report === null) throw await this.stateChanged(order);
+        return {
+          set: {},
+          guard: async (tx) =>
+            (await openItemReport(tx, order.id, order.placedAt))?.id === report.id,
+          effects: async (tx) => {
+            await tx
+              .update(itemReports)
+              .set({
+                closedAt: now,
+                closedHow: 'withdrawn',
+                closedByType: 'restaurant',
+                closedById: command.accountId,
+              })
+              .where(eq(itemReports.id, report.id));
+            await this.merchants.switchOnItems(
+              tx,
+              order.restaurantId,
+              report.items.map((item) => item.itemId),
+              change,
+              now,
+            );
+          },
+        };
+      },
+    );
+  }
+
+  // AP §9.3.2 «إغلاق بلاغ صنف نفد»: operations close the open report without
+  // an edit (the restaurant found the item, for example), with their
+  // required reason, which the restaurant's devices chime with (RA §16 #37).
+  // The menu is left as it is. 409 order_state_changed without an open
+  // report.
+  async closeItemReport(command: AdminOrderCommand, now: Date): Promise<OrderView> {
+    return this.run(
+      { kind: 'admin', command },
+      { verb: 'close_item_report', from: REPORTABLE, to: null, event: 'order.item_report_closed' },
+      { reason: command.reason },
+      now,
+      async (order) => {
+        const report = await openItemReport(this.database.db, order.id, order.placedAt);
+        if (report === null) throw await this.stateChanged(order);
+        return {
+          set: {},
+          // RA §16 #37 shows the restaurant operations' reason.
+          publicReason: command.reason,
+          guard: async (tx) =>
+            (await openItemReport(tx, order.id, order.placedAt))?.id === report.id,
+          effects: async (tx) => {
+            await tx
+              .update(itemReports)
+              .set({
+                closedAt: now,
+                closedHow: 'closed',
+                closedByType: 'admin',
+                closedById: command.admin.accountId,
+                closeReason: command.reason,
+              })
+              .where(eq(itemReports.id, report.id));
+          },
+        };
+      },
+    );
+  }
+
+  private async times(
+    executor: Database['db'] | Tx,
+    order: { id: string; placedAt: Date },
+  ): Promise<OrderTimes> {
+    const [row] = await executor
+      .select({
+        status: orders.status,
+        promisedAt: orders.promisedAt,
+        prepMin: orders.prepMin,
+        prepLateAlertAt: orders.prepLateAlertAt,
+        searchStartAt: orders.searchStartAt,
+        searchStartedAt: orders.searchStartedAt,
+      })
+      .from(orders)
+      .where(orderKey(order.id, order.placedAt));
+    // Every accepted order has them together (a CHECK).
+    if (!row?.promisedAt || row.prepMin === null || !row.prepLateAlertAt || !row.searchStartAt) {
+      throw new Error(`order ${order.id} has no acceptance`);
+    }
+    return {
+      status: row.status,
+      promisedAt: row.promisedAt,
+      prepMin: row.prepMin,
+      prepLateAlertAt: row.prepLateAlertAt,
+      searchStartAt: row.searchStartAt,
+      searchStartedAt: row.searchStartedAt,
+    };
+  }
+
   private async run(
     caller: Caller,
     transition: Transition,
@@ -997,14 +1322,15 @@ export class OrderCommands {
         current = (await lockOrder(tx, order.id, order.placedAt))!;
       }
       const version = current.version + 1;
+      const to = transition.to ?? current.status;
       await tx
         .update(orders)
-        .set({ ...prepared.set, status: transition.to, version })
+        .set({ ...prepared.set, status: to, version })
         .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
       await recordTransition(tx, this.jobs, current, {
-        type: `order.${transition.to}`,
+        type: transition.event ?? `order.${to as 'accepted' | 'ready' | 'rejected' | 'cancelled'}`,
         from: current.status,
-        to: transition.to,
+        to,
         version,
         actor:
           caller.kind === 'restaurant'
@@ -1039,8 +1365,8 @@ export class OrderCommands {
             cityId: locked.cityId,
             action: `order.${transition.verb}`,
             target: { type: 'order', id: locked.id },
-            before: { status: locked.status },
-            after: { status: transition.to, ...body, reason: publicReason },
+            before: { status: locked.status, ...prepared.audit?.before },
+            after: { status: to, ...body, reason: publicReason, ...prepared.audit?.after },
             reason,
           },
           tx,
@@ -1137,6 +1463,34 @@ export class OrderCommands {
       throw new OrderCommandRefusedError('idempotency_key_reused', error.message);
     }
   }
+}
+
+// RA §18: who changed the menu from a restaurant command, for its audit.
+function merchantChange(command: MerchantCommand): MerchantChange {
+  return {
+    actor: { type: 'merchant', id: command.accountId, role: command.role ?? null },
+    context: { ipAddress: command.ipAddress ?? null, device: command.deviceId },
+  };
+}
+
+// What «تعديل الوقت» moves, and what decides it.
+type OrderTimes = {
+  status: OrderView['status'];
+  promisedAt: Date;
+  prepMin: number;
+  prepLateAlertAt: Date;
+  searchStartAt: Date;
+  searchStartedAt: Date | null;
+};
+
+function sameTimes(a: OrderTimes, b: OrderTimes): boolean {
+  return (
+    a.status === b.status &&
+    a.promisedAt.getTime() === b.promisedAt.getTime() &&
+    a.prepMin === b.prepMin &&
+    a.searchStartAt.getTime() === b.searchStartAt.getTime() &&
+    (a.searchStartedAt === null) === (b.searchStartedAt === null)
+  );
 }
 
 type OrderAtStart = {

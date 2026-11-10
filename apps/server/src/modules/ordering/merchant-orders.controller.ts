@@ -128,6 +128,25 @@ const boardOrder = z.object({
     .describe(
       'While the captain waits at the restaurant for an accepted or ready order (RA §8.9), else null.',
     ),
+  itemReport: z
+    .object({
+      at: z.iso.datetime(),
+      items: z.array(
+        z.object({
+          itemId: z.uuid(),
+          name: z.string(),
+          until: z.enum(['tomorrow', 'turned_back_on']),
+        }),
+      ),
+      note: z
+        .object({ code: z.string(), label: z.string() })
+        .nullable()
+        .describe("A reason of Content's item_unavailable_note list, its label as chosen."),
+    })
+    .nullable()
+    .describe(
+      'RA §8.12: the open item-unavailable report: the badge «صنف نفد — بانتظار العمليات», the line «العمليات تتواصل مع الزبون» and «تراجع — الصنف متوفر» (POST …/item-report/withdraw); pickup requests wait until it closes (RA §8.10). Null otherwise.',
+    ),
   cancellation: z
     .object({
       at: z.iso.datetime(),
@@ -252,6 +271,30 @@ class MerchantPickupDisputeDto extends createZodDto(
     receivedLines: paymentLines.describe(
       "What the restaurant actually received, prefilled with the captain's lines.",
     ),
+  }),
+) {}
+
+class MerchantItemReportDto extends createZodDto(
+  z.object({
+    items: z
+      .array(
+        z.object({
+          itemId: z.uuid(),
+          until: z
+            .enum(['tomorrow', 'turned_back_on'])
+            .describe('«حتى الغد» (the default) or «حتى أعيده» (RA §9.3).'),
+        }),
+      )
+      .min(1)
+      .max(50)
+      .describe("One or more of the order's items, each once, switched off in the menu at once."),
+    note: z
+      .string()
+      .max(50)
+      .nullable()
+      .describe(
+        "Optional: a code of Content's item_unavailable_note list (GET /v1/merchant/content); 400 unknown_reason otherwise.",
+      ),
   }),
 ) {}
 
@@ -442,6 +485,66 @@ export class MerchantOrdersController {
     );
   }
 
+  // RA §8.12 «صنف غير متوفر — اتصلوا بالزبون»: on an accepted or ready
+  // order with no pickup request open, the items switched off at once,
+  // operations alerted and the customer told FOX DROP will call; the
+  // restaurant keeps preparing the rest. 400 invalid_item_report; 409
+  // order_state_changed (a request or a report already open, picked up,
+  // cancelled); 404 unknown_order; 422 idempotency_key_reused.
+  @Post('orders/:orderId/item-report')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: MerchantOrderDto })
+  async reportItems(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: MerchantOrderParamsDto,
+    @Body() body: MerchantItemReportDto,
+    @Req() request: FastifyRequest,
+  ) {
+    const command = await this.command(session, idempotencyKey, params.orderId);
+    return this.answer(command.restaurantId, () =>
+      this.commands.reportItems(
+        {
+          ...command,
+          ...(session.merchant ? { role: session.merchant.role } : {}),
+          ipAddress: request.ip,
+          items: body.items,
+          note: body.note,
+        },
+        new Date(),
+      ),
+    );
+  }
+
+  // RA §8.12 «تراجع — الصنف متوفر»: before operations act, the open report
+  // withdrawn and its items switched on again. 409 order_state_changed
+  // without an open report; 404 unknown_order; 422 idempotency_key_reused.
+  @Post('orders/:orderId/item-report/withdraw')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: MerchantOrderDto })
+  async withdrawItemReport(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: MerchantOrderParamsDto,
+    @Req() request: FastifyRequest,
+  ) {
+    const command = await this.command(session, idempotencyKey, params.orderId);
+    return this.answer(command.restaurantId, () =>
+      this.commands.withdrawItemReport(
+        {
+          ...command,
+          ...(session.merchant ? { role: session.merchant.role } : {}),
+          ipAddress: request.ip,
+        },
+        new Date(),
+      ),
+    );
+  }
+
   private async command(
     session: AppSession,
     idempotencyKey: string,
@@ -470,7 +573,8 @@ export class MerchantOrdersController {
         refusal === 'invalid_prep_time' ||
         refusal === 'invalid_lines' ||
         refusal === 'unknown_reason' ||
-        refusal === 'invalid_rejection'
+        refusal === 'invalid_rejection' ||
+        refusal === 'invalid_item_report'
       ) {
         throw new BadRequestException({
           statusCode: HttpStatus.BAD_REQUEST,
@@ -588,6 +692,11 @@ export class MerchantOrdersController {
               waitingAlertAt: order.captainArrival.waitingAlertAt.toISOString(),
             }
           : null,
+      itemReport: order.itemReport && {
+        at: order.itemReport.at.toISOString(),
+        items: order.itemReport.items,
+        note: order.itemReport.note,
+      },
       // RA §8.14: only while it rings, until «حسناً» on any device.
       cancellation:
         order.cancellation &&

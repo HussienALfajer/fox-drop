@@ -2,6 +2,7 @@ import { and, asc, desc, eq, inArray, ne, or, type SQL, sql } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { equivalent, type RateSnapshot } from '../fx/index.js';
 import type { Point } from '../geo/index.js';
+import { type ItemReportNote, type ItemReportUntil, openItemReports } from './item-reports.js';
 import type { CaptainTrack } from './order-events.js';
 import type { QuoteMoney } from './quote.js';
 import {
@@ -115,6 +116,15 @@ export interface OrderView {
     captainCompensation: bigint | null;
     acknowledgedAt: Date | null;
     captainSeenAt: Date | null;
+  } | null;
+  // RA §8.12: the restaurant's open item-unavailable report, with each
+  // item's name from the order's lines, or null.
+  itemReport: {
+    at: Date;
+    items: { itemId: string; name: string; until: ItemReportUntil }[];
+    note: ItemReportNote | null;
+    accountId: string;
+    device: string;
   } | null;
   // RA §8.6, CU §11.9: the rejection's reason, its label, the customer's text
   // and the items «اطلب بدون الأصناف غير المتوفرة» leaves out.
@@ -296,6 +306,10 @@ export async function readOrders(
   const acceptances = decisions.filter((event) => event.toStatus === 'accepted');
   const rejections = decisions.filter((event) => event.toStatus === 'rejected');
   const cancellations = decisions.filter((event) => event.toStatus === 'cancelled');
+  const reports = await openItemReports(
+    executor,
+    rows.filter((row) => row.acceptedAt !== null),
+  );
   const delivered = rows.filter((row) => row.deliveredAt !== null);
   const deliveries =
     delivered.length === 0
@@ -317,6 +331,8 @@ export async function readOrders(
           );
   return rows.map((row) => {
     const collection = deliveries.find((each) => each.orderId === row.id);
+    const report = reports.find((each) => each.orderId === row.id);
+    const ownLines = lines.filter((line) => line.orderId === row.id);
     const snapshot = snapshotOf(row.rateSnapshot);
     return {
       id: row.id,
@@ -403,6 +419,19 @@ export async function readOrders(
               captainSeenAt: row.cancelCaptainSeenAt,
             }
           : null,
+      itemReport: report
+        ? {
+            at: report.at,
+            items: report.items.map((item) => ({
+              itemId: item.itemId,
+              name: ownLines.find((line) => line.itemId === item.itemId)?.itemName ?? '',
+              until: item.until,
+            })),
+            note: report.note,
+            accountId: report.accountId,
+            device: report.device,
+          }
+        : null,
       rejection:
         row.rejectedAt &&
         row.rejectReason &&

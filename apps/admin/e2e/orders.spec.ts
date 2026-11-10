@@ -19,7 +19,13 @@ const card = {
   captainTrack: 'searching',
   captain: null,
   total: { amount: '1250', currency: 'USD' },
-  badges: { needsAssignment: true, note: false, newCustomer: true, pickupPending: false },
+  badges: {
+    needsAssignment: true,
+    note: false,
+    newCustomer: true,
+    pickupPending: false,
+    itemReport: false,
+  },
   moments: {
     acceptAlertAt: null,
     prepLateAlertAt: null,
@@ -41,6 +47,8 @@ const detail = {
   rejection: null,
   onBehalf: null,
   cancelChoices: null,
+  itemReport: null,
+  timeChange: null,
   customer: {
     name: 'أحمد',
     address: {
@@ -88,6 +96,8 @@ const detail = {
       actor: { type: 'customer', id: null },
       captainId: null,
       reason: null,
+      timeChange: null,
+      itemReport: null,
     },
   ],
 };
@@ -546,6 +556,8 @@ test('shows a cancellation by operations in the detail and its timeline', async 
               actor: { type: 'admin', id: adminId },
               captainId: null,
               reason: 'انقطاع الكهرباء',
+              timeChange: null,
+              itemReport: null,
             },
           ],
         },
@@ -608,4 +620,124 @@ test('lets the operator untick «تعويض الكابتن» after captain_pay_u
   await expect(cancel.getByText('لا قيود مالية لهذا الإلغاء.')).toBeVisible();
   await cancel.getByRole('textbox', { name: 'السبب (للسجل الداخلي)' }).fill('ملاحظة');
   await expect(cancel.getByRole('button', { name: 'تأكيد الإلغاء' })).toBeEnabled();
+});
+
+// AP §9.3.2 «تعديل الوقت» (owner decision 2026-11-10): a typed minute, the
+// promised time now and after it (rounded up to the next 5), the optional
+// note left empty.
+test('moves the promised time of a ready order', async ({ page }) => {
+  await fakeSession(page, ['operations.read', 'operations.manage']);
+  await fakeOperations(page);
+  const promisedAt = '2026-11-10T10:02:00.000Z';
+  await page.route(`**/v1/admin/orders/${orderId}`, (route) =>
+    route.fulfill({
+      json: {
+        order: {
+          ...detail,
+          promisedAt,
+          timeChange: { maxMin: 60 },
+          timeline: [
+            ...detail.timeline,
+            {
+              version: 5,
+              at: later(-2),
+              type: 'order.time_changed',
+              from: 'ready',
+              to: 'ready',
+              actor: { type: 'admin', id: null },
+              captainId: null,
+              reason: 'الطريق مزدحم',
+              timeChange: { addMin: 10, promisedAt },
+              itemReport: null,
+            },
+          ],
+        },
+      },
+    }),
+  );
+  let sent: unknown;
+  await page.route(`**/v1/admin/orders/${orderId}/change-time`, (route) => {
+    sent = route.request().postDataJSON();
+    return route.fulfill({ json: { order: card } });
+  });
+  await page.goto(`/orders/${orderId}`);
+
+  const change = page.getByRole('form', { name: 'تعديل الوقت' });
+  await expect(change.getByText('الطعام جاهز: يتأخر الوقت الموعود فقط.')).toBeVisible();
+  // AP §9.3.1 «ETA changes»: the minutes and the new time on the city's clock.
+  const changed = page.getByRole('listitem').filter({ hasText: 'عُدّل الوقت' });
+  await expect(changed).toContainText(/\+10 د، الوقت الموعود الجديد 1:02/);
+  await expect(changed).toContainText('الطريق مزدحم');
+  await expect(change.getByRole('button', { name: '+20 د' })).toBeVisible();
+  // 10:02 + 7 min = 10:09, rounded up to 10:10 UTC, 1:10 PM in Damascus.
+  await change.getByRole('spinbutton', { name: 'دقائق إضافية' }).fill('7');
+  await expect(change.getByText(/يصبح: 1:10/)).toBeVisible();
+  await change.getByRole('button', { name: 'تأكيد تعديل الوقت' }).click();
+
+  await expect(change.getByRole('status')).toHaveText('عُدّل الوقت، وأُبلغ الزبون بالموعد الجديد');
+  expect(sent).toEqual({ addMin: 7, reason: null });
+});
+
+// RA §8.12, AP §9.3.2 «إغلاق بلاغ صنف نفد»: the report's items and note, then
+// operations close it with their reason.
+test('shows an open item report and closes it with a reason', async ({ page }) => {
+  await fakeSession(page, ['operations.read', 'operations.manage']);
+  await fakeOperations(page);
+  let closed = false;
+  const reported = {
+    ...detail,
+    badges: { ...card.badges, itemReport: true },
+    alerts: ['item_unavailable'],
+    itemReport: {
+      at: later(-3),
+      items: [{ itemId: detail.lines[0]!.itemId, name: 'شاورما', until: 'turned_back_on' }],
+      note: { code: 'similar_substitute', label: 'يوجد بديل مشابه' },
+    },
+    timeline: [
+      ...detail.timeline,
+      {
+        version: 2,
+        at: later(-3),
+        type: 'order.item_reported',
+        from: 'ready',
+        to: 'ready',
+        actor: { type: 'restaurant', id: null },
+        captainId: null,
+        reason: null,
+        timeChange: null,
+        itemReport: {
+          items: [{ itemId: detail.lines[0]!.itemId, name: 'شاورما', until: 'turned_back_on' }],
+          note: { code: 'similar_substitute', label: 'يوجد بديل مشابه' },
+        },
+      },
+    ],
+  };
+  await page.route(`**/v1/admin/orders/${orderId}`, (route) =>
+    route.fulfill({ json: { order: closed ? detail : reported } }),
+  );
+  let sent: unknown;
+  await page.route(`**/v1/admin/orders/${orderId}/item-report/close`, (route) => {
+    sent = route.request().postDataJSON();
+    closed = true;
+    return route.fulfill({ json: { order: card } });
+  });
+  await page.goto(`/orders/${orderId}`);
+
+  const panel = page.getByRole('complementary');
+  await expect(panel.getByText('صنف نفد', { exact: true })).toBeVisible();
+  const report = panel.getByRole('region', { name: 'صنف نفد بعد القبول' });
+  await expect(report.getByRole('listitem')).toHaveText('شاورما: حتى أعيده');
+  await expect(report.getByText('يوجد بديل مشابه', { exact: true })).toBeVisible();
+  // AP §9.3.1: the timeline line names the items and the note.
+  const reportedLine = panel.getByRole('listitem').filter({ hasText: 'أبلغ المطعم عن صنف نفد' });
+  await expect(reportedLine).toContainText('شاورما: حتى أعيده');
+  await expect(reportedLine).toContainText('يوجد بديل مشابه');
+  const close = page.getByRole('form', { name: 'إغلاق بلاغ صنف نفد' });
+  const confirm = close.getByRole('button', { name: 'تأكيد إغلاق البلاغ' });
+  await expect(confirm).toBeDisabled();
+  await close.getByRole('textbox', { name: 'السبب (للسجل الداخلي)' }).fill('وجد المطعم الصنف');
+  await confirm.click();
+
+  await expect(page.getByRole('form', { name: 'إغلاق بلاغ صنف نفد' })).toHaveCount(0);
+  expect(sent).toEqual({ reason: 'وجد المطعم الصنف' });
 });

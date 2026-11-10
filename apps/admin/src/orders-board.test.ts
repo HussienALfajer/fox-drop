@@ -29,7 +29,13 @@ function card(overrides: Partial<OrderCard>): OrderCard {
     captainTrack: null,
     captain: null,
     total: { amount: '1000', currency: 'USD' },
-    badges: { needsAssignment: false, note: false, newCustomer: false, pickupPending: false },
+    badges: {
+      needsAssignment: false,
+      note: false,
+      newCustomer: false,
+      pickupPending: false,
+      itemReport: false,
+    },
     moments: {
       acceptAlertAt: null,
       prepLateAlertAt: null,

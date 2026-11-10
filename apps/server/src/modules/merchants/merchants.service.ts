@@ -1183,10 +1183,11 @@ export class MerchantsService implements OnModuleInit {
     return nextCutoff(now, hours * 60 + minutes, timeZone);
   }
 
-  // RA §8.6 «صنف غير متوفر»: the rejection's items switched off at once, in
-  // the order's transaction (after the order's lock), each until the end
-  // `switchedOffUntil` gave. An item deleted from the menu since is left
-  // alone. Audited as the restaurant's own switch.
+  // RA §8.6 «صنف غير متوفر», RA §8.12: a rejection's or an item report's
+  // items switched off at once, in the order's transaction (after the
+  // order's lock), each until the end `switchedOffUntil` gave. An item
+  // deleted from the menu since is left alone. Audited as the restaurant's
+  // own switch.
   async switchOffForRejection(
     tx: Tx,
     restaurantId: string,
@@ -1203,6 +1204,31 @@ export class MerchantsService implements OnModuleInit {
         { type: 'item', id: each.itemId },
         false,
         each.until,
+        change,
+        now,
+      );
+    }
+  }
+
+  // RA §8.12 «تراجع — الصنف متوفر»: a withdrawn report's items switched on
+  // again, in the order's transaction (after the order's lock). An item
+  // deleted from the menu since is left alone.
+  async switchOnItems(
+    tx: Tx,
+    restaurantId: string,
+    itemIds: string[],
+    change: MerchantChange,
+    now: Date,
+  ): Promise<void> {
+    const row = await this.lockRestaurant(tx, restaurantId);
+    for (const itemId of itemIds) {
+      await this.writeAvailability(
+        tx,
+        row.cityId,
+        restaurantId,
+        { type: 'item', id: itemId },
+        true,
+        null,
         change,
         now,
       );

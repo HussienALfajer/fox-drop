@@ -18,6 +18,7 @@ Map<String, Object?> _order({
   Map<String, Object?>? rejection,
   List<Map<String, Object?>>? lines,
   String? promisedAt,
+  Map<String, Object?>? itemReport,
 }) => {
   'id': _orderId,
   'number': '10423',
@@ -28,6 +29,7 @@ Map<String, Object?> _order({
   'cancellation': cancellation,
   'rejection': rejection,
   'delivery': null,
+  'itemReport': itemReport,
   'restaurant': {'id': shamId, 'nameAr': 'مطعم الشام', 'nameEn': null},
   'captain': captain,
   'currency': 'TRY',
@@ -168,6 +170,69 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(_status(tester), 'طلبك جاهز — الكابتن يستلم طلبك الآن');
+    await app.done(tester);
+  });
+
+  testWidgets('the item-unavailable banner and a moved time follow the '
+      "order's events (CU §11.6)", (tester) async {
+    final app = await open(tester, [
+      FakeAnswer(200, {
+        'order': _order(
+          status: 'accepted',
+          version: 2,
+          promisedAt: '2026-11-07T12:45:00.000Z',
+        ),
+      }),
+      FakeAnswer(200, {
+        'order': _order(
+          status: 'accepted',
+          version: 3,
+          promisedAt: '2026-11-07T12:45:00.000Z',
+          itemReport: {'at': '2026-11-07T12:20:00.000Z'},
+        ),
+      }),
+      FakeAnswer(200, {
+        'order': _order(
+          status: 'accepted',
+          version: 4,
+          promisedAt: '2026-11-07T13:00:00.000Z',
+        ),
+      }),
+    ]);
+    const banner =
+        'المطعم أبلغ أن صنفاً في طلبك غير متوفر. سيتصل بك فريق '
+        'FOX DROP الآن.';
+    expect(find.text(banner), findsNothing);
+    // The title's subtitle and the time line (CU §11.2).
+    expect(find.text('يصل حوالي 3:45 م'), findsNWidgets(2));
+
+    const channel = 'order:$_orderId';
+    app.transport.send(channel, const RealtimeUp(recovered: true));
+    app.transport.send(
+      channel,
+      const RealtimePublication({
+        'type': 'order.item_reported',
+        'orderId': _orderId,
+        'version': 3,
+      }),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text(banner), findsOneWidget);
+
+    // Operations edited the time; the report closed meanwhile.
+    app.transport.send(
+      channel,
+      const RealtimePublication({
+        'type': 'order.time_changed',
+        'orderId': _orderId,
+        'version': 4,
+        'reason': 'promised_time_changed',
+      }),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text(banner), findsNothing);
+    expect(find.text('يصل حوالي 3:45 م'), findsNothing);
+    expect(find.text('يصل حوالي 4:00 م'), findsNWidgets(2));
     await app.done(tester);
   });
 

@@ -82,6 +82,10 @@ String noticeText(
   AutoCancelled(:final number) => l10n.merchantAutoCancelled(number),
   CustomerCancelled(:final number) => l10n.merchantCustomerCancelled(number),
   Cancelled(:final number) => l10n.merchantCancelled(number),
+  PrepTimeChanged(:final number, :final prepMin) =>
+    l10n.merchantPrepTimeChanged(number, prepMin),
+  ItemReportClosed(:final number, :final reason) =>
+    l10n.merchantItemReportClosed(number, reason),
   PrepLate(:final number) => l10n.merchantPrepLateChime(number),
   CaptainArrived(:final name, :final number) => l10n.merchantCaptainArrived(
     name,
@@ -127,7 +131,24 @@ String commandText(AppLocalizations l10n, CommandNotice notice) =>
       StateChanged() => l10n.merchantStateChanged,
       LinesRefused() => l10n.merchantLinesRefused,
       AlreadyDisputed() => l10n.merchantAlreadyDisputed,
+      ItemReportRefused() => l10n.merchantItemReportRefused,
+      ReportWhilePickupOpen() => l10n.merchantItemReportPickupOpen,
+      ItemReportOpenFirst() => l10n.merchantItemReportOpenFirst,
+      ItemReportClosedFirst() => l10n.merchantItemReportClosedFirst,
       CommandFailed() => l10n.merchantCommandFailed,
+    };
+
+/// The report's optional notes (RA §8.12): Content's `item_unavailable_note`
+/// list ([labels], codes to labels, which operations may edit), else the
+/// built-in labels of its seeded codes.
+Map<String, String> itemReportNoteLabels(
+  AppLocalizations l10n, [
+  Map<String, String>? labels,
+]) =>
+    labels ??
+    {
+      'similar_alternative': l10n.merchantItemReportSimilar,
+      'insufficient_quantity': l10n.merchantItemReportNotEnough,
     };
 
 String paymentLinesText(

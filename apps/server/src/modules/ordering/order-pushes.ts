@@ -30,7 +30,7 @@ export interface OrderPushFacts {
   // label.
   rejectText: string | null;
   rejectLabel: string | null;
-  // RA §16 #5: the prep time operations chose.
+  // RA §16 #5, #12: the order's prep time (operations chose or moved it).
   prepMin: number | null;
   // Who made the transition (order_events.actor_type).
   actor: string;
@@ -199,6 +199,21 @@ export function orderPushes(
       ];
     case 'order.delivered':
       return [customer('customer.delivered')];
+    case 'order.item_reported':
+      // CU §11.6, §14 #10: FOX DROP will call the customer.
+      return [customer('customer.item_unavailable')];
+    case 'order.item_report_closed':
+      // RA §16 #37, with operations' reason.
+      return [merchant('merchant.item_report_closed', { السبب: reason ?? '' })];
+    case 'order.time_changed':
+      return [
+        // CU §11.6, §14 #12: the new promised time.
+        customer('customer.time_changed', { الساعة: facts.promisedTime ?? '' }),
+        // RA §16 #12: the prep time moved while the food was being prepared.
+        ...(reason === 'prep_time_changed'
+          ? [merchant('merchant.prep_time_changed', { د: String(facts.prepMin ?? '') })]
+          : []),
+      ];
     default:
       // The search and an offer closing are silent (CA §14 #2).
       return [];

@@ -324,6 +324,11 @@ class OrderCard extends ConsumerWidget {
                 // RA §8.15: «قبلته العمليات».
                 if (order.acceptance?.byOperations ?? false)
                   l10n.merchantBadgeByOperations,
+                // RA §8.12: the open item-unavailable report.
+                if (order.itemReport != null) ...[
+                  l10n.merchantItemReportBadge,
+                  l10n.merchantItemReportOperationsCalling,
+                ],
                 if (line != null) captainLineText(l10n, line, now),
                 ?timer,
               ].join('\n'),

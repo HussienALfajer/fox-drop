@@ -57,6 +57,11 @@ PickupRequest? openRequest(ActiveOrder order) {
   return request?.status == RequestStatus.open ? request : null;
 }
 
+/// Whether the pickup request waits: the restaurant reported an item
+/// unavailable and operations have not edited, cancelled or closed it (CA §9
+/// step 2, RA §8.12): «بانتظار تعديل الطلب من العمليات».
+bool pickupBlocked(ActiveOrder order) => order.itemReportOpen;
+
 /// The latest request the restaurant refused, while the captain is back at
 /// the restaurant (CA §9.4 item 4), or null.
 PickupRequest? refusedRequest(ActiveOrder order) {

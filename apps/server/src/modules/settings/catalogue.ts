@@ -184,6 +184,7 @@ export const catalogue = {
     schema: z.number().positive(),
     default: 20,
   }),
+  'order.eta_change_max_min': minutes(60, 1),
   'merchant.auto_pause_unanswered_count': count(3),
   'merchant.settlement_weekday': define({
     type: 'enum',

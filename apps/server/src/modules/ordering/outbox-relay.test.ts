@@ -48,10 +48,17 @@ beforeEach(async () => {
 interface Row {
   orderId: string;
   restaurantId: string;
-  type: 'order.placed' | 'order.cancelled' | 'order.offered' | 'order.assigned';
+  type:
+    | 'order.placed'
+    | 'order.cancelled'
+    | 'order.offered'
+    | 'order.assigned'
+    | 'order.item_report_closed';
   version: number;
   captainTrack?: string;
+  captainId?: string;
   byCustomer?: boolean;
+  reason?: string;
 }
 
 const payloadOf = (row: Row) => ({
@@ -63,9 +70,9 @@ const payloadOf = (row: Row) => ({
   customerAccountId: randomUUID(),
   status: row.type === 'order.cancelled' ? 'cancelled' : 'placed',
   version: row.version,
-  ...(row.captainTrack ? { captainTrack: row.captainTrack, captainId: null } : {}),
+  ...(row.captainTrack ? { captainTrack: row.captainTrack, captainId: row.captainId ?? null } : {}),
   ...(row.byCustomer === undefined ? {} : { byCustomer: row.byCustomer }),
-  reason: null,
+  reason: row.reason ?? null,
   at: new Date().toISOString(),
 });
 
@@ -89,6 +96,28 @@ const versionsOn = async (channel: string) =>
   ((await centrifugo.history(channel)) as { version: number }[]).map((data) => data.version);
 
 describe('the outbox relay (architecture §5.5, E4)', () => {
+  it("keeps operations' reason for closing an item report to the restaurant and the panel (RA §16 #37, AP §10)", async () => {
+    const order = { orderId: randomUUID(), restaurantId: randomUUID() };
+    const captainId = randomUUID();
+    await insert({
+      ...order,
+      type: 'order.item_report_closed',
+      version: 5,
+      captainTrack: 'at_merchant',
+      captainId,
+      reason: 'وجد المطعم الصنف',
+    });
+    await relay.drain(new Date());
+    const reasonOn = async (channel: string) =>
+      ((await centrifugo.history(channel)) as { reason: string | null }[]).map(
+        (data) => data.reason,
+      );
+    expect(await reasonOn(`merchant:${order.restaurantId}`)).toEqual(['وجد المطعم الصنف']);
+    expect(await reasonOn(`ops:city.${city}`)).toContain('وجد المطعم الصنف');
+    expect(await reasonOn(`captain:${captainId}`)).toEqual([null]);
+    expect(await reasonOn(`order:${order.orderId}`)).toEqual([null]);
+  });
+
   it("tells the restaurant the customer's own cancellation, and false for a row before slice 2.8a (RA §8.3)", async () => {
     const order = { orderId: randomUUID(), restaurantId: randomUUID() };
     await insert({ ...order, type: 'order.placed', version: 1 });

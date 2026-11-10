@@ -71,7 +71,15 @@ export type OrderEventType =
   | 'order.arrived_at_customer'
   // CA §9.8, AP §9.3.2: «تم التسليم» with outcome normal (status delivered,
   // track done).
-  | 'order.delivered';
+  | 'order.delivered'
+  // AP §9.3.2 «تعديل الوقت»: operations moved the promised time (and the prep
+  // time while accepted); the status stays.
+  | 'order.time_changed'
+  // RA §8.12, AP §9.3.2: the restaurant reported items unavailable after
+  // accepting, withdrew its report, or operations closed it without an edit.
+  | 'order.item_reported'
+  | 'order.item_report_withdrawn'
+  | 'order.item_report_closed';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that

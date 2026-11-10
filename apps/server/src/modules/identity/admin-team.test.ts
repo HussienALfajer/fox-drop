@@ -453,6 +453,8 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/captain/orders/{orderId}/arrive-at-customer': 'app_session',
   'POST /v1/captain/orders/{orderId}/deliver': 'app_session',
   'POST /v1/admin/orders/{orderId}/record-arrival': 'operations.manage',
+  'POST /v1/admin/orders/{orderId}/change-time': 'operations.manage',
+  'POST /v1/admin/orders/{orderId}/item-report/close': 'operations.manage',
   'POST /v1/admin/orders/{orderId}/accept': 'operations.manage',
   'POST /v1/admin/orders/{orderId}/reject': 'operations.manage',
   'POST /v1/admin/orders/{orderId}/cancel': 'operations.manage',
@@ -460,6 +462,8 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/merchant/orders/{orderId}/acknowledge-cancellation': 'app_session',
   'POST /v1/captain/orders/{orderId}/acknowledge-cancellation': 'app_session',
   'POST /v1/merchant/orders/{orderId}/reject': 'app_session',
+  'POST /v1/merchant/orders/{orderId}/item-report': 'app_session',
+  'POST /v1/merchant/orders/{orderId}/item-report/withdraw': 'app_session',
   'POST /v1/admin/orders/{orderId}/resend-notification': {
     anyOf: ['operations.manage', 'operations.compensate'],
   },

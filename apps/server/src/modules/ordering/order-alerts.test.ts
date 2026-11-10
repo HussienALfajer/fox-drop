@@ -22,6 +22,7 @@ const placed: OrderAlertInput = {
   amountDisputed: false,
   away: false,
   shortfall: false,
+  itemReportOpen: false,
 };
 
 describe('orderAlerts (AP §9.1.3)', () => {
@@ -111,6 +112,14 @@ describe('orderAlerts (AP §9.1.3)', () => {
     expect(orderAlerts({ ...disputed, status: 'picked_up' }, now).open).toEqual([]);
     const delivered = { ...placed, status: 'delivered' as const, shortfall: true, away: true };
     expect(orderAlerts(delivered, now).open).toEqual(['collection_shortfall', 'away_from_address']);
+  });
+
+  it('raises «صنف نفد بعد القبول» while an item report is open (RA §8.12)', () => {
+    const reported = { ...placed, status: 'ready' as const, acceptAlertAt: null };
+    expect(orderAlerts({ ...reported, itemReportOpen: true }, now).open).toEqual([
+      'item_unavailable',
+    ]);
+    expect(orderAlerts(reported, now).open).toEqual([]);
   });
 
   it('times the soonest moment still ahead', () => {

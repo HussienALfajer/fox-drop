@@ -513,6 +513,91 @@ export const pickupDisputes = ordering.table(
   ],
 );
 
+// AP §9.3.2 «تعديل الوقت» (slice 2.9): one row per change, never changed:
+// the minutes added and the promised time and prep time before and after,
+// which the timeline shows (AP §9.3.1) and from which the captain's waiting
+// counts the prep time as accepted (docs/domain/04).
+export const timeChanges = ordering.table(
+  'time_changes',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+    adminId: uuid('admin_id').notNull(),
+    addMin: smallint('add_min').notNull(),
+    promisedBefore: timestamp('promised_before', { withTimezone: true }).notNull(),
+    promisedAfter: timestamp('promised_after', { withTimezone: true }).notNull(),
+    prepMinBefore: smallint('prep_min_before').notNull(),
+    prepMinAfter: smallint('prep_min_after').notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId, table.orderPlacedAt],
+      foreignColumns: [orders.id, orders.placedAt],
+    }),
+    index('time_changes_order').on(table.orderId, table.orderPlacedAt),
+    check(
+      'time_changes_moved',
+      sql`${table.addMin} > 0 AND ${table.promisedAfter} > ${table.promisedBefore} AND ${table.prepMinAfter} >= ${table.prepMinBefore}`,
+    ),
+  ],
+);
+
+// RA §8.12, AP §9.3.2 (slice 2.9): «صنف غير متوفر — اتصلوا بالزبون», the
+// restaurant's report of items it ran out of after accepting, at most one
+// open per order (a partial unique index). It blocks the pickup until it is
+// closed: withdrawn by the restaurant («تراجع — الصنف متوفر»), closed by
+// operations without an edit («إغلاق بلاغ صنف نفد», with their reason), or
+// cleared by the order's cancellation (and, from 2.10, its edit).
+export const itemReports = ordering.table(
+  'item_reports',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    // [{ itemId, until: 'tomorrow' | 'turned_back_on' }], the order's items.
+    items: jsonb('items').notNull(),
+    // A code of Content's item_unavailable_note list («يوجد بديل مشابه»,
+    // «الكمية غير كافية»), with a copy of its label.
+    note: text('note'),
+    noteLabel: text('note_label'),
+    // The restaurant user (identity's merchant_accounts row) and the app
+    // installation.
+    accountId: uuid('account_id').notNull(),
+    device: text('device').notNull(),
+    reportedAt: timestamp('reported_at', { withTimezone: true }).notNull(),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    // withdrawn (the restaurant), closed (operations, with their reason) or
+    // cancelled (the order's cancellation).
+    closedHow: text('closed_how'),
+    closedByType: text('closed_by_type'),
+    closedById: uuid('closed_by_id'),
+    closeReason: text('close_reason'),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId, table.orderPlacedAt],
+      foreignColumns: [orders.id, orders.placedAt],
+    }),
+    uniqueIndex('item_reports_one_open_per_order')
+      .on(table.orderId)
+      .where(sql`${table.closedAt} IS NULL`),
+    index('item_reports_order').on(table.orderId, table.orderPlacedAt),
+    check('item_reports_note_label', sql`(${table.note} IS NULL) = (${table.noteLabel} IS NULL)`),
+    check(
+      'item_reports_closed',
+      sql`(${table.closedAt} IS NULL) = (${table.closedHow} IS NULL) AND (${table.closedHow} IS NULL OR ${table.closedHow} IN ('withdrawn', 'closed', 'cancelled')) AND (${table.closedHow} IS NOT DISTINCT FROM 'closed') = (${table.closeReason} IS NOT NULL) AND (${table.closedHow} IS NULL OR (${table.closedByType} IS NOT NULL AND ${table.closedById} IS NOT NULL))`,
+    ),
+  ],
+);
+
 // AP §8.6, CA §9.7–9.8, AP §9.3.2: the payment at the door, one per order,
 // recorded by the captain at «تم التسليم» or by operations
 // («تسجيل التسليم نيابة عن الكابتن»): the lines received and given back, their

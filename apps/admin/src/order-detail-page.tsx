@@ -20,6 +20,10 @@ import {
 import { statusKeys, trackKeys, vehicleKey } from './order-labels.js';
 import { DecideOnBehalf } from './order-on-behalf-page.js';
 import { canDecide } from './order-on-behalf.js';
+import { CloseItemReport, ItemReportSection, ReportedItems } from './order-item-report-page.js';
+import { canCloseItemReport } from './order-item-report.js';
+import { ChangeTime } from './order-time-change-page.js';
+import { canChangeTime } from './order-time-change.js';
 import { Badges } from './orders-board-page.js';
 import {
   canResend,
@@ -40,7 +44,9 @@ function linesText(lines: Lines): string {
 // AP §9.3.1: the order detail beside the board, live over the board's
 // channel. Its actions come with their slices: «تعيين كابتن» (AP §9.3.2),
 // whose picker opens below it, while placed «قبول نيابة عن المطعم» and
-// «رفض نيابة عن المطعم», and until pickup «إلغاء الطلب».
+// «رفض نيابة عن المطعم», until pickup «إلغاء الطلب», from acceptance until
+// the captain reaches the customer «تعديل الوقت», and while a report is
+// open «إغلاق بلاغ صنف نفد».
 export function OrderDetailPage() {
   const { t } = useTranslation();
   const { orderId } = route.useParams();
@@ -177,6 +183,18 @@ export function OrderDetailPage() {
         </>
       )}
       <Badges card={detail} />
+      {detail.itemReport && <ItemReportSection report={detail.itemReport} time={time} />}
+      {canCloseItemReport(session, detail) && <CloseItemReport key={orderId} orderId={orderId} />}
+      {canChangeTime(session, detail) && (
+        <ChangeTime
+          key={orderId}
+          orderId={orderId}
+          status={detail.status}
+          promisedAt={detail.promisedAt}
+          choices={detail.timeChange}
+          time={time}
+        />
+      )}
       {canDecide(session, detail) && (
         <DecideOnBehalf
           key={orderId}
@@ -357,6 +375,16 @@ export function OrderDetailPage() {
               {cancelled && cancellation.by.type === 'customer' && cancellation.note && (
                 <span> {cancellation.note}</span>
               )}
+              {event.timeChange && (
+                <span>
+                  {' '}
+                  {t('order.changeTime.event', {
+                    minutes: event.timeChange.addMin,
+                    time: time(event.timeChange.promisedAt),
+                  })}
+                </span>
+              )}
+              {event.itemReport && <ReportedItems report={event.itemReport} />}
               {reason && !(cancelled && 'key' in reason) && (
                 <span> {'key' in reason ? t(reason.key) : reason.text}</span>
               )}

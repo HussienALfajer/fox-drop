@@ -4,10 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api.dart';
 import '../auth.dart';
+import '../content.dart';
 import 'board.dart';
 import 'board_screen.dart';
 import 'commands.dart';
 import 'dispute_sheet.dart';
+import 'item_report_sheet.dart';
 import 'texts.dart';
 
 /// The order detail (RA §8.4) from the board's state: header, customer,
@@ -43,6 +45,8 @@ class OrderScreen extends ConsumerWidget {
         pickup.disputeUntil != null &&
         now.isBefore(pickup.disputeUntil!);
     final sending = ref.watch(boardCommandsProvider).contains(order.id);
+    // Read before a report needs its notes (RA §8.12).
+    ref.watch(itemReportNotesProvider);
     Future<void> show(CommandNotice? notice) async {
       if (notice != null && context.mounted) {
         ScaffoldMessenger.of(
@@ -68,6 +72,19 @@ class OrderScreen extends ConsumerWidget {
             // RA §8.15: «قبلته العمليات».
             if (order.acceptance?.byOperations ?? false)
               ListTile(title: Text(l10n.merchantBadgeByOperations)),
+            // RA §8.12: the open item-unavailable report and its items.
+            if (order.itemReport case final report?)
+              ListTile(
+                key: const Key('item-report'),
+                title: Text(l10n.merchantItemReportBadge),
+                subtitle: Text(
+                  [
+                    l10n.merchantItemReportOperationsCalling,
+                    report.items.map((i) => i.name).join('، '),
+                    ?report.note?.label,
+                  ].join('\n'),
+                ),
+              ),
             ListTile(
               title: Text(
                 l10n.merchantCustomer(
@@ -138,6 +155,50 @@ class OrderScreen extends ConsumerWidget {
                 child: Text(l10n.merchantNeedMoreTime),
               ),
             ],
+            // RA §8.12: «صنف غير متوفر — اتصلوا بالزبون», hidden while a
+            // pickup request is open (RA §8.10).
+            if (canReportItems(order))
+              OutlinedButton(
+                key: const Key('report-items'),
+                onPressed: sending
+                    ? null
+                    : () async {
+                        // A failed read of Content is read again for the
+                        // next report; meanwhile the built-in notes.
+                        final notes = ref.read(itemReportNotesProvider);
+                        if (notes.hasError) {
+                          ref.invalidate(merchantContentProvider);
+                        }
+                        final report = await showItemReportSheet(
+                          context,
+                          order,
+                          notes.value,
+                        );
+                        if (report == null) return;
+                        final notice = await ref
+                            .read(boardCommandsProvider.notifier)
+                            .reportItems(order.id, report);
+                        // RA Appendix C: a note removed from Content.
+                        if (notice is ItemReportRefused) {
+                          ref.invalidate(merchantContentProvider);
+                        }
+                        await show(notice);
+                      },
+                child: Text(l10n.merchantItemReportButton),
+              ),
+            // RA §8.12: «تراجع — الصنف متوفر» before operations act.
+            if (canWithdrawItemReport(order))
+              OutlinedButton(
+                key: const Key('withdraw-item-report'),
+                onPressed: sending
+                    ? null
+                    : () async => show(
+                        await ref
+                            .read(boardCommandsProvider.notifier)
+                            .withdrawItemReport(order.id),
+                      ),
+                child: Text(l10n.merchantItemReportWithdraw),
+              ),
             // RA §8.10 item 8: «المبلغ غير صحيح» after the pickup, within the
             // dispute window.
             if (disputeOpen && pickup.request != null)

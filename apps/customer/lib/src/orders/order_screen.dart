@@ -14,7 +14,9 @@ import 'order_live.dart';
 /// The order screen (CU §11): the status title and subtitle of §11.2, the
 /// five-step progress, the time, the captain card from assignment and the
 /// summary, kept live over the order's channel, and «مساعدة» with
-/// «إلغاء الطلب» while placed (CU §11.4–11.5). The map, the other banners
+/// «إلغاء الطلب» while placed (CU §11.4–11.5), and the banners of the
+/// emergency stop and the item-unavailable report (CU §11.6). The map, the
+/// other banners
 /// and the rating sheet come with their slices. Unstyled until the design.
 class OrderScreen extends ConsumerWidget {
   const OrderScreen({super.key, required this.orderId});
@@ -97,6 +99,13 @@ class OrderScreen extends ConsumerWidget {
             OrderAgainSection(order: order),
             // CU §11.6: the emergency stop's delay notice.
             if (!ended) EmergencyDelayNotice(orderId: orderId),
+            // CU §11.6: the restaurant reported an item unavailable (RA
+            // §8.12); gone once the report is resolved or withdrawn.
+            if (!ended && order.itemReport != null)
+              ListTile(
+                key: const Key('item-report-banner'),
+                title: Text(l10n.customerItemReportBanner),
+              ),
             // CU §4.4: notifications refused at the first order.
             if (!ended) const NotificationsOffBanner(),
             if (step != null)
