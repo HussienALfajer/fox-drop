@@ -24,6 +24,8 @@ class OfferSheet extends ConsumerWidget {
     final sending = ref.watch(commandsProvider).contains(offer.id);
     final pay = offer.pay;
     final preparation = offer.preparation;
+    // CA §9.10.1: «استلام من كابتن», from the first captain; nothing to pay.
+    final handover = offer.handover;
     final readyAt = preparation.readyAt;
     Future<void> answer(bool accept) async {
       // The sheet closes once answered, so the message goes to the home's.
@@ -54,6 +56,7 @@ class OfferSheet extends ConsumerWidget {
           padding: const EdgeInsetsDirectional.all(16),
           children: [
             Text(l10n.captainNewOffer),
+            if (handover != null) Text(l10n.captainHandoverOffer),
             if (offer.fromOperations) Text(l10n.captainOfferFromOperations),
             Text(l10n.formatCountdown(clock.until(offer.expiresAt))),
             Text(
@@ -62,12 +65,18 @@ class OfferSheet extends ConsumerWidget {
                   : l10n.formatMoney(pay.amount, pay.currency),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
-            Text(l10n.captainWaitingPayMayApply),
+            // The second captain of a handover earns no waiting (AP §9.3.2).
+            if (handover == null) Text(l10n.captainWaitingPayMayApply),
             Text(
-              l10n.captainOfferRestaurant(
-                offer.restaurant.name,
-                l10n.formatDistance(offer.restaurant.distanceMetres),
-              ),
+              handover == null
+                  ? l10n.captainOfferRestaurant(
+                      offer.restaurant.name,
+                      l10n.formatDistance(offer.restaurant.distanceMetres),
+                    )
+                  : l10n.captainHandoverFrom(
+                      handover.fromCaptainName,
+                      l10n.formatDistance(offer.restaurant.distanceMetres),
+                    ),
             ),
             Text(
               l10n.captainOfferCustomer(
@@ -76,25 +85,28 @@ class OfferSheet extends ConsumerWidget {
               ),
             ),
             Text(
-              l10n.captainPayToRestaurant(
-                l10n.formatMoney(
-                  offer.pickupPayment.amount,
-                  offer.pickupPayment.currency,
-                ),
-              ),
+              handover != null
+                  ? l10n.captainPayNothing
+                  : l10n.captainPayToRestaurant(
+                      l10n.formatMoney(
+                        offer.pickupPayment.amount,
+                        offer.pickupPayment.currency,
+                      ),
+                    ),
             ),
             Text(
               l10n.captainCollectFromCustomer(
                 l10n.formatMoney(offer.collect.amount, offer.collect.currency),
               ),
             ),
-            Text(
-              preparation.ready || readyAt == null
-                  ? l10n.captainReady
-                  : l10n.captainOfferPreparing(
-                      (clock.until(readyAt).inSeconds / 60).ceil(),
-                    ),
-            ),
+            if (handover == null)
+              Text(
+                preparation.ready || readyAt == null
+                    ? l10n.captainReady
+                    : l10n.captainOfferPreparing(
+                        (clock.until(readyAt).inSeconds / 60).ceil(),
+                      ),
+              ),
             const SizedBox(height: 16),
             FilledButton(
               onPressed: sending ? null : () => answer(true),

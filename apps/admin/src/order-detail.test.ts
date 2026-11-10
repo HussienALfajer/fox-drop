@@ -18,6 +18,14 @@ describe('eventReason', () => {
         reason: 'incomplete',
       }),
     ).toEqual({ key: 'order.reason.incomplete' });
+    // Slice 2.12b: a handover closed by operations names its code, never
+    // shows it in English.
+    expect(
+      eventReason({ type: 'order.handover_closed', actor: { type: 'admin' }, reason: 'replaced' }),
+    ).toEqual({ key: 'order.handovers.closed.replaced' });
+    expect(
+      eventReason({ type: 'order.handover_closed', actor: { type: 'admin' }, reason: 'ended' }),
+    ).toEqual({ key: 'order.handovers.closed.ended' });
   });
 
   it("shows an operator's reason as written and hides an unknown code", () => {

@@ -53,6 +53,10 @@ export const eventKeys = {
   'order.outcome_collected': 'order.event.outcomeCollected',
   'order.outcome_changed': 'order.event.outcomeChanged',
   'order.reassigned': 'order.event.reassigned',
+  'order.handover_offered': 'order.event.handoverOffered',
+  'order.handover_assigned': 'order.event.handoverAssigned',
+  'order.handover_closed': 'order.event.handoverClosed',
+  'order.handed_over': 'order.event.handedOver',
 } as const;
 
 export function eventKey(type: string | null): (typeof eventKeys)[keyof typeof eventKeys] | null {
@@ -92,6 +96,14 @@ const reasonKeysByType = {
     declined: 'order.reason.declined',
     expired: 'order.reason.expired',
     withdrawn: 'order.reason.withdrawn',
+  },
+  // Slice 2.12b: why a handover closed without the receipt.
+  'order.handover_closed': {
+    declined: 'order.handovers.closed.declined',
+    expired: 'order.handovers.closed.expired',
+    withdrawn: 'order.handovers.closed.withdrawn',
+    ended: 'order.handovers.closed.ended',
+    replaced: 'order.handovers.closed.replaced',
   },
   'order.pickup_rejected': {
     amount_incorrect: 'order.reason.amountIncorrect',
@@ -148,6 +160,19 @@ export const cashKeys = {
   not_returned: 'order.cash.not_returned',
   not_paid: 'order.cash.not_paid',
 } as const satisfies Record<NonNullable<Cancellation['cash']>, string>;
+
+// AP §9.3.2 «تسليم لكابتن آخر» (slice 2.12b): why a handover closed without
+// the receipt.
+export const handoverCloseKeys = {
+  declined: 'order.handovers.closed.declined',
+  expired: 'order.handovers.closed.expired',
+  withdrawn: 'order.handovers.closed.withdrawn',
+  ended: 'order.handovers.closed.ended',
+  replaced: 'order.handovers.closed.replaced',
+} as const satisfies Record<
+  NonNullable<OrderDetail['handover']['handovers'][number]['closeReason']>,
+  string
+>;
 
 export const outcomeKeys = {
   normal: 'order.outcome.normal',

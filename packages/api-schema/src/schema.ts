@@ -2308,6 +2308,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/orders/{orderId}/acknowledge-handover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainOrdersAcknowledgeHandover"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/orders/{orderId}/receive-handover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainOrdersReceiveHandover"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/orders/{orderId}/acknowledge-outcome": {
         parameters: {
             query?: never;
@@ -2702,6 +2734,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminDispatchAssign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/handover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminDispatchHandover"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6266,6 +6314,35 @@ export interface components {
                         captainFault: boolean;
                     }[];
                 } | null;
+                /** @description AP §9.3.1, §9.3.2 «تسليم لكابتن آخر» (slice 2.12b). */
+                handover: {
+                    /** @description «تسليم لكابتن آخر» is offered: picked up or arrived with a captain, no handover open, no outcome waiting. */
+                    allowed: boolean;
+                    /** @description Every handover of the order, oldest first. */
+                    handovers: {
+                        /** Format: date-time */
+                        openedAt: string;
+                        /** Format: uuid */
+                        fromCaptainId: string;
+                        fromCaptainName: string | null;
+                        /** Format: uuid */
+                        toCaptainId: string;
+                        toCaptainName: string | null;
+                        /** @description Sent as an offer «استلام من كابتن», else assigned. */
+                        offered: boolean;
+                        /** @description The second captain has it (accepted or assigned). */
+                        assignedAt: string | null;
+                        /** @description «استلمت الطلب من الكابتن {الاسم}». */
+                        receivedAt: string | null;
+                        closedAt: string | null;
+                        /** @description Why it closed without the receipt: the offer declined, expired or withdrawn, or the order ended first. */
+                        closeReason: ("declined" | "expired" | "withdrawn" | "ended" | "replaced") | null;
+                        /** @description Operations' internal note. */
+                        note: string;
+                        /** Format: uuid */
+                        adminId: string;
+                    }[];
+                };
                 /** @description AP §9.3.1: every «سحب وإعادة تعيين» of the order, oldest first. */
                 reassignments: {
                     /** Format: date-time */
@@ -6930,6 +7007,28 @@ export interface components {
                     /** @description captain.customer_radius_m: «وصلت» and «تم التسليم» need no reason within it (K4, C9). */
                     customerMetres: number;
                 };
+                /** @description «تسليم لكابتن آخر» (CA §9.10.1, slice 2.12b): the open handover of the order, or null. While giving, the steps wait; while receiving, «لا تدفع شيئاً». */
+                handover: {
+                    /**
+                     * @description giving: «سيستلم الكابتن {الاسم} الطلب منك. انتظره في موقعك.»; receiving: step 1 leads to the other captain, «استلمت الطلب من الكابتن {الاسم}» within radii.customerMetres of them.
+                     * @enum {string}
+                     */
+                    role: "giving" | "receiving";
+                    /** @description The second captain has it; false while it is still offered to them. */
+                    assigned: boolean;
+                    captain: {
+                        name: string;
+                        /** @description «اتصال» dials it. */
+                        phone: string | null;
+                        /** @description Their latest point, read again with the order; null without one. */
+                        location: {
+                            latitude: number;
+                            longitude: number;
+                            /** Format: date-time */
+                            recordedAt: string;
+                        } | null;
+                    };
+                } | null;
             } | null;
             /** @description The latest order operations cancelled within 12 hours that the captain has not acknowledged (POST …/acknowledge-cancellation); the app plays the cancellation sound when one appears. */
             cancelled: {
@@ -6987,6 +7086,16 @@ export interface components {
                     amount: string;
                     currency: string;
                 } | null;
+                /** Format: date-time */
+                at: string;
+            } | null;
+            /** @description The latest order the captain handed to another within 12 hours that they have not acknowledged (POST …/acknowledge-handover). */
+            handedOver: {
+                /** Format: uuid */
+                orderId: string;
+                number: string;
+                /** @description {الاسم} of «سلّمت الطلب للكابتن {الاسم}». */
+                toCaptainName: string;
                 /** Format: date-time */
                 at: string;
             } | null;
@@ -7188,6 +7297,28 @@ export interface components {
                     /** @description captain.customer_radius_m: «وصلت» and «تم التسليم» need no reason within it (K4, C9). */
                     customerMetres: number;
                 };
+                /** @description «تسليم لكابتن آخر» (CA §9.10.1, slice 2.12b): the open handover of the order, or null. While giving, the steps wait; while receiving, «لا تدفع شيئاً». */
+                handover: {
+                    /**
+                     * @description giving: «سيستلم الكابتن {الاسم} الطلب منك. انتظره في موقعك.»; receiving: step 1 leads to the other captain, «استلمت الطلب من الكابتن {الاسم}» within radii.customerMetres of them.
+                     * @enum {string}
+                     */
+                    role: "giving" | "receiving";
+                    /** @description The second captain has it; false while it is still offered to them. */
+                    assigned: boolean;
+                    captain: {
+                        name: string;
+                        /** @description «اتصال» dials it. */
+                        phone: string | null;
+                        /** @description Their latest point, read again with the order; null without one. */
+                        location: {
+                            latitude: number;
+                            longitude: number;
+                            /** Format: date-time */
+                            recordedAt: string;
+                        } | null;
+                    };
+                } | null;
             };
         };
         CaptainArriveAtCustomerDto: {
@@ -7540,9 +7671,9 @@ export interface components {
                 eligible: boolean;
                 /** @description Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed. */
                 reasons: ("busy" | "cash_limit" | "closed_due" | "simulated_location" | "out_of_range" | "vehicle_not_allowed")[];
-                /** @description To the restaurant: by road within the search radius, else the straight line. */
+                /** @description To the restaurant (after the pickup, to the order’s captain at their latest point): by road within the search radius, else the straight line. */
                 distanceMetres: number;
-                /** @description To the restaurant; null beyond the search radius. */
+                /** @description To the same point; null beyond the search radius. */
                 etaMin: number | null;
                 ordersToday: number;
                 /** @description Cash-limit usage. */
@@ -7589,8 +7720,19 @@ export interface components {
                     captainId: string;
                     /** Format: date-time */
                     expiresAt: string;
+                    /** @description «استلام من كابتن» (AP §9.3.2, CA §9.10.1). */
+                    handover: boolean;
                 } | null;
             };
+        };
+        AdminHandoverDto: {
+            /**
+             * Format: uuid
+             * @description An eligible captain from the picker, measured from the first.
+             */
+            captainId: string;
+            /** @description Operations’ internal note (AP §9.3.2: required; never shown to the apps). */
+            reason: string;
         };
         CaptainCurrentOfferDto_Output: {
             /** @description The open offer, or null. */
@@ -7632,7 +7774,7 @@ export interface components {
                     /** @description Restaurant to customer. */
                     tripMetres: number;
                 };
-                /** @description «تدفع للمطعم» (D26: the items value). */
+                /** @description «تدفع للمطعم» (D26: the items value); 0 on a handover, «لا تدفع شيئاً». */
                 pickupPayment: {
                     /** @description Minor units of the currency, as a string. */
                     amount: string;
@@ -7650,6 +7792,20 @@ export interface components {
                     /** @description «قيد التحضير — جاهز بعد {د} د تقريباً» counts to it while not ready. */
                     readyAt: string | null;
                 };
+                /** @description «استلام من كابتن» (CA §9.10.1): the order is taken from this captain; restaurant.distanceMetres is then to them. Null for an ordinary offer. */
+                handover: {
+                    fromCaptainName: string;
+                    /** @description The first captain’s latest point; null without one. */
+                    location: {
+                        latitude: number;
+                        longitude: number;
+                        /**
+                         * Format: date-time
+                         * @description When the first captain’s app recorded it.
+                         */
+                        recordedAt: string;
+                    } | null;
+                } | null;
             } | null;
         };
         CaptainOfferDto_Output: {
@@ -7692,7 +7848,7 @@ export interface components {
                     /** @description Restaurant to customer. */
                     tripMetres: number;
                 };
-                /** @description «تدفع للمطعم» (D26: the items value). */
+                /** @description «تدفع للمطعم» (D26: the items value); 0 on a handover, «لا تدفع شيئاً». */
                 pickupPayment: {
                     /** @description Minor units of the currency, as a string. */
                     amount: string;
@@ -7710,6 +7866,20 @@ export interface components {
                     /** @description «قيد التحضير — جاهز بعد {د} د تقريباً» counts to it while not ready. */
                     readyAt: string | null;
                 };
+                /** @description «استلام من كابتن» (CA §9.10.1): the order is taken from this captain; restaurant.distanceMetres is then to them. Null for an ordinary offer. */
+                handover: {
+                    fromCaptainName: string;
+                    /** @description The first captain’s latest point; null without one. */
+                    location: {
+                        latitude: number;
+                        longitude: number;
+                        /**
+                         * Format: date-time
+                         * @description When the first captain’s app recorded it.
+                         */
+                        recordedAt: string;
+                    } | null;
+                } | null;
             };
         };
     };
@@ -11297,6 +11467,57 @@ export interface operations {
             };
         };
     };
+    captainOrdersAcknowledgeHandover: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainActiveOrderDto_Output"];
+                };
+            };
+        };
+    };
+    captainOrdersReceiveHandover: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainArriveDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainOrderDto_Output"];
+                };
+            };
+        };
+    };
     captainOrdersAcknowledgeOutcome: {
         parameters: {
             query?: never;
@@ -11896,6 +12117,35 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminAssignDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDispatchStateDto_Output"];
+                };
+            };
+        };
+    };
+    adminDispatchHandover: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminHandoverDto"];
             };
         };
         responses: {

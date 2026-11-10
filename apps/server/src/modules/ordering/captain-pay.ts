@@ -1,6 +1,7 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { CaptainsService } from '../captains/index.js';
 import { waitingMinutes } from './door-payment.js';
+import { receivedHandoverOf } from './order-assignments.js';
 import { orderKey } from './order-views.js';
 import { orders } from './schema.js';
 import { acceptedPrepMin } from './time-changes.js';
@@ -41,16 +42,21 @@ export async function captainPay(
   // Placing needs a pay table in force (captain_pay_unset); only an order
   // placed before slice 1.13 can lack one.
   if (money.payTableId === null) throw new Error(`order ${order.id} kept no pay table`);
-  const waiting = waitingMinutes({
-    acceptedAt: money.acceptedAt,
-    // docs/domain/04 (slice 2.9, to confirm with the owner): «تعديل الوقت»
-    // never shortens the captain's paid waiting; it counts from the prep
-    // time chosen at acceptance.
-    prepMin: (await acceptedPrepMin(executor, order)) ?? money.prepMin,
-    arrivedAtMerchantAt: money.arrivedAtMerchantAt,
-    captainWaitingAlertAt: money.captainWaitingAlertAt,
-    pickedUpAt: money.pickedUpAt,
-  });
+  // AP §9.3.2 (slice 2.12b): after a handover the second captain earns the
+  // order pay; the waiting at the restaurant was the first captain's.
+  const handedOver = (await receivedHandoverOf(executor, order)) !== null;
+  const waiting = handedOver
+    ? 0
+    : waitingMinutes({
+        acceptedAt: money.acceptedAt,
+        // docs/domain/04 (slice 2.9, to confirm with the owner): «تعديل الوقت»
+        // never shortens the captain's paid waiting; it counts from the prep
+        // time chosen at acceptance.
+        prepMin: (await acceptedPrepMin(executor, order)) ?? money.prepMin,
+        arrivedAtMerchantAt: money.arrivedAtMerchantAt,
+        captainWaitingAlertAt: money.captainWaitingAlertAt,
+        pickedUpAt: money.pickedUpAt,
+      });
   const pay = await captains.payParts(
     money.payTableId,
     captain.vehicle,

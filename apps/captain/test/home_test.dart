@@ -725,6 +725,157 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets(
+    'offers a handover «استلام من كابتن», and the second captain receives it near the first (CA §9.10.1)',
+    (tester) async {
+      final app = TestApp();
+      app.work(
+        availability: [availabilityJson()],
+        offers: [
+          offerJson(
+            handover: {
+              'fromCaptainName': 'سامر',
+              'location': {
+                'latitude': firstCaptain.latitude,
+                'longitude': firstCaptain.longitude,
+                'recordedAt': now.toIso8601String(),
+              },
+            },
+          ),
+        ],
+      );
+      await app.pump(tester);
+      await app.live(tester);
+      expect(find.text('استلام من كابتن'), findsOneWidget);
+      expect(find.text('لا تدفع شيئاً'), findsOneWidget);
+      expect(find.textContaining('من الكابتن سامر'), findsOneWidget);
+      expect(find.textContaining('تدفع للمطعم'), findsNothing);
+
+      // Accepted: step 1 leads to the first captain.
+      app.server.on('/v1/captain/offers/$offerId/accept', [
+        FakeAnswer(200, {'offer': offerJson()}),
+      ]);
+      app.work(
+        availability: [availabilityJson(state: 'busy')],
+        orders: [
+          orderJson(
+            status: 'arrived',
+            track: 'at_customer',
+            pickupPayment: '0',
+            pickedUp: true,
+            handover: handoverJson(),
+          ),
+        ],
+      );
+      await app.tapVisible(tester, find.text('قبول'));
+      await app.settle(tester);
+      expect(find.text('الخطوة 1 من 4: استلام من كابتن'), findsOneWidget);
+      expect(find.text('من الكابتن سامر'), findsOneWidget);
+      expect(find.text('لا تدفع شيئاً'), findsOneWidget);
+      expect(find.text('اتصال بالكابتن'), findsOneWidget);
+      final receive = find.widgetWithText(
+        FilledButton,
+        'استلمت الطلب من الكابتن سامر',
+      );
+
+      // Far from the first captain, the button waits.
+      app.location.move(restaurant);
+      await app.settle(tester);
+      expect(find.text('اقترب من الكابتن لتأكيد الاستلام'), findsOneWidget);
+      expect(tester.widget<FilledButton>(receive).onPressed, isNull);
+
+      app.location.move(firstCaptain);
+      await app.settle(tester);
+      app.server.on('/v1/captain/orders/$orderId/receive-handover', [
+        FakeAnswer(200, {
+          'order': orderJson(
+            status: 'picked_up',
+            track: 'picked_up',
+            pickedUp: true,
+          ),
+        }),
+      ]);
+      app.work(
+        availability: [availabilityJson(state: 'busy')],
+        orders: [
+          orderJson(status: 'picked_up', track: 'picked_up', pickedUp: true),
+        ],
+      );
+      await app.tapVisible(tester, receive);
+      await app.settle(tester);
+      expect(
+        app.server.to('/v1/captain/orders/$orderId/receive-handover'),
+        hasLength(1),
+      );
+      expect(find.text('الخطوة 3 من 4: إلى الزبون'), findsOneWidget);
+      await app.done(tester);
+    },
+  );
+
+  testWidgets(
+    'the first captain waits for the second, then sees the card until «حسناً» (CA §9.10.1)',
+    (tester) async {
+      final app = TestApp();
+      final picked = orderJson(
+        status: 'picked_up',
+        track: 'picked_up',
+        pickedUp: true,
+      );
+      app.work(
+        availability: [availabilityJson(state: 'busy')],
+        orders: [picked],
+      );
+      await app.pump(tester);
+      await app.live(tester);
+      expect(find.text('الخطوة 3 من 4: إلى الزبون'), findsOneWidget);
+
+      app.work(
+        availability: [availabilityJson(state: 'busy')],
+        orders: [
+          orderJson(
+            status: 'picked_up',
+            track: 'picked_up',
+            pickedUp: true,
+            version: 4,
+            handover: handoverJson(role: 'giving', name: 'باسل'),
+          ),
+        ],
+      );
+      app.transport.event('order.handover_assigned', 4);
+      await app.settle(tester);
+      expect(find.byKey(const Key('handover-wait')), findsOneWidget);
+      expect(
+        find.text('سيستلم الكابتن باسل الطلب منك. انتظره في موقعك.'),
+        findsWidgets,
+      );
+      expect(find.text('اتصال بالكابتن'), findsOneWidget);
+      expect(find.text('وصلت'), findsNothing);
+      expect(app.ringer.chimes, 1);
+
+      app.work(
+        availability: [availabilityJson(state: 'offline')],
+        handedOver: handedOverJson(),
+      );
+      app.transport.event('order.handed_over', 5);
+      await app.settle(tester);
+      expect(find.text('سلّمت الطلب للكابتن باسل'), findsOneWidget);
+      expect(app.ringer.cancellations, 1);
+
+      app.server.on('/v1/captain/orders/$orderId/acknowledge-handover', [
+        const FakeAnswer(200, {'order': null, 'handedOver': null}),
+      ]);
+      app.work(availability: [availabilityJson(state: 'offline')]);
+      await app.tapVisible(tester, find.text('حسناً'));
+      await app.settle(tester);
+      expect(
+        app.server.to('/v1/captain/orders/$orderId/acknowledge-handover'),
+        hasLength(1),
+      );
+      expect(find.text('سلّمت الطلب للكابتن باسل'), findsNothing);
+      await app.done(tester);
+    },
+  );
+
   testWidgets('shows the order operations took away until «حسناً» (CA §9.10)', (
     tester,
   ) async {

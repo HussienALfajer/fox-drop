@@ -15,6 +15,8 @@ class _$CaptainActiveOrderDtoOutput extends CaptainActiveOrderDtoOutput {
   final CaptainActiveOrderDtoOutputWithdrawn? withdrawn;
   @override
   final CaptainActiveOrderDtoOutputEnded? ended;
+  @override
+  final CaptainActiveOrderDtoOutputHandedOver? handedOver;
 
   factory _$CaptainActiveOrderDtoOutput([
     void Function(CaptainActiveOrderDtoOutputBuilder)? updates,
@@ -25,6 +27,7 @@ class _$CaptainActiveOrderDtoOutput extends CaptainActiveOrderDtoOutput {
     this.cancelled,
     this.withdrawn,
     this.ended,
+    this.handedOver,
   }) : super._();
   @override
   CaptainActiveOrderDtoOutput rebuild(
@@ -42,7 +45,8 @@ class _$CaptainActiveOrderDtoOutput extends CaptainActiveOrderDtoOutput {
         order == other.order &&
         cancelled == other.cancelled &&
         withdrawn == other.withdrawn &&
-        ended == other.ended;
+        ended == other.ended &&
+        handedOver == other.handedOver;
   }
 
   @override
@@ -52,6 +56,7 @@ class _$CaptainActiveOrderDtoOutput extends CaptainActiveOrderDtoOutput {
     _$hash = $jc(_$hash, cancelled.hashCode);
     _$hash = $jc(_$hash, withdrawn.hashCode);
     _$hash = $jc(_$hash, ended.hashCode);
+    _$hash = $jc(_$hash, handedOver.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -62,7 +67,8 @@ class _$CaptainActiveOrderDtoOutput extends CaptainActiveOrderDtoOutput {
           ..add('order', order)
           ..add('cancelled', cancelled)
           ..add('withdrawn', withdrawn)
-          ..add('ended', ended))
+          ..add('ended', ended)
+          ..add('handedOver', handedOver))
         .toString();
   }
 }
@@ -99,6 +105,12 @@ class CaptainActiveOrderDtoOutputBuilder
   set ended(CaptainActiveOrderDtoOutputEndedBuilder? ended) =>
       _$this._ended = ended;
 
+  CaptainActiveOrderDtoOutputHandedOverBuilder? _handedOver;
+  CaptainActiveOrderDtoOutputHandedOverBuilder get handedOver =>
+      _$this._handedOver ??= CaptainActiveOrderDtoOutputHandedOverBuilder();
+  set handedOver(CaptainActiveOrderDtoOutputHandedOverBuilder? handedOver) =>
+      _$this._handedOver = handedOver;
+
   CaptainActiveOrderDtoOutputBuilder() {
     CaptainActiveOrderDtoOutput._defaults(this);
   }
@@ -110,6 +122,7 @@ class CaptainActiveOrderDtoOutputBuilder
       _cancelled = $v.cancelled?.toBuilder();
       _withdrawn = $v.withdrawn?.toBuilder();
       _ended = $v.ended?.toBuilder();
+      _handedOver = $v.handedOver?.toBuilder();
       _$v = null;
     }
     return this;
@@ -138,6 +151,7 @@ class CaptainActiveOrderDtoOutputBuilder
             cancelled: _cancelled?.build(),
             withdrawn: _withdrawn?.build(),
             ended: _ended?.build(),
+            handedOver: _handedOver?.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -150,6 +164,8 @@ class CaptainActiveOrderDtoOutputBuilder
         _withdrawn?.build();
         _$failedField = 'ended';
         _ended?.build();
+        _$failedField = 'handedOver';
+        _handedOver?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'CaptainActiveOrderDtoOutput',

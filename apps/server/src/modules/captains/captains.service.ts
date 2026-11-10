@@ -790,6 +790,46 @@ export class CaptainsService implements OnModuleInit {
     return new Map(rows.flatMap((row) => (row.at ? [[row.captainId, row.at] as const] : [])));
   }
 
+  // CA §9.10.1 (slice 2.12b): the captain's newest real point of their open
+  // online period, whatever its age, or null: where the first captain of a
+  // handover waits, which the second captain is led to and receives near.
+  async latestPoint(captainId: string): Promise<(Point & { recordedAt: Date }) | null> {
+    const { rows } = await this.database.db.execute<{
+      latitude: number;
+      longitude: number;
+      recorded_at: Date | string;
+    }>(sql`
+      SELECT ST_Y(l.location) AS latitude, ST_X(l.location) AS longitude, l.recorded_at
+        FROM ${onlinePeriods} p
+        JOIN ${locations} l ON l.captain_id = p.captain_id AND l.recorded_at >= p.started_at
+        WHERE p.captain_id = ${captainId} AND p.ended_at IS NULL AND NOT l.simulated
+        ORDER BY l.recorded_at DESC LIMIT 1`);
+    const [row] = rows;
+    if (!row) return null;
+    return {
+      latitude: Number(row.latitude),
+      longitude: Number(row.longitude),
+      recordedAt: new Date(row.recorded_at),
+    };
+  }
+
+  // K17 (slice 2.12b): the captain who handed their order to another goes
+  // offline in the receipt's transaction, once the order is no longer theirs
+  // (refused otherwise). The answer runs after the commit: the live position
+  // removed and the listeners told, as any end of an online period.
+  async offlineAfterHandover(tx: Tx, captainId: string, now: Date): Promise<() => Promise<void>> {
+    const row = await this.lockCaptain(tx, captainId);
+    if ((await this.activeOrders([captainId], tx)).size > 0) {
+      throw new Error(`captain ${captainId} still has an active order`);
+    }
+    const ended = await this.endOnline(tx, captainId, 'handed_over', now);
+    return async () => {
+      if (ended === null) return;
+      await this.positions.remove(row.cityId, captainId, ended);
+      await this.wentOffline(captainId, now);
+    };
+  }
+
   // The captain's state and cash now (CA §7.1, AP §8.5.3–8.5.4).
   async state(captainId: string, now: Date): Promise<CaptainState> {
     const row = await this.row(this.database.db, captainId);
@@ -1050,7 +1090,7 @@ export class CaptainsService implements OnModuleInit {
   private async endOnline(
     tx: Tx,
     captainId: string,
-    reason: 'captain' | 'suspended' | 'terminated' | 'offers_expired',
+    reason: 'captain' | 'suspended' | 'terminated' | 'offers_expired' | 'handed_over',
     now: Date,
   ): Promise<string | null> {
     const [ended] = await tx

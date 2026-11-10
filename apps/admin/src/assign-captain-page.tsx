@@ -3,7 +3,7 @@ import { getRouteApi, Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import {
   type AssignRefusal,
-  type IneligibleReason,
+  ineligibleKeys as reasonKeys,
   pickerQuery,
   secondsLeft,
   useAssignCaptain,
@@ -13,16 +13,6 @@ import { formatDistance, formatMoney } from './format.js';
 import { vehicleKeys } from './order-labels.js';
 
 const route = getRouteApi('/signed-in/orders/$orderId/assign');
-
-const reasonKeys = {
-  busy: 'assign.reason.busy',
-  cash_limit: 'assign.reason.cashLimit',
-  closed_due: 'assign.reason.closedDue',
-  simulated_location: 'assign.reason.simulatedLocation',
-  out_of_range: 'assign.reason.outOfRange',
-  vehicle_not_allowed: 'assign.reason.vehicleNotAllowed',
-  offline: 'assign.reason.offline',
-} as const satisfies Record<IneligibleReason, string>;
 
 const refusalKeys = {
   order_not_assignable: 'assign.refused.orderNotAssignable',

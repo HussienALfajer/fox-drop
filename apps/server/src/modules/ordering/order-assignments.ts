@@ -1,5 +1,5 @@
 import { Inject, Injectable, Module, type OnModuleInit } from '@nestjs/common';
-import { and, count, eq, gte, inArray, type SQL, sql } from 'drizzle-orm';
+import { and, count, desc, eq, gte, inArray, isNotNull, isNull, type SQL, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DatabaseModule, DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -7,8 +7,10 @@ import { JobsModule } from '../../jobs/jobs.module.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { CaptainsModule, CaptainsService } from '../captains/index.js';
 import type { Point } from '../geo/index.js';
+import { canHandOver, type HandoverRefusal } from './handover.js';
 import { type CaptainTrack, recordTransition } from './order-events.js';
-import { orders, type orderStatuses } from './schema.js';
+import { pendingOutcome } from './outcome-facts.js';
+import { handovers, type handoverCloseReasons, orders, type orderStatuses } from './schema.js';
 
 type OrderStatus = (typeof orderStatuses)[number];
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
@@ -62,7 +64,21 @@ export type AssignmentChange =
   | { type: 'order.offer_closed'; captainId: string; reason: 'declined' | 'expired' | 'withdrawn' }
   | { type: 'order.assigned'; captainId: string };
 
-// Dispatch's part of a cancellation, in its transaction on the locked order.
+// AP §9.3.2 «تسليم لكابتن آخر» (slice 2.12b): an order's open handover, from
+// its captain to a second one: offered (offerId, not yet assigned) or
+// assigned (the second captain has it, busy), not yet received.
+export interface OpenHandover {
+  id: string;
+  fromCaptainId: string;
+  toCaptainId: string;
+  offerId: string | null;
+  assignedAt: Date | null;
+}
+
+export type HandoverCloseReason = (typeof handoverCloseReasons)[number];
+
+// Dispatch's part of an order's end (a cancellation, an outcome, operations'
+// delivery), in its transaction on the locked order.
 export type CancelListener = (
   tx: Tx,
   order: DispatchOrder,
@@ -107,9 +123,12 @@ export class OrderAssignments implements OnModuleInit {
     this.cancelListeners.push(listener);
   }
 
-  // The locked order is about to be cancelled. An offered order with no
-  // listener would leave its offer open, so it fails.
-  async beforeCancel(
+  // The locked order is about to end (cancelled, an outcome set, delivered
+  // by operations): dispatch withdraws its open offer, a handover's
+  // included, and an assigned handover closes as ended (slice 2.12b). An
+  // offered order with no listener would leave its offer open, so it fails.
+  // The order's version may move: the caller locks it again.
+  async beforeEnd(
     tx: Tx,
     orderId: string,
     placedAt: Date,
@@ -118,10 +137,162 @@ export class OrderAssignments implements OnModuleInit {
   ): Promise<void> {
     const order = await this.lock(tx, orderId, placedAt);
     if (order === null) throw new Error(`order ${orderId} not found`);
-    if (order.captainTrack === 'offered' && this.cancelListeners.length === 0) {
-      throw new Error('an offered order is cancelled without dispatch to withdraw its offer');
+    const handover = await this.openHandover(tx, order);
+    const offered =
+      order.captainTrack === 'offered' || (handover !== null && handover.assignedAt === null);
+    if (offered && this.cancelListeners.length === 0) {
+      throw new Error('an offered order ends without dispatch to withdraw its offer');
     }
     for (const listener of this.cancelListeners) await listener(tx, order, actor, now);
+    const still = await this.openHandover(tx, order);
+    if (still === null) return;
+    const current = await this.lock(tx, orderId, placedAt);
+    await this.closeHandover(tx, current!, still, 'ended', actor, now);
+  }
+
+  // AP §9.3.2 «تسليم لكابتن آخر»: whether operations may hand the order to
+  // this captain now (handover.ts), read with the executor given (the
+  // command's transaction under the order's lock, or the pool before it).
+  async handoverProblem(
+    executor: Executor,
+    order: DispatchOrder,
+    toCaptainId: string,
+  ): Promise<HandoverRefusal | null> {
+    const outcomePending = await pendingOutcome(executor, order);
+    return canHandOver(order, { outcomePending: outcomePending !== null }, toCaptainId);
+  }
+
+  // AP §9.3.2, CA §9.10.1 (slice 2.12b): the order's open handover, if any.
+  async openHandover(
+    executor: Executor,
+    order: { id: string; placedAt: Date },
+  ): Promise<OpenHandover | null> {
+    return openHandoverOf(executor, order);
+  }
+
+  // AP §9.3.2 «تسليم لكابتن آخر»: operations open the handover of the locked
+  // picked-up order to a second captain, as an offer (dispatch's, with its
+  // pay and end) or an assignment. The order stays its captain's until the
+  // receipt; the event is about the second captain and reaches the first.
+  async startHandover(
+    tx: Tx,
+    order: DispatchOrder,
+    start: {
+      toCaptainId: string;
+      note: string;
+      adminId: string;
+      offer: {
+        id: string;
+        pay: { amount: bigint; currency: string } | null;
+        expiresAt: Date;
+      } | null;
+    },
+    now: Date,
+  ): Promise<void> {
+    if (order.captainId === null) throw new Error(`order ${order.id} has no captain`);
+    await tx.insert(handovers).values({
+      orderId: order.id,
+      orderPlacedAt: order.placedAt,
+      cityId: order.cityId,
+      fromCaptainId: order.captainId,
+      toCaptainId: start.toCaptainId,
+      offerId: start.offer?.id ?? null,
+      note: start.note,
+      adminId: start.adminId,
+      openedAt: now,
+      assignedAt: start.offer === null ? now : null,
+    });
+    await this.handoverEvent(
+      tx,
+      order,
+      start.offer === null ? 'order.handover_assigned' : 'order.handover_offered',
+      start.toCaptainId,
+      { type: 'admin', id: start.adminId },
+      { reason: start.note, publicReason: null },
+      now,
+      start.offer === null
+        ? {}
+        : { offerPay: start.offer.pay, offerExpiresAt: start.offer.expiresAt },
+    );
+  }
+
+  // CA §8.3: the second captain accepted the handover offer; they are busy
+  // with the order from now on.
+  async assignHandover(
+    tx: Tx,
+    order: DispatchOrder,
+    handover: OpenHandover,
+    actor: AssignmentActor,
+    now: Date,
+  ): Promise<DispatchOrder> {
+    await tx.update(handovers).set({ assignedAt: now }).where(eq(handovers.id, handover.id));
+    return this.handoverEvent(
+      tx,
+      order,
+      'order.handover_assigned',
+      handover.toCaptainId,
+      actor,
+      { reason: null },
+      now,
+    );
+  }
+
+  // The handover closed without the receipt: its offer declined, expired or
+  // withdrawn, or the order ended first.
+  async closeHandover(
+    tx: Tx,
+    order: DispatchOrder,
+    handover: OpenHandover,
+    reason: HandoverCloseReason,
+    actor: AssignmentActor,
+    now: Date,
+  ): Promise<DispatchOrder> {
+    await tx
+      .update(handovers)
+      .set({ closedAt: now, closeReason: reason })
+      .where(eq(handovers.id, handover.id));
+    return this.handoverEvent(
+      tx,
+      order,
+      'order.handover_closed',
+      handover.toCaptainId,
+      actor,
+      { reason },
+      now,
+    );
+  }
+
+  private async handoverEvent(
+    tx: Tx,
+    order: DispatchOrder,
+    type: 'order.handover_offered' | 'order.handover_assigned' | 'order.handover_closed',
+    toCaptainId: string,
+    actor: AssignmentActor,
+    reason: { reason: string | null; publicReason?: string | null },
+    now: Date,
+    offer: {
+      offerPay?: { amount: bigint; currency: string } | null;
+      offerExpiresAt?: Date;
+    } = {},
+  ): Promise<DispatchOrder> {
+    const version = order.version + 1;
+    await tx
+      .update(orders)
+      .set({ version })
+      .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
+    await recordTransition(tx, this.jobs, order, {
+      type,
+      from: order.status,
+      to: order.status,
+      version,
+      actor,
+      ...reason,
+      at: now,
+      captainId: toCaptainId,
+      ...(order.captainId === null ? {} : { otherCaptainId: order.captainId }),
+      ...offer,
+    });
+    return { ...order, version };
   }
 
   // The order without a lock, by its id alone; null when unknown.
@@ -213,18 +384,79 @@ export class OrderAssignments implements OnModuleInit {
   }
 }
 
-// Which of these captains have an active order now.
+// AP §9.3.2, CA §9.10.1 (slice 2.12b): the order's open handover, if any.
+export async function openHandoverOf(
+  executor: Executor,
+  order: { id: string; placedAt: Date },
+): Promise<OpenHandover | null> {
+  const [row] = await executor
+    .select({
+      id: handovers.id,
+      fromCaptainId: handovers.fromCaptainId,
+      toCaptainId: handovers.toCaptainId,
+      offerId: handovers.offerId,
+      assignedAt: handovers.assignedAt,
+    })
+    .from(handovers)
+    .where(
+      and(
+        eq(handovers.orderId, order.id),
+        eq(handovers.orderPlacedAt, order.placedAt),
+        isNull(handovers.receivedAt),
+        isNull(handovers.closedAt),
+      ),
+    );
+  return row ?? null;
+}
+
+// The handover the order was received by, if any: its second captain
+// delivers it, without the first's waiting, and paid nothing at the pickup.
+export async function receivedHandoverOf(
+  executor: Executor,
+  order: { id: string; placedAt: Date },
+): Promise<{ fromCaptainId: string; toCaptainId: string } | null> {
+  const [row] = await executor
+    .select({ fromCaptainId: handovers.fromCaptainId, toCaptainId: handovers.toCaptainId })
+    .from(handovers)
+    .where(
+      and(
+        eq(handovers.orderId, order.id),
+        eq(handovers.orderPlacedAt, order.placedAt),
+        isNotNull(handovers.receivedAt),
+      ),
+    )
+    .orderBy(desc(handovers.receivedAt))
+    .limit(1);
+  return row ?? null;
+}
+
+// Which of these captains have an active order now: as its captain, or as
+// the second captain of an assigned handover not yet received (slice 2.12b;
+// a handover closes when its order ends).
 export async function captainsWithActiveOrders(
   executor: Executor,
   captainIds: string[],
 ): Promise<Set<string>> {
   if (captainIds.length === 0) return new Set();
-  const rows = await executor
-    .select({ captainId: orders.captainId })
-    .from(orders)
-    .where(and(inArray(orders.captainId, captainIds), inArray(orders.status, CAPTAIN_ACTIVE)))
-    .groupBy(orders.captainId);
-  return new Set(rows.map((row) => row.captainId!));
+  const [rows, receiving] = await Promise.all([
+    executor
+      .select({ captainId: orders.captainId })
+      .from(orders)
+      .where(and(inArray(orders.captainId, captainIds), inArray(orders.status, CAPTAIN_ACTIVE)))
+      .groupBy(orders.captainId),
+    executor
+      .select({ captainId: handovers.toCaptainId })
+      .from(handovers)
+      .where(
+        and(
+          inArray(handovers.toCaptainId, captainIds),
+          isNotNull(handovers.assignedAt),
+          isNull(handovers.receivedAt),
+          isNull(handovers.closedAt),
+        ),
+      ),
+  ]);
+  return new Set([...rows.map((row) => row.captainId!), ...receiving.map((row) => row.captainId)]);
 }
 
 async function selectOrders(

@@ -42,6 +42,18 @@ class AdminAssignDto extends createZodDto(
   z.object({ captainId: z.uuid().describe('An eligible captain from the assignment picker.') }),
 ) {}
 
+class AdminHandoverDto extends createZodDto(
+  z.object({
+    captainId: z.uuid().describe('An eligible captain from the picker, measured from the first.'),
+    reason: z
+      .string()
+      .trim()
+      .min(1)
+      .max(500)
+      .describe('Operations’ internal note (AP §9.3.2: required; never shown to the apps).'),
+  }),
+) {}
+
 class AdminDispatchStateDto extends createZodDto(
   z.object({
     order: z.object({
@@ -74,7 +86,12 @@ class AdminDispatchStateDto extends createZodDto(
         .describe('AP §8.2; searching is «بحاجة لتعيين» in manual mode.'),
       captainId: z.uuid().nullable().describe('From assignment.'),
       offer: z
-        .object({ id: z.uuid(), captainId: z.uuid(), expiresAt: z.iso.datetime() })
+        .object({
+          id: z.uuid(),
+          captainId: z.uuid(),
+          expiresAt: z.iso.datetime(),
+          handover: z.boolean().describe('«استلام من كابتن» (AP §9.3.2, CA §9.10.1).'),
+        })
         .nullable()
         .describe('The open offer, while the captain decides (CA §8.4).'),
     }),
@@ -107,9 +124,9 @@ class AdminPickerDto extends createZodDto(
           distanceMetres: z
             .int()
             .describe(
-              'To the restaurant: by road within the search radius, else the straight line.',
+              'To the restaurant (after the pickup, to the order’s captain at their latest point): by road within the search radius, else the straight line.',
             ),
-          etaMin: z.int().nullable().describe('To the restaurant; null beyond the search radius.'),
+          etaMin: z.int().nullable().describe('To the same point; null beyond the search radius.'),
           ordersToday: z.int(),
           custody: z.object({ usage: money, limit: money }).describe('Cash-limit usage.'),
           acceptanceRate: z
@@ -156,7 +173,9 @@ const offer = z
         tripMetres: z.int().describe('Restaurant to customer.'),
       })
       .describe("Never the customer's name, phone or exact address before acceptance (C2)."),
-    pickupPayment: money.describe('«تدفع للمطعم» (D26: the items value).'),
+    pickupPayment: money.describe(
+      '«تدفع للمطعم» (D26: the items value); 0 on a handover, «لا تدفع شيئاً».',
+    ),
     collect: money.describe('«تقبض من الزبون».'),
     preparation: z.object({
       ready: z.boolean().describe('«جاهز».'),
@@ -165,6 +184,22 @@ const offer = z
         .nullable()
         .describe('«قيد التحضير — جاهز بعد {د} د تقريباً» counts to it while not ready.'),
     }),
+    handover: z
+      .object({
+        fromCaptainName: z.string(),
+        location: z
+          .object({
+            latitude: z.number(),
+            longitude: z.number(),
+            recordedAt: z.iso.datetime().describe('When the first captain’s app recorded it.'),
+          })
+          .nullable()
+          .describe('The first captain’s latest point; null without one.'),
+      })
+      .nullable()
+      .describe(
+        '«استلام من كابتن» (CA §9.10.1): the order is taken from this captain; restaurant.distanceMetres is then to them. Null for an ordinary offer.',
+      ),
   })
   .describe('An offer (CA §8.2).');
 
@@ -210,6 +245,13 @@ function offerBody(value: CaptainOffer) {
       ready: value.preparation.ready,
       readyAt: value.preparation.readyAt?.toISOString() ?? null,
     },
+    handover: value.handover && {
+      fromCaptainName: value.handover.fromCaptainName,
+      location: value.handover.location && {
+        ...value.handover.location,
+        recordedAt: value.handover.location.recordedAt.toISOString(),
+      },
+    },
   };
 }
 
@@ -241,7 +283,7 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
   }
 }
 
-// AP §9.3.2 «تعيين كابتن», for OWN and OPS.
+// AP §9.3.2 «تعيين كابتن» and «تسليم لكابتن آخر», for OWN and OPS.
 @AdminController('orders')
 export class AdminDispatchController {
   constructor(private readonly dispatch: DispatchService) {}
@@ -278,6 +320,39 @@ export class AdminDispatchController {
           {
             orderId: params.orderId,
             captainId: body.captainId,
+            admin: { accountId: session.accountId, roles: session.roles },
+            context: requestContext(request),
+            idempotencyKey,
+          },
+          new Date(),
+        ),
+      ),
+    );
+  }
+
+  // AP §9.3.2 «تسليم لكابتن آخر» (slice 2.12b): a picked-up or arrived
+  // order offered, or assigned, to a second captain who takes it from the
+  // first. Refused 409 order_not_handoverable, captain_not_eligible with its
+  // reasons, captain_has_offer.
+  @Post(':orderId/handover')
+  @RequirePermission('operations.manage')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminDispatchStateDto })
+  handover(
+    @Param() params: AdminAssignParamsDto,
+    @Body() body: AdminHandoverDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () =>
+      stateBody(
+        await this.dispatch.handover(
+          {
+            orderId: params.orderId,
+            captainId: body.captainId,
+            reason: body.reason,
             admin: { accountId: session.accountId, roles: session.roles },
             context: requestContext(request),
             idempotencyKey,

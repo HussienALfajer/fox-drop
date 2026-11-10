@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   bigint,
+  boolean,
   check,
   index,
   integer,
@@ -55,6 +56,10 @@ export const offers = dispatch.table(
     pickupMetres: integer('pickup_metres').notNull(),
     pay: bigint('pay', { mode: 'bigint' }),
     payCurrency: text('pay_currency'),
+    // AP §9.3.2 «تسليم لكابتن آخر» (slice 2.12b): the offer of a picked-up
+    // order from its captain, «استلام من كابتن»; pickup_metres is then to
+    // the first captain.
+    handover: boolean('handover').notNull().default(false),
   },
   (table) => [
     // CA §8.1: one offer at a time per captain, and per order.

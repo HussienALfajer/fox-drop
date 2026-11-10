@@ -18,8 +18,8 @@ part 'admin_picker_dto_output_captains_inner.g.dart';
 /// * [vehicle]
 /// * [eligible]
 /// * [reasons] - Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed.
-/// * [distanceMetres] - To the restaurant: by road within the search radius, else the straight line.
-/// * [etaMin] - To the restaurant; null beyond the search radius.
+/// * [distanceMetres] - To the restaurant (after the pickup, to the order’s captain at their latest point): by road within the search radius, else the straight line.
+/// * [etaMin] - To the same point; null beyond the search radius.
 /// * [ordersToday]
 /// * [custody]
 /// * [acceptanceRate] - A percentage over the last offers answered (CA §11.1); null without one.
@@ -48,11 +48,11 @@ abstract class AdminPickerDtoOutputCaptainsInner
   BuiltList<AdminPickerDtoOutputCaptainsInnerReasonsEnum> get reasons;
   // enum reasonsEnum {  busy,  cash_limit,  closed_due,  simulated_location,  out_of_range,  vehicle_not_allowed,  };
 
-  /// To the restaurant: by road within the search radius, else the straight line.
+  /// To the restaurant (after the pickup, to the order’s captain at their latest point): by road within the search radius, else the straight line.
   @BuiltValueField(wireName: r'distanceMetres')
   int get distanceMetres;
 
-  /// To the restaurant; null beyond the search radius.
+  /// To the same point; null beyond the search radius.
   @BuiltValueField(wireName: r'etaMin')
   int? get etaMin;
 

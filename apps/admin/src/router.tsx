@@ -9,6 +9,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { OPERATIONS_MANAGE } from './assign-captain.js';
 import { AssignCaptainPage } from './assign-captain-page.js';
+import { OrderHandoverPage } from './order-handover-page.js';
 import { SETTINGS_READ } from './app-settings.js';
 import { AppSettingsPage } from './app-settings-page.js';
 import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
@@ -148,6 +149,16 @@ const assignRoute = createRoute({
   component: AssignCaptainPage,
 });
 
+// AP §9.3.2 «تسليم لكابتن آخر» (slice 2.12b): the note and the picker.
+const handoverRoute = createRoute({
+  getParentRoute: () => orderRoute,
+  path: 'handover',
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, OPERATIONS_MANAGE)) throw redirect({ to: '/' });
+  },
+  component: OrderHandoverPage,
+});
+
 // AP §9.1.3: the alerts list. Any signed-in user may open it; the server
 // answers the alerts the session's roles receive.
 const alertsRoute = createRoute({
@@ -221,7 +232,7 @@ const routeTree = rootRoute.addChildren([
     imagesRoute,
     restaurantStatusRoute,
     alertsRoute,
-    ordersRoute.addChildren([orderRoute.addChildren([assignRoute])]),
+    ordersRoute.addChildren([orderRoute.addChildren([assignRoute, handoverRoute])]),
   ]),
 ]);
 

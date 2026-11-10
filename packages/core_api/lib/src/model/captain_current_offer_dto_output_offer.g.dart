@@ -126,6 +126,8 @@ class _$CaptainCurrentOfferDtoOutputOffer
   final CaptainCurrentOfferDtoOutputOfferCollect collect;
   @override
   final CaptainCurrentOfferDtoOutputOfferPreparation preparation;
+  @override
+  final CaptainCurrentOfferDtoOutputOfferHandover? handover;
 
   factory _$CaptainCurrentOfferDtoOutputOffer([
     void Function(CaptainCurrentOfferDtoOutputOfferBuilder)? updates,
@@ -145,6 +147,7 @@ class _$CaptainCurrentOfferDtoOutputOffer
     required this.pickupPayment,
     required this.collect,
     required this.preparation,
+    this.handover,
   }) : super._();
   @override
   CaptainCurrentOfferDtoOutputOffer rebuild(
@@ -171,7 +174,8 @@ class _$CaptainCurrentOfferDtoOutputOffer
         customer == other.customer &&
         pickupPayment == other.pickupPayment &&
         collect == other.collect &&
-        preparation == other.preparation;
+        preparation == other.preparation &&
+        handover == other.handover;
   }
 
   @override
@@ -190,6 +194,7 @@ class _$CaptainCurrentOfferDtoOutputOffer
     _$hash = $jc(_$hash, pickupPayment.hashCode);
     _$hash = $jc(_$hash, collect.hashCode);
     _$hash = $jc(_$hash, preparation.hashCode);
+    _$hash = $jc(_$hash, handover.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -209,7 +214,8 @@ class _$CaptainCurrentOfferDtoOutputOffer
           ..add('customer', customer)
           ..add('pickupPayment', pickupPayment)
           ..add('collect', collect)
-          ..add('preparation', preparation))
+          ..add('preparation', preparation)
+          ..add('handover', handover))
         .toString();
   }
 }
@@ -294,6 +300,12 @@ class CaptainCurrentOfferDtoOutputOfferBuilder
     CaptainCurrentOfferDtoOutputOfferPreparationBuilder? preparation,
   ) => _$this._preparation = preparation;
 
+  CaptainCurrentOfferDtoOutputOfferHandoverBuilder? _handover;
+  CaptainCurrentOfferDtoOutputOfferHandoverBuilder get handover =>
+      _$this._handover ??= CaptainCurrentOfferDtoOutputOfferHandoverBuilder();
+  set handover(CaptainCurrentOfferDtoOutputOfferHandoverBuilder? handover) =>
+      _$this._handover = handover;
+
   CaptainCurrentOfferDtoOutputOfferBuilder() {
     CaptainCurrentOfferDtoOutputOffer._defaults(this);
   }
@@ -314,6 +326,7 @@ class CaptainCurrentOfferDtoOutputOfferBuilder
       _pickupPayment = $v.pickupPayment.toBuilder();
       _collect = $v.collect.toBuilder();
       _preparation = $v.preparation.toBuilder();
+      _handover = $v.handover?.toBuilder();
       _$v = null;
     }
     return this;
@@ -381,6 +394,7 @@ class CaptainCurrentOfferDtoOutputOfferBuilder
             pickupPayment: pickupPayment.build(),
             collect: collect.build(),
             preparation: preparation.build(),
+            handover: _handover?.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -397,6 +411,8 @@ class CaptainCurrentOfferDtoOutputOfferBuilder
         collect.build();
         _$failedField = 'preparation';
         preparation.build();
+        _$failedField = 'handover';
+        _handover?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'CaptainCurrentOfferDtoOutputOffer',

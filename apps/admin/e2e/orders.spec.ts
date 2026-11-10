@@ -50,6 +50,7 @@ const detail = {
   cancelChoices: null,
   reassignChoices: null,
   reassignments: [],
+  handover: { allowed: false, handovers: [] },
   outcome: null,
   outcomeChoices: null,
   itemReport: null,
@@ -588,6 +589,97 @@ test('shows a cancellation by operations in the detail and its timeline', async 
   await expect(cancelled).toContainText('ظرف طارئ');
   await expect(cancelled).toContainText('انقطاع الكهرباء');
   await expect(panel.getByRole('form', { name: 'إلغاء الطلب' })).toHaveCount(0);
+});
+
+// AP §9.3.2 «تسليم لكابتن آخر» (slice 2.12b): the note first, then a captain
+// of the picker measured from the order's captain; the detail lists the
+// handovers.
+test('hands a picked-up order to a second captain with a note', async ({ page }) => {
+  await fakeSession(page, ['operations.read', 'operations.manage']);
+  await fakeOperations(page);
+  const first = '01900000-0000-7000-8000-0000000000a1';
+  const second = '01900000-0000-7000-8000-0000000000a2';
+  await page.route(`**/v1/admin/orders/${orderId}`, (route) =>
+    route.fulfill({
+      json: {
+        order: {
+          ...detail,
+          status: 'picked_up',
+          captainTrack: 'picked_up',
+          handover: {
+            allowed: true,
+            handovers: [
+              {
+                openedAt: later(-10),
+                fromCaptainId: first,
+                fromCaptainName: 'سامر',
+                toCaptainId: second,
+                toCaptainName: 'رامي',
+                offered: true,
+                assignedAt: null,
+                receivedAt: null,
+                closedAt: later(-9),
+                closeReason: 'declined',
+                note: 'حادث بسيط',
+                adminId: first,
+              },
+            ],
+          },
+        },
+      },
+    }),
+  );
+  await page.route(`**/v1/admin/orders/${orderId}/captains`, (route) =>
+    route.fulfill({
+      json: {
+        captains: [
+          {
+            captainId: second,
+            name: 'باسل',
+            vehicle: 'motorbike',
+            eligible: true,
+            reasons: [],
+            distanceMetres: 450,
+            etaMin: 2,
+            ordersToday: 3,
+            custody: {
+              usage: { amount: '0', currency: 'USD' },
+              limit: { amount: '30000', currency: 'USD' },
+            },
+            acceptanceRate: null,
+          },
+        ],
+      },
+    }),
+  );
+  let sent: unknown;
+  await page.route(`**/v1/admin/orders/${orderId}/handover`, (route) => {
+    sent = route.request().postDataJSON();
+    return route.fulfill({
+      json: {
+        order: {
+          id: orderId,
+          number: '10001',
+          status: 'picked_up',
+          version: 9,
+          captainTrack: 'picked_up',
+          captainId: first,
+          offer: { id: second, captainId: second, expiresAt: later(1), handover: true },
+        },
+      },
+    });
+  });
+  await page.goto(`/orders/${orderId}`);
+
+  await expect(page.getByText(/من سامر إلى رامي — رفض الكابتن العرض\. حادث بسيط/)).toBeVisible();
+  await page.getByRole('link', { name: 'تسليم لكابتن آخر' }).click();
+  await expect(page.getByText('450 مترًا عن الكابتن الحالي، 2 دقيقة')).toBeVisible();
+  const submit = page.getByRole('button', { name: 'تسليم إلى باسل' });
+  await expect(submit).toBeDisabled();
+  await page.getByRole('textbox', { name: 'سبب التسليم (للعمليات فقط)' }).fill('تعطلت الدراجة');
+  await submit.click();
+  await expect.poll(() => sent).toEqual({ captainId: second, reason: 'تعطلت الدراجة' });
+  await expect(page.getByRole('status')).toContainText('أُرسل العرض «استلام من كابتن»');
 });
 
 // AP §9.3.2 «سحب وإعادة تعيين» (slice 2.12a): the reason prefills its fault,

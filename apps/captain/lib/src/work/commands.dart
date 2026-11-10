@@ -64,6 +64,14 @@ class StaleLocation extends Notice {
   const StaleLocation();
 }
 
+/// CA §9.10.1 (slice 2.12b): «استلمت الطلب من الكابتن {الاسم}» beyond
+/// captain.customer_radius_m of the first captain, or with no position of
+/// theirs (`too_far_from_captain`).
+class TooFarFromCaptain extends Notice {
+  const TooFarFromCaptain(this.distanceMetres);
+  final int? distanceMetres;
+}
+
 /// The server sees the captain offline.
 class NotOnline extends Notice {
   const NotOnline();
@@ -380,6 +388,25 @@ class Commands extends Notifier<Set<String>> {
     (_) => _api.captainOrdersAcknowledgeWithdrawal(orderId: orderId),
   )).$2;
 
+  /// «استلمت الطلب من الكابتن {الاسم}» (CA §9.10.1, §15): the second captain
+  /// near the first; the order becomes theirs, picked up.
+  Future<Notice?> receiveHandover(String orderId) => _withFix(
+    orderId,
+    'receive-handover',
+    (key, location) => _api.captainOrdersReceiveHandover(
+      orderId: orderId,
+      idempotencyKey: key,
+      captainArriveDto: CaptainArriveDto((b) => b..location.replace(location)),
+    ),
+  );
+
+  /// «حسناً» on the handover card (CA §9.10.1): no key and no location.
+  Future<Notice?> acknowledgeHandover(String orderId) async => (await _send(
+    orderId,
+    'acknowledge-handover',
+    (_) => _api.captainOrdersAcknowledgeHandover(orderId: orderId),
+  )).$2;
+
   /// «حسناً» on an order operations ended with an outcome (CA §9.12): no key
   /// and no location, as the cancellation's.
   Future<Notice?> acknowledgeOutcome(String orderId) async => (await _send(
@@ -512,6 +539,9 @@ Notice refusal(Object? body) {
         fromCustomer: error == 'too_far_from_customer',
         distanceMetres: distance is num ? distance.round() : null,
       );
+    case 'too_far_from_captain':
+      final distance = (body as Map)['distanceMetres'];
+      return TooFarFromCaptain(distance is num ? distance.round() : null);
     case 'weak_location':
       return const WeakLocation();
     case 'simulated_location':

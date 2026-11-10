@@ -74,6 +74,7 @@ Serializers _$serializers =
           ..add(AdminFaqDtoOutput.serializer)
           ..add(AdminFaqsDtoOutput.serializer)
           ..add(AdminFaqsDtoOutputCustomerInner.serializer)
+          ..add(AdminHandoverDto.serializer)
           ..add(AdminImageSetDtoOutput.serializer)
           ..add(AdminNewUploadDto.serializer)
           ..add(AdminNewUploadDtoContentTypeEnum.serializer)
@@ -137,6 +138,12 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderEditsInnerItemsValue.serializer)
           ..add(AdminOrderDtoOutputOrderEditsInnerResponsibleEnum.serializer)
           ..add(AdminOrderDtoOutputOrderEditsInnerStatusEnum.serializer)
+          ..add(AdminOrderDtoOutputOrderHandover.serializer)
+          ..add(AdminOrderDtoOutputOrderHandoverHandoversInner.serializer)
+          ..add(
+            AdminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum
+                .serializer,
+          )
           ..add(AdminOrderDtoOutputOrderItemReport.serializer)
           ..add(AdminOrderDtoOutputOrderItemReportItemsInner.serializer)
           ..add(
@@ -295,6 +302,7 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputEndedOutcomeEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputEndedPay.serializer)
           ..add(CaptainActiveOrderDtoOutputEndedStatusEnum.serializer)
+          ..add(CaptainActiveOrderDtoOutputHandedOver.serializer)
           ..add(CaptainActiveOrderDtoOutputOrder.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderArrival.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderCaptainTrackEnum.serializer)
@@ -303,6 +311,12 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputOrderCustomerAddress.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderCustomerArrival.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderCustomerLocation.serializer)
+          ..add(CaptainActiveOrderDtoOutputOrderHandover.serializer)
+          ..add(CaptainActiveOrderDtoOutputOrderHandoverCaptain.serializer)
+          ..add(
+            CaptainActiveOrderDtoOutputOrderHandoverCaptainLocation.serializer,
+          )
+          ..add(CaptainActiveOrderDtoOutputOrderHandoverRoleEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderLinesInner.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderOutcomeToCollect.serializer)
           ..add(
@@ -350,6 +364,8 @@ Serializers _$serializers =
           ..add(CaptainCurrentOfferDtoOutputOffer.serializer)
           ..add(CaptainCurrentOfferDtoOutputOfferCollect.serializer)
           ..add(CaptainCurrentOfferDtoOutputOfferCustomer.serializer)
+          ..add(CaptainCurrentOfferDtoOutputOfferHandover.serializer)
+          ..add(CaptainCurrentOfferDtoOutputOfferHandoverLocation.serializer)
           ..add(CaptainCurrentOfferDtoOutputOfferPickupPayment.serializer)
           ..add(CaptainCurrentOfferDtoOutputOfferPreparation.serializer)
           ..add(CaptainCurrentOfferDtoOutputOfferRestaurant.serializer)
@@ -901,6 +917,12 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminOrderDtoOutputOrderEditChoicesItemsInnerOptionGroupsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderDtoOutputOrderHandoverHandoversInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderHandoverHandoversInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

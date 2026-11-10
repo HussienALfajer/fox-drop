@@ -8,7 +8,7 @@ import 'package:built_value/serializer.dart';
 
 part 'captain_current_offer_dto_output_offer_pickup_payment.g.dart';
 
-/// «تدفع للمطعم» (D26: the items value).
+/// «تدفع للمطعم» (D26: the items value); 0 on a handover, «لا تدفع شيئاً».
 ///
 /// Properties:
 /// * [amount] - Minor units of the currency, as a string.

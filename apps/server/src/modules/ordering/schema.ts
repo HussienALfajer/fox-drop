@@ -1007,3 +1007,71 @@ export const reassignments = ordering.table(
     ),
   ],
 );
+
+// AP §9.3.2 «تسليم لكابتن آخر», CA §9.10.1 (slice 2.12b): why an open
+// handover closed without the receipt: the offer was declined, expired or
+// withdrawn (the second captain went offline), or the order ended first
+// («تحديد النتيجة», «تسجيل التسليم»), or operations replaced the second
+// captain with another handover (owner decision 2026-11-11).
+export const handoverCloseReasons = [
+  'declined',
+  'expired',
+  'withdrawn',
+  'ended',
+  'replaced',
+] as const;
+
+// A picked-up order handed from its captain to a second one (AP §9.3.2,
+// CA §9.10.1): opened by operations as a manual offer (offer_id) or an
+// assignment, assigned once the second captain has it, received when they
+// confirm near the first captain. One open per order; the first captain's
+// card shows until from_seen_at. The application role may update only the
+// steps' columns.
+export const handovers = ordering.table(
+  'handovers',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    fromCaptainId: uuid('from_captain_id').notNull(),
+    toCaptainId: uuid('to_captain_id').notNull(),
+    // dispatch's offer, null for a direct assignment.
+    offerId: uuid('offer_id'),
+    // Operations' internal note (AP §9.3.2: a reason is required).
+    note: text('note').notNull(),
+    adminId: uuid('admin_id').notNull(),
+    openedAt: timestamp('opened_at', { withTimezone: true }).notNull(),
+    assignedAt: timestamp('assigned_at', { withTimezone: true }),
+    receivedAt: timestamp('received_at', { withTimezone: true }),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    closeReason: text('close_reason', { enum: handoverCloseReasons }),
+    fromSeenAt: timestamp('from_seen_at', { withTimezone: true }),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId, table.orderPlacedAt],
+      foreignColumns: [orders.id, orders.placedAt],
+    }),
+    uniqueIndex('handovers_one_open_per_order')
+      .on(table.orderId)
+      .where(sql`${table.receivedAt} IS NULL AND ${table.closedAt} IS NULL`),
+    index('handovers_order').on(table.orderId, table.orderPlacedAt),
+    index('handovers_to_captain').on(table.toCaptainId, table.openedAt),
+    index('handovers_from_captain').on(table.fromCaptainId, table.openedAt),
+    check('handovers_two_captains', sql`${table.fromCaptainId} <> ${table.toCaptainId}`),
+    check(
+      'handovers_close',
+      sql`(${table.closedAt} IS NULL) = (${table.closeReason} IS NULL)
+        AND (${table.closeReason} IS NULL OR ${table.closeReason} IN ('declined', 'expired', 'withdrawn', 'ended', 'replaced'))`,
+    ),
+    check(
+      'handovers_steps',
+      sql`(${table.receivedAt} IS NULL OR (${table.assignedAt} IS NOT NULL AND ${table.closedAt} IS NULL))
+        AND (${table.offerId} IS NOT NULL OR ${table.assignedAt} IS NOT NULL)
+        AND (${table.fromSeenAt} IS NULL OR ${table.receivedAt} IS NOT NULL)`,
+    ),
+  ],
+);

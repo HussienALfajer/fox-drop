@@ -252,7 +252,9 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
         ref.read(answeredProvider),
       )) {
         // The cancellation and withdrawal cards say it, with their sound.
-        if (alert is OrderCancelled || alert is OrderWithdrawn) {
+        if (alert is OrderCancelled ||
+            alert is OrderWithdrawn ||
+            alert is OrderHandedOver) {
           _ringer.cancellation();
           continue;
         }
@@ -305,6 +307,8 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
             Positioned.fill(child: _WithdrawnCard(withdrawn: withdrawn)),
           if (work?.ended case final ended?)
             Positioned.fill(child: _EndedCard(ended: ended)),
+          if (work?.handedOver case final handedOver?)
+            Positioned.fill(child: _HandedOverCard(handedOver: handedOver)),
           if (offer != null) Positioned.fill(child: OfferSheet(offer: offer)),
         ],
       ),
@@ -420,6 +424,47 @@ class _WithdrawnCard extends ConsumerWidget {
                     final notice = await ref
                         .read(commandsProvider.notifier)
                         .acknowledgeWithdrawal(withdrawn.orderId);
+                    if (notice != null) {
+                      messenger.showSnackBar(
+                        SnackBar(content: Text(l10n.noticeText(notice))),
+                      );
+                    }
+                  },
+            child: Text(sending ? l10n.captainSending : l10n.captainOk),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// CA §9.10.1 (slice 2.12b): the order the captain handed to another; they
+/// are offline now (K17). Until «حسناً»; the availability shows under it.
+class _HandedOverCard extends ConsumerWidget {
+  const _HandedOverCard({required this.handedOver});
+
+  final HandedOver handedOver;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final sending = ref.watch(commandsProvider).contains(handedOver.orderId);
+    return Material(
+      child: ListView(
+        padding: const EdgeInsetsDirectional.all(16),
+        children: [
+          Text(
+            l10n.captainHandedOver(handedOver.toCaptainName),
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          FilledButton(
+            onPressed: sending
+                ? null
+                : () async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    final notice = await ref
+                        .read(commandsProvider.notifier)
+                        .acknowledgeHandover(handedOver.orderId);
                     if (notice != null) {
                       messenger.showSnackBar(
                         SnackBar(content: Text(l10n.noticeText(notice))),

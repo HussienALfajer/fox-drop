@@ -57,6 +57,7 @@ import 'package:core_api/src/model/admin_faq_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_faq_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output_customer_inner.dart';
+import 'package:core_api/src/model/admin_handover_dto.dart';
 import 'package:core_api/src/model/admin_image_set_dto_output.dart';
 import 'package:core_api/src/model/admin_new_upload_dto.dart';
 import 'package:core_api/src/model/admin_notification_resent_dto_output.dart';
@@ -90,6 +91,8 @@ import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices_ite
 import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices_items_inner_option_groups_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_edits_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_edits_inner_items_value.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_handover.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_handover_handovers_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_item_report.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_item_report_items_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
@@ -180,6 +183,7 @@ import 'package:core_api/src/model/captain_active_order_dto_output_cancelled.dar
 import 'package:core_api/src/model/captain_active_order_dto_output_ended.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_ended_charge.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_ended_pay.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_handed_over.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
@@ -187,6 +191,9 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_custome
 import 'package:core_api/src/model/captain_active_order_dto_output_order_customer_address.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_customer_arrival.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_customer_location.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_handover.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_handover_captain.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_handover_captain_location.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_outcome_to_collect.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_outcome_to_collect_amount.dart';
@@ -217,6 +224,8 @@ import 'package:core_api/src/model/captain_current_offer_dto_output.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_collect.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_customer.dart';
+import 'package:core_api/src/model/captain_current_offer_dto_output_offer_handover.dart';
+import 'package:core_api/src/model/captain_current_offer_dto_output_offer_handover_location.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_pickup_payment.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_preparation.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_restaurant.dart';
@@ -480,6 +489,7 @@ part 'serializers.g.dart';
   AdminFaqDtoOutput,
   AdminFaqsDtoOutput,
   AdminFaqsDtoOutputCustomerInner,
+  AdminHandoverDto,
   AdminImageSetDtoOutput,
   AdminNewUploadDto,
   AdminNotificationResentDtoOutput,
@@ -513,6 +523,8 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderEditChoicesItemsInnerOptionGroupsInner,
   AdminOrderDtoOutputOrderEditsInner,
   AdminOrderDtoOutputOrderEditsInnerItemsValue,
+  AdminOrderDtoOutputOrderHandover,
+  AdminOrderDtoOutputOrderHandoverHandoversInner,
   AdminOrderDtoOutputOrderItemReport,
   AdminOrderDtoOutputOrderItemReportItemsInner,
   AdminOrderDtoOutputOrderLinesInner,
@@ -603,6 +615,7 @@ part 'serializers.g.dart';
   CaptainActiveOrderDtoOutputEnded,
   CaptainActiveOrderDtoOutputEndedCharge,
   CaptainActiveOrderDtoOutputEndedPay,
+  CaptainActiveOrderDtoOutputHandedOver,
   CaptainActiveOrderDtoOutputOrder,
   CaptainActiveOrderDtoOutputOrderArrival,
   CaptainActiveOrderDtoOutputOrderCollect,
@@ -610,6 +623,9 @@ part 'serializers.g.dart';
   CaptainActiveOrderDtoOutputOrderCustomerAddress,
   CaptainActiveOrderDtoOutputOrderCustomerArrival,
   CaptainActiveOrderDtoOutputOrderCustomerLocation,
+  CaptainActiveOrderDtoOutputOrderHandover,
+  CaptainActiveOrderDtoOutputOrderHandoverCaptain,
+  CaptainActiveOrderDtoOutputOrderHandoverCaptainLocation,
   CaptainActiveOrderDtoOutputOrderLinesInner,
   CaptainActiveOrderDtoOutputOrderOutcomeToCollect,
   CaptainActiveOrderDtoOutputOrderOutcomeToCollectAmount,
@@ -640,6 +656,8 @@ part 'serializers.g.dart';
   CaptainCurrentOfferDtoOutputOffer,
   CaptainCurrentOfferDtoOutputOfferCollect,
   CaptainCurrentOfferDtoOutputOfferCustomer,
+  CaptainCurrentOfferDtoOutputOfferHandover,
+  CaptainCurrentOfferDtoOutputOfferHandoverLocation,
   CaptainCurrentOfferDtoOutputOfferPickupPayment,
   CaptainCurrentOfferDtoOutputOfferPreparation,
   CaptainCurrentOfferDtoOutputOfferRestaurant,
@@ -921,6 +939,12 @@ Serializers serializers =
               FullType(CaptainAvailabilityDtoOutputCustodyLimit),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminOrderDtoOutputOrderHandoverHandoversInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderHandoverHandoversInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

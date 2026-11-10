@@ -13,11 +13,13 @@ import { RecordOutcomePayment } from './order-outcome-payment-page.js';
 import { canRecordOutcomePayment } from './order-outcome-payment.js';
 import { canCancel } from './order-cancel.js';
 import { ReassignOrder } from './order-reassign-page.js';
+import { canHandOver, handoverState } from './order-handover.js';
 import { canReassign } from './order-reassign.js';
 import {
   actorKey,
   cancelReasonKeys,
   cashKeys,
+  handoverCloseKeys,
   eventKey,
   eventReason,
   orderQuery,
@@ -293,7 +295,48 @@ export function OrderDetailPage() {
           </Link>
         </p>
       )}
+      {canHandOver(session, detail) && (
+        <p>
+          <Link to="/orders/$orderId/handover" params={{ orderId }} search>
+            {t('handover.title')}
+          </Link>
+          {detail.handover.handovers.some(
+            (each) => each.receivedAt === null && each.closedAt === null,
+          ) && <span> {t('handover.replaces')}</span>}
+        </p>
+      )}
       <Outlet />
+      {detail.handover.handovers.length > 0 && (
+        <section>
+          <h4>{t('order.handovers.title')}</h4>
+          <ul>
+            {detail.handover.handovers.map((each) => {
+              const state = handoverState(each);
+              return (
+                <li key={each.openedAt}>
+                  {[
+                    t('order.handovers.line', {
+                      time: time(each.openedAt),
+                      from: each.fromCaptainName ?? '',
+                      to: each.toCaptainName ?? '',
+                    }),
+                    state.kind === 'received'
+                      ? t('order.handovers.received', { time: time(state.at) })
+                      : state.kind === 'closed'
+                        ? t(handoverCloseKeys[state.reason])
+                        : t(
+                            state.kind === 'offered'
+                              ? 'order.handovers.offered'
+                              : 'order.handovers.waiting',
+                          ),
+                    each.note,
+                  ].join(' ')}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
       {detail.reassignments.length > 0 && (
         <section>
           <h4>{t('order.reassignments.title')}</h4>

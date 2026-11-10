@@ -120,6 +120,16 @@ export class CaptainAccountsService {
     return account ?? null;
   }
 
+  // CA §9.10.1 (slice 2.12b): the captain's number, which the other captain
+  // of a handover dials («اتصال»); null without an account.
+  async phone(captainId: string): Promise<string | null> {
+    const [row] = await this.database.db
+      .select({ phoneEncrypted: captainAccounts.phoneEncrypted })
+      .from(captainAccounts)
+      .where(eq(captainAccounts.captainId, captainId));
+    return row ? this.secrets.decrypt(row.phoneEncrypted) : null;
+  }
+
   // The account a number signs in to, or why it cannot. The code request
   // answers the refusal before sending anything (architecture §8.3.3 sends
   // codes to real users only); the sign-in checks it again. Read outside any

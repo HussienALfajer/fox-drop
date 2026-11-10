@@ -17,6 +17,7 @@ Work work({
   Map<String, Object?>? cancelled,
   Map<String, Object?>? withdrawn,
   Map<String, Object?>? ended,
+  Map<String, Object?>? handedOver,
 }) => Work(
   availability: standardSerializers.deserializeWith(
     CaptainAvailabilityDtoOutput.serializer,
@@ -51,6 +52,12 @@ Work work({
       : standardSerializers.deserializeWith(
           CaptainActiveOrderDtoOutputWithdrawn.serializer,
           withdrawn,
+        ),
+  handedOver: handedOver == null
+      ? null
+      : standardSerializers.deserializeWith(
+          CaptainActiveOrderDtoOutputHandedOver.serializer,
+          handedOver,
         ),
 );
 
@@ -145,6 +152,14 @@ void main() {
   group('the refusals (CA §4.6, §15)', () {
     test('map to what the screen explains', () {
       expect(refusal({'error': 'offer_unavailable'}), isA<OfferUnavailable>());
+      expect(
+        refusal({'error': 'too_far_from_captain', 'distanceMetres': 312}),
+        isA<TooFarFromCaptain>().having((n) => n.distanceMetres, 'm', 312),
+      );
+      expect(
+        refusal({'error': 'too_far_from_captain', 'distanceMetres': null}),
+        isA<TooFarFromCaptain>().having((n) => n.distanceMetres, 'm', null),
+      );
       expect(
         refusal({'error': 'too_far_from_customer', 'distanceMetres': 640}),
         isA<TooFar>()
@@ -365,6 +380,56 @@ void main() {
         isA<PickupDisputed>(),
       );
     });
+
+    test(
+      'the handover chimes once for the first captain, and its card rings once (CA §9.10.1)',
+      () {
+        final picked = work(
+          state: 'busy',
+          order: orderJson(
+            status: 'picked_up',
+            track: 'picked_up',
+            pickedUp: true,
+          ),
+        );
+        final offered = work(
+          state: 'busy',
+          order: orderJson(
+            status: 'picked_up',
+            track: 'picked_up',
+            pickedUp: true,
+            handover: handoverJson(
+              role: 'giving',
+              assigned: false,
+              name: 'باسل',
+            ),
+          ),
+        );
+        final waiting = work(
+          state: 'busy',
+          order: orderJson(
+            status: 'picked_up',
+            track: 'picked_up',
+            pickedUp: true,
+            handover: handoverJson(role: 'giving', name: 'باسل'),
+          ),
+        );
+        expect(alertStep(picked, offered, now, answered), isEmpty);
+        expect(
+          alertStep(offered, waiting, now, answered).single,
+          isA<HandoverStarted>().having((a) => a.name, 'name', 'باسل'),
+        );
+        expect(alertStep(waiting, waiting, now, answered), isEmpty);
+        final handedOver = work(state: 'offline', handedOver: handedOverJson());
+        expect(
+          alertStep(waiting, handedOver, now, answered).single,
+          isA<OrderHandedOver>()
+              .having((a) => a.handedOver.toCaptainName, 'name', 'باسل')
+              .having((a) => a.chimes, 'chimes', false),
+        );
+        expect(alertStep(handedOver, handedOver, now, answered), isEmpty);
+      },
+    );
 
     test('an order taken from the captain rings once (CA §9.10, §14 #11)', () {
       final busy = work(

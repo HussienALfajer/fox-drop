@@ -5841,6 +5841,100 @@
         ]
       }
     },
+    "/v1/captain/orders/{orderId}/acknowledge-handover": {
+      "post": {
+        "operationId": "captainOrdersAcknowledgeHandover",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainActiveOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/captain/orders/{orderId}/receive-handover": {
+      "post": {
+        "operationId": "captainOrdersReceiveHandover",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptainArriveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
     "/v1/captain/orders/{orderId}/acknowledge-outcome": {
       "post": {
         "operationId": "captainOrdersAcknowledgeOutcome",
@@ -6835,6 +6929,63 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/AdminAssignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDispatchStateDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/orders/{orderId}/handover": {
+      "post": {
+        "operationId": "adminDispatchHandover",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminHandoverDto"
               }
             }
           }
@@ -21265,6 +21416,141 @@
                 ],
                 "description": "While accepted or ready with a captain: the choices of «سحب وإعادة تعيين» (AP §9.3.2); refused with 409 pickup_request_open while a request is open."
               },
+              "handover": {
+                "type": "object",
+                "properties": {
+                  "allowed": {
+                    "type": "boolean",
+                    "description": "«تسليم لكابتن آخر» is offered: picked up or arrived with a captain, no handover open, no outcome waiting."
+                  },
+                  "handovers": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "openedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "fromCaptainId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "fromCaptainName": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "toCaptainId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "toCaptainName": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "offered": {
+                          "type": "boolean",
+                          "description": "Sent as an offer «استلام من كابتن», else assigned."
+                        },
+                        "assignedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "The second captain has it (accepted or assigned)."
+                        },
+                        "receivedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "«استلمت الطلب من الكابتن {الاسم}»."
+                        },
+                        "closedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "closeReason": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "declined",
+                                "expired",
+                                "withdrawn",
+                                "ended",
+                                "replaced"
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "Why it closed without the receipt: the offer declined, expired or withdrawn, or the order ended first."
+                        },
+                        "note": {
+                          "type": "string",
+                          "description": "Operations' internal note."
+                        },
+                        "adminId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        }
+                      },
+                      "required": [
+                        "openedAt",
+                        "fromCaptainId",
+                        "fromCaptainName",
+                        "toCaptainId",
+                        "toCaptainName",
+                        "offered",
+                        "assignedAt",
+                        "receivedAt",
+                        "closedAt",
+                        "closeReason",
+                        "note",
+                        "adminId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "Every handover of the order, oldest first."
+                  }
+                },
+                "required": [
+                  "allowed",
+                  "handovers"
+                ],
+                "additionalProperties": false,
+                "description": "AP §9.3.1, §9.3.2 «تسليم لكابتن آخر» (slice 2.12b)."
+              },
               "reassignments": {
                 "type": "array",
                 "items": {
@@ -23370,6 +23656,7 @@
               "cancellation",
               "cancelChoices",
               "reassignChoices",
+              "handover",
               "reassignments",
               "outcome",
               "outcomeChange",
@@ -24126,6 +24413,88 @@
                     ],
                     "additionalProperties": false,
                     "description": "The arrival radii, by the straight line from the latest fix."
+                  },
+                  "handover": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "giving",
+                              "receiving"
+                            ],
+                            "description": "giving: «سيستلم الكابتن {الاسم} الطلب منك. انتظره في موقعك.»; receiving: step 1 leads to the other captain, «استلمت الطلب من الكابتن {الاسم}» within radii.customerMetres of them."
+                          },
+                          "assigned": {
+                            "type": "boolean",
+                            "description": "The second captain has it; false while it is still offered to them."
+                          },
+                          "captain": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "phone": {
+                                "description": "«اتصال» dials it.",
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "location": {
+                                "anyOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "latitude": {
+                                        "type": "number"
+                                      },
+                                      "longitude": {
+                                        "type": "number"
+                                      },
+                                      "recordedAt": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                                      }
+                                    },
+                                    "required": [
+                                      "latitude",
+                                      "longitude",
+                                      "recordedAt"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "Their latest point, read again with the order; null without one."
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "phone",
+                              "location"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "role",
+                          "assigned",
+                          "captain"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«تسليم لكابتن آخر» (CA §9.10.1, slice 2.12b): the open handover of the order, or null. While giving, the steps wait; while receiving, «لا تدفع شيئاً»."
                   }
                 },
                 "required": [
@@ -24147,7 +24516,8 @@
                   "collect",
                   "pickup",
                   "customer",
-                  "radii"
+                  "radii",
+                  "handover"
                 ],
                 "additionalProperties": false,
                 "description": "The active order (CA §9)."
@@ -24421,13 +24791,51 @@
               }
             ],
             "description": "The latest order operations ended with an outcome within 12 hours that the captain has not acknowledged (POST …/acknowledge-outcome)."
+          },
+          "handedOver": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "number": {
+                    "type": "string"
+                  },
+                  "toCaptainName": {
+                    "type": "string",
+                    "description": "{الاسم} of «سلّمت الطلب للكابتن {الاسم}»."
+                  },
+                  "at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "number",
+                  "toCaptainName",
+                  "at"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The latest order the captain handed to another within 12 hours that they have not acknowledged (POST …/acknowledge-handover)."
           }
         },
         "required": [
           "order",
           "cancelled",
           "withdrawn",
-          "ended"
+          "ended",
+          "handedOver"
         ],
         "additionalProperties": false
       },
@@ -25202,6 +25610,88 @@
                 ],
                 "additionalProperties": false,
                 "description": "The arrival radii, by the straight line from the latest fix."
+              },
+              "handover": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "role": {
+                        "type": "string",
+                        "enum": [
+                          "giving",
+                          "receiving"
+                        ],
+                        "description": "giving: «سيستلم الكابتن {الاسم} الطلب منك. انتظره في موقعك.»; receiving: step 1 leads to the other captain, «استلمت الطلب من الكابتن {الاسم}» within radii.customerMetres of them."
+                      },
+                      "assigned": {
+                        "type": "boolean",
+                        "description": "The second captain has it; false while it is still offered to them."
+                      },
+                      "captain": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "phone": {
+                            "description": "«اتصال» dials it.",
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "location": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "latitude": {
+                                    "type": "number"
+                                  },
+                                  "longitude": {
+                                    "type": "number"
+                                  },
+                                  "recordedAt": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                                  }
+                                },
+                                "required": [
+                                  "latitude",
+                                  "longitude",
+                                  "recordedAt"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "Their latest point, read again with the order; null without one."
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "phone",
+                          "location"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "role",
+                      "assigned",
+                      "captain"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«تسليم لكابتن آخر» (CA §9.10.1, slice 2.12b): the open handover of the order, or null. While giving, the steps wait; while receiving, «لا تدفع شيئاً»."
               }
             },
             "required": [
@@ -25223,7 +25713,8 @@
               "collect",
               "pickup",
               "customer",
-              "radii"
+              "radii",
+              "handover"
             ],
             "additionalProperties": false,
             "description": "The active order (CA §9)."
@@ -26683,7 +27174,7 @@
                   "type": "integer",
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991,
-                  "description": "To the restaurant: by road within the search radius, else the straight line."
+                  "description": "To the restaurant (after the pickup, to the order’s captain at their latest point): by road within the search radius, else the straight line."
                 },
                 "etaMin": {
                   "anyOf": [
@@ -26696,7 +27187,7 @@
                       "type": "null"
                     }
                   ],
-                  "description": "To the restaurant; null beyond the search radius."
+                  "description": "To the same point; null beyond the search radius."
                 },
                 "ordersToday": {
                   "type": "integer",
@@ -26890,12 +27381,17 @@
                         "type": "string",
                         "format": "date-time",
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "handover": {
+                        "type": "boolean",
+                        "description": "«استلام من كابتن» (AP §9.3.2, CA §9.10.1)."
                       }
                     },
                     "required": [
                       "id",
                       "captainId",
-                      "expiresAt"
+                      "expiresAt",
+                      "handover"
                     ],
                     "additionalProperties": false
                   },
@@ -26922,6 +27418,27 @@
           "order"
         ],
         "additionalProperties": false
+      },
+      "AdminHandoverDto": {
+        "type": "object",
+        "properties": {
+          "captainId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "An eligible captain from the picker, measured from the first."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Operations’ internal note (AP §9.3.2: required; never shown to the apps)."
+          }
+        },
+        "required": [
+          "captainId",
+          "reason"
+        ]
       },
       "CaptainCurrentOfferDto_Output": {
         "type": "object",
@@ -27072,7 +27589,7 @@
                       "currency"
                     ],
                     "additionalProperties": false,
-                    "description": "«تدفع للمطعم» (D26: the items value)."
+                    "description": "«تدفع للمطعم» (D26: the items value); 0 on a handover, «لا تدفع شيئاً»."
                   },
                   "collect": {
                     "type": "object",
@@ -27121,6 +27638,58 @@
                       "readyAt"
                     ],
                     "additionalProperties": false
+                  },
+                  "handover": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "fromCaptainName": {
+                            "type": "string"
+                          },
+                          "location": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "latitude": {
+                                    "type": "number"
+                                  },
+                                  "longitude": {
+                                    "type": "number"
+                                  },
+                                  "recordedAt": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                                    "description": "When the first captain’s app recorded it."
+                                  }
+                                },
+                                "required": [
+                                  "latitude",
+                                  "longitude",
+                                  "recordedAt"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "The first captain’s latest point; null without one."
+                          }
+                        },
+                        "required": [
+                          "fromCaptainName",
+                          "location"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«استلام من كابتن» (CA §9.10.1): the order is taken from this captain; restaurant.distanceMetres is then to them. Null for an ordinary offer."
                   }
                 },
                 "required": [
@@ -27136,7 +27705,8 @@
                   "customer",
                   "pickupPayment",
                   "collect",
-                  "preparation"
+                  "preparation",
+                  "handover"
                 ],
                 "additionalProperties": false,
                 "description": "An offer (CA §8.2)."
@@ -27300,7 +27870,7 @@
                   "currency"
                 ],
                 "additionalProperties": false,
-                "description": "«تدفع للمطعم» (D26: the items value)."
+                "description": "«تدفع للمطعم» (D26: the items value); 0 on a handover, «لا تدفع شيئاً»."
               },
               "collect": {
                 "type": "object",
@@ -27349,6 +27919,58 @@
                   "readyAt"
                 ],
                 "additionalProperties": false
+              },
+              "handover": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "fromCaptainName": {
+                        "type": "string"
+                      },
+                      "location": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "latitude": {
+                                "type": "number"
+                              },
+                              "longitude": {
+                                "type": "number"
+                              },
+                              "recordedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                                "description": "When the first captain’s app recorded it."
+                              }
+                            },
+                            "required": [
+                              "latitude",
+                              "longitude",
+                              "recordedAt"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "The first captain’s latest point; null without one."
+                      }
+                    },
+                    "required": [
+                      "fromCaptainName",
+                      "location"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«استلام من كابتن» (CA §9.10.1): the order is taken from this captain; restaurant.distanceMetres is then to them. Null for an ordinary offer."
               }
             },
             "required": [
@@ -27364,7 +27986,8 @@
               "customer",
               "pickupPayment",
               "collect",
-              "preparation"
+              "preparation",
+              "handover"
             ],
             "additionalProperties": false,
             "description": "An offer (CA §8.2)."

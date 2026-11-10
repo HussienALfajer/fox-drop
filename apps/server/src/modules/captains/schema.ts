@@ -32,7 +32,14 @@ const vehicleValues = sql.raw(vehicles.map((vehicle) => `'${vehicle}'`).join(', 
 
 // Why an online period ended (CA §7.5–7.6).
 // offers_expired: C3, after unanswered offers (AP §9.7.6).
-export const onlineEndReasons = ['captain', 'suspended', 'terminated', 'offers_expired'] as const;
+// handed_over: K17, the captain handed their order to another (slice 2.12b).
+export const onlineEndReasons = [
+  'captain',
+  'suspended',
+  'terminated',
+  'offers_expired',
+  'handed_over',
+] as const;
 
 // AP §9.7.1, §9.7.5, D10: an activated captain with its vehicle and cash
 // limit.
@@ -105,7 +112,7 @@ export const onlinePeriods = captains.table(
     ),
     check(
       'online_periods_end_reason_values',
-      sql`${table.endReason} IN ('captain', 'suspended', 'terminated', 'offers_expired')`,
+      sql`${table.endReason} IN ('captain', 'suspended', 'terminated', 'offers_expired', 'handed_over')`,
     ),
   ],
 );

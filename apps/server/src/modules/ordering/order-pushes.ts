@@ -14,6 +14,8 @@ export interface OrderPushFacts {
   // The captain the event is about (an offer's, or the one assigned).
   captainId: string | null;
   captainFirstName: string | null;
+  // A handover's first captain (slice 2.12b), who hands the order over.
+  otherCaptainId?: string | null;
   // CU §11.7, Q5: the recipient of an order for someone else.
   recipientName: string | null;
   // Formatted for the push: «9:45 م», «120 ₺».
@@ -216,6 +218,33 @@ export function orderPushes(
         { الأجر: facts.offerPay ?? '', المطعم: facts.restaurantName },
         { target: 'offer', orderId: facts.orderId },
       );
+    // AP §10, CA §9.10.1 (slice 2.12b): the second captain hears the task (an
+    // offer, or an assignment by operations); at the receipt the customer
+    // hears the new captain and the first captain «سلّمت الطلب للكابتن
+    // {الاسم}» (CA §14 #11). The restaurant hears nothing.
+    case 'order.handover_offered':
+      return captain(
+        'captain.new_offer',
+        { الأجر: facts.offerPay ?? '', المطعم: facts.restaurantName },
+        { target: 'offer', orderId: facts.orderId },
+      );
+    case 'order.handover_assigned':
+      return facts.actor === 'admin' ? captain('captain.assigned_by_operations') : [];
+    case 'order.handed_over':
+      return [
+        customer('customer.captain_changed', { الاسم: captainName }),
+        ...(facts.otherCaptainId
+          ? [
+              {
+                party: 'captain' as const,
+                recipient: { party: 'captain' as const, captainId: facts.otherCaptainId },
+                templateKey: 'captain.handed_over',
+                values: { ...number, الاسم: captainName },
+                data: order,
+              },
+            ]
+          : []),
+      ];
     case 'order.reassigned':
       // CA §9.10, §14 #11: the withdrawn captain, with the cancellation sound.
       return captain('captain.withdrawn', { السبب: facts.reassignLabel ?? '' });

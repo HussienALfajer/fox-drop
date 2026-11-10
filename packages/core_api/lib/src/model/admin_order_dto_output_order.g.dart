@@ -431,6 +431,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
   @override
   final AdminOrderDtoOutputOrderReassignChoices? reassignChoices;
   @override
+  final AdminOrderDtoOutputOrderHandover handover;
+  @override
   final BuiltList<AdminOrderDtoOutputOrderReassignmentsInner> reassignments;
   @override
   final AdminOrderDtoOutputOrderOutcome? outcome;
@@ -493,6 +495,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     this.cancellation,
     this.cancelChoices,
     this.reassignChoices,
+    required this.handover,
     required this.reassignments,
     this.outcome,
     this.outcomeChange,
@@ -546,6 +549,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
         cancellation == other.cancellation &&
         cancelChoices == other.cancelChoices &&
         reassignChoices == other.reassignChoices &&
+        handover == other.handover &&
         reassignments == other.reassignments &&
         outcome == other.outcome &&
         outcomeChange == other.outcomeChange &&
@@ -590,6 +594,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     _$hash = $jc(_$hash, cancellation.hashCode);
     _$hash = $jc(_$hash, cancelChoices.hashCode);
     _$hash = $jc(_$hash, reassignChoices.hashCode);
+    _$hash = $jc(_$hash, handover.hashCode);
     _$hash = $jc(_$hash, reassignments.hashCode);
     _$hash = $jc(_$hash, outcome.hashCode);
     _$hash = $jc(_$hash, outcomeChange.hashCode);
@@ -636,6 +641,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
           ..add('cancellation', cancellation)
           ..add('cancelChoices', cancelChoices)
           ..add('reassignChoices', reassignChoices)
+          ..add('handover', handover)
           ..add('reassignments', reassignments)
           ..add('outcome', outcome)
           ..add('outcomeChange', outcomeChange)
@@ -773,6 +779,12 @@ class AdminOrderDtoOutputOrderBuilder
   set reassignChoices(
     AdminOrderDtoOutputOrderReassignChoicesBuilder? reassignChoices,
   ) => _$this._reassignChoices = reassignChoices;
+
+  AdminOrderDtoOutputOrderHandoverBuilder? _handover;
+  AdminOrderDtoOutputOrderHandoverBuilder get handover =>
+      _$this._handover ??= AdminOrderDtoOutputOrderHandoverBuilder();
+  set handover(AdminOrderDtoOutputOrderHandoverBuilder? handover) =>
+      _$this._handover = handover;
 
   ListBuilder<AdminOrderDtoOutputOrderReassignmentsInner>? _reassignments;
   ListBuilder<AdminOrderDtoOutputOrderReassignmentsInner> get reassignments =>
@@ -915,6 +927,7 @@ class AdminOrderDtoOutputOrderBuilder
       _cancellation = $v.cancellation?.toBuilder();
       _cancelChoices = $v.cancelChoices?.toBuilder();
       _reassignChoices = $v.reassignChoices?.toBuilder();
+      _handover = $v.handover.toBuilder();
       _reassignments = $v.reassignments.toBuilder();
       _outcome = $v.outcome?.toBuilder();
       _outcomeChange = $v.outcomeChange?.toBuilder();
@@ -1006,6 +1019,7 @@ class AdminOrderDtoOutputOrderBuilder
             cancellation: _cancellation?.build(),
             cancelChoices: _cancelChoices?.build(),
             reassignChoices: _reassignChoices?.build(),
+            handover: handover.build(),
             reassignments: reassignments.build(),
             outcome: _outcome?.build(),
             outcomeChange: _outcomeChange?.build(),
@@ -1051,6 +1065,8 @@ class AdminOrderDtoOutputOrderBuilder
         _cancelChoices?.build();
         _$failedField = 'reassignChoices';
         _reassignChoices?.build();
+        _$failedField = 'handover';
+        handover.build();
         _$failedField = 'reassignments';
         reassignments.build();
         _$failedField = 'outcome';

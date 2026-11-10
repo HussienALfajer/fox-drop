@@ -271,6 +271,27 @@ describe('the pushes of an order event', () => {
     ]);
   });
 
+  it('tells the second captain the handover, then the customer and the first captain the receipt (slice 2.12b)', () => {
+    // AP §10: the second captain gets the task; the event is about them.
+    expect(sent('order.handover_offered')).toEqual([
+      [captain, 'captain.new_offer', { رقم: '10002', الأجر: '25 ₺', المطعم: 'مطعم الاختبار' }],
+    ]);
+    expect(sent('order.handover_assigned', null, { actor: 'admin' })).toEqual([
+      [captain, 'captain.assigned_by_operations', { رقم: '10002' }],
+    ]);
+    expect(sent('order.handover_assigned', null, { actor: 'captain' })).toEqual([]);
+    expect(sent('order.handover_closed', 'declined')).toEqual([]);
+    // CU §14 #13, CA §14 #11: the receipt; the restaurant hears nothing.
+    expect(sent('order.handed_over', null, { otherCaptainId: 'captain-0' })).toEqual([
+      [customer, 'customer.captain_changed', { الاسم: 'أحمد' }],
+      [
+        { party: 'captain', captainId: 'captain-0' },
+        'captain.handed_over',
+        { رقم: '10002', الاسم: 'أحمد' },
+      ],
+    ]);
+  });
+
   it('tells the customer the acceptance, the captain, the pickup, the door and the delivery (CU §14 #1–6)', () => {
     expect(sent('order.accepted')).toEqual([[customer, 'customer.accepted', { الساعة: '9:45 م' }]]);
     expect(sent('order.assigned')).toEqual([

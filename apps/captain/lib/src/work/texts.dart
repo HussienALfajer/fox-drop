@@ -110,6 +110,9 @@ extension CaptainTexts on AppLocalizations {
         OfflineWithOrder() => captainOfflineWithOrder,
         OfferUnavailable() => captainOfferUnavailable,
         TooFar(fromCustomer: false) => captainGetCloser,
+        TooFarFromCaptain(distanceMetres: null) =>
+          captainCaptainLocationUnknown,
+        TooFarFromCaptain() => captainGetCloserToCaptain,
         TooFar() => captainAwayTitle,
         WeakLocation() => captainWeakGps,
         SimulatedLocation() => captainStopMockLocation,
@@ -142,6 +145,10 @@ extension CaptainTexts on AppLocalizations {
     PickupDisputed() => captainPickupDisputed,
     OrderCancelled(:final cancelled) => captainTaskCancelled(cancelled.reason),
     OrderWithdrawn(:final withdrawn) => captainOrderWithdrawn(withdrawn.reason),
+    OrderHandedOver(:final handedOver) => captainHandedOver(
+      handedOver.toCaptainName,
+    ),
+    HandoverStarted(:final name) => captainHandoverWait(name),
     OutcomeSet(:final ended) => captainOutcomeSet(
       outcomeText(this, ended.outcome),
     ),

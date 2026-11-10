@@ -11,7 +11,7 @@ import { CustomersService } from '../customers/index.js';
 import { FxService } from '../fx/index.js';
 import { LedgerService } from '../ledger/index.js';
 import { type Point, straightLineMetres } from '../geo/index.js';
-import { CustomerAccountsService, PhoneCipher } from '../identity/index.js';
+import { CaptainAccountsService, CustomerAccountsService, PhoneCipher } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 import {
@@ -22,7 +22,13 @@ import {
 } from '../content/index.js';
 import { openItemReport } from './item-reports.js';
 import { frozenAtPickup, unacknowledgedAdditionAt } from './order-edits.js';
-import { CAPTAIN_ACTIVE } from './order-assignments.js';
+import {
+  CAPTAIN_ACTIVE,
+  openHandoverOf,
+  OrderAssignments,
+  receivedHandoverOf,
+} from './order-assignments.js';
+import { HANDOVER_FROM, receiptDistance, receiptSet } from './handover.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
 import { lockOrder, type OrderRow, recordTransition } from './order-events.js';
 import {
@@ -46,7 +52,14 @@ import {
   currentRequests,
   pickupRequestsOf,
 } from './pickup-views.js';
-import { collections, orderOutcomeRows, orders, pickupRequests, reassignments } from './schema.js';
+import {
+  collections,
+  handovers,
+  orderOutcomeRows,
+  orders,
+  pickupRequests,
+  reassignments,
+} from './schema.js';
 import { outcomeEntries, type OutcomeFood, type SetOutcome } from './outcome.js';
 import { pendingOutcome, readOutcomeFacts } from './outcome-facts.js';
 import {
@@ -73,6 +86,10 @@ export type CaptainOrderRefusal =
   | 'order_state_changed'
   | 'too_far_from_restaurant'
   | 'too_far_from_customer'
+  // CA §9.10.1 (slice 2.12b): «استلمت الطلب من الكابتن {الاسم}» beyond
+  // captain.customer_radius_m of the first captain, or without a fix of
+  // theirs (distanceMetres null).
+  | 'too_far_from_captain'
   | 'weak_location'
   | 'simulated_location'
   | 'stale_location'
@@ -189,6 +206,30 @@ export interface CaptainOutcome {
   at: Date;
 }
 
+// CA §9.10.1 (slice 2.12b): the order was handed to another captain, «سلّمت
+// الطلب للكابتن {الاسم}», until the first captain's «حسناً».
+export interface CaptainHandedOver {
+  orderId: string;
+  number: bigint;
+  toCaptainName: string;
+  at: Date;
+}
+
+// CA §9.10.1: the open handover of the captain's order: giving it (the
+// order's captain, waiting: «سيستلم الكابتن {الاسم} الطلب منك. انتظره في
+// موقعك.») or receiving it (step 1 to the first captain, «استلمت الطلب من
+// الكابتن {الاسم}»); the other captain with their number and latest point.
+export interface CaptainHandover {
+  role: 'giving' | 'receiving';
+  // The second captain has it (accepted or assigned); false while offered.
+  assigned: boolean;
+  captain: {
+    name: string;
+    phone: string | null;
+    location: (Point & { recordedAt: Date }) | null;
+  };
+}
+
 // The captain's active order (CA §9) with the restaurant it is picked up
 // from.
 export interface CaptainActiveOrder {
@@ -202,6 +243,8 @@ export interface CaptainActiveOrder {
   restaurant: { name: string; address: string | null; phone: string | null; location: Point };
   // C6, K4: the radii the arrival and delivery buttons are enabled within.
   radii: { restaurantMetres: number; customerMetres: number };
+  // CA §9.10.1 (slice 2.12b): an open handover of the order, or null.
+  handover: CaptainHandover | null;
 }
 
 // The captain's side of an order (CA §9, §15) and operations' commands on the
@@ -219,6 +262,8 @@ export class CaptainOrders {
     private readonly audit: AuditService,
     private readonly customers: CustomersService,
     private readonly customerAccounts: CustomerAccountsService,
+    private readonly captainAccounts: CaptainAccountsService,
+    private readonly assignments: OrderAssignments,
     private readonly phones: PhoneCipher,
     private readonly booking: DeliveryBooking,
     private readonly ledger: LedgerService,
@@ -461,13 +506,172 @@ export class CaptainOrders {
 
   // CA §9: the order assigned to the captain until it ends, or null (no
   // stacking in V1, AP §9.12.6).
+  // CA §9.10.1 (slice 2.12b): the second captain of an assigned handover
+  // has its order too, before the receipt makes it theirs.
   async active(captainId: string, now: Date): Promise<CaptainActiveOrder | null> {
     const [order] = await readOrders(
       this.database.db,
       and(eq(orders.captainId, captainId), inArray(orders.status, CAPTAIN_ACTIVE)),
       { newestFirst: true },
     );
-    return order ? this.withRestaurant(order, captainId, now) : null;
+    if (order) return this.withRestaurant(order, captainId, now);
+    const [receiving] = await this.database.db
+      .select({ id: handovers.orderId, placedAt: handovers.orderPlacedAt })
+      .from(handovers)
+      .where(
+        and(
+          eq(handovers.toCaptainId, captainId),
+          isNotNull(handovers.assignedAt),
+          isNull(handovers.receivedAt),
+          isNull(handovers.closedAt),
+        ),
+      );
+    return receiving ? this.answer(receiving, captainId, now) : null;
+  }
+
+  // CA §9.10.1 (slice 2.12b): «استلمت الطلب من الكابتن {الاسم}», the second
+  // captain of the order's assigned handover, within captain.customer_radius_m
+  // of the first captain's latest point by the straight line (their own fix
+  // follows the arrival's rules). In one transaction: the order becomes the
+  // second captain's, picked_up again if it was arrived with the door arrival
+  // cleared (docs/domain/01), the handover received, order.handed_over, and
+  // the first captain offline (K17). The pickup payment stays in the first
+  // captain's custody; the second collects at the door and earns the order
+  // pay (AP §9.3.2). Answers the order, now the second captain's.
+  async receiveHandover(
+    command: CaptainOrderCommand & { location: CommandLocation },
+    now: Date,
+  ): Promise<CaptainActiveOrder> {
+    const requestHash = commandHash({ verb: 'receive_handover', orderId: command.orderId });
+    const earlier = await this.replay(command.accountId, command, requestHash, now);
+    if (earlier !== null) return this.answer(earlier, command.captainId, now);
+    const order = await this.anyOrder(command.orderId);
+    const handover = await openHandoverOf(this.database.db, order);
+    if (handover?.toCaptainId !== command.captainId) {
+      if (order.captainId === command.captainId) {
+        throw await this.refusedState(order, command.accountId, command, requestHash, now);
+      }
+      throw new CaptainOrderRefusedError('unknown_order', 'no such order');
+    }
+    if (!receivable(order, handover)) {
+      throw await this.refusedState(order, command.accountId, command, requestHash, now);
+    }
+    const [radius, firstPoint] = await Promise.all([
+      this.settings.get('captain.customer_radius_m', { cityId: order.cityId }),
+      this.captains.latestPoint(handover.fromCaptainId),
+    ]);
+    await this.recordLocation(command.captainId, command.location, now);
+    checkFix(command.location, now);
+    const distance = receiptDistance(command.location, firstPoint, radius);
+    if (!distance.within) {
+      throw new CaptainOrderRefusedError(
+        'too_far_from_captain',
+        distance.metres === null
+          ? 'the first captain has no point'
+          : `${distance.metres} m from the first captain, more than ${radius} m`,
+        null,
+        distance.metres,
+      );
+    }
+    await this.jobs.ready();
+    let afterCommit: (() => Promise<void>) | null = null;
+    const done = await this.database.db.transaction(async (tx) => {
+      const locked = await lockOrder(tx, order.id, order.placedAt);
+      if (!locked) throw new Error(`order ${order.id} not found`);
+      if ((await this.replay(command.accountId, command, requestHash, now, tx)) !== null) {
+        return true;
+      }
+      const current = await openHandoverOf(tx, locked);
+      if (current?.id !== handover.id || !receivable(locked, current)) return false;
+      const version = locked.version + 1;
+      await tx
+        .update(orders)
+        .set({ ...receiptSet(command.captainId), version })
+        .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
+      await tx.update(handovers).set({ receivedAt: now }).where(eq(handovers.id, handover.id));
+      await recordTransition(tx, this.jobs, locked, {
+        type: 'order.handed_over',
+        from: locked.status,
+        to: 'picked_up',
+        version,
+        actor: { type: 'captain', id: command.captainId, device: command.deviceId },
+        reason: null,
+        at: now,
+        captainTrack: 'picked_up',
+        captainId: command.captainId,
+        otherCaptainId: handover.fromCaptainId,
+      });
+      afterCommit = await this.captains.offlineAfterHandover(tx, handover.fromCaptainId, now);
+      await keepKey(tx, command.accountId, command.idempotencyKey, requestHash, order, now);
+      return true;
+    });
+    if (!done) throw await this.stateChanged(order);
+    if (afterCommit !== null) await (afterCommit as () => Promise<void>)();
+    return this.answer(order, command.captainId, now);
+  }
+
+  // CA §9.10.1 (slice 2.12b): the latest order this captain handed to
+  // another within CANCELLED_CARD_MS, not yet acknowledged, for «سلّمت الطلب
+  // للكابتن {الاسم}»; null otherwise.
+  async handedOver(captainId: string, now: Date): Promise<CaptainHandedOver | null> {
+    const since = new Date(now.getTime() - CANCELLED_CARD_MS);
+    const [row] = await this.database.db
+      .select({
+        orderId: handovers.orderId,
+        number: orders.number,
+        toCaptainId: handovers.toCaptainId,
+        at: handovers.receivedAt,
+      })
+      .from(handovers)
+      .innerJoin(
+        orders,
+        and(eq(orders.id, handovers.orderId), eq(orders.placedAt, handovers.orderPlacedAt)),
+      )
+      .where(
+        and(
+          eq(handovers.fromCaptainId, captainId),
+          isNull(handovers.fromSeenAt),
+          gt(handovers.receivedAt, since),
+          gt(orders.placedAt, new Date(since.getTime() - CANCELLED_AFTER_PLACING_MS)),
+        ),
+      )
+      .orderBy(desc(handovers.receivedAt))
+      .limit(1);
+    if (!row?.at) return null;
+    const to = await this.captains.captain(row.toCaptainId, now);
+    return {
+      orderId: row.orderId,
+      number: row.number,
+      toCaptainName: to?.name ?? '',
+      at: row.at,
+    };
+  }
+
+  // «حسناً» on the handover card: idempotent by its nature, no key, no fix.
+  // An order this captain never handed over is unknown_order.
+  async acknowledgeHandover(captainId: string, orderId: string, now: Date): Promise<void> {
+    const rows = await this.database.db
+      .select({ id: handovers.id })
+      .from(handovers)
+      .where(
+        and(
+          eq(handovers.orderId, orderId),
+          eq(handovers.fromCaptainId, captainId),
+          isNotNull(handovers.receivedAt),
+        ),
+      );
+    if (rows.length === 0) throw new CaptainOrderRefusedError('unknown_order', 'no such order');
+    await this.database.db
+      .update(handovers)
+      .set({ fromSeenAt: now })
+      .where(
+        and(
+          eq(handovers.orderId, orderId),
+          eq(handovers.fromCaptainId, captainId),
+          isNotNull(handovers.receivedAt),
+          isNull(handovers.fromSeenAt),
+        ),
+      );
   }
 
   // CA §9.2 (C6): «وصلت إلى المطعم», only within
@@ -541,7 +745,11 @@ export class CaptainOrders {
     const earlier = await this.replay(command.accountId, command, requestHash, now);
     if (earlier !== null) return this.answer(earlier, command.captainId, now);
     const order = await this.captainsOrder(command);
-    if (!customerArrivable(order, command.captainId)) {
+    // CA §9.10.1 (slice 2.12b): the first captain waits for the second.
+    if (
+      !customerArrivable(order, command.captainId) ||
+      (await openHandoverOf(this.database.db, order)) !== null
+    ) {
       throw await this.refusedState(order, command.accountId, command, requestHash, now);
     }
     const radius = await this.settings.get('captain.customer_radius_m', { cityId: order.cityId });
@@ -567,6 +775,7 @@ export class CaptainOrders {
         return true;
       }
       if (!customerArrivable(locked, command.captainId)) return false;
+      if ((await openHandoverOf(tx, locked)) !== null) return false;
       const version = locked.version + 1;
       await tx
         .update(orders)
@@ -620,7 +829,12 @@ export class CaptainOrders {
     const earlier = await this.replay(command.accountId, command, requestHash, now);
     if (earlier !== null) return this.summary(earlier, now);
     const order = await this.captainsOrder(command);
-    if (!deliverable(order, command.captainId) || (await pendingOutcome(this.database.db, order))) {
+    if (
+      !deliverable(order, command.captainId) ||
+      (await pendingOutcome(this.database.db, order)) ||
+      // CA §9.10.1 (slice 2.12b): the first captain waits for the second.
+      (await openHandoverOf(this.database.db, order)) !== null
+    ) {
       throw await this.refusedState(order, command.accountId, command, requestHash, now);
     }
     const delivery = await this.prepareDelivery(order, command, now);
@@ -652,6 +866,7 @@ export class CaptainOrders {
       if (!deliverable(locked, command.captainId)) return false;
       // K9 (slice 2.11b): an outcome waiting for its collection.
       if (await pendingOutcome(tx, locked)) return false;
+      if ((await openHandoverOf(tx, locked)) !== null) return false;
       const due = await lockForDelivery(tx, locked);
       // An edit since the payment was checked (AP §9.3.3).
       if (due.total !== delivery.amountDue) return false;
@@ -699,7 +914,17 @@ export class CaptainOrders {
       if ((await this.replay(accountId, command, requestHash, now, tx)) !== null) return true;
       if (!deliverableByOperations(locked) || locked.captainId !== order.captainId) return false;
       if (await pendingOutcome(tx, locked)) return false;
-      const due = await lockForDelivery(tx, locked);
+      // Slice 2.12b: an open handover ends with the order (its offer
+      // withdrawn); the order is read again under its lock.
+      await this.assignments.beforeEnd(
+        tx,
+        order.id,
+        order.placedAt,
+        { type: 'admin', id: accountId },
+        now,
+      );
+      const current = (await lockOrder(tx, order.id, order.placedAt))!;
+      const due = await lockForDelivery(tx, current);
       // An edit since the payment was checked (AP §9.3.3).
       if (due.total !== delivery.amountDue) return false;
       await this.booking.complete(
@@ -989,8 +1214,13 @@ export class CaptainOrders {
       )
       .where(and(eq(collections.orderId, key.id), eq(collections.orderPlacedAt, key.placedAt)));
     if (!row) throw new Error(`order ${key.id} has no collection`);
-    // The pickup payment, which an edit after the pickup leaves as it was.
-    const paid = (await frozenAtPickup(this.database.db, { ...key, ...row })).itemsValue;
+    // The pickup payment, which an edit after the pickup leaves as it was;
+    // the second captain of a handover paid nothing (slice 2.12b).
+    const received = await receivedHandoverOf(this.database.db, key);
+    const paid =
+      received !== null && received.toCaptainId === row.captainId
+        ? 0n
+        : (await frozenAtPickup(this.database.db, { ...key, ...row })).itemsValue;
     const orderPay = row.basePay + row.distancePay + row.topUpPay;
     return {
       orderId: key.id,
@@ -1297,13 +1527,15 @@ export class CaptainOrders {
   ): Promise<CaptainActiveOrder> {
     const restaurant = await this.merchants.restaurant(order.restaurantId, now);
     if (!restaurant) throw new Error(`restaurant ${order.restaurantId} not found`);
-    const [requests, disputes, customer, restaurantMetres, customerMetres] = await Promise.all([
-      pickupRequestsOf(this.database.db, [order]),
-      pickupDisputesOf(this.database.db, [order]),
-      this.customerOf(order, captainId),
-      this.settings.get('captain.merchant_arrival_radius_m', { cityId: order.cityId }),
-      this.settings.get('captain.customer_radius_m', { cityId: order.cityId }),
-    ]);
+    const [requests, disputes, customer, restaurantMetres, customerMetres, handover] =
+      await Promise.all([
+        pickupRequestsOf(this.database.db, [order]),
+        pickupDisputesOf(this.database.db, [order]),
+        this.customerOf(order, captainId),
+        this.settings.get('captain.merchant_arrival_radius_m', { cityId: order.cityId }),
+        this.settings.get('captain.customer_radius_m', { cityId: order.cityId }),
+        this.handoverOf(order, captainId, now),
+      ]);
     return {
       order,
       customer,
@@ -1316,6 +1548,36 @@ export class CaptainOrders {
         location: restaurant.location,
       },
       radii: { restaurantMetres, customerMetres },
+      handover,
+    };
+  }
+
+  // CA §9.10.1: the order's open handover as this captain sees it: the
+  // order's captain gives it, the second captain of an assigned one receives
+  // it; anyone else sees none.
+  private async handoverOf(
+    order: OrderView,
+    captainId: string,
+    now: Date,
+  ): Promise<CaptainHandover | null> {
+    if (!HANDOVER_FROM.includes(order.status)) return null;
+    const open = await openHandoverOf(this.database.db, order);
+    if (open === null) return null;
+    const giving = open.fromCaptainId === captainId && order.captainId === captainId;
+    const receiving = open.toCaptainId === captainId && open.assignedAt !== null;
+    if (!giving && !receiving) return null;
+    const otherId = giving ? open.toCaptainId : open.fromCaptainId;
+    // The second captain's number and position only once they have it.
+    const shared = receiving || open.assignedAt !== null;
+    const [other, phone, location] = await Promise.all([
+      this.captains.captain(otherId, now),
+      shared ? this.captainAccounts.phone(otherId) : null,
+      shared ? this.captains.latestPoint(otherId) : null,
+    ]);
+    return {
+      role: giving ? 'giving' : 'receiving',
+      assigned: open.assignedAt !== null,
+      captain: { name: other?.name ?? '', phone, location },
     };
   }
 
@@ -1381,6 +1643,19 @@ function arrivable(
     order.captainTrack === 'assigned' &&
     order.captainId !== null &&
     order.captainId === captainId
+  );
+}
+
+// CA §9.10.1: the second captain of an assigned handover, while the order is
+// picked up or arrived with the first captain.
+function receivable(
+  order: Pick<OrderAtStart, 'status' | 'captainId'>,
+  handover: { fromCaptainId: string; assignedAt: Date | null },
+): boolean {
+  return (
+    HANDOVER_FROM.includes(order.status) &&
+    order.captainId === handover.fromCaptainId &&
+    handover.assignedAt !== null
   );
 }
 

@@ -63,6 +63,7 @@ import {
   type SetOutcome,
 } from './outcome.js';
 import { OrderAssignments } from './order-assignments.js';
+import { canHandOver } from './handover.js';
 import { baseTotal, linesOf } from './pickup-booking.js';
 import type { SearchStartJob } from './order-timers.js';
 import {
@@ -92,6 +93,7 @@ import {
   outcomeFoods,
   pickupRequests,
   reassignments,
+  handovers,
   timeChanges,
 } from './schema.js';
 
@@ -590,7 +592,7 @@ export class OrderCommands {
           // The entries were worked out from the order before the lock.
           guard: async (tx) => (await this.ownFacts(tx, order)).key === read.key,
           before: async (tx) => {
-            await this.assignments.beforeCancel(tx, order.id, order.placedAt, actor, now);
+            await this.assignments.beforeEnd(tx, order.id, order.placedAt, actor, now);
             // docs/domain/02: the open request voided below returns the
             // track to at_merchant, which the cancellation publishes.
             await tx
@@ -824,6 +826,49 @@ export class OrderCommands {
       }));
   }
 
+  // AP §9.3.1, §9.3.2 «تسليم لكابتن آخر» (slice 2.12b): the order's
+  // handovers, oldest first, with both captains' names, and whether
+  // operations may open one now (picked up or arrived with a captain, no
+  // outcome waiting; an open one is then replaced).
+  async handoversOf(
+    order: { id: string; placedAt: Date; status: OrderView['status']; captainId: string | null },
+    now: Date,
+  ) {
+    const rows = await this.database.db
+      .select({
+        openedAt: handovers.openedAt,
+        fromCaptainId: handovers.fromCaptainId,
+        toCaptainId: handovers.toCaptainId,
+        offered: sql<boolean>`${handovers.offerId} IS NOT NULL`,
+        assignedAt: handovers.assignedAt,
+        receivedAt: handovers.receivedAt,
+        closedAt: handovers.closedAt,
+        closeReason: handovers.closeReason,
+        note: handovers.note,
+        adminId: handovers.adminId,
+      })
+      .from(handovers)
+      .where(and(eq(handovers.orderId, order.id), eq(handovers.orderPlacedAt, order.placedAt)))
+      .orderBy(handovers.openedAt);
+    const ids = [...new Set(rows.flatMap((row) => [row.fromCaptainId, row.toCaptainId]))];
+    const names = new Map(
+      await Promise.all(
+        ids.map(async (id) => [id, (await this.captains.captain(id, now))?.name ?? null] as const),
+      ),
+    );
+    const outcomePending = (await pendingOutcome(this.database.db, order)) !== null;
+    return {
+      // A handover still open is replaced by a new one (owner decision
+      // 2026-11-11).
+      allowed: canHandOver(order, { outcomePending }, '') === null && order.captainId !== null,
+      rows: rows.map((row) => ({
+        ...row,
+        fromCaptainName: names.get(row.fromCaptainId) ?? null,
+        toCaptainName: names.get(row.toCaptainId) ?? null,
+      })),
+    };
+  }
+
   // AP §9.3.1: the order's withdrawals, oldest first, each with the
   // withdrawn captain's name.
   async reassignmentsOf(order: { id: string; placedAt: Date }) {
@@ -938,6 +983,9 @@ export class OrderCommands {
           // edit since moved its version.
           guard: async (tx) =>
             (await lockOrder(tx, order.id, order.placedAt))?.version === read.version,
+          // Slice 2.12b: an open handover ends with the outcome (its offer
+          // withdrawn): the order is the outcome's now.
+          before: (tx) => this.assignments.beforeEnd(tx, order.id, order.placedAt, actor, now),
           effects: async (tx) => {
             // With an amount to collect, the collection posts the journals.
             const journalIds = waits

@@ -10,6 +10,17 @@ export type PickerCaptain = components['schemas']['AdminPickerDto_Output']['capt
 export type DispatchState = components['schemas']['AdminDispatchStateDto_Output']['order'];
 export type IneligibleReason = PickerCaptain['reasons'][number] | 'offline';
 
+// Why a captain is greyed out in a picker (AP §9.3.2).
+export const ineligibleKeys = {
+  busy: 'assign.reason.busy',
+  cash_limit: 'assign.reason.cashLimit',
+  closed_due: 'assign.reason.closedDue',
+  simulated_location: 'assign.reason.simulatedLocation',
+  out_of_range: 'assign.reason.outOfRange',
+  vehicle_not_allowed: 'assign.reason.vehicleNotAllowed',
+  offline: 'assign.reason.offline',
+} as const satisfies Record<IneligibleReason, string>;
+
 // AP §9.3.2 «تعيين كابتن»: no captain and no open offer, before pickup. The
 // server takes accepted or ready orders only (owner decision 2026-11-06, CA
 // §8.1): a placed order waits for the restaurant.
