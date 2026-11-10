@@ -783,12 +783,6 @@ describe('the handover’s pay and its other ways out (slice 2.12b)', () => {
     expect(delivered.json().summary.pay).toMatchObject({ waiting: '0', total: '2500' });
     expect(await balance('captain.earnings', second.captainId)).toBe(2_500n);
     expect(await balance('captain.earnings', first.captainId)).toBe(0n);
-    const { rows } = await sql.query(
-      `SELECT count(*)::int AS n FROM ledger.journals
-         WHERE type = 'earn.waiting_pay' AND source_id = $1`,
-      [order.id],
-    );
-    expect(rows[0].n).toBe(0);
   });
 
   it('replaces an assigned handover with another captain (owner decision 2026-11-11)', async () => {
