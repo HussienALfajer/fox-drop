@@ -358,6 +358,12 @@ class AdminEditPreviewAnswerDto extends createZodDto(
       .array(
         z.object({
           type: z.string().describe('The journal type, such as merchant.debit.'),
+          reason: z
+            .string()
+            .nullable()
+            .describe(
+              "The journal's reason, its line on the party's account (RA §12.5): «أصناف حُذفت بعد الاستلام», «خُفّضت أجرة التوصيل بعد الاستلام», «إلغاء عمولة».",
+            ),
           account: z.string().describe('The account purpose, such as merchant.account.'),
           party: z.object({
             kind: z.enum(['merchant', 'captain', 'platform']),
@@ -1052,6 +1058,7 @@ export class AdminOrdersController {
       afterPickup: answer.afterPickup,
       entries: answer.entries.map((entry) => ({
         type: entry.type,
+        reason: entry.reason,
         account: entry.account,
         party: entry.party,
         amount: { amount: entry.amount.toString(), currency: entry.currency },

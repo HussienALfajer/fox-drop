@@ -11,7 +11,8 @@ import {
   type LedgerEntry,
   LedgerService,
 } from '../ledger/index.js';
-import type { DoorPayment } from './door-payment.js';
+import { commission, type DoorPayment } from './door-payment.js';
+import { frozenAtPickup } from './order-edits.js';
 import { type OrderRow, recordTransition } from './order-events.js';
 import { snapshotOf } from './order-views.js';
 import { type PaymentLine, storedLines } from './pickup-booking.js';
@@ -56,15 +57,9 @@ export interface Delivery {
   shortfall: ChosenReason | null;
   pay: PayParts;
   waitingMinutes: number;
-  // AP §8.4: null on a test restaurant's order, which posts none (AP §9.6.3).
-  // AP §9.3.3 (slice 2.10b): on the items value of the pickup, frozen by an
-  // edit after it (`frozenAtPickup`), with the part on the items the captain
-  // or the platform bore going to the order clearing account.
-  commission: bigint | null;
-  commissionToClearing: bigint;
-  // The delivery fee of the pickup: the platform's revenue, its cut by an
-  // edit after the pickup borne by the responsible party.
-  deliveryFee: bigint;
+  // AP §8.4: the order's commission rate, null on a test restaurant's
+  // order, which posts none (AP §9.6.3).
+  commissionBp: number | null;
   // The total the payment was checked against; an edit since refuses it.
   amountDue: bigint;
 }
@@ -138,7 +133,19 @@ export class DeliveryBooking {
       recordedByDevice: by.actor.device ?? null,
       reason: by.reason,
     });
-    await this.post(tx, order, order.captainId, delivery, by.actor);
+    // AP §9.3.3 (slice 2.10b): the commission on the pickup's items value,
+    // the part the captain's or the platform's edits after it bore going to
+    // the order clearing account, and the pickup's fee as the revenue; read
+    // under the order's lock, so an edit committed since counts.
+    const frozen = await frozenAtPickup(tx, order);
+    await this.post(tx, order, order.captainId, delivery, by.actor, {
+      commission:
+        delivery.commissionBp === null
+          ? null
+          : commission(frozen.itemsValue, delivery.commissionBp),
+      commissionToClearing: delivery.commissionBp === null ? 0n : frozen.commissionToClearing,
+      deliveryFee: frozen.deliveryFee,
+    });
     await recordTransition(tx, this.jobs, order, {
       type: 'order.delivered',
       from: order.status,
@@ -158,6 +165,7 @@ export class DeliveryBooking {
     captainId: string,
     delivery: Delivery,
     actor: DeliveredBy['actor'],
+    money: { commission: bigint | null; commissionToClearing: bigint; deliveryFee: bigint },
   ): Promise<void> {
     const { cityId } = order;
     const base = order.snapshot.baseCurrency;
@@ -222,11 +230,11 @@ export class DeliveryBooking {
     const clearing = await account('platform.order_clearing', base);
     // AP §8.11: the delivery fee is the platform's revenue.
     await post('platform.revenue_delivery', [
-      { accountId: clearing, currency: base, amount: delivery.deliveryFee },
+      { accountId: clearing, currency: base, amount: money.deliveryFee },
       {
         accountId: await account('platform.revenue_delivery', base),
         currency: base,
-        amount: -delivery.deliveryFee,
+        amount: -money.deliveryFee,
       },
     ]);
     // AP §8.4, §8.6: the total's rounding and the door's gap within rounding.
@@ -235,27 +243,27 @@ export class DeliveryBooking {
       { accountId: clearing, currency: base, amount: rounding },
       { accountId: await account('platform.fx_rounding', base), currency: base, amount: -rounding },
     ]);
-    if (delivery.commission !== null) {
+    if (money.commission !== null) {
       await post('merchant.commission', [
         {
           accountId: await account('merchant.account', base, order.restaurantId),
           currency: base,
-          amount: delivery.commission,
+          amount: money.commission,
         },
         {
           accountId: await account('platform.revenue_commission', base),
           currency: base,
-          amount: -(delivery.commission - delivery.commissionToClearing),
+          amount: -(money.commission - money.commissionToClearing),
         },
         // docs/domain/09 rule 3: the commission on items removed after the
         // pickup with the captain or the platform responsible recovers the
         // pickup payment.
-        { accountId: clearing, currency: base, amount: -delivery.commissionToClearing },
+        { accountId: clearing, currency: base, amount: -money.commissionToClearing },
       ]);
     }
     // AP §8.5.2, AP §9.6.3: a test order's pay is the platform's test cost.
     const payCounter = await account(
-      delivery.commission === null ? 'platform.test_cost' : 'platform.captain_pay',
+      money.commission === null ? 'platform.test_cost' : 'platform.captain_pay',
       base,
     );
     const earnings = await account('captain.earnings', base, captainId);

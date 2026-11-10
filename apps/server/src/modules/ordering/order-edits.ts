@@ -223,6 +223,8 @@ export type AfterPickupParty = (typeof AFTER_PICKUP_PARTIES)[number];
 // confirm with the owner).
 export const REMOVED_AFTER_PICKUP_REASON = 'أصناف حُذفت بعد الاستلام';
 export const FEE_LOWERED_AFTER_PICKUP_REASON = 'خُفّضت أجرة التوصيل بعد الاستلام';
+// RA §12.5: the reversing merchant.commission's line.
+export const COMMISSION_REVERSED_REASON = 'إلغاء عمولة';
 
 export interface AfterPickupEntry {
   account: AccountPurpose;
@@ -277,57 +279,56 @@ export function afterPickupEntries(facts: {
   // commission of what it kept, rounded once.
   const commissionCut =
     facts.commissionOf(facts.itemsValueBefore) - facts.commissionOf(facts.itemsValueAfter);
-  const charge = (facts.responsible === 'restaurant' ? removed : removed - commissionCut) + feeCut;
-  const reason = removed > 0n ? REMOVED_AFTER_PICKUP_REASON : FEE_LOWERED_AFTER_PICKUP_REASON;
+  const itemsCharge = facts.responsible === 'restaurant' ? removed : removed - commissionCut;
   const platform = { kind: 'platform' as const, id: null };
   const merchant = { kind: 'merchant' as const, id: facts.restaurantId };
-  const clearing: AfterPickupEntry = {
-    account: 'platform.order_clearing',
-    party: platform,
-    amount: -charge,
-    currency,
-  };
-  const journals: AfterPickupJournal[] = [];
-  if (charge > 0n) {
+  // The party's side of one journal, against the order clearing account.
+  const borne = (amount: bigint, reason: string): AfterPickupJournal => {
+    const clearing: AfterPickupEntry = {
+      account: 'platform.order_clearing',
+      party: platform,
+      amount: -amount,
+      currency,
+    };
     if (facts.responsible === 'restaurant') {
-      journals.push({
+      return {
         type: 'merchant.debit',
         reason,
-        entries: [
-          { account: 'merchant.account', party: merchant, amount: charge, currency },
-          clearing,
-        ],
-      });
-    } else if (facts.responsible === 'captain') {
+        entries: [{ account: 'merchant.account', party: merchant, amount, currency }, clearing],
+      };
+    }
+    if (facts.responsible === 'captain') {
       if (facts.captainId === null) throw new Error('an order after the pickup has a captain');
-      journals.push({
+      return {
         type: 'earn.charge',
         reason,
         entries: [
           {
             account: 'captain.earnings',
             party: { kind: 'captain', id: facts.captainId },
-            amount: charge,
+            amount,
             currency,
           },
           clearing,
         ],
-      });
-    } else {
-      journals.push({
-        type: 'platform.operating_cost',
-        reason,
-        entries: [
-          { account: 'platform.operating_cost', party: platform, amount: charge, currency },
-          clearing,
-        ],
-      });
+      };
     }
-  }
+    return {
+      type: 'platform.operating_cost',
+      reason,
+      entries: [
+        { account: 'platform.operating_cost', party: platform, amount, currency },
+        clearing,
+      ],
+    };
+  };
+  // One journal per reason (RA §12.5), so the account line says which.
+  const journals: AfterPickupJournal[] = [];
+  if (itemsCharge > 0n) journals.push(borne(itemsCharge, REMOVED_AFTER_PICKUP_REASON));
   if (facts.responsible === 'restaurant' && commissionCut > 0n) {
     journals.push({
       type: 'merchant.commission',
-      reason,
+      reason: COMMISSION_REVERSED_REASON,
       entries: [
         { account: 'merchant.account', party: merchant, amount: -commissionCut, currency },
         {
@@ -339,7 +340,8 @@ export function afterPickupEntries(facts: {
       ],
     });
   }
-  return { journals, charge, commissionCut };
+  if (feeCut > 0n) journals.push(borne(feeCut, FEE_LOWERED_AFTER_PICKUP_REASON));
+  return { journals, charge: itemsCharge + feeCut, commissionCut };
 }
 
 // AP §9.3.3, §8.1: what the delivery books from the order as it was at the
@@ -347,17 +349,27 @@ export function afterPickupEntries(facts: {
 // payment and the commission's base), the delivery fee (the platform's
 // revenue; its cut was borne by the responsible party), and the commission
 // on the items the captain or the platform bore, which goes against the
-// order clearing account instead of the revenue. Without such an edit, the
-// order's own values.
+// order clearing account instead of the revenue. Also what the restaurant's
+// own edits took from it (the preview's commission and merchant net).
+// Without such an edit, the order's own values. Read it in the transaction
+// that books from it, under the order's lock, so an edit committed since is
+// counted.
 export async function frozenAtPickup(
   executor: Executor,
   order: { id: string; placedAt: Date; itemsValue: bigint; deliveryFee: bigint },
-): Promise<{ itemsValue: bigint; deliveryFee: bigint; commissionToClearing: bigint }> {
+): Promise<{
+  itemsValue: bigint;
+  deliveryFee: bigint;
+  commissionToClearing: bigint;
+  restaurantCommissionCut: bigint;
+  restaurantCharge: bigint;
+}> {
   const edits = await executor
     .select({
       itemsValueBefore: orderEdits.itemsValueBefore,
       deliveryFeeBefore: orderEdits.deliveryFeeBefore,
       responsible: orderEdits.responsible,
+      charge: orderEdits.charge,
       commissionCut: orderEdits.commissionCut,
     })
     .from(orderEdits)
@@ -369,19 +381,16 @@ export async function frozenAtPickup(
       ),
     )
     .orderBy(asc(orderEdits.at));
+  const sum = (party: (responsible: string | null) => boolean, of: 'charge' | 'commissionCut') =>
+    edits
+      .filter((edit) => party(edit.responsible))
+      .reduce((total, edit) => total + (edit[of] ?? 0n), 0n);
   const first = edits[0];
-  if (!first) {
-    return {
-      itemsValue: order.itemsValue,
-      deliveryFee: order.deliveryFee,
-      commissionToClearing: 0n,
-    };
-  }
   return {
-    itemsValue: first.itemsValueBefore,
-    deliveryFee: first.deliveryFeeBefore,
-    commissionToClearing: edits
-      .filter((edit) => edit.responsible !== 'restaurant')
-      .reduce((sum, edit) => sum + (edit.commissionCut ?? 0n), 0n),
+    itemsValue: first?.itemsValueBefore ?? order.itemsValue,
+    deliveryFee: first?.deliveryFeeBefore ?? order.deliveryFee,
+    commissionToClearing: sum((party) => party !== 'restaurant', 'commissionCut'),
+    restaurantCommissionCut: sum((party) => party === 'restaurant', 'commissionCut'),
+    restaurantCharge: sum((party) => party === 'restaurant', 'charge'),
   };
 }

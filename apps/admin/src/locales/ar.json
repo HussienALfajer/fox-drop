@@ -240,9 +240,10 @@
       "responsible": "المسؤول عن التعديل",
       "newCollect": "المبلغ الجديد للتحصيل: {{amount}}",
       "entry": {
-        "merchantDebit": "يُسجَّل على المطعم «{{name}}» {{amount}} (حساب المطعم): أصناف حُذفت بعد الاستلام.",
+        "merchantDebit": "يُسجَّل على المطعم «{{name}}» {{amount}} (حساب المطعم): {{reason}}.",
         "commissionReversed": "تُلغى عمولة {{amount}} عن الأصناف المحذوفة (حساب المطعم).",
-        "captainCharge": "يُخصم من مستحقات الكابتن «{{name}}» {{amount}}."
+        "captainCharge": "يُخصم من مستحقات الكابتن «{{name}}» {{amount}}: {{reason}}.",
+        "platformCost": "تتحمّل المنصة {{amount}} (كلفة تشغيلية): {{reason}}."
       }
     },
     "money": "المبالغ",

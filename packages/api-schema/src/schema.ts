@@ -5434,6 +5434,8 @@ export interface components {
             entries: {
                 /** @description The journal type, such as merchant.debit. */
                 type: string;
+                /** @description The journal's reason, its line on the party's account (RA §12.5): «أصناف حُذفت بعد الاستلام», «خُفّضت أجرة التوصيل بعد الاستلام», «إلغاء عمولة». */
+                reason: string | null;
                 /** @description The account purpose, such as merchant.account. */
                 account: string;
                 party: {

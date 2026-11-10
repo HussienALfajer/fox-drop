@@ -275,6 +275,7 @@ function EntryText({ line }: { line: AfterPickupLine }) {
           {t('order.edit.entry.merchantDebit', {
             name: line.name ?? '',
             amount: formatMoney(line.amount),
+            reason: line.reason,
           })}
         </>
       );
@@ -286,11 +287,19 @@ function EntryText({ line }: { line: AfterPickupLine }) {
           {t('order.edit.entry.captainCharge', {
             name: line.name ?? '',
             amount: formatMoney(line.amount),
+            reason: line.reason,
           })}
         </>
       );
     case 'platformCost':
-      return <>{t('order.cancel.entry.platformCost', { amount: formatMoney(line.amount) })}</>;
+      return (
+        <>
+          {t('order.edit.entry.platformCost', {
+            amount: formatMoney(line.amount),
+            reason: line.reason,
+          })}
+        </>
+      );
     default:
       return <>{t('order.cancel.entry.unknown')}</>;
   }

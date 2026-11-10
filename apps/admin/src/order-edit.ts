@@ -162,21 +162,27 @@ export function editBody(
 // per journal, the order clearing account left out. As for the cancellation,
 // an entry whose sign is not the sentence's or a type the panel cannot name
 // is `unknown` and blocks the confirm.
+// Each sentence names its journal's reason (RA §12.5).
 export type AfterPickupLine =
-  | { key: 'merchantDebit'; name: string | null; amount: Money }
+  | { key: 'merchantDebit'; name: string | null; amount: Money; reason: string }
   | { key: 'commissionReversed'; amount: Money }
-  | { key: 'captainCharge'; name: string | null; amount: Money }
-  | { key: 'platformCost'; amount: Money }
+  | { key: 'captainCharge'; name: string | null; amount: Money; reason: string }
+  | { key: 'platformCost'; amount: Money; reason: string }
   | { key: 'unknown' };
 
 type Entry = EditPreview['entries'][number];
 
 export function afterPickupLines(preview: EditPreview): AfterPickupLine[] {
+  // One journal per type and reason: the items and the fee cut apart.
   const journals = new Map<string, Entry[]>();
   for (const entry of preview.entries) {
-    journals.set(entry.type, [...(journals.get(entry.type) ?? []), entry]);
+    const key = JSON.stringify([entry.type, entry.reason]);
+    journals.set(key, [...(journals.get(key) ?? []), entry]);
   }
-  return [...journals].map(([type, entries]) => entryLine(type, entries) ?? { key: 'unknown' });
+  return [...journals.values()].map(
+    (entries) =>
+      entryLine(entries[0]!.type, entries[0]!.reason ?? '', entries) ?? { key: 'unknown' },
+  );
 }
 
 const isCredit = (entry: Entry) => entry.amount.amount.startsWith('-');
@@ -185,7 +191,7 @@ const size = (entry: Entry): Money => ({
   amount: entry.amount.amount.replace(/^-/, ''),
 });
 
-function entryLine(type: string, entries: Entry[]): AfterPickupLine | null {
+function entryLine(type: string, reason: string, entries: Entry[]): AfterPickupLine | null {
   // The one entry of an account, with the expected direction.
   const one = (account: string, credit: boolean) => {
     const found = entries.filter((entry) => entry.account === account);
@@ -195,7 +201,12 @@ function entryLine(type: string, entries: Entry[]): AfterPickupLine | null {
     case 'merchant.debit': {
       const merchant = one('merchant.account', false);
       return (
-        merchant && { key: 'merchantDebit', name: merchant.party.name, amount: size(merchant) }
+        merchant && {
+          key: 'merchantDebit',
+          name: merchant.party.name,
+          amount: size(merchant),
+          reason,
+        }
       );
     }
     case 'merchant.commission': {
@@ -207,12 +218,17 @@ function entryLine(type: string, entries: Entry[]): AfterPickupLine | null {
     case 'earn.charge': {
       const earnings = one('captain.earnings', false);
       return (
-        earnings && { key: 'captainCharge', name: earnings.party.name, amount: size(earnings) }
+        earnings && {
+          key: 'captainCharge',
+          name: earnings.party.name,
+          amount: size(earnings),
+          reason,
+        }
       );
     }
     case 'platform.operating_cost': {
       const cost = one('platform.operating_cost', false);
-      return cost && { key: 'platformCost', amount: size(cost) };
+      return cost && { key: 'platformCost', amount: size(cost), reason };
     }
     default:
       return null;

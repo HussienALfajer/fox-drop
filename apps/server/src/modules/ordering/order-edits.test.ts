@@ -1098,6 +1098,66 @@ describe('POST /v1/admin/orders/{orderId}/edit after the pickup (AP §9.3.3)', (
     });
   });
 
+  it('settles several edits with different parties, and previews the frozen commission', async () => {
+    const before = await balances();
+    const order = await pickedUpOrder();
+    expect(
+      (await order.ops.edit(order.order.id, { ...oneShawarma, responsible: 'restaurant' }))
+        .statusCode,
+    ).toBe(200);
+    const lowerFee = {
+      keep: [{ position: 0, quantity: 1 }],
+      add: [],
+      deliveryFee: '1000',
+      extraPrepMin: null,
+      responsible: 'captain',
+    };
+    // The restaurant already gave back 12000 and its commission on them: it
+    // owes 1800 and keeps 10200, and the captain's fee cut changes neither.
+    const preview = (await order.ops.editPreview(order.order.id, lowerFee)).json();
+    expect(preview.before).toMatchObject({ commission: '1800', merchantNet: '10200' });
+    expect(preview.after).toMatchObject({ commission: '1800', merchantNet: '10200' });
+    expect(preview.entries.map((entry: { reason: string }) => entry.reason)).toEqual([
+      'خُفّضت أجرة التوصيل بعد الاستلام',
+      'خُفّضت أجرة التوصيل بعد الاستلام',
+    ]);
+    expect((await order.ops.edit(order.order.id, lowerFee)).statusCode).toBe(200);
+    expect(await money(order.order.id)).toMatchObject({ total: '13000' });
+    expect((await order.arriveAtCustomer()).statusCode).toBe(200);
+    expect((await order.deliver('13000')).statusCode).toBe(200);
+    expect(moneyMoved(before, await balances(order.captain.captainId))).toMatchObject({
+      clearing: 0n,
+      restaurant: -(12_000n + 3_600n - 1_800n),
+      earnings: ORDER_PAY - 3_000n,
+      commission: 1_800n,
+      delivery: 4_000n,
+    });
+  });
+
+  it('previews a captain-responsible removal with the commission left on the restaurant', async () => {
+    const order = await pickedUpOrder();
+    const preview = (
+      await order.ops.editPreview(order.order.id, { ...oneShawarma, responsible: 'captain' })
+    ).json();
+    expect(preview.before).toMatchObject({ commission: '3600', merchantNet: '20400' });
+    expect(preview.after).toMatchObject({ commission: '3600', merchantNet: '20400' });
+    expect(preview.entries[0]).toMatchObject({
+      type: 'earn.charge',
+      reason: 'أصناف حُذفت بعد الاستلام',
+      account: 'captain.earnings',
+      party: { kind: 'captain', name: 'كابتن التعديل' },
+      amount: { amount: '10200', currency: 'TRY' },
+    });
+    // A dialog shown before the order moved is refused as such.
+    const stale = await order.ops.edit(order.order.id, {
+      ...oneShawarma,
+      responsible: 'captain',
+      version: (await order.ops.detail(order.order.id)).version - 1,
+    });
+    expect(stale.statusCode).toBe(409);
+    expect(stale.json().error).toBe('order_state_changed');
+  });
+
   it('refuses what an edit after the pickup cannot do', async () => {
     const order = await pickedUpOrder();
     const refused = async (body: object, status = 400) => {

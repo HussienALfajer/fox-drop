@@ -30,6 +30,7 @@ import {
   type AfterPickupJournal,
   afterPickupEntries,
   type CurrentLine,
+  frozenAtPickup,
   type EditChange,
   type EditRequest,
   pendingEdits,
@@ -1295,7 +1296,7 @@ export class OrderCommands {
       },
       now,
       async (order) => {
-        const edit = await this.prepareEdit(order, request, now);
+        const edit = await this.prepareEdit(order, request, now, { version: command.version });
         // AP §9.3.3: the edit is the one previewed on the order as the
         // dialog showed it; any change since is order_state_changed.
         if (edit.version !== command.version) throw await this.stateChanged(order);
@@ -1452,15 +1453,18 @@ export class OrderCommands {
       { preview: true },
     );
     const entries = (booking?.journals ?? []).flatMap((journal) =>
-      journal.entries.map((entry) => ({ type: journal.type, ...entry })),
+      journal.entries.map((entry) => ({ type: journal.type, reason: journal.reason, ...entry })),
     );
-    const [names, captain] = await Promise.all([
-      this.merchants.names([order.restaurantId]),
-      captainId === null ? null : this.captains.captain(captainId, now),
-    ]);
+    const [names, captain] =
+      entries.length === 0
+        ? [null, null]
+        : await Promise.all([
+            this.merchants.names([order.restaurantId]),
+            captainId === null ? null : this.captains.captain(captainId, now),
+          ]);
     const name = (party: { kind: string }) =>
       party.kind === 'merchant'
-        ? (names.get(order.restaurantId)?.nameAr ?? null)
+        ? (names?.get(order.restaurantId)?.nameAr ?? null)
         : party.kind === 'captain'
           ? (captain?.name ?? null)
           : null;
@@ -1468,9 +1472,32 @@ export class OrderCommands {
       const cut = commissionOf(money.itemsValue);
       return { ...money, commission: cut, merchantNet: money.itemsValue - cut };
     };
+    let sides = { before: side(before), after: side(after) };
+    if (AFTER_PICKUP.includes(order.status)) {
+      // AP §9.3.3: after the pickup the commission's base is frozen; the
+      // restaurant keeps the pickup payment less the commission and its own
+      // edits' debits, and only an edit it bears changes them.
+      const frozen = await frozenAtPickup(this.database.db, {
+        id: order.id,
+        placedAt: order.placedAt,
+        itemsValue: before.itemsValue,
+        deliveryFee: before.deliveryFee,
+      });
+      const ownCut = request.responsible === 'restaurant' && booking ? booking.commissionCut : 0n;
+      const ownCharge = request.responsible === 'restaurant' && booking ? booking.charge : 0n;
+      const commissionBefore = commissionOf(frozen.itemsValue) - frozen.restaurantCommissionCut;
+      const netBefore = frozen.itemsValue - commissionBefore - frozen.restaurantCharge;
+      sides = {
+        before: { ...before, commission: commissionBefore, merchantNet: netBefore },
+        after: {
+          ...after,
+          commission: commissionBefore - ownCut,
+          merchantNet: netBefore + ownCut - ownCharge,
+        },
+      };
+    }
     return {
-      before: side(before),
-      after: side(after),
+      ...sides,
       changes: plan.changes,
       addsItems: plan.addsItems,
       backToPreparing: times !== null,
@@ -1638,7 +1665,7 @@ export class OrderCommands {
     order: OrderAtStart,
     request: EditRequest,
     now: Date,
-    { preview = false }: { preview?: boolean } = {},
+    { preview = false, version }: { preview?: boolean; version?: number } = {},
   ) {
     const [row] = await this.database.db
       .select({
@@ -1656,6 +1683,9 @@ export class OrderCommands {
       .from(orders)
       .where(orderKey(order.id, order.placedAt));
     if (!row || !EDITABLE.includes(row.status)) throw await this.stateChanged(order);
+    // AP §9.3.3: the edit is the one previewed; an order that moved since
+    // (picked up under the dialog, say) is order_state_changed first.
+    if (version !== undefined && row.version !== version) throw await this.stateChanged(order);
     const afterPickup = AFTER_PICKUP.includes(row.status);
     // AP §9.3.3: after the pickup an edit names who bears it; before, none.
     // The preview may come before the dialog's party is chosen.
@@ -2116,6 +2146,7 @@ export interface EditPreview {
   afterPickup: boolean;
   entries: (AfterPickupJournal['entries'][number] & {
     type: AfterPickupJournal['type'];
+    reason: string | null;
     party: { name: string | null };
   })[];
 }

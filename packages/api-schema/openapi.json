@@ -17922,6 +17922,13 @@
                   "type": "string",
                   "description": "The journal type, such as merchant.debit."
                 },
+                "reason": {
+                  "description": "The journal's reason, its line on the party's account (RA §12.5): «أصناف حُذفت بعد الاستلام», «خُفّضت أجرة التوصيل بعد الاستلام», «إلغاء عمولة».",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
                 "account": {
                   "type": "string",
                   "description": "The account purpose, such as merchant.account."
@@ -17987,6 +17994,7 @@
               },
               "required": [
                 "type",
+                "reason",
                 "account",
                 "party",
                 "amount"

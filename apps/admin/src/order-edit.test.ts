@@ -166,6 +166,7 @@ describe('an edit after the pickup', () => {
   it('names each journal of the preview, and refuses one it cannot', () => {
     const entry = (type: string, account: string, amount: string, name: string | null = null) => ({
       type,
+      reason: type === 'merchant.commission' ? 'إلغاء عمولة' : 'أصناف حُذفت بعد الاستلام',
       account,
       party: { kind: 'merchant' as const, id: null, name },
       amount: { amount, currency: 'TRY' },
@@ -182,7 +183,12 @@ describe('an edit after the pickup', () => {
         ]),
       ),
     ).toEqual([
-      { key: 'merchantDebit', name: 'مطعم الشام', amount: { amount: '12000', currency: 'TRY' } },
+      {
+        key: 'merchantDebit',
+        name: 'مطعم الشام',
+        amount: { amount: '12000', currency: 'TRY' },
+        reason: 'أصناف حُذفت بعد الاستلام',
+      },
       { key: 'commissionReversed', amount: { amount: '1800', currency: 'TRY' } },
     ]);
     expect(
@@ -193,7 +199,12 @@ describe('an edit after the pickup', () => {
         ]),
       ),
     ).toEqual([
-      { key: 'captainCharge', name: 'أحمد', amount: { amount: '12200', currency: 'TRY' } },
+      {
+        key: 'captainCharge',
+        name: 'أحمد',
+        amount: { amount: '12200', currency: 'TRY' },
+        reason: 'أصناف حُذفت بعد الاستلام',
+      },
     ]);
     expect(
       afterPickupLines(preview([entry('merchant.credit', 'merchant.account', '-100')])),

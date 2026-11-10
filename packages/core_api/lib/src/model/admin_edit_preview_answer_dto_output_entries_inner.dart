@@ -14,6 +14,7 @@ part 'admin_edit_preview_answer_dto_output_entries_inner.g.dart';
 ///
 /// Properties:
 /// * [type] - The journal type, such as merchant.debit.
+/// * [reason] - The journal's reason, its line on the party's account (RA §12.5): «أصناف حُذفت بعد الاستلام», «خُفّضت أجرة التوصيل بعد الاستلام», «إلغاء عمولة».
 /// * [account] - The account purpose, such as merchant.account.
 /// * [party]
 /// * [amount]
@@ -27,6 +28,10 @@ abstract class AdminEditPreviewAnswerDtoOutputEntriesInner
   /// The journal type, such as merchant.debit.
   @BuiltValueField(wireName: r'type')
   String get type;
+
+  /// The journal's reason, its line on the party's account (RA §12.5): «أصناف حُذفت بعد الاستلام», «خُفّضت أجرة التوصيل بعد الاستلام», «إلغاء عمولة».
+  @BuiltValueField(wireName: r'reason')
+  String? get reason;
 
   /// The account purpose, such as merchant.account.
   @BuiltValueField(wireName: r'account')
@@ -75,6 +80,13 @@ class _$AdminEditPreviewAnswerDtoOutputEntriesInnerSerializer
       object.type,
       specifiedType: const FullType(String),
     );
+    yield r'reason';
+    yield object.reason == null
+        ? null
+        : serializers.serialize(
+            object.reason,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'account';
     yield serializers.serialize(
       object.account,
@@ -129,6 +141,16 @@ class _$AdminEditPreviewAnswerDtoOutputEntriesInnerSerializer
                   )
                   as String;
           result.type = valueDes;
+          break;
+        case r'reason':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.reason = valueDes;
           break;
         case r'account':
           final valueDes =

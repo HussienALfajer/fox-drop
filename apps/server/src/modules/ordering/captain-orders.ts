@@ -48,7 +48,7 @@ import {
 } from './pickup-views.js';
 import { collections, orders, pickupRequests } from './schema.js';
 import { type Delivery, DeliveryBooking, lockForDelivery } from './delivery-booking.js';
-import { checkDoorPayment, commission, waitingMinutes } from './door-payment.js';
+import { checkDoorPayment, waitingMinutes } from './door-payment.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 
@@ -596,7 +596,6 @@ export class CaptainOrders {
         captainWaitingAlertAt: orders.captainWaitingAlertAt,
         pickedUpAt: orders.pickedUpAt,
         testOrder: orders.testOrder,
-        deliveryFee: orders.deliveryFee,
       })
       .from(orders)
       .where(orderKey(order.id, order.placedAt));
@@ -625,12 +624,6 @@ export class CaptainOrders {
       waiting,
     );
     if (!pay) throw new Error(`pay table ${money.payTableId} has no rate for ${captain.vehicle}`);
-    const frozen = await frozenAtPickup(this.database.db, {
-      id: order.id,
-      placedAt: order.placedAt,
-      itemsValue: order.itemsValue,
-      deliveryFee: money.deliveryFee,
-    });
     return {
       received: collection.received,
       change: collection.change,
@@ -643,9 +636,7 @@ export class CaptainOrders {
       pay,
       waitingMinutes: waiting,
       // AP §9.6.3: a test order, flagged at placing, posts no commission.
-      commission: money.testOrder ? null : commission(frozen.itemsValue, money.commissionBp),
-      commissionToClearing: money.testOrder ? 0n : frozen.commissionToClearing,
-      deliveryFee: frozen.deliveryFee,
+      commissionBp: money.testOrder ? null : money.commissionBp,
       amountDue: order.total,
     };
   }
