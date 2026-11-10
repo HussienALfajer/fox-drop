@@ -16,7 +16,7 @@ Slice 2.12b, «تسليم لكابتن آخر» after the pickup (`docs/roadmap.
   - [x] Server rule and table (test first): `handover.ts`, migration (`ordering.handovers`, `dispatch.offers.handover`, the online period's end `handed_over`).
   - [x] Server command: `POST /v1/admin/orders/{orderId}/handover` (`captainId`, `reason`) as a manual offer or assignment marked handover; the picker measured from the first captain; accept, decline, expiry and withdrawal of a handover offer.
   - [x] Server receipt: `POST /v1/captain/orders/{orderId}/receive-handover` within `captain.customer_radius_m` of the first captain's latest fix; both captains' reads, the first's card and its acknowledgement, the first offline (K17), the pay and custody, the relay to both captains, the pushes, the outcome and operations' delivery ending an open handover.
-  - [ ] Captain app: the offer «استلام من كابتن» with «لا تدفع شيئاً», the receiver's step and button, the giver's waiting screen with the call button, the card «سلّمت الطلب للكابتن {الاسم}».
+  - [x] Captain app: the offer «استلام من كابتن» with «لا تدفع شيئاً», the receiver's step and button, the giver's waiting screen with the call button, the card «سلّمت الطلب للكابتن {الاسم}».
   - [ ] Panel: «تسليم لكابتن آخر» with the note and the picker, the open handover and the history on the detail, the timeline's lines.
   - [ ] Docs and the handover to 2.12c.
 

@@ -1908,6 +1908,56 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get captainHandoverOffer => 'استلام من كابتن';
+
+  @override
+  String get captainPayNothing => 'لا تدفع شيئاً';
+
+  @override
+  String captainHandoverFrom(String name, String distance) {
+    return 'من الكابتن $name — $distance';
+  }
+
+  @override
+  String captainHandoverFromName(String name) {
+    return 'من الكابتن $name';
+  }
+
+  @override
+  String captainReceivedFromCaptain(String name) {
+    return 'استلمت الطلب من الكابتن $name';
+  }
+
+  @override
+  String get captainGetCloserToCaptain => 'اقترب من الكابتن لتأكيد الاستلام';
+
+  @override
+  String get captainCaptainLocationUnknown =>
+      'موقع الكابتن غير متاح الآن — اتصل به';
+
+  @override
+  String captainHandoverWait(String name) {
+    return 'سيستلم الكابتن $name الطلب منك. انتظره في موقعك.';
+  }
+
+  @override
+  String get captainHandoverOffered =>
+      'تبحث العمليات عن كابتن يستلم الطلب منك. انتظر في موقعك.';
+
+  @override
+  String get captainCallCaptain => 'اتصال بالكابتن';
+
+  @override
+  String captainOtherCaptainAway(String name, String distance) {
+    return 'الكابتن $name على بعد $distance';
+  }
+
+  @override
+  String captainHandedOver(String name) {
+    return 'سلّمت الطلب للكابتن $name';
+  }
+
+  @override
   String get captainCashTakeBack => 'استرجع المبلغ من المطعم';
 
   @override

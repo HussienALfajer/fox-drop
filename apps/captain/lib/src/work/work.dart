@@ -24,11 +24,15 @@ typedef EndedOutcome = CaptainActiveOrderDtoOutputEndedOutcomeEnum;
 typedef CollectOutcome =
     CaptainActiveOrderDtoOutputOrderOutcomeToCollectOutcomeEnum;
 typedef EndedFood = CaptainActiveOrderDtoOutputEndedFoodEnum;
+typedef Handover = CaptainActiveOrderDtoOutputOrderHandover;
+typedef HandoverRole = CaptainActiveOrderDtoOutputOrderHandoverRoleEnum;
+typedef HandedOver = CaptainActiveOrderDtoOutputHandedOver;
 
 /// What the captain's screens show, always as the server answered it: the
 /// availability (CA §7), the open offer (CA §8), the active order (CA §9)
 /// and an order operations cancelled, took from the captain, or ended with
-/// an outcome, that the captain has not yet seen (CA §9.10, §9.12).
+/// an outcome, or that the captain handed to another, that the captain has
+/// not yet seen (CA §9.10, §9.10.1, §9.12).
 class Work {
   const Work({
     required this.availability,
@@ -37,6 +41,7 @@ class Work {
     this.cancelled,
     this.withdrawn,
     this.ended,
+    this.handedOver,
   });
 
   final Availability availability;
@@ -45,6 +50,7 @@ class Work {
   final Cancelled? cancelled;
   final Withdrawn? withdrawn;
   final Ended? ended;
+  final HandedOver? handedOver;
 
   AvailabilityState get state => availability.availability.state;
 
@@ -61,6 +67,14 @@ int stepOf(ActiveOrder order) => switch (order.captainTrack) {
   Track.atCustomer || Track.done => 4,
   _ => 1,
 };
+
+/// CA §9.10.1 (slice 2.12b): the open handover the captain gives (the
+/// order's captain, waiting) or receives (step 1 leads to the first
+/// captain), or null.
+Handover? giving(ActiveOrder order) =>
+    order.handover?.role == HandoverRole.giving ? order.handover : null;
+Handover? receiving(ActiveOrder order) =>
+    order.handover?.role == HandoverRole.receiving ? order.handover : null;
 
 /// The open pickup request (CA §9.4), or null.
 PickupRequest? openRequest(ActiveOrder order) {
@@ -108,6 +122,7 @@ final workFeedProvider = Provider.autoDispose<LiveFeed<Work>?>((ref) {
         cancelled: order.data!.cancelled,
         withdrawn: order.data!.withdrawn,
         ended: order.data!.ended,
+        handedOver: order.data!.handedOver,
       );
     },
     versions: (work) => {

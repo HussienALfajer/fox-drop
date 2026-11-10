@@ -56,6 +56,14 @@ class OrderView extends ConsumerWidget {
         ],
       );
     }
+    // CA §9.10.1 (slice 2.12b): the order's handover replaces the steps:
+    // the first captain waits, the second goes to them.
+    if (giving(order) case final handover?) {
+      return _HandingOver(order: order, handover: handover);
+    }
+    if (receiving(order) case final handover?) {
+      return _Receiving(order: order, handover: handover);
+    }
     return ListView(
       padding: const EdgeInsetsDirectional.all(16),
       children: [
@@ -437,6 +445,130 @@ class _AtCustomer extends ConsumerWidget {
         _CustomerBlock(order: order),
         const Divider(),
         PaymentForm(key: ValueKey('${order.id} payment'), order: order),
+      ],
+    );
+  }
+}
+
+/// While a handover is open, the active order is read again every 15
+/// seconds, so the other captain's position stays live (CA §9.10.1).
+void _followOtherCaptain(WidgetRef ref) {
+  ref.listen(tickProvider, (_, tick) {
+    if ((tick.value ?? 0) % 15 == 14) ref.read(workFeedProvider)?.refresh();
+  });
+}
+
+/// The other captain of a handover: their distance and the call button.
+List<Widget> _otherCaptain(
+  BuildContext context,
+  WidgetRef ref,
+  Handover handover, {
+  required bool navigate,
+}) {
+  final l10n = AppLocalizations.of(context);
+  final other = handover.captain;
+  final location = other.location;
+  final phone = other.phone;
+  final distance = location == null
+      ? null
+      : _distanceTo(ref, location.latitude, location.longitude);
+  return [
+    if (location == null)
+      Text(l10n.captainCaptainLocationUnknown)
+    else if (distance != null)
+      Text(
+        l10n.captainOtherCaptainAway(other.name, l10n.formatDistance(distance)),
+      ),
+    if (navigate && location != null)
+      OutlinedButton(
+        onPressed: () =>
+            _open(ref, navigationTo(location.latitude, location.longitude)),
+        child: Text(l10n.captainStartNavigation),
+      ),
+    if (phone != null)
+      OutlinedButton(
+        onPressed: () => _open(ref, Uri(scheme: 'tel', path: phone)),
+        child: Text(l10n.captainCallCaptain),
+      ),
+  ];
+}
+
+/// CA §9.10.1: the first captain waits where they are for the second, whose
+/// live position shows, with a call button; their own steps wait.
+class _HandingOver extends ConsumerWidget {
+  const _HandingOver({required this.order, required this.handover});
+
+  final ActiveOrder order;
+  final Handover handover;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    _followOtherCaptain(ref);
+    return ListView(
+      padding: const EdgeInsetsDirectional.all(16),
+      children: [
+        Text(l10n.captainOrderItems(order.number, order.itemCount)),
+        Text(
+          handover.assigned
+              ? l10n.captainHandoverWait(handover.captain.name)
+              : l10n.captainHandoverOffered,
+          key: const Key('handover-wait'),
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        if (handover.assigned)
+          ..._otherCaptain(context, ref, handover, navigate: false),
+      ],
+    );
+  }
+}
+
+/// CA §9.10.1: the second captain's step 1, to the first captain's live
+/// position; nothing to pay; «استلمت الطلب من الكابتن {الاسم}» within
+/// captain.customer_radius_m of them.
+class _Receiving extends ConsumerWidget {
+  const _Receiving({required this.order, required this.handover});
+
+  final ActiveOrder order;
+  final Handover handover;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    _followOtherCaptain(ref);
+    final location = handover.captain.location;
+    final distance = location == null
+        ? null
+        : _distanceTo(ref, location.latitude, location.longitude);
+    final within = distance != null && distance <= order.radii.customerMetres;
+    final collect = order.collect;
+    return ListView(
+      padding: const EdgeInsetsDirectional.all(16),
+      children: [
+        Text(l10n.captainStep(1, l10n.captainHandoverOffer)),
+        Text(l10n.captainOrderItems(order.number, order.itemCount)),
+        Text(l10n.captainHandoverFromName(handover.captain.name)),
+        ..._otherCaptain(context, ref, handover, navigate: true),
+        Text(l10n.captainPayNothing),
+        Text(
+          l10n.captainCollectFromCustomer(
+            l10n.formatMoney(collect.amount, collect.currency),
+          ),
+        ),
+        Text(order.customer.address.neighbourhood),
+        if (!within && location != null) Text(l10n.captainGetCloserToCaptain),
+        _MainButton(
+          order: order,
+          label: l10n.captainReceivedFromCaptain(handover.captain.name),
+          onPressed: within
+              ? () async {
+                  final notice = await ref
+                      .read(commandsProvider.notifier)
+                      .receiveHandover(order.id);
+                  if (context.mounted) showNotice(context, notice);
+                }
+              : null,
+        ),
       ],
     );
   }

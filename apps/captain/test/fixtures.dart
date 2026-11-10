@@ -59,32 +59,68 @@ Map<String, Object?> availabilityJson({
 };
 
 /// An open offer of `GET /v1/captain/offers/current`.
-Map<String, Object?> offerJson({Duration left = const Duration(seconds: 40)}) =>
-    {
-      'id': offerId,
-      'status': 'open',
-      'orderId': orderId,
-      'number': '10423',
-      'fromOperations': true,
-      'offeredAt': now.toIso8601String(),
-      'expiresAt': now.add(left).toIso8601String(),
-      'pay': moneyJson('3500'),
-      'restaurant': {
-        'name': 'مطعم الشام',
-        'location': {
-          'latitude': restaurant.latitude,
-          'longitude': restaurant.longitude,
-        },
-        'distanceMetres': 1200,
-      },
-      'customer': {'neighbourhood': 'حي الشهداء', 'tripMetres': 2800},
-      'pickupPayment': moneyJson('40000'),
-      'collect': moneyJson('41000'),
-      'preparation': {
-        'ready': false,
-        'readyAt': now.add(const Duration(minutes: 8)).toIso8601String(),
-      },
-    };
+Map<String, Object?> offerJson({
+  Duration left = const Duration(seconds: 40),
+  Map<String, Object?>? handover,
+}) => {
+  'id': offerId,
+  'status': 'open',
+  'orderId': orderId,
+  'number': '10423',
+  'fromOperations': true,
+  'offeredAt': now.toIso8601String(),
+  'expiresAt': now.add(left).toIso8601String(),
+  'pay': moneyJson('3500'),
+  'restaurant': {
+    'name': 'مطعم الشام',
+    'location': {
+      'latitude': restaurant.latitude,
+      'longitude': restaurant.longitude,
+    },
+    'distanceMetres': 1200,
+  },
+  'customer': {'neighbourhood': 'حي الشهداء', 'tripMetres': 2800},
+  'pickupPayment': moneyJson('40000'),
+  'collect': moneyJson('41000'),
+  'preparation': {
+    'ready': false,
+    'readyAt': now.add(const Duration(minutes: 8)).toIso8601String(),
+  },
+  'handover': handover,
+};
+
+/// Where the first captain of a handover waits, about 110 m from [pin].
+const firstCaptain = (latitude: 36.597, longitude: 37.044);
+
+/// The open handover of the active order (CA §9.10.1, slice 2.12b).
+Map<String, Object?> handoverJson({
+  String role = 'receiving',
+  bool assigned = true,
+  String name = 'سامر',
+  bool located = true,
+}) => {
+  'role': role,
+  'assigned': assigned,
+  'captain': {
+    'name': name,
+    'phone': '+963944333333',
+    'location': located
+        ? {
+            'latitude': firstCaptain.latitude,
+            'longitude': firstCaptain.longitude,
+            'recordedAt': now.toIso8601String(),
+          }
+        : null,
+  },
+};
+
+/// The order this captain handed to another (CA §9.10.1).
+Map<String, Object?> handedOverJson() => {
+  'orderId': orderId,
+  'number': '10423',
+  'toCaptainName': 'باسل',
+  'at': now.toIso8601String(),
+};
 
 /// The active order of `GET /v1/captain/orders/active`.
 Map<String, Object?> orderJson({
@@ -101,6 +137,7 @@ Map<String, Object?> orderJson({
   String collect = '41000',
   int quantity = 2,
   bool pickedUp = false,
+  Map<String, Object?>? handover,
 }) {
   final atRestaurant = track != 'assigned';
   final atCustomer = track == 'at_customer';
@@ -168,6 +205,7 @@ Map<String, Object?> orderJson({
     'radii': {'restaurantMetres': 150, 'customerMetres': 200},
     'itemReportOpen': itemReportOpen,
     'editUnacknowledged': editUnacknowledged,
+    'handover': handover,
   };
 }
 
@@ -395,6 +433,7 @@ class TestApp {
     Map<String, Object?>? cancelled,
     Map<String, Object?>? withdrawn,
     Map<String, Object?>? ended,
+    Map<String, Object?>? handedOver,
   }) {
     server.on('/v1/captain/availability', [
       for (final a in availability) FakeAnswer(200, a),
@@ -409,6 +448,7 @@ class TestApp {
           'cancelled': cancelled,
           'withdrawn': withdrawn,
           'ended': ended,
+          'handedOver': handedOver,
         }),
     ]);
   }

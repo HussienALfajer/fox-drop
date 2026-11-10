@@ -3184,6 +3184,78 @@ abstract class AppLocalizations {
   /// **'سُحب منك الطلب: {reason}'**
   String captainOrderWithdrawn(String reason);
 
+  /// The mark of a handover offer or assignment and the step's title for the second captain (CA §9.10.1, Appendix B, slice 2.12b).
+  ///
+  /// In ar, this message translates to:
+  /// **'استلام من كابتن'**
+  String get captainHandoverOffer;
+
+  /// Shown instead of the pickup payment on a handover offer and to the second captain (CA §9.10.1, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تدفع شيئاً'**
+  String get captainPayNothing;
+
+  /// The first captain on a handover offer and step (CA §9.10.1; the spec gives no wording); {distance} is formatted with formatDistance.
+  ///
+  /// In ar, this message translates to:
+  /// **'من الكابتن {name} — {distance}'**
+  String captainHandoverFrom(String name, String distance);
+
+  /// The first captain on a handover offer or step while their position is unknown (CA §9.10.1; the spec gives no wording).
+  ///
+  /// In ar, this message translates to:
+  /// **'من الكابتن {name}'**
+  String captainHandoverFromName(String name);
+
+  /// The second captain's button within captain.customer_radius_m of the first captain (CA §9.10.1, §15, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'استلمت الطلب من الكابتن {name}'**
+  String captainReceivedFromCaptain(String name);
+
+  /// The second captain beyond the radius of the first, or refused too_far_from_captain (CA §9.10.1; the spec gives no wording).
+  ///
+  /// In ar, this message translates to:
+  /// **'اقترب من الكابتن لتأكيد الاستلام'**
+  String get captainGetCloserToCaptain;
+
+  /// The other captain of a handover has sent no position (CA §9.10.1; the spec gives no wording).
+  ///
+  /// In ar, this message translates to:
+  /// **'موقع الكابتن غير متاح الآن — اتصل به'**
+  String get captainCaptainLocationUnknown;
+
+  /// The first captain's waiting screen once the second captain has the handover (CA §9.10.1, Appendix B); also its chime.
+  ///
+  /// In ar, this message translates to:
+  /// **'سيستلم الكابتن {name} الطلب منك. انتظره في موقعك.'**
+  String captainHandoverWait(String name);
+
+  /// The first captain's waiting screen while the handover is still offered (CA §9.10.1; the spec gives no wording).
+  ///
+  /// In ar, this message translates to:
+  /// **'تبحث العمليات عن كابتن يستلم الطلب منك. انتظر في موقعك.'**
+  String get captainHandoverOffered;
+
+  /// Dials the other captain of a handover (CA §9.10.1; the spec gives no wording).
+  ///
+  /// In ar, this message translates to:
+  /// **'اتصال بالكابتن'**
+  String get captainCallCaptain;
+
+  /// The second captain's live distance on the first captain's waiting screen (CA §9.10.1; the spec gives no wording); {distance} is formatted with formatDistance.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن {name} على بعد {distance}'**
+  String captainOtherCaptainAway(String name, String distance);
+
+  /// The card after the second captain confirmed the receipt; the first captain is offline (CA §9.10.1, §14 #11, K17).
+  ///
+  /// In ar, this message translates to:
+  /// **'سلّمت الطلب للكابتن {name}'**
+  String captainHandedOver(String name);
+
   /// The cancellation card when the restaurant returned the pickup payment (CA §9.10; owner decision 2026-11-09).
   ///
   /// In ar, this message translates to:

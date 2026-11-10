@@ -145,6 +145,20 @@ class OrderWithdrawn extends Alert {
   final Withdrawn withdrawn;
 }
 
+/// «سلّمت الطلب للكابتن {الاسم}» (CA §9.10.1, §14 #11, slice 2.12b): the
+/// handover card shows it, with the cancellation sound as its push.
+class OrderHandedOver extends Alert {
+  const OrderHandedOver(this.handedOver) : super(chimes: false);
+  final HandedOver handedOver;
+}
+
+/// «سيستلم الكابتن {الاسم} الطلب منك. انتظره في موقعك.» (CA §9.10.1): the
+/// second captain has the handover of this captain's order.
+class HandoverStarted extends Alert {
+  const HandoverStarted(this.name);
+  final String name;
+}
+
 /// «أنهت العمليات الطلب: {النتيجة}.» (CA §9.10, slice 2.11a): the outcome card
 /// shows it, with a chime.
 class OutcomeSet extends Alert {
@@ -224,6 +238,10 @@ List<Alert> alertStep(
   if (ended != null && before.ended?.orderId != ended.orderId) {
     alerts.add(OutcomeSet(ended));
   }
+  final handedOver = after.handedOver;
+  if (handedOver != null && before.handedOver?.orderId != handedOver.orderId) {
+    alerts.add(OrderHandedOver(handedOver));
+  }
   final was = before.order;
   final order = after.order;
   if (order == null) return alerts;
@@ -241,6 +259,10 @@ List<Alert> alertStep(
         Money(collect.amount.amount, collect.amount.currency),
       ),
     );
+  }
+  final handover = giving(order);
+  if (handover != null && handover.assigned && giving(was!)?.assigned != true) {
+    alerts.add(HandoverStarted(handover.captain.name));
   }
   if (!was!.preparation.ready && order.preparation.ready) {
     alerts.add(OrderReady(order.number));
