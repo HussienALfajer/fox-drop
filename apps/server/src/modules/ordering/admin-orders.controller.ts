@@ -689,6 +689,44 @@ class AdminOrderDto extends createZodDto(
         .describe(
           'While accepted or ready with a captain: the choices of «سحب وإعادة تعيين» (AP §9.3.2); refused with 409 pickup_request_open while a request is open.',
         ),
+      handover: z
+        .object({
+          allowed: z
+            .boolean()
+            .describe(
+              '«تسليم لكابتن آخر» is offered: picked up or arrived with a captain, no handover open, no outcome waiting.',
+            ),
+          handovers: z
+            .array(
+              z.object({
+                openedAt: z.iso.datetime(),
+                fromCaptainId: z.uuid(),
+                fromCaptainName: z.string().nullable(),
+                toCaptainId: z.uuid(),
+                toCaptainName: z.string().nullable(),
+                offered: z.boolean().describe('Sent as an offer «استلام من كابتن», else assigned.'),
+                assignedAt: z.iso
+                  .datetime()
+                  .nullable()
+                  .describe('The second captain has it (accepted or assigned).'),
+                receivedAt: z.iso
+                  .datetime()
+                  .nullable()
+                  .describe('«استلمت الطلب من الكابتن {الاسم}».'),
+                closedAt: z.iso.datetime().nullable(),
+                closeReason: z
+                  .enum(['declined', 'expired', 'withdrawn', 'ended'])
+                  .nullable()
+                  .describe(
+                    'Why it closed without the receipt: the offer declined, expired or withdrawn, or the order ended first.',
+                  ),
+                note: z.string().describe("Operations' internal note."),
+                adminId: z.uuid(),
+              }),
+            )
+            .describe('Every handover of the order, oldest first.'),
+        })
+        .describe('AP §9.3.1, §9.3.2 «تسليم لكابتن آخر» (slice 2.12b).'),
       reassignments: z
         .array(
           z.object({
@@ -1954,6 +1992,7 @@ export class AdminOrdersController {
       outcomeChange,
       reassignReasons,
       reassignmentRows,
+      handoverRows,
     ] = await Promise.all([
       this.customers.profile(order.customerAccountId),
       this.views.timeline(order),
@@ -1975,6 +2014,7 @@ export class AdminOrdersController {
         ? this.commands.reassignReasons()
         : null,
       this.commands.reassignmentsOf(order),
+      this.commands.handoversOf(order, now),
     ]);
     const { acceptance } = order;
     // The cancellation itself, not its acknowledgement (RA §8.14).
@@ -2019,6 +2059,16 @@ export class AdminOrdersController {
         },
         cancelChoices: cancelReasons && { reasons: cancelReasons },
         reassignChoices: reassignReasons && { reasons: reassignReasons },
+        handover: {
+          allowed: handoverRows.allowed,
+          handovers: handoverRows.rows.map((each) => ({
+            ...each,
+            openedAt: each.openedAt.toISOString(),
+            assignedAt: each.assignedAt?.toISOString() ?? null,
+            receivedAt: each.receivedAt?.toISOString() ?? null,
+            closedAt: each.closedAt?.toISOString() ?? null,
+          })),
+        },
         reassignments: reassignmentRows.map((each) => ({
           ...each,
           at: each.at.toISOString(),

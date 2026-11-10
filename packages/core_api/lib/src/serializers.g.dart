@@ -138,6 +138,12 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderEditsInnerItemsValue.serializer)
           ..add(AdminOrderDtoOutputOrderEditsInnerResponsibleEnum.serializer)
           ..add(AdminOrderDtoOutputOrderEditsInnerStatusEnum.serializer)
+          ..add(AdminOrderDtoOutputOrderHandover.serializer)
+          ..add(AdminOrderDtoOutputOrderHandoverHandoversInner.serializer)
+          ..add(
+            AdminOrderDtoOutputOrderHandoverHandoversInnerCloseReasonEnum
+                .serializer,
+          )
           ..add(AdminOrderDtoOutputOrderItemReport.serializer)
           ..add(AdminOrderDtoOutputOrderItemReportItemsInner.serializer)
           ..add(
@@ -911,6 +917,12 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminOrderDtoOutputOrderEditChoicesItemsInnerOptionGroupsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderDtoOutputOrderHandoverHandoversInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderHandoverHandoversInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

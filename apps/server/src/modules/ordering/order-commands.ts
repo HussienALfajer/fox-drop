@@ -63,6 +63,7 @@ import {
   type SetOutcome,
 } from './outcome.js';
 import { OrderAssignments } from './order-assignments.js';
+import { canHandOver } from './handover.js';
 import { baseTotal, linesOf } from './pickup-booking.js';
 import type { SearchStartJob } from './order-timers.js';
 import {
@@ -92,6 +93,7 @@ import {
   outcomeFoods,
   pickupRequests,
   reassignments,
+  handovers,
   timeChanges,
 } from './schema.js';
 
@@ -822,6 +824,49 @@ export class OrderCommands {
         label,
         captainFault: captainFault ?? false,
       }));
+  }
+
+  // AP §9.3.1, §9.3.2 «تسليم لكابتن آخر» (slice 2.12b): the order's
+  // handovers, oldest first, with both captains' names, and whether
+  // operations may open one now (picked up or arrived with a captain, none
+  // open, no outcome waiting).
+  async handoversOf(
+    order: { id: string; placedAt: Date; status: OrderView['status']; captainId: string | null },
+    now: Date,
+  ) {
+    const rows = await this.database.db
+      .select({
+        openedAt: handovers.openedAt,
+        fromCaptainId: handovers.fromCaptainId,
+        toCaptainId: handovers.toCaptainId,
+        offered: sql<boolean>`${handovers.offerId} IS NOT NULL`,
+        assignedAt: handovers.assignedAt,
+        receivedAt: handovers.receivedAt,
+        closedAt: handovers.closedAt,
+        closeReason: handovers.closeReason,
+        note: handovers.note,
+        adminId: handovers.adminId,
+      })
+      .from(handovers)
+      .where(and(eq(handovers.orderId, order.id), eq(handovers.orderPlacedAt, order.placedAt)))
+      .orderBy(handovers.openedAt);
+    const ids = [...new Set(rows.flatMap((row) => [row.fromCaptainId, row.toCaptainId]))];
+    const names = new Map(
+      await Promise.all(
+        ids.map(async (id) => [id, (await this.captains.captain(id, now))?.name ?? null] as const),
+      ),
+    );
+    const open = rows.some((row) => row.receivedAt === null && row.closedAt === null);
+    const outcomePending = (await pendingOutcome(this.database.db, order)) !== null;
+    return {
+      allowed:
+        canHandOver(order, { open, outcomePending }, '') === null && order.captainId !== null,
+      rows: rows.map((row) => ({
+        ...row,
+        fromCaptainName: names.get(row.fromCaptainId) ?? null,
+        toCaptainName: names.get(row.toCaptainId) ?? null,
+      })),
+    };
   }
 
   // AP §9.3.1: the order's withdrawals, oldest first, each with the

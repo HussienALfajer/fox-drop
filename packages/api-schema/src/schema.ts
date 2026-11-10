@@ -6314,6 +6314,35 @@ export interface components {
                         captainFault: boolean;
                     }[];
                 } | null;
+                /** @description AP §9.3.1, §9.3.2 «تسليم لكابتن آخر» (slice 2.12b). */
+                handover: {
+                    /** @description «تسليم لكابتن آخر» is offered: picked up or arrived with a captain, no handover open, no outcome waiting. */
+                    allowed: boolean;
+                    /** @description Every handover of the order, oldest first. */
+                    handovers: {
+                        /** Format: date-time */
+                        openedAt: string;
+                        /** Format: uuid */
+                        fromCaptainId: string;
+                        fromCaptainName: string | null;
+                        /** Format: uuid */
+                        toCaptainId: string;
+                        toCaptainName: string | null;
+                        /** @description Sent as an offer «استلام من كابتن», else assigned. */
+                        offered: boolean;
+                        /** @description The second captain has it (accepted or assigned). */
+                        assignedAt: string | null;
+                        /** @description «استلمت الطلب من الكابتن {الاسم}». */
+                        receivedAt: string | null;
+                        closedAt: string | null;
+                        /** @description Why it closed without the receipt: the offer declined, expired or withdrawn, or the order ended first. */
+                        closeReason: ("declined" | "expired" | "withdrawn" | "ended") | null;
+                        /** @description Operations' internal note. */
+                        note: string;
+                        /** Format: uuid */
+                        adminId: string;
+                    }[];
+                };
                 /** @description AP §9.3.1: every «سحب وإعادة تعيين» of the order, oldest first. */
                 reassignments: {
                     /** Format: date-time */

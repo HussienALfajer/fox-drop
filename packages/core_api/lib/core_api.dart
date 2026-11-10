@@ -92,6 +92,8 @@ export 'package:core_api/src/model/admin_order_dto_output_order_edit_choices_ite
 export 'package:core_api/src/model/admin_order_dto_output_order_edit_choices_items_inner_option_groups_inner.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_edits_inner.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_edits_inner_items_value.dart';
+export 'package:core_api/src/model/admin_order_dto_output_order_handover.dart';
+export 'package:core_api/src/model/admin_order_dto_output_order_handover_handovers_inner.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_item_report.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_item_report_items_inner.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';

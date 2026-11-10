@@ -91,6 +91,8 @@ import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices_ite
 import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices_items_inner_option_groups_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_edits_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_edits_inner_items_value.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_handover.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_handover_handovers_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_item_report.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_item_report_items_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
@@ -521,6 +523,8 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderEditChoicesItemsInnerOptionGroupsInner,
   AdminOrderDtoOutputOrderEditsInner,
   AdminOrderDtoOutputOrderEditsInnerItemsValue,
+  AdminOrderDtoOutputOrderHandover,
+  AdminOrderDtoOutputOrderHandoverHandoversInner,
   AdminOrderDtoOutputOrderItemReport,
   AdminOrderDtoOutputOrderItemReportItemsInner,
   AdminOrderDtoOutputOrderLinesInner,
@@ -935,6 +939,12 @@ Serializers serializers =
               FullType(CaptainAvailabilityDtoOutputCustodyLimit),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminOrderDtoOutputOrderHandoverHandoversInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderHandoverHandoversInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

@@ -558,9 +558,27 @@ describe('POST /v1/admin/orders/{orderId}/handover (AP §9.3.2, CA §9.10.1)', (
     const { order, first, ops } = await pickedUpOrder();
     const second = await onlineCaptain('مباشر', besideThem);
     const custody = await balance('captain.custody', first.captainId);
+    expect((await ops.detail(order.id)).handover).toEqual({ allowed: true, handovers: [] });
     const answer = await ops.handover(order.id, second.captainId);
     expect(answer.statusCode).toBe(200);
     expect(answer.json().order.offer).toBeNull();
+    // AP §9.3.1: the detail lists it, and offers no other meanwhile.
+    expect((await ops.detail(order.id)).handover).toMatchObject({
+      allowed: false,
+      handovers: [
+        {
+          fromCaptainId: first.captainId,
+          fromCaptainName: 'سامر الأول',
+          toCaptainId: second.captainId,
+          toCaptainName: 'مباشر',
+          offered: false,
+          receivedAt: null,
+          closeReason: null,
+          note: 'تعطلت الدراجة',
+          adminId: ops.accountId,
+        },
+      ],
+    });
     expect(await handoverRows(order.id)).toMatchObject([{ offered: false, assigned: true }]);
     expect((await second.availability()).state).toBe('busy');
     // Nothing moves in the ledger until the delivery: the pickup payment

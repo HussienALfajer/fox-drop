@@ -19,6 +19,7 @@ import 'package:core_api/src/model/admin_order_dto_output_order_item_report.dart
 import 'package:core_api/src/model/admin_order_dto_output_order_time_change.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_rejection.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_handover.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_delivery.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_reassign_choices.dart';
@@ -59,6 +60,7 @@ part 'admin_order_dto_output_order.g.dart';
 /// * [cancellation]
 /// * [cancelChoices]
 /// * [reassignChoices]
+/// * [handover]
 /// * [reassignments] - AP §9.3.1: every «سحب وإعادة تعيين» of the order, oldest first.
 /// * [outcome]
 /// * [outcomeChange]
@@ -153,6 +155,9 @@ abstract class AdminOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'reassignChoices')
   AdminOrderDtoOutputOrderReassignChoices? get reassignChoices;
+
+  @BuiltValueField(wireName: r'handover')
+  AdminOrderDtoOutputOrderHandover get handover;
 
   /// AP §9.3.1: every «سحب وإعادة تعيين» of the order, oldest first.
   @BuiltValueField(wireName: r'reassignments')
@@ -378,6 +383,11 @@ class _$AdminOrderDtoOutputOrderSerializer
               AdminOrderDtoOutputOrderReassignChoices,
             ),
           );
+    yield r'handover';
+    yield serializers.serialize(
+      object.handover,
+      specifiedType: const FullType(AdminOrderDtoOutputOrderHandover),
+    );
     yield r'reassignments';
     yield serializers.serialize(
       object.reassignments,
@@ -761,6 +771,17 @@ class _$AdminOrderDtoOutputOrderSerializer
                   as AdminOrderDtoOutputOrderReassignChoices?;
           if (valueDes == null) continue;
           result.reassignChoices.replace(valueDes);
+          break;
+        case r'handover':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminOrderDtoOutputOrderHandover,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderHandover;
+          result.handover.replace(valueDes);
           break;
         case r'reassignments':
           final valueDes =
