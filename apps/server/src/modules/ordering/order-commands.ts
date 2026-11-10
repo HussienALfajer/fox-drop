@@ -37,13 +37,7 @@ import { lockOrder, type OrderEventType, recordTransition } from './order-events
 import { OrderAssignments } from './order-assignments.js';
 import { baseTotal, linesOf } from './pickup-booking.js';
 import type { SearchStartJob } from './order-timers.js';
-import {
-  BEFORE_PICKUP,
-  orderKey,
-  readOrders,
-  snapshotOf,
-  type OrderView,
-} from './order-views.js';
+import { BEFORE_PICKUP, orderKey, readOrders, snapshotOf, type OrderView } from './order-views.js';
 import { commission } from './door-payment.js';
 import { priceLines, quoteMoney, type QuoteMoney } from './quote.js';
 import {

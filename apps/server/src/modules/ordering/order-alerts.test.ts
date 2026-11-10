@@ -132,9 +132,9 @@ describe('orderAlerts (AP §9.1.3)', () => {
       open: [],
       next: at(2),
     });
-    expect(
-      orderAlerts({ ...edited, status: 'picked_up', editAlertAt: at(-1) }, now).open,
-    ).toEqual([]);
+    expect(orderAlerts({ ...edited, status: 'picked_up', editAlertAt: at(-1) }, now).open).toEqual(
+      [],
+    );
   });
 
   it('times the soonest moment still ahead', () => {

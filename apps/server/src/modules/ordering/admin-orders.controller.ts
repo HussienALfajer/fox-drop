@@ -282,7 +282,9 @@ const editRequest = {
     ),
   deliveryFee: minor
     .nullable()
-    .describe('A new delivery fee in minor units, or null to keep it (the threshold is not checked again).'),
+    .describe(
+      'A new delivery fee in minor units, or null to keep it (the threshold is not checked again).',
+    ),
   extraPrepMin: z
     .int()
     .nullable()
@@ -500,7 +502,7 @@ class AdminOrderDto extends createZodDto(
                 ),
               }),
             )
-            .describe("The items customers can order now, with their available options."),
+            .describe('The items customers can order now, with their available options.'),
         })
         .nullable()
         .describe('While placed, accepted or ready: «تعديل الطلب» (AP §9.3.3).'),
@@ -1348,21 +1350,27 @@ export class AdminOrdersController {
     }
     const { order } = item;
     const { cancellation } = order;
-    const [profile, timeline, onBehalf, cancelReasons, customerLabel, timeChange, editChoices, edits] =
-      await Promise.all([
-        this.customers.profile(order.customerAccountId),
-        this.views.timeline(order),
-        order.status === 'placed'
-          ? this.commands.onBehalfChoices(order.restaurantId, order.cityId, now)
-          : null,
-        CANCELLABLE.includes(order.status) ? this.commands.cancelReasons() : null,
-        cancellation?.byCustomer ? this.commands.customerCancelLabel(cancellation.reason) : null,
-        TIME_CHANGEABLE.includes(order.status)
-          ? this.commands.timeChangeChoices(order.cityId)
-          : null,
-        BEFORE_PICKUP.includes(order.status) ? this.commands.editChoices(order, now) : null,
-        this.commands.editsOf(order),
-      ]);
+    const [
+      profile,
+      timeline,
+      onBehalf,
+      cancelReasons,
+      customerLabel,
+      timeChange,
+      editChoices,
+      edits,
+    ] = await Promise.all([
+      this.customers.profile(order.customerAccountId),
+      this.views.timeline(order),
+      order.status === 'placed'
+        ? this.commands.onBehalfChoices(order.restaurantId, order.cityId, now)
+        : null,
+      CANCELLABLE.includes(order.status) ? this.commands.cancelReasons() : null,
+      cancellation?.byCustomer ? this.commands.customerCancelLabel(cancellation.reason) : null,
+      TIME_CHANGEABLE.includes(order.status) ? this.commands.timeChangeChoices(order.cityId) : null,
+      BEFORE_PICKUP.includes(order.status) ? this.commands.editChoices(order, now) : null,
+      this.commands.editsOf(order),
+    ]);
     const { acceptance } = order;
     // The cancellation itself, not its acknowledgement (RA §8.14).
     const cancelEvent = timeline.find(

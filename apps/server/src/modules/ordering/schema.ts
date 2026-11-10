@@ -350,10 +350,7 @@ export const orderLines = ordering.table(
   },
   (table) => [
     primaryKey({ columns: [table.orderId, table.orderPlacedAt, table.position] }),
-    check(
-      'order_lines_quantity_before',
-      sql`${table.quantityBefore} BETWEEN 1 AND 20`,
-    ),
+    check('order_lines_quantity_before', sql`${table.quantityBefore} BETWEEN 1 AND 20`),
     foreignKey({
       columns: [table.orderId, table.orderPlacedAt],
       foreignColumns: [orders.id, orders.placedAt],
@@ -665,10 +662,7 @@ export const orderEdits = ordering.table(
     index('order_edits_unacknowledged')
       .on(table.orderId)
       .where(sql`${table.acknowledgedAt} IS NULL`),
-    check(
-      'order_edits_status',
-      sql`${table.status} IN ('placed', 'accepted', 'ready')`,
-    ),
+    check('order_edits_status', sql`${table.status} IN ('placed', 'accepted', 'ready')`),
     check(
       'order_edits_money',
       sql`${table.itemsValueBefore} >= 0 AND ${table.itemsValueAfter} > 0 AND ${table.deliveryFeeBefore} >= 0 AND ${table.deliveryFeeAfter} >= 0 AND ${table.totalBefore} >= 0 AND ${table.totalAfter} >= 0`,

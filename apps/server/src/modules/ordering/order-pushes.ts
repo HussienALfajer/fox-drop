@@ -225,9 +225,7 @@ export function orderPushes(
           ? [customer('customer.time_changed', { الساعة: facts.promisedTime ?? '' })]
           : []),
         // RA §8.13, §16 #16–17: an addition rings until acknowledged.
-        merchant(
-          reason === 'changed' ? 'merchant.edited' : 'merchant.edited_items_added',
-        ),
+        merchant(reason === 'changed' ? 'merchant.edited' : 'merchant.edited_items_added'),
         // CA §9.10, §14 #10: the new amounts to pay and to collect.
         ...captain('captain.order_edited', {
           للمطعم: facts.itemsValue,
