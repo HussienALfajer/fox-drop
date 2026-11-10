@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, count, eq, gt, inArray, isNull, max, type SQL } from 'drizzle-orm';
+import { and, count, eq, gt, inArray, isNull, type SQL, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -64,7 +64,14 @@ export class ActiveOrders {
   ): Promise<CustomerLimit> {
     const whose = eq(orders.customerAccountId, accountId);
     const [lastFake] = await executor
-      .select({ at: max(orderOutcomeRows.setAt) })
+      // When the fake outcome happened: the order's first outcome, which a
+      // change (slice 2.11c) does not move.
+      .select({
+        at: sql`max((SELECT min(first.set_at) FROM ordering.order_outcomes first
+                     WHERE first.order_id = ${orderOutcomeRows.orderId}))`.mapWith(
+          orderOutcomeRows.setAt,
+        ),
+      })
       .from(orderOutcomeRows)
       .innerJoin(
         orders,

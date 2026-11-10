@@ -60,6 +60,7 @@ const customer: Entry[] = [
   // AP §8.9 «تغيير النتيجة» (slice 2.11c): the texts ours, beside CU §14 #9
   // (to confirm with the owner).
   ['outcome_changed', '9', 'راجعنا طلبك #{رقم} وتغيّرت نتيجته: {السبب}', 'default'],
+  ['outcome_changed_delivered', '9', 'راجعنا طلبك #{رقم}: تم التسليم', 'default'],
   ['outcome_dues_cancelled', '9', 'راجعنا طلبك #{رقم}: لم يعد عليك شيء لـ FOX DROP عنه', 'default'],
   ['item_unavailable', '10', 'صنف في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن', 'default'],
   ['order_edited', '11', 'عدّلت FOX DROP طلبك. المجموع الجديد: {المبلغ}', 'default'],

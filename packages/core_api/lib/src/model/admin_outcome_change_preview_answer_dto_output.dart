@@ -22,7 +22,7 @@ part 'admin_outcome_change_preview_answer_dto_output.g.dart';
 /// * [dues]
 /// * [captainPay]
 /// * [entries] - Every entry the outcome would post (AP §8.9 «Preview»).
-/// * [reversed] - Every entry of the outcome in force reversed (AP §8.9 «Changing an outcome»), before the new outcome's entries.
+/// * [reversed] - Every entry of the outcome in force reversed (AP §8.9 «Changing an outcome»), before the new outcome's entries; each carries the reversed journal's own reason, which names it, while the reversal is posted with the reason «تغيير النتيجة».
 @BuiltValue()
 abstract class AdminOutcomeChangePreviewAnswerDtoOutput
     implements
@@ -51,7 +51,7 @@ abstract class AdminOutcomeChangePreviewAnswerDtoOutput
   @BuiltValueField(wireName: r'entries')
   BuiltList<AdminOutcomePreviewAnswerDtoOutputEntriesInner> get entries;
 
-  /// Every entry of the outcome in force reversed (AP §8.9 «Changing an outcome»), before the new outcome's entries.
+  /// Every entry of the outcome in force reversed (AP §8.9 «Changing an outcome»), before the new outcome's entries; each carries the reversed journal's own reason, which names it, while the reversal is posted with the reason «تغيير النتيجة».
   @BuiltValueField(wireName: r'reversed')
   BuiltList<AdminOutcomePreviewAnswerDtoOutputEntriesInner> get reversed;
 

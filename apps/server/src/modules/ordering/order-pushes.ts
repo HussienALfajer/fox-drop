@@ -289,10 +289,12 @@ export function orderPushes(
           ? [
               change.duesCancelled
                 ? customer('customer.outcome_dues_cancelled', number)
-                : customer('customer.outcome_changed', {
-                    ...number,
-                    السبب: failed ? (outcome.customerText ?? '') : 'تم التسليم',
-                  }),
+                : failed
+                  ? customer('customer.outcome_changed', {
+                      ...number,
+                      السبب: outcome.customerText ?? '',
+                    })
+                  : customer('customer.outcome_changed_delivered', number),
             ]
           : []),
         ...(change.merchant

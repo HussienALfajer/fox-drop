@@ -100,6 +100,21 @@ async function restaurant({ open = true } = {}) {
   return { id, cashier: await signedIn(id, 'cashier') };
 }
 
+// Every day from 10 minutes before now to 4 hours after, on Azaz's clock.
+function hoursAroundNow() {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Damascus',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date());
+  const part = (type: string) => Number(parts.find((each) => each.type === type)!.value);
+  const minute = part('hour') * 60 + part('minute');
+  const opensAt = (minute - 10 + 1440) % 1440;
+  const closesAt = (minute + 240) % 1440;
+  return [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, opensAt, closesAt }));
+}
+
 const call = (
   method: 'GET' | 'POST' | 'PUT' | 'DELETE',
   url: string,
@@ -456,6 +471,10 @@ describe('state events and timers (RA §16 #24, #25, §18)', () => {
   it('reminds of busy mode while it is the one the job was set for', async () => {
     const service = app.get(RestaurantStatusService);
     const { id, cashier } = await restaurant();
+    // Busy mode ends at the closing time, and the next reminder is due two
+    // reminders from now: open from just before now to four hours ahead, so
+    // midnight never cuts it short.
+    await merchants.setWeeklySchedule(id, hoursAroundNow(), change);
     await call('PUT', 'status/busy-mode', cashier.headers, { extraMin: 20 });
     const [{ data }] = await jobsOf('merchants-busy-reminder', id);
     expect(await service.busyReminder(data)).toBe(true);

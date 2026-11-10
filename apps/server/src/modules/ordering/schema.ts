@@ -744,6 +744,10 @@ export const orderOutcomeRows = ordering.table(
     // null while it waits for its collection, and on an outcome posted before
     // this slice (it cannot change).
     journalIds: uuid('journal_ids').array(),
+    // What the outcome's journals give the captain's earnings, a charge below
+    // 0 (the pay, a charge, edits' charges given back), set with journal_ids;
+    // a change notifies the captain when it moves.
+    captainNet: bigint('captain_net', { mode: 'bigint' }),
     // The outcome this one replaced, and when this one was replaced.
     replacesId: uuid('replaces_id'),
     replacedAt: timestamp('replaced_at', { withTimezone: true }),
@@ -758,6 +762,7 @@ export const orderOutcomeRows = ordering.table(
       .on(table.orderId)
       .where(sql`${table.replacedAt} IS NULL`),
     uniqueIndex('order_outcomes_replaces').on(table.replacesId),
+    index('order_outcomes_order_rows').on(table.orderId, table.orderPlacedAt),
     check(
       'order_outcomes_values',
       sql`${table.outcome} IN ('free', 'fake', 'damaged', 'wrong_refused', 'failed_other') AND ${table.responsible} IN ('restaurant', 'captain', 'customer', 'platform') AND ${table.status} IN ('delivered', 'failed') AND (${table.food} IS NULL OR ${table.food} IN ('kept_by_captain', 'returned_to_restaurant', 'destroyed'))`,
@@ -772,7 +777,7 @@ export const orderOutcomeRows = ordering.table(
     ),
     check(
       'order_outcomes_change',
-      sql`(${table.replacedAt} IS NULL OR ${table.journalIds} IS NOT NULL) AND (${table.replacesId} IS NULL OR ${table.journalIds} IS NOT NULL)`,
+      sql`(${table.replacedAt} IS NULL OR ${table.journalIds} IS NOT NULL) AND (${table.replacesId} IS NULL OR ${table.journalIds} IS NOT NULL) AND (${table.journalIds} IS NULL) = (${table.captainNet} IS NULL)`,
     ),
     check(
       'order_outcomes_money',

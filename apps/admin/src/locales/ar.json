@@ -657,6 +657,7 @@
           "failed": "تعذّر التسليم",
           "outcome_changed": "تغيير نتيجة الطلب",
           "outcome_dues_cancelled": "إلغاء المستحقات بتغيير النتيجة",
+          "outcome_changed_delivered": "تغيير النتيجة إلى «تم التسليم»",
           "item_unavailable": "صنف غير متوفر",
           "order_edited": "تعديل الطلب",
           "time_changed": "تغيّر الموعد",

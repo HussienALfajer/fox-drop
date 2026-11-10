@@ -1886,8 +1886,12 @@ describe('POST /v1/admin/orders/{orderId}/outcome-change (AP §8.9)', () => {
       outcome: 'failed_other',
       text: 'تعذّر الوصول إليك أو إلى العنوان',
     });
-    // The captain's pay did not move: no new card.
-    expect((await order.captain.active()).json().ended).toBeNull();
+    // The captain's pay did not move: the card the captain has not yet
+    // acknowledged stays, now with the outcome in force.
+    expect((await order.captain.active()).json().ended).toMatchObject({
+      outcome: 'failed_other',
+      pay: { amount: '2500', currency: 'TRY' },
+    });
   });
 
   it('restores the trust a fake outcome removed (D23)', async () => {
@@ -2048,5 +2052,123 @@ describe('POST /v1/admin/orders/{orderId}/outcome-change (AP §8.9)', () => {
       await settings.update('order.outcome_change_days', { cityId: azaz }, 7, bySystem);
     }
     expect((await outcomeRows(order.order.id)).length).toBe(1);
+  });
+});
+
+// The money paths a change crosses (slice 2.11c review): an edit after the
+// pickup, a short collection, a repeated key, and the captain's card after
+// an old collection.
+describe('«تغيير النتيجة» across edits, collections and repeats (AP §8.9)', () => {
+  const platform = {
+    outcome: 'failed_other',
+    responsible: 'platform',
+    delivered: false,
+    food: 'kept_by_captain',
+  };
+  const byRestaurant = { ...platform, responsible: 'restaurant', food: 'destroyed' };
+
+  it('books after an edit after the pickup as if the new outcome had been set: nobody pays twice', async () => {
+    const own = await admin(['OWN']);
+    // Directly: the restaurant's edit, then the platform responsible.
+    const before = await balances();
+    const direct = await pickedUpOrder();
+    expect(
+      (await direct.ops.edit(direct.order.id, { ...oneShawarma, responsible: 'restaurant' }))
+        .statusCode,
+    ).toBe(200);
+    expect((await direct.ops.outcome(direct.order.id, platform)).statusCode).toBe(200);
+    const directMoved = moneyMoved(before, await balances());
+    // Changed: the same edit, the restaurant responsible, then the platform.
+    const middle = await balances();
+    const changed = await pickedUpOrder();
+    expect(
+      (await changed.ops.edit(changed.order.id, { ...oneShawarma, responsible: 'restaurant' }))
+        .statusCode,
+    ).toBe(200);
+    expect((await changed.ops.outcome(changed.order.id, byRestaurant)).statusCode).toBe(200);
+    expect((await own.outcomeChange(changed.order.id, platform)).statusCode).toBe(200);
+    expect(moneyMoved(middle, await balances())).toEqual(directMoved);
+    expect(directMoved.clearing).toBe(0n);
+  });
+
+  it('keeps a collection shortfall on the clearing account once', async () => {
+    const order = await pickedUpOrder();
+    const before = await balances(order.captain.captainId);
+    const free = {
+      outcome: 'free',
+      responsible: 'platform',
+      delivered: true,
+      food: null,
+      amountToCollect: '5000',
+    };
+    expect((await order.ops.outcome(order.order.id, free)).statusCode).toBe(200);
+    const paid = await outcomePayment(order, 'ops', {
+      received: '4000',
+      due: '5000',
+      shortfall: { reason: 'customer_short', note: null },
+    });
+    expect(paid.statusCode).toBe(200);
+    const own = await admin(['OWN']);
+    const damaged = { outcome: 'damaged', responsible: 'restaurant', delivered: true, food: null };
+    expect((await own.outcomeChange(order.order.id, damaged)).statusCode).toBe(200);
+    // As «تحديد النتيجة» of the same outcome with the same short payment.
+    expect(moneyMoved(before, await balances(order.captain.captainId))).toMatchObject({
+      clearing: -24_000n + 1_000n,
+      restaurant: -24_000n,
+      delivery: 2_500n,
+      operatingCost: 0n,
+      earnings: 2_500n,
+    });
+  });
+
+  it('answers a repeated key with the first change, posting nothing more', async () => {
+    const order = await pickedUpOrder();
+    const fake = { ...platform, outcome: 'fake', responsible: 'customer' };
+    expect((await order.ops.outcome(order.order.id, fake)).statusCode).toBe(200);
+    const own = await admin(['OWN']);
+    const key = randomUUID();
+    // The retry sends the body the dialog sent, with the version it previewed.
+    const body = { ...platform, version: (await own.detail(order.order.id)).version };
+    const first = await own.outcomeChange(order.order.id, body, key);
+    expect(first.statusCode).toBe(200);
+    const after = await balances(order.captain.captainId);
+    const repeat = await own.outcomeChange(order.order.id, body, key);
+    expect(repeat.statusCode).toBe(200);
+    expect(repeat.json().order.version).toBe(first.json().order.version);
+    expect(moneyMoved(after, await balances(order.captain.captainId))).toMatchObject({
+      clearing: 0n,
+      restaurant: 0n,
+      operatingCost: 0n,
+      earnings: 0n,
+    });
+    expect((await outcomeRows(order.order.id)).length).toBe(2);
+  });
+
+  it("shows the captain's card again for a change long after the collection", async () => {
+    const order = await pickedUpOrder();
+    const free = {
+      outcome: 'free',
+      responsible: 'platform',
+      delivered: true,
+      food: null,
+      amountToCollect: '5000',
+    };
+    expect((await order.ops.outcome(order.order.id, free)).statusCode).toBe(200);
+    expect((await outcomePayment(order, 'captain', { received: '5000' })).statusCode).toBe(200);
+    await sql.query(
+      "UPDATE ordering.order_outcomes SET collected_at = collected_at - interval '13 hours' WHERE order_id = $1",
+      [order.order.id],
+    );
+    const own = await admin(['OWN']);
+    // The captain is now responsible: charged, no pay.
+    const byCaptain = { ...free, responsible: 'captain' };
+    delete (byCaptain as { amountToCollect?: string }).amountToCollect;
+    expect((await own.outcomeChange(order.order.id, byCaptain)).statusCode).toBe(200);
+    expect((await order.captain.active()).json().ended).toMatchObject({
+      orderId: order.order.id,
+      outcome: 'free',
+      pay: null,
+      charge: { amount: '15400', currency: 'TRY' },
+    });
   });
 });

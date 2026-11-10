@@ -44,6 +44,7 @@ import {
   readOutcomeFacts,
 } from './outcome-facts.js';
 import {
+  captainNet,
   OUTCOME_CHANGE_REASON,
   type OutcomeChoices,
   outcomeChangeProblem,
@@ -730,6 +731,7 @@ export class OrderCommands {
             const journalIds = waits
               ? null
               : await this.postJournals(tx, order, actor, result.journals);
+            const net = waits ? null : captainNet(result.journals);
             await tx.insert(orderOutcomeRows).values({
               orderId: order.id,
               orderPlacedAt: order.placedAt,
@@ -749,6 +751,7 @@ export class OrderCommands {
               setAt: now,
               setBy: actor.id,
               journalIds,
+              captainNet: net,
             });
           },
           audit: {
@@ -855,12 +858,10 @@ export class OrderCommands {
           result.status === 'failed'
             ? await this.content.customerText('failed_outcome', choices.outcome)
             : null;
-        // Rules 4, 5: what the captain earns from the order, a charge below 0.
-        const captainMoney = (responsible: string, loss: bigint, pay: bigint) =>
-          responsible === 'captain' ? -loss : pay;
-        const captainChanged =
-          captainMoney(old.responsible, old.loss, old.captainPay) !==
-          captainMoney(choices.responsible, result.loss, result.captainPay);
+        // What the outcome gives the captain (the pay, a charge, an edit's
+        // charge given back): the captain hears of a change that moves it.
+        const net = captainNet(result.journals);
+        const captainChanged = old.captainNet !== net;
         return {
           set: {
             outcome: choices.outcome,
@@ -906,9 +907,11 @@ export class OrderCommands {
               setAt: now,
               setBy: actor.id,
               collectedAt: old.collectedAt,
-              // The captain's card shows again only when its money changed.
-              captainSeenAt: captainChanged ? null : now,
+              // The captain's card shows again only when its money changed;
+              // otherwise it stays as the captain left it.
+              captainSeenAt: captainChanged ? null : old.captainSeenAt,
               journalIds,
+              captainNet: net,
               replacesId: old.id,
             });
           },
@@ -2320,7 +2323,18 @@ export class OrderCommands {
       if (first !== null) return this.read(first);
       throw await this.stateChanged(order);
     }
-    const prepared = await change(order);
+    let prepared: Change;
+    try {
+      prepared = await change(order);
+    } catch (error) {
+      // A repeat may read the order after the first committed and be
+      // refused by what the first changed: it answers the first's order.
+      if (error instanceof OrderCommandRefusedError) {
+        const first = await this.replay(this.database.db, key, requestHash, now);
+        if (first !== null) return this.read(first);
+      }
+      throw error;
+    }
     const noCaptainAlertMin = prepared.searchStartAt
       ? await this.settings.get('dispatch.no_captain_alert_min', { cityId: order.cityId })
       : 0;

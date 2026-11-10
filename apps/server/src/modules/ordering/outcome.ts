@@ -319,6 +319,16 @@ export function outcomeEntries(
   };
 }
 
+// What the journals give the captain's earnings (the pay, a charge below 0,
+// an edit's charge given back), from the captain's view; «تغيير النتيجة»
+// tells the captain when it moves (slice 2.11c).
+export function captainNet(journals: readonly Pick<OutcomeJournal, 'entries'>[]): bigint {
+  return journals
+    .flatMap((journal) => journal.entries)
+    .filter((entry) => entry.account === 'captain.earnings')
+    .reduce((sum, entry) => sum - entry.amount, 0n);
+}
+
 // The outcome in force on a finished order, as «تغيير النتيجة» reads it.
 // `posted` is false while it waits for its collection (K9) and for an outcome
 // posted before slice 2.11c kept its journals, which cannot be reversed.

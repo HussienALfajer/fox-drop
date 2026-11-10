@@ -553,7 +553,7 @@ class AdminOutcomeChangePreviewAnswerDto extends createZodDto(
     reversed: z
       .array(previewEntry)
       .describe(
-        "Every entry of the outcome in force reversed (AP §8.9 «Changing an outcome»), before the new outcome's entries.",
+        "Every entry of the outcome in force reversed (AP §8.9 «Changing an outcome»), before the new outcome's entries; each carries the reversed journal's own reason, which names it, while the reversal is posted with the reason «تغيير النتيجة».",
       ),
   }),
 ) {}

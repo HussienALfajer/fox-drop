@@ -1,5 +1,5 @@
 {
-  "id": "2b84d906-a37a-435b-a6ed-5e96fe6984a4",
+  "id": "5580c515-8046-4e9a-acbc-995efda25911",
   "prevId": "326a8b4b-b625-434e-a30e-6b27237f3287",
   "version": "7",
   "dialect": "postgresql",
@@ -8743,6 +8743,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "captain_net": {
+          "name": "captain_net",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
         "replaces_id": {
           "name": "replaces_id",
           "type": "uuid",
@@ -8784,6 +8790,27 @@
             }
           ],
           "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "order_outcomes_order_rows": {
+          "name": "order_outcomes_order_rows",
+          "columns": [
+            {
+              "expression": "order_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "order_placed_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -8839,7 +8866,7 @@
         },
         "order_outcomes_change": {
           "name": "order_outcomes_change",
-          "value": "(\"ordering\".\"order_outcomes\".\"replaced_at\" IS NULL OR \"ordering\".\"order_outcomes\".\"journal_ids\" IS NOT NULL) AND (\"ordering\".\"order_outcomes\".\"replaces_id\" IS NULL OR \"ordering\".\"order_outcomes\".\"journal_ids\" IS NOT NULL)"
+          "value": "(\"ordering\".\"order_outcomes\".\"replaced_at\" IS NULL OR \"ordering\".\"order_outcomes\".\"journal_ids\" IS NOT NULL) AND (\"ordering\".\"order_outcomes\".\"replaces_id\" IS NULL OR \"ordering\".\"order_outcomes\".\"journal_ids\" IS NOT NULL) AND (\"ordering\".\"order_outcomes\".\"journal_ids\" IS NULL) = (\"ordering\".\"order_outcomes\".\"captain_net\" IS NULL)"
         },
         "order_outcomes_money": {
           "name": "order_outcomes_money",

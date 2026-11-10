@@ -331,16 +331,13 @@ export class OutboxPushes {
       type === 'order.outcome_changed'
         ? rows.find((each) => each.id === row.replacesId)
         : undefined;
-    // Rules 4, 5: what the captain earns from the order, a charge below 0.
-    const captainMoney = (each: typeof row) =>
-      each.responsible === 'captain' ? -each.loss : each.captainPay;
     return {
       ...(before
         ? {
             change: {
               customer: before.status !== row.status || before.dues !== row.dues,
               duesCancelled: before.dues !== null && row.dues === null,
-              captain: captainMoney(before) !== captainMoney(row),
+              captain: before.captainNet !== row.captainNet,
               merchant: before.merchantDebit !== row.merchantDebit,
             },
           }

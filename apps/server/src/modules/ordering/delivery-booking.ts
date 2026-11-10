@@ -16,7 +16,7 @@ import { frozenAtPickup } from './order-edits.js';
 import { type OrderRow, recordTransition } from './order-events.js';
 import { orderKey, snapshotOf } from './order-views.js';
 import { postOrderJournals } from './outcome-facts.js';
-import type { OutcomeJournal, SetOutcome } from './outcome.js';
+import { captainNet, type OutcomeJournal, type SetOutcome } from './outcome.js';
 import { type PaymentLine, storedLines } from './pickup-booking.js';
 import type { ChosenReason } from '../content/index.js';
 import { collections, orderOutcomeRows, orders } from './schema.js';
@@ -258,6 +258,7 @@ export class DeliveryBooking {
       .update(orderOutcomeRows)
       .set({
         journalIds,
+        captainNet: captainNet(outcome.journals),
         loss: outcome.loss,
         merchantDebit: outcome.merchantDebit,
         captainPay: outcome.captainPay,

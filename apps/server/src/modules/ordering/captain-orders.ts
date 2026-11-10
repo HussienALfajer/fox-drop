@@ -147,6 +147,9 @@ export interface AdminOrderCommand {
 
 // CA §9.10: how long an unacknowledged cancellation card stays.
 export const CANCELLED_CARD_MS = 12 * 60 * 60 * 1000;
+// How long after placing a changed outcome's card can still show: beyond any
+// order.outcome_change_days the owner would set (7 by default).
+const OUTCOME_CHANGE_CARD_MS = 31 * 24 * 60 * 60 * 1000;
 
 // CA §9.10: operations cancelled the captain's order.
 export interface CaptainCancellation {
@@ -305,9 +308,19 @@ export class CaptainOrders {
           inArray(orders.status, ['delivered', 'failed']),
           isNull(orderOutcomeRows.captainSeenAt),
           isNull(orderOutcomeRows.replacedAt),
-          gt(sql`coalesce(${orderOutcomeRows.collectedAt}, ${orderOutcomeRows.setAt})`, since),
-          // An order ends after the pickup within hours of placing.
-          gt(orders.placedAt, new Date(since.getTime() - CANCELLED_AFTER_PLACING_MS)),
+          // A changed outcome (slice 2.11c) counts from its change.
+          gt(
+            sql`CASE WHEN ${orderOutcomeRows.replacesId} IS NULL
+                THEN coalesce(${orderOutcomeRows.collectedAt}, ${orderOutcomeRows.setAt})
+                ELSE ${orderOutcomeRows.setAt} END`,
+            since,
+          ),
+          // An order ends after the pickup within hours of placing, and its
+          // outcome changes within order.outcome_change_days.
+          gt(
+            orders.placedAt,
+            new Date(since.getTime() - CANCELLED_AFTER_PLACING_MS - OUTCOME_CHANGE_CARD_MS),
+          ),
         ),
       )
       .orderBy(desc(orderOutcomeRows.setAt))

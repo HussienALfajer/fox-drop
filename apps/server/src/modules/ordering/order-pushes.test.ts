@@ -213,7 +213,7 @@ describe('the pushes of an order event', () => {
         },
       }),
     ).toEqual([
-      [customer, 'customer.outcome_changed', { رقم: '10002', السبب: 'تم التسليم' }],
+      [customer, 'customer.outcome_changed_delivered', { رقم: '10002' }],
       [
         owners,
         'merchant.outcome_changed_debited',
