@@ -78,6 +78,9 @@ export interface OrderView {
   // AP §8.2: the captain track, and the captain from assignment.
   captainTrack: CaptainTrack | null;
   captainId: string | null;
+  // When the captain was assigned: a captain's pickup requests are those
+  // opened since (slice 2.12a: a withdrawn captain's stay in the history).
+  assignedAt: Date | null;
   // CA §9.2, RA §8.9: «وصل الكابتن», and the waiting alert's moment.
   captainArrival: { at: Date; waitingAlertAt: Date } | null;
   // AP §8.1: the pickup, and whether ready was recorded at it («لم يُضغط
@@ -261,6 +264,7 @@ export async function readOrders(
       readyAt: orders.readyAt,
       captainTrack: orders.captainTrack,
       captainId: orders.captainId,
+      assignedAt: orders.assignedAt,
       arrivedAtMerchantAt: orders.arrivedAtMerchantAt,
       captainWaitingAlertAt: orders.captainWaitingAlertAt,
       pickedUpAt: orders.pickedUpAt,
@@ -482,6 +486,7 @@ export async function readOrders(
       readyAt: row.readyAt,
       captainTrack: row.captainTrack,
       captainId: row.captainId,
+      assignedAt: row.assignedAt,
       captainArrival:
         row.arrivedAtMerchantAt && row.captainWaitingAlertAt
           ? { at: row.arrivedAtMerchantAt, waitingAlertAt: row.captainWaitingAlertAt }

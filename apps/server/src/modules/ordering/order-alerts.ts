@@ -6,7 +6,7 @@ import {
   type OnApplicationShutdown,
   type OnModuleInit,
 } from '@nestjs/common';
-import { and, eq, gt, inArray, isNotNull } from 'drizzle-orm';
+import { and, eq, gt, gte, inArray, isNotNull, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -275,6 +275,9 @@ async function readInput(
         eq(pickupRequests.orderId, orderId),
         eq(pickupRequests.orderPlacedAt, placedAt),
         eq(pickupRequests.outcome, 'amount_incorrect'),
+        // Slice 2.12a: the current assignment's requests only.
+        order?.captainId ? eq(pickupRequests.captainId, order.captainId) : sql`false`,
+        order?.assignedAt ? gte(pickupRequests.openedAt, order.assignedAt) : sql`false`,
       ),
     )
     .limit(1);

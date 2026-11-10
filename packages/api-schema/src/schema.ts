@@ -6275,6 +6275,7 @@ export interface components {
                      * @description The captain the order was taken from.
                      */
                     captainId: string;
+                    captainName: string | null;
                     /** @description The reassignment list's code. */
                     reason: string;
                     /** @description The label as chosen. */

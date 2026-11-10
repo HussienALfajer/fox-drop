@@ -694,6 +694,7 @@ class AdminOrderDto extends createZodDto(
           z.object({
             at: z.iso.datetime(),
             captainId: z.uuid().describe('The captain the order was taken from.'),
+            captainName: z.string().nullable(),
             reason: z.string().describe("The reassignment list's code."),
             label: z.string().describe('The label as chosen.'),
             captainFault: z.boolean().describe('«بخطأ من الكابتن».'),

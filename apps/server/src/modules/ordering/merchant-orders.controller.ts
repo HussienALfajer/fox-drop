@@ -26,7 +26,7 @@ import { SettingsService } from '../settings/index.js';
 import { linesBody, linesOfBody, paymentLines } from './captain-orders.controller.js';
 import { minor } from './customer-quote.controller.js';
 import { PickupCommands } from './pickup-commands.js';
-import type { PickupRequestView } from './pickup-views.js';
+import { currentRequests, type PickupRequestView } from './pickup-views.js';
 import { type MerchantCommand, OrderCommandRefusedError, OrderCommands } from './order-commands.js';
 import type { OrderView } from './order-views.js';
 import { OrdersService } from './orders.service.js';
@@ -692,7 +692,12 @@ export class MerchantOrdersController {
       this.accounts.accounts(restaurantId),
     ]);
     const userNames = new Map(users.map((user) => [user.id, user.name]));
-    const latest = new Map([...requests].map(([orderId, list]) => [orderId, list[0]!] as const));
+    const latest = new Map(
+      orders.flatMap((order) => {
+        const request = currentRequests(requests.get(order.id), order)[0];
+        return request ? [[order.id, request] as const] : [];
+      }),
+    );
     const [firstNames, deviceNames] = await Promise.all([
       this.customers.firstNames([...new Set(orders.map((order) => order.customerAccountId))]),
       this.merchants.deviceNames(restaurantId, [

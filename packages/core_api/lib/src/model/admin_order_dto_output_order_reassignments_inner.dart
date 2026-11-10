@@ -14,6 +14,7 @@ part 'admin_order_dto_output_order_reassignments_inner.g.dart';
 /// Properties:
 /// * [at]
 /// * [captainId] - The captain the order was taken from.
+/// * [captainName]
 /// * [reason] - The reassignment list's code.
 /// * [label] - The label as chosen.
 /// * [captainFault] - «بخطأ من الكابتن».
@@ -34,6 +35,9 @@ abstract class AdminOrderDtoOutputOrderReassignmentsInner
   /// The captain the order was taken from.
   @BuiltValueField(wireName: r'captainId')
   String get captainId;
+
+  @BuiltValueField(wireName: r'captainName')
+  String? get captainName;
 
   /// The reassignment list's code.
   @BuiltValueField(wireName: r'reason')
@@ -103,6 +107,13 @@ class _$AdminOrderDtoOutputOrderReassignmentsInnerSerializer
       object.captainId,
       specifiedType: const FullType(String),
     );
+    yield r'captainName';
+    yield object.captainName == null
+        ? null
+        : serializers.serialize(
+            object.captainName,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'reason';
     yield serializers.serialize(
       object.reason,
@@ -188,6 +199,16 @@ class _$AdminOrderDtoOutputOrderReassignmentsInnerSerializer
                   )
                   as String;
           result.captainId = valueDes;
+          break;
+        case r'captainName':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.captainName = valueDes;
           break;
         case r'reason':
           final valueDes =

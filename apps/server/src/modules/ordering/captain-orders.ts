@@ -43,6 +43,7 @@ import {
   type PickupDisputeView,
   pickupDisputesOf,
   type PickupRequestView,
+  currentRequests,
   pickupRequestsOf,
 } from './pickup-views.js';
 import { collections, orderOutcomeRows, orders, pickupRequests, reassignments } from './schema.js';
@@ -1306,7 +1307,7 @@ export class CaptainOrders {
     return {
       order,
       customer,
-      pickupRequest: requests.get(order.id)?.[0] ?? null,
+      pickupRequest: currentRequests(requests.get(order.id), order)[0] ?? null,
       pickupDispute: disputes.get(order.id) ?? null,
       restaurant: {
         name: restaurant.nameAr,

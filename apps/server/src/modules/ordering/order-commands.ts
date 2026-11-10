@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, isNull, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
@@ -726,20 +726,18 @@ export class OrderCommands {
           );
         }
         const captainId = read.facts.captainId!;
-        // docs/domain/03: the order needs a captain now, «بحاجة لتعيين».
-        const searchStarted =
-          read.searchStartedAt === null
-            ? {
-                searchStartedAt: now,
-                searchAlertAt: new Date(
-                  now.getTime() +
-                    (await this.settings.get('dispatch.no_captain_alert_min', {
-                      cityId: order.cityId,
-                    })) *
-                      MINUTE_MS,
-                ),
-              }
-            : {};
+        // docs/domain/03, AP §9.1.3: the order needs a captain again; «طلب
+        // بلا كابتن» counts dispatch.no_captain_alert_min from the withdrawal,
+        // not from the first search (to confirm with the owner).
+        const searchAlertAt = new Date(
+          now.getTime() +
+            (await this.settings.get('dispatch.no_captain_alert_min', { cityId: order.cityId })) *
+              MINUTE_MS,
+        );
+        const searchStarted = {
+          searchStartedAt: read.searchStartedAt ?? now,
+          searchAlertAt,
+        };
         return {
           set: {
             captainId: null,
@@ -826,9 +824,10 @@ export class OrderCommands {
       }));
   }
 
-  // AP §9.3.1: the order's withdrawals, oldest first.
+  // AP §9.3.1: the order's withdrawals, oldest first, each with the
+  // withdrawn captain's name.
   async reassignmentsOf(order: { id: string; placedAt: Date }) {
-    return this.database.db
+    const rows = await this.database.db
       .select({
         at: reassignments.at,
         captainId: reassignments.captainId,
@@ -845,6 +844,15 @@ export class OrderCommands {
         and(eq(reassignments.orderId, order.id), eq(reassignments.orderPlacedAt, order.placedAt)),
       )
       .orderBy(reassignments.at);
+    const now = new Date();
+    const names = new Map(
+      await Promise.all(
+        [...new Set(rows.map((row) => row.captainId))].map(
+          async (id) => [id, (await this.captains.captain(id, now))?.name ?? null] as const,
+        ),
+      ),
+    );
+    return rows.map((row) => ({ ...row, captainName: names.get(row.captainId) ?? null }));
   }
 
   private async reassignmentReason(code: string): Promise<{ label: string }> {
@@ -1442,6 +1450,7 @@ export class OrderCommands {
         restaurantId: orders.restaurantId,
         captainId: orders.captainId,
         captainTrack: orders.captainTrack,
+        assignedAt: orders.assignedAt,
         searchStartedAt: orders.searchStartedAt,
         arrivedAtMerchantAt: orders.arrivedAtMerchantAt,
         currency: orders.currency,
@@ -1466,7 +1475,18 @@ export class OrderCommands {
       })
       .from(pickupRequests)
       .where(
-        and(eq(pickupRequests.orderId, order.id), eq(pickupRequests.orderPlacedAt, order.placedAt)),
+        and(
+          eq(pickupRequests.orderId, order.id),
+          eq(pickupRequests.orderPlacedAt, order.placedAt),
+          // AP §8.1, slice 2.12a: the current captain's requests since their
+          // assignment; a withdrawn captain's never set this one's cash.
+          row.captainId === null || row.assignedAt === null
+            ? sql`false`
+            : and(
+                eq(pickupRequests.captainId, row.captainId),
+                gte(pickupRequests.openedAt, row.assignedAt),
+              ),
+        ),
       )
       .orderBy(desc(pickupRequests.openedAt))
       .limit(1);

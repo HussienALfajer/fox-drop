@@ -91,6 +91,8 @@ class _$AdminOrderDtoOutputOrderReassignmentsInner
   @override
   final String captainId;
   @override
+  final String? captainName;
+  @override
   final String reason;
   @override
   final String label;
@@ -113,6 +115,7 @@ class _$AdminOrderDtoOutputOrderReassignmentsInner
   _$AdminOrderDtoOutputOrderReassignmentsInner._({
     required this.at,
     required this.captainId,
+    this.captainName,
     required this.reason,
     required this.label,
     required this.captainFault,
@@ -136,6 +139,7 @@ class _$AdminOrderDtoOutputOrderReassignmentsInner
     return other is AdminOrderDtoOutputOrderReassignmentsInner &&
         at == other.at &&
         captainId == other.captainId &&
+        captainName == other.captainName &&
         reason == other.reason &&
         label == other.label &&
         captainFault == other.captainFault &&
@@ -150,6 +154,7 @@ class _$AdminOrderDtoOutputOrderReassignmentsInner
     var _$hash = 0;
     _$hash = $jc(_$hash, at.hashCode);
     _$hash = $jc(_$hash, captainId.hashCode);
+    _$hash = $jc(_$hash, captainName.hashCode);
     _$hash = $jc(_$hash, reason.hashCode);
     _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, captainFault.hashCode);
@@ -168,6 +173,7 @@ class _$AdminOrderDtoOutputOrderReassignmentsInner
           )
           ..add('at', at)
           ..add('captainId', captainId)
+          ..add('captainName', captainName)
           ..add('reason', reason)
           ..add('label', label)
           ..add('captainFault', captainFault)
@@ -194,6 +200,10 @@ class AdminOrderDtoOutputOrderReassignmentsInnerBuilder
   String? _captainId;
   String? get captainId => _$this._captainId;
   set captainId(String? captainId) => _$this._captainId = captainId;
+
+  String? _captainName;
+  String? get captainName => _$this._captainName;
+  set captainName(String? captainName) => _$this._captainName = captainName;
 
   String? _reason;
   String? get reason => _$this._reason;
@@ -234,6 +244,7 @@ class AdminOrderDtoOutputOrderReassignmentsInnerBuilder
     if ($v != null) {
       _at = $v.at;
       _captainId = $v.captainId;
+      _captainName = $v.captainName;
       _reason = $v.reason;
       _label = $v.label;
       _captainFault = $v.captainFault;
@@ -275,6 +286,7 @@ class AdminOrderDtoOutputOrderReassignmentsInnerBuilder
             r'AdminOrderDtoOutputOrderReassignmentsInner',
             'captainId',
           ),
+          captainName: captainName,
           reason: BuiltValueNullFieldError.checkNotNull(
             reason,
             r'AdminOrderDtoOutputOrderReassignmentsInner',
