@@ -50,6 +50,7 @@ export const eventKeys = {
   'order.edited': 'order.event.edited',
   'order.edit_acknowledged': 'order.event.editAcknowledged',
   'order.outcome_set': 'order.event.outcomeSet',
+  'order.outcome_collected': 'order.event.outcomeCollected',
 } as const;
 
 export function eventKey(type: string | null): (typeof eventKeys)[keyof typeof eventKeys] | null {

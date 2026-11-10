@@ -53,6 +53,7 @@ export const badgeKeys = {
   note: 'order.badge.note',
   newCustomer: 'order.badge.newCustomer',
   pickupPending: 'order.badge.pickupPending',
+  awaitingCollection: 'order.badge.awaitingCollection',
   itemReport: 'order.badge.itemReport',
 } as const satisfies Record<keyof OrderCard['badges'], string>;
 

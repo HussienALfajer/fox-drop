@@ -7,6 +7,8 @@ import { formatMoney, formatTime } from './format.js';
 import { CancelOrder } from './order-cancel-page.js';
 import { SetOutcome } from './order-outcome-page.js';
 import { canSetOutcome } from './order-outcome.js';
+import { RecordOutcomePayment } from './order-outcome-payment-page.js';
+import { canRecordOutcomePayment } from './order-outcome-payment.js';
 import { canCancel } from './order-cancel.js';
 import {
   actorKey,
@@ -228,6 +230,14 @@ export function OrderDetailPage() {
             captainName: detail.captain?.name ?? null,
             payment: { amount: detail.money.pickupPayment, currency: detail.money.currency },
           }}
+          total={{ amount: detail.money.total, currency: detail.money.currency }}
+        />
+      )}
+      {detail.outcome && canRecordOutcomePayment(session, detail) && (
+        <RecordOutcomePayment
+          key={orderId}
+          orderId={orderId}
+          due={detail.outcome.amountToCollect}
         />
       )}
       {canCancel(session, detail) && (
@@ -559,6 +569,14 @@ function OutcomeSection({
         })}
       </p>
       <p>{t('order.outcomeSet.at', { time: time(outcome.at) })}</p>
+      {outcome.amountToCollect.amount !== '0' && (
+        <p>
+          {t('order.outcomeSet.amountToCollect', {
+            amount: formatMoney(outcome.amountToCollect),
+          })}
+        </p>
+      )}
+      {outcome.awaitingCollection && <p>{t('order.outcomeSet.awaitingCollection')}</p>}
       {food && <p>{t('order.outcomeSet.food', { food: t(food) })}</p>}
       {outcome.loss.amount !== '0' && (
         <p>{t('order.outcomeSet.loss', { amount: formatMoney(outcome.loss) })}</p>
