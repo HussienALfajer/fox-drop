@@ -357,6 +357,43 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets('an edit that added items rings until «اطلعت على التعديل», '
+      'listing its changes (RA §8.13, §16 #16)', (tester) async {
+    final app = _Board();
+    final edited = orderJson(
+      status: 'accepted',
+      version: 4,
+      acceptedAfter: Duration.zero,
+      edits: [editJson(extraPrepMin: 10)],
+    );
+    final acknowledged = {...edited, 'version': 5, 'edits': <Object?>[]};
+    await app.pump(tester, [
+      FakeAnswer(200, boardJson([edited])),
+      FakeAnswer(200, boardJson([acknowledged])),
+    ]);
+    await app.up(tester);
+
+    expect(find.text('تم تعديل الطلب #10001 — أُضيفت أصناف'), findsOneWidget);
+    expect(find.text('شاورما: 2 ← 3'), findsOneWidget);
+    expect(find.text('أُضيف: 1 × بطاطا'), findsOneWidget);
+    expect(find.text('عاد الطلب إلى «قيد التحضير»: 10 د إضافية'), findsOneWidget);
+    expect(find.text('قيمة الأصناف الجديدة: 433 ₺'), findsOneWidget);
+    expect(app.ringer.ringing, isTrue);
+    app.server.on('/v1/merchant/orders/$_orderId/acknowledge-edit', [
+      FakeAnswer(200, {'order': acknowledged}),
+    ]);
+    await tester.tap(find.byKey(const Key('acknowledge-edit')));
+    await tester.pumpAndSettle();
+
+    final sent = app.server
+        .to('/v1/merchant/orders/$_orderId/acknowledge-edit')
+        .single;
+    expect(sent.headers['Idempotency-Key'], isNotEmpty);
+    expect(find.byKey(const Key('ringing-prompt')), findsNothing);
+    expect(app.ringer.ringing, isFalse);
+    await app.done(tester);
+  });
+
   testWidgets("«حسناً» on another device stops this one's ring", (
     tester,
   ) async {

@@ -118,6 +118,13 @@ class ItemReportClosed extends BoardNotice {
   final String reason;
 }
 
+/// «تم تعديل الطلب #{رقم}»: an edit by operations that added nothing chimes
+/// once and stays on the order until acknowledged (RA §8.13, §16 #17).
+class OrderEdited extends BoardNotice {
+  const OrderEdited(this.number);
+  final String number;
+}
+
 /// «تحضير متأخر #{رقم} — اضغط «الطلب جاهز» فور الانتهاء».
 class PrepLate extends BoardNotice {
   const PrepLate(this.number);
@@ -251,6 +258,9 @@ AlertStep alertStep(
       // RA §16 #37: operations closed the report without an edit.
       case 'order.item_report_closed':
         notices.add(ItemReportClosed(number, '${event['reason'] ?? ''}'));
+      // RA §8.13: an edit that added items rings with its prompt instead.
+      case 'order.edited' when event['reason'] == 'changed':
+        notices.add(OrderEdited(number));
     }
   }
 
@@ -382,13 +392,14 @@ final boardAlertsProvider = Provider.autoDispose<void>((ref) {
       final deadline = switch (item) {
         NewOrderRinging(:final order) => order.autoCancelAt,
         PickupRinging(:final request) => request.confirmBy,
-        // Only «حسناً» ends it, on this device or another one.
-        CancelledRinging() => null,
+        // Only «حسناً» or «اطلعت على التعديل» ends it, on any device.
+        CancelledRinging() || EditRinging() => null,
       };
       final key = switch (item) {
         NewOrderRinging(:final order) => order.id,
         PickupRinging(:final request) => request.id,
         CancelledRinging(:final order) => 'cancelled-${order.id}',
+        EditRinging(:final order) => 'edit-${order.id}',
       };
       if (deadline != null &&
           now.isAfter(deadline.add(ringDeadlineGrace)) &&

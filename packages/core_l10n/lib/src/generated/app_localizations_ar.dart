@@ -1978,4 +1978,65 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get customerItemReportBanner =>
       'المطعم أبلغ أن صنفاً في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن.';
+
+  @override
+  String merchantOrderEditedItemsAdded(String number) {
+    return 'تم تعديل الطلب #$number — أُضيفت أصناف';
+  }
+
+  @override
+  String merchantOrderEdited(String number) {
+    return 'تم تعديل الطلب #$number';
+  }
+
+  @override
+  String get merchantAcknowledgeEdit => 'اطلعت على التعديل';
+
+  @override
+  String merchantEditItemsValue(String amount) {
+    return 'قيمة الأصناف الجديدة: $amount';
+  }
+
+  @override
+  String merchantEditBackToPreparing(int minutes) {
+    return 'عاد الطلب إلى «قيد التحضير»: $minutes د إضافية';
+  }
+
+  @override
+  String get merchantEditAcknowledgedElsewhere => 'اطّلع جهاز آخر على التعديل';
+
+  @override
+  String orderEditAdded(int quantity, String name) {
+    return 'أُضيف: $quantity × $name';
+  }
+
+  @override
+  String orderEditRemoved(int quantity, String name) {
+    return 'حُذف: $quantity × $name';
+  }
+
+  @override
+  String orderEditQuantity(String name, int before, int after) {
+    return '$name: $before ← $after';
+  }
+
+  @override
+  String get captainWaitingForEditAcknowledgement =>
+      'بانتظار تأكيد المطعم للتعديل';
+
+  @override
+  String captainOrderEdited(String pay, String collect) {
+    return 'تم تعديل الطلب — المبلغ الجديد للمطعم $pay، للتحصيل $collect';
+  }
+
+  @override
+  String get customerLineAdded => 'أُضيف';
+
+  @override
+  String get customerLineRemoved => 'حُذف';
+
+  @override
+  String customerOrderEditedBanner(String amount) {
+    return 'عدّلت FOX DROP طلبك. المجموع الجديد: $amount';
+  }
 }

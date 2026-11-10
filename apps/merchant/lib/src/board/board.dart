@@ -16,6 +16,10 @@ typedef PickupOutcome =
     MerchantOrdersDtoOutputOrdersInnerPickupRequestOutcomeEnum;
 typedef BoardCancellation = MerchantOrdersDtoOutputOrdersInnerCancellation;
 typedef BoardItemReport = MerchantOrdersDtoOutputOrdersInnerItemReport;
+typedef BoardEdit = MerchantOrdersDtoOutputOrdersInnerEditsInner;
+typedef BoardEditChange = MerchantOrdersDtoOutputOrdersInnerEditsInnerChangesInner;
+typedef EditChangeKind =
+    MerchantOrdersDtoOutputOrdersInnerEditsInnerChangesInnerKindEnum;
 
 /// The board's columns, right to left (RA §8.1–8.2).
 enum BoardColumn { incoming, preparing, ready, withCaptain }
@@ -146,8 +150,13 @@ CaptainLine? captainLine(BoardOrder order) {
   };
 }
 
-/// What rings on the board (RA §4.4): new orders, open pickup requests and
-/// operations' cancellations after acceptance, oldest first. One sound plays
+/// Whether operations' unacknowledged edits include one that added items:
+/// it rings until «اطلعت على التعديل» and blocks the pickup (RA §8.13).
+bool editRings(BoardOrder order) => order.edits.any((edit) => edit.addsItems);
+
+/// What rings on the board (RA §4.4): new orders, open pickup requests,
+/// operations' cancellations after acceptance and their edits that added
+/// items, oldest first. One sound plays
 /// for all of them; the prompts stack.
 sealed class Ringing {
   const Ringing(this.order);
@@ -180,11 +189,21 @@ class CancelledRinging extends Ringing {
   DateTime get since => cancellation.at;
 }
 
+/// «تم تعديل الطلب #{رقم} — أُضيفت أصناف» until «اطلعت على التعديل» on any
+/// device (RA §8.13), with every edit not yet acknowledged.
+class EditRinging extends Ringing {
+  const EditRinging(super.order);
+  @override
+  DateTime get since => order.edits.first.at;
+}
+
 List<Ringing> ringing(Board board) {
   final items = <Ringing>[
     for (final order in board.orders)
-      if (order.status == OrderStatus.placed)
+      if (order.status == OrderStatus.placed && !editRings(order))
         NewOrderRinging(order)
+      else if (editRings(order))
+        EditRinging(order)
       else if (order.status == OrderStatus.cancelled &&
           order.cancellation != null)
         CancelledRinging(order, order.cancellation!)

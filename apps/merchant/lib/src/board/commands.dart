@@ -21,6 +21,7 @@ enum CommandKind {
   acknowledgeCancellation,
   reportItems,
   withdrawItemReport,
+  acknowledgeEdit,
 }
 
 /// The three rejection reasons, the codes of the closed list (RA §8.6, R3).
@@ -328,6 +329,18 @@ class BoardCommands extends Notifier<Set<String>> {
     ),
   );
 
+  /// «اطلعت على التعديل» (RA §8.13): every edit not yet acknowledged; the
+  /// ring stops on every device and the captain's pickup is free.
+  Future<CommandNotice?> acknowledgeEdit(String orderId) => _send(
+    orderId,
+    CommandKind.acknowledgeEdit,
+    '',
+    (key) => _api.merchantOrdersAcknowledgeEdit(
+      orderId: orderId,
+      idempotencyKey: key,
+    ),
+  );
+
   /// «صنف غير متوفر — اتصلوا بالزبون» (RA §8.12).
   Future<CommandNotice?> reportItems(String orderId, ItemReport report) =>
       _send(
@@ -422,7 +435,10 @@ class BoardCommands extends Notifier<Set<String>> {
   CommandNotice? _refused(CommandKind kind, Response<Object?> answer) {
     // The order no longer waits for «حسناً»: the board fetched after the
     // answer drops it, with nothing to explain.
-    if (kind == CommandKind.acknowledgeCancellation &&
+    // Or another device acknowledged the edits first: the board fetched
+    // after the answer shows none.
+    if ((kind == CommandKind.acknowledgeCancellation ||
+            kind == CommandKind.acknowledgeEdit) &&
         answer.statusCode == 409) {
       return null;
     }
