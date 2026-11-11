@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { canReleaseDevice, releaseReason } from './captain-device.js';
+import { canReleaseDevice, releaseReason, releaseResult } from './captain-device.js';
 
 vi.mock('./api.js', () => ({ api: {} }));
 
@@ -27,5 +27,22 @@ describe('releaseReason', () => {
   it('requires a reason and trims it', () => {
     expect(releaseReason(' انكسر هاتفه ')).toBe('انكسر هاتفه');
     expect(releaseReason('   ')).toBeNull();
+  });
+});
+
+// Every refusal the form explains is a typed result; anything else throws.
+describe('releaseResult', () => {
+  it('maps the answers', () => {
+    expect(releaseResult(200, true, undefined)).toEqual({ status: 'released' });
+    expect(releaseResult(409, false, { error: 'no_device' })).toEqual({
+      status: 'refused',
+      refusal: 'no_device',
+    });
+    expect(releaseResult(404, false, { error: 'unknown_captain' })).toEqual({
+      status: 'refused',
+      refusal: 'unknown_captain',
+    });
+    expect(() => releaseResult(409, false, { error: 'other' })).toThrow();
+    expect(() => releaseResult(500, false, undefined)).toThrow();
   });
 });

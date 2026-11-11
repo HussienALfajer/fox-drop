@@ -290,7 +290,7 @@ export function OrderDetailPage() {
         </p>
       )}
       {canReleaseDevice(session, detail) && (
-        <ReleaseDevice key={detail.captain.id} captainId={detail.captain.id} />
+        <ReleaseDevice key={detail.captain.id} captainId={detail.captain.id} time={time} />
       )}
       {detail.captainTrack === 'offered' && <p>{t('order.offerOpen')}</p>}
       {can(session, OPERATIONS_MANAGE) && canAssign(detail) && (

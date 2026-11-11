@@ -382,6 +382,7 @@ const routeAccess: Record<string, Access> = {
   'PUT /v1/admin/otp-sender-numbers/{numberId}/status': 'settings.manage',
   'POST /v1/admin/otp-sender-numbers/{numberId}/disable': 'settings.manage',
   'POST /v1/admin/emergency-sign-in-codes': 'sign_in.emergency_code',
+  'GET /v1/admin/captains/{captainId}/device': 'captains.manage',
   'POST /v1/admin/captains/{captainId}/release-device': 'captains.manage',
   'GET /v1/admin/settings': { editRoles: ['OWN', 'OPS', 'FIN'] },
   'PUT /v1/admin/settings/{key}': settingRoles,

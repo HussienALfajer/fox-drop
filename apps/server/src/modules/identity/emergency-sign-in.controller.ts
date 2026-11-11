@@ -44,7 +44,8 @@ export class EmergencySignInController {
   constructor(private readonly emergency: EmergencySignInService) {}
 
   // 409 not_registered, contract_ended, restaurant_draft or
-  // restaurant_terminated for a number that cannot sign in.
+  // restaurant_terminated for a number that cannot sign in; captain's
+  // active_order_elsewhere while «تحرير الجهاز» is needed first.
   @Post()
   @HttpCode(200)
   // The answer carries a code that signs in: never cached.

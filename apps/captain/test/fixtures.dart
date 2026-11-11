@@ -331,9 +331,13 @@ class FakeLocation implements LocationSource {
   LocationProblem? problem;
   final _tracked = StreamController<Fix>.broadcast();
   int tracking = 0;
+  int accessAsked = 0;
 
   @override
-  Future<LocationProblem?> ensureAccess() async => problem;
+  Future<LocationProblem?> ensureAccess() async {
+    accessAsked++;
+    return problem;
+  }
 
   @override
   Future<Fix?> current() async => fix;

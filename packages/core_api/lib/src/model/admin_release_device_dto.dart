@@ -11,10 +11,15 @@ part 'admin_release_device_dto.g.dart';
 /// AdminReleaseDeviceDto
 ///
 /// Properties:
+/// * [sessionId] - The device the panel showed.
 /// * [reason] - Why, kept in the audit log (AP §9.7.5).
 @BuiltValue()
 abstract class AdminReleaseDeviceDto
     implements Built<AdminReleaseDeviceDto, AdminReleaseDeviceDtoBuilder> {
+  /// The device the panel showed.
+  @BuiltValueField(wireName: r'sessionId')
+  String get sessionId;
+
   /// Why, kept in the audit log (AP §9.7.5).
   @BuiltValueField(wireName: r'reason')
   String get reason;
@@ -49,6 +54,11 @@ class _$AdminReleaseDeviceDtoSerializer
     AdminReleaseDeviceDto object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    yield r'sessionId';
+    yield serializers.serialize(
+      object.sessionId,
+      specifiedType: const FullType(String),
+    );
     yield r'reason';
     yield serializers.serialize(
       object.reason,
@@ -81,6 +91,15 @@ class _$AdminReleaseDeviceDtoSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'sessionId':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.sessionId = valueDes;
+          break;
         case r'reason':
           final valueDes =
               serializers.deserialize(

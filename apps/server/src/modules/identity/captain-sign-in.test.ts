@@ -16,6 +16,7 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
 import { AdminSessionsService } from './admin-sessions.service.js';
+import { AppSessionsService } from './app-sessions.service.js';
 import { changePlaceholderPhone } from './placeholder-phone.js';
 import { ADMIN_SESSION_COOKIE } from './route-access.guard.js';
 import { IDENTITY_SECRETS, type IdentitySecrets } from './secrets.js';
@@ -284,12 +285,21 @@ async function admin(roles: string[]) {
   const cookies = { [ADMIN_SESSION_COOKIE]: token };
   return {
     accountId,
+    device: (captainId: string) =>
+      app.inject({ method: 'GET', url: `/v1/admin/captains/${captainId}/device`, cookies }),
     release: (captainId: string, payload: Record<string, unknown>) =>
       app.inject({
         method: 'POST',
         url: `/v1/admin/captains/${captainId}/release-device`,
         cookies,
         payload,
+      }),
+    issueCode: (phone: string) =>
+      app.inject({
+        method: 'POST',
+        url: '/v1/admin/emergency-sign-in-codes',
+        cookies,
+        payload: { party: 'captain', phone, reason: 'ضاع هاتفه' },
       }),
   };
 }
@@ -338,21 +348,46 @@ describe('one device during an active order (CA §4.9, K5)', () => {
     const { captainId, phone, accountId } = await captain();
     const old = (await signIn(phone)).json();
     busy.add(captainId);
+    // Owner decision 2026-11-11: the release keeps the captain online.
+    await captains.goOnline(
+      captainId,
+      { appVersion: '1.0.0', simulatedLocation: false, termsPending: false },
+      new Date(),
+    );
+    const ended: string[][] = [];
+    app.get(AppSessionsService).onEnded((ids) => ended.push(ids));
     const ops = await admin(['OPS']);
 
-    expect((await ops.release(captainId, { reason: ' ' })).statusCode).toBe(400);
-    const released = await ops.release(captainId, { reason: 'انكسر هاتفه' });
+    // An emergency code would be used up by the refusal: release first.
+    const code = await ops.issueCode(phone);
+    expect(code.statusCode).toBe(409);
+    expect(code.json()).toMatchObject({ error: 'active_order_elsewhere' });
+
+    const shown = (await ops.device(captainId)).json();
+    expect(shown).toEqual({
+      device: { sessionId: expect.any(String), signedInAt: expect.any(String) },
+    });
+    const { sessionId } = shown.device;
+    expect((await ops.release(captainId, { sessionId, reason: ' ' })).statusCode).toBe(400);
+    const released = await ops.release(captainId, { sessionId, reason: 'انكسر هاتفه' });
     expect(released.statusCode).toBe(200);
     expect(released.json()).toEqual({ status: 'released' });
+    expect(ended).toEqual([[sessionId]]);
+    expect((await ops.device(captainId)).json()).toEqual({ device: null });
+    const { rows: online } = await sql.query(
+      'SELECT ended_at FROM captains.online_periods WHERE captain_id = $1',
+      [captainId],
+    );
+    expect(online).toEqual([{ ended_at: null }]);
     // The old device is signed out, not told of another device.
     const gone = await session(old.accessToken);
     expect(gone.statusCode).toBe(401);
     expect(gone.json().error).toBeUndefined();
-    const { rows: ended } = await sql.query(
+    const { rows: reasons } = await sql.query(
       "SELECT end_reason FROM identity.app_sessions WHERE party = 'captain' AND account_id = $1",
       [accountId],
     );
-    expect(ended).toEqual([{ end_reason: 'device_released' }]);
+    expect(reasons).toEqual([{ end_reason: 'device_released' }]);
     const { rows: audit } = await sql.query(
       `SELECT actor_id, actor_role, target_type, target_id, city_id, reason, changes::text AS changes
          FROM audit.events WHERE action = 'captain_account.release_device' AND target_id = $1`,
@@ -370,22 +405,29 @@ describe('one device during an active order (CA §4.9, K5)', () => {
       },
     ]);
 
-    // Nothing left to release.
-    const again = await ops.release(captainId, { reason: 'مرة ثانية' });
-    expect(again.statusCode).toBe(409);
-    expect(again.json()).toMatchObject({ error: 'no_device' });
-
-    // The captain signs in on the new phone during the order.
+    // The captain signs in on the new phone during the order; a second or
+    // late release of the old device never signs the new one out.
     await pastResendWait();
     const fresh = await signIn(phone);
     expect(fresh.statusCode).toBe(200);
+    const again = await ops.release(captainId, { sessionId, reason: 'مرة ثانية' });
+    expect(again.statusCode).toBe(409);
+    expect(again.json()).toMatchObject({ error: 'no_device' });
+    expect((await session(fresh.json().accessToken)).statusCode).toBe(200);
     busy.delete(captainId);
 
     const owner = await admin(['OWN']);
-    expect((await owner.release(captainId, { reason: 'هاتف جديد' })).statusCode).toBe(200);
-    expect((await owner.release(randomUUID(), { reason: 'x' })).statusCode).toBe(404);
+    const current = (await owner.device(captainId)).json().device.sessionId;
+    expect(current).not.toBe(sessionId);
+    expect(
+      (await owner.release(captainId, { sessionId: current, reason: 'هاتف جديد' })).statusCode,
+    ).toBe(200);
+    expect((await owner.device(randomUUID())).statusCode).toBe(404);
+    expect(
+      (await owner.release(randomUUID(), { sessionId: current, reason: 'x' })).statusCode,
+    ).toBe(404);
     const support = await admin(['SUP']);
-    expect((await support.release(captainId, { reason: 'x' })).statusCode).toBe(403);
+    expect((await support.device(captainId)).statusCode).toBe(403);
   });
 });
 

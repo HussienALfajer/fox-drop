@@ -31,6 +31,8 @@ Serializers _$serializers =
           ..add(AdminCancelPreviewDto.serializer)
           ..add(AdminCancelPreviewDtoCashEnum.serializer)
           ..add(AdminCancelPreviewDtoResponsibleEnum.serializer)
+          ..add(AdminCaptainDeviceDtoOutput.serializer)
+          ..add(AdminCaptainDeviceDtoOutputDevice.serializer)
           ..add(AdminChangeOutcomeDto.serializer)
           ..add(AdminChangeOutcomeDtoFoodEnum.serializer)
           ..add(AdminChangeOutcomeDtoOutcomeEnum.serializer)

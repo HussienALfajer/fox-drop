@@ -27,6 +27,8 @@ export 'package:core_api/src/model/admin_cancel_dto.dart';
 export 'package:core_api/src/model/admin_cancel_preview_answer_dto_output.dart';
 export 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner.dart';
 export 'package:core_api/src/model/admin_cancel_preview_dto.dart';
+export 'package:core_api/src/model/admin_captain_device_dto_output.dart';
+export 'package:core_api/src/model/admin_captain_device_dto_output_device.dart';
 export 'package:core_api/src/model/admin_change_outcome_dto.dart';
 export 'package:core_api/src/model/admin_change_time_dto.dart';
 export 'package:core_api/src/model/admin_cities_dto_output.dart';

@@ -19,7 +19,12 @@ export const EMERGENCY_CODE_MINUTES = 10;
 export type EmergencyParty = 'captain' | 'merchant';
 
 export class EmergencyCodeRefusedError extends Error {
-  constructor(readonly refusal: CaptainSignInRefusal | MerchantSignInRefusal) {
+  // active_order_elsewhere: a captain with an active order still signed in
+  // on another device; their sign-in would use the code up, so operations
+  // release the device first (CA §4.9, AP §9.7.5).
+  constructor(
+    readonly refusal: CaptainSignInRefusal | MerchantSignInRefusal | 'active_order_elsewhere',
+  ) {
     super(`emergency code refused: ${refusal}`);
   }
 }
@@ -54,6 +59,12 @@ export class EmergencySignInService {
         ? await this.captainAccounts.signInAccount(phoneHash, now)
         : await this.merchantAccounts.signInAccount(phoneHash);
     if (typeof account === 'string') throw new EmergencyCodeRefusedError(account);
+    if (
+      'captainId' in account &&
+      (await this.captainAccounts.activeOrderElsewhere(this.database.db, account, ''))
+    ) {
+      throw new EmergencyCodeRefusedError('active_order_elsewhere');
+    }
 
     // The audit event carries the account's city (AP D28, §9.16).
     const table = request.party === 'captain' ? captainAccounts : merchantAccounts;

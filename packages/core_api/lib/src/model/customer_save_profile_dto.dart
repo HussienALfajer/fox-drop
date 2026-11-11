@@ -19,7 +19,8 @@ part 'customer_save_profile_dto.g.dart';
 /// * [birthday] - «تاريخ الميلاد», optional, a past date.
 /// * [acceptTerms] - «أوافق على الشروط وسياسة الخصوصية»: needed the first time only.
 @BuiltValue()
-abstract class CustomerSaveProfileDto implements Built<CustomerSaveProfileDto, CustomerSaveProfileDtoBuilder> {
+abstract class CustomerSaveProfileDto
+    implements Built<CustomerSaveProfileDto, CustomerSaveProfileDtoBuilder> {
   /// «الاسم»: 2 to 30 Arabic or Latin letters, spaces and «-».
   @BuiltValueField(wireName: r'firstName')
   String get firstName;
@@ -43,18 +44,25 @@ abstract class CustomerSaveProfileDto implements Built<CustomerSaveProfileDto, C
 
   CustomerSaveProfileDto._();
 
-  factory CustomerSaveProfileDto([void updates(CustomerSaveProfileDtoBuilder b)]) = _$CustomerSaveProfileDto;
+  factory CustomerSaveProfileDto([
+    void updates(CustomerSaveProfileDtoBuilder b),
+  ]) = _$CustomerSaveProfileDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerSaveProfileDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerSaveProfileDto> get serializer => _$CustomerSaveProfileDtoSerializer();
+  static Serializer<CustomerSaveProfileDto> get serializer =>
+      _$CustomerSaveProfileDtoSerializer();
 }
 
-class _$CustomerSaveProfileDtoSerializer implements PrimitiveSerializer<CustomerSaveProfileDto> {
+class _$CustomerSaveProfileDtoSerializer
+    implements PrimitiveSerializer<CustomerSaveProfileDto> {
   @override
-  final Iterable<Type> types = const [CustomerSaveProfileDto, _$CustomerSaveProfileDto];
+  final Iterable<Type> types = const [
+    CustomerSaveProfileDto,
+    _$CustomerSaveProfileDto,
+  ];
 
   @override
   final String wireName = r'CustomerSaveProfileDto';
@@ -70,20 +78,24 @@ class _$CustomerSaveProfileDtoSerializer implements PrimitiveSerializer<Customer
       specifiedType: const FullType(String),
     );
     yield r'lastName';
-    yield object.lastName == null ? null : serializers.serialize(
-      object.lastName,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.lastName == null
+        ? null
+        : serializers.serialize(
+            object.lastName,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'gender';
     yield serializers.serialize(
       object.gender,
       specifiedType: const FullType(CustomerSaveProfileDtoGenderEnum),
     );
     yield r'birthday';
-    yield object.birthday == null ? null : serializers.serialize(
-      object.birthday,
-      specifiedType: const FullType.nullable(Date),
-    );
+    yield object.birthday == null
+        ? null
+        : serializers.serialize(
+            object.birthday,
+            specifiedType: const FullType.nullable(Date),
+          );
     yield r'acceptTerms';
     yield serializers.serialize(
       object.acceptTerms,
@@ -97,7 +109,11 @@ class _$CustomerSaveProfileDtoSerializer implements PrimitiveSerializer<Customer
     CustomerSaveProfileDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -113,40 +129,52 @@ class _$CustomerSaveProfileDtoSerializer implements PrimitiveSerializer<Customer
       final value = serializedList[i + 1];
       switch (key) {
         case r'firstName':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.firstName = valueDes;
           break;
         case r'lastName':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.lastName = valueDes;
           break;
         case r'gender':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CustomerSaveProfileDtoGenderEnum),
-          ) as CustomerSaveProfileDtoGenderEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CustomerSaveProfileDtoGenderEnum,
+                    ),
+                  )
+                  as CustomerSaveProfileDtoGenderEnum;
           result.gender = valueDes;
           break;
         case r'birthday':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(Date),
-          ) as Date?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(Date),
+                  )
+                  as Date?;
           if (valueDes == null) continue;
           result.birthday = valueDes;
           break;
         case r'acceptTerms':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.acceptTerms = valueDes;
           break;
         default:
@@ -178,20 +206,22 @@ class _$CustomerSaveProfileDtoSerializer implements PrimitiveSerializer<Customer
   }
 }
 
-
 /// «ذكر» male or «أنثى» female.
 class CustomerSaveProfileDtoGenderEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'male')
-  static const CustomerSaveProfileDtoGenderEnum male = _$customerSaveProfileDtoGenderEnum_male;
+  static const CustomerSaveProfileDtoGenderEnum male =
+      _$customerSaveProfileDtoGenderEnum_male;
   @BuiltValueEnumConst(wireName: r'female')
-  static const CustomerSaveProfileDtoGenderEnum female = _$customerSaveProfileDtoGenderEnum_female;
+  static const CustomerSaveProfileDtoGenderEnum female =
+      _$customerSaveProfileDtoGenderEnum_female;
 
-  static Serializer<CustomerSaveProfileDtoGenderEnum> get serializer => _$customerSaveProfileDtoGenderEnumSerializer;
+  static Serializer<CustomerSaveProfileDtoGenderEnum> get serializer =>
+      _$customerSaveProfileDtoGenderEnumSerializer;
 
-  const CustomerSaveProfileDtoGenderEnum._(String name): super(name);
+  const CustomerSaveProfileDtoGenderEnum._(String name) : super(name);
 
-  static BuiltSet<CustomerSaveProfileDtoGenderEnum> get values => _$customerSaveProfileDtoGenderEnumValues;
-  static CustomerSaveProfileDtoGenderEnum valueOf(String name) => _$customerSaveProfileDtoGenderEnumValueOf(name);
+  static BuiltSet<CustomerSaveProfileDtoGenderEnum> get values =>
+      _$customerSaveProfileDtoGenderEnumValues;
+  static CustomerSaveProfileDtoGenderEnum valueOf(String name) =>
+      _$customerSaveProfileDtoGenderEnumValueOf(name);
 }
-
