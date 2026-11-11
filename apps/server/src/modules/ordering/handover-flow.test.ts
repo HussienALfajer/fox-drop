@@ -352,6 +352,14 @@ async function onlineCaptain(name: string, point: Point = captainSpot) {
     availability: async () =>
       (await app.inject({ method: 'GET', url: '/v1/captain/availability', headers })).json()
         .availability,
+    // CA §7.3 (slice 2.13a): «لا أريد طلبات جديدة».
+    lastOrder: () =>
+      app.inject({
+        method: 'POST',
+        url: '/v1/captain/availability/last-order',
+        headers,
+        payload: { on: true },
+      }),
   };
 }
 
@@ -715,6 +723,8 @@ describe('POST /v1/captain/orders/{orderId}/receive-handover (CA §9.10.1, §15)
     const { order, ops } = await pickedUpOrder();
     const second = await onlineCaptain('منتظر', besideThem);
     expect((await ops.handover(order.id, second.captainId)).statusCode).toBe(200);
+    // The assigned handover is the second captain's active order (K18).
+    expect((await second.lastOrder()).json().availability.state).toBe('last_order');
     const recorded = await ops.post(`/v1/admin/orders/${order.id}/record-delivery`, {
       received: [{ currency: 'TRY', amount: '28000' }],
       change: [],
@@ -724,7 +734,9 @@ describe('POST /v1/captain/orders/{orderId}/receive-handover (CA §9.10.1, §15)
     });
     expect(recorded.statusCode).toBe(200);
     expect(await handoverRows(order.id)).toMatchObject([{ close_reason: 'ended' }]);
-    expect((await second.availability()).state).toBe('online_available');
+    // Slice 2.13a: the order left them with the handover, so their last
+    // order ended.
+    expect((await second.availability()).state).toBe('offline');
     expect((await second.active()).order).toBeNull();
   });
 });
@@ -790,13 +802,16 @@ describe('the handover’s pay and its other ways out (slice 2.12b)', () => {
     const second = await onlineCaptain('لم يصل', besideThem);
     const third = await onlineCaptain('البديل', besideThem);
     expect((await ops.handover(order.id, second.captainId)).statusCode).toBe(200);
+    expect((await second.lastOrder()).statusCode).toBe(200);
     expect((await ops.detail(order.id)).handover.allowed).toBe(true);
     expect((await ops.handover(order.id, third.captainId)).statusCode).toBe(200);
     expect(await handoverRows(order.id)).toMatchObject([
       { to_captain_id: second.captainId, close_reason: 'replaced' },
       { to_captain_id: third.captainId, assigned: true, close_reason: null },
     ]);
-    expect((await second.availability()).state).toBe('online_available');
+    // Slice 2.13a: replaced while in last-order mode, the second captain is
+    // offline.
+    expect((await second.availability()).state).toBe('offline');
     expect((await second.active()).order).toBeNull();
     expect((await third.active()).order.handover).toMatchObject({ role: 'receiving' });
     expect((await second.receive(order.id)).statusCode).toBe(404);
@@ -877,6 +892,24 @@ describe('the handover’s pay and its other ways out (slice 2.12b)', () => {
     } finally {
       await requireAccept(false);
     }
+  });
+
+  // CA §7.3 (slice 2.13a): «تحديد النتيجة» takes the order from its captain,
+  // so their last order ends.
+  it('takes a captain in last-order mode offline when operations set a failed outcome', async () => {
+    const { order, first, ops } = await pickedUpOrder();
+    expect((await first.lastOrder()).statusCode).toBe(200);
+    const { version } = await ops.detail(order.id);
+    const outcome = await ops.post(`/v1/admin/orders/${order.id}/outcome`, {
+      outcome: 'failed_other',
+      responsible: 'platform',
+      delivered: false,
+      food: 'kept_by_captain',
+      version,
+      reason: 'تعذّر الوصول إلى الزبون',
+    });
+    expect(outcome.statusCode).toBe(200);
+    expect((await first.availability()).state).toBe('offline');
   });
 
   it('holds the first captain’s steps and gives a giver no details before the acceptance', async () => {

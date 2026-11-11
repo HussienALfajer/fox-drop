@@ -18,6 +18,8 @@ class _$CaptainAvailabilityDtoOutputCustody
   final CaptainAvailabilityDtoOutputCustodyClosedDue closedDue;
   @override
   final DateTime lastCutoff;
+  @override
+  final CaptainAvailabilityDtoOutputCustodyRemitTolerance remitTolerance;
 
   factory _$CaptainAvailabilityDtoOutputCustody([
     void Function(CaptainAvailabilityDtoOutputCustodyBuilder)? updates,
@@ -30,6 +32,7 @@ class _$CaptainAvailabilityDtoOutputCustody
     required this.warn,
     required this.closedDue,
     required this.lastCutoff,
+    required this.remitTolerance,
   }) : super._();
   @override
   CaptainAvailabilityDtoOutputCustody rebuild(
@@ -48,7 +51,8 @@ class _$CaptainAvailabilityDtoOutputCustody
         limit == other.limit &&
         warn == other.warn &&
         closedDue == other.closedDue &&
-        lastCutoff == other.lastCutoff;
+        lastCutoff == other.lastCutoff &&
+        remitTolerance == other.remitTolerance;
   }
 
   @override
@@ -59,6 +63,7 @@ class _$CaptainAvailabilityDtoOutputCustody
     _$hash = $jc(_$hash, warn.hashCode);
     _$hash = $jc(_$hash, closedDue.hashCode);
     _$hash = $jc(_$hash, lastCutoff.hashCode);
+    _$hash = $jc(_$hash, remitTolerance.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -70,7 +75,8 @@ class _$CaptainAvailabilityDtoOutputCustody
           ..add('limit', limit)
           ..add('warn', warn)
           ..add('closedDue', closedDue)
-          ..add('lastCutoff', lastCutoff))
+          ..add('lastCutoff', lastCutoff)
+          ..add('remitTolerance', remitTolerance))
         .toString();
   }
 }
@@ -111,6 +117,14 @@ class CaptainAvailabilityDtoOutputCustodyBuilder
   DateTime? get lastCutoff => _$this._lastCutoff;
   set lastCutoff(DateTime? lastCutoff) => _$this._lastCutoff = lastCutoff;
 
+  CaptainAvailabilityDtoOutputCustodyRemitToleranceBuilder? _remitTolerance;
+  CaptainAvailabilityDtoOutputCustodyRemitToleranceBuilder get remitTolerance =>
+      _$this._remitTolerance ??=
+          CaptainAvailabilityDtoOutputCustodyRemitToleranceBuilder();
+  set remitTolerance(
+    CaptainAvailabilityDtoOutputCustodyRemitToleranceBuilder? remitTolerance,
+  ) => _$this._remitTolerance = remitTolerance;
+
   CaptainAvailabilityDtoOutputCustodyBuilder() {
     CaptainAvailabilityDtoOutputCustody._defaults(this);
   }
@@ -123,6 +137,7 @@ class CaptainAvailabilityDtoOutputCustodyBuilder
       _warn = $v.warn;
       _closedDue = $v.closedDue.toBuilder();
       _lastCutoff = $v.lastCutoff;
+      _remitTolerance = $v.remitTolerance.toBuilder();
       _$v = null;
     }
     return this;
@@ -162,6 +177,7 @@ class CaptainAvailabilityDtoOutputCustodyBuilder
               r'CaptainAvailabilityDtoOutputCustody',
               'lastCutoff',
             ),
+            remitTolerance: remitTolerance.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -173,6 +189,9 @@ class CaptainAvailabilityDtoOutputCustodyBuilder
 
         _$failedField = 'closedDue';
         closedDue.build();
+
+        _$failedField = 'remitTolerance';
+        remitTolerance.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'CaptainAvailabilityDtoOutputCustody',

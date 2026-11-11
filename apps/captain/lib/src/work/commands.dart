@@ -36,6 +36,12 @@ class OfflineWithOrder extends Notice {
   const OfflineWithOrder();
 }
 
+/// CA §7.3, §7.6 (slice 2.13a): last-order mode set by operations, a
+/// suspension or a termination, which the captain cannot cancel.
+class LastOrderNotYours extends Notice {
+  const LastOrderNotYours();
+}
+
 /// «لم يعد العرض متاحاً» (CA §8.3).
 class OfferUnavailable extends Notice {
   const OfferUnavailable();
@@ -220,6 +226,15 @@ class Commands extends Notifier<Set<String>> {
     }
     return notice;
   }
+
+  /// «لا أريد طلبات جديدة» (CA §7.3, §15) on or off during an active order.
+  Future<Notice?> setLastOrder(bool on) async => (await _send(
+    'availability',
+    'last-order $on',
+    (_) => _api.captainAvailabilityLastOrder(
+      captainLastOrderDto: CaptainLastOrderDto((b) => b..on_ = on),
+    ),
+  )).$2;
 
   /// «قبول» (CA §8.3).
   Future<Notice?> accept(String offerId) async => (await _send(
@@ -531,6 +546,10 @@ Notice refusal(Object? body) {
       ]);
     case 'active_order':
       return const OfflineWithOrder();
+    case 'last_order_not_yours':
+      return const LastOrderNotYours();
+    case 'no_active_order':
+      return const StateChanged();
     case 'offer_unavailable' || 'unknown_offer':
       return const OfferUnavailable();
     case 'too_far_from_restaurant' || 'too_far_from_customer':

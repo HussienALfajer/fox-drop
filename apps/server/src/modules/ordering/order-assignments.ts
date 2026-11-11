@@ -11,6 +11,7 @@ import { canHandOver, type HandoverRefusal } from './handover.js';
 import { type CaptainTrack, recordTransition } from './order-events.js';
 import { pendingOutcome } from './outcome-facts.js';
 import { handovers, type handoverCloseReasons, orders, type orderStatuses } from './schema.js';
+import type { AfterCommit } from './delivery-booking.js';
 
 type OrderStatus = (typeof orderStatuses)[number];
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
@@ -99,11 +100,26 @@ export interface AssignmentActor {
 // command's transaction.
 @Injectable()
 export class OrderAssignments implements OnModuleInit {
+  // CA §7.3, K18 (slice 2.13a): what runs after a transaction commits once a
+  // closed handover took the order from its second captain, until the
+  // transaction's owner takes it (takeAfterCommit).
+  private readonly afterCommits = new WeakMap<Tx, AfterCommit[]>();
+
   constructor(
     @Inject(DATABASE) private readonly database: Database,
     private readonly jobs: Jobs,
     private readonly captains: CaptainsService,
   ) {}
+
+  // The work a closed handover left for after the commit of this
+  // transaction; the caller runs it once the transaction committed.
+  takeAfterCommit(tx: Tx): AfterCommit {
+    const pending = this.afterCommits.get(tx) ?? [];
+    this.afterCommits.delete(tx);
+    return async () => {
+      for (const after of pending) await after();
+    };
+  }
 
   // CA §7.1: a captain with an active order is busy (AP §9.12.6, no
   // stacking), in every process that reads a captain's state.
@@ -251,6 +267,12 @@ export class OrderAssignments implements OnModuleInit {
       .update(handovers)
       .set({ closedAt: now, closeReason: reason })
       .where(eq(handovers.id, handover.id));
+    // An assigned handover was the second captain's active order: their
+    // last-order mode may end with it (CA §7.3, K18).
+    if (handover.assignedAt !== null) {
+      const after = await this.captains.afterOrderLeft(tx, handover.toCaptainId, now);
+      this.afterCommits.set(tx, [...(this.afterCommits.get(tx) ?? []), after]);
+    }
     return this.handoverEvent(
       tx,
       order,

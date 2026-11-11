@@ -8,6 +8,7 @@ import { IdentityModule, OpenAppSessionsModule, OtpSenderPoolModule } from '../i
 import { MerchantsModule } from '../merchants/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminAlertsController } from './alerts.controller.js';
+import { CaptainAvailabilityNotices } from './captain-availability-notices.js';
 import { AlertsService } from './alerts.service.js';
 import { AlertsRelay, AlertsRelayWorker } from './alerts-relay.js';
 import { AlertsSweep, AlertsSweepWorker } from './alerts-sweep.js';
@@ -40,7 +41,15 @@ import {
 // and the panel's alerts (AP §7.3, §9.1.3). Push, in-app messages and sound
 // levels join with their slices.
 @Module({
-  imports: [DatabaseModule, IdentityModule, OpenAppSessionsModule, MerchantsModule, SettingsModule],
+  imports: [
+    DatabaseModule,
+    IdentityModule,
+    OpenAppSessionsModule,
+    MerchantsModule,
+    SettingsModule,
+    CaptainsModule,
+    ContentModule,
+  ],
   controllers: [
     MerchantRealtimeController,
     CustomerRealtimeController,
@@ -62,6 +71,7 @@ import {
     PushQueue,
     PlatformBroadcasts,
     AppChangeBroadcasts,
+    CaptainAvailabilityNotices,
   ],
   exports: [RealtimeAccess, RealtimePublisher, AlertsService, PushQueue, PlatformBroadcasts],
 })

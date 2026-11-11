@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { canAssign, OPERATIONS_MANAGE } from './assign-captain.js';
 import { ReleaseDevice } from './captain-device-page.js';
 import { canReleaseDevice } from './captain-device.js';
+import { ForceOffline } from './captain-offline-page.js';
 import { chosenCity, citiesQuery } from './cities.js';
 import { formatMoney, formatTime } from './format.js';
 import { CancelOrder } from './order-cancel-page.js';
@@ -291,6 +292,9 @@ export function OrderDetailPage() {
       )}
       {canReleaseDevice(session, detail) && (
         <ReleaseDevice key={detail.captain.id} captainId={detail.captain.id} time={time} />
+      )}
+      {canReleaseDevice(session, detail) && (
+        <ForceOffline key={detail.captain.id} captainId={detail.captain.id} />
       )}
       {detail.captainTrack === 'offered' && <p>{t('order.offerOpen')}</p>}
       {can(session, OPERATIONS_MANAGE) && canAssign(detail) && (

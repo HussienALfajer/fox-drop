@@ -109,6 +109,11 @@ export class PlatformRelay {
   }
 
   private async channels(row: typeof platformOutbox.$inferSelect): Promise<string[]> {
+    // Slice 2.13a: one captain's own channel.
+    if (row.type === 'captain.availability_changed') {
+      const { captainId } = row.payload as { captainId: string };
+      return [captainChannel(captainId)];
+    }
     const cities =
       row.cityId !== null ? [row.cityId] : (await this.geo.activeCities()).map(({ id }) => id);
     const channels: string[] = [];

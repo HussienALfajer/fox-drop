@@ -34,7 +34,14 @@ const money = z.object({
 // Dart client cannot read without another package.
 const availability = z
   .object({
-    state: z.enum(['offline', 'online_available', 'busy', 'not_receiving_offers', 'suspended']),
+    state: z.enum([
+      'offline',
+      'online_available',
+      'busy',
+      'last_order',
+      'not_receiving_offers',
+      'suspended',
+    ]),
     since: z.iso.datetime().nullable().describe('Online since; null unless online.'),
     reasons: z
       .array(z.enum(['cash_limit', 'closed_due', 'simulated_location']))
@@ -44,9 +51,19 @@ const availability = z
       .datetime()
       .nullable()
       .describe('While suspended: the end, or null until further notice.'),
+    lastOrderBy: z
+      .enum(['captain', 'forced', 'suspended', 'terminated'])
+      .nullable()
+      .describe(
+        "In last_order: who set it (CA §7.3, §7.6, K18). Only the captain's own can be cancelled.",
+      ),
+    lastOrderReason: z
+      .string()
+      .nullable()
+      .describe("In last_order: the reason shown, a force offline's or a suspension's."),
   })
   .describe(
-    'CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «لا تصلك عروض» with its reasons, «موقوف».',
+    'CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «آخر طلب» (last-order mode), «لا تصلك عروض» with its reasons, «موقوف».',
   );
 
 class CaptainAvailabilityDto extends createZodDto(
@@ -58,6 +75,9 @@ class CaptainAvailabilityDto extends createZodDto(
       warn: z.boolean().describe('At captain.custody_warn_pct of the limit or more.'),
       closedDue: money.describe('Due from closed business days (AP §8.5.4).'),
       lastCutoff: z.iso.datetime(),
+      remitTolerance: money.describe(
+        'CA §7.5: captain.remit_tolerance; the hand-in reminder shows when usage is above it.',
+      ),
     }),
   }),
 ) {}
@@ -96,6 +116,14 @@ class CaptainLocationsDto extends createZodDto(
       .min(1)
       .max(360)
       .describe('Every 10 seconds, or the points queued without a signal (CA §4.3).'),
+  }),
+) {}
+
+class CaptainLastOrderDto extends createZodDto(
+  z.object({
+    on: z
+      .boolean()
+      .describe('CA §7.3: «لا أريد طلبات جديدة» on, or cancelled before the order ends.'),
   }),
 ) {}
 
@@ -161,6 +189,28 @@ export class CaptainAvailabilityController {
     }
   }
 
+  // CA §7.3, §15: last-order mode on or off during an active order. Refused
+  // 409 not_online, no_active_order (on without an order) or
+  // last_order_not_yours (off when operations, a suspension or a termination
+  // set it).
+  @Post('availability/last-order')
+  @AppSignedIn()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CaptainAvailabilityDto })
+  async lastOrder(@CurrentAppSession() session: AppSession, @Body() body: CaptainLastOrderDto) {
+    try {
+      return stateBody(await this.captains.setLastOrder(captainOf(session), body.on, new Date()));
+    } catch (error) {
+      if (
+        error instanceof CaptainsRefusedError &&
+        ['not_online', 'no_active_order', 'last_order_not_yours'].includes(error.refusal)
+      ) {
+        throw new ConflictException({ statusCode: HttpStatus.CONFLICT, error: error.refusal });
+      }
+      throw error;
+    }
+  }
+
   // Offline answers 409 not_online: no location is collected (CA §4.3).
   @Post('location')
   @AppSignedIn()
@@ -205,10 +255,12 @@ function availabilityBody(state: Availability) {
     reasons: state.state === 'not_receiving_offers' ? state.reasons : [],
     suspensionReason: state.state === 'suspended' ? state.reason : null,
     suspendedUntil: state.state === 'suspended' ? (state.until?.toISOString() ?? null) : null,
+    lastOrderBy: state.state === 'last_order' ? state.by : null,
+    lastOrderReason: state.state === 'last_order' ? state.reason : null,
   };
 }
 
-function stateBody({ availability: state, custody }: CaptainState) {
+function stateBody({ availability: state, custody, remitTolerance }: CaptainState) {
   return {
     availability: availabilityBody(state),
     custody: {
@@ -217,6 +269,7 @@ function stateBody({ availability: state, custody }: CaptainState) {
       warn: custody.warn,
       closedDue: moneyBody(custody.closedDue),
       lastCutoff: custody.lastCutoff.toISOString(),
+      remitTolerance: moneyBody(remitTolerance),
     },
   };
 }

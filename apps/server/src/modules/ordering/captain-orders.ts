@@ -63,6 +63,7 @@ import {
 import { outcomeEntries, type OutcomeFood, type SetOutcome } from './outcome.js';
 import { pendingOutcome, readOutcomeFacts } from './outcome-facts.js';
 import {
+  type AfterCommit,
   type Delivery,
   DeliveryBooking,
   lockForDelivery,
@@ -857,6 +858,7 @@ export class CaptainOrders {
         ? await this.chosen('captain_away', command.away)
         : null;
     await this.jobs.ready();
+    let afterCommit: AfterCommit = () => Promise.resolve();
     const done = await this.database.db.transaction(async (tx) => {
       const locked = await lockOrder(tx, order.id, order.placedAt);
       if (!locked) throw new Error(`order ${order.id} not found`);
@@ -870,7 +872,7 @@ export class CaptainOrders {
       const due = await lockForDelivery(tx, locked);
       // An edit since the payment was checked (AP §9.3.3).
       if (due.total !== delivery.amountDue) return false;
-      await this.booking.complete(
+      afterCommit = await this.booking.complete(
         tx,
         due,
         delivery,
@@ -885,6 +887,7 @@ export class CaptainOrders {
       return true;
     });
     if (!done) throw await this.stateChanged(order);
+    await afterCommit();
     return this.summary(order, now);
   }
 
@@ -908,6 +911,8 @@ export class CaptainOrders {
     }
     const delivery = await this.prepareDelivery(order, command, now);
     await this.jobs.ready();
+    let handoverAfter: AfterCommit = () => Promise.resolve();
+    let afterCommit: AfterCommit = () => Promise.resolve();
     const done = await this.database.db.transaction(async (tx) => {
       const locked = await lockOrder(tx, order.id, order.placedAt);
       if (!locked) throw new Error(`order ${order.id} not found`);
@@ -927,7 +932,8 @@ export class CaptainOrders {
       const due = await lockForDelivery(tx, current);
       // An edit since the payment was checked (AP §9.3.3).
       if (due.total !== delivery.amountDue) return false;
-      await this.booking.complete(
+      handoverAfter = this.assignments.takeAfterCommit(tx);
+      afterCommit = await this.booking.complete(
         tx,
         due,
         delivery,
@@ -958,6 +964,8 @@ export class CaptainOrders {
       return true;
     });
     if (!done) throw await this.stateChanged(order);
+    await handoverAfter();
+    await afterCommit();
     return this.read(order);
   }
 
@@ -1069,6 +1077,7 @@ export class CaptainOrders {
       },
     };
     await this.jobs.ready();
+    let afterCommit: AfterCommit = () => Promise.resolve();
     const done = await this.database.db.transaction(async (tx) => {
       const locked = await lockOrder(tx, order.id, order.placedAt);
       if (!locked) throw new Error(`order ${order.id} not found`);
@@ -1077,7 +1086,7 @@ export class CaptainOrders {
       if (locked.version !== read.version) return false;
       if ((await pendingOutcome(tx, locked))?.id !== pending.id) return false;
       const due = await lockForDelivery(tx, locked);
-      await this.booking.completeOutcome(
+      afterCommit = await this.booking.completeOutcome(
         tx,
         due,
         booking,
@@ -1122,6 +1131,7 @@ export class CaptainOrders {
       return true;
     });
     if (!done) throw await this.stateChanged(order);
+    await afterCommit();
     return order;
   }
 

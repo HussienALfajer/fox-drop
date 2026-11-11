@@ -685,8 +685,8 @@ export class DispatchService implements OnModuleInit {
       throw new DispatchRefusedError(
         'captain_not_eligible',
         'the captain cannot take the order',
-        state.state === 'busy'
-          ? ['busy']
+        state.state === 'busy' || state.state === 'last_order'
+          ? [state.state]
           : state.state === 'not_receiving_offers'
             ? state.reasons
             : ['offline'],
@@ -831,6 +831,7 @@ export class DispatchService implements OnModuleInit {
     const lockCaptain = await this.captains.assignmentLock(order.cityId, now);
 
     await this.jobs.ready();
+    let handoverAfter = () => Promise.resolve();
     const done = await this.database.db.transaction(async (tx) => {
       const locked = await this.assignments.lock(tx, order.id, order.placedAt);
       if (!locked) throw new Error(`order ${order.id} not found`);
@@ -900,9 +901,12 @@ export class DispatchService implements OnModuleInit {
         tx,
       );
       await keepKey(tx, command.admin.accountId, command.idempotencyKey, hash, order, offerId, now);
+      handoverAfter = this.assignments.takeAfterCommit(tx);
       return true;
     });
     if (!done) throw this.notHandoverable();
+    // CA §7.3, K18: the replaced second captain's last order may have ended.
+    await handoverAfter();
     return this.state(order.id);
   }
 

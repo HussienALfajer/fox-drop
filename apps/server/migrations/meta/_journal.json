@@ -379,6 +379,13 @@
       "when": 1794355531324,
       "tag": "0053_identity_device_released",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1794364279086,
+      "tag": "0054_captains_last_order",
+      "breakpoints": true
     }
   ]
 }

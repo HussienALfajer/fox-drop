@@ -50,6 +50,9 @@ const AdminPickerDtoOutputCaptainsInnerReasonsEnum
 _$adminPickerDtoOutputCaptainsInnerReasonsEnum_busy =
     const AdminPickerDtoOutputCaptainsInnerReasonsEnum._('busy');
 const AdminPickerDtoOutputCaptainsInnerReasonsEnum
+_$adminPickerDtoOutputCaptainsInnerReasonsEnum_lastOrder =
+    const AdminPickerDtoOutputCaptainsInnerReasonsEnum._('lastOrder');
+const AdminPickerDtoOutputCaptainsInnerReasonsEnum
 _$adminPickerDtoOutputCaptainsInnerReasonsEnum_cashLimit =
     const AdminPickerDtoOutputCaptainsInnerReasonsEnum._('cashLimit');
 const AdminPickerDtoOutputCaptainsInnerReasonsEnum
@@ -70,6 +73,8 @@ _$adminPickerDtoOutputCaptainsInnerReasonsEnumValueOf(String name) {
   switch (name) {
     case 'busy':
       return _$adminPickerDtoOutputCaptainsInnerReasonsEnum_busy;
+    case 'lastOrder':
+      return _$adminPickerDtoOutputCaptainsInnerReasonsEnum_lastOrder;
     case 'cashLimit':
       return _$adminPickerDtoOutputCaptainsInnerReasonsEnum_cashLimit;
     case 'closedDue':
@@ -90,6 +95,7 @@ _$adminPickerDtoOutputCaptainsInnerReasonsEnumValues =
     BuiltSet<AdminPickerDtoOutputCaptainsInnerReasonsEnum>(
       const <AdminPickerDtoOutputCaptainsInnerReasonsEnum>[
         _$adminPickerDtoOutputCaptainsInnerReasonsEnum_busy,
+        _$adminPickerDtoOutputCaptainsInnerReasonsEnum_lastOrder,
         _$adminPickerDtoOutputCaptainsInnerReasonsEnum_cashLimit,
         _$adminPickerDtoOutputCaptainsInnerReasonsEnum_closedDue,
         _$adminPickerDtoOutputCaptainsInnerReasonsEnum_simulatedLocation,
@@ -150,6 +156,7 @@ class _$AdminPickerDtoOutputCaptainsInnerReasonsEnumSerializer
         PrimitiveSerializer<AdminPickerDtoOutputCaptainsInnerReasonsEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'busy': 'busy',
+    'lastOrder': 'last_order',
     'cashLimit': 'cash_limit',
     'closedDue': 'closed_due',
     'simulatedLocation': 'simulated_location',
@@ -158,6 +165,7 @@ class _$AdminPickerDtoOutputCaptainsInnerReasonsEnumSerializer
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'busy': 'busy',
+    'last_order': 'lastOrder',
     'cash_limit': 'cashLimit',
     'closed_due': 'closedDue',
     'simulated_location': 'simulatedLocation',

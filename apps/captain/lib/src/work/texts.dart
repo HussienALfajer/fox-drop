@@ -38,10 +38,25 @@ extension CaptainTexts on AppLocalizations {
   String stateText(AvailabilityState state) => switch (state) {
     AvailabilityState.onlineAvailable => captainStateAvailable,
     AvailabilityState.busy => captainStateBusy,
+    AvailabilityState.lastOrder => captainStateLastOrder,
     AvailabilityState.notReceivingOffers => captainStateNoOffers,
     AvailabilityState.suspended => captainStateSuspended,
     _ => captainStateOffline,
   };
+
+  /// CA §7.6, K18: why the captain is in last-order mode when operations, a
+  /// suspension or a termination set it, or null for the captain's own.
+  String? lastOrderText(Availability availability) {
+    final state = availability.availability;
+    if (state.state != AvailabilityState.lastOrder) return null;
+    final reason = state.lastOrderReason;
+    return switch (state.lastOrderBy) {
+      LastOrderBy.forced => captainLastOrderForced(reason ?? ''),
+      LastOrderBy.suspended => captainLastOrderSuspended(reason ?? ''),
+      LastOrderBy.terminated => captainLastOrderTerminated,
+      _ => null,
+    };
+  }
 
   /// Why no offers arrive (CA §7.1: the reason is shown).
   List<String> noOffersTexts(Availability availability) {
@@ -108,6 +123,7 @@ extension CaptainTexts on AppLocalizations {
         OnlineBlocked(:final blocks) =>
           blocks.map((b) => blockText(b, currency)).join('\n'),
         OfflineWithOrder() => captainOfflineWithOrder,
+        LastOrderNotYours() => captainLastOrderNotYours,
         OfferUnavailable() => captainOfferUnavailable,
         TooFar(fromCustomer: false) => captainGetCloser,
         TooFarFromCaptain(distanceMetres: null) =>

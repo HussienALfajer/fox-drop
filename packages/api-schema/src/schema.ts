@@ -1172,6 +1172,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/availability/last-order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainAvailabilityLastOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/location": {
         parameters: {
             query?: never;
@@ -1182,6 +1198,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["captainAvailabilityLocation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captains/{captainId}/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCaptainsAvailability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captains/{captainId}/force-offline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainsForceOffline"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3693,10 +3741,10 @@ export interface components {
             expiresAt: string;
         };
         CaptainAvailabilityDto_Output: {
-            /** @description CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «لا تصلك عروض» with its reasons, «موقوف». */
+            /** @description CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «آخر طلب» (last-order mode), «لا تصلك عروض» with its reasons, «موقوف». */
             availability: {
                 /** @enum {string} */
-                state: "offline" | "online_available" | "busy" | "not_receiving_offers" | "suspended";
+                state: "offline" | "online_available" | "busy" | "last_order" | "not_receiving_offers" | "suspended";
                 /** @description Online since; null unless online. */
                 since: string | null;
                 /** @description Why no offers arrive; empty unless not_receiving_offers. */
@@ -3704,6 +3752,10 @@ export interface components {
                 suspensionReason: string | null;
                 /** @description While suspended: the end, or null until further notice. */
                 suspendedUntil: string | null;
+                /** @description In last_order: who set it (CA §7.3, §7.6, K18). Only the captain's own can be cancelled. */
+                lastOrderBy: ("captain" | "forced" | "suspended" | "terminated") | null;
+                /** @description In last_order: the reason shown, a force offline's or a suspension's. */
+                lastOrderReason: string | null;
             };
             custody: {
                 /** @description The cash held, in the base currency (AP §8.5.3). */
@@ -3727,6 +3779,12 @@ export interface components {
                 };
                 /** Format: date-time */
                 lastCutoff: string;
+                /** @description CA §7.5: captain.remit_tolerance; the hand-in reminder shows when usage is above it. */
+                remitTolerance: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
             };
         };
         CaptainGoOnlineDto: {
@@ -3741,6 +3799,10 @@ export interface components {
                 amount: string;
                 currency: string;
             } | null;
+        };
+        CaptainLastOrderDto: {
+            /** @description CA §7.3: «لا أريد طلبات جديدة» on, or cancelled before the order ends. */
+            on: boolean;
         };
         CaptainLocationsDto: {
             /** @description Every 10 seconds, or the points queued without a signal (CA §4.3). */
@@ -3759,6 +3821,16 @@ export interface components {
         CaptainLocationsSavedDto_Output: {
             /** @description The new points kept. */
             accepted: number;
+        };
+        AdminCaptainAvailabilityDto_Output: {
+            /** @enum {string} */
+            state: "offline" | "online_available" | "busy" | "last_order" | "not_receiving_offers" | "suspended";
+            /** @description In last_order: who set it (CA §7.3, §7.6, K18). */
+            lastOrderBy: ("captain" | "forced" | "suspended" | "terminated") | null;
+        };
+        AdminForceOfflineDto: {
+            /** @description Shown to the captain and kept in the audit log (AP §9.7.5). */
+            reason: string;
         };
         /** @description The support phone and WhatsApp numbers in E.164, when set (AP §9.13). */
         ContactDto_Output: {
@@ -7727,7 +7799,7 @@ export interface components {
                 vehicle: "walking" | "bicycle" | "motorbike" | "car";
                 eligible: boolean;
                 /** @description Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed. */
-                reasons: ("busy" | "cash_limit" | "closed_due" | "simulated_location" | "out_of_range" | "vehicle_not_allowed")[];
+                reasons: ("busy" | "last_order" | "cash_limit" | "closed_due" | "simulated_location" | "out_of_range" | "vehicle_not_allowed")[];
                 /** @description To the restaurant (after the pickup, to the order’s captain at their latest point): by road within the search radius, else the straight line. */
                 distanceMetres: number;
                 /** @description To the same point; null beyond the search radius. */
@@ -9705,6 +9777,30 @@ export interface operations {
             };
         };
     };
+    captainAvailabilityLastOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainLastOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainAvailabilityDto_Output"];
+                };
+            };
+        };
+    };
     captainAvailabilityLocation: {
         parameters: {
             query?: never;
@@ -9725,6 +9821,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainLocationsSavedDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainsAvailability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainAvailabilityDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainsForceOffline: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminForceOfflineDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainAvailabilityDto_Output"];
                 };
             };
         };

@@ -898,6 +898,76 @@ void main() {
     },
   );
 
+  testWidgets('«لا أريد طلبات جديدة» during an order, then offline with the '
+      'hand-in (CA §7.3, §7.5)', (tester) async {
+    final app = TestApp();
+    app.work(
+      availability: [availabilityJson(state: 'busy', usage: '4000')],
+      orders: [orderJson(track: 'at_merchant')],
+    );
+    await app.pump(tester);
+    await app.live(tester);
+    expect(find.text('متصل'), findsNothing);
+    app.server.on('/v1/captain/availability/last-order', [
+      FakeAnswer(
+        200,
+        availabilityJson(
+          state: 'last_order',
+          lastOrderBy: 'captain',
+          usage: '4000',
+        ),
+      ),
+    ]);
+    app.work(
+      availability: [
+        availabilityJson(
+          state: 'last_order',
+          lastOrderBy: 'captain',
+          usage: '4000',
+        ),
+      ],
+      orders: [orderJson(track: 'at_merchant')],
+    );
+    await app.tapVisible(tester, find.text('لا أريد طلبات جديدة'));
+    await app.settle(tester);
+    expect(app.server.to('/v1/captain/availability/last-order'), hasLength(1));
+    expect(find.text('ستصبح غير متصل بعد هذا الطلب.'), findsOneWidget);
+
+    // The order left the captain and the last order ended: offline, with
+    // the cash to hand in.
+    app.work(availability: [availabilityJson(usage: '4000')]);
+    app.transport.signal('captain.availability_changed');
+    await app.settle(tester);
+    expect(find.text('غير متصل'), findsOneWidget);
+    expect(find.text('عليك تسليم 40 ₺'), findsWidgets);
+    await app.done(tester);
+  });
+
+  testWidgets('shows a force offline during an order with its reason, '
+      'without the switch (CA §7.6, K18)', (tester) async {
+    final app = TestApp();
+    app.work(
+      availability: [
+        availabilityJson(
+          state: 'last_order',
+          lastOrderBy: 'forced',
+          lastOrderReason: 'تأخر في التسليم',
+        ),
+      ],
+      orders: [orderJson(track: 'at_merchant')],
+    );
+    await app.pump(tester);
+    await app.live(tester);
+    expect(
+      find.text(
+        'فصلتك العمليات من الاتصال: تأخر في التسليم. ستصبح غير متصل بعد هذا الطلب.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('لا أريد طلبات جديدة'), findsNothing);
+    await app.done(tester);
+  });
+
   testWidgets('shows the order operations took away until «حسناً» (CA §9.10)', (
     tester,
   ) async {

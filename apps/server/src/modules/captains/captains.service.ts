@@ -13,12 +13,20 @@ import {
   availability,
   type AvailabilityInput,
   type CaptainStatus,
+  type LastOrderBy,
   type OnlineBlock,
   onlineBlocks,
 } from './availability.js';
 import { LIVE_POSITION_MAX_AGE_MS, LivePositions, type NearbyCaptain } from './live-positions.js';
 import { checkPayRate, orderPay, type PayParts, type PayRate } from './pay.js';
-import { captainRecords, locations, onlinePeriods, payRates, payTables } from './schema.js';
+import {
+  captainRecords,
+  locations,
+  type onlineEndReasons,
+  onlinePeriods,
+  payRates,
+  payTables,
+} from './schema.js';
 
 export type CaptainsRefusal =
   | 'unknown_captain'
@@ -30,7 +38,11 @@ export type CaptainsRefusal =
   | 'online_blocked'
   | 'not_online'
   | 'invalid_location'
-  | 'active_order';
+  | 'active_order'
+  // CA §7.3, §15: last-order mode needs an active order, and the captain may
+  // cancel only the mode they asked for.
+  | 'no_active_order'
+  | 'last_order_not_yours';
 
 // A change the captains module refuses, with the reason the routes map to
 // their own answers; going online carries its blocks (CA §7.2).
@@ -57,6 +69,35 @@ export interface Money {
   amount: bigint;
   currency: string;
 }
+
+type OnlineEndReason = (typeof onlineEndReasons)[number];
+
+// CA §7.3, §7.6, K18: how a last-order mode ends its online period once the
+// order left the captain.
+const LAST_ORDER_END: Record<LastOrderBy, OnlineEndReason> = {
+  captain: 'last_order',
+  forced: 'forced',
+  suspended: 'suspended',
+  terminated: 'terminated',
+};
+
+// CA §7.6, §14 #26, AP §10: a change of the captain's availability that
+// another module tells the captain about, in the transaction that made it
+// (onAvailabilityChanged). forced_offline: operations' «فصل من الاتصال»,
+// at once (atOnce) or after the active order; offline_after_order: a
+// last-order mode ended the online period when the order left the captain.
+export type AvailabilityChange =
+  | {
+      kind: 'forced_offline';
+      captainId: string;
+      cityId: string;
+      reason: string;
+      atOnce: boolean;
+      at: Date;
+    }
+  | { kind: 'offline_after_order'; captainId: string; cityId: string; at: Date };
+
+type AvailabilityListener = (tx: Tx, change: AvailabilityChange) => Promise<void>;
 
 export interface NewCaptain {
   name: string;
@@ -112,6 +153,10 @@ const LOCATION_CLOCK_SKEW_MS = 60_000;
 export interface CaptainState {
   availability: Availability;
   custody: Custody;
+  // CA §7.5: captain.remit_tolerance in the base currency; the app shows the
+  // hand-in reminder when the captain goes offline (after a last order too)
+  // holding more.
+  remitTolerance: Money;
 }
 
 type Executor = Pick<NodePgDatabase, 'select' | 'execute'>;
@@ -129,6 +174,8 @@ export type ActiveOrderLookup = (
 // joins with its slice.
 export type IneligibleReason =
   | 'busy'
+  // CA §7.3, K18: last-order mode, no new orders.
+  | 'last_order'
   | 'cash_limit'
   | 'closed_due'
   | 'simulated_location'
@@ -183,6 +230,9 @@ export class CaptainsService implements OnModuleInit {
   private activeOrders: ActiveOrderLookup = () => Promise.resolve(new Set());
   // Told once a captain's online period ended and committed (onWentOffline).
   private readonly offlineListeners: ((captainId: string, now: Date) => Promise<void>)[] = [];
+  // Told in the transaction of a change the captain hears of
+  // (onAvailabilityChanged).
+  private readonly availabilityListeners: AvailabilityListener[] = [];
 
   constructor(
     @Inject(DATABASE) private readonly database: Database,
@@ -230,6 +280,16 @@ export class CaptainsService implements OnModuleInit {
   // at once. A listener that fails is logged and never undoes the offline.
   onWentOffline(listener: (captainId: string, now: Date) => Promise<void>): void {
     this.offlineListeners.push(listener);
+  }
+
+  // CA §14 #26, AP §10: notifications queue the captain's push and tell the
+  // open app to read its state again, in the change's transaction (E4).
+  onAvailabilityChanged(listener: AvailabilityListener): void {
+    this.availabilityListeners.push(listener);
+  }
+
+  private async availabilityChanged(tx: Tx, change: AvailabilityChange): Promise<void> {
+    for (const listener of this.availabilityListeners) await listener(tx, change);
   }
 
   // The start of the captain's open online period, or null while offline:
@@ -329,9 +389,10 @@ export class CaptainsService implements OnModuleInit {
 
   // AP §9.7.5: suspend (until a moment or further notice), reactivate or
   // terminate, each with a reason. Suspending a suspended captain replaces
-  // the suspension (a new reason or end); one past its end counts as active. An online captain goes offline at once; an
-  // active order would keep them in last-order mode (K18), which comes with
-  // the ordering slices.
+  // the suspension (a new reason or end); one past its end counts as active.
+  // An online captain goes offline at once; with an active order they are in
+  // last-order mode instead and go offline when it ends (K18). Reactivating
+  // during the order lifts the suspension's mode.
   async setStatus(
     captainId: string,
     status: CaptainStatus,
@@ -368,13 +429,8 @@ export class CaptainsService implements OnModuleInit {
         .where(eq(captainRecords.id, captainId));
       const ended =
         status === 'active'
-          ? null
-          : await this.endOnline(
-              tx,
-              captainId,
-              status === 'suspended' ? 'suspended' : 'terminated',
-              now,
-            );
+          ? await this.clearLastOrder(tx, captainId, 'suspended')
+          : await this.offlineOrLastOrder(tx, captainId, status, null, now);
       await this.audit.recordWrite(
         {
           actor: change.actor,
@@ -394,6 +450,169 @@ export class CaptainsService implements OnModuleInit {
       await this.positions.remove(cityId, captainId, ended);
       await this.wentOffline(captainId, now);
     }
+  }
+
+  // AP §9.7.5 «فصل من الاتصال» (CA §7.6, K18): operations set the captain
+  // offline at once with a reason, or, with an active order, in last-order
+  // mode with that reason (it replaces a mode the captain asked for). The
+  // captain hears it with the reason (CA §14 #26). An offline captain stays
+  // so, and nothing is recorded.
+  async forceOffline(captainId: string, change: CaptainChange, now: Date): Promise<void> {
+    if (!hasReason(change)) {
+      throw new CaptainsRefusedError('reason_required', 'a force offline needs a reason');
+    }
+    const reason = change.reason!.trim();
+    const { cityId, ended } = await this.database.db.transaction(async (tx) => {
+      const row = await this.lockCaptain(tx, captainId);
+      const open = await this.openPeriod(tx, captainId);
+      // Offline, or already forced: a repeat writes nothing more.
+      if (open === null || open.lastOrderBy === 'forced') {
+        return { cityId: row.cityId, ended: null };
+      }
+      const ended = await this.offlineOrLastOrder(tx, captainId, 'forced', reason, now);
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId: row.cityId,
+          action: 'captain.force_offline',
+          target: { type: 'captain', id: captainId },
+          before: { online: true },
+          after: ended === null ? { lastOrder: 'forced' } : { online: false },
+          reason,
+        },
+        tx,
+      );
+      await this.availabilityChanged(tx, {
+        kind: 'forced_offline',
+        captainId,
+        cityId: row.cityId,
+        reason,
+        atOnce: ended !== null,
+        at: now,
+      });
+      return { cityId: row.cityId, ended };
+    });
+    if (ended !== null) {
+      await this.positions.remove(cityId, captainId, ended);
+      await this.wentOffline(captainId, now);
+    }
+  }
+
+  // CA §7.3, §15 «لا أريد طلبات جديدة»: the captain turns last-order mode on
+  // during an active order (no offers, offline when it ends), or off before
+  // it ends. Refused while offline (not_online), on without an active order
+  // (no_active_order), and off when operations, a suspension or a
+  // termination set the mode (last_order_not_yours). On while already on
+  // keeps the mode as it is.
+  async setLastOrder(captainId: string, on: boolean, now: Date): Promise<CaptainState> {
+    await this.database.db.transaction(async (tx) => {
+      await this.lockCaptain(tx, captainId);
+      const open = await this.openPeriod(tx, captainId);
+      if (open === null) throw new CaptainsRefusedError('not_online', 'the captain is offline');
+      if (on) {
+        if (open.lastOrderBy !== null) return;
+        if ((await this.activeOrders([captainId], tx)).size === 0) {
+          throw new CaptainsRefusedError('no_active_order', 'last-order mode needs an order');
+        }
+        await tx
+          .update(onlinePeriods)
+          .set({ lastOrderBy: 'captain', lastOrderAt: now, lastOrderReason: null })
+          .where(eq(onlinePeriods.id, open.id));
+        return;
+      }
+      if (open.lastOrderBy === null) return;
+      if (open.lastOrderBy !== 'captain') {
+        throw new CaptainsRefusedError('last_order_not_yours', 'operations set this mode');
+      }
+      await this.clearLastOrder(tx, captainId, 'captain');
+    });
+    return this.state(captainId, now);
+  }
+
+  // CA §7.3, §7.6, K18 (slice 2.13a): in the transaction where an order left
+  // the captain (delivered, ended with an outcome, cancelled, withdrawn), a
+  // last-order mode ends the online period once no active order is left,
+  // with the mode's reason; the captain hears it (AP §10). A suspension's
+  // mode whose suspension has ended is lifted instead, and the captain stays
+  // online. The answer runs after the commit: the live position removed and
+  // the listeners told. Nothing without a mode.
+  async afterOrderLeft(tx: Tx, captainId: string, now: Date): Promise<() => Promise<void>> {
+    const row = await this.lockCaptain(tx, captainId);
+    const open = await this.openPeriod(tx, captainId);
+    const nothing = () => Promise.resolve();
+    if (open === null || open.lastOrderBy === null) return nothing;
+    if ((await this.activeOrders([captainId], tx)).size > 0) return nothing;
+    if (open.lastOrderBy === 'suspended' && captainOf(row, now).status !== 'suspended') {
+      await this.clearLastOrder(tx, captainId, 'suspended');
+      return nothing;
+    }
+    const ended = await this.endOnline(tx, captainId, LAST_ORDER_END[open.lastOrderBy], now);
+    if (ended === null) return nothing;
+    await this.availabilityChanged(tx, {
+      kind: 'offline_after_order',
+      captainId,
+      cityId: row.cityId,
+      at: now,
+    });
+    return async () => {
+      await this.positions.remove(row.cityId, captainId, ended);
+      await this.wentOffline(captainId, now);
+    };
+  }
+
+  // K18: an online captain with an active order enters last-order mode for
+  // a suspension, a termination or a force offline; without one the online
+  // period ends at once. Answers the ended period's id, or null.
+  private async offlineOrLastOrder(
+    tx: Tx,
+    captainId: string,
+    by: Exclude<LastOrderBy, 'captain'>,
+    reason: string | null,
+    now: Date,
+  ): Promise<string | null> {
+    const open = await this.openPeriod(tx, captainId);
+    if (open === null) return null;
+    if ((await this.activeOrders([captainId], tx)).size === 0) {
+      return this.endOnline(tx, captainId, LAST_ORDER_END[by], now);
+    }
+    // Operations' force offline stays: a suspension or termination after it
+    // ends the period anyway, and lifting the suspension must not lift it.
+    if (open.lastOrderBy === 'forced') return null;
+    await tx
+      .update(onlinePeriods)
+      .set({ lastOrderBy: by, lastOrderAt: now, lastOrderReason: by === 'forced' ? reason : null })
+      .where(eq(onlinePeriods.id, open.id));
+    return null;
+  }
+
+  // Lifts the open period's last-order mode when it is the given kind.
+  private async clearLastOrder(tx: Tx, captainId: string, by: LastOrderBy): Promise<null> {
+    await tx
+      .update(onlinePeriods)
+      .set({ lastOrderBy: null, lastOrderAt: null, lastOrderReason: null })
+      .where(
+        and(
+          eq(onlinePeriods.captainId, captainId),
+          isNull(onlinePeriods.endedAt),
+          eq(onlinePeriods.lastOrderBy, by),
+        ),
+      );
+    return null;
+  }
+
+  private async openPeriod(executor: Tx | Database['db'], captainId: string) {
+    const [open] = await executor
+      .select({
+        id: onlinePeriods.id,
+        startedAt: onlinePeriods.startedAt,
+        appVersion: onlinePeriods.appVersion,
+        lastOrderBy: onlinePeriods.lastOrderBy,
+        lastOrderReason: onlinePeriods.lastOrderReason,
+      })
+      .from(onlinePeriods)
+      .where(and(eq(onlinePeriods.captainId, captainId), isNull(onlinePeriods.endedAt)));
+    return open ?? null;
   }
 
   // AP §9.7.5: a new cash limit, effective immediately, with a reason.
@@ -688,6 +907,7 @@ export class CaptainsService implements OnModuleInit {
         const straightMetres = Math.round(straightLineMetres(captain.position, restaurant));
         const reasons: IneligibleReason[] = [];
         if (state.state === 'busy') reasons.push('busy');
+        if (state.state === 'last_order') reasons.push('last_order');
         if (state.state === 'not_receiving_offers') reasons.push(...state.reasons);
         if (straightMetres > radiusMetres) reasons.push('out_of_range');
         if (tripMetres > vehicleMax) reasons.push('vehicle_not_allowed');
@@ -844,7 +1064,11 @@ export class CaptainsService implements OnModuleInit {
     const row = await this.row(this.database.db, captainId);
     const rules = await this.cityRules(row.cityId, now);
     const input = await this.input(this.database.db, row, rules);
-    return { availability: availability(input.availability, now), custody: input.custody };
+    return {
+      availability: availability(input.availability, now),
+      custody: input.custody,
+      remitTolerance: { amount: rules.remitTolerance, currency: input.custody.usage.currency },
+    };
   }
 
   // CA §7.2: going online, refused with every block that applies. Already
@@ -878,7 +1102,11 @@ export class CaptainsService implements OnModuleInit {
           .values({ captainId, startedAt: now, appVersion: device.appVersion });
         input.availability.onlineSince = now;
       }
-      return { availability: availability(input.availability, now), custody: input.custody };
+      return {
+        availability: availability(input.availability, now),
+        custody: input.custody,
+        remitTolerance: { amount: rules.remitTolerance, currency: input.custody.usage.currency },
+      };
     });
   }
 
@@ -903,8 +1131,7 @@ export class CaptainsService implements OnModuleInit {
     // After the offline commits, so reading the cash can never undo it.
     const row = await this.row(this.database.db, captainId);
     const { custody } = await this.input(this.database.db, row, rules);
-    const held = custody.usage.amount;
-    return { handIn: held > rules.remitTolerance ? { ...custody.usage } : null };
+    return { handIn: handInOf(custody, rules.remitTolerance) };
   }
 
   // CA §4.3, architecture §7.3: the points recorded inside one of the
@@ -1019,10 +1246,7 @@ export class CaptainsService implements OnModuleInit {
     row: typeof captainRecords.$inferSelect,
     rules: Awaited<ReturnType<CaptainsService['cityRules']>>,
   ): Promise<{ availability: AvailabilityInput; custody: Custody }> {
-    const [open] = await executor
-      .select({ startedAt: onlinePeriods.startedAt, appVersion: onlinePeriods.appVersion })
-      .from(onlinePeriods)
-      .where(and(eq(onlinePeriods.captainId, row.id), isNull(onlinePeriods.endedAt)));
+    const open = await this.openPeriod(executor, row.id);
     const custody = await this.custody(executor, row, rules.lastCutoff, rules.warnPct);
     // CA §4.3: the newest point of this online period says whether the
     // location is simulated now.
@@ -1054,6 +1278,8 @@ export class CaptainsService implements OnModuleInit {
         simulatedLocation: latest?.simulated ?? false,
         termsPending: false,
         activeOrder: open ? (await this.activeOrders([row.id], executor)).size > 0 : false,
+        lastOrder:
+          open?.lastOrderBy == null ? null : { by: open.lastOrderBy, reason: open.lastOrderReason },
       },
       custody,
     };
@@ -1099,7 +1325,7 @@ export class CaptainsService implements OnModuleInit {
   private async endOnline(
     tx: Tx,
     captainId: string,
-    reason: 'captain' | 'suspended' | 'terminated' | 'offers_expired' | 'handed_over',
+    reason: OnlineEndReason,
     now: Date,
   ): Promise<string | null> {
     const [ended] = await tx
@@ -1148,6 +1374,10 @@ export class CaptainsService implements OnModuleInit {
       );
     }
   }
+}
+
+function handInOf(custody: Custody, tolerance: bigint): Money | null {
+  return custody.usage.amount > tolerance ? { ...custody.usage } : null;
 }
 
 function captainOf(row: typeof captainRecords.$inferSelect, now: Date): Captain {

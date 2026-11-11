@@ -13,6 +13,7 @@ export type IneligibleReason = PickerCaptain['reasons'][number] | 'offline';
 // Why a captain is greyed out in a picker (AP §9.3.2).
 export const ineligibleKeys = {
   busy: 'assign.reason.busy',
+  last_order: 'assign.reason.lastOrder',
   cash_limit: 'assign.reason.cashLimit',
   closed_due: 'assign.reason.closedDue',
   simulated_location: 'assign.reason.simulatedLocation',
@@ -64,6 +65,7 @@ export type AssignResult =
 
 const knownReasons: readonly string[] = [
   'busy',
+  'last_order',
   'cash_limit',
   'closed_due',
   'simulated_location',

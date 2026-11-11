@@ -1138,6 +1138,33 @@ class AppLocalizationsAr extends AppLocalizations {
   String get captainStateBusy => 'مشغول';
 
   @override
+  String get captainStateLastOrder => 'آخر طلب';
+
+  @override
+  String get captainLastOrderSwitch => 'لا أريد طلبات جديدة';
+
+  @override
+  String get captainLastOrderOn => 'ستصبح غير متصل بعد هذا الطلب.';
+
+  @override
+  String captainLastOrderForced(String reason) {
+    return 'فصلتك العمليات من الاتصال: $reason. ستصبح غير متصل بعد هذا الطلب.';
+  }
+
+  @override
+  String captainLastOrderSuspended(String reason) {
+    return 'حسابك موقوف: $reason. أكمل هذا الطلب ثم تصبح غير متصل.';
+  }
+
+  @override
+  String get captainLastOrderTerminated =>
+      'انتهى تعاقدك مع FOX DROP. أكمل هذا الطلب ثم تصبح غير متصل.';
+
+  @override
+  String get captainLastOrderNotYours =>
+      'لا يمكنك إلغاء هذا الوضع: وضعته العمليات.';
+
+  @override
   String get captainStateNoOffers => 'لا تصلك عروض';
 
   @override

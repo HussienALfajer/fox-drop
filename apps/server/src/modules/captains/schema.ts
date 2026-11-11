@@ -15,7 +15,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { vehicles } from '../settings/index.js';
-import { captainStatuses } from './availability.js';
+import { captainStatuses, lastOrderBy } from './availability.js';
 
 // Architecture §4.2–4.3: the captains module owns the captain record, its
 // availability and the pay table. Cities belong to geo, the captain's sign-in
@@ -33,13 +33,19 @@ const vehicleValues = sql.raw(vehicles.map((vehicle) => `'${vehicle}'`).join(', 
 // Why an online period ended (CA §7.5–7.6).
 // offers_expired: C3, after unanswered offers (AP §9.7.6).
 // handed_over: K17, the captain handed their order to another (slice 2.12b).
+// last_order: the captain's last-order mode, after the order (CA §7.3).
+// forced: operations' «فصل من الاتصال», at once or after the order (CA §7.6).
 export const onlineEndReasons = [
   'captain',
   'suspended',
   'terminated',
   'offers_expired',
   'handed_over',
+  'last_order',
+  'forced',
 ] as const;
+const endReasonValues = sql.raw(onlineEndReasons.map((reason) => `'${reason}'`).join(', '));
+const lastOrderValues = sql.raw(lastOrderBy.map((by) => `'${by}'`).join(', '));
 
 // AP §9.7.1, §9.7.5, D10: an activated captain with its vehicle and cash
 // limit.
@@ -99,6 +105,11 @@ export const onlinePeriods = captains.table(
     appVersion: text('app_version'),
     endedAt: timestamp('ended_at', { withTimezone: true }),
     endReason: text('end_reason', { enum: onlineEndReasons }),
+    // CA §7.3, §7.6, K18: last-order mode, since when and who asked; a force
+    // offline keeps operations' reason, shown to the captain.
+    lastOrderBy: text('last_order_by', { enum: lastOrderBy }),
+    lastOrderAt: timestamp('last_order_at', { withTimezone: true }),
+    lastOrderReason: text('last_order_reason'),
   },
   (table) => [
     uniqueIndex('online_periods_one_open')
@@ -110,9 +121,12 @@ export const onlinePeriods = captains.table(
       sql`(${table.endedAt} IS NULL) = (${table.endReason} IS NULL)
           AND (${table.endedAt} IS NULL OR ${table.endedAt} >= ${table.startedAt})`,
     ),
+    check('online_periods_end_reason_values', sql`${table.endReason} IN (${endReasonValues})`),
     check(
-      'online_periods_end_reason_values',
-      sql`${table.endReason} IN ('captain', 'suspended', 'terminated', 'offers_expired', 'handed_over')`,
+      'online_periods_last_order',
+      sql`(${table.lastOrderBy} IS NULL) = (${table.lastOrderAt} IS NULL)
+          AND (coalesce(${table.lastOrderBy}, '') = 'forced') = (${table.lastOrderReason} IS NOT NULL)
+          AND (${table.lastOrderBy} IS NULL OR ${table.lastOrderBy} IN (${lastOrderValues}))`,
     ),
   ],
 );

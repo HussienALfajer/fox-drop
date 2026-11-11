@@ -19,7 +19,11 @@ export type PlatformBroadcast =
       at: Date;
     }
   // 2.4a: an app's maintenance, its messages or its versions changed.
-  | { type: 'platform.app_changed'; app: BroadcastApp; at: Date };
+  | { type: 'platform.app_changed'; app: BroadcastApp; at: Date }
+  // CA §7.6, AP §10 (slice 2.13a): one captain's availability changed
+  // outside an order event (a force offline, the end of a last order); only
+  // that captain's channel hears it, and the app reads its state again.
+  | { type: 'captain.availability_changed'; cityId: string; captainId: string; at: Date };
 
 type Executor = Pick<Database['db'], 'insert'>;
 
@@ -38,6 +42,17 @@ export class PlatformBroadcasts {
         ops: true,
         orderIds: broadcast.orderIds,
         payload: { schema: 1, active: broadcast.active, at: broadcast.at.toISOString() },
+      });
+      return;
+    }
+    if (broadcast.type === 'captain.availability_changed') {
+      await executor.insert(platformOutbox).values({
+        createdAt: broadcast.at,
+        cityId: broadcast.cityId,
+        type: broadcast.type,
+        apps: ['captain'],
+        ops: false,
+        payload: { schema: 1, captainId: broadcast.captainId, at: broadcast.at.toISOString() },
       });
       return;
     }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Jobs } from '../../jobs/jobs.module.js';
-import type { PayParts } from '../captains/index.js';
+import { CaptainsService, type PayParts } from '../captains/index.js';
 import type { RateSnapshot } from '../fx/index.js';
 import {
   type AccountPurpose,
@@ -20,6 +20,10 @@ import { captainNet, type OutcomeJournal, type SetOutcome } from './outcome.js';
 import { type PaymentLine, storedLines } from './pickup-booking.js';
 import type { ChosenReason } from '../content/index.js';
 import { collections, orderOutcomeRows, orders } from './schema.js';
+
+// What runs once the transaction commits (the captain's live position
+// removed and the listeners told when a last order ended their online period).
+export type AfterCommit = () => Promise<void>;
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 
@@ -103,6 +107,7 @@ export class DeliveryBooking {
   constructor(
     private readonly jobs: Jobs,
     private readonly ledger: LedgerService,
+    private readonly captains: CaptainsService,
   ) {}
 
   async complete(
@@ -112,7 +117,7 @@ export class DeliveryBooking {
     by: DeliveredBy,
     now: Date,
     away: ChosenReason | null,
-  ): Promise<void> {
+  ): Promise<AfterCommit> {
     if (order.captainId === null) throw new Error(`order ${order.id} has no captain`);
     // AP §8.4: a discount needs platform.discount_cost or
     // merchant.discount_share, which come with codes (Phase 2); until then
@@ -181,6 +186,8 @@ export class DeliveryBooking {
       at: now,
       captainTrack: 'done',
     });
+    // CA §7.3, K18: the order left its captain.
+    return this.captains.afterOrderLeft(tx, order.captainId, now);
   }
 
   // CA §9.10 (K9, slice 2.11b): the payment of an outcome's amount to
@@ -196,7 +203,7 @@ export class DeliveryBooking {
     collection: OutcomeCollection,
     by: DeliveredBy,
     now: Date,
-  ): Promise<void> {
+  ): Promise<AfterCommit> {
     if (order.captainId === null) throw new Error(`order ${order.id} has no captain`);
     const version = order.version + 1;
     const { outcome } = collection;
@@ -278,6 +285,7 @@ export class DeliveryBooking {
       at: now,
       captainTrack: 'done',
     });
+    return this.captains.afterOrderLeft(tx, order.captainId, now);
   }
 
   private poster(tx: Tx, order: DeliveryOrder, actor: LedgerActor) {

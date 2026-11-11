@@ -41,6 +41,8 @@ Map<String, Object?> availabilityJson({
   String state = 'offline',
   List<String> reasons = const [],
   String usage = '0',
+  String? lastOrderBy,
+  String? lastOrderReason,
 }) => {
   'availability': {
     'state': state,
@@ -48,6 +50,8 @@ Map<String, Object?> availabilityJson({
     'reasons': reasons,
     'suspensionReason': null,
     'suspendedUntil': null,
+    'lastOrderBy': lastOrderBy,
+    'lastOrderReason': lastOrderReason,
   },
   'custody': {
     'usage': moneyJson(usage),
@@ -55,6 +59,7 @@ Map<String, Object?> availabilityJson({
     'warn': false,
     'closedDue': moneyJson('0'),
     'lastCutoff': now.toIso8601String(),
+    'remitTolerance': moneyJson('0'),
   },
 };
 
@@ -393,6 +398,11 @@ class FakeTransport implements RealtimeTransport {
   }
 
   /// The channel says the order changed to [version].
+  /// A publication without an order (slice 2.13a), such as
+  /// `captain.availability_changed`.
+  void signal(String type) =>
+      send(captainChannel, RealtimePublication({'type': type}));
+
   void event(String type, int version) => send(
     captainChannel,
     RealtimePublication({'type': type, 'orderId': orderId, 'version': version}),
