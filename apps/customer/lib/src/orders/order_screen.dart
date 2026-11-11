@@ -7,6 +7,7 @@ import '../emergency_stop.dart';
 import '../notifications/notifications_off_banner.dart';
 import 'cancel_order.dart';
 import 'cancel_order_sheet.dart';
+import 'door_ring.dart';
 import 'order_again_section.dart';
 import 'order_help_sheet.dart';
 import 'order_live.dart';
@@ -15,7 +16,8 @@ import 'order_live.dart';
 /// five-step progress, the time, the captain card from assignment and the
 /// summary, kept live over the order's channel, and «مساعدة» with
 /// «إلغاء الطلب» while placed (CU §11.4–11.5), and the banners of the
-/// emergency stop and the item-unavailable report (CU §11.6). The map, the
+/// emergency stop and the item-unavailable report (CU §11.6), and the door
+/// ping's full-screen ring (CU §11.7). The map, the
 /// other banners
 /// and the rating sheet come with their slices. Unstyled until the design.
 class OrderScreen extends ConsumerWidget {
@@ -74,149 +76,158 @@ class OrderScreen extends ConsumerWidget {
       }
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.customerOrderNumber(order.number)),
-        actions: [
-          if (!ended)
-            TextButton(
-              key: const Key('order-help'),
-              onPressed: help,
-              child: Text(l10n.customerHelp),
-            ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () => ref.read(orderFeedProvider(orderId)).refresh(),
-        child: ListView(
-          children: [
-            ListTile(
-              key: const Key('order-status'),
-              title: Text(title),
-              subtitle: subtitle == null ? null : Text(subtitle),
-            ),
-            // CU §11.9: a rejected or unanswered order.
-            OrderAgainSection(order: order),
-            // CU §11.6: the emergency stop's delay notice.
-            if (!ended) EmergencyDelayNotice(orderId: orderId),
-            // CU §11.6: the restaurant reported an item unavailable (RA
-            // §8.12); gone once the report is resolved or withdrawn.
-            if (!ended && order.itemReport != null)
-              ListTile(
-                key: const Key('item-report-banner'),
-                title: Text(l10n.customerItemReportBanner),
-              ),
-            // CU §11.6: FOX DROP edited the order, with the new total.
-            if (!ended && order.edited)
-              ListTile(
-                key: const Key('order-edited-banner'),
-                title: Text(l10n.customerOrderEditedBanner(total())),
-              ),
-            // CU §4.4: notifications refused at the first order.
-            if (!ended) const NotificationsOffBanner(),
-            if (step != null)
-              Padding(
-                padding: const EdgeInsetsDirectional.symmetric(horizontal: 16),
-                child: Wrap(
-                  spacing: 8,
-                  children: [
-                    for (final s in OrderStep.values)
-                      Chip(
-                        key: Key('step-${s.name}'),
-                        // Done, current, or still ahead (CU §11.1); a
-                        // delivered order has every step done.
-                        avatar: Icon(
-                          s.index < step.index || step == OrderStep.delivered
-                              ? Icons.check_circle
-                              : s == step
-                              ? Icons.radio_button_checked
-                              : Icons.radio_button_unchecked,
-                        ),
-                        label: Text(stepText(l10n, s)),
-                      ),
-                  ],
-                ),
-              ),
+    // CU §11.7: the door ping rings full screen over the order.
+    return DoorRingGate(
+      order: order,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.customerOrderNumber(order.number)),
+          actions: [
             if (!ended)
-              ListTile(
-                title: Text(
-                  order.promisedAt == null
-                      ? l10n.customerArrivesWithin(
-                          order.estimate.fromMin,
-                          order.estimate.toMin,
-                        )
-                      : l10n.customerArrivesAbout(
-                          l10n.formatTime(order.promisedAt!),
-                        ),
-                ),
-              ),
-            if (captain != null && !ended)
-              ListTile(
-                key: const Key('captain-card'),
-                title: Text(captain.firstName),
-                subtitle: Text(l10n.vehicleName(captain.vehicle.name)),
-              ),
-            // CU §11.7: at the door, the amount due large, with equivalents.
-            if (order.status.name == 'arrived')
-              ListTile(
-                title: Text(
-                  total(),
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-              ),
-            ListTile(title: Text(order.restaurant.nameAr)),
-            for (final line in order.lines)
-              ListTile(
-                title: Text('${line.quantity} × ${line.name}'),
-                subtitle:
-                    line.options.isEmpty &&
-                        line.note == null &&
-                        !line.added &&
-                        line.quantityBefore == null
-                    ? null
-                    : Text(
-                        [
-                          if (line.options.isNotEmpty)
-                            line.options.map((o) => o.name).join('، '),
-                          ?line.note,
-                          // CU §11.6: the edit's marks.
-                          if (line.added) l10n.customerLineAdded,
-                          if (line.quantityBefore case final before?)
-                            l10n.orderEditQuantity(
-                              line.name,
-                              before,
-                              line.quantity,
-                            ),
-                        ].join('\n'),
-                      ),
-                trailing: Text(
-                  l10n.formatMoney(line.lineTotal, order.currency),
-                ),
-              ),
-            // CU §11.6: the lines FOX DROP removed, struck through.
-            for (final line in order.removedLines)
-              ListTile(
-                title: Text(
-                  '${line.quantity} × ${line.name}',
-                  style: const TextStyle(
-                    decoration: TextDecoration.lineThrough,
-                  ),
-                ),
-                subtitle: Text(l10n.customerLineRemoved),
-              ),
-            ListTile(
-              title: Text(order.address.street),
-              subtitle: Text(order.address.landmark),
-            ),
-            ListTile(title: Text(l10n.customerTotal), trailing: Text(total())),
-            // CU §11.1: «إلغاء الطلب», while placed only (§11.4).
-            if (cancelHelpAt(order.status.name) == CancelHelp.cancel)
               TextButton(
-                key: const Key('order-cancel'),
-                onPressed: cancel,
-                child: Text(l10n.customerCancelOrder),
+                key: const Key('order-help'),
+                onPressed: help,
+                child: Text(l10n.customerHelp),
               ),
           ],
+        ),
+        body: RefreshIndicator(
+          onRefresh: () => ref.read(orderFeedProvider(orderId)).refresh(),
+          child: ListView(
+            children: [
+              ListTile(
+                key: const Key('order-status'),
+                title: Text(title),
+                subtitle: subtitle == null ? null : Text(subtitle),
+              ),
+              // CU §11.9: a rejected or unanswered order.
+              OrderAgainSection(order: order),
+              // CU §11.6: the emergency stop's delay notice.
+              if (!ended) EmergencyDelayNotice(orderId: orderId),
+              // CU §11.6: the restaurant reported an item unavailable (RA
+              // §8.12); gone once the report is resolved or withdrawn.
+              if (!ended && order.itemReport != null)
+                ListTile(
+                  key: const Key('item-report-banner'),
+                  title: Text(l10n.customerItemReportBanner),
+                ),
+              // CU §11.6: FOX DROP edited the order, with the new total.
+              if (!ended && order.edited)
+                ListTile(
+                  key: const Key('order-edited-banner'),
+                  title: Text(l10n.customerOrderEditedBanner(total())),
+                ),
+              // CU §4.4: notifications refused at the first order.
+              if (!ended) const NotificationsOffBanner(),
+              if (step != null)
+                Padding(
+                  padding: const EdgeInsetsDirectional.symmetric(
+                    horizontal: 16,
+                  ),
+                  child: Wrap(
+                    spacing: 8,
+                    children: [
+                      for (final s in OrderStep.values)
+                        Chip(
+                          key: Key('step-${s.name}'),
+                          // Done, current, or still ahead (CU §11.1); a
+                          // delivered order has every step done.
+                          avatar: Icon(
+                            s.index < step.index || step == OrderStep.delivered
+                                ? Icons.check_circle
+                                : s == step
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_unchecked,
+                          ),
+                          label: Text(stepText(l10n, s)),
+                        ),
+                    ],
+                  ),
+                ),
+              if (!ended)
+                ListTile(
+                  title: Text(
+                    order.promisedAt == null
+                        ? l10n.customerArrivesWithin(
+                            order.estimate.fromMin,
+                            order.estimate.toMin,
+                          )
+                        : l10n.customerArrivesAbout(
+                            l10n.formatTime(order.promisedAt!),
+                          ),
+                  ),
+                ),
+              if (captain != null && !ended)
+                ListTile(
+                  key: const Key('captain-card'),
+                  title: Text(captain.firstName),
+                  subtitle: Text(l10n.vehicleName(captain.vehicle.name)),
+                ),
+              // CU §11.7: at the door, the amount due large, with equivalents.
+              if (order.status.name == 'arrived')
+                ListTile(
+                  title: Text(
+                    total(),
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                ),
+              ListTile(title: Text(order.restaurant.nameAr)),
+              for (final line in order.lines)
+                ListTile(
+                  title: Text('${line.quantity} × ${line.name}'),
+                  subtitle:
+                      line.options.isEmpty &&
+                          line.note == null &&
+                          !line.added &&
+                          line.quantityBefore == null
+                      ? null
+                      : Text(
+                          [
+                            if (line.options.isNotEmpty)
+                              line.options.map((o) => o.name).join('، '),
+                            ?line.note,
+                            // CU §11.6: the edit's marks.
+                            if (line.added) l10n.customerLineAdded,
+                            if (line.quantityBefore case final before?)
+                              l10n.orderEditQuantity(
+                                line.name,
+                                before,
+                                line.quantity,
+                              ),
+                          ].join('\n'),
+                        ),
+                  trailing: Text(
+                    l10n.formatMoney(line.lineTotal, order.currency),
+                  ),
+                ),
+              // CU §11.6: the lines FOX DROP removed, struck through.
+              for (final line in order.removedLines)
+                ListTile(
+                  title: Text(
+                    '${line.quantity} × ${line.name}',
+                    style: const TextStyle(
+                      decoration: TextDecoration.lineThrough,
+                    ),
+                  ),
+                  subtitle: Text(l10n.customerLineRemoved),
+                ),
+              ListTile(
+                title: Text(order.address.street),
+                subtitle: Text(order.address.landmark),
+              ),
+              ListTile(
+                title: Text(l10n.customerTotal),
+                trailing: Text(total()),
+              ),
+              // CU §11.1: «إلغاء الطلب», while placed only (§11.4).
+              if (cancelHelpAt(order.status.name) == CancelHelp.cancel)
+                TextButton(
+                  key: const Key('order-cancel'),
+                  onPressed: cancel,
+                  child: Text(l10n.customerCancelOrder),
+                ),
+            ],
+          ),
         ),
       ),
     );

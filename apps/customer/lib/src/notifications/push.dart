@@ -70,3 +70,17 @@ final pushTapsProvider = Provider<void>((ref) {
   );
   ref.onDispose(taps.cancel);
 });
+
+/// CU §11.7 (slice 2.13d): the door ping that arrives while the app is open
+/// opens its order, whose screen rings full screen; the system shows no
+/// notification in the foreground.
+final doorPingsProvider = Provider<void>((ref) {
+  final push = ref.watch(pushProvider);
+  final router = ref.watch(routerProvider);
+  final pings = push.received.listen((data) {
+    if (data['kind'] != 'door_ping') return;
+    final path = pushTargetPath(data);
+    if (path != null) router.go(path);
+  });
+  ref.onDispose(pings.cancel);
+});

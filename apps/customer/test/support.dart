@@ -9,6 +9,7 @@ import 'package:customer/src/auth.dart';
 import 'package:customer/src/device.dart';
 import 'package:customer/src/media_image.dart';
 import 'package:customer/src/notifications/permission.dart';
+import 'package:customer/src/orders/door_ring.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +26,17 @@ final transparentPng = base64Decode(
 
 /// The customer app on a [FakeServer], with memory stores: no server or
 /// device needed.
+/// A [DoorRinger] a test reads.
+class FakeDoorRinger implements DoorRinger {
+  bool ringing = false;
+
+  @override
+  void ring() => ringing = true;
+
+  @override
+  void stop() => ringing = false;
+}
+
 class TestApp {
   TestApp({
     bool signedIn = false,
@@ -90,6 +102,9 @@ class TestApp {
 
   /// The `tel:` and WhatsApp links the app opened.
   final launched = <Uri>[];
+
+  /// The door ping's sound (CU §11.7).
+  final doorRinger = FakeDoorRinger();
   final List<Override> overrides;
   final transport = FakeTransport();
   late final ProviderContainer container;
@@ -175,6 +190,7 @@ class TestApp {
           mediaUrls.add(url);
           return MemoryImage(transparentPng);
         }),
+        doorRingerProvider.overrideWithValue(doorRinger),
         customerAuth.launch.overrideWithValue((uri) async {
           launched.add(uri);
           return true;

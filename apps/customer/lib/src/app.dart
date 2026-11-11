@@ -20,6 +20,8 @@ class CustomerApp extends ConsumerWidget {
     // push opening its order.
     ref.watch(pushTokensProvider);
     ref.watch(pushTapsProvider);
+    // CU §11.7: a door ping while the app is open opens its ringing order.
+    ref.watch(doorPingsProvider);
     // CU §4.7: a new version of the terms opens on the next open.
     ref.watch(termsPromptProvider);
     // A placed order opens its screen wherever the customer is: leaving

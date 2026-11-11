@@ -92,6 +92,21 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets('a door ping arriving while the app is open opens its order '
+      '(CU §11.7)', (tester) async {
+    final push = FakePush();
+    final app = _app(push);
+    await app.pump(tester);
+    // Another push while open opens nothing.
+    push.receive({'target': 'order', 'orderId': _orderId});
+    await tester.pumpAndSettle();
+    expect(_location(app), isNot('/orders/$_orderId'));
+    push.receive({'target': 'order', 'orderId': _orderId, 'kind': 'door_ping'});
+    await tester.pumpAndSettle();
+    expect(_location(app), '/orders/$_orderId');
+    await app.done(tester);
+  });
+
   test('only an order target has a route yet', () {
     expect(
       pushTargetPath({'target': 'order', 'orderId': 'a b'}),
