@@ -24,6 +24,8 @@ import { HomePage } from './home-page.js';
 import { OrderDetailPage } from './order-detail-page.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { OrdersBoardPage } from './orders-board-page.js';
+import { ZONES_READ } from './peak-bonus.js';
+import { PeakBonusPage } from './peak-bonus-page.js';
 import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { ContentPage } from './content-page.js';
 import { canSeeImages } from './restaurant-images.js';
@@ -220,6 +222,19 @@ const restaurantStatusRoute = createRoute({
   component: RestaurantStatusPage,
 });
 
+// AP §9.12.5 «مكافأة ساعة الذروة» (slice 2.16): read with the zones
+// (zones.read); only OWN saves it (pricing.edit_pay_tables, checked by the
+// page and the server), until the zones and pricing screens of 2.37.
+const peakBonusRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/peak-bonus',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, ZONES_READ)) throw redirect({ to: '/' });
+  },
+  component: PeakBonusPage,
+});
+
 const routeTree = rootRoute.addChildren([
   setupRoute,
   signInRoute,
@@ -229,6 +244,7 @@ const routeTree = rootRoute.addChildren([
     emergencyStopRoute,
     contentRoute,
     appSettingsRoute,
+    peakBonusRoute,
     imagesRoute,
     restaurantStatusRoute,
     alertsRoute,
