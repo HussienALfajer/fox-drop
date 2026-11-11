@@ -33,6 +33,7 @@ part 'captain_offer_dto_output_offer.g.dart';
 /// * [collect]
 /// * [preparation]
 /// * [handover]
+/// * [aboveMaxPickup] - CA §8.4, K2: sent by operations above the captain’s «أقصى مبلغ أحمله»: «المبلغ أكبر من الحد الذي حددته — اقبل فقط إذا كان معك ما يكفي».
 @BuiltValue()
 abstract class CaptainOfferDtoOutputOffer
     implements
@@ -81,6 +82,10 @@ abstract class CaptainOfferDtoOutputOffer
 
   @BuiltValueField(wireName: r'handover')
   CaptainCurrentOfferDtoOutputOfferHandover? get handover;
+
+  /// CA §8.4, K2: sent by operations above the captain’s «أقصى مبلغ أحمله»: «المبلغ أكبر من الحد الذي حددته — اقبل فقط إذا كان معك ما يكفي».
+  @BuiltValueField(wireName: r'aboveMaxPickup')
+  bool get aboveMaxPickup;
 
   CaptainOfferDtoOutputOffer._();
 
@@ -196,6 +201,11 @@ class _$CaptainOfferDtoOutputOfferSerializer
               CaptainCurrentOfferDtoOutputOfferHandover,
             ),
           );
+    yield r'aboveMaxPickup';
+    yield serializers.serialize(
+      object.aboveMaxPickup,
+      specifiedType: const FullType(bool),
+    );
   }
 
   @override
@@ -366,6 +376,15 @@ class _$CaptainOfferDtoOutputOfferSerializer
                   as CaptainCurrentOfferDtoOutputOfferHandover?;
           if (valueDes == null) continue;
           result.handover.replace(valueDes);
+          break;
+        case r'aboveMaxPickup':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.aboveMaxPickup = valueDes;
           break;
         default:
           unhandled.add(key);

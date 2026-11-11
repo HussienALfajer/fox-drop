@@ -2572,6 +2572,54 @@ abstract class AppLocalizations {
   /// **'العملة الأساسية'**
   String get captainBaseCurrency;
 
+  /// The maximum pickup amount on «الإعدادات» and the question at «متصل» (CA §10.5, K2, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'أقصى مبلغ أحمله'**
+  String get captainMaxPickup;
+
+  /// Under «أقصى مبلغ أحمله» (CA §8.1, C4). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لن تصلك العروض الآلية التي تدفع فيها للمطعم أكثر من هذا المبلغ.'**
+  String get captainMaxPickupExplain;
+
+  /// No maximum pickup amount set (K2: empty is no limit). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'بلا حد الآن'**
+  String get captainMaxPickupNone;
+
+  /// The maximum pickup amount set (CA §10.5). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحد الآن: {amount}'**
+  String captainMaxPickupCurrent(String amount);
+
+  /// The field of the maximum pickup amount, in the base currency. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ'**
+  String get captainMaxPickupField;
+
+  /// The typed maximum pickup amount is not an amount above zero. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب مبلغاً أكبر من صفر.'**
+  String get captainMaxPickupInvalid;
+
+  /// Sets no maximum pickup amount (K2). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'بلا حد'**
+  String get captainMaxPickupNoLimit;
+
+  /// A manual offer above the captain's maximum pickup amount (CA §8.4, K2).
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ أكبر من الحد الذي حددته — اقبل فقط إذا كان معك ما يكفي'**
+  String get captainOfferAboveMaxPickup;
+
   /// A settings change the server did not take. The spec gives no wording.
   ///
   /// In ar, this message translates to:

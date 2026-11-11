@@ -17,7 +17,7 @@ part 'admin_picker_dto_output_captains_inner.g.dart';
 /// * [name]
 /// * [vehicle]
 /// * [eligible]
-/// * [reasons] - Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed.
+/// * [reasons] - Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed, «المبلغ أكبر مما يحمله» (C4: the pickup payment above the captain’s maximum; alone, operations may still send an offer, CA §8.4).
 /// * [distanceMetres] - To the restaurant (after the pickup, to the order’s captain at their latest point): by road within the search radius, else the straight line.
 /// * [etaMin] - To the same point; null beyond the search radius.
 /// * [ordersToday]
@@ -43,10 +43,10 @@ abstract class AdminPickerDtoOutputCaptainsInner
   @BuiltValueField(wireName: r'eligible')
   bool get eligible;
 
-  /// Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed.
+  /// Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed, «المبلغ أكبر مما يحمله» (C4: the pickup payment above the captain’s maximum; alone, operations may still send an offer, CA §8.4).
   @BuiltValueField(wireName: r'reasons')
   BuiltList<AdminPickerDtoOutputCaptainsInnerReasonsEnum> get reasons;
-  // enum reasonsEnum {  busy,  last_order,  cash_limit,  closed_due,  simulated_location,  out_of_range,  vehicle_not_allowed,  };
+  // enum reasonsEnum {  busy,  last_order,  cash_limit,  closed_due,  simulated_location,  out_of_range,  vehicle_not_allowed,  above_max_pickup,  };
 
   /// To the restaurant (after the pickup, to the order’s captain at their latest point): by road within the search radius, else the straight line.
   @BuiltValueField(wireName: r'distanceMetres')
@@ -350,6 +350,9 @@ class AdminPickerDtoOutputCaptainsInnerReasonsEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'vehicle_not_allowed')
   static const AdminPickerDtoOutputCaptainsInnerReasonsEnum vehicleNotAllowed =
       _$adminPickerDtoOutputCaptainsInnerReasonsEnum_vehicleNotAllowed;
+  @BuiltValueEnumConst(wireName: r'above_max_pickup')
+  static const AdminPickerDtoOutputCaptainsInnerReasonsEnum aboveMaxPickup =
+      _$adminPickerDtoOutputCaptainsInnerReasonsEnum_aboveMaxPickup;
 
   static Serializer<AdminPickerDtoOutputCaptainsInnerReasonsEnum>
   get serializer => _$adminPickerDtoOutputCaptainsInnerReasonsEnumSerializer;

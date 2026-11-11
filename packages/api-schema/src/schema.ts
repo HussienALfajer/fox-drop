@@ -1236,6 +1236,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/settings/max-pickup-amount": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainAvailabilityMaxPickup"];
+        put: operations["captainAvailabilitySetMaxPickup"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/location": {
         parameters: {
             query?: never;
@@ -4016,6 +4032,22 @@ export interface components {
         CaptainSetCarriedCurrenciesDto: {
             /** @description The currencies carried, one at least, the base among them or not. */
             currencies: string[];
+        };
+        CaptainMaxPickupDto_Output: {
+            /** @description «أقصى مبلغ أحمله» (CA §10.5, C4) in the city’s base currency; null is no limit. */
+            limit: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            } | null;
+            /** @description Whether the captain has answered, a limit or none; the app asks until then (K2). */
+            answered: boolean;
+            /** @description Null while the city has none. */
+            baseCurrency: string | null;
+        };
+        CaptainSetMaxPickupDto: {
+            /** @description Minor units of the city’s base currency, above zero; null for no limit. */
+            amount: string | null;
         };
         CaptainLocationsDto: {
             /** @description Every 10 seconds, or the points queued without a signal (CA §4.3). */
@@ -8238,6 +8270,8 @@ export interface components {
             }[];
         };
         AdminPickerDto_Output: {
+            /** @description «تعيين» reaches the captain as an offer (dispatch.manual_assign_requires_accept), the only way to send one greyed out only for «المبلغ أكبر مما يحمله» (CA §8.4, K2). */
+            assignsAsOffer: boolean;
             /** @description Every online captain of the city, nearest to the restaurant first (AP §9.3.2). */
             captains: {
                 /** Format: uuid */
@@ -8246,8 +8280,8 @@ export interface components {
                 /** @enum {string} */
                 vehicle: "walking" | "bicycle" | "motorbike" | "car";
                 eligible: boolean;
-                /** @description Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed. */
-                reasons: ("busy" | "last_order" | "cash_limit" | "closed_due" | "simulated_location" | "out_of_range" | "vehicle_not_allowed")[];
+                /** @description Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed, «المبلغ أكبر مما يحمله» (C4: the pickup payment above the captain’s maximum; alone, operations may still send an offer, CA §8.4). */
+                reasons: ("busy" | "last_order" | "cash_limit" | "closed_due" | "simulated_location" | "out_of_range" | "vehicle_not_allowed" | "above_max_pickup")[];
                 /** @description To the restaurant (after the pickup, to the order’s captain at their latest point): by road within the search radius, else the straight line. */
                 distanceMetres: number;
                 /** @description To the same point; null beyond the search radius. */
@@ -8388,6 +8422,8 @@ export interface components {
                         recordedAt: string;
                     } | null;
                 } | null;
+                /** @description CA §8.4, K2: sent by operations above the captain’s «أقصى مبلغ أحمله»: «المبلغ أكبر من الحد الذي حددته — اقبل فقط إذا كان معك ما يكفي». */
+                aboveMaxPickup: boolean;
             } | null;
         };
         CaptainOfferDto_Output: {
@@ -8462,6 +8498,8 @@ export interface components {
                         recordedAt: string;
                     } | null;
                 } | null;
+                /** @description CA §8.4, K2: sent by operations above the captain’s «أقصى مبلغ أحمله»: «المبلغ أكبر من الحد الذي حددته — اقبل فقط إذا كان معك ما يكفي». */
+                aboveMaxPickup: boolean;
             };
         };
     };
@@ -10364,6 +10402,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainCarriedCurrenciesDto_Output"];
+                };
+            };
+        };
+    };
+    captainAvailabilityMaxPickup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainMaxPickupDto_Output"];
+                };
+            };
+        };
+    };
+    captainAvailabilitySetMaxPickup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainSetMaxPickupDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainMaxPickupDto_Output"];
                 };
             };
         };

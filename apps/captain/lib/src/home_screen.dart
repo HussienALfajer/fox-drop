@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 
 import 'api.dart';
 import 'platform.dart';
+import 'settings/max_pickup_form.dart';
 import 'terms.dart';
 import 'work/alerts.dart';
 import 'work/commands.dart';
@@ -140,6 +141,9 @@ class _AvailabilityView extends ConsumerWidget {
     final sending = ref.watch(commandsProvider).contains('availability');
     final suspended = state.state == AvailabilityState.suspended;
     Future<void> toggle(bool on) async {
+      // K2: «أقصى مبلغ أحمله» is asked the first time while unanswered.
+      if (on) await askMaxPickupUnanswered(context, ref);
+      if (!context.mounted) return;
       final commands = ref.read(commandsProvider.notifier);
       final notice = on
           ? await commands.goOnline()

@@ -269,6 +269,7 @@ import 'package:core_api/src/model/captain_last_order_dto.dart';
 import 'package:core_api/src/model/captain_locations_dto.dart';
 import 'package:core_api/src/model/captain_locations_dto_points_inner.dart';
 import 'package:core_api/src/model/captain_locations_saved_dto_output.dart';
+import 'package:core_api/src/model/captain_max_pickup_dto_output.dart';
 import 'package:core_api/src/model/captain_offer_dto_output.dart';
 import 'package:core_api/src/model/captain_offer_dto_output_offer.dart';
 import 'package:core_api/src/model/captain_order_dto_output.dart';
@@ -282,6 +283,7 @@ import 'package:core_api/src/model/captain_pickup_request_dto.dart';
 import 'package:core_api/src/model/captain_refresh_dto.dart';
 import 'package:core_api/src/model/captain_session_dto_output.dart';
 import 'package:core_api/src/model/captain_set_carried_currencies_dto.dart';
+import 'package:core_api/src/model/captain_set_max_pickup_dto.dart';
 import 'package:core_api/src/model/captain_sign_in_dto.dart';
 import 'package:core_api/src/model/captain_signed_in_dto_output.dart';
 import 'package:core_api/src/model/captain_signed_out_dto_output.dart';
@@ -734,6 +736,7 @@ part 'serializers.g.dart';
   CaptainLocationsDto,
   CaptainLocationsDtoPointsInner,
   CaptainLocationsSavedDtoOutput,
+  CaptainMaxPickupDtoOutput,
   CaptainOfferDtoOutput,
   CaptainOfferDtoOutputOffer,
   CaptainOrderDtoOutput,
@@ -747,6 +750,7 @@ part 'serializers.g.dart';
   CaptainRefreshDto,
   CaptainSessionDtoOutput,
   CaptainSetCarriedCurrenciesDto,
+  CaptainSetMaxPickupDto,
   CaptainSignInDto,
   CaptainSignedInDtoOutput,
   CaptainSignedOutDtoOutput,

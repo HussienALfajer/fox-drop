@@ -37,7 +37,8 @@ The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, 
 
 ## Pickup currencies (slice 2.14a; CA §10.5, C8, RA §12.7; owner decisions 2026-11-11)
 
-- **«الإعدادات»:** `lib/src/settings/`, reached from the home's app bar (`/settings`); for now only «العملات التي أحملها», which grows with the captain's settings (CA §12). `carriedCurrenciesProvider` reads and sets `GET`/`PUT /v1/captain/settings/carried-currencies`; a switch per currency of the city with its Arabic name from the server, the base marked «العملة الأساسية», and the last one carried cannot be switched off (`CarriedCurrencies.switched`). «أقصى مبلغ أحمله» waits for 2.15.
+- **«الإعدادات»:** `lib/src/settings/`, reached from the home's app bar (`/settings`); for now «أقصى مبلغ أحمله» and «العملات التي أحملها», which grow with the captain's settings (CA §12). `carriedCurrenciesProvider` reads and sets `GET`/`PUT /v1/captain/settings/carried-currencies`; a switch per currency of the city with its Arabic name from the server, the base marked «العملة الأساسية», and the last one carried cannot be switched off (`CarriedCurrencies.switched`).
+- **«أقصى مبلغ أحمله» (slice 2.15a; CA §10.5, C4, K2):** `maxPickupProvider` (`settings/max_pickup.dart`) reads and sets `GET`/`PUT /v1/captain/settings/max-pickup-amount`. `MaxPickupForm` (`settings/max_pickup_form.dart`) shows the limit («الحد الآن: {المبلغ}» or «بلا حد الآن»), a field in the base currency (`minorOf`, «اكتب مبلغاً أكبر من صفر.»), «حفظ» and «بلا حد»; it sits on «الإعدادات» (apart from the currencies, so one failed read never hides the other) and in the question `askMaxPickupUnanswered` asks at «متصل» while the server says the captain never answered (K2, once: «حفظ» or «بلا حد» answers it; a failed read never holds going online back). The server refuses a change during an order (`409 active_order`, CA §15). An offer with `aboveMaxPickup` shows «المبلغ أكبر من الحد الذي حددته — اقبل فقط إذا كان معك ما يكفي» (CA §8.4). The activation's ask comes with 2.35. Tests: `max_pickup_test.dart`.
 - **The pickup's payment:** step 2 pays the server's one proposed line (`pickup.proposedLines`). With more than one currency the restaurant accepts (`pickup.currencies`, each with the whole pickup payment in it), «تقسيم المبلغ أو تعديله» opens one field per currency, the proposal filling its own; the typed lines go with «دفعت للمطعم واستلمت الطلب» and the server checks them (`amount_mismatch`, `currency_not_accepted`). Tests: `pickup_currencies_test.dart`.
 
 ## The item-unavailable report (slice 2.9; CA §9 step 2, RA §8.12, §8.10)
@@ -61,7 +62,7 @@ The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, 
 
 ## Not yet (slice 1.14g)
 
-- The suggestion of «وصلت» when entering the customer's radius (CA §9.6), the peak bonus lines and the K2 over-limit text (with their server fields).
+- The suggestion of «وصلت» when entering the customer's radius (CA §9.6) and the peak bonus lines (with their server fields).
 - The map and the route (Phase 2), the ETA to the restaurant, «بدأ احتساب أجر الانتظار», the record of each call or WhatsApp tap (CA §9.2–9.5, with their server fields); the report with a quick reason (2.24), the earnings, custody and support screens.
 - The office hours and map in the hand-in reminder (CA §7.5, with the office fields), the device check and the yellow banner (CA §4.5), the vibration, the full-screen offer over the lock screen and the bundled sounds (`core_alerts`, architecture §14.2), and the iOS behaviour (Android only for now, owner decision 2026-11-07).
 - A batch the server refuses with a `400` (a point past its clock skew) is dropped whole; dropping only the bad points needs the refusal to name them.

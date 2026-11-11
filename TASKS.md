@@ -4,17 +4,25 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.15a, «أقصى مبلغ أحمله» (`docs/roadmap.md`, Phase 2; 2.15 split into 2.15a, 2.15b and 2.15c, owner decision 2026-11-11).
+Slice 2.15b, the automatic dispatcher on the server (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** 2.15a «أقصى مبلغ أحمله» (C4, K2): the captain's maximum pickup amount in the base currency on «الإعدادات» (empty is no limit), asked the first time the captain goes online while it is empty (the activation's ask comes with 2.35), shown greyed «المبلغ أكبر مما يحمله» in the assignment picker with the manual offer still allowed, the offer's warning «المبلغ أكبر من الحد الذي حددته — اقبل فقط إذا كان معك ما يكفي», handover offers ignoring it (CA §8.1, §8.4, §10.5, AP §9.3.2).
-- **Specs:** CA §10.5 and K2, CA §8.1 and §8.4, CA §5.5 (the activation's ask, with 2.35), AP §9.3.2 (the assignment picker), AP §9.12.6 (eligibility; the capacity check ignores it), AP §9.7.4 («التطبيق» shows it, with 2.36), the dispatch and captains modules' `CLAUDE.md`.
-- **Branch:** `feat/max-pickup-amount`.
+- **Roadmap line:** 2.15b The automatic dispatcher on the server: `dispatch.mode` «آلي» and «مختلط», ranking by distance (the OSRM matrix, following `pricing.distance_method`, the straight line × 1.3 as the fallback), then fewest orders today, the C4 filter, one offer at a time and the next on a decline, an expiry or a withdrawal, never the same order offered twice to one captain (a new search every 30 seconds for captains not yet offered, «طلب بلا كابتن» as usual), mixed falling back to manual after `dispatch.max_offers_before_manual` failed offers (declined, expired or withdrawn) or at the no-captain alert, the C3 push and sound (CA §7.4, §8.1, AP §9.12.6).
+- **Specs:** AP §9.12.6 (modes, eligibility, ranking, offers, search start), AP §8.3 (the search start), AP §14 item 9, CA §7.4 (C3, K1), CA §8.1–8.3, CA §14 (the C3 push), AP Appendix A (`dispatch.*`), the dispatch, captains, geo and ordering modules' `CLAUDE.md` (the search start, the offer timer, C3), architecture §4.4 (the `dispatcher` role).
+- **Branch:** `feat/auto-dispatch`.
 - **Plan:**
-  - [ ] Server, captains: `captains.max_pickup_amount` and its currency (null: no limit) and `max_pickup_set_at` (when the captain last answered, so the app asks once), registered with `FxService.useCityAmounts` like the cash limit; `GET`/`PUT /v1/captain/settings/max-pickup-amount` (an amount above zero in the city's base, or null; no key: it sets a value); the database and route tests.
-  - [ ] Server, dispatch: the picker's reason `above_max_pickup` against the order's pickup payment (the items value, D26); a manual offer or assignment allowed when it is the only reason; the offer keeping `above_max_pickup`, and `GET /v1/captain/offers/current` answering it; handover offers ignoring the limit; the capacity check and the search start unchanged; tests first.
-  - [ ] Panel: the picker's «المبلغ أكبر مما يحمله», greyed but still selectable for an offer; its test.
-  - [ ] Captain app: «أقصى مبلغ أحمله» on «الإعدادات» (an amount or «بلا حد»), asked when going online while never answered, and the offer sheet's warning; widget tests.
-  - [ ] Review, then hand over to 2.15b.
+  - [ ] Geo: the distance matrix (OSRM `table`) from many captains to one restaurant by vehicle, following `pricing.distance_method`, the straight line × 1.3 on any failure; tests with the fake port.
+  - [ ] Dispatch: automatic offers (`offers.kind` `auto`, no admin), the next offer when the search starts and when an offer closes (declined, expired, withdrawn), ranked by distance then fewest orders today, eligible and within the limit (`above_max_pickup` left out), never a captain already offered the order, a new search every 30 seconds while none is left; in the process the architecture names (the `dispatcher` role or the worker); tests first.
+  - [ ] Mixed mode: after `dispatch.max_offers_before_manual` failed offers or at the no-captain alert the order leaves automatic dispatch («بحاجة لتعيين»), kept on the order or the offers so 2.15c can show it; the mode read when each offer would be sent (manual stops new offers); tests first.
+  - [ ] C3: the push and sound «لم ترد على 3 عروض متتالية، فأصبحت غير متصل. اضغط «متصل» عندما تكون جاهزاً.» (CA §7.4, §14), and the captain app showing it.
+  - [ ] Review, then hand over to 2.15c.
+
+### Left from 2.15a (`feat/max-pickup-amount`)
+
+- **Before deploying to staging:** migration 0059 adds `captains.captains.max_pickup_amount`, `max_pickup_currency` and `max_pickup_set_at` (null; a `CHECK` added `NOT VALID`, then validated) and `dispatch.offers.above_max_pickup` (false by default). The captain's current offer gains the required `aboveMaxPickup` and the picker `assignsAsOffer` and the reason `above_max_pickup`: deploy the server first, then the panel and the captain APK together (a new APK cannot read an offer from an older server; an older panel hides the unknown reason).
+- **To check on staging:** in the captain app «الإعدادات» → «أقصى مبلغ أحمله» → 200 → «حفظ»: «الحد الآن: 200 ₺». On an order whose items cost more, the panel's picker greys the captain out with «المبلغ أكبر مما يحمله» and «إرسال عرض إلى {الاسم} رغم ذلك» → the captain's offer says «المبلغ أكبر من الحد الذي حددته — اقبل فقط إذا كان معك ما يكفي» and can be accepted. A captain who never answered is asked at «متصل» («حفظ» or «بلا حد»). During an order the change is refused.
+- **To confirm with the owner:** a direct assignment (`dispatch.manual_assign_requires_accept` off) above the limit is refused, since the captain could not decline it (the spec allows only an offer); the question at «متصل» cannot be skipped («بلا حد» is one tap) and comes once; a captain's limit blocks the owner's base-currency change before the base locks (staging only in practice); the strings the spec gives no wording for: the captain app's «لن تصلك العروض الآلية التي تدفع فيها للمطعم أكثر من هذا المبلغ.», «بلا حد الآن», «الحد الآن: {المبلغ}», «المبلغ», «اكتب مبلغاً أكبر من صفر.», «بلا حد»; the panel's «يصل الكابتن عرضٌ يحذّره أن المبلغ أكبر من حدّه، ويقبل أو يرفض.» and «إرسال عرض إلى {الاسم} رغم ذلك».
+- **Decided by us:** the offer's warning follows the captain's limit and the items value when read (an edit during the offer warns too), while `offers.above_max_pickup` logs the override when it opened.
+- **Not yet:** «العملات التي أحملها» can still change during an order (CA §15 asks no active order for both settings; 2.14a let it); the activation's ask (2.35); the panel's «التطبيق» tab showing the limit (2.36).
 
 ### Owner decisions for 2.15 (2026-11-11)
 

@@ -1536,6 +1536,34 @@ class AppLocalizationsAr extends AppLocalizations {
   String get captainBaseCurrency => 'العملة الأساسية';
 
   @override
+  String get captainMaxPickup => 'أقصى مبلغ أحمله';
+
+  @override
+  String get captainMaxPickupExplain =>
+      'لن تصلك العروض الآلية التي تدفع فيها للمطعم أكثر من هذا المبلغ.';
+
+  @override
+  String get captainMaxPickupNone => 'بلا حد الآن';
+
+  @override
+  String captainMaxPickupCurrent(String amount) {
+    return 'الحد الآن: $amount';
+  }
+
+  @override
+  String get captainMaxPickupField => 'المبلغ';
+
+  @override
+  String get captainMaxPickupInvalid => 'اكتب مبلغاً أكبر من صفر.';
+
+  @override
+  String get captainMaxPickupNoLimit => 'بلا حد';
+
+  @override
+  String get captainOfferAboveMaxPickup =>
+      'المبلغ أكبر من الحد الذي حددته — اقبل فقط إذا كان معك ما يكفي';
+
+  @override
   String get captainSaveFailed => 'لم يُحفظ التغيير، حاول مرة أخرى';
 
   @override

@@ -20,6 +20,7 @@ import {
   type CaptainState,
   CaptainsRefusedError,
   CaptainsService,
+  type MaxPickup,
   type Money,
 } from './captains.service.js';
 
@@ -154,6 +155,28 @@ class CaptainSetCarriedCurrenciesDto extends createZodDto(
   }),
 ) {}
 
+const maxPickupSchema = z.object({
+  limit: money
+    .nullable()
+    .describe('«أقصى مبلغ أحمله» (CA §10.5, C4) in the city’s base currency; null is no limit.'),
+  answered: z
+    .boolean()
+    .describe('Whether the captain has answered, a limit or none; the app asks until then (K2).'),
+  baseCurrency: z.string().length(3).nullable().describe('Null while the city has none.'),
+});
+
+class CaptainMaxPickupDto extends createZodDto(maxPickupSchema) {}
+
+class CaptainSetMaxPickupDto extends createZodDto(
+  z.object({
+    amount: z
+      .string()
+      .regex(/^[1-9][0-9]{0,18}$/)
+      .nullable()
+      .describe('Minor units of the city’s base currency, above zero; null for no limit.'),
+  }),
+) {}
+
 // CA §7, §4.3: the captain's availability, going online and offline, and the
 // location every 10 seconds while online.
 @CaptainController()
@@ -265,6 +288,45 @@ export class CaptainAvailabilityController {
     }
   }
 
+  // CA §10.5, K2 «أقصى مبلغ أحمله» on «الإعدادات».
+  @Get('settings/max-pickup-amount')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: CaptainMaxPickupDto })
+  async maxPickup(@CurrentAppSession() session: AppSession) {
+    return maxPickupBody(await this.captains.maxPickup(captainOf(session)));
+  }
+
+  // Sets it to a value, so it takes no Idempotency-Key. 400
+  // invalid_max_pickup above the largest amount, 409 not_in_base_currency
+  // while the city has no base, 409 active_order during an order (CA §15).
+  @Put('settings/max-pickup-amount')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: CaptainMaxPickupDto })
+  async setMaxPickup(
+    @CurrentAppSession() session: AppSession,
+    @Body() body: CaptainSetMaxPickupDto,
+  ) {
+    try {
+      const amount = body.amount === null ? null : BigInt(body.amount);
+      return maxPickupBody(await this.captains.setMaxPickup(captainOf(session), amount));
+    } catch (error) {
+      if (error instanceof CaptainsRefusedError && error.refusal === 'invalid_max_pickup') {
+        throw new BadRequestException({
+          statusCode: HttpStatus.BAD_REQUEST,
+          error: error.refusal,
+          message: error.message,
+        });
+      }
+      if (
+        error instanceof CaptainsRefusedError &&
+        (error.refusal === 'not_in_base_currency' || error.refusal === 'active_order')
+      ) {
+        throw new ConflictException({ statusCode: HttpStatus.CONFLICT, error: error.refusal });
+      }
+      throw error;
+    }
+  }
+
   // Offline answers 409 not_online: no location is collected (CA §4.3).
   @Post('location')
   @AppSignedIn()
@@ -296,6 +358,10 @@ export class CaptainAvailabilityController {
 function captainOf(session: AppSession): string {
   if (session.captain === null) throw new ForbiddenException();
   return session.captain.captainId;
+}
+
+function maxPickupBody(value: MaxPickup) {
+  return { ...value, limit: value.limit && moneyBody(value.limit) };
 }
 
 function moneyBody(money: Money) {

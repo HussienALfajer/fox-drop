@@ -6,7 +6,9 @@ import type { OrderDetail } from './order-detail.js';
 
 export const OPERATIONS_MANAGE = 'operations.manage';
 
-export type PickerCaptain = components['schemas']['AdminPickerDto_Output']['captains'][number];
+type ListedCaptain = components['schemas']['AdminPickerDto_Output']['captains'][number];
+// offerable: «تعيين» may go to this captain (canOffer).
+export type PickerCaptain = ListedCaptain & { offerable: boolean };
 export type DispatchState = components['schemas']['AdminDispatchStateDto_Output']['order'];
 export type IneligibleReason = PickerCaptain['reasons'][number] | 'offline';
 
@@ -19,6 +21,7 @@ export const ineligibleKeys = {
   simulated_location: 'assign.reason.simulatedLocation',
   out_of_range: 'assign.reason.outOfRange',
   vehicle_not_allowed: 'assign.reason.vehicleNotAllowed',
+  above_max_pickup: 'assign.reason.aboveMaxPickup',
   offline: 'assign.reason.offline',
 } as const satisfies Record<IneligibleReason, string>;
 
@@ -32,6 +35,22 @@ export function canAssign(
     (order.status === 'accepted' || order.status === 'ready') &&
     order.captain === null &&
     order.captainTrack !== 'offered'
+  );
+}
+
+// C4, K2, CA §8.4: a captain greyed out only for «المبلغ أكبر مما يحمله»
+// may still get a manual offer, which they can decline; only when «تعيين»
+// arrives as an offer (assignsAsOffer), since the server refuses a direct
+// assignment then.
+export function canOffer(
+  captain: Pick<ListedCaptain, 'eligible' | 'reasons'>,
+  assignsAsOffer: boolean,
+): boolean {
+  return (
+    captain.eligible ||
+    (assignsAsOffer &&
+      captain.reasons.length > 0 &&
+      captain.reasons.every((reason) => reason === 'above_max_pickup'))
   );
 }
 
@@ -50,7 +69,10 @@ export function pickerQuery(orderId: string) {
         params: { path: { orderId } },
       });
       if (!data) throw new Error('The picker read failed.');
-      return data.captains;
+      return data.captains.map((captain) => ({
+        ...captain,
+        offerable: canOffer(captain, data.assignsAsOffer),
+      }));
     },
   });
 }
@@ -71,6 +93,7 @@ const knownReasons: readonly string[] = [
   'simulated_location',
   'out_of_range',
   'vehicle_not_allowed',
+  'above_max_pickup',
   'offline',
 ] satisfies IneligibleReason[];
 

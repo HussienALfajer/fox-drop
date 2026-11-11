@@ -2915,6 +2915,66 @@
         ]
       }
     },
+    "/v1/captain/settings/max-pickup-amount": {
+      "get": {
+        "operationId": "captainAvailabilityMaxPickup",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainMaxPickupDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      },
+      "put": {
+        "operationId": "captainAvailabilitySetMaxPickup",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptainSetMaxPickupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainMaxPickupDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
     "/v1/captain/location": {
       "post": {
         "operationId": "captainAvailabilityLocation",
@@ -11781,6 +11841,82 @@
         },
         "required": [
           "currencies"
+        ]
+      },
+      "CaptainMaxPickupDto_Output": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$",
+                    "description": "Integer minor units (AP §8.6)."
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  }
+                },
+                "required": [
+                  "amount",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«أقصى مبلغ أحمله» (CA §10.5, C4) in the city’s base currency; null is no limit."
+          },
+          "answered": {
+            "type": "boolean",
+            "description": "Whether the captain has answered, a limit or none; the app asks until then (K2)."
+          },
+          "baseCurrency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null while the city has none."
+          }
+        },
+        "required": [
+          "limit",
+          "answered",
+          "baseCurrency"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainSetMaxPickupDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Minor units of the city’s base currency, above zero; null for no limit."
+          }
+        },
+        "required": [
+          "amount"
         ]
       },
       "CaptainLocationsDto": {
@@ -29368,6 +29504,10 @@
       "AdminPickerDto_Output": {
         "type": "object",
         "properties": {
+          "assignsAsOffer": {
+            "type": "boolean",
+            "description": "«تعيين» reaches the captain as an offer (dispatch.manual_assign_requires_accept), the only way to send one greyed out only for «المبلغ أكبر مما يحمله» (CA §8.4, K2)."
+          },
           "captains": {
             "type": "array",
             "items": {
@@ -29404,10 +29544,11 @@
                       "closed_due",
                       "simulated_location",
                       "out_of_range",
-                      "vehicle_not_allowed"
+                      "vehicle_not_allowed",
+                      "above_max_pickup"
                     ]
                   },
-                  "description": "Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed."
+                  "description": "Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed, «المبلغ أكبر مما يحمله» (C4: the pickup payment above the captain’s maximum; alone, operations may still send an offer, CA §8.4)."
                 },
                 "distanceMetres": {
                   "type": "integer",
@@ -29516,6 +29657,7 @@
           }
         },
         "required": [
+          "assignsAsOffer",
           "captains"
         ],
         "additionalProperties": false
@@ -29937,6 +30079,10 @@
                       }
                     ],
                     "description": "«استلام من كابتن» (CA §9.10.1): the order is taken from this captain; restaurant.distanceMetres is then to them. Null for an ordinary offer."
+                  },
+                  "aboveMaxPickup": {
+                    "type": "boolean",
+                    "description": "CA §8.4, K2: sent by operations above the captain’s «أقصى مبلغ أحمله»: «المبلغ أكبر من الحد الذي حددته — اقبل فقط إذا كان معك ما يكفي»."
                   }
                 },
                 "required": [
@@ -29953,7 +30099,8 @@
                   "pickupPayment",
                   "collect",
                   "preparation",
-                  "handover"
+                  "handover",
+                  "aboveMaxPickup"
                 ],
                 "additionalProperties": false,
                 "description": "An offer (CA §8.2)."
@@ -30218,6 +30365,10 @@
                   }
                 ],
                 "description": "«استلام من كابتن» (CA §9.10.1): the order is taken from this captain; restaurant.distanceMetres is then to them. Null for an ordinary offer."
+              },
+              "aboveMaxPickup": {
+                "type": "boolean",
+                "description": "CA §8.4, K2: sent by operations above the captain’s «أقصى مبلغ أحمله»: «المبلغ أكبر من الحد الذي حددته — اقبل فقط إذا كان معك ما يكفي»."
               }
             },
             "required": [
@@ -30234,7 +30385,8 @@
               "pickupPayment",
               "collect",
               "preparation",
-              "handover"
+              "handover",
+              "aboveMaxPickup"
             ],
             "additionalProperties": false,
             "description": "An offer (CA §8.2)."

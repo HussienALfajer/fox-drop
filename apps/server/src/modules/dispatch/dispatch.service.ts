@@ -111,6 +111,9 @@ export interface CaptainOffer {
     fromCaptainName: string;
     location: (Point & { recordedAt: Date }) | null;
   } | null;
+  // CA §8.4, K2: operations sent it above the captain's «أقصى مبلغ أحمله»:
+  // «المبلغ أكبر من الحد الذي حددته — اقبل فقط إذا كان معك ما يكفي».
+  aboveMaxPickup: boolean;
 }
 
 // A captain in the assignment picker (AP §9.3.2).
@@ -192,8 +195,10 @@ export class DispatchService implements OnModuleInit {
   // AP §9.3.2 «تعيين كابتن»: with dispatch.manual_assign_requires_accept the
   // captain gets an offer for dispatch.offer_timeout_sec (CA §8.4); without
   // it the order is the captain's at once. The captain must be eligible now
-  // (AP §9.12.6); the maximum pickup amount, the only reason operations may
-  // override, joins with C4.
+  // (AP §9.12.6), except for a pickup payment above the captain's «أقصى
+  // مبلغ أحمله» (C4), the one reason operations may override, and only with
+  // an offer the captain can decline (K2, CA §8.4): the offer then carries
+  // the warning.
   async assign(command: AdminCommand, now: Date): Promise<DispatchState> {
     const hash = commandHash({
       verb: 'assign',
@@ -220,25 +225,37 @@ export class DispatchService implements OnModuleInit {
       throw new DispatchRefusedError('unknown_captain', 'no such captain');
     }
     const seen = (
-      await this.captains.candidates(order.cityId, restaurant.location, order.tripMetres, now)
+      await this.captains.candidates(
+        order.cityId,
+        restaurant.location,
+        order.tripMetres,
+        now,
+        pickupPaymentOf(order),
+      )
     ).find((candidate) => candidate.captainId === command.captainId);
     if (!seen) {
       throw new DispatchRefusedError('captain_not_eligible', 'the captain is not online', [
         'offline',
       ]);
     }
-    if (seen.reasons.length > 0) {
+    const [requiresAccept, timeoutSec] = await Promise.all([
+      this.settings.get('dispatch.manual_assign_requires_accept', { cityId: order.cityId }),
+      this.settings.get('dispatch.offer_timeout_sec', { cityId: order.cityId }),
+    ]);
+    const aboveMaxPickup = seen.reasons.includes('above_max_pickup');
+    const blocking = requiresAccept
+      ? seen.reasons.filter((reason) => reason !== 'above_max_pickup')
+      : seen.reasons;
+    if (blocking.length > 0) {
       throw new DispatchRefusedError(
         'captain_not_eligible',
         'the captain cannot take the order',
         seen.reasons,
       );
     }
-    const [requiresAccept, timeoutSec] = await Promise.all([
-      this.settings.get('dispatch.manual_assign_requires_accept', { cityId: order.cityId }),
-      this.settings.get('dispatch.offer_timeout_sec', { cityId: order.cityId }),
-    ]);
-    const shown = requiresAccept ? await this.shown(order, seen, now) : null;
+    const shown = requiresAccept
+      ? { ...(await this.shown(order, seen, now)), aboveMaxPickup }
+      : null;
     const lockCaptain = await this.captains.assignmentLock(order.cityId, now);
 
     // pg-boss connects before the locks are taken, never while they are held.
@@ -442,8 +459,15 @@ export class DispatchService implements OnModuleInit {
     const from = handover
       ? await this.handoverPoint(order, now)
       : (await this.restaurantOf(order, now)).location;
+    // C4 does not apply to a handover (CA §9.10.1): the captain pays nothing.
     const candidates = (
-      await this.captains.candidates(order.cityId, from, order.tripMetres, now)
+      await this.captains.candidates(
+        order.cityId,
+        from,
+        order.tripMetres,
+        now,
+        handover ? null : pickupPaymentOf(order),
+      )
     ).filter((candidate) => candidate.captainId !== order.captainId);
     if (candidates.length === 0) return [];
     const [speedKmh, window, cutoff, timeZone] = await Promise.all([
@@ -484,6 +508,15 @@ export class DispatchService implements OnModuleInit {
     return listed.sort(
       (a, b) => a.distanceMetres - b.distanceMetres || a.ordersToday - b.ordersToday,
     );
+  }
+
+  // AP §9.3.2, CA §8.4: whether «تعيين» reaches the captain as an offer
+  // (dispatch.manual_assign_requires_accept), the only way past «المبلغ أكبر
+  // مما يحمله» (K2: the captain decides).
+  async assignsAsOffer(orderId: string): Promise<boolean> {
+    const order = await this.assignments.find(orderId);
+    if (order === null) throw new DispatchRefusedError('unknown_order', 'no such order');
+    return this.settings.get('dispatch.manual_assign_requires_accept', { cityId: order.cityId });
   }
 
   // CA §11.1: each captain's acceptance rate over its last offers answered,
@@ -637,7 +670,11 @@ export class DispatchService implements OnModuleInit {
     tx: Tx,
     order: DispatchOrder,
     command: AdminCommand,
-    shown: { pickupMetres: number; pay: { amount: bigint; currency: string } | null },
+    shown: {
+      pickupMetres: number;
+      pay: { amount: bigint; currency: string } | null;
+      aboveMaxPickup?: boolean;
+    },
     now: Date,
     expiresAt: Date,
     handover = false,
@@ -658,6 +695,7 @@ export class DispatchService implements OnModuleInit {
         pay: shown.pay?.amount ?? null,
         payCurrency: shown.pay?.currency ?? null,
         handover,
+        aboveMaxPickup: shown.aboveMaxPickup ?? false,
       })
       .returning({ id: offers.id });
     const job: OfferExpiryJob = {
@@ -729,6 +767,15 @@ export class DispatchService implements OnModuleInit {
       offer.handover && order.captainId !== null
         ? await this.handoverFrom(order.captainId, now)
         : null;
+    // CA §8.4, K2: as the captain's limit and the items value are now, so an
+    // edit while the offer is open warns too; never on a handover (they pay
+    // nothing).
+    const limit = handover ? null : (await this.captains.captain(offer.captainId, now))?.maxPickup;
+    const aboveMaxPickup =
+      !offer.handover &&
+      limit != null &&
+      limit.currency === order.currency &&
+      order.itemsValue > limit.amount;
     return {
       id: offer.id,
       status: offer.status,
@@ -752,6 +799,7 @@ export class DispatchService implements OnModuleInit {
       collect: { amount: order.total, currency: order.currency },
       preparation: { ready: order.readyAt !== null, readyAt: order.readyAt ?? prepDue },
       handover,
+      aboveMaxPickup,
     };
   }
 
@@ -1047,4 +1095,10 @@ async function keepKey(
 
 function commandHash(command: unknown): string {
   return createHash('sha256').update(JSON.stringify(command)).digest('hex');
+}
+
+// D26, C4: «تدفع للمطعم», the items value the captain pays at pickup, which
+// «أقصى مبلغ أحمله» is measured against.
+function pickupPaymentOf(order: DispatchOrder): { amount: bigint; currency: string } {
+  return { amount: order.itemsValue, currency: order.currency };
 }

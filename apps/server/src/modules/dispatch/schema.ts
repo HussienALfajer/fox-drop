@@ -60,6 +60,10 @@ export const offers = dispatch.table(
     // order from its captain, «استلام من كابتن»; pickup_metres is then to
     // the first captain.
     handover: boolean('handover').notNull().default(false),
+    // CA §8.4, K2: a manual offer whose pickup payment was above the
+    // captain's «أقصى مبلغ أحمله» when it opened; the captain sees «المبلغ
+    // أكبر من الحد الذي حددته — اقبل فقط إذا كان معك ما يكفي».
+    aboveMaxPickup: boolean('above_max_pickup').notNull().default(false),
   },
   (table) => [
     // CA §8.1: one offer at a time per captain, and per order.

@@ -453,6 +453,8 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/captain/availability/last-order': 'app_session',
   'GET /v1/captain/settings/carried-currencies': 'app_session',
   'PUT /v1/captain/settings/carried-currencies': 'app_session',
+  'GET /v1/captain/settings/max-pickup-amount': 'app_session',
+  'PUT /v1/captain/settings/max-pickup-amount': 'app_session',
   'POST /v1/captain/location': 'app_session',
   'GET /v1/captain/offers/current': 'app_session',
   'POST /v1/captain/realtime/token': 'app_session',
