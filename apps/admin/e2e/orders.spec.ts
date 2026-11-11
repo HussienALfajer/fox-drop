@@ -19,6 +19,7 @@ const card = {
   captainTrack: 'searching',
   captain: null,
   total: { amount: '1250', currency: 'USD' },
+  dispatch: { mode: 'manual', manual: null, autoOffers: 0, maxOffers: null },
   badges: {
     needsAssignment: true,
     note: false,
@@ -167,7 +168,91 @@ async function fakeOperations(page: Page) {
   await page.route(`**/v1/admin/orders/${orderId}/captains`, (route) =>
     route.fulfill({ json: picker }),
   );
+  await page.route(`**/v1/admin/orders/${orderId}/offers`, (route) =>
+    route.fulfill({ json: { offers: [] } }),
+  );
 }
+
+// AP §9.2.1, §9.3.2, §9.7.4 (slice 2.15c): an order the dispatcher is
+// offering in «مختلط» shows its offer; operations take it out of automatic
+// dispatch and it shows «بحاجة لتعيين».
+test('takes an order out of automatic dispatch: «توزيع يدوي لهذا الطلب»', async ({ page }) => {
+  await fakeSession(page, ['operations.read', 'operations.manage']);
+  await fakeOperations(page);
+  let moved = false;
+  const automatic = {
+    ...card,
+    alerts: [],
+    captainTrack: 'offered',
+    dispatch: { mode: 'mixed', manual: null, autoOffers: 2, maxOffers: 5 },
+    badges: { ...card.badges, needsAssignment: false },
+  };
+  const manual = {
+    ...automatic,
+    captainTrack: 'searching',
+    dispatch: { ...automatic.dispatch, manual: { reason: 'operations', at: later(0) } },
+    badges: { ...card.badges, needsAssignment: true },
+  };
+  const current = () => (moved ? manual : automatic);
+  await page.route('**/v1/admin/orders?*', (route) =>
+    route.fulfill({ json: { orders: [current()] } }),
+  );
+  await page.route(`**/v1/admin/orders/${orderId}`, (route) =>
+    route.fulfill({ json: { order: { ...detail, ...current() } } }),
+  );
+  await page.route(`**/v1/admin/orders/${orderId}/offers`, (route) =>
+    route.fulfill({
+      json: {
+        offers: [
+          {
+            id: '01900000-0000-7000-8000-0000000000a1',
+            captain: { id: captainId, name: 'سامر' },
+            kind: 'auto',
+            handover: false,
+            offeredAt: later(-3),
+            expiresAt: later(-2),
+            status: 'declined',
+            respondedAt: later(-3),
+            responseSec: 12,
+          },
+        ],
+      },
+    }),
+  );
+  let key: string | undefined;
+  await page.route(`**/v1/admin/orders/${orderId}/manual-dispatch`, (route) => {
+    key = route.request().headers()['idempotency-key'];
+    moved = true;
+    return route.fulfill({
+      json: {
+        order: {
+          id: orderId,
+          number: '10001',
+          status: 'ready',
+          version: 6,
+          captainTrack: 'offered',
+          captainId: null,
+          offer: null,
+        },
+      },
+    });
+  });
+  await page.goto(`/orders/${orderId}?city=AZ`);
+
+  const ready = page.getByRole('region', { name: 'جاهز' });
+  await expect(ready.getByText('توزيع آلي — العرض 2 من 5')).toBeVisible();
+  await expect(ready.getByText('بحاجة لتعيين')).toHaveCount(0);
+  const panel = page.getByRole('complementary', { name: 'تفاصيل الطلب' });
+  await expect(panel.getByText('سجل العروض')).toBeVisible();
+  await expect(panel.getByText('سامر — آلي — رفض الرد بعد 12 ث')).toBeVisible();
+
+  await panel.getByRole('button', { name: 'توزيع يدوي لهذا الطلب' }).click();
+  await expect(panel.getByText('نُقل إلى التوزيع اليدوي بقرار العمليات')).toBeVisible();
+  expect(key).toMatch(/^[\w-]{16,128}$/);
+  await expect(ready.getByText('بحاجة لتعيين')).toBeVisible();
+  await expect(ready.getByText('نُقل إلى التوزيع اليدوي بقرار العمليات')).toBeVisible();
+  await expect(panel.getByRole('button', { name: 'توزيع يدوي لهذا الطلب' })).toHaveCount(0);
+});
 
 // AP §9.2, §9.3.2: the owner assigns a captain from the panel.
 test('opens a late order from the board and offers it to a captain', async ({ page }) => {

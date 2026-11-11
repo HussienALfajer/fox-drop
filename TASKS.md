@@ -12,7 +12,7 @@ Slice 2.15c, the panel's side of automatic dispatch (`docs/roadmap.md`, Phase 2)
 - **Plan:**
   - [x] Server: «توزيع يدوي لهذا الطلب» (`POST /v1/admin/orders/{orderId}/manual-dispatch`, `operations.manage`, `Idempotency-Key`): a `manual_orders` row with a new reason `operations` (the `CHECK` widened) and the admin, audited; an open automatic offer keeps its time; tests first.
   - [x] Server: the dispatch state on the board and the detail (the mode, automatic or manual and why, «العرض {ن} من {م}» from the automatic offers and `dispatch.max_offers_before_manual`) and the order's offers log (captain, kind, time, answer, response time); whether «بحاجة لتعيين» shows for an order the dispatcher is still offering (today every `searching` order shows it in every mode, `ordering/operations-views.ts`).
-  - [ ] Panel: the button, the dispatch state and the offers log on the detail; the state on the board's card; Playwright smoke.
+  - [x] Panel: the button, the dispatch state and the offers log on the detail; the state on the board's card; Playwright smoke.
   - [ ] Review, then hand over.
 
 ### Left from 2.15b (`feat/auto-dispatch`)

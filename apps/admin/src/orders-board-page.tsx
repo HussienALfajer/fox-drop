@@ -6,6 +6,7 @@ import { chosenCity, citiesQuery } from './cities.js';
 import { useServerNow } from './clock.js';
 import { formatMoney } from './format.js';
 import { useOpsChannel } from './live.js';
+import { DispatchState } from './order-dispatch-page.js';
 import { alertKeys, badgeKeys, slaKeys, statusKeys, trackKeys } from './order-labels.js';
 import {
   type BoardFilter,
@@ -185,6 +186,7 @@ function Card({ card, now, cityCode }: { card: OrderCard; now: number; cityCode:
         {card.captain ? card.captain.name : <strong>{t('board.noCaptain')}</strong>}
         {card.captainTrack && <span> {t(trackKeys[card.captainTrack])}</span>}
       </p>
+      <DispatchState card={card} />
       <p>{formatMoney(card.total)}</p>
       <Badges card={card} />
     </article>
