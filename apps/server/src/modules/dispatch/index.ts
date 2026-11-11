@@ -7,7 +7,7 @@ import {
   type OnModuleDestroy,
   type OnModuleInit,
 } from '@nestjs/common';
-import type pg from 'pg';
+import pg from 'pg';
 import { DATABASE, DatabaseModule } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { QUEUES } from '../../jobs/job-queue.js';
@@ -90,7 +90,7 @@ export class AutoDispatcher implements OnApplicationBootstrap, OnModuleDestroy {
   private readonly logger = new Logger('AutoDispatcher');
   private timer: NodeJS.Timeout | null = null;
   private running: Promise<void> | null = null;
-  private client: pg.PoolClient | null = null;
+  private client: pg.Client | null = null;
   private readonly led = new Set<string>();
 
   constructor(
@@ -134,9 +134,24 @@ export class AutoDispatcher implements OnApplicationBootstrap, OnModuleDestroy {
 
   // Whether this process leads the city: it holds the city's lock, or takes
   // it now.
+  // A city already led checks that the session still holds the lock: a
+  // half-open connection the server ended gives no error until used.
   private async lead(cityId: string): Promise<boolean> {
-    if (this.led.has(cityId)) return true;
     try {
+      if (this.led.has(cityId) && this.client !== null) {
+        const { rows } = await this.client.query<{ held: boolean }>(
+          `SELECT EXISTS (
+             SELECT 1 FROM pg_locks
+             WHERE locktype = 'advisory' AND pid = pg_backend_pid() AND granted
+               AND ((classid::bigint << 32) | objid::bigint) = hashtextextended($1, 0)
+           ) AS held`,
+          [`dispatcher:${cityId}`],
+        );
+        if (rows[0]?.held) return true;
+        this.logger.warn({ cityId }, 'the city lock was lost');
+        this.drop();
+        return false;
+      }
       this.client ??= await this.connect();
       const { rows } = await this.client.query<{ led: boolean }>(
         'SELECT pg_try_advisory_lock(hashtextextended($1, 0)) AS led',
@@ -154,18 +169,21 @@ export class AutoDispatcher implements OnApplicationBootstrap, OnModuleDestroy {
     }
   }
 
-  private async connect(): Promise<pg.PoolClient> {
-    const client = await this.database.pool.connect();
+  // A connection of its own, outside the pool, with TCP keepalive, so a
+  // dead peer is found.
+  private async connect(): Promise<pg.Client> {
+    const client = new pg.Client({ ...this.database.pool.options, keepAlive: true });
     client.on('error', (error) => {
       this.logger.warn({ err: error }, 'the leader connection was lost');
       if (this.client === client) this.drop();
     });
+    await client.connect();
     return client;
   }
 
   // Closes the leader connection, which frees every lock it held.
   private drop(): void {
-    this.client?.release(true);
+    void this.client?.end().catch(() => undefined);
     this.client = null;
     this.led.clear();
   }

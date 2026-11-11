@@ -1259,6 +1259,21 @@ describe('the dispatcher role (architecture §4.4)', () => {
       await first.onModuleDestroy();
       await second.tick();
       expect(passes).toEqual(['first', 'first', 'second']);
+      // The leader's session ends on the server: it connects again and
+      // takes the free lock at its next tick, so the city keeps one leader.
+      await sql.query(
+        "SELECT pg_terminate_backend(pid) FROM pg_locks WHERE locktype = 'advisory' AND pid <> pg_backend_pid()",
+      );
+      await second.tick();
+      await second.tick();
+      expect(passes.at(-1)).toBe('second');
+      const third = new AutoDispatcher(db, app.get(GeoService), counting('third'));
+      try {
+        await third.tick();
+        expect(passes).not.toContain('third');
+      } finally {
+        await third.onModuleDestroy();
+      }
     } finally {
       await first.onModuleDestroy();
       await second.onModuleDestroy();

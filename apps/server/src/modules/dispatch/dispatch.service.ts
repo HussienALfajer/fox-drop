@@ -5,6 +5,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
+import { reportError } from '../../observability/error-tracking.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { type AuditRequestContext, AuditService } from '../audit/index.js';
 import {
@@ -537,11 +538,15 @@ export class DispatchService implements OnModuleInit {
   // AP §9.12.6 «آلي» and «مختلط» (slice 2.15b): one pass of the automatic
   // dispatcher over the city's orders waiting for a captain, the earliest
   // search first: each gets one offer, to the best captain not yet offered
-  // it. The mode is read on every pass, so «يدوي» stops new offers (an open
-  // one runs its time). The number of offers sent.
+  // it. The mode is read before each order, so «يدوي» stops new offers at
+  // once (an open one runs its time). `now` is the pass's start; each order
+  // reads the clock again (now plus the time the pass has taken), so a slow
+  // pass never shortens an offer. A failing order is reported and passed
+  // over, never holding back the others. The number of offers sent.
   async autoDispatchCity(cityId: string, now: Date): Promise<number> {
-    const mode = await this.settings.get('dispatch.mode', { cityId });
-    if (mode === 'manual') {
+    const started = Date.now();
+    const clock = () => new Date(now.getTime() + (Date.now() - started));
+    if ((await this.settings.get('dispatch.mode', { cityId })) === 'manual') {
       this.retries.delete(cityId);
       return 0;
     }
@@ -564,13 +569,22 @@ export class DispatchService implements OnModuleInit {
     const manual = new Set(left.map((row) => row.orderId));
     let sent = 0;
     for (const order of waiting) {
-      if (manual.has(order.id) || (retries.get(order.id) ?? 0) > now.getTime()) continue;
-      const outcome = await this.autoDispatch(order, mode, now);
-      if (outcome === 'offered') {
-        retries.delete(order.id);
-        sent += 1;
-      } else if (outcome === 'none_left') {
-        retries.set(order.id, now.getTime() + AUTO_SEARCH_RETRY_MS);
+      if (manual.has(order.id)) continue;
+      const mode = await this.settings.get('dispatch.mode', { cityId });
+      if (mode === 'manual') break;
+      try {
+        const at = clock();
+        const waits = (retries.get(order.id) ?? 0) > at.getTime();
+        const outcome = await this.autoDispatch(order, mode, at, clock, waits);
+        if (outcome === 'offered') {
+          retries.delete(order.id);
+          sent += 1;
+        } else if (outcome === 'none_left') {
+          retries.set(order.id, at.getTime() + AUTO_SEARCH_RETRY_MS);
+        }
+      } catch (error) {
+        this.logger.error({ err: error, orderId: order.id }, 'automatic offer failed');
+        reportError(error);
       }
     }
     return sent;
@@ -582,10 +596,14 @@ export class DispatchService implements OnModuleInit {
   // included) never offered this order and without an open offer, nearest
   // to the restaurant first (the matrix, following pricing.distance_method),
   // then fewest orders today: the first whose offer opens under the locks.
+  // An order still waiting for its next search (`waits`) is only checked for
+  // «مختلط»'s fallback; `clock` gives each offer's moment.
   private async autoDispatch(
     order: DispatchOrder,
     mode: 'auto' | 'mixed',
     now: Date,
+    clock: () => Date,
+    waits: boolean,
   ): Promise<'offered' | 'none_left' | 'manual' | 'skipped'> {
     const maxFailed =
       mode === 'mixed'
@@ -604,6 +622,7 @@ export class DispatchService implements OnModuleInit {
         return 'manual';
       }
     }
+    if (waits) return 'skipped';
     const restaurant = await this.restaurantOf(order, now);
     const [candidates, offered] = await Promise.all([
       this.captains.candidates(
@@ -630,23 +649,28 @@ export class DispatchService implements OnModuleInit {
       this.settings.get('dispatch.offer_timeout_sec', { cityId: order.cityId }),
       this.captains.assignmentLock(order.cityId, now),
     ]);
+    let raced = false;
     for (const { candidate, metres } of ranked) {
       const pay =
         order.payTableId === null
           ? null
           : await this.captains.orderPay(order.payTableId, candidate.vehicle, order.tripMetres);
+      const at = clock();
       const result = await this.openAutoOffer(
         order,
         candidate.captainId,
         { pickupMetres: metres, pay },
         lockCaptain,
-        now,
-        new Date(now.getTime() + timeoutSec * 1000),
+        at,
+        new Date(at.getTime() + timeoutSec * 1000),
         maxFailed,
       );
-      if (result !== 'captain_taken') return result;
+      if (result === 'captain_busy') raced = true;
+      else if (result !== 'captain_taken') return result;
     }
-    return 'none_left';
+    // Owner decision 2026-11-11: the 30-second wait is for no captain left;
+    // captains lost only to another offer meanwhile are tried at once.
+    return raced ? 'skipped' : 'none_left';
   }
 
   // AP §9.12.6 ranking (dispatch.ranking nearest_then_fewest_today): the
@@ -679,9 +703,10 @@ export class DispatchService implements OnModuleInit {
 
   // Under the order's lock: still waiting for a captain with its search
   // started, still automatic, and in «مختلط» still short of
-  // dispatch.max_offers_before_manual; then under the captain's lock: free,
-  // without an open offer, and never offered this order. The order is
-  // offered (order.offered, actor the system).
+  // dispatch.max_offers_before_manual and its no-captain alert; then under
+  // the captain's lock: never offered this order, free and without an open
+  // offer (captain_busy when another offer took them meanwhile). The order
+  // is offered (order.offered, actor the system).
   private async openAutoOffer(
     order: DispatchOrder,
     captainId: string,
@@ -690,7 +715,7 @@ export class DispatchService implements OnModuleInit {
     now: Date,
     expiresAt: Date,
     maxFailed: number | null,
-  ): Promise<'offered' | 'captain_taken' | 'skipped' | 'manual'> {
+  ): Promise<'offered' | 'captain_taken' | 'captain_busy' | 'skipped' | 'manual'> {
     await this.jobs.ready();
     return this.database.db.transaction(async (tx) => {
       const locked = await this.assignments.lock(tx, order.id, order.placedAt);
@@ -706,8 +731,13 @@ export class DispatchService implements OnModuleInit {
       if (left) return 'skipped';
       if (maxFailed !== null) {
         const failed = await failedAutoOffers(tx, order.id);
-        if (failed >= maxFailed) {
-          await insertManual(tx, current, 'max_offers', failed, now);
+        const alerted = [current.searchAlertAt, current.noCaptainAlertAt].some(
+          (at) => at !== null && at <= now,
+        );
+        const reason: ManualReason | null =
+          failed >= maxFailed ? 'max_offers' : alerted ? 'no_captain_alert' : null;
+        if (reason !== null) {
+          await insertManual(tx, current, reason, failed, now);
           return 'manual';
         }
       }
@@ -720,7 +750,9 @@ export class DispatchService implements OnModuleInit {
       try {
         await this.lockFreeCaptain(tx, lockCaptain, captainId);
       } catch (error) {
-        if (error instanceof DispatchRefusedError) return 'captain_taken';
+        if (error instanceof DispatchRefusedError) {
+          return error.refusal === 'captain_has_offer' ? 'captain_busy' : 'captain_taken';
+        }
         throw error;
       }
       await this.openOffer(tx, current, { captainId, kind: 'auto' }, shown, now, expiresAt);

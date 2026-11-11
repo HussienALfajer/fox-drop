@@ -639,7 +639,7 @@ describe('last-order mode when the order leaves the captain', () => {
     expect((await ops.reassign(order.id, withdrawal)).statusCode).toBe(200);
     expect(
       (await app.get(CaptainsService).state(captain.captainId, new Date())).availability,
-    ).toEqual({ state: 'offline' });
+    ).toEqual({ state: 'offline', offersExpired: null });
     expect(await periodEnd(captain.captainId)).toBe('last_order');
     expect(await heard(captain.captainId)).toEqual(['captain.availability_changed']);
   });
