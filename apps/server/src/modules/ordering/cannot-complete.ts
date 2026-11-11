@@ -2,6 +2,7 @@ import { and, eq, inArray, isNull } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { CaptainsService } from '../captains/index.js';
 import { closeEmergency } from './emergencies.js';
+import { closeNoAnswer } from './no-answer.js';
 import { cannotCompleteRequests, type cannotCompleteHows } from './schema.js';
 
 type Executor = Pick<NodePgDatabase, 'select'>;
@@ -98,6 +99,8 @@ export async function leaveCaptain(
 ): Promise<() => Promise<void>> {
   const open = await closeCannotComplete(tx, key, how, now);
   const emergency = await closeEmergency(tx, key, how, now);
+  // CA §9.9 (slice 2.13d): a «الزبون لا يستجيب» still open ends with it.
+  await closeNoAnswer(tx, key, 'ended', now);
   if (emergency?.captainId === captainId) {
     return captains.offlineAfterProblem(tx, captainId, 'emergency', now);
   }

@@ -1,6 +1,12 @@
 import { and, asc, desc, eq, gte, inArray, isNull } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { doorPings, noAnswerReports, orders, type pingAnswers } from './schema.js';
+import {
+  doorPings,
+  type noAnswerCloseHows,
+  noAnswerReports,
+  orders,
+  type pingAnswers,
+} from './schema.js';
 
 type Executor = Pick<NodePgDatabase, 'select'>;
 
@@ -163,6 +169,7 @@ export async function openNoAnswerReports(
           keys.map((key) => key.placedAt),
         ),
         isNull(noAnswerReports.waitedAt),
+        isNull(noAnswerReports.closedAt),
       ),
     );
   return new Map(rows.map((row) => [row.orderId, row]));
@@ -182,7 +189,10 @@ export async function noAnswerHistory(
   key: { id: string; placedAt: Date },
 ): Promise<{
   pings: (DoorPing & { captainId: string })[];
-  reports: (NoAnswerReport & { captainId: string })[];
+  reports: (NoAnswerReport & {
+    captainId: string;
+    closedHow: (typeof noAnswerCloseHows)[number] | null;
+  })[];
 }> {
   const [pings, reports] = await Promise.all([
     executor
@@ -201,6 +211,7 @@ export async function noAnswerHistory(
         at: noAnswerReports.reportedAt,
         waitedAt: noAnswerReports.waitedAt,
         waitMessage: noAnswerReports.waitMessage,
+        closedHow: noAnswerReports.closedHow,
       })
       .from(noAnswerReports)
       .where(
@@ -209,6 +220,28 @@ export async function noAnswerHistory(
       .orderBy(asc(noAnswerReports.reportedAt), asc(noAnswerReports.id)),
   ]);
   return { pings, reports };
+}
+
+// The order left the door with a report open (slice 2.13d): another captain
+// received it, or it ended. In that transaction, so the next captain's door
+// starts clean and the history tells it from operations' «انتظر».
+export async function closeNoAnswer(
+  tx: Pick<NodePgDatabase, 'update'>,
+  key: { id: string; placedAt: Date },
+  how: (typeof noAnswerCloseHows)[number],
+  now: Date,
+): Promise<void> {
+  await tx
+    .update(noAnswerReports)
+    .set({ closedAt: now, closedHow: how })
+    .where(
+      and(
+        eq(noAnswerReports.orderId, key.id),
+        eq(noAnswerReports.orderPlacedAt, key.placedAt),
+        isNull(noAnswerReports.waitedAt),
+        isNull(noAnswerReports.closedAt),
+      ),
+    );
 }
 
 // When the order's captain arrived at the customer (null before).

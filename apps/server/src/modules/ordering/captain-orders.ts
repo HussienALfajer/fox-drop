@@ -37,6 +37,7 @@ import {
   arrivedAtCustomer,
   canPing,
   canReport,
+  closeNoAnswer,
   noAnswerFacts,
   type NoAnswerRule,
   type NoAnswerState,
@@ -640,6 +641,8 @@ export class CaptainOrders {
       // إكمال الطلب» closes with the receipt (slice 2.13b).
       await closeCannotComplete(tx, locked, 'handed_over', now);
       await closeEmergency(tx, locked, 'handed_over', now);
+      // CA §9.9: the second captain's door starts again (slice 2.13d).
+      await closeNoAnswer(tx, locked, 'handed_over', now);
       afterCommit = await this.captains.offlineAfterHandover(tx, handover.fromCaptainId, now);
       await keepKey(tx, command.accountId, command.idempotencyKey, requestHash, order, now);
       return true;

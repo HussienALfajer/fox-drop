@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -15,6 +16,7 @@ part 'admin_order_dto_output_order_no_answer_reports_inner.g.dart';
 /// * [at]
 /// * [waitedAt]
 /// * [waitMessage] - Operations' «انتظر» message.
+/// * [closedHow] - The order left the door before «انتظر»: another captain received it, or it ended.
 @BuiltValue()
 abstract class AdminOrderDtoOutputOrderNoAnswerReportsInner
     implements
@@ -34,6 +36,11 @@ abstract class AdminOrderDtoOutputOrderNoAnswerReportsInner
   /// Operations' «انتظر» message.
   @BuiltValueField(wireName: r'waitMessage')
   String? get waitMessage;
+
+  /// The order left the door before «انتظر»: another captain received it, or it ended.
+  @BuiltValueField(wireName: r'closedHow')
+  AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum? get closedHow;
+  // enum closedHowEnum {  handed_over,  ended,  };
 
   AdminOrderDtoOutputOrderNoAnswerReportsInner._();
 
@@ -91,6 +98,15 @@ class _$AdminOrderDtoOutputOrderNoAnswerReportsInnerSerializer
         : serializers.serialize(
             object.waitMessage,
             specifiedType: const FullType.nullable(String),
+          );
+    yield r'closedHow';
+    yield object.closedHow == null
+        ? null
+        : serializers.serialize(
+            object.closedHow,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum,
+            ),
           );
   }
 
@@ -157,6 +173,18 @@ class _$AdminOrderDtoOutputOrderNoAnswerReportsInnerSerializer
           if (valueDes == null) continue;
           result.waitMessage = valueDes;
           break;
+        case r'closedHow':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum?;
+          if (valueDes == null) continue;
+          result.closedHow = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -184,4 +212,30 @@ class _$AdminOrderDtoOutputOrderNoAnswerReportsInnerSerializer
     );
     return result.build();
   }
+}
+
+/// The order left the door before «انتظر»: another captain received it, or it ended.
+class AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum
+    extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'handed_over')
+  static const AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum
+  handedOver =
+      _$adminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum_handedOver;
+  @BuiltValueEnumConst(wireName: r'ended')
+  static const AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum ended =
+      _$adminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum_ended;
+
+  static Serializer<AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum>
+  get serializer =>
+      _$adminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnumSerializer;
+
+  const AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum._(String name)
+    : super(name);
+
+  static BuiltSet<AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum>
+  get values =>
+      _$adminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnumValues;
+  static AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum valueOf(
+    String name,
+  ) => _$adminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnumValueOf(name);
 }

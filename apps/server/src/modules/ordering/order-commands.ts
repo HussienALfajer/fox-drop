@@ -1788,6 +1788,7 @@ export class OrderCommands {
                   eq(noAnswerReports.orderId, order.id),
                   eq(noAnswerReports.orderPlacedAt, order.placedAt),
                   isNull(noAnswerReports.waitedAt),
+                  isNull(noAnswerReports.closedAt),
                 ),
               );
           },

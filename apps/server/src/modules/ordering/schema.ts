@@ -1217,9 +1217,12 @@ export const doorPings = ordering.table(
 // CA §9.9 «الزبون لا يستجيب» (slice 2.13d): the captain told operations the
 // customer does not answer, which opens the warning «زبون لا يرد» until
 // operations answer «انتظر» with a message for the captain (owner decision
-// 2026-11-11: the outcome stays «تحديد النتيجة»). At most one waiting per
-// order (a partial unique index). The application role may update only the
-// wait.
+// 2026-11-11: the outcome stays «تحديد النتيجة»), or the order leaves the
+// door first: another captain receives it (`handed_over`) or it ends
+// (`ended`). At most one open per order (a partial unique index). The
+// application role may update only the wait and the closing.
+export const noAnswerCloseHows = ['handed_over', 'ended'] as const;
+
 export const noAnswerReports = ordering.table(
   'no_answer_reports',
   {
@@ -1235,6 +1238,8 @@ export const noAnswerReports = ordering.table(
     waitMessage: text('wait_message'),
     // The admin account that answered «انتظر».
     waitedBy: uuid('waited_by'),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    closedHow: text('closed_how', { enum: noAnswerCloseHows }),
   },
   (table) => [
     foreignKey({
@@ -1243,13 +1248,19 @@ export const noAnswerReports = ordering.table(
     }),
     uniqueIndex('no_answer_reports_one_open_per_order')
       .on(table.orderId)
-      .where(sql`${table.waitedAt} IS NULL`),
+      .where(sql`${table.waitedAt} IS NULL AND ${table.closedAt} IS NULL`),
     index('no_answer_reports_order').on(table.orderId, table.orderPlacedAt, table.reportedAt),
     check(
       'no_answer_reports_wait',
       sql`(${table.waitedAt} IS NULL) = (${table.waitMessage} IS NULL)
         AND (${table.waitedAt} IS NULL) = (${table.waitedBy} IS NULL)
         AND (${table.waitMessage} IS NULL OR length(${table.waitMessage}) BETWEEN 1 AND 300)`,
+    ),
+    check(
+      'no_answer_reports_closed',
+      sql`(${table.closedAt} IS NULL) = (${table.closedHow} IS NULL)
+        AND (${table.closedHow} IS NULL OR ${table.closedHow} IN ('handed_over', 'ended'))
+        AND (${table.closedAt} IS NULL OR ${table.waitedAt} IS NULL)`,
     ),
   ],
 );

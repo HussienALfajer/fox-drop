@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api.dart';
 import '../auth.dart';
+import '../orders/order_live.dart';
 import '../router.dart';
 
 /// The installation's push (`packages/core_push`): `main` gives the one
@@ -72,15 +73,22 @@ final pushTapsProvider = Provider<void>((ref) {
 });
 
 /// CU §11.7 (slice 2.13d): the door ping that arrives while the app is open
-/// opens its order, whose screen rings full screen; the system shows no
-/// notification in the foreground.
+/// opens its order over the screen the customer is on, whose screen rings
+/// full screen; an order screen already open reads the order now, its socket
+/// may be down. The system shows no notification in the foreground.
 final doorPingsProvider = Provider<void>((ref) {
   final push = ref.watch(pushProvider);
   final router = ref.watch(routerProvider);
   final pings = push.received.listen((data) {
-    if (data['kind'] != 'door_ping') return;
+    final orderId = data['orderId'];
     final path = pushTargetPath(data);
-    if (path != null) router.go(path);
+    if (data['kind'] != 'door_ping' || orderId == null || path == null) return;
+    final here = router.state.uri.toString();
+    if (here == path) {
+      unawaited(ref.read(orderFeedProvider(orderId)).refresh());
+    } else {
+      unawaited(router.push(path));
+    }
   });
   ref.onDispose(pings.cancel);
 });

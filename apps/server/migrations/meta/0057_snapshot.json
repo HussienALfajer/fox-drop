@@ -1,5 +1,5 @@
 {
-  "id": "7a84f917-c414-45c5-a827-b0e7bce963b6",
+  "id": "c97621a8-8965-437c-9af7-7135ebb4560e",
   "prevId": "72668fb7-9391-4164-8ba9-2c1d1d504a22",
   "version": "7",
   "dialect": "postgresql",
@@ -8828,6 +8828,18 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
+        },
+        "closed_at": {
+          "name": "closed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "closed_how": {
+          "name": "closed_how",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -8842,7 +8854,7 @@
             }
           ],
           "isUnique": true,
-          "where": "\"ordering\".\"no_answer_reports\".\"waited_at\" IS NULL",
+          "where": "\"ordering\".\"no_answer_reports\".\"waited_at\" IS NULL AND \"ordering\".\"no_answer_reports\".\"closed_at\" IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -8900,6 +8912,10 @@
         "no_answer_reports_wait": {
           "name": "no_answer_reports_wait",
           "value": "(\"ordering\".\"no_answer_reports\".\"waited_at\" IS NULL) = (\"ordering\".\"no_answer_reports\".\"wait_message\" IS NULL)\n        AND (\"ordering\".\"no_answer_reports\".\"waited_at\" IS NULL) = (\"ordering\".\"no_answer_reports\".\"waited_by\" IS NULL)\n        AND (\"ordering\".\"no_answer_reports\".\"wait_message\" IS NULL OR length(\"ordering\".\"no_answer_reports\".\"wait_message\") BETWEEN 1 AND 300)"
+        },
+        "no_answer_reports_closed": {
+          "name": "no_answer_reports_closed",
+          "value": "(\"ordering\".\"no_answer_reports\".\"closed_at\" IS NULL) = (\"ordering\".\"no_answer_reports\".\"closed_how\" IS NULL)\n        AND (\"ordering\".\"no_answer_reports\".\"closed_how\" IS NULL OR \"ordering\".\"no_answer_reports\".\"closed_how\" IN ('handed_over', 'ended'))\n        AND (\"ordering\".\"no_answer_reports\".\"closed_at\" IS NULL OR \"ordering\".\"no_answer_reports\".\"waited_at\" IS NULL)"
         }
       },
       "isRLSEnabled": false

@@ -101,9 +101,24 @@ void main() {
     push.receive({'target': 'order', 'orderId': _orderId});
     await tester.pumpAndSettle();
     expect(_location(app), isNot('/orders/$_orderId'));
-    push.receive({'target': 'order', 'orderId': _orderId, 'kind': 'door_ping'});
+    final ping = {'target': 'order', 'orderId': _orderId, 'kind': 'door_ping'};
+    push.receive(ping);
     await tester.pumpAndSettle();
-    expect(_location(app), '/orders/$_orderId');
+    final router = app.container.read(routerProvider);
+    // Over the screen the customer was on, which stays below.
+    expect(router.state.uri.toString(), '/orders/$_orderId');
+    expect(router.canPop(), isTrue);
+    // Already on the order: it is read again, no second screen.
+    final reads = app.server.to('/v1/customer/orders/$_orderId').length;
+    push.receive(ping);
+    await tester.pumpAndSettle();
+    expect(
+      app.server.to('/v1/customer/orders/$_orderId').length,
+      greaterThan(reads),
+    );
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(router.canPop(), isFalse);
     await app.done(tester);
   });
 

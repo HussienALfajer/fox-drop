@@ -16,6 +16,12 @@ export const pingAnswerKeys = {
   contacting_recipient: 'order.noAnswer.contactingRecipient',
 } as const satisfies Record<PingAnswer, string>;
 
+// A report the order left before «انتظر» (slice 2.13d).
+export const closedHowKeys = {
+  handed_over: 'order.noAnswer.closedHandedOver',
+  ended: 'order.noAnswer.closedEnded',
+} as const satisfies Record<NonNullable<NoAnswer['reports'][number]['closedHow']>, string>;
+
 // CA §9.9 «انتظر»: OWN and OPS, while the captain's «الزبون لا يستجيب»
 // waits (owner decision 2026-11-11).
 export function canWaitForCustomer(

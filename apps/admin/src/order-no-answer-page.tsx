@@ -1,6 +1,12 @@
 import { type FormEvent, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type NoAnswer, pingAnswerKeys, useWaitForCustomer, waitBody } from './order-no-answer.js';
+import {
+  closedHowKeys,
+  type NoAnswer,
+  pingAnswerKeys,
+  useWaitForCustomer,
+  waitBody,
+} from './order-no-answer.js';
 
 // CA §9.9, AP §9.3.1 (slice 2.13d): the captain's pings at the door with the
 // customer's answers, and each «الزبون لا يستجيب» with operations' «انتظر».
@@ -45,6 +51,7 @@ export function NoAnswerSection({
                 })}
               </span>
             )}
+            {report.closedHow && <span> {t(closedHowKeys[report.closedHow])}</span>}
           </li>
         ))}
       </ul>

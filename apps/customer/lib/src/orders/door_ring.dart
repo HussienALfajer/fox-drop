@@ -138,7 +138,10 @@ class _DoorRingGateState extends ConsumerState<DoorRingGate> {
     final order = widget.order;
     final now = ref.watch(serverClockProvider).now();
     final ping = ringingPing(order, now, _done);
-    _follow(ping, now);
+    // The sound follows the frame, never the build itself.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _follow(ping, now);
+    });
     if (ping == null) return widget.child;
     final l10n = AppLocalizations.of(context);
     final recipient = order.address.recipientName;

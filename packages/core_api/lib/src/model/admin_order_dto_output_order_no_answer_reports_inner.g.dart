@@ -6,6 +6,81 @@ part of 'admin_order_dto_output_order_no_answer_reports_inner.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum
+_$adminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum_handedOver =
+    const AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum._(
+      'handedOver',
+    );
+const AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum
+_$adminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum_ended =
+    const AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum._('ended');
+
+AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum
+_$adminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnumValueOf(
+  String name,
+) {
+  switch (name) {
+    case 'handedOver':
+      return _$adminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum_handedOver;
+    case 'ended':
+      return _$adminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum_ended;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum>
+_$adminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnumValues =
+    BuiltSet<AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum>(
+      const <AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum>[
+        _$adminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum_handedOver,
+        _$adminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum_ended,
+      ],
+    );
+
+Serializer<AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum>
+_$adminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnumSerializer =
+    _$AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnumSerializer();
+
+class _$AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnumSerializer
+    implements
+        PrimitiveSerializer<
+          AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum
+        > {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'handedOver': 'handed_over',
+    'ended': 'ended',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'handed_over': 'handedOver',
+    'ended': 'ended',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum,
+  ];
+  @override
+  final String wireName =
+      'AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$AdminOrderDtoOutputOrderNoAnswerReportsInner
     extends AdminOrderDtoOutputOrderNoAnswerReportsInner {
   @override
@@ -16,6 +91,8 @@ class _$AdminOrderDtoOutputOrderNoAnswerReportsInner
   final DateTime? waitedAt;
   @override
   final String? waitMessage;
+  @override
+  final AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum? closedHow;
 
   factory _$AdminOrderDtoOutputOrderNoAnswerReportsInner([
     void Function(AdminOrderDtoOutputOrderNoAnswerReportsInnerBuilder)? updates,
@@ -27,6 +104,7 @@ class _$AdminOrderDtoOutputOrderNoAnswerReportsInner
     required this.at,
     this.waitedAt,
     this.waitMessage,
+    this.closedHow,
   }) : super._();
   @override
   AdminOrderDtoOutputOrderNoAnswerReportsInner rebuild(
@@ -44,7 +122,8 @@ class _$AdminOrderDtoOutputOrderNoAnswerReportsInner
         captainId == other.captainId &&
         at == other.at &&
         waitedAt == other.waitedAt &&
-        waitMessage == other.waitMessage;
+        waitMessage == other.waitMessage &&
+        closedHow == other.closedHow;
   }
 
   @override
@@ -54,6 +133,7 @@ class _$AdminOrderDtoOutputOrderNoAnswerReportsInner
     _$hash = $jc(_$hash, at.hashCode);
     _$hash = $jc(_$hash, waitedAt.hashCode);
     _$hash = $jc(_$hash, waitMessage.hashCode);
+    _$hash = $jc(_$hash, closedHow.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -66,7 +146,8 @@ class _$AdminOrderDtoOutputOrderNoAnswerReportsInner
           ..add('captainId', captainId)
           ..add('at', at)
           ..add('waitedAt', waitedAt)
-          ..add('waitMessage', waitMessage))
+          ..add('waitMessage', waitMessage)
+          ..add('closedHow', closedHow))
         .toString();
   }
 }
@@ -95,6 +176,13 @@ class AdminOrderDtoOutputOrderNoAnswerReportsInnerBuilder
   String? get waitMessage => _$this._waitMessage;
   set waitMessage(String? waitMessage) => _$this._waitMessage = waitMessage;
 
+  AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum? _closedHow;
+  AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum? get closedHow =>
+      _$this._closedHow;
+  set closedHow(
+    AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum? closedHow,
+  ) => _$this._closedHow = closedHow;
+
   AdminOrderDtoOutputOrderNoAnswerReportsInnerBuilder() {
     AdminOrderDtoOutputOrderNoAnswerReportsInner._defaults(this);
   }
@@ -106,6 +194,7 @@ class AdminOrderDtoOutputOrderNoAnswerReportsInnerBuilder
       _at = $v.at;
       _waitedAt = $v.waitedAt;
       _waitMessage = $v.waitMessage;
+      _closedHow = $v.closedHow;
       _$v = null;
     }
     return this;
@@ -142,6 +231,7 @@ class AdminOrderDtoOutputOrderNoAnswerReportsInnerBuilder
           ),
           waitedAt: waitedAt,
           waitMessage: waitMessage,
+          closedHow: closedHow,
         );
     replace(_$result);
     return _$result;

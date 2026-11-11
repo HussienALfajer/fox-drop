@@ -647,3 +647,89 @@ describe('«الزبون لا يستجيب» and «انتظر» (CA §9.9, AP §
     ).rejects.toThrow(/permission denied/);
   });
 });
+
+describe('«الزبون لا يستجيب» across a handover and out of scope (CA §9.9)', () => {
+  it("closes the first captain's report at the receipt, so the second can report", async () => {
+    const { order, captain, ops } = await atTheDoor();
+    await waitedAtDoor(order.id, 16);
+    await earlierPings(order.id, captain.captainId, [15, 10, 5]);
+    expect((await report(captain, order.id)).statusCode).toBe(200);
+    const second = await onlineCaptain(home);
+    const handedOver = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/orders/${order.id}/handover`,
+      cookies: ops.cookies,
+      headers: { 'idempotency-key': randomUUID() },
+      payload: { captainId: second.captainId, reason: 'تعطلت الدراجة', captainFault: false },
+    });
+    expect(handedOver.statusCode).toBe(200);
+    expect(
+      (await captainPost(second, order.id, 'receive-handover', { location: atHome() })).statusCode,
+    ).toBe(200);
+    const { rows } = await sql.query(
+      'SELECT closed_how, waited_at FROM ordering.no_answer_reports WHERE order_id = $1',
+      [order.id],
+    );
+    expect(rows).toEqual([{ closed_how: 'handed_over', waited_at: null }]);
+    expect(
+      (
+        await captainPost(second, order.id, 'arrive-at-customer', {
+          location: atHome(),
+          away: null,
+        })
+      ).statusCode,
+    ).toBe(200);
+    await waitedAtDoor(order.id, 16);
+    await earlierPings(order.id, second.captainId, [15, 10, 5]);
+    expect((await report(second, order.id)).statusCode).toBe(200);
+    expect((await ops.detail(order.id)).noAnswer.waitAllowed).toBe(true);
+  });
+
+  it('closes a report still open when the order ends', async () => {
+    const { order, captain } = await atTheDoor();
+    await waitedAtDoor(order.id, 16);
+    await earlierPings(order.id, captain.captainId, [15, 10, 5]);
+    expect((await report(captain, order.id)).statusCode).toBe(200);
+    const delivered = await captainPost(captain, order.id, 'deliver', {
+      received: [{ currency: 'TRY', amount: '28000' }],
+      change: [],
+      amountDue: { amount: '28000', currency: 'TRY' },
+      shortfall: null,
+      away: null,
+      location: atHome(),
+    });
+    expect(delivered.statusCode).toBe(200);
+    const { rows } = await sql.query(
+      'SELECT closed_how FROM ordering.no_answer_reports WHERE order_id = $1',
+      [order.id],
+    );
+    expect(rows).toEqual([{ closed_how: 'ended' }]);
+  });
+
+  it("refuses another customer's answer and another captain's door", async () => {
+    const { order, captain } = await atTheDoor();
+    expect((await ping(captain, order.id)).statusCode).toBe(200);
+    const stranger = await appSignIn('customer', phoneNumber());
+    expect((await answer(stranger, order.id)).statusCode).toBe(404);
+    const other = await onlineCaptain(home);
+    expect((await ping(other, order.id)).statusCode).toBe(404);
+    expect((await report(other, order.id)).statusCode).toBe(404);
+  });
+
+  it("gives the customer the captain's number from the pickup until the order ends only", async () => {
+    const { order, captain } = await captainAtRestaurant();
+    expect((await customerOrder(order.customer, order.id)).captain.phone).toBeNull();
+    expect((await captain.requestPickup(order.id)).statusCode).toBe(200);
+    await app.inject({
+      method: 'POST',
+      url: `/v1/merchant/orders/${order.id}/pickup/confirm`,
+      headers: { ...order.cashier, 'idempotency-key': randomUUID() },
+    });
+    expect((await customerOrder(order.customer, order.id)).captain.phone).toMatch(/^\+963/);
+    await sql.query(
+      "UPDATE ordering.orders SET status = 'delivered', captain_track = 'done', delivered_at = now(), outcome = 'normal' WHERE id = $1",
+      [order.id],
+    );
+    expect((await customerOrder(order.customer, order.id)).captain.phone).toBeNull();
+  });
+});

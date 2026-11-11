@@ -23201,13 +23201,29 @@
                             "string",
                             "null"
                           ]
+                        },
+                        "closedHow": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "handed_over",
+                                "ended"
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "The order left the door before «انتظر»: another captain received it, or it ended."
                         }
                       },
                       "required": [
                         "captainId",
                         "at",
                         "waitedAt",
-                        "waitMessage"
+                        "waitMessage",
+                        "closedHow"
                       ],
                       "additionalProperties": false
                     },

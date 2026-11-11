@@ -6795,6 +6795,8 @@ export interface components {
                         waitedAt: string | null;
                         /** @description Operations' «انتظر» message. */
                         waitMessage: string | null;
+                        /** @description The order left the door before «انتظر»: another captain received it, or it ended. */
+                        closedHow: ("handed_over" | "ended") | null;
                     }[];
                     /** @description «انتظر» is open: the order's captain at the door has a report waiting. */
                     waitAllowed: boolean;

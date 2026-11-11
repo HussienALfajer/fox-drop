@@ -891,6 +891,12 @@ class AdminOrderDto extends createZodDto(
                 at: z.iso.datetime(),
                 waitedAt: z.iso.datetime().nullable(),
                 waitMessage: z.string().nullable().describe("Operations' «انتظر» message."),
+                closedHow: z
+                  .enum(['handed_over', 'ended'])
+                  .nullable()
+                  .describe(
+                    'The order left the door before «انتظر»: another captain received it, or it ended.',
+                  ),
               }),
             )
             .describe("Every «الزبون لا يستجيب», oldest first, with operations' «انتظر»."),
@@ -2252,6 +2258,7 @@ export class AdminOrdersController {
             at: report.at.toISOString(),
             waitedAt: report.waitedAt?.toISOString() ?? null,
             waitMessage: report.waitMessage,
+            closedHow: report.closedHow,
           })),
           waitAllowed: order.noAnswer !== null,
         },

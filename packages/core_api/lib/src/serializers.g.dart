@@ -169,6 +169,10 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderNoAnswerPingsInner.serializer)
           ..add(AdminOrderDtoOutputOrderNoAnswerPingsInnerAnswerEnum.serializer)
           ..add(AdminOrderDtoOutputOrderNoAnswerReportsInner.serializer)
+          ..add(
+            AdminOrderDtoOutputOrderNoAnswerReportsInnerClosedHowEnum
+                .serializer,
+          )
           ..add(AdminOrderDtoOutputOrderOnBehalf.serializer)
           ..add(AdminOrderDtoOutputOrderOnBehalfPrepTime.serializer)
           ..add(AdminOrderDtoOutputOrderOutcome.serializer)
