@@ -181,7 +181,15 @@ extension CaptainTexts on AppLocalizations {
       moneyOf(collect),
     ),
     CollectLowered(:final collect) => captainCollectLowered(moneyOf(collect)),
+    CustomerAnswered(:final answer) => pingAnswerText(answer),
+    WaitForCustomer(:final message) => captainOperationsWait(message),
   };
+
+  /// CA §9.9: the customer's answer to a ping.
+  String pingAnswerText(PingAnswer answer) =>
+      answer == PingAnswer.contactingRecipient
+      ? captainCustomerContactingRecipient
+      : captainCustomerComing;
 
   /// What to do about the cash paid to the restaurant on a cancelled order
   /// (CA §9.10), or null when there is nothing to say.

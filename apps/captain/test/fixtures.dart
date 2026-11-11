@@ -146,6 +146,7 @@ Map<String, Object?> orderJson({
   Map<String, Object?>? handover,
   Map<String, Object?>? cannotComplete,
   Map<String, Object?>? emergency,
+  Map<String, Object?>? noAnswer,
 }) {
   final atRestaurant = track != 'assigned';
   final atCustomer = track == 'at_customer';
@@ -216,6 +217,7 @@ Map<String, Object?> orderJson({
     'handover': handover,
     'cannotComplete': cannotComplete,
     'emergency': emergency,
+    'noAnswer': noAnswer,
   };
 }
 

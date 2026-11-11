@@ -198,6 +198,20 @@ class CollectLowered extends Alert {
   final Money collect;
 }
 
+/// «الزبون رأى التنبيه وهو قادم» or «الزبون يتواصل مع المستلم»: the
+/// customer answered a ping (CA §9.9, §14 #13a, slice 2.13d).
+class CustomerAnswered extends Alert {
+  const CustomerAnswered(this.answer);
+  final PingAnswer answer;
+}
+
+/// «العمليات: انتظر الزبون. {الرسالة}»: operations' «انتظر» (CA §9.9, §14
+/// #13); the door shows it as a card too.
+class WaitForCustomer extends Alert {
+  const WaitForCustomer(this.message);
+  final String message;
+}
+
 /// The offers and orders answered on this phone, whose closing it does not
 /// announce as another's.
 class Answered {
@@ -306,6 +320,18 @@ List<Alert> alertStep(
   }
   if (was.pickup.disputedAt == null && order.pickup.disputedAt != null) {
     alerts.add(const PickupDisputed());
+  }
+  // CA §9.9: the customer's answer and operations' «انتظر» at the door.
+  final answer = order.noAnswer?.answer;
+  if (answer != null && was.noAnswer?.answer?.at != answer.at) {
+    alerts.add(CustomerAnswered(answer.answer));
+  }
+  final report = order.noAnswer?.report;
+  final message = report?.waitMessage;
+  if (report?.waitedAt != null &&
+      message != null &&
+      was.noAnswer?.report?.waitedAt != report!.waitedAt) {
+    alerts.add(WaitForCustomer(message));
   }
   return alerts;
 }

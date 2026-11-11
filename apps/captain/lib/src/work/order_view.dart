@@ -6,6 +6,7 @@ import '../api.dart';
 import '../auth.dart';
 import '../content.dart';
 import 'commands.dart';
+import 'door.dart';
 import 'door_payment.dart';
 import 'location.dart';
 import 'payment_form.dart';
@@ -444,6 +445,8 @@ class _AtCustomer extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _CustomerBlock(order: order),
+        // CA §9.9: the customer not answering; the payment stays open.
+        DoorPanel(order: order),
         const Divider(),
         PaymentForm(key: ValueKey('${order.id} payment'), order: order),
       ],

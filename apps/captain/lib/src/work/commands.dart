@@ -317,6 +317,29 @@ class Commands extends Notifier<Set<String>> {
     })).$2;
   }
 
+  /// CA §9.9 «تنبيه الزبون» (slice 2.13d): rings the customer's app; too
+  /// soon or none left answers the order, whose `noAnswer` says when.
+  Future<Notice?> pingCustomer(String orderId) => _withFix(
+    orderId,
+    'ping-customer',
+    (key, location) => _api.captainOrdersPingCustomer(
+      orderId: orderId,
+      idempotencyKey: key,
+      captainArriveDto: CaptainArriveDto((b) => b..location.replace(location)),
+    ),
+  );
+
+  /// CA §9.9 «الزبون لا يستجيب»: operations get «زبون لا يرد».
+  Future<Notice?> reportNoAnswer(String orderId) => _withFix(
+    orderId,
+    'customer-not-answering',
+    (key, location) => _api.captainOrdersReportNoAnswer(
+      orderId: orderId,
+      idempotencyKey: key,
+      captainArriveDto: CaptainArriveDto((b) => b..location.replace(location)),
+    ),
+  );
+
   /// «تراجع»: the captain withdraws their «لا أستطيع إكمال الطلب».
   Future<Notice?> withdrawCannotComplete(String orderId) => _withFix(
     orderId,
