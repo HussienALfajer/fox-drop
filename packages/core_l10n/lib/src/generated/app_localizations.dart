@@ -346,6 +346,12 @@ abstract class AppLocalizations {
   /// **'سُجّل دخولك من جهاز آخر'**
   String get captainSignedInElsewhere;
 
+  /// A sign-in on a second device refused during an active order (CA §4.9; owner decision 2026-11-11).
+  ///
+  /// In ar, this message translates to:
+  /// **'لديك طلب نشط على جهاز آخر. اتصل بالعمليات لتحرير جهازك القديم.'**
+  String get captainActiveOrderElsewhere;
+
   /// The captain's contract ended (CA §4.9).
   ///
   /// In ar, this message translates to:

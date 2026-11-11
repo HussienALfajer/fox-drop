@@ -100,6 +100,33 @@ void main() {
     expect(find.textContaining('إعادة الإرسال'), findsNothing);
   });
 
+  testWidgets('a second device is refused during an active order (CA §4.9)', (
+    tester,
+  ) async {
+    final app = TestApp();
+    await app.pump(tester, stored: {});
+    app.server.on('/v1/captain/auth/code', [FakeAnswer(200, _codeSent())]);
+    app.server.on('/v1/captain/auth/sign-in', [
+      const FakeAnswer(403, {'error': 'active_order_elsewhere'}),
+    ]);
+    await tester.enterText(
+      find.byKey(const Key('sign-in-phone')),
+      '0944123456',
+    );
+    await tester.tap(find.text('إرسال الرمز'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('sign-in-code')), '123456');
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'لديك طلب نشط على جهاز آخر. اتصل بالعمليات لتحرير جهازك القديم.',
+      ),
+      findsOneWidget,
+    );
+    await app.done(tester);
+  });
+
   testWidgets('a sign-in on another device signs this one out', (tester) async {
     final app = TestApp();
     app.work(availability: [availabilityJson()]);

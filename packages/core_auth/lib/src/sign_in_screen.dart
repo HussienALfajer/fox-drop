@@ -220,6 +220,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       'restaurant_draft' => l10n.merchantRestaurantDraft,
       'restaurant_terminated' => l10n.merchantRestaurantTerminated,
       'contract_ended' => l10n.captainContractEnded,
+      'active_order_elsewhere' => l10n.captainActiveOrderElsewhere,
       _ => l10n.signInError,
     };
   }

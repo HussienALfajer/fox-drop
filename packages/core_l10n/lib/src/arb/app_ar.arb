@@ -84,6 +84,8 @@
   "@merchantDeviceNameHint": { "description": "Examples of a device name (RA §5.2 item 5)." },
   "captainSignedInElsewhere": "سُجّل دخولك من جهاز آخر",
   "@captainSignedInElsewhere": { "description": "The captain signed in on another device (CA §4.9, CA Appendix B)." },
+  "captainActiveOrderElsewhere": "لديك طلب نشط على جهاز آخر. اتصل بالعمليات لتحرير جهازك القديم.",
+  "@captainActiveOrderElsewhere": { "description": "A sign-in on a second device refused during an active order (CA §4.9; owner decision 2026-11-11)." },
   "captainContractEnded": "انتهى تعاقدك مع FOX DROP.",
   "@captainContractEnded": { "description": "The captain's contract ended (CA §4.9)." },
   "captainNotRegistered": "هذا الرقم غير مسجّل ككابتن في FOX DROP",
