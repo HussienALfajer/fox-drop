@@ -113,7 +113,12 @@ export type OrderEventType =
   | 'order.handover_offered'
   | 'order.handover_assigned'
   | 'order.handover_closed'
-  | 'order.handed_over';
+  | 'order.handed_over'
+  // CA §9.11 (slice 2.13b): the captain's «لا أستطيع إكمال الطلب» (its
+  // reason's code published to operations and the captain) and its «تراجع»;
+  // the status stays.
+  | 'order.cannot_complete_requested'
+  | 'order.cannot_complete_withdrawn';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that

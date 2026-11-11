@@ -83,6 +83,7 @@ import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices.d
 import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices_reasons_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancellation.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancellation_by.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_cannot_complete.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer_address.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer_arrival.dart';
@@ -192,6 +193,7 @@ import 'package:core_api/src/model/captain_active_order_dto_output_ended_pay.dar
 import 'package:core_api/src/model/captain_active_order_dto_output_handed_over.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_cannot_complete.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_customer_address.dart';
@@ -223,6 +225,7 @@ import 'package:core_api/src/model/captain_availability_dto_output_custody_close
 import 'package:core_api/src/model/captain_availability_dto_output_custody_limit.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_custody_remit_tolerance.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_custody_usage.dart';
+import 'package:core_api/src/model/captain_cannot_complete_dto.dart';
 import 'package:core_api/src/model/captain_code_request_dto.dart';
 import 'package:core_api/src/model/captain_code_sent_dto_output.dart';
 import 'package:core_api/src/model/captain_content_dto_output.dart';
@@ -523,6 +526,7 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderCancelChoicesReasonsInner,
   AdminOrderDtoOutputOrderCancellation,
   AdminOrderDtoOutputOrderCancellationBy,
+  AdminOrderDtoOutputOrderCannotComplete,
   AdminOrderDtoOutputOrderCustomer,
   AdminOrderDtoOutputOrderCustomerAddress,
   AdminOrderDtoOutputOrderCustomerArrival,
@@ -632,6 +636,7 @@ part 'serializers.g.dart';
   CaptainActiveOrderDtoOutputHandedOver,
   CaptainActiveOrderDtoOutputOrder,
   CaptainActiveOrderDtoOutputOrderArrival,
+  CaptainActiveOrderDtoOutputOrderCannotComplete,
   CaptainActiveOrderDtoOutputOrderCollect,
   CaptainActiveOrderDtoOutputOrderCustomer,
   CaptainActiveOrderDtoOutputOrderCustomerAddress,
@@ -663,6 +668,7 @@ part 'serializers.g.dart';
   CaptainAvailabilityDtoOutputCustodyLimit,
   CaptainAvailabilityDtoOutputCustodyRemitTolerance,
   CaptainAvailabilityDtoOutputCustodyUsage,
+  CaptainCannotCompleteDto,
   CaptainCodeRequestDto,
   CaptainCodeSentDtoOutput,
   CaptainContentDtoOutput,

@@ -2,6 +2,7 @@ import { and, asc, desc, eq, inArray, ne, or, type SQL, sql } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { equivalent, type RateSnapshot } from '../fx/index.js';
 import type { Point } from '../geo/index.js';
+import { type OpenCannotComplete, openCannotCompletes } from './cannot-complete.js';
 import { type ItemReportNote, type ItemReportUntil, openItemReports } from './item-reports.js';
 import { type PendingEdit, pendingEdits } from './order-edits.js';
 import type { CaptainTrack } from './order-events.js';
@@ -177,6 +178,9 @@ export interface OrderView {
     accountId: string;
     device: string;
   } | null;
+  // CA §9.11 (slice 2.13b): the captain's open «لا أستطيع إكمال الطلب»
+  // («بانتظار العمليات»), or null.
+  cannotComplete: OpenCannotComplete | null;
   // RA §8.6, CU §11.9: the rejection's reason, its label, the customer's text
   // and the items «اطلب بدون الأصناف غير المتوفرة» leaves out.
   rejection: {
@@ -381,6 +385,10 @@ export async function readOrders(
   const reports = await openItemReports(
     executor,
     rows.filter((row) => row.acceptedAt !== null),
+  );
+  const problems = await openCannotCompletes(
+    executor,
+    rows.filter((row) => row.captainId !== null),
   );
   const edits = await pendingEdits(
     executor,
@@ -604,6 +612,7 @@ export async function readOrders(
             device: report.device,
           }
         : null,
+      cannotComplete: problems.get(row.id) ?? null,
       rejection:
         row.rejectedAt &&
         row.rejectReason &&

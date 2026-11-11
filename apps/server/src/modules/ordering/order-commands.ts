@@ -64,6 +64,7 @@ import {
 } from './outcome.js';
 import { OrderAssignments } from './order-assignments.js';
 import { canHandOver } from './handover.js';
+import { leaveCaptain } from './cannot-complete.js';
 import { baseTotal, linesOf } from './pickup-booking.js';
 import type { SearchStartJob } from './order-timers.js';
 import type { AfterCommit } from './delivery-booking.js';
@@ -847,6 +848,7 @@ export class OrderCommands {
         closeReason: handovers.closeReason,
         note: handovers.note,
         adminId: handovers.adminId,
+        captainFault: handovers.captainFault,
       })
       .from(handovers)
       .where(and(eq(handovers.orderId, order.id), eq(handovers.orderPlacedAt, order.placedAt)))
@@ -2669,7 +2671,16 @@ export class OrderCommands {
         !LEFT_CAPTAIN.includes(current.status) &&
         (LEFT_CAPTAIN.includes(to) || prepared.set.captainId === null)
       ) {
-        afterCommit = await this.captains.afterOrderLeft(tx, current.captainId, now);
+        // K17 (slice 2.13b): an open «لا أستطيع إكمال الطلب» takes them
+        // offline instead.
+        afterCommit = await leaveCaptain(
+          tx,
+          this.captains,
+          order,
+          current.captainId,
+          prepared.set.captainId === null ? 'reassigned' : 'ended',
+          now,
+        );
       }
       if (caller.kind === 'admin') {
         const { admin, context, reason } = caller.command;

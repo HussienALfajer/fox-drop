@@ -1059,6 +1059,34 @@ export class CaptainsService implements OnModuleInit {
     };
   }
 
+  // K17 (slice 2.13b): the order left a captain whose «لا أستطيع إكمال
+  // الطلب» was open: the online period ends with cannot_complete in that
+  // transaction, under the captain's lock, once no active order is left,
+  // whatever last-order mode it had. The listeners hear it (the app reads its
+  // state again); the answer runs after the commit.
+  async offlineAfterCannotComplete(
+    tx: Tx,
+    captainId: string,
+    now: Date,
+  ): Promise<() => Promise<void>> {
+    const row = await this.lockCaptain(tx, captainId);
+    if ((await this.activeOrders([captainId], tx)).size > 0) {
+      throw new Error(`captain ${captainId} still has an active order`);
+    }
+    const ended = await this.endOnline(tx, captainId, 'cannot_complete', now);
+    if (ended === null) return () => Promise.resolve();
+    await this.availabilityChanged(tx, {
+      kind: 'offline_after_order',
+      captainId,
+      cityId: row.cityId,
+      at: now,
+    });
+    return async () => {
+      await this.positions.remove(row.cityId, captainId, ended);
+      await this.wentOffline(captainId, now);
+    };
+  }
+
   // The captain's state and cash now (CA §7.1, AP §8.5.3–8.5.4).
   async state(captainId: string, now: Date): Promise<CaptainState> {
     const row = await this.row(this.database.db, captainId);

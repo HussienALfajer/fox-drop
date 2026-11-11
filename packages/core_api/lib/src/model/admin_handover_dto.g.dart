@@ -11,13 +11,18 @@ class _$AdminHandoverDto extends AdminHandoverDto {
   final String captainId;
   @override
   final String reason;
+  @override
+  final bool? captainFault;
 
   factory _$AdminHandoverDto([
     void Function(AdminHandoverDtoBuilder)? updates,
   ]) => (AdminHandoverDtoBuilder()..update(updates))._build();
 
-  _$AdminHandoverDto._({required this.captainId, required this.reason})
-    : super._();
+  _$AdminHandoverDto._({
+    required this.captainId,
+    required this.reason,
+    this.captainFault,
+  }) : super._();
   @override
   AdminHandoverDto rebuild(void Function(AdminHandoverDtoBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -31,7 +36,8 @@ class _$AdminHandoverDto extends AdminHandoverDto {
     if (identical(other, this)) return true;
     return other is AdminHandoverDto &&
         captainId == other.captainId &&
-        reason == other.reason;
+        reason == other.reason &&
+        captainFault == other.captainFault;
   }
 
   @override
@@ -39,6 +45,7 @@ class _$AdminHandoverDto extends AdminHandoverDto {
     var _$hash = 0;
     _$hash = $jc(_$hash, captainId.hashCode);
     _$hash = $jc(_$hash, reason.hashCode);
+    _$hash = $jc(_$hash, captainFault.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -47,7 +54,8 @@ class _$AdminHandoverDto extends AdminHandoverDto {
   String toString() {
     return (newBuiltValueToStringHelper(r'AdminHandoverDto')
           ..add('captainId', captainId)
-          ..add('reason', reason))
+          ..add('reason', reason)
+          ..add('captainFault', captainFault))
         .toString();
   }
 }
@@ -64,6 +72,10 @@ class AdminHandoverDtoBuilder
   String? get reason => _$this._reason;
   set reason(String? reason) => _$this._reason = reason;
 
+  bool? _captainFault;
+  bool? get captainFault => _$this._captainFault;
+  set captainFault(bool? captainFault) => _$this._captainFault = captainFault;
+
   AdminHandoverDtoBuilder() {
     AdminHandoverDto._defaults(this);
   }
@@ -73,6 +85,7 @@ class AdminHandoverDtoBuilder
     if ($v != null) {
       _captainId = $v.captainId;
       _reason = $v.reason;
+      _captainFault = $v.captainFault;
       _$v = null;
     }
     return this;
@@ -105,6 +118,7 @@ class AdminHandoverDtoBuilder
             r'AdminHandoverDto',
             'reason',
           ),
+          captainFault: captainFault,
         );
     replace(_$result);
     return _$result;

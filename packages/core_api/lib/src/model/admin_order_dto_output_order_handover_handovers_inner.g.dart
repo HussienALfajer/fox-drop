@@ -140,6 +140,8 @@ class _$AdminOrderDtoOutputOrderHandoverHandoversInner
   final String note;
   @override
   final String adminId;
+  @override
+  final bool? captainFault;
 
   factory _$AdminOrderDtoOutputOrderHandoverHandoversInner([
     void Function(AdminOrderDtoOutputOrderHandoverHandoversInnerBuilder)?
@@ -161,6 +163,7 @@ class _$AdminOrderDtoOutputOrderHandoverHandoversInner
     this.closeReason,
     required this.note,
     required this.adminId,
+    this.captainFault,
   }) : super._();
   @override
   AdminOrderDtoOutputOrderHandoverHandoversInner rebuild(
@@ -187,7 +190,8 @@ class _$AdminOrderDtoOutputOrderHandoverHandoversInner
         closedAt == other.closedAt &&
         closeReason == other.closeReason &&
         note == other.note &&
-        adminId == other.adminId;
+        adminId == other.adminId &&
+        captainFault == other.captainFault;
   }
 
   @override
@@ -205,6 +209,7 @@ class _$AdminOrderDtoOutputOrderHandoverHandoversInner
     _$hash = $jc(_$hash, closeReason.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, adminId.hashCode);
+    _$hash = $jc(_$hash, captainFault.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -225,7 +230,8 @@ class _$AdminOrderDtoOutputOrderHandoverHandoversInner
           ..add('closedAt', closedAt)
           ..add('closeReason', closeReason)
           ..add('note', note)
-          ..add('adminId', adminId))
+          ..add('adminId', adminId)
+          ..add('captainFault', captainFault))
         .toString();
   }
 }
@@ -292,6 +298,10 @@ class AdminOrderDtoOutputOrderHandoverHandoversInnerBuilder
   String? get adminId => _$this._adminId;
   set adminId(String? adminId) => _$this._adminId = adminId;
 
+  bool? _captainFault;
+  bool? get captainFault => _$this._captainFault;
+  set captainFault(bool? captainFault) => _$this._captainFault = captainFault;
+
   AdminOrderDtoOutputOrderHandoverHandoversInnerBuilder() {
     AdminOrderDtoOutputOrderHandoverHandoversInner._defaults(this);
   }
@@ -311,6 +321,7 @@ class AdminOrderDtoOutputOrderHandoverHandoversInnerBuilder
       _closeReason = $v.closeReason;
       _note = $v.note;
       _adminId = $v.adminId;
+      _captainFault = $v.captainFault;
       _$v = null;
     }
     return this;
@@ -372,6 +383,7 @@ class AdminOrderDtoOutputOrderHandoverHandoversInnerBuilder
             r'AdminOrderDtoOutputOrderHandoverHandoversInner',
             'adminId',
           ),
+          captainFault: captainFault,
         );
     replace(_$result);
     return _$result;

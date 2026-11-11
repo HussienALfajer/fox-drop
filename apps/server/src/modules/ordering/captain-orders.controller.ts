@@ -254,6 +254,16 @@ const activeOrder = z
       .describe(
         '«تسليم لكابتن آخر» (CA §9.10.1, slice 2.12b): the open handover of the order, or null. While giving, the steps wait; while receiving, «لا تدفع شيئاً».',
       ),
+    cannotComplete: z
+      .object({
+        reason: z.string().describe("The captain_cannot_complete reason's label as chosen."),
+        note: z.string().nullable().describe('The text of «أخرى».'),
+        at: z.iso.datetime(),
+      })
+      .nullable()
+      .describe(
+        "«لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b): the captain's open request, «بانتظار العمليات» with «تراجع»; every step stays open. Null without one.",
+      ),
   })
   .describe('The active order (CA §9).');
 
@@ -470,6 +480,18 @@ const reasonNote = z
 // captain_away list.
 export const awayGiven = z.object({ reason: reasonCode, note: reasonNote });
 
+// CA §9.11, Appendix C: «لا أستطيع إكمال الطلب» with a reason of the
+// captain_cannot_complete list.
+class CaptainCannotCompleteDto extends createZodDto(
+  z.object({
+    location: commandLocation,
+    reason: reasonCode.describe(
+      'A code of the captain_cannot_complete list (GET /v1/captain/content): «عطل في المركبة», «حادث», «ظرف طارئ», «لا أملك المبلغ المطلوب للمطعم», «أخرى» (with note).',
+    ),
+    note: reasonNote,
+  }),
+) {}
+
 class CaptainArriveAtCustomerDto extends createZodDto(
   z.object({
     location: commandLocation,
@@ -608,6 +630,7 @@ function activeOrderBody({
   pickupDispute,
   radii,
   handover,
+  cannotComplete,
 }: CaptainActiveOrder) {
   if (order.captainTrack === null) throw new Error(`order ${order.id} has no captain track`);
   if (order.acceptance === null) throw new Error(`order ${order.id} was never accepted`);
@@ -680,6 +703,11 @@ function activeOrderBody({
     },
     radii,
     handover: handoverBody(handover),
+    cannotComplete: cannotComplete && {
+      reason: cannotComplete.reasonLabel,
+      note: cannotComplete.note,
+      at: cannotComplete.at.toISOString(),
+    },
   };
 }
 
@@ -847,6 +875,75 @@ export class CaptainOrdersController {
     return refusalsAsHttp(captainId, this.orders, async () => ({
       order: activeOrderBody(
         await this.orders.arrive(
+          {
+            orderId: params.orderId,
+            captainId,
+            accountId: session.accountId,
+            deviceId: session.deviceId,
+            idempotencyKey,
+            location: { ...body.location, recordedAt: new Date(body.location.recordedAt) },
+          },
+          new Date(),
+        ),
+      ),
+    }));
+  }
+
+  // CA §9.11 «لا أستطيع إكمال الطلب» (C5, slice 2.13b): operations get the
+  // critical alert, the order stays the captain's with every step open. 409
+  // order_state_changed (not the captain's active order, or a request already
+  // open), not_online; 400 unknown_reason, reason_note_required,
+  // reason_note_not_allowed, invalid_location; 404 unknown_order; 422
+  // idempotency_key_reused.
+  @Post(':orderId/cannot-complete')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CaptainOrderDto })
+  async cannotComplete(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: CaptainOrderParamsDto,
+    @Body() body: CaptainCannotCompleteDto,
+  ) {
+    const captainId = captainOf(session);
+    return refusalsAsHttp(captainId, this.orders, async () => ({
+      order: activeOrderBody(
+        await this.orders.cannotComplete(
+          {
+            orderId: params.orderId,
+            captainId,
+            accountId: session.accountId,
+            deviceId: session.deviceId,
+            idempotencyKey,
+            location: { ...body.location, recordedAt: new Date(body.location.recordedAt) },
+            reason: body.reason,
+            note: body.note,
+          },
+          new Date(),
+        ),
+      ),
+    }));
+  }
+
+  // CA §9.11 «تراجع»: the captain withdraws their open request; the alert
+  // closes. 409 order_state_changed without one open, not_online; 404
+  // unknown_order; 400 invalid_location; 422 idempotency_key_reused.
+  @Post(':orderId/cannot-complete/withdraw')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CaptainOrderDto })
+  async withdrawCannotComplete(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: CaptainOrderParamsDto,
+    @Body() body: CaptainArriveDto,
+  ) {
+    const captainId = captainOf(session);
+    return refusalsAsHttp(captainId, this.orders, async () => ({
+      order: activeOrderBody(
+        await this.orders.withdrawCannotComplete(
           {
             orderId: params.orderId,
             captainId,

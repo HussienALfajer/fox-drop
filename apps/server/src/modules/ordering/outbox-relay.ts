@@ -102,6 +102,9 @@ const CUSTOMER_SKIPS = new Set([
   'order.handover_offered',
   'order.handover_assigned',
   'order.handover_closed',
+  // CA §9.11 (slice 2.13b): between the captain and operations.
+  'order.cannot_complete_requested',
+  'order.cannot_complete_withdrawn',
 ]);
 
 // AP §10: the restaurant hears nothing of a handover but the receipt, which
@@ -110,6 +113,9 @@ const MERCHANT_SKIPS = new Set([
   'order.handover_offered',
   'order.handover_assigned',
   'order.handover_closed',
+  // CA §9.11: the captain's «لا أستطيع إكمال الطلب» is for operations.
+  'order.cannot_complete_requested',
+  'order.cannot_complete_withdrawn',
 ]);
 
 // The restaurant's own steps the captain's channel never carries.

@@ -286,6 +286,8 @@ class _$CaptainActiveOrderDtoOutputOrder
   final CaptainActiveOrderDtoOutputOrderRadii radii;
   @override
   final CaptainActiveOrderDtoOutputOrderHandover? handover;
+  @override
+  final CaptainActiveOrderDtoOutputOrderCannotComplete? cannotComplete;
 
   factory _$CaptainActiveOrderDtoOutputOrder([
     void Function(CaptainActiveOrderDtoOutputOrderBuilder)? updates,
@@ -312,6 +314,7 @@ class _$CaptainActiveOrderDtoOutputOrder
     required this.customer,
     required this.radii,
     this.handover,
+    this.cannotComplete,
   }) : super._();
   @override
   CaptainActiveOrderDtoOutputOrder rebuild(
@@ -345,7 +348,8 @@ class _$CaptainActiveOrderDtoOutputOrder
         pickup == other.pickup &&
         customer == other.customer &&
         radii == other.radii &&
-        handover == other.handover;
+        handover == other.handover &&
+        cannotComplete == other.cannotComplete;
   }
 
   @override
@@ -371,6 +375,7 @@ class _$CaptainActiveOrderDtoOutputOrder
     _$hash = $jc(_$hash, customer.hashCode);
     _$hash = $jc(_$hash, radii.hashCode);
     _$hash = $jc(_$hash, handover.hashCode);
+    _$hash = $jc(_$hash, cannotComplete.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -397,7 +402,8 @@ class _$CaptainActiveOrderDtoOutputOrder
           ..add('pickup', pickup)
           ..add('customer', customer)
           ..add('radii', radii)
-          ..add('handover', handover))
+          ..add('handover', handover)
+          ..add('cannotComplete', cannotComplete))
         .toString();
   }
 }
@@ -527,6 +533,14 @@ class CaptainActiveOrderDtoOutputOrderBuilder
   set handover(CaptainActiveOrderDtoOutputOrderHandoverBuilder? handover) =>
       _$this._handover = handover;
 
+  CaptainActiveOrderDtoOutputOrderCannotCompleteBuilder? _cannotComplete;
+  CaptainActiveOrderDtoOutputOrderCannotCompleteBuilder get cannotComplete =>
+      _$this._cannotComplete ??=
+          CaptainActiveOrderDtoOutputOrderCannotCompleteBuilder();
+  set cannotComplete(
+    CaptainActiveOrderDtoOutputOrderCannotCompleteBuilder? cannotComplete,
+  ) => _$this._cannotComplete = cannotComplete;
+
   CaptainActiveOrderDtoOutputOrderBuilder() {
     CaptainActiveOrderDtoOutputOrder._defaults(this);
   }
@@ -554,6 +568,7 @@ class CaptainActiveOrderDtoOutputOrderBuilder
       _customer = $v.customer.toBuilder();
       _radii = $v.radii.toBuilder();
       _handover = $v.handover?.toBuilder();
+      _cannotComplete = $v.cannotComplete?.toBuilder();
       _$v = null;
     }
     return this;
@@ -630,6 +645,7 @@ class CaptainActiveOrderDtoOutputOrderBuilder
             customer: customer.build(),
             radii: radii.build(),
             handover: _handover?.build(),
+            cannotComplete: _cannotComplete?.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -659,6 +675,8 @@ class CaptainActiveOrderDtoOutputOrderBuilder
         radii.build();
         _$failedField = 'handover';
         _handover?.build();
+        _$failedField = 'cannotComplete';
+        _cannotComplete?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'CaptainActiveOrderDtoOutputOrder',

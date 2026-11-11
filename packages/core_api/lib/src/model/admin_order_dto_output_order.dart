@@ -9,6 +9,7 @@ import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_outcome_choices.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_cannot_complete.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_outcome_change.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_removed_lines_inner.dart';
@@ -65,6 +66,7 @@ part 'admin_order_dto_output_order.g.dart';
 /// * [outcome]
 /// * [outcomeChange]
 /// * [outcomeChoices]
+/// * [cannotComplete]
 /// * [itemReport]
 /// * [timeChange]
 /// * [editChoices]
@@ -136,7 +138,7 @@ abstract class AdminOrderDtoOutputOrder
   /// AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active.
   @BuiltValueField(wireName: r'alerts')
   BuiltList<AdminOrderDtoOutputOrderAlertsEnum> get alerts;
-  // enum alertsEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  away_from_address,  item_unavailable,  edit_unacknowledged,  };
+  // enum alertsEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  };
 
   @BuiltValueField(wireName: r'promisedAt')
   DateTime? get promisedAt;
@@ -171,6 +173,9 @@ abstract class AdminOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'outcomeChoices')
   AdminOrderDtoOutputOrderOutcomeChoices? get outcomeChoices;
+
+  @BuiltValueField(wireName: r'cannotComplete')
+  AdminOrderDtoOutputOrderCannotComplete? get cannotComplete;
 
   @BuiltValueField(wireName: r'itemReport')
   AdminOrderDtoOutputOrderItemReport? get itemReport;
@@ -420,6 +425,15 @@ class _$AdminOrderDtoOutputOrderSerializer
             object.outcomeChoices,
             specifiedType: const FullType.nullable(
               AdminOrderDtoOutputOrderOutcomeChoices,
+            ),
+          );
+    yield r'cannotComplete';
+    yield object.cannotComplete == null
+        ? null
+        : serializers.serialize(
+            object.cannotComplete,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderCannotComplete,
             ),
           );
     yield r'itemReport';
@@ -830,6 +844,18 @@ class _$AdminOrderDtoOutputOrderSerializer
           if (valueDes == null) continue;
           result.outcomeChoices.replace(valueDes);
           break;
+        case r'cannotComplete':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderCannotComplete,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderCannotComplete?;
+          if (valueDes == null) continue;
+          result.cannotComplete.replace(valueDes);
+          break;
         case r'itemReport':
           final valueDes =
               serializers.deserialize(
@@ -1134,6 +1160,9 @@ class AdminOrderDtoOutputOrderAlertsEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'edit_unacknowledged')
   static const AdminOrderDtoOutputOrderAlertsEnum editUnacknowledged =
       _$adminOrderDtoOutputOrderAlertsEnum_editUnacknowledged;
+  @BuiltValueEnumConst(wireName: r'captain_cannot_complete')
+  static const AdminOrderDtoOutputOrderAlertsEnum captainCannotComplete =
+      _$adminOrderDtoOutputOrderAlertsEnum_captainCannotComplete;
 
   static Serializer<AdminOrderDtoOutputOrderAlertsEnum> get serializer =>
       _$adminOrderDtoOutputOrderAlertsEnumSerializer;

@@ -17,6 +17,7 @@ import { CaptainsService } from '../captains/index.js';
 import { type AlertCode, AlertsService } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
 import { UNTIL_ENDED } from './active-orders.js';
+import { openCannotComplete } from './cannot-complete.js';
 import { openItemReport } from './item-reports.js';
 import { unacknowledgedAdditionAt } from './order-edits.js';
 import { BEFORE_PICKUP } from './order-views.js';
@@ -42,6 +43,7 @@ export const ORDER_ALERT_CODES = [
   'away_from_address',
   'item_unavailable',
   'edit_unacknowledged',
+  'captain_cannot_complete',
 ] as const satisfies readonly AlertCode[];
 export type OrderAlertCode = (typeof ORDER_ALERT_CODES)[number];
 
@@ -67,6 +69,8 @@ export interface OrderAlertInput {
   shortfall: boolean;
   // RA §8.12: an open item-unavailable report.
   itemReportOpen: boolean;
+  // CA §9.11: the captain's open «لا أستطيع إكمال الطلب».
+  cannotCompleteOpen: boolean;
   // RA §8.13, AP §9.3.3: the oldest unacknowledged edit that added items,
   // plus order.merchant_accept_alert_min; null with none.
   editAlertAt: Date | null;
@@ -130,6 +134,9 @@ export function orderAlerts(
   if (order.shortfall) open.push('collection_shortfall');
   if (order.away) open.push('away_from_address');
   if (order.itemReportOpen) open.push('item_unavailable');
+  if (order.cannotCompleteOpen && UNTIL_ENDED.includes(order.status)) {
+    open.push('captain_cannot_complete');
+  }
   // «المطعم لم يؤكد التعديل»: only before the pickup.
   from('edit_unacknowledged', BEFORE_PICKUP.includes(order.status), order.editAlertAt);
   const next = ahead.reduce<Date | null>(
@@ -293,6 +300,7 @@ async function readInput(
     )
     .limit(1);
   const report = await openItemReport(tx, orderId, placedAt);
+  const problem = await openCannotComplete(tx, { id: orderId, placedAt });
   const edited = await unacknowledgedAdditionAt(tx, orderId, placedAt);
   const row = order!;
   return {
@@ -311,6 +319,7 @@ async function readInput(
     away: row.awayReason !== null,
     shortfall: short !== undefined,
     itemReportOpen: report !== null,
+    cannotCompleteOpen: problem !== null,
     editAlertAt: edited && new Date(edited.getTime() + editAlertMin * MINUTE_MS),
   };
 }

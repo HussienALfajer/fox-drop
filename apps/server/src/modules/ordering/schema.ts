@@ -1049,6 +1049,10 @@ export const handovers = ordering.table(
     closedAt: timestamp('closed_at', { withTimezone: true }),
     closeReason: text('close_reason', { enum: handoverCloseReasons }),
     fromSeenAt: timestamp('from_seen_at', { withTimezone: true }),
+    // AP §9.7.6 (slice 2.13b, owner decision 2026-11-11): «بخطأ من الكابتن»
+    // or «دون خطأ», chosen exactly when the first captain's «لا أستطيع إكمال
+    // الطلب» was open at the handover; null otherwise.
+    captainFault: boolean('captain_fault'),
   },
   (table) => [
     foreignKey({
@@ -1072,6 +1076,53 @@ export const handovers = ordering.table(
       sql`(${table.receivedAt} IS NULL OR (${table.assignedAt} IS NOT NULL AND ${table.closedAt} IS NULL))
         AND (${table.offerId} IS NOT NULL OR ${table.assignedAt} IS NOT NULL)
         AND (${table.fromSeenAt} IS NULL OR ${table.receivedAt} IS NOT NULL)`,
+    ),
+  ],
+);
+
+// CA §9.11 «لا أستطيع إكمال الطلب» (C5, slice 2.13b): the captain's request,
+// with a reason of Content's captain_cannot_complete list (CA Appendix C),
+// that operations take the order from them. At most one open per order (a
+// partial unique index). The order stays the captain's until operations act;
+// it closes when the captain withdraws it («تراجع»), operations reassign the
+// order or another captain receives it, or the order ends. Open when the
+// order leaves the captain, it takes the captain offline (K17). The
+// application role may update only the closing columns.
+export const cannotCompleteHows = ['withdrawn', 'reassigned', 'handed_over', 'ended'] as const;
+
+export const cannotCompleteRequests = ordering.table(
+  'cannot_complete_requests',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    captainId: uuid('captain_id').notNull(),
+    // A code of Content's captain_cannot_complete list, with its label as
+    // chosen and the text «أخرى» needs.
+    reason: text('reason').notNull(),
+    reasonLabel: text('reason_label').notNull(),
+    note: text('note'),
+    requestedAt: timestamp('requested_at', { withTimezone: true }).notNull(),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    closedHow: text('closed_how', { enum: cannotCompleteHows }),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId, table.orderPlacedAt],
+      foreignColumns: [orders.id, orders.placedAt],
+    }),
+    uniqueIndex('cannot_complete_requests_one_open_per_order')
+      .on(table.orderId)
+      .where(sql`${table.closedAt} IS NULL`),
+    index('cannot_complete_requests_order').on(table.orderId, table.orderPlacedAt),
+    index('cannot_complete_requests_captain').on(table.captainId, table.requestedAt),
+    check(
+      'cannot_complete_requests_closed',
+      sql`(${table.closedAt} IS NULL) = (${table.closedHow} IS NULL)
+        AND (${table.closedHow} IS NULL OR ${table.closedHow} IN ('withdrawn', 'reassigned', 'handed_over', 'ended'))`,
     ),
   ],
 );

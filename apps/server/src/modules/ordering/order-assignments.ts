@@ -7,6 +7,7 @@ import { JobsModule } from '../../jobs/jobs.module.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { CaptainsModule, CaptainsService } from '../captains/index.js';
 import type { Point } from '../geo/index.js';
+import { openCannotComplete } from './cannot-complete.js';
 import { canHandOver, type HandoverRefusal } from './handover.js';
 import { type CaptainTrack, recordTransition } from './order-events.js';
 import { pendingOutcome } from './outcome-facts.js';
@@ -197,6 +198,9 @@ export class OrderAssignments implements OnModuleInit {
       toCaptainId: string;
       note: string;
       adminId: string;
+      // AP §9.7.6 (slice 2.13b): the fault operations chose while the first
+      // captain's «لا أستطيع إكمال الطلب» is open; null counts as theirs.
+      captainFault: boolean | null;
       offer: {
         id: string;
         pay: { amount: bigint; currency: string } | null;
@@ -206,6 +210,7 @@ export class OrderAssignments implements OnModuleInit {
     now: Date,
   ): Promise<void> {
     if (order.captainId === null) throw new Error(`order ${order.id} has no captain`);
+    const problem = await openCannotComplete(tx, order);
     await tx.insert(handovers).values({
       orderId: order.id,
       orderPlacedAt: order.placedAt,
@@ -217,6 +222,7 @@ export class OrderAssignments implements OnModuleInit {
       adminId: start.adminId,
       openedAt: now,
       assignedAt: start.offer === null ? now : null,
+      captainFault: problem?.captainId === order.captainId ? (start.captainFault ?? true) : null,
     });
     await this.handoverEvent(
       tx,

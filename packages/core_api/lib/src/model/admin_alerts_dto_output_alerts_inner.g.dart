@@ -52,6 +52,9 @@ const AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnum_editUnacknowledged =
     const AdminAlertsDtoOutputAlertsInnerCodeEnum._('editUnacknowledged');
 const AdminAlertsDtoOutputAlertsInnerCodeEnum
+_$adminAlertsDtoOutputAlertsInnerCodeEnum_captainCannotComplete =
+    const AdminAlertsDtoOutputAlertsInnerCodeEnum._('captainCannotComplete');
+const AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused =
     const AdminAlertsDtoOutputAlertsInnerCodeEnum._('restaurantAutoPaused');
 
@@ -88,6 +91,8 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_itemUnavailable;
     case 'editUnacknowledged':
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_editUnacknowledged;
+    case 'captainCannotComplete':
+      return _$adminAlertsDtoOutputAlertsInnerCodeEnum_captainCannotComplete;
     case 'restaurantAutoPaused':
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused;
     default:
@@ -114,6 +119,7 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValues =
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_awayFromAddress,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_itemUnavailable,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_editUnacknowledged,
+        _$adminAlertsDtoOutputAlertsInnerCodeEnum_captainCannotComplete,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused,
       ],
     );
@@ -226,6 +232,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'awayFromAddress': 'away_from_address',
     'itemUnavailable': 'item_unavailable',
     'editUnacknowledged': 'edit_unacknowledged',
+    'captainCannotComplete': 'captain_cannot_complete',
     'restaurantAutoPaused': 'restaurant_auto_paused',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
@@ -244,6 +251,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'away_from_address': 'awayFromAddress',
     'item_unavailable': 'itemUnavailable',
     'edit_unacknowledged': 'editUnacknowledged',
+    'captain_cannot_complete': 'captainCannotComplete',
     'restaurant_auto_paused': 'restaurantAutoPaused',
   };
 

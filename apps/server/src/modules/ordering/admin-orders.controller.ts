@@ -99,6 +99,11 @@ const card = z.object({
         '«بانتظار تسجيل التحصيل»: an outcome with an amount to collect waits for the payment (CA §9.10, K9).',
       ),
     itemReport: z.boolean().describe('«صنف نفد»: an open item-unavailable report (RA §8.12).'),
+    cannotComplete: z
+      .boolean()
+      .describe(
+        "«بانتظار العمليات»: the captain's open «لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b).",
+      ),
   }),
   moments: z
     .object({
@@ -722,6 +727,12 @@ class AdminOrderDto extends createZodDto(
                   ),
                 note: z.string().describe("Operations' internal note."),
                 adminId: z.uuid(),
+                captainFault: z
+                  .boolean()
+                  .nullable()
+                  .describe(
+                    'AP §9.7.6 (slice 2.13b): the fault chosen while the first captain could not complete the order; null when they had not asked.',
+                  ),
               }),
             )
             .describe('Every handover of the order, oldest first.'),
@@ -812,6 +823,18 @@ class AdminOrderDto extends createZodDto(
         })
         .nullable()
         .describe('While picked up or arrived: the choices of «تحديد النتيجة» (AP §9.3.2).'),
+      cannotComplete: z
+        .object({
+          captainId: z.uuid(),
+          reason: z.string().describe('The captain_cannot_complete code.'),
+          label: z.string().describe("The reason's label as the captain chose it."),
+          note: z.string().nullable().describe('The text of «أخرى».'),
+          at: z.iso.datetime(),
+        })
+        .nullable()
+        .describe(
+          "«بانتظار العمليات» (CA §9.11, slice 2.13b): the captain's open «لا أستطيع إكمال الطلب»; «سحب وإعادة تعيين» prefills «بخطأ من الكابتن» and «تسليم لكابتن آخر» asks the fault while it is open. Null without one.",
+        ),
       itemReport: z
         .object({
           at: z.iso.datetime(),
@@ -1139,6 +1162,7 @@ function cardBody(item: OperationsOrder) {
       pickupPending: item.pickupPending,
       awaitingCollection: item.awaitingCollection,
       itemReport: order.itemReport !== null,
+      cannotComplete: order.cannotComplete !== null,
     },
     moments: {
       acceptAlertAt: at(item.moments.acceptAlertAt),
@@ -2100,6 +2124,13 @@ export class AdminOrdersController {
         outcomeChange: outcomeChange && {
           until: outcomeChange.until.toISOString(),
           foods: outcomeChange.foods,
+        },
+        cannotComplete: order.cannotComplete && {
+          captainId: order.cannotComplete.captainId,
+          reason: order.cannotComplete.reason,
+          label: order.cannotComplete.reasonLabel,
+          note: order.cannotComplete.note,
+          at: order.cannotComplete.at.toISOString(),
         },
         itemReport: order.itemReport && {
           at: order.itemReport.at.toISOString(),
