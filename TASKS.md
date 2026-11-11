@@ -4,16 +4,22 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.14b, the restaurant owner's pickup currencies (`docs/roadmap.md`, Phase 2; the second part of 2.14).
+Slice 2.15, automatic and mixed dispatch (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** 2.14b «العملات التي تقبلها من الكابتن» in the restaurant app, owners only (RA §12.7, §14; owner decision 2026-11-11: a small «الإعدادات» screen, which grows with RA §14). The owner switches USD on and the next pickup's proposal can be in dollars.
-- **Specs:** RA §12.7 (`restaurant-app/12-money.md`), RA §14 (`restaurant-app/14-staff-devices-and-settings.md`, owners only), RA Appendix A (pickup currencies a per-restaurant field, base only by default), RA §22 definition of done.
-- **Branch:** `feat/pickup-currencies-b`.
-- **Builds on (2.14a):** `RestaurantStatusService.pickupCurrencies` and `setPickupCurrencies` (audited `restaurant.pickup_currencies`, `400 invalid_pickup_currencies`), the panel's `PUT /v1/admin/restaurants/{id}/pickup-currencies`, the merchant app's owner-only routes (`owner_only`) and its router.
+- **Roadmap line:** 2.15 Automatic and mixed dispatch: eligibility and ranking with the OSRM matrix, one offer at a time, the fallback to manual after 5 failed offers, the maximum pickup amount and its manual override (C4, K2), the C3 message, «توزيع يدوي لهذا الطلب», the offers log (AP §9.12.6, CA §8, AP §14 item 9). An order is offered on its own to the nearest eligible captain. With it, the captain's «أقصى مبلغ أحمله» on «الإعدادات» (owner decision 2026-11-11).
+- **Specs:** AP §9.12.6 (dispatch settings and modes), AP §14 item 9, CA §8 (offers), CA §7 (C3), CA §10.5 and K2 (the maximum pickup amount), CA Appendix A, AP Appendix A (the dispatch settings), the dispatch module's `CLAUDE.md` (manual dispatch, 1.12 and 2.12b).
+- **Branch:** `feat/auto-dispatch-a` (or as the split names it).
 - **Plan:**
-  - [ ] Server: `GET` and `PUT /v1/merchant/settings/pickup-currencies` (owners only, `403 owner_only` for a cashier; no key: it sets a value), audited with the user and the device; tests.
-  - [ ] Restaurant app: «الإعدادات» (owners only) with the base fixed and a switch per other enabled currency, with its Arabic name; reached from the board.
-  - [ ] Review, docs, hand over to 2.15.
+  - [ ] Split 2.15 into slices with the `slice-plan` skill and get the owner's approval of the split (it spans the server's dispatcher role, the panel and the captain app).
+  - [ ] Write the first slice's plan here, one step per commit.
+
+### Left from 2.14b (`feat/pickup-currencies-b`)
+
+- **Before deploying to staging:** no migration. The restaurant app gains `GET` and `PUT /v1/merchant/settings/pickup-currencies` (owners only); an older APK has no «الإعدادات», and the panel's control from 2.14a still works. Deploy the server before the restaurant APK.
+- **To check on staging:** with USD enabled for Azaz, an owner's board shows the gear «الإعدادات» (a cashier's does not) → «العملات التي تقبلها من الكابتن»: «ليرة تركية» fixed on with «العملة الأساسية، مقبولة دائماً» → switch «دولار أمريكي» on; the panel's restaurant status shows «يقبل من الكابتن: ليرة تركية، دولار أمريكي», and a captain carrying only dollars gets «ادفع للمطعم: {المبلغ بالدولار}» on the next pickup.
+- **To confirm with the owner:** the strings the spec gives no wording for: «يُطبَّق التغيير على طلبات الاستلام بعده.», «العملة الأساسية، مقبولة دائماً», «لا عملات أخرى مفعّلة في المدينة.», «لم يُحفظ التغيير، حاول مرة أخرى», «تعذّر تحميل الإعدادات، حاول مرة أخرى», «هذه الإعدادات لمالكي المطعم فقط.», «إعادة المحاولة»; the route takes no `Idempotency-Key` (it sets a value, like the status routes; RA §18 asks one of every command).
+- **Decided by us:** a currency the city disabled is dropped from the restaurant's set by the next change the owner makes meanwhile (the set is built from what the city enables now), so it is not accepted again when the city enables it back.
+- **Not yet:** the rest of RA §14 (staff, devices, this device's settings, the restaurant's info); the owner web portal's settings (RA §17).
 
 ### Left from 2.14a (`feat/pickup-currencies-a`)
 
