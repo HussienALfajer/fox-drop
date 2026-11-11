@@ -19,7 +19,7 @@ const card = {
   captainTrack: 'searching',
   captain: null,
   total: { amount: '1250', currency: 'USD' },
-  dispatch: { mode: 'manual', manual: null, autoOffers: 0, maxOffers: null },
+  dispatch: { mode: 'manual', manual: null, autoOffers: 0, autoOfferOpen: false, maxOffers: null },
   badges: {
     needsAssignment: true,
     note: false,
@@ -184,7 +184,7 @@ test('takes an order out of automatic dispatch: «توزيع يدوي لهذا �
     ...card,
     alerts: [],
     captainTrack: 'offered',
-    dispatch: { mode: 'mixed', manual: null, autoOffers: 2, maxOffers: 5 },
+    dispatch: { mode: 'mixed', manual: null, autoOffers: 2, autoOfferOpen: true, maxOffers: 5 },
     badges: { ...card.badges, needsAssignment: false },
   };
   const manual = {

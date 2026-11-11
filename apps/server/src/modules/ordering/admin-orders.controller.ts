@@ -105,6 +105,9 @@ const card = z.object({
       autoOffers: z
         .int()
         .describe('The automatic offers sent so far, the open one included: «العرض {ن}».'),
+      autoOfferOpen: z
+        .boolean()
+        .describe('The open offer is the dispatcher’s; false for operations’ own offer.'),
       maxOffers: z
         .int()
         .nullable()

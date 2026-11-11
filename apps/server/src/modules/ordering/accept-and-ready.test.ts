@@ -456,6 +456,22 @@ describe('POST /v1/merchant/orders/{orderId}/accept (RA §8.5, §18)', () => {
     });
   });
 
+  // An operations step on a placed order («تعديل الطلب», «توزيع يدوي لهذا
+  // الطلب») moves its version; the restaurant still has not answered.
+  it('cancels a placed order whose version moved since placing (AP §8.3)', async () => {
+    const order = await placed();
+    await sql.query('UPDATE ordering.orders SET version = version + 1 WHERE id = $1', [order.id]);
+    expect(
+      await app
+        .get(OrderTimers)
+        .merchantAutoCancel(
+          { orderId: order.id, placedAt: order.placedAt, version: 1 },
+          new Date(),
+        ),
+    ).toBe(true);
+    expect(await row(order.id)).toMatchObject({ status: 'cancelled', version: 3 });
+  });
+
   it('leaves the accepted order to the automatic cancellation job (AP §8.3)', async () => {
     const order = await placed();
     expect((await accept(order.id, await signedIn('merchant'))).statusCode).toBe(200);

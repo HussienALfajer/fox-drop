@@ -212,8 +212,10 @@ async function admin(roles: string[]) {
 // A placed order the restaurant accepted, its search started.
 // At the main restaurant unless another is given (automatic dispatch's,
 // apart from the manual tests' captains).
+// With accept false, the order stays placed.
 async function acceptedOrder(
   at: { restaurant: string; item: string; home: Point } = { restaurant, item, home },
+  { accept = true }: { accept?: boolean } = {},
 ): Promise<{ id: string; placedAt: string }> {
   const customer = await appSignIn('customer', phoneNumber());
   const lines = [
@@ -255,6 +257,7 @@ async function acceptedOrder(
   });
   expect(placed.statusCode).toBe(201);
   const order = placed.json().order;
+  if (!accept) return { id: order.id, placedAt: order.placedAt };
   const phone = phoneNumber();
   await app
     .get(MerchantAccountsService)
@@ -1245,7 +1248,7 @@ describe('automatic dispatch (AP §9.12.6, CA §8.1)', () => {
     await dispatch().autoDispatchCity(azaz, new Date());
     expect(await cardOf(order.id)).toMatchObject({
       captainTrack: 'offered',
-      dispatch: { autoOffers: 1, maxOffers: 2 },
+      dispatch: { autoOffers: 1, autoOfferOpen: true, maxOffers: 2 },
     });
     for (const captain of [first, second]) {
       if (captain === second) await dispatch().autoDispatchCity(azaz, new Date());
@@ -1328,6 +1331,34 @@ describe('automatic dispatch (AP §9.12.6, CA §8.1)', () => {
       badges: { needsAssignment: true },
       dispatch: { mode: 'auto', manual: { reason: 'operations' }, autoOffers: 1 },
     });
+  });
+
+  it('«توزيع يدوي لهذا الطلب» in «مختلط» keeps the failed offers, and works on a placed order', async () => {
+    await mode('mixed');
+    const order = await searchingOrder();
+    const first = await captainNorth(200);
+    await dispatch().autoDispatchCity(azaz, new Date());
+    await first.call('POST', `/v1/captain/offers/${(await currentOffer(first)).id}/decline`);
+    const ops = await admin(['OPS']);
+    const key = randomUUID();
+    expect((await ops.manualDispatch(order.id, key)).statusCode).toBe(200);
+    expect(await manualRow(order.id)).toEqual([{ reason: 'operations', failed_offers: 1 }]);
+    expect(await cardOf(order.id)).toMatchObject({
+      badges: { needsAssignment: true },
+      dispatch: { autoOffers: 1, autoOfferOpen: false },
+    });
+    // The key belongs to that order's move (architecture §5.3).
+    const other = await searchingOrder();
+    const reused = await ops.manualDispatch(other.id, key);
+    expect(reused.statusCode).toBe(422);
+    expect(reused.json().error).toBe('idempotency_key_reused');
+
+    // AP §9.3.2 «Before assignment»: an order the restaurant has not
+    // accepted yet leaves too, and its automatic cancellation still runs.
+    const fresh = await acceptedOrder(at, { accept: false });
+    expect((await ops.manualDispatch(fresh.id)).statusCode).toBe(200);
+    expect(await manualRow(fresh.id)).toEqual([{ reason: 'operations', failed_offers: 0 }]);
+    expect(await orderRow(fresh.id)).toMatchObject({ status: 'placed', version: 2 });
   });
 
   it('refuses «توزيع يدوي لهذا الطلب» in manual mode, after assignment, and to SUP', async () => {

@@ -19757,6 +19757,10 @@
                     "maximum": 9007199254740991,
                     "description": "The automatic offers sent so far, the open one included: «العرض {ن}»."
                   },
+                  "autoOfferOpen": {
+                    "type": "boolean",
+                    "description": "The open offer is the dispatcher’s; false for operations’ own offer."
+                  },
                   "maxOffers": {
                     "anyOf": [
                       {
@@ -19775,6 +19779,7 @@
                   "mode",
                   "manual",
                   "autoOffers",
+                  "autoOfferOpen",
                   "maxOffers"
                 ],
                 "additionalProperties": false,
@@ -22268,6 +22273,10 @@
                       "maximum": 9007199254740991,
                       "description": "The automatic offers sent so far, the open one included: «العرض {ن}»."
                     },
+                    "autoOfferOpen": {
+                      "type": "boolean",
+                      "description": "The open offer is the dispatcher’s; false for operations’ own offer."
+                    },
                     "maxOffers": {
                       "anyOf": [
                         {
@@ -22286,6 +22295,7 @@
                     "mode",
                     "manual",
                     "autoOffers",
+                    "autoOfferOpen",
                     "maxOffers"
                   ],
                   "additionalProperties": false,
@@ -22696,6 +22706,10 @@
                     "maximum": 9007199254740991,
                     "description": "The automatic offers sent so far, the open one included: «العرض {ن}»."
                   },
+                  "autoOfferOpen": {
+                    "type": "boolean",
+                    "description": "The open offer is the dispatcher’s; false for operations’ own offer."
+                  },
                   "maxOffers": {
                     "anyOf": [
                       {
@@ -22714,6 +22728,7 @@
                   "mode",
                   "manual",
                   "autoOffers",
+                  "autoOfferOpen",
                   "maxOffers"
                 ],
                 "additionalProperties": false,

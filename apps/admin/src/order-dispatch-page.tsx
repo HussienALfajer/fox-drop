@@ -15,7 +15,7 @@ import type { OrderCard } from './orders-board.js';
 export function DispatchState({
   card,
 }: {
-  card: Pick<OrderCard, 'dispatch' | 'captain' | 'captainTrack'>;
+  card: Pick<OrderCard, 'dispatch' | 'captain' | 'captainTrack' | 'status'>;
 }) {
   const { t } = useTranslation();
   const line = dispatchLine(card);

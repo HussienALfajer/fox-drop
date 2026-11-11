@@ -6009,6 +6009,8 @@ export interface components {
                     } | null;
                     /** @description The automatic offers sent so far, the open one included: «العرض {ن}». */
                     autoOffers: number;
+                    /** @description The open offer is the dispatcher’s; false for operations’ own offer. */
+                    autoOfferOpen: boolean;
                     /** @description «مختلط»: dispatch.max_offers_before_manual, «من {م}»; null otherwise. */
                     maxOffers: number | null;
                 };
@@ -6625,6 +6627,8 @@ export interface components {
                     } | null;
                     /** @description The automatic offers sent so far, the open one included: «العرض {ن}». */
                     autoOffers: number;
+                    /** @description The open offer is the dispatcher’s; false for operations’ own offer. */
+                    autoOfferOpen: boolean;
                     /** @description «مختلط»: dispatch.max_offers_before_manual, «من {م}»; null otherwise. */
                     maxOffers: number | null;
                 };
@@ -6723,6 +6727,8 @@ export interface components {
                     } | null;
                     /** @description The automatic offers sent so far, the open one included: «العرض {ن}». */
                     autoOffers: number;
+                    /** @description The open offer is the dispatcher’s; false for operations’ own offer. */
+                    autoOfferOpen: boolean;
                     /** @description «مختلط»: dispatch.max_offers_before_manual, «من {م}»; null otherwise. */
                     maxOffers: number | null;
                 };

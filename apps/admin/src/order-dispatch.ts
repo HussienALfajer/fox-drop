@@ -32,11 +32,13 @@ export const offerStatusKeys = {
   withdrawn: 'dispatch.offers.status.withdrawn',
 } as const satisfies Record<OrderOffer['status'], string>;
 
-// What the card and the detail say of the dispatch, while the order waits
-// for a captain (AP §9.2.1, §9.12.6): left to operations and why; in «آلي»
-// or «مختلط» the automatic offer open («العرض {ن}», «من {م}» in «مختلط»)
-// or the search for the next. Nothing in «يدوي» (D6, «بحاجة لتعيين»
-// says it), before the search or once a captain has it.
+// What the card and the detail say of the dispatch while the order waits
+// for a captain (placed to ready, no captain; AP §9.2.1, §9.12.6): left to
+// operations and why, from the move on; in «آلي» or «مختلط», once the
+// search started, the automatic offer open («العرض {ن}», «من {م}» in
+// «مختلط») or the search for the next. Nothing in «يدوي» (D6, «بحاجة
+// لتعيين» says it) or while operations' own offer is open («أُرسل عرض إلى
+// كابتن» says it).
 export type DispatchLine =
   | { kind: 'manual'; reason: ManualReason }
   | { kind: 'offer'; offer: number; of: number | null }
@@ -44,17 +46,21 @@ export type DispatchLine =
   | null;
 
 export function dispatchLine(
-  card: Pick<OrderCard, 'dispatch' | 'captain' | 'captainTrack'>,
+  card: Pick<OrderCard, 'dispatch' | 'captain' | 'captainTrack' | 'status'>,
 ): DispatchLine {
   const { dispatch } = card;
-  if (card.captain !== null) return null;
-  if (card.captainTrack !== 'searching' && card.captainTrack !== 'offered') return null;
+  const waiting =
+    card.captain === null &&
+    (card.status === 'placed' || card.status === 'accepted' || card.status === 'ready');
+  if (!waiting) return null;
   if (dispatch.manual !== null) return { kind: 'manual', reason: dispatch.manual.reason };
   if (dispatch.mode === 'manual') return null;
-  if (card.captainTrack === 'offered' && dispatch.autoOffers > 0) {
-    return { kind: 'offer', offer: dispatch.autoOffers, of: dispatch.maxOffers };
+  if (card.captainTrack === 'offered') {
+    return dispatch.autoOfferOpen
+      ? { kind: 'offer', offer: dispatch.autoOffers, of: dispatch.maxOffers }
+      : null;
   }
-  return { kind: 'searching' };
+  return card.captainTrack === 'searching' ? { kind: 'searching' } : null;
 }
 
 // AP §9.3.2 «توزيع يدوي لهذا الطلب»: OWN and OPS, before assignment, while

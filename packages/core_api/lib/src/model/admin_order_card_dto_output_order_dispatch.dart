@@ -16,6 +16,7 @@ part 'admin_order_card_dto_output_order_dispatch.g.dart';
 /// * [mode] - The city’s dispatch.mode now.
 /// * [manual]
 /// * [autoOffers] - The automatic offers sent so far, the open one included: «العرض {ن}».
+/// * [autoOfferOpen] - The open offer is the dispatcher’s; false for operations’ own offer.
 /// * [maxOffers] - «مختلط»: dispatch.max_offers_before_manual, «من {م}»; null otherwise.
 @BuiltValue()
 abstract class AdminOrderCardDtoOutputOrderDispatch
@@ -35,6 +36,10 @@ abstract class AdminOrderCardDtoOutputOrderDispatch
   /// The automatic offers sent so far, the open one included: «العرض {ن}».
   @BuiltValueField(wireName: r'autoOffers')
   int get autoOffers;
+
+  /// The open offer is the dispatcher’s; false for operations’ own offer.
+  @BuiltValueField(wireName: r'autoOfferOpen')
+  bool get autoOfferOpen;
 
   /// «مختلط»: dispatch.max_offers_before_manual, «من {م}»; null otherwise.
   @BuiltValueField(wireName: r'maxOffers')
@@ -90,6 +95,11 @@ class _$AdminOrderCardDtoOutputOrderDispatchSerializer
     yield serializers.serialize(
       object.autoOffers,
       specifiedType: const FullType(int),
+    );
+    yield r'autoOfferOpen';
+    yield serializers.serialize(
+      object.autoOfferOpen,
+      specifiedType: const FullType(bool),
     );
     yield r'maxOffers';
     yield object.maxOffers == null
@@ -153,6 +163,15 @@ class _$AdminOrderCardDtoOutputOrderDispatchSerializer
               serializers.deserialize(value, specifiedType: const FullType(int))
                   as int;
           result.autoOffers = valueDes;
+          break;
+        case r'autoOfferOpen':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.autoOfferOpen = valueDes;
           break;
         case r'maxOffers':
           final valueDes =

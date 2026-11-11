@@ -85,6 +85,8 @@ export interface DispatchView {
   mode: 'manual' | 'auto' | 'mixed';
   manual: { reason: ManualReason; at: Date } | null;
   autoOffers: number;
+  // The open offer is the dispatcher's (an operations' offer is not).
+  autoOfferOpen: boolean;
   maxOffers: number | null;
 }
 

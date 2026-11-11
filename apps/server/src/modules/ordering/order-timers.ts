@@ -19,6 +19,8 @@ export interface AutoCancelJob {
   orderId: string;
   // ISO time, the order's partition key.
   placedAt: string;
+  // The order's version at placing (1); no longer compared (slice 2.15c),
+  // kept so the jobs already queued keep their shape.
   version: number;
 }
 
@@ -70,7 +72,11 @@ export class OrderTimers {
     );
     return this.database.db.transaction(async (tx) => {
       const order = await lockOrder(tx, job.orderId, new Date(job.placedAt));
-      if (!order || order.status !== 'placed' || order.version !== job.version) return false;
+      // An order never returns to placed, so the status alone says the
+      // restaurant has not answered: operations' steps on a placed order
+      // («تعديل الطلب», «توزيع يدوي لهذا الطلب») move its version, not the
+      // timer.
+      if (!order || order.status !== 'placed') return false;
       const version = order.version + 1;
       await tx
         .update(orders)

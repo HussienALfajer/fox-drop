@@ -91,6 +91,8 @@ class _$AdminOrderCardDtoOutputOrderDispatch
   @override
   final int autoOffers;
   @override
+  final bool autoOfferOpen;
+  @override
   final int? maxOffers;
 
   factory _$AdminOrderCardDtoOutputOrderDispatch([
@@ -102,6 +104,7 @@ class _$AdminOrderCardDtoOutputOrderDispatch
     required this.mode,
     this.manual,
     required this.autoOffers,
+    required this.autoOfferOpen,
     this.maxOffers,
   }) : super._();
   @override
@@ -120,6 +123,7 @@ class _$AdminOrderCardDtoOutputOrderDispatch
         mode == other.mode &&
         manual == other.manual &&
         autoOffers == other.autoOffers &&
+        autoOfferOpen == other.autoOfferOpen &&
         maxOffers == other.maxOffers;
   }
 
@@ -129,6 +133,7 @@ class _$AdminOrderCardDtoOutputOrderDispatch
     _$hash = $jc(_$hash, mode.hashCode);
     _$hash = $jc(_$hash, manual.hashCode);
     _$hash = $jc(_$hash, autoOffers.hashCode);
+    _$hash = $jc(_$hash, autoOfferOpen.hashCode);
     _$hash = $jc(_$hash, maxOffers.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -140,6 +145,7 @@ class _$AdminOrderCardDtoOutputOrderDispatch
           ..add('mode', mode)
           ..add('manual', manual)
           ..add('autoOffers', autoOffers)
+          ..add('autoOfferOpen', autoOfferOpen)
           ..add('maxOffers', maxOffers))
         .toString();
   }
@@ -168,6 +174,11 @@ class AdminOrderCardDtoOutputOrderDispatchBuilder
   int? get autoOffers => _$this._autoOffers;
   set autoOffers(int? autoOffers) => _$this._autoOffers = autoOffers;
 
+  bool? _autoOfferOpen;
+  bool? get autoOfferOpen => _$this._autoOfferOpen;
+  set autoOfferOpen(bool? autoOfferOpen) =>
+      _$this._autoOfferOpen = autoOfferOpen;
+
   int? _maxOffers;
   int? get maxOffers => _$this._maxOffers;
   set maxOffers(int? maxOffers) => _$this._maxOffers = maxOffers;
@@ -182,6 +193,7 @@ class AdminOrderCardDtoOutputOrderDispatchBuilder
       _mode = $v.mode;
       _manual = $v.manual?.toBuilder();
       _autoOffers = $v.autoOffers;
+      _autoOfferOpen = $v.autoOfferOpen;
       _maxOffers = $v.maxOffers;
       _$v = null;
     }
@@ -219,6 +231,11 @@ class AdminOrderCardDtoOutputOrderDispatchBuilder
               autoOffers,
               r'AdminOrderCardDtoOutputOrderDispatch',
               'autoOffers',
+            ),
+            autoOfferOpen: BuiltValueNullFieldError.checkNotNull(
+              autoOfferOpen,
+              r'AdminOrderCardDtoOutputOrderDispatch',
+              'autoOfferOpen',
             ),
             maxOffers: maxOffers,
           );

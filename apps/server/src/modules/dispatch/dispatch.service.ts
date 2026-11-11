@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
-import { and, count, desc, eq, gt, gte, inArray, lt, ne } from 'drizzle-orm';
+import { and, count, desc, eq, gt, gte, inArray, lt, ne, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -257,13 +257,17 @@ export class DispatchService implements OnModuleInit {
         .from(manualOrders)
         .where(inArray(manualOrders.orderId, ids)),
       this.database.db
-        .select({ orderId: offers.orderId, n: count() })
+        .select({
+          orderId: offers.orderId,
+          n: count(),
+          open: sql<boolean>`bool_or(${offers.status} = 'open')`,
+        })
         .from(offers)
         .where(and(inArray(offers.orderId, ids), eq(offers.kind, 'auto')))
         .groupBy(offers.orderId),
     ]);
     const manual = new Map(left.map((row) => [row.orderId, row]));
-    const autoOffers = new Map(sent.map((row) => [row.orderId, row.n]));
+    const autoOffers = new Map(sent.map((row) => [row.orderId, row]));
     return new Map(
       orders.map((order) => {
         const rule = rules.get(order.cityId)!;
@@ -273,7 +277,8 @@ export class DispatchService implements OnModuleInit {
           {
             mode: rule.mode,
             manual: row ? { reason: row.reason, at: row.at } : null,
-            autoOffers: autoOffers.get(order.id) ?? 0,
+            autoOffers: autoOffers.get(order.id)?.n ?? 0,
+            autoOfferOpen: autoOffers.get(order.id)?.open ?? false,
             maxOffers: rule.maxOffers,
           },
         ];
