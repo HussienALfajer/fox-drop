@@ -32,6 +32,9 @@ export interface AvailabilityInput {
   activeOrder: boolean;
   // CA §7.3, §7.6, K18: the open online period's last-order mode, or null.
   lastOrder: LastOrderMode | null;
+  // C3, CA §7.4 (slice 2.15b): while offline, the offers in a row that
+  // expired when the latest online period ended for them; null otherwise.
+  offersExpired: number | null;
 }
 
 // CA §7.3, §7.6, K18: who put the captain in last-order mode. The captain
@@ -60,7 +63,9 @@ export type NoOffersReason = 'cash_limit' | 'closed_due' | 'simulated_location';
 
 // CA §7.1.
 export type Availability =
-  | { state: 'offline' }
+  // offersExpired: C3 took the captain offline after that many unanswered
+  // offers (CA §7.4), until the next online period; null otherwise.
+  | { state: 'offline'; offersExpired: number | null }
   | { state: 'online_available'; since: Date }
   // «مشغول»: an active order; no offers in V1 (no stacking, AP §9.12.6).
   | { state: 'busy'; since: Date }
@@ -127,7 +132,12 @@ export function availability(input: AvailabilityInput, now: Date): Availability 
   if (suspension !== null) {
     return { state: 'suspended', reason: suspension.reason, until: suspension.until };
   }
-  if (input.status === 'terminated' || since === null) return { state: 'offline' };
+  if (input.status === 'terminated' || since === null) {
+    return {
+      state: 'offline',
+      offersExpired: input.status === 'terminated' ? null : input.offersExpired,
+    };
+  }
   if (input.activeOrder) return { state: 'busy', since };
   const reasons: NoOffersReason[] = [];
   if (input.custodyUsage >= input.custodyLimit) reasons.push('cash_limit');

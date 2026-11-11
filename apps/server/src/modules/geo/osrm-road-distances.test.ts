@@ -76,4 +76,20 @@ describe('OsrmRoadDistances', () => {
     const osrm = new OsrmRoadDistances({ car: baseUrl }, 1000);
     await expect(osrm.metres(from, to, 'bicycle')).rejects.toThrow('no OSRM server for bicycle');
   });
+
+  it('reads the matrix from the sources to the destination, longitude first', async () => {
+    answer(200, { code: 'Ok', distances: [[1200.5], [null]], sources: [], destinations: [] });
+    const osrm = new OsrmRoadDistances({ motorbike: baseUrl }, 1000);
+    await expect(osrm.table([from, to], to, 'motorbike')).resolves.toEqual([1200.5, null]);
+    expect(paths.at(-1)).toBe(
+      '/table/v1/driving/37.0463,36.5866;37.0518,36.5901;37.0518,36.5901?sources=0;1&destinations=2&annotations=distance',
+    );
+  });
+
+  it('fails when the matrix is refused or for a vehicle without a server', async () => {
+    answer(400, { code: 'InvalidQuery' });
+    const osrm = new OsrmRoadDistances({ car: baseUrl }, 1000);
+    await expect(osrm.table([from], to, 'car')).rejects.toThrow('InvalidQuery');
+    await expect(osrm.table([from], to, 'walking')).rejects.toThrow('no OSRM server for walking');
+  });
 });

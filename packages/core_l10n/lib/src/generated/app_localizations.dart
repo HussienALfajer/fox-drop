@@ -1960,6 +1960,12 @@ abstract class AppLocalizations {
   /// **'فصلتك العمليات من الاتصال: {reason}. ستصبح غير متصل بعد هذا الطلب.'**
   String captainLastOrderForced(String reason);
 
+  /// C3: offline after unanswered offers in a row (CA §7.4); count is captain.offer_expiry_offline_count, given as text.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم ترد على {count} عروض متتالية، فأصبحت غير متصل. اضغط «متصل» عندما تكون جاهزاً.'**
+  String captainOffersExpiredOffline(String count);
+
   /// A suspension during an order (CA §7.6, K18); the wording is ours.
   ///
   /// In ar, this message translates to:

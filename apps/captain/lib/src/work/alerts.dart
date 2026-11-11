@@ -212,6 +212,13 @@ class WaitForCustomer extends Alert {
   final String message;
 }
 
+/// «لم ترد على 3 عروض متتالية، فأصبحت غير متصل…»: C3 took the captain
+/// offline (CA §7.4, §14 #3; slice 2.15b), with the chime.
+class OfflineAfterUnanswered extends Alert {
+  const OfflineAfterUnanswered(this.count);
+  final int count;
+}
+
 /// The offers and orders answered on this phone, whose closing it does not
 /// announce as another's.
 class Answered {
@@ -251,6 +258,10 @@ List<Alert> alertStep(
   final ended = after.ended;
   if (ended != null && before.ended?.orderId != ended.orderId) {
     alerts.add(OutcomeSet(ended));
+  }
+  final expired = after.availability.availability.offersExpired;
+  if (expired != null && before.online && !after.online) {
+    alerts.add(OfflineAfterUnanswered(expired));
   }
   final handedOver = after.handedOver;
   if (handedOver != null && before.handedOver?.orderId != handedOver.orderId) {

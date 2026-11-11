@@ -1143,6 +1143,27 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets('says why C3 took the captain offline, with the chime '
+      '(CA §7.4)', (tester) async {
+    const text =
+        'لم ترد على 3 عروض متتالية، فأصبحت غير متصل. اضغط «متصل» عندما تكون جاهزاً.';
+    final app = TestApp();
+    app.work(
+      availability: [
+        availabilityJson(state: 'online_available'),
+        availabilityJson(offersExpired: 3),
+      ],
+    );
+    // Read online first, then offline once the channel is live.
+    await app.pump(tester);
+    await app.live(tester);
+    // The state's line, and the message once.
+    expect(find.text(text), findsNWidgets(2));
+    expect(find.byKey(const Key('offers-expired')), findsOneWidget);
+    expect(app.ringer.chimes, 1);
+    await app.done(tester);
+  });
+
   testWidgets('shows a force offline during an order with its reason, '
       'without the switch (CA §7.6, K18)', (tester) async {
     final app = TestApp();

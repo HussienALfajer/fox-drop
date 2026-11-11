@@ -12,6 +12,11 @@ const routeAnswer = z.object({
   routes: z.tuple([z.object({ distance: z.number().nonnegative() })], z.unknown()),
 });
 
+const tableAnswer = z.object({
+  code: z.literal('Ok'),
+  distances: z.array(z.tuple([z.number().nonnegative().nullable()])),
+});
+
 const failedAnswer = z.object({ code: z.string() });
 
 // Self-hosted OSRM (architecture §7.1): one osrm-routed per vehicle profile,
@@ -23,8 +28,7 @@ export class OsrmRoadDistances implements RoadDistances {
   ) {}
 
   async metres(from: Point, to: Point, vehicle: Vehicle): Promise<number> {
-    const url = this.urls[vehicle];
-    if (!url) throw new Error(`no OSRM server for ${vehicle}`);
+    const url = this.server(vehicle);
     // Each osrm-routed serves one profile, so the profile in the path is
     // only a name. OSRM takes longitude first.
     const points = `${from.longitude},${from.latitude};${to.longitude},${to.latitude}`;
@@ -39,6 +43,31 @@ export class OsrmRoadDistances implements RoadDistances {
     throw new Error(
       `OSRM answered ${response.status} ${failure.success ? failure.data.code : 'without a route'}`,
     );
+  }
+
+  // OSRM's table service: the sources first, the destination last, distances
+  // only (a null for a source it cannot route).
+  async table(sources: Point[], to: Point, vehicle: Vehicle): Promise<(number | null)[]> {
+    const url = this.server(vehicle);
+    const points = [...sources, to].map((each) => `${each.longitude},${each.latitude}`).join(';');
+    const indexes = sources.map((_each, index) => index).join(';');
+    const response = await fetch(
+      `${url}/table/v1/driving/${points}?sources=${indexes}&destinations=${sources.length}&annotations=distance`,
+      { signal: AbortSignal.timeout(this.timeoutMs) },
+    );
+    const body: unknown = await response.json();
+    const table = tableAnswer.safeParse(body);
+    if (table.success) return table.data.distances.map(([metres]) => metres);
+    const failure = failedAnswer.safeParse(body);
+    throw new Error(
+      `OSRM answered ${response.status} ${failure.success ? failure.data.code : 'without a table'}`,
+    );
+  }
+
+  private server(vehicle: Vehicle): string {
+    const url = this.urls[vehicle];
+    if (!url) throw new Error(`no OSRM server for ${vehicle}`);
+    return url;
   }
 }
 

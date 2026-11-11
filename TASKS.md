@@ -4,17 +4,24 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.15b, the automatic dispatcher on the server (`docs/roadmap.md`, Phase 2).
+Slice 2.15c, the panel's side of automatic dispatch (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** 2.15b The automatic dispatcher on the server: `dispatch.mode` «آلي» and «مختلط», ranking by distance (the OSRM matrix, following `pricing.distance_method`, the straight line × 1.3 as the fallback), then fewest orders today, the C4 filter, one offer at a time and the next on a decline, an expiry or a withdrawal, never the same order offered twice to one captain (a new search every 30 seconds for captains not yet offered, «طلب بلا كابتن» as usual), mixed falling back to manual after `dispatch.max_offers_before_manual` failed offers (declined, expired or withdrawn) or at the no-captain alert, the C3 push and sound (CA §7.4, §8.1, AP §9.12.6).
-- **Specs:** AP §9.12.6 (modes, eligibility, ranking, offers, search start), AP §8.3 (the search start), AP §14 item 9, CA §7.4 (C3, K1), CA §8.1–8.3, CA §14 (the C3 push), AP Appendix A (`dispatch.*`), the dispatch, captains, geo and ordering modules' `CLAUDE.md` (the search start, the offer timer, C3), architecture §4.4 (the `dispatcher` role).
-- **Branch:** `feat/auto-dispatch`.
+- **Roadmap line:** 2.15c The panel: «توزيع يدوي لهذا الطلب» on the order detail (an open automatic offer keeps its time, owner decision 2026-11-11; no automatic offer follows), the dispatch state on the board and the detail («العرض {ن} من {م}», moved to manual), the order's offers log on the detail (each offer's captain, time, answer and response time) (AP §9.3.2, §9.7.4). The captain's «سجل العروض» comes with their profile in 2.36. The owner takes an order out of automatic dispatch and it shows «بحاجة لتعيين».
+- **Specs:** AP §9.3.1–9.3.2 (the order detail and its actions), AP §9.2 (the board), AP §9.12.6 (the modes), AP §9.7.4 (the offers log), the dispatch module's `CLAUDE.md` (`dispatch.manual_orders`, automatic offers `kind` `auto`), `apps/admin/CLAUDE.md`.
+- **Branch:** `feat/auto-dispatch-panel`.
 - **Plan:**
-  - [ ] Geo: the distance matrix (OSRM `table`) from many captains to one restaurant by vehicle, following `pricing.distance_method`, the straight line × 1.3 on any failure; tests with the fake port.
-  - [ ] Dispatch: automatic offers (`offers.kind` `auto`, no admin), the next offer when the search starts and when an offer closes (declined, expired, withdrawn), ranked by distance then fewest orders today, eligible and within the limit (`above_max_pickup` left out), never a captain already offered the order, a new search every 30 seconds while none is left; in the process the architecture names (the `dispatcher` role or the worker); tests first.
-  - [ ] Mixed mode: after `dispatch.max_offers_before_manual` failed offers or at the no-captain alert the order leaves automatic dispatch («بحاجة لتعيين»), kept on the order or the offers so 2.15c can show it; the mode read when each offer would be sent (manual stops new offers); tests first.
-  - [ ] C3: the push and sound «لم ترد على 3 عروض متتالية، فأصبحت غير متصل. اضغط «متصل» عندما تكون جاهزاً.» (CA §7.4, §14), and the captain app showing it.
-  - [ ] Review, then hand over to 2.15c.
+  - [ ] Server: «توزيع يدوي لهذا الطلب» (`POST /v1/admin/orders/{orderId}/manual-dispatch`, `operations.manage`, `Idempotency-Key`): a `manual_orders` row with a new reason `operations` (the `CHECK` widened) and the admin, audited; an open automatic offer keeps its time; tests first.
+  - [ ] Server: the dispatch state on the board and the detail (the mode, automatic or manual and why, «العرض {ن} من {م}» from the automatic offers and `dispatch.max_offers_before_manual`) and the order's offers log (captain, kind, time, answer, response time); whether «بحاجة لتعيين» shows for an order the dispatcher is still offering (today every `searching` order shows it in every mode, `ordering/operations-views.ts`).
+  - [ ] Panel: the button, the dispatch state and the offers log on the detail; the state on the board's card; Playwright smoke.
+  - [ ] Review, then hand over.
+
+### Left from 2.15b (`feat/auto-dispatch`)
+
+- **Before deploying to staging:** migration 0060 adds `dispatch.manual_orders` (a new table; the application role may only insert) and widens `offers.kind` to `auto` with `offers_manual_by` now both ways (both `CHECK`s replaced `NOT VALID`, then validated). The `dispatcher` container now runs `AutoDispatcher`; it needs the database, Valkey and the OSRM URLs (`infra/compose.yaml` passes the shared environment). The captain availability gains `offersExpired`: deploy the server before the captain APK (a new APK cannot read an older server's state). The worker now registers the C3 push listener.
+- **To check on staging:** the panel's «إعدادات» → `dispatch.mode` «آلي»; two captains online near a restaurant; place and accept an order: once its search starts, the nearer captain gets the offer (not «تعيين من العمليات»); «رفض» → the other captain gets it within a second or two; decline again: no offer, and a third captain who goes online gets it within 30 seconds. In «مختلط» with `dispatch.max_offers_before_manual` 2, two declines leave the order «بحاجة لتعيين» with no further offer. A captain who lets 3 offers expire gets the push «لم ترد على 3 عروض متتالية، فأصبحت غير متصل. اضغط «متصل» عندما تكون جاهزاً.» with the chime, and the app shows it under «غير متصل».
+- **To confirm with the owner:** «بحاجة لتعيين» shows on every `searching` order in every mode until 2.15c shows the dispatch state; a captain declining an automatic offer is never offered that order again, even after a reassignment; the C3 line and push take the count from `captain.offer_expiry_offline_count` as it is now (the app's line reads today's setting, the push the one in force when it fired).
+- **Decided by us:** the dispatcher passes over each city every second (`DISPATCH_TICK_MS`); a fallback to manual is final (a `manual_orders` row stays whatever the mode later); captains who only got another order's offer in the same pass are tried at once, without the 30-second wait.
+- **Not yet:** the panel's side (2.15c); a fallback to manual writes no order event, so the timeline and the panel's live update wait for 2.15c; the peak bonus on the offer (D15).
 
 ### Left from 2.15a (`feat/max-pickup-amount`)
 

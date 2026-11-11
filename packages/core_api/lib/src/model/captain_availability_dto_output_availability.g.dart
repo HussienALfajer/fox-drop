@@ -295,6 +295,8 @@ class _$CaptainAvailabilityDtoOutputAvailability
   final CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum? lastOrderBy;
   @override
   final String? lastOrderReason;
+  @override
+  final int? offersExpired;
 
   factory _$CaptainAvailabilityDtoOutputAvailability([
     void Function(CaptainAvailabilityDtoOutputAvailabilityBuilder)? updates,
@@ -309,6 +311,7 @@ class _$CaptainAvailabilityDtoOutputAvailability
     this.suspendedUntil,
     this.lastOrderBy,
     this.lastOrderReason,
+    this.offersExpired,
   }) : super._();
   @override
   CaptainAvailabilityDtoOutputAvailability rebuild(
@@ -329,7 +332,8 @@ class _$CaptainAvailabilityDtoOutputAvailability
         suspensionReason == other.suspensionReason &&
         suspendedUntil == other.suspendedUntil &&
         lastOrderBy == other.lastOrderBy &&
-        lastOrderReason == other.lastOrderReason;
+        lastOrderReason == other.lastOrderReason &&
+        offersExpired == other.offersExpired;
   }
 
   @override
@@ -342,6 +346,7 @@ class _$CaptainAvailabilityDtoOutputAvailability
     _$hash = $jc(_$hash, suspendedUntil.hashCode);
     _$hash = $jc(_$hash, lastOrderBy.hashCode);
     _$hash = $jc(_$hash, lastOrderReason.hashCode);
+    _$hash = $jc(_$hash, offersExpired.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -357,7 +362,8 @@ class _$CaptainAvailabilityDtoOutputAvailability
           ..add('suspensionReason', suspensionReason)
           ..add('suspendedUntil', suspendedUntil)
           ..add('lastOrderBy', lastOrderBy)
-          ..add('lastOrderReason', lastOrderReason))
+          ..add('lastOrderReason', lastOrderReason)
+          ..add('offersExpired', offersExpired))
         .toString();
   }
 }
@@ -409,6 +415,11 @@ class CaptainAvailabilityDtoOutputAvailabilityBuilder
   set lastOrderReason(String? lastOrderReason) =>
       _$this._lastOrderReason = lastOrderReason;
 
+  int? _offersExpired;
+  int? get offersExpired => _$this._offersExpired;
+  set offersExpired(int? offersExpired) =>
+      _$this._offersExpired = offersExpired;
+
   CaptainAvailabilityDtoOutputAvailabilityBuilder() {
     CaptainAvailabilityDtoOutputAvailability._defaults(this);
   }
@@ -423,6 +434,7 @@ class CaptainAvailabilityDtoOutputAvailabilityBuilder
       _suspendedUntil = $v.suspendedUntil;
       _lastOrderBy = $v.lastOrderBy;
       _lastOrderReason = $v.lastOrderReason;
+      _offersExpired = $v.offersExpired;
       _$v = null;
     }
     return this;
@@ -460,6 +472,7 @@ class CaptainAvailabilityDtoOutputAvailabilityBuilder
             suspendedUntil: suspendedUntil,
             lastOrderBy: lastOrderBy,
             lastOrderReason: lastOrderReason,
+            offersExpired: offersExpired,
           );
     } catch (_) {
       late String _$failedField;

@@ -86,6 +86,14 @@ export class NotificationsModule {}
 })
 export class NotificationsWorkerModule {}
 
+// The worker's side of the captain's availability notices: C3 sets a
+// captain offline from the offer timers (CA §7.4, slice 2.15b).
+@Module({
+  imports: [DatabaseModule, CaptainsModule, ContentModule],
+  providers: [PushQueue, PlatformBroadcasts, CaptainAvailabilityNotices],
+})
+export class CaptainNoticesWorkerModule {}
+
 // The worker's push relay (architecture §8.1): sends the queued pushes
 // through FCM to the live devices of their recipients.
 @Module({

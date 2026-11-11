@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { measureDistance, type RoadDistances, straightLineMetres } from './distance.js';
+import {
+  measureDistance,
+  measureDistances,
+  type RoadDistances,
+  straightLineMetres,
+} from './distance.js';
 
 // Architecture §7.1, AP §9.12.3: a road distance from the routing service,
 // or the straight line × 1.3 when it does not answer.
@@ -15,7 +20,12 @@ function road(answer: () => Promise<number>): RoadDistances & { calls: unknown[]
       calls.push(args);
       return answer();
     },
+    table: () => Promise.reject(new Error('not asked')),
   };
+}
+
+function matrix(answer: () => Promise<(number | null)[]>): RoadDistances {
+  return { metres: () => Promise.reject(new Error('not asked')), table: answer };
 }
 
 describe('straightLineMetres', () => {
@@ -72,5 +82,48 @@ describe('measureDistance', () => {
       method: 'straight_x1.3',
     });
     expect(osrm.calls).toEqual([]);
+  });
+});
+
+describe('measureDistances (AP §9.12.6)', () => {
+  const straight = Math.round(straightLineMetres(azaz, market) * 1.3);
+
+  it('reads each road distance, the straight line × 1.3 for one without a route', async () => {
+    const onFallback = vi.fn();
+    await expect(
+      measureDistances(
+        [azaz, north],
+        market,
+        'motorbike',
+        'road',
+        matrix(() => Promise.resolve([2345.6, null])),
+        onFallback,
+      ),
+    ).resolves.toEqual([
+      { metres: 2346, method: 'road' },
+      { metres: Math.round(straightLineMetres(north, market) * 1.3), method: 'straight_x1.3' },
+    ]);
+    expect(onFallback).toHaveBeenCalledOnce();
+  });
+
+  it('falls back for every source when the matrix fails or has the wrong rows', async () => {
+    for (const answer of [
+      () => Promise.reject(new Error('timed out')),
+      () => Promise.resolve([1, 2]),
+    ]) {
+      await expect(
+        measureDistances([azaz], market, 'car', 'road', matrix(answer)),
+      ).resolves.toEqual([{ metres: straight, method: 'straight_x1.3' }]);
+    }
+  });
+
+  it('never asks with straight_line, and refuses a point that is not a coordinate', async () => {
+    const never = matrix(() => Promise.reject(new Error('asked')));
+    await expect(measureDistances([azaz], market, 'car', 'straight_line', never)).resolves.toEqual([
+      { metres: straight, method: 'straight_x1.3' },
+    ]);
+    await expect(
+      measureDistances([{ latitude: 91, longitude: 0 }], market, 'car', 'road', never),
+    ).rejects.toThrow(RangeError);
   });
 });

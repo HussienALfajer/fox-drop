@@ -6,12 +6,13 @@ import { createApiApp } from '../http/create-api-app.js';
 import { LoggingModule } from '../logging/logging.module.js';
 import { AuditWorkerModule } from '../modules/audit/index.js';
 import { CaptainsWorkerModule } from '../modules/captains/index.js';
-import { DispatchWorkerModule } from '../modules/dispatch/index.js';
+import { DispatcherModule, DispatchWorkerModule } from '../modules/dispatch/index.js';
 import { OtpSenderModule } from '../modules/identity/index.js';
 import { LedgerWorkerModule } from '../modules/ledger/index.js';
 import { MerchantsWorkerModule } from '../modules/merchants/index.js';
 import {
   AlertsWorkerModule,
+  CaptainNoticesWorkerModule,
   PlatformRelayWorkerModule,
   PushWorkerModule,
 } from '../modules/notifications/index.js';
@@ -31,11 +32,12 @@ const BACKGROUND_MODULES: Record<BackgroundRole, Type[]> = {
     OrderingWorkerModule,
     DispatchWorkerModule,
     AlertsWorkerModule,
+    CaptainNoticesWorkerModule,
     PushWorkerModule,
     PlatformRelayWorkerModule,
     MerchantsWorkerModule,
   ],
-  dispatcher: [],
+  dispatcher: [DispatcherModule],
   'otp-sender': [OtpSenderModule],
 };
 

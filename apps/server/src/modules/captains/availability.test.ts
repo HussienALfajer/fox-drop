@@ -24,6 +24,7 @@ const ready: AvailabilityInput = {
   termsPending: false,
   activeOrder: false,
   lastOrder: null,
+  offersExpired: null,
 };
 
 describe('onlineBlocks', () => {
@@ -112,7 +113,7 @@ describe('availability', () => {
   const online = { ...ready, onlineSince: new Date(now.getTime() - hours(1)) };
 
   it('is offline without an online period', () => {
-    expect(availability(ready, now)).toEqual({ state: 'offline' });
+    expect(availability(ready, now)).toEqual({ state: 'offline', offersExpired: null });
   });
 
   it('is online and available with nothing in the way', () => {
@@ -177,7 +178,10 @@ describe('availability', () => {
         now,
       ),
     ).toEqual({ state: 'suspended', reason: 'تأخر متكرر', until });
-    expect(availability({ ...ready, status: 'terminated' }, now)).toEqual({ state: 'offline' });
+    expect(availability({ ...ready, status: 'terminated' }, now)).toEqual({
+      state: 'offline',
+      offersExpired: null,
+    });
   });
 
   // CA §7.3, §7.6, K13, K18: last-order mode, asked by the captain or set by

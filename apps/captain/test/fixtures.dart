@@ -44,6 +44,7 @@ Map<String, Object?> availabilityJson({
   String usage = '0',
   String? lastOrderBy,
   String? lastOrderReason,
+  int? offersExpired,
 }) => {
   'availability': {
     'state': state,
@@ -53,6 +54,7 @@ Map<String, Object?> availabilityJson({
     'suspendedUntil': null,
     'lastOrderBy': lastOrderBy,
     'lastOrderReason': lastOrderReason,
+    'offersExpired': offersExpired,
   },
   'custody': {
     'usage': moneyJson(usage),

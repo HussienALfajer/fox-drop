@@ -378,7 +378,10 @@ describe('going online and offline (CA §7.2, §7.5)', () => {
       since: now,
     });
     expect(await captains.goOffline(id, later)).toEqual({ handIn: null });
-    expect((await captains.state(id, later)).availability).toEqual({ state: 'offline' });
+    expect((await captains.state(id, later)).availability).toEqual({
+      state: 'offline',
+      offersExpired: null,
+    });
   });
 
   it('reminds of the cash held when going offline', async () => {
@@ -681,7 +684,10 @@ describe('last-order mode and force offline', () => {
     await db.transaction(async (tx) => (await captains.afterOrderLeft(tx, id, new Date()))());
     expect((await captains.state(id, new Date())).availability.state).toBe('last_order');
     await leaves(id);
-    expect((await captains.state(id, new Date())).availability).toEqual({ state: 'offline' });
+    expect((await captains.state(id, new Date())).availability).toEqual({
+      state: 'offline',
+      offersExpired: null,
+    });
     expect(await endReason(id)).toBe('last_order');
     expect(changes.at(-1)).toMatchObject({ kind: 'offline_after_order', captainId: id });
   });
@@ -714,7 +720,10 @@ describe('last-order mode and force offline', () => {
       captains.forceOffline(id, { ...change, reason: ' ' }, new Date()),
     ).rejects.toMatchObject({ refusal: 'reason_required' });
     await captains.forceOffline(id, { ...change, reason: 'تأخر في التسليم' }, new Date());
-    expect((await captains.state(id, new Date())).availability).toEqual({ state: 'offline' });
+    expect((await captains.state(id, new Date())).availability).toEqual({
+      state: 'offline',
+      offersExpired: null,
+    });
     expect(await endReason(id)).toBe('forced');
     expect(changes.at(-1)).toMatchObject({
       kind: 'forced_offline',
@@ -781,7 +790,10 @@ describe('last-order mode and force offline', () => {
       by: 'terminated',
     });
     await leaves(id);
-    expect((await captains.state(id, new Date())).availability).toEqual({ state: 'offline' });
+    expect((await captains.state(id, new Date())).availability).toEqual({
+      state: 'offline',
+      offersExpired: null,
+    });
     expect(await endReason(id)).toBe('terminated');
   });
 

@@ -622,6 +622,8 @@
   "@captainLastOrderOn": {"description": "Under the switch while last-order mode is on (CA §7.3); the wording is ours."},
   "captainLastOrderForced": "فصلتك العمليات من الاتصال: {reason}. ستصبح غير متصل بعد هذا الطلب.",
   "@captainLastOrderForced": {"description": "Force offline during an order (CA §7.6, K18); the wording is ours.", "placeholders": {"reason": {"type": "String"}}},
+  "captainOffersExpiredOffline": "لم ترد على {count} عروض متتالية، فأصبحت غير متصل. اضغط «متصل» عندما تكون جاهزاً.",
+  "@captainOffersExpiredOffline": {"description": "C3: offline after unanswered offers in a row (CA §7.4); count is captain.offer_expiry_offline_count, given as text.", "placeholders": {"count": {"type": "String"}}},
   "captainLastOrderSuspended": "حسابك موقوف: {reason}. أكمل هذا الطلب ثم تصبح غير متصل.",
   "@captainLastOrderSuspended": {"description": "A suspension during an order (CA §7.6, K18); the wording is ours.", "placeholders": {"reason": {"type": "String"}}},
   "captainLastOrderTerminated": "انتهى تعاقدك مع FOX DROP. أكمل هذا الطلب ثم تصبح غير متصل.",
