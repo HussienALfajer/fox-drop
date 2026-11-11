@@ -97,7 +97,7 @@ function PeakBonusView({ bonus, city }: { bonus: PeakBonus; city: City }) {
           key={newest?.id ?? 'none'}
           initial={formOf(newest)}
           zones={bonus.zones}
-          currency={newest?.currency ?? null}
+          currency={newest?.currency ?? bonus.baseCurrency}
           city={city}
           save={save}
         />
@@ -161,8 +161,9 @@ function PeakBonusForm({
   const { t } = useTranslation();
   const [form, setForm] = useState<PeakForm>(initial);
   const [problem, setProblem] = useState<{ problem: FormProblem; window: number } | null>(null);
-  // Amounts are typed in the city's base; a city without one is refused.
-  const base = currency ?? 'TRY';
+  // Amounts are typed in the city's base; without one the server refuses
+  // the save, and two decimals are assumed meanwhile.
+  const base = currency ?? '';
   const setWindow = (index: number, change: Partial<WindowForm>) =>
     setForm((before) => ({
       ...before,

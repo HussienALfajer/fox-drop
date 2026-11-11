@@ -18,6 +18,7 @@ part 'admin_peak_bonus_dto_output.g.dart';
 /// * [inForce]
 /// * [pending]
 /// * [zones]
+/// * [baseCurrency] - The amounts are typed in it; null while the city has none.
 @BuiltValue()
 abstract class AdminPeakBonusDtoOutput
     implements Built<AdminPeakBonusDtoOutput, AdminPeakBonusDtoOutputBuilder> {
@@ -29,6 +30,10 @@ abstract class AdminPeakBonusDtoOutput
 
   @BuiltValueField(wireName: r'zones')
   BuiltList<AdminPeakBonusDtoOutputZonesInner> get zones;
+
+  /// The amounts are typed in it; null while the city has none.
+  @BuiltValueField(wireName: r'baseCurrency')
+  String? get baseCurrency;
 
   AdminPeakBonusDtoOutput._();
 
@@ -85,6 +90,13 @@ class _$AdminPeakBonusDtoOutputSerializer
         FullType(AdminPeakBonusDtoOutputZonesInner),
       ]),
     );
+    yield r'baseCurrency';
+    yield object.baseCurrency == null
+        ? null
+        : serializers.serialize(
+            object.baseCurrency,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -146,6 +158,16 @@ class _$AdminPeakBonusDtoOutputSerializer
                   )
                   as BuiltList<AdminPeakBonusDtoOutputZonesInner>;
           result.zones.replace(valueDes);
+          break;
+        case r'baseCurrency':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.baseCurrency = valueDes;
           break;
         default:
           unhandled.add(key);

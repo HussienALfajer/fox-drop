@@ -36,10 +36,11 @@ test('turns the peak bonus on with a window for one zone', async ({ page }) => {
           },
           pending: null,
           zones,
+          baseCurrency: 'TRY',
         },
       });
     }
-    return route.fulfill({ json: { inForce: null, pending: null, zones } });
+    return route.fulfill({ json: { inForce: null, pending: null, zones, baseCurrency: 'TRY' } });
   });
   await page.goto('/');
 
@@ -69,7 +70,7 @@ test('shows the bonus without the form to a role that only reads it', async ({ p
   await fakeSession(page, ['zones.read']);
   await page.route('**/v1/admin/cities', (route) => route.fulfill({ json: cities }));
   await page.route('**/v1/admin/peak-bonus*', (route) =>
-    route.fulfill({ json: { inForce: null, pending: null, zones } }),
+    route.fulfill({ json: { inForce: null, pending: null, zones, baseCurrency: 'TRY' } }),
   );
   await page.goto('/peak-bonus');
   await expect(page.getByText('المكافأة متوقفة.')).toBeVisible();

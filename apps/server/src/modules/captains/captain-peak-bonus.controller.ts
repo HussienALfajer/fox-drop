@@ -57,12 +57,10 @@ export class CaptainPeakBonusController {
     const now = new Date();
     const captain = await this.captains.captain(session.captain.captainId, now);
     if (!captain) throw new ForbiddenException();
-    const [{ inForce }, active] = await Promise.all([
-      this.peak.state(captain.cityId, now),
+    const [{ currency, windows }, active] = await Promise.all([
+      this.peak.captainWindows(captain.cityId, now),
       this.peak.activeNow(captain.cityId, now),
     ]);
-    const windows = inForce?.enabled ? inForce.windows : [];
-    const currency = inForce?.currency ?? '';
     return {
       windows: windows.map((window) => ({
         days: window.days,

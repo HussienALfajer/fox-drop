@@ -136,9 +136,11 @@ export function bonusAt(
 }
 
 // When a new version takes effect (AP §9.12.5): enabling or raising at once;
-// lowering or disabling what is running now at the end of the current
-// window, the latest end among the running windows of a zone whose bonus
-// falls; with no window running, at once (owner decision 2026-11-12).
+// lowering, shortening or disabling a window running now at the end of the
+// current window: the latest end among the running windows during whose rest
+// the new version pays a zone they cover less; with no window running, at
+// once (owner decision 2026-11-12). Each running window is checked minute by
+// minute until its end on the city's clock.
 export function takesEffect(
   current: Pick<PeakVersion, 'enabled' | 'windows'> | null,
   next: Pick<PeakVersion, 'enabled' | 'windows'>,
@@ -146,20 +148,40 @@ export function takesEffect(
   clock: LocalClock,
 ): Date {
   if (current === null || !current.enabled) return now;
-  const running = activeWindows(current.windows, clock);
   // Every zone either version names, and null for any other zone.
   const zones = new Set<string | null>([null]);
   for (const window of [...current.windows, ...next.windows]) {
     for (const zoneId of window.zoneIds) zones.add(zoneId);
   }
   let waitSeconds = 0;
-  for (const zoneId of zones) {
-    if (bonusAt(next, clock, zoneId) >= bonusAt(current, clock, zoneId)) continue;
-    for (const { window, endsInSeconds } of running) {
-      if (covers(window, zoneId) && endsInSeconds > waitSeconds) waitSeconds = endsInSeconds;
-    }
+  for (const { window, endsInSeconds } of activeWindows(current.windows, clock)) {
+    if (endsInSeconds <= waitSeconds) continue;
+    const lowered = [...zones].some(
+      (zoneId) =>
+        covers(window, zoneId) &&
+        minutesUntil(clock, endsInSeconds).some(
+          (later) => bonusAt(next, later, zoneId) < window.amount,
+        ),
+    );
+    if (lowered) waitSeconds = endsInSeconds;
   }
   return new Date(now.getTime() + waitSeconds * 1000);
+}
+
+// The city's clock now and at the start of every minute after it, before a
+// moment that many seconds ahead.
+function minutesUntil(clock: LocalClock, seconds: number): LocalClock[] {
+  const clocks = [clock];
+  const minutes = Math.ceil((clock.second + seconds) / 60);
+  for (let ahead = 1; ahead < minutes; ahead += 1) {
+    const total = clock.minute + ahead;
+    clocks.push({
+      day: ((clock.day - 1 + Math.floor(total / MINUTES_PER_DAY)) % 7) + 1,
+      minute: total % MINUTES_PER_DAY,
+      second: 0,
+    });
+  }
+  return clocks;
 }
 
 // The version in force at a moment, of a city's versions in the order they

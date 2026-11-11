@@ -4237,6 +4237,8 @@ export interface components {
                 name: string;
                 active: boolean;
             }[];
+            /** @description The amounts are typed in it; null while the city has none. */
+            baseCurrency: string | null;
         };
         AdminSetPeakBonusDto: {
             /** Format: uuid */

@@ -1,10 +1,20 @@
-import { BadRequestException, Body, Get, HttpStatus, Put, Query, Req } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Get,
+  HttpStatus,
+  NotFoundException,
+  Put,
+  Query,
+  Req,
+} from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
+import { FxService } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
 import type { AdminSession } from '../identity/index.js';
 import { CaptainsRefusedError } from './captains.service.js';
@@ -48,6 +58,11 @@ class AdminPeakBonusDto extends createZodDto(
       .nullable()
       .describe('A lowering or disabling waiting for the end of the current window.'),
     zones: z.array(z.object({ id: z.uuid(), name: z.string(), active: z.boolean() })),
+    baseCurrency: z
+      .string()
+      .length(3)
+      .nullable()
+      .describe('The amounts are typed in it; null while the city has none.'),
   }),
 ) {}
 
@@ -67,24 +82,27 @@ export class AdminPeakBonusController {
   constructor(
     private readonly peak: PeakBonusService,
     private readonly geo: GeoService,
+    private readonly fx: FxService,
   ) {}
 
   @Get()
   @RequirePermission('zones.read')
   @ZodResponse({ status: 200, type: AdminPeakBonusDto })
   async state(@Query() query: AdminPeakBonusQueryDto) {
-    const [state, zones] = await Promise.all([
+    const [state, zones, baseCurrency] = await Promise.all([
       this.peak.state(query.cityId, new Date()),
       this.geo.zones(query.cityId),
+      this.fx.baseCurrency(query.cityId),
     ]);
     return {
       inForce: state.inForce && versionBody(state.inForce),
       pending: state.pending && versionBody(state.pending),
       zones,
+      baseCurrency,
     };
   }
 
-  // 400 invalid_peak_bonus, not_in_base_currency.
+  // 400 invalid_peak_bonus, not_in_base_currency; 404 unknown_city.
   @Put()
   @RequirePermission('pricing.edit_pay_tables')
   @ZodResponse({ status: 200, type: AdminPeakBonusDto })
@@ -106,6 +124,9 @@ export class AdminPeakBonusController {
         },
       );
     } catch (error) {
+      if (error instanceof CaptainsRefusedError && error.refusal === 'unknown_city') {
+        throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: error.refusal });
+      }
       if (error instanceof CaptainsRefusedError) {
         throw new BadRequestException({
           statusCode: HttpStatus.BAD_REQUEST,

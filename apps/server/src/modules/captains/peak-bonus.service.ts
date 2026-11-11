@@ -72,16 +72,33 @@ export class PeakBonusService implements OnModuleInit {
     private readonly audit: AuditService,
   ) {}
 
-  // The latest version, while it is on, is in the city's base currency, so
-  // fx refuses a base change under it.
+  // The version in force and the latest, while on, are in the city's base
+  // currency, so fx refuses a base change under them (a disabling waiting
+  // for the end of a window never lets the base move under the window).
   onModuleInit(): void {
     this.fx.useCityAmounts(async (cityId, executor) => {
-      const { rows } = await executor.execute<{ key: string; currency: string; enabled: boolean }>(
-        sql`SELECT 'captain.peak_bonus' AS key, currency, enabled
+      const { rows } = await executor.execute<{
+        id: string;
+        enabled: boolean;
+        currency: string;
+        effective_from: Date;
+        created_at: Date;
+      }>(
+        sql`SELECT id, enabled, currency, effective_from, created_at
               FROM captains.peak_bonus_versions WHERE city_id = ${cityId}
-              ORDER BY created_at DESC, id DESC LIMIT 1`,
+              ORDER BY created_at, id`,
       );
-      return rows.filter((row) => row.enabled).map(({ key, currency }) => ({ key, currency }));
+      const versions = rows.map((row) => ({
+        id: row.id,
+        enabled: row.enabled,
+        currency: row.currency,
+        effectiveFrom: new Date(row.effective_from),
+        createdAt: new Date(row.created_at),
+        windows: [],
+      }));
+      return [versionInForce(versions, new Date()), versions.at(-1) ?? null]
+        .filter((version) => version?.enabled === true)
+        .map((version) => ({ key: 'captain.peak_bonus', currency: version!.currency }));
     });
   }
 
@@ -109,7 +126,7 @@ export class PeakBonusService implements OnModuleInit {
       throw new CaptainsRefusedError('invalid_peak_bonus', 'a zone is not one of the city');
     }
     const timeZone = await this.geo.cityTimeZone(cityId);
-    if (timeZone === null) throw new Error(`city ${cityId} not found`);
+    if (timeZone === null) throw new CaptainsRefusedError('unknown_city', 'no such city');
     const editor = change.actor;
     if (editor.type !== 'admin' && editor.type !== 'system') {
       throw new Error(`a ${editor.type} does not set the peak bonus`);
@@ -134,6 +151,9 @@ export class PeakBonusService implements OnModuleInit {
       const createdAt = new Date(now);
       const versions = await this.versions(cityId, tx);
       const current = versionInForce(versions, createdAt);
+      // A change still waiting, which this one replaces.
+      const last = versions.at(-1);
+      const replaced = last !== undefined && last.effectiveFrom > createdAt ? last : null;
       const effectiveFrom = takesEffect(
         // A version in an earlier base pays nothing now (bonusFor).
         current?.currency === currency ? current : null,
@@ -165,8 +185,11 @@ export class PeakBonusService implements OnModuleInit {
           cityId,
           action: 'peak_bonus.set',
           target: { type: 'peak_bonus', id },
-          before: current && auditOf(current),
-          after: auditOf({ enabled: next.enabled, currency, effectiveFrom, windows: next.windows }),
+          before: current && { ...auditOf(current), versionId: current.id },
+          after: {
+            ...auditOf({ enabled: next.enabled, currency, effectiveFrom, windows: next.windows }),
+            replaces: replaced?.id ?? null,
+          },
           reason: change.reason ?? null,
         },
         tx,
@@ -195,8 +218,8 @@ export class PeakBonusService implements OnModuleInit {
   // CA §12.5: the windows running now, each with its amount, its end and its
   // zones (none: every zone).
   async activeNow(cityId: string, now: Date): Promise<ActivePeakWindow[]> {
-    const version = versionInForce(await this.versions(cityId, this.database.db), now);
-    if (version === null || !version.enabled) return [];
+    const version = await this.payingVersion(cityId, now);
+    if (version === null) return [];
     const timeZone = await this.geo.cityTimeZone(cityId);
     if (timeZone === null) return [];
     const running = activeWindows(version.windows, localClock(now, timeZone));
@@ -210,6 +233,28 @@ export class PeakBonusService implements OnModuleInit {
       until: new Date(now.getTime() + endsInSeconds * 1000),
       zones: zonesOf(window, names),
     }));
+  }
+
+  // CA §12.5: the windows the captain sees, those of the version in force
+  // while it pays (on, in the city's base); none otherwise.
+  async captainWindows(
+    cityId: string,
+    now: Date,
+  ): Promise<{ currency: string; windows: PeakWindowView[] }> {
+    const version = await this.payingVersion(cityId, now);
+    if (version === null) return { currency: '', windows: [] };
+    return {
+      currency: version.currency,
+      windows: view(version, await this.zoneNames(cityId)).windows,
+    };
+  }
+
+  // The version in force while it pays: on, and in the city's base (a
+  // version in an earlier base pays nothing, bonusFor).
+  private async payingVersion(cityId: string, now: Date): Promise<PeakVersion | null> {
+    const version = versionInForce(await this.versions(cityId, this.database.db), now);
+    if (version === null || !version.enabled) return null;
+    return (await this.fx.baseCurrency(cityId)) === version.currency ? version : null;
   }
 
   // The city's versions in the order they were saved, with their windows.

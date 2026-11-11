@@ -13,13 +13,19 @@ class _$AdminPeakBonusDtoOutput extends AdminPeakBonusDtoOutput {
   final AdminPeakBonusDtoOutputPending? pending;
   @override
   final BuiltList<AdminPeakBonusDtoOutputZonesInner> zones;
+  @override
+  final String? baseCurrency;
 
   factory _$AdminPeakBonusDtoOutput([
     void Function(AdminPeakBonusDtoOutputBuilder)? updates,
   ]) => (AdminPeakBonusDtoOutputBuilder()..update(updates))._build();
 
-  _$AdminPeakBonusDtoOutput._({this.inForce, this.pending, required this.zones})
-    : super._();
+  _$AdminPeakBonusDtoOutput._({
+    this.inForce,
+    this.pending,
+    required this.zones,
+    this.baseCurrency,
+  }) : super._();
   @override
   AdminPeakBonusDtoOutput rebuild(
     void Function(AdminPeakBonusDtoOutputBuilder) updates,
@@ -35,7 +41,8 @@ class _$AdminPeakBonusDtoOutput extends AdminPeakBonusDtoOutput {
     return other is AdminPeakBonusDtoOutput &&
         inForce == other.inForce &&
         pending == other.pending &&
-        zones == other.zones;
+        zones == other.zones &&
+        baseCurrency == other.baseCurrency;
   }
 
   @override
@@ -44,6 +51,7 @@ class _$AdminPeakBonusDtoOutput extends AdminPeakBonusDtoOutput {
     _$hash = $jc(_$hash, inForce.hashCode);
     _$hash = $jc(_$hash, pending.hashCode);
     _$hash = $jc(_$hash, zones.hashCode);
+    _$hash = $jc(_$hash, baseCurrency.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -53,7 +61,8 @@ class _$AdminPeakBonusDtoOutput extends AdminPeakBonusDtoOutput {
     return (newBuiltValueToStringHelper(r'AdminPeakBonusDtoOutput')
           ..add('inForce', inForce)
           ..add('pending', pending)
-          ..add('zones', zones))
+          ..add('zones', zones)
+          ..add('baseCurrency', baseCurrency))
         .toString();
   }
 }
@@ -81,6 +90,10 @@ class AdminPeakBonusDtoOutputBuilder
   set zones(ListBuilder<AdminPeakBonusDtoOutputZonesInner>? zones) =>
       _$this._zones = zones;
 
+  String? _baseCurrency;
+  String? get baseCurrency => _$this._baseCurrency;
+  set baseCurrency(String? baseCurrency) => _$this._baseCurrency = baseCurrency;
+
   AdminPeakBonusDtoOutputBuilder() {
     AdminPeakBonusDtoOutput._defaults(this);
   }
@@ -91,6 +104,7 @@ class AdminPeakBonusDtoOutputBuilder
       _inForce = $v.inForce?.toBuilder();
       _pending = $v.pending?.toBuilder();
       _zones = $v.zones.toBuilder();
+      _baseCurrency = $v.baseCurrency;
       _$v = null;
     }
     return this;
@@ -118,6 +132,7 @@ class AdminPeakBonusDtoOutputBuilder
             inForce: _inForce?.build(),
             pending: _pending?.build(),
             zones: zones.build(),
+            baseCurrency: baseCurrency,
           );
     } catch (_) {
       late String _$failedField;

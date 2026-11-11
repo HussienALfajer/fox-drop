@@ -12619,12 +12619,26 @@
               ],
               "additionalProperties": false
             }
+          },
+          "baseCurrency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The amounts are typed in it; null while the city has none."
           }
         },
         "required": [
           "inForce",
           "pending",
-          "zones"
+          "zones",
+          "baseCurrency"
         ],
         "additionalProperties": false
       },

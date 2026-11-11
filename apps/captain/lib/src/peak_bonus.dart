@@ -12,8 +12,8 @@ typedef PeakWindow = CaptainPeakBonusDtoOutputWindowsInner;
 typedef ActivePeak = CaptainPeakBonusDtoOutputActiveInner;
 
 /// How long a read of the windows stands before it is read again, so a
-/// window that starts while home stays open shows within this time (and at
-/// once with its push, CA §14 #23).
+/// window that starts while home stays open shows within this time (its
+/// push, CA §14 #23, opens home but does not read it again).
 const peakRefresh = Duration(minutes: 5);
 
 /// CA §12.5 (AP §9.12.5, D15): `GET /v1/captain/peak-bonus`, the windows in

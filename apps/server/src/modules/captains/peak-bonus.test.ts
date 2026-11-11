@@ -141,6 +141,25 @@ describe('takesEffect', () => {
     expect(takesEffect(current, narrowed, now, clock)).toEqual(end);
   });
 
+  it('waits for the end of a running window that a change shortens or narrows', () => {
+    const now = thursday('20:30');
+    const clock = localClock(now, ZONE);
+    // 20:00–22:00 cut to 20:00–21:00 pays the same now, less from 21:00.
+    const shortened = { enabled: true, windows: [{ ...evening, endMinute: 21 * 60 }] };
+    expect(takesEffect(current, shortened, now, clock)).toEqual(thursday('22:00'));
+    // Running past midnight: Thursday 23:00–01:00 cut to 23:00–00:00.
+    const late: PeakWindow = { ...evening, days: [4], startMinute: 23 * 60, endMinute: 60 };
+    const lateVersion = version([late], at('2026-01-01T00:00:00Z'));
+    const lateNow = thursday('23:30');
+    const cut = { enabled: true, windows: [{ ...late, endMinute: 0 }] };
+    expect(takesEffect(lateVersion, cut, lateNow, localClock(lateNow, ZONE))).toEqual(
+      at('2026-11-13T01:00:00+03:00'),
+    );
+    // Lengthened: at once.
+    const longer = { enabled: true, windows: [{ ...evening, endMinute: 23 * 60 }] };
+    expect(takesEffect(current, longer, now, clock)).toEqual(now);
+  });
+
   it('lowers or disables at once when no window is running (owner decision 2026-11-12)', () => {
     const now = thursday('18:00');
     const clock = localClock(now, ZONE);
@@ -152,9 +171,10 @@ describe('takesEffect', () => {
     const clock = localClock(now, ZONE);
     const long: PeakWindow = { ...evening, endMinute: 23 * 60, amount: 300n, zoneIds: [zoneA] };
     const withLong = version([evening, long], at('2026-01-01T00:00:00Z'));
-    // Zone B loses 500 (ends 22:00); zone A keeps 500 from the new window.
+    // Zone B loses 500 (ends 22:00); zone A keeps 500 until 22:00 but loses
+    // its 300 from 22:00 to 23:00, so the change waits for 23:00.
     const next = { enabled: true, windows: [{ ...evening, zoneIds: [zoneA] }] };
-    expect(takesEffect(withLong, next, now, clock)).toEqual(thursday('22:00'));
+    expect(takesEffect(withLong, next, now, clock)).toEqual(thursday('23:00'));
     // Both off: zone A's longer window ends at 23:00.
     expect(takesEffect(withLong, { enabled: false, windows: [] }, now, clock)).toEqual(
       thursday('23:00'),
