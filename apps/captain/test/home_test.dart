@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:captain/src/auth.dart';
 import 'package:captain/src/work/location.dart';
+import 'package:captain/src/work/order_view.dart';
 import 'package:captain/src/work/work.dart';
 import 'package:core_auth/testing.dart';
 import 'package:core_realtime/core_realtime.dart';
@@ -38,6 +39,8 @@ void main() {
     });
     expect(find.text('متصل متاح'), findsOneWidget);
     expect(app.location.tracking, 1);
+    // «طوارئ» calls directly with the call permission (CA §4.5 check 8).
+    expect(app.caller.prepared, 1);
 
     app.server.on('/v1/captain/availability/offline', [
       FakeAnswer(200, {'handIn': moneyJson('41000')}),
@@ -319,7 +322,18 @@ void main() {
       {'reason': 'pin_inaccurate', 'note': null},
     );
 
-    // Step 4: the exact amount in dollars, then «تم التسليم».
+    // Step 4: the exact amount in dollars, then «تم التسليم». The list
+    // keeps its scroll, so its header is above the fold.
+    await tester.scrollUntilVisible(
+      find.text('الخطوة 4 من 4: عند الزبون'),
+      -200,
+      scrollable: find
+          .descendant(
+            of: find.byType(OrderView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     expect(find.text('الخطوة 4 من 4: عند الزبون'), findsOneWidget);
     expect(find.text('المبلغ المطلوب'), findsOneWidget);
     await app.tapVisible(tester, find.byKey(const Key('exact-USD')));
@@ -1012,6 +1026,71 @@ void main() {
       hasLength(1),
     );
     expect(find.text('بانتظار العمليات'), findsNothing);
+    await app.done(tester);
+  });
+
+  testWidgets('«طوارئ» needs a 2-second press, calls operations and sends '
+      'the location, then only calls (CA §9.11, C15, K12)', (tester) async {
+    final app = TestApp();
+    app.server.on('/v1/captain/contact', [
+      const FakeAnswer(200, {'phone': '+963944000000', 'whatsapp': null}),
+    ]);
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [orderJson(track: 'picked_up', pickedUp: true)],
+    );
+    await app.pump(tester);
+    await app.live(tester);
+    final button = find.text('طوارئ');
+    await tester.ensureVisible(button);
+    await app.settle(tester);
+
+    // A short press does nothing.
+    var press = await tester.startGesture(tester.getCenter(button));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 1500));
+    await press.up();
+    await app.settle(tester);
+    expect(app.caller.calls, isEmpty);
+    expect(app.server.to('/v1/captain/orders/$orderId/emergency'), isEmpty);
+
+    final pressed = orderJson(
+      track: 'picked_up',
+      pickedUp: true,
+      version: 4,
+      emergency: {'at': now.toIso8601String()},
+    );
+    app.server.on('/v1/captain/orders/$orderId/emergency', [
+      FakeAnswer(200, {'order': pressed}),
+    ]);
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [pressed],
+    );
+    press = await tester.startGesture(tester.getCenter(button));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 2100));
+    await press.up();
+    await app.settle(tester);
+    expect(app.caller.calls, ['+963944000000']);
+    final body = bodyOf(app, '/v1/captain/orders/$orderId/emergency');
+    expect((body['location'] as Map<String, Object?>)['latitude'], isNotNull);
+    expect(
+      find.text('أُبلغت العمليات بالطوارئ وموقعك. ابقَ في مكان آمن.'),
+      findsOneWidget,
+    );
+
+    // Open: it cannot be withdrawn, and another press only calls.
+    press = await tester.startGesture(tester.getCenter(button));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 2100));
+    await press.up();
+    await app.settle(tester);
+    expect(app.caller.calls, hasLength(2));
+    expect(
+      app.server.to('/v1/captain/orders/$orderId/emergency'),
+      hasLength(1),
+    );
     await app.done(tester);
   });
 

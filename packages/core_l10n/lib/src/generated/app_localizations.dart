@@ -2458,6 +2458,24 @@ abstract class AppLocalizations {
   /// **'تراجع'**
   String get captainWithdrawRequest;
 
+  /// The red emergency button on the active order (C15, CA §9.11, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'طوارئ'**
+  String get captainEmergency;
+
+  /// Under «طوارئ»: the 2-second press of K12. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط مطوّلاً ثانيتين للاتصال بالعمليات وإرسال موقعك'**
+  String get captainEmergencyHold;
+
+  /// Above «طوارئ» once the emergency is open; it cannot be withdrawn. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أُبلغت العمليات بالطوارئ وموقعك. ابقَ في مكان آمن.'**
+  String get captainEmergencySent;
+
   /// The text of «أخرى». The spec gives no wording.
   ///
   /// In ar, this message translates to:

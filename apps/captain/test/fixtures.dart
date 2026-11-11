@@ -6,6 +6,7 @@ import 'package:captain/src/app.dart';
 import 'package:captain/src/auth.dart';
 import 'package:captain/src/push.dart';
 import 'package:captain/src/work/alerts.dart';
+import 'package:captain/src/work/call.dart';
 import 'package:captain/src/work/commands.dart';
 import 'package:captain/src/work/location.dart';
 import 'package:core_auth/testing.dart';
@@ -144,6 +145,7 @@ Map<String, Object?> orderJson({
   bool pickedUp = false,
   Map<String, Object?>? handover,
   Map<String, Object?>? cannotComplete,
+  Map<String, Object?>? emergency,
 }) {
   final atRestaurant = track != 'assigned';
   final atCustomer = track == 'at_customer';
@@ -213,6 +215,7 @@ Map<String, Object?> orderJson({
     'editUnacknowledged': editUnacknowledged,
     'handover': handover,
     'cannotComplete': cannotComplete,
+    'emergency': emergency,
   };
 }
 
@@ -434,6 +437,7 @@ class TestApp {
   final push = FakePush();
   // The phone allows notifications unless a test says otherwise.
   final permission = FakeNotificationPermission(allowed: true);
+  final caller = FakeCaller();
   late final ProviderContainer container;
 
   /// The server's clock in the test, which [advance] moves.
@@ -535,6 +539,7 @@ class TestApp {
         locationSourceProvider.overrideWithValue(location),
         pushProvider.overrideWithValue(push),
         notificationPermissionProvider.overrideWithValue(permission),
+        operationsCallerProvider.overrideWithValue(caller),
         serverClockProvider.overrideWithValue(
           ServerClock(deviceNow: () => clockNow),
         ),
@@ -588,4 +593,16 @@ class TestApp {
     container.dispose();
     await tester.pump(const Duration(seconds: 1));
   }
+}
+
+/// The call to operations of «طوارئ»: what was asked and called.
+class FakeCaller implements OperationsCaller {
+  int prepared = 0;
+  final calls = <String>[];
+
+  @override
+  Future<void> prepare() async => prepared++;
+
+  @override
+  Future<void> call(String phone) async => calls.add(phone);
 }

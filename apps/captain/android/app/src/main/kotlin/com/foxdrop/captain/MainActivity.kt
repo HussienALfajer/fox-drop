@@ -1,16 +1,49 @@
 package com.foxdrop.captain
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.RingtoneManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         createPushChannels()
+    }
+
+    // CA §9.11 «طوارئ» (slice 2.13c): calls operations directly with the
+    // call permission (CA §4.5 check 8), otherwise opens the dialer with the
+    // number. Answers whether the call started directly.
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.foxdrop.captain/call")
+            .setMethodCallHandler { call, result ->
+                val phone = call.argument<String>("phone")
+                if (call.method != "call" || phone == null) {
+                    result.notImplemented()
+                    return@setMethodCallHandler
+                }
+                val direct = Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
+                    checkSelfPermission(Manifest.permission.CALL_PHONE) ==
+                    PackageManager.PERMISSION_GRANTED
+                val action = if (direct) Intent.ACTION_CALL else Intent.ACTION_DIAL
+                try {
+                    startActivity(Intent(action, Uri.fromParts("tel", phone, null)))
+                    result.success(direct)
+                } catch (error: ActivityNotFoundException) {
+                    result.error("no_dialer", error.message, null)
+                }
+            }
     }
 
     // The Android channels of the captain's pushes (CA §14, CA §4.4,

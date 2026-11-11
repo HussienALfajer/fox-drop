@@ -1467,6 +1467,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get captainWithdrawRequest => 'تراجع';
 
   @override
+  String get captainEmergency => 'طوارئ';
+
+  @override
+  String get captainEmergencyHold =>
+      'اضغط مطوّلاً ثانيتين للاتصال بالعمليات وإرسال موقعك';
+
+  @override
+  String get captainEmergencySent =>
+      'أُبلغت العمليات بالطوارئ وموقعك. ابقَ في مكان آمن.';
+
+  @override
   String get captainOtherHint => 'اكتب السبب';
 
   @override

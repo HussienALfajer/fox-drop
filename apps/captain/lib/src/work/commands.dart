@@ -10,6 +10,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../api.dart';
 import '../content.dart';
 import '../push.dart';
+import 'call.dart';
 import 'door_payment.dart';
 import 'location.dart';
 import 'work.dart';
@@ -188,6 +189,7 @@ class Commands extends Notifier<Set<String>> {
   /// The notification permission is asked before it, never blocking.
   Future<Notice?> goOnline() async {
     await askNotifications(ref);
+    await askCallPermission(ref);
     final source = ref.read(locationSourceProvider);
     final problem = await source.ensureAccess();
     if (problem != null) return LocationNeeded(problem);
@@ -277,6 +279,38 @@ class Commands extends Notifier<Set<String>> {
       ),
     ),
   );
+
+  /// CA §9.11 «طوارئ» (slice 2.13c): the latest fix whatever its age, or a
+  /// new one within a few seconds, or none: the emergency never waits for a
+  /// good fix. Its own subject, so a step being sent never holds it back.
+  Future<Notice?> emergency(String orderId) async {
+    final fix =
+        _tracker.latest ??
+        await ref
+            .read(locationSourceProvider)
+            .current()
+            .timeout(const Duration(seconds: 3), onTimeout: () => null);
+    return (await _send('emergency $orderId', 'emergency', (key) {
+      return _api.captainOrdersEmergency(
+        orderId: orderId,
+        idempotencyKey: key,
+        captainEmergencyDto: CaptainEmergencyDto(
+          (b) => fix == null
+              ? b.location = null
+              : b.location.replace(
+                  CaptainEmergencyDtoLocation(
+                    (l) => l
+                      ..latitude = fix.latitude
+                      ..longitude = fix.longitude
+                      ..accuracyMetres = fix.accuracyMetres
+                      ..recordedAt = fix.recordedAt
+                      ..simulated = fix.simulated,
+                  ),
+                ),
+        ),
+      );
+    })).$2;
+  }
 
   /// «تراجع»: the captain withdraws their «لا أستطيع إكمال الطلب».
   Future<Notice?> withdrawCannotComplete(String orderId) => _withFix(
