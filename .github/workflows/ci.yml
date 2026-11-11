@@ -67,7 +67,7 @@ jobs:
 
       # The traces of a failed smoke test (playwright.config.ts).
       - if: failure()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: playwright-results
           path: apps/*/test-results/
@@ -292,7 +292,7 @@ jobs:
           # Where the update screen's button leads (RA §4.2); empty hides it.
           UPDATE_URL: ${{ vars[format('STAGING_{0}_UPDATE_URL', matrix.key)] }}
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: foxdrop-${{ matrix.app }}-staging-${{ github.run_number }}
           path: apps/${{ matrix.app }}/build/app/outputs/flutter-apk/app-staging-release.apk
