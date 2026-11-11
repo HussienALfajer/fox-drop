@@ -419,7 +419,7 @@ describe('POST /v1/admin/orders/{orderId}/assign as an offer (AP §9.3.2, CA §8
       // A newer disabled version, at once (the service would wait for the
       // window's end).
       await migrator.query(
-        "INSERT INTO captains.peak_bonus_versions (city_id, enabled, currency, effective_from, editor_type, created_at) VALUES ($1, false, 'TRY', clock_timestamp(), 'system', clock_timestamp())",
+        "INSERT INTO captains.peak_bonus_versions (city_id, enabled, currency, effective_from, editor_type, created_at) VALUES ($1, false, 'TRY', now(), 'system', now())",
         [azaz],
       );
     }

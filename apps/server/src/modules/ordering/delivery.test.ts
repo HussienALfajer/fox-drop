@@ -833,7 +833,7 @@ async function peakNow(amount: bigint): Promise<() => Promise<void>> {
     await migrator.connect();
     try {
       await migrator.query(
-        "INSERT INTO captains.peak_bonus_versions (city_id, enabled, currency, effective_from, editor_type, created_at) VALUES ($1, false, 'TRY', clock_timestamp(), 'system', clock_timestamp())",
+        "INSERT INTO captains.peak_bonus_versions (city_id, enabled, currency, effective_from, editor_type, created_at) VALUES ($1, false, 'TRY', now(), 'system', now())",
         [azaz],
       );
     } finally {
