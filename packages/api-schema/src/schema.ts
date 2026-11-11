@@ -916,6 +916,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/settings/pickup-currencies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantStatusPickupCurrencies"];
+        put: operations["merchantStatusSetPickupCurrencies"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/restaurants": {
         parameters: {
             query?: never;
@@ -3746,6 +3762,26 @@ export interface components {
             endsAt: string;
             /** @description To customers, up to 100 characters. */
             message: string | null;
+        };
+        MerchantPickupCurrenciesDto_Output: {
+            /** @description Always accepted, fixed; null while the city has none. */
+            baseCurrency: {
+                currency: string;
+                /** @description Its Arabic name. */
+                name: string;
+            } | null;
+            /** @description The other currencies switched on, in the city’s display order. */
+            accepted: string[];
+            /** @description Every other currency the city has enabled, in its display order. */
+            choices: {
+                currency: string;
+                /** @description Its Arabic name. */
+                name: string;
+            }[];
+        };
+        MerchantSetPickupCurrenciesDto: {
+            /** @description The other currencies to accept besides the base; empty for the base only. */
+            currencies: string[];
         };
         AdminRestaurantsDto_Output: {
             restaurants: {
@@ -9793,6 +9829,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantStatusDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStatusPickupCurrencies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantPickupCurrenciesDto_Output"];
+                };
+            };
+        };
+    };
+    merchantStatusSetPickupCurrencies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantSetPickupCurrenciesDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantPickupCurrenciesDto_Output"];
                 };
             };
         };

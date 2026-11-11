@@ -433,6 +433,8 @@ const routeAccess: Record<string, Access> = {
   'PUT /v1/merchant/restaurant/order-settings': 'app_session',
   'PUT /v1/merchant/restaurant/holiday-close': 'app_session',
   'DELETE /v1/merchant/restaurant/holiday-close': 'app_session',
+  'GET /v1/merchant/settings/pickup-currencies': 'app_session',
+  'PUT /v1/merchant/settings/pickup-currencies': 'app_session',
   'GET /v1/merchant/menu': 'app_session',
   'GET /v1/merchant/orders': 'app_session',
   'POST /v1/merchant/orders/{orderId}/accept': 'app_session',

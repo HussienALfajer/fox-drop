@@ -293,9 +293,6 @@ Serializers _$serializers =
           ..add(AdminRestaurantStatusDtoOutputHeldPauseSourceEnum.serializer)
           ..add(AdminRestaurantStatusDtoOutputPauseSourceEnum.serializer)
           ..add(AdminRestaurantStatusDtoOutputPickupBaseCurrency.serializer)
-          ..add(
-            AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner.serializer,
-          )
           ..add(AdminRestaurantStatusDtoOutputStateEnum.serializer)
           ..add(AdminRestaurantsDtoOutput.serializer)
           ..add(AdminRestaurantsDtoOutputRestaurantsInner.serializer)
@@ -703,6 +700,9 @@ Serializers _$serializers =
           ..add(MerchantOrdersDtoOutputOrdersInnerStatusEnum.serializer)
           ..add(MerchantOrdersDtoOutputPrepTime.serializer)
           ..add(MerchantPauseDto.serializer)
+          ..add(MerchantPickupCurrenciesDtoOutput.serializer)
+          ..add(MerchantPickupCurrenciesDtoOutputBaseCurrency.serializer)
+          ..add(MerchantPickupCurrenciesDtoOutputChoicesInner.serializer)
           ..add(MerchantPickupDisputeDto.serializer)
           ..add(MerchantPickupDisputeDtoReceivedLinesInner.serializer)
           ..add(MerchantRefreshDto.serializer)
@@ -716,6 +716,7 @@ Serializers _$serializers =
           ..add(MerchantScheduleDtoPeriodsInner.serializer)
           ..add(MerchantSessionDtoOutput.serializer)
           ..add(MerchantSessionDtoOutputRoleEnum.serializer)
+          ..add(MerchantSetPickupCurrenciesDto.serializer)
           ..add(MerchantSignInDto.serializer)
           ..add(MerchantSignedInDtoOutput.serializer)
           ..add(MerchantSignedInDtoOutputRoleEnum.serializer)
@@ -1929,10 +1930,24 @@ Serializers _$serializers =
             () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(CaptainCarriedCurrenciesDtoOutputChoicesInner),
             ]),
             () => ListBuilder<CaptainCarriedCurrenciesDtoOutputChoicesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantPickupCurrenciesDtoOutputChoicesInner),
+            ]),
+            () => ListBuilder<MerchantPickupCurrenciesDtoOutputChoicesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),
@@ -1976,13 +1991,13 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
-              const FullType(
-                AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner,
+              const FullType.nullable(
+                AdminRestaurantStatusDtoOutputPickupBaseCurrency,
               ),
             ]),
             () =>
                 ListBuilder<
-                  AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner
+                  AdminRestaurantStatusDtoOutputPickupBaseCurrency?
                 >(),
           )
           ..addBuilderFactory(

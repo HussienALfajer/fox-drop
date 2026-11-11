@@ -6,19 +6,19 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_restaurant_status_dto_output_pickup_currency_choices_inner.g.dart';
+part 'merchant_pickup_currencies_dto_output_base_currency.g.dart';
 
-/// AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner
+/// Always accepted, fixed; null while the city has none.
 ///
 /// Properties:
 /// * [currency]
 /// * [name] - Its Arabic name.
 @BuiltValue()
-abstract class AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner
+abstract class MerchantPickupCurrenciesDtoOutputBaseCurrency
     implements
         Built<
-          AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner,
-          AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInnerBuilder
+          MerchantPickupCurrenciesDtoOutputBaseCurrency,
+          MerchantPickupCurrenciesDtoOutputBaseCurrencyBuilder
         > {
   @BuiltValueField(wireName: r'currency')
   String get currency;
@@ -27,43 +27,37 @@ abstract class AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner
   @BuiltValueField(wireName: r'name')
   String get name;
 
-  AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner._();
+  MerchantPickupCurrenciesDtoOutputBaseCurrency._();
 
-  factory AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner([
-    void updates(
-      AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInnerBuilder b,
-    ),
-  ]) = _$AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner;
+  factory MerchantPickupCurrenciesDtoOutputBaseCurrency([
+    void updates(MerchantPickupCurrenciesDtoOutputBaseCurrencyBuilder b),
+  ]) = _$MerchantPickupCurrenciesDtoOutputBaseCurrency;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(
-    AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInnerBuilder b,
+    MerchantPickupCurrenciesDtoOutputBaseCurrencyBuilder b,
   ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner>
-  get serializer =>
-      _$AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInnerSerializer();
+  static Serializer<MerchantPickupCurrenciesDtoOutputBaseCurrency>
+  get serializer => _$MerchantPickupCurrenciesDtoOutputBaseCurrencySerializer();
 }
 
-class _$AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInnerSerializer
+class _$MerchantPickupCurrenciesDtoOutputBaseCurrencySerializer
     implements
-        PrimitiveSerializer<
-          AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner
-        > {
+        PrimitiveSerializer<MerchantPickupCurrenciesDtoOutputBaseCurrency> {
   @override
   final Iterable<Type> types = const [
-    AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner,
-    _$AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner,
+    MerchantPickupCurrenciesDtoOutputBaseCurrency,
+    _$MerchantPickupCurrenciesDtoOutputBaseCurrency,
   ];
 
   @override
-  final String wireName =
-      r'AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner';
+  final String wireName = r'MerchantPickupCurrenciesDtoOutputBaseCurrency';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner object, {
+    MerchantPickupCurrenciesDtoOutputBaseCurrency object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'currency';
@@ -81,7 +75,7 @@ class _$AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner object, {
+    MerchantPickupCurrenciesDtoOutputBaseCurrency object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -96,8 +90,7 @@ class _$AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInnerBuilder
-    result,
+    required MerchantPickupCurrenciesDtoOutputBaseCurrencyBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -131,13 +124,12 @@ class _$AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInnerSerializer
   }
 
   @override
-  AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner deserialize(
+  MerchantPickupCurrenciesDtoOutputBaseCurrency deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result =
-        AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInnerBuilder();
+    final result = MerchantPickupCurrenciesDtoOutputBaseCurrencyBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

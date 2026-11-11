@@ -174,7 +174,6 @@ import 'package:core_api/src/model/admin_restaurant_pause_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_pickup_currencies_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_status_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_status_dto_output_pickup_base_currency.dart';
-import 'package:core_api/src/model/admin_restaurant_status_dto_output_pickup_currency_choices_inner.dart';
 import 'package:core_api/src/model/admin_restaurants_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurants_dto_output_restaurants_inner.dart';
 import 'package:core_api/src/model/admin_resume_emergency_stop_dto.dart';
@@ -423,6 +422,9 @@ import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_picku
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup_request.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_prep_time.dart';
 import 'package:core_api/src/model/merchant_pause_dto.dart';
+import 'package:core_api/src/model/merchant_pickup_currencies_dto_output.dart';
+import 'package:core_api/src/model/merchant_pickup_currencies_dto_output_base_currency.dart';
+import 'package:core_api/src/model/merchant_pickup_currencies_dto_output_choices_inner.dart';
 import 'package:core_api/src/model/merchant_pickup_dispute_dto.dart';
 import 'package:core_api/src/model/merchant_pickup_dispute_dto_received_lines_inner.dart';
 import 'package:core_api/src/model/merchant_refresh_dto.dart';
@@ -432,6 +434,7 @@ import 'package:core_api/src/model/merchant_restaurant_dto_output.dart';
 import 'package:core_api/src/model/merchant_schedule_dto.dart';
 import 'package:core_api/src/model/merchant_schedule_dto_periods_inner.dart';
 import 'package:core_api/src/model/merchant_session_dto_output.dart';
+import 'package:core_api/src/model/merchant_set_pickup_currencies_dto.dart';
 import 'package:core_api/src/model/merchant_sign_in_dto.dart';
 import 'package:core_api/src/model/merchant_signed_in_dto_output.dart';
 import 'package:core_api/src/model/merchant_signed_out_dto_output.dart';
@@ -636,7 +639,6 @@ part 'serializers.g.dart';
   AdminRestaurantPickupCurrenciesDto,
   AdminRestaurantStatusDtoOutput,
   AdminRestaurantStatusDtoOutputPickupBaseCurrency,
-  AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner,
   AdminRestaurantsDtoOutput,
   AdminRestaurantsDtoOutputRestaurantsInner,
   AdminResumeEmergencyStopDto,
@@ -885,6 +887,9 @@ part 'serializers.g.dart';
   MerchantOrdersDtoOutputOrdersInnerPickupRequest,
   MerchantOrdersDtoOutputPrepTime,
   MerchantPauseDto,
+  MerchantPickupCurrenciesDtoOutput,
+  MerchantPickupCurrenciesDtoOutputBaseCurrency,
+  MerchantPickupCurrenciesDtoOutputChoicesInner,
   MerchantPickupDisputeDto,
   MerchantPickupDisputeDtoReceivedLinesInner,
   MerchantRefreshDto,
@@ -894,6 +899,7 @@ part 'serializers.g.dart';
   MerchantScheduleDto,
   MerchantScheduleDtoPeriodsInner,
   MerchantSessionDtoOutput,
+  MerchantSetPickupCurrenciesDto,
   MerchantSignInDto,
   MerchantSignedInDtoOutput,
   MerchantSignedOutDtoOutput,
@@ -946,20 +952,15 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
-              FullType(
-                AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
               FullType(MerchantMenuDtoOutputCategoriesInnerItemsInner),
             ]),
             () => ListBuilder<MerchantMenuDtoOutputCategoriesInnerItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantPickupCurrenciesDtoOutputChoicesInner),
+            ]),
+            () => ListBuilder<MerchantPickupCurrenciesDtoOutputChoicesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1429,6 +1430,15 @@ Serializers serializers =
               FullType(AdminOrderDtoOutputOrderNoAnswerReportsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderNoAnswerReportsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType.nullable(
+                AdminRestaurantStatusDtoOutputPickupBaseCurrency,
+              ),
+            ]),
+            () =>
+                ListBuilder<AdminRestaurantStatusDtoOutputPickupBaseCurrency>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
