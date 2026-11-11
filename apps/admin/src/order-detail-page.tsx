@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { getRouteApi, Link, Outlet } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { canAssign, OPERATIONS_MANAGE } from './assign-captain.js';
+import { ReleaseDevice } from './captain-device-page.js';
+import { canReleaseDevice } from './captain-device.js';
 import { chosenCity, citiesQuery } from './cities.js';
 import { formatMoney, formatTime } from './format.js';
 import { CancelOrder } from './order-cancel-page.js';
@@ -286,6 +288,9 @@ export function OrderDetailPage() {
         <p>
           <strong>{t('board.noCaptain')}</strong>
         </p>
+      )}
+      {canReleaseDevice(session, detail) && (
+        <ReleaseDevice key={detail.captain.id} captainId={detail.captain.id} />
       )}
       {detail.captainTrack === 'offered' && <p>{t('order.offerOpen')}</p>}
       {can(session, OPERATIONS_MANAGE) && canAssign(detail) && (
