@@ -84,6 +84,7 @@ export 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices.d
 export 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices_reasons_inner.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_cancellation.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_cancellation_by.dart';
+export 'package:core_api/src/model/admin_order_dto_output_order_cannot_complete.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_customer.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_customer_address.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_customer_arrival.dart';
@@ -193,6 +194,7 @@ export 'package:core_api/src/model/captain_active_order_dto_output_ended_pay.dar
 export 'package:core_api/src/model/captain_active_order_dto_output_handed_over.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
+export 'package:core_api/src/model/captain_active_order_dto_output_order_cannot_complete.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_customer.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_customer_address.dart';
@@ -224,6 +226,7 @@ export 'package:core_api/src/model/captain_availability_dto_output_custody_close
 export 'package:core_api/src/model/captain_availability_dto_output_custody_limit.dart';
 export 'package:core_api/src/model/captain_availability_dto_output_custody_remit_tolerance.dart';
 export 'package:core_api/src/model/captain_availability_dto_output_custody_usage.dart';
+export 'package:core_api/src/model/captain_cannot_complete_dto.dart';
 export 'package:core_api/src/model/captain_code_request_dto.dart';
 export 'package:core_api/src/model/captain_code_sent_dto_output.dart';
 export 'package:core_api/src/model/captain_content_dto_output.dart';

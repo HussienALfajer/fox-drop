@@ -11,6 +11,7 @@ import {
   type LedgerEntry,
   LedgerService,
 } from '../ledger/index.js';
+import { leaveCaptain } from './cannot-complete.js';
 import { commission, type DoorPayment } from './door-payment.js';
 import { frozenAtPickup } from './order-edits.js';
 import { type OrderRow, recordTransition } from './order-events.js';
@@ -187,7 +188,7 @@ export class DeliveryBooking {
       captainTrack: 'done',
     });
     // CA §7.3, K18: the order left its captain.
-    return this.captains.afterOrderLeft(tx, order.captainId, now);
+    return leaveCaptain(tx, this.captains, order, order.captainId, 'ended', now);
   }
 
   // CA §9.10 (K9, slice 2.11b): the payment of an outcome's amount to
@@ -285,7 +286,7 @@ export class DeliveryBooking {
       at: now,
       captainTrack: 'done',
     });
-    return this.captains.afterOrderLeft(tx, order.captainId, now);
+    return leaveCaptain(tx, this.captains, order, order.captainId, 'ended', now);
   }
 
   private poster(tx: Tx, order: DeliveryOrder, actor: LedgerActor) {

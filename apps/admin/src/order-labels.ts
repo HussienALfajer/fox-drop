@@ -46,6 +46,7 @@ export const alertKeys = {
   restaurant_auto_paused: 'order.alert.restaurantAutoPaused',
   item_unavailable: 'order.alert.itemUnavailable',
   edit_unacknowledged: 'order.alert.editUnacknowledged',
+  captain_cannot_complete: 'order.alert.captainCannotComplete',
 } as const satisfies Record<AlertCode, string>;
 
 export const badgeKeys = {
@@ -55,6 +56,7 @@ export const badgeKeys = {
   pickupPending: 'order.badge.pickupPending',
   awaitingCollection: 'order.badge.awaitingCollection',
   itemReport: 'order.badge.itemReport',
+  cannotComplete: 'order.badge.cannotComplete',
 } as const satisfies Record<keyof OrderCard['badges'], string>;
 
 export const vehicleKeys = {

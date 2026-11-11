@@ -13,6 +13,7 @@ part 'admin_handover_dto.g.dart';
 /// Properties:
 /// * [captainId] - An eligible captain from the picker, measured from the first.
 /// * [reason] - Operations’ internal note (AP §9.3.2: required; never shown to the apps).
+/// * [captainFault] - AP §9.7.6 (slice 2.13b): «بخطأ من الكابتن» (true) or «دون خطأ» (false), kept only while the first captain's «لا أستطيع إكمال الطلب» is open (the detail's cannotComplete), where null counts as true; ignored otherwise.
 @BuiltValue()
 abstract class AdminHandoverDto
     implements Built<AdminHandoverDto, AdminHandoverDtoBuilder> {
@@ -23,6 +24,10 @@ abstract class AdminHandoverDto
   /// Operations’ internal note (AP §9.3.2: required; never shown to the apps).
   @BuiltValueField(wireName: r'reason')
   String get reason;
+
+  /// AP §9.7.6 (slice 2.13b): «بخطأ من الكابتن» (true) or «دون خطأ» (false), kept only while the first captain's «لا أستطيع إكمال الطلب» is open (the detail's cannotComplete), where null counts as true; ignored otherwise.
+  @BuiltValueField(wireName: r'captainFault')
+  bool? get captainFault;
 
   AdminHandoverDto._();
 
@@ -60,6 +65,13 @@ class _$AdminHandoverDtoSerializer
       object.reason,
       specifiedType: const FullType(String),
     );
+    if (object.captainFault != null) {
+      yield r'captainFault';
+      yield serializers.serialize(
+        object.captainFault,
+        specifiedType: const FullType.nullable(bool),
+      );
+    }
   }
 
   @override
@@ -104,6 +116,16 @@ class _$AdminHandoverDtoSerializer
                   )
                   as String;
           result.reason = valueDes;
+          break;
+        case r'captainFault':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(bool),
+                  )
+                  as bool?;
+          if (valueDes == null) continue;
+          result.captainFault = valueDes;
           break;
         default:
           unhandled.add(key);

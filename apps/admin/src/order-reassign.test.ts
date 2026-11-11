@@ -38,6 +38,14 @@ describe('chooseReason', () => {
       captainFault: false,
     });
   });
+
+  it('prefills the captain fault while they could not complete the order (AP §9.7.6)', () => {
+    expect(chooseReason(empty, choices, 'accident', true)).toMatchObject({
+      reassignment: 'accident',
+      captainFault: true,
+    });
+    expect(chooseReason(empty, choices, 'unknown', true).captainFault).toBeNull();
+  });
 });
 
 describe('reassignBody', () => {

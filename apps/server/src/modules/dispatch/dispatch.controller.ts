@@ -51,6 +51,13 @@ class AdminHandoverDto extends createZodDto(
       .min(1)
       .max(500)
       .describe('Operations’ internal note (AP §9.3.2: required; never shown to the apps).'),
+    captainFault: z
+      .boolean()
+      .nullable()
+      .default(null)
+      .describe(
+        "AP §9.7.6 (slice 2.13b): «بخطأ من الكابتن» (true) or «دون خطأ» (false), kept only while the first captain's «لا أستطيع إكمال الطلب» is open (the detail's cannotComplete), where null counts as true; ignored otherwise.",
+      ),
   }),
 ) {}
 
@@ -354,6 +361,7 @@ export class AdminDispatchController {
             orderId: params.orderId,
             captainId: body.captainId,
             reason: body.reason,
+            captainFault: body.captainFault,
             admin: { accountId: session.accountId, roles: session.roles },
             context: requestContext(request),
             idempotencyKey,

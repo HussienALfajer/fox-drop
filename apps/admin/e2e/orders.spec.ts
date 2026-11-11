@@ -26,6 +26,7 @@ const card = {
     pickupPending: false,
     awaitingCollection: false,
     itemReport: false,
+    cannotComplete: false,
   },
   moments: {
     acceptAlertAt: null,
@@ -51,6 +52,7 @@ const detail = {
   reassignChoices: null,
   reassignments: [],
   handover: { allowed: false, handovers: [] },
+  cannotComplete: null,
   outcome: null,
   outcomeChoices: null,
   itemReport: null,
@@ -622,6 +624,7 @@ test('hands a picked-up order to a second captain with a note', async ({ page })
                 closeReason: 'declined',
                 note: 'حادث بسيط',
                 adminId: first,
+                captainFault: null,
               },
             ],
           },
@@ -678,7 +681,9 @@ test('hands a picked-up order to a second captain with a note', async ({ page })
   await expect(submit).toBeDisabled();
   await page.getByRole('textbox', { name: 'سبب التسليم (للعمليات فقط)' }).fill('تعطلت الدراجة');
   await submit.click();
-  await expect.poll(() => sent).toEqual({ captainId: second, reason: 'تعطلت الدراجة' });
+  await expect
+    .poll(() => sent)
+    .toEqual({ captainId: second, reason: 'تعطلت الدراجة', captainFault: null });
   await expect(page.getByRole('status')).toContainText('أُرسل العرض «استلام من كابتن»');
 });
 
@@ -1031,4 +1036,45 @@ test('shows an open item report and closes it with a reason', async ({ page }) =
 
   await expect(page.getByRole('form', { name: 'إغلاق بلاغ صنف نفد' })).toHaveCount(0);
   expect(sent).toEqual({ reason: 'وجد المطعم الصنف' });
+});
+
+// CA §9.11, AP §9.7.6 (slice 2.13b): the captain's «لا أستطيع إكمال الطلب»
+// shows on the detail, and the withdrawal prefills «بخطأ من الكابتن» whatever
+// the reason's default.
+test('shows «لا أستطيع إكمال الطلب» and prefills the captain fault', async ({ page }) => {
+  await fakeSession(page, ['operations.read', 'operations.manage']);
+  await fakeOperations(page);
+  const captainId = '01900000-0000-7000-8000-0000000000c1';
+  await page.route(`**/v1/admin/orders/${orderId}`, (route) =>
+    route.fulfill({
+      json: {
+        order: {
+          ...detail,
+          badges: { ...card.badges, cannotComplete: true },
+          alerts: ['captain_cannot_complete'],
+          cannotComplete: {
+            captainId,
+            reason: 'vehicle_breakdown',
+            label: 'عطل في المركبة',
+            note: null,
+            at: later(-2),
+          },
+          reassignChoices: {
+            reasons: [{ code: 'vehicle_breakdown', label: 'عطل في المركبة', captainFault: false }],
+          },
+        },
+      },
+    }),
+  );
+  await page.route(`**/v1/admin/orders/${orderId}/reassign-preview`, (route) =>
+    route.fulfill({ json: { entries: [], cashAsked: false, cashLines: null } }),
+  );
+  await page.goto(`/orders/${orderId}`);
+
+  await expect(page.getByText('الكابتن لا يستطيع إكمال الطلب', { exact: true })).toBeVisible();
+  await expect(page.getByText('السبب: عطل في المركبة')).toBeVisible();
+  await expect(page.getByText('بانتظار العمليات').first()).toBeVisible();
+  const reassign = page.getByRole('form', { name: 'سحب وإعادة تعيين' });
+  await reassign.getByRole('radio', { name: 'عطل في المركبة' }).check();
+  await expect(reassign.getByRole('radio', { name: 'بخطأ من الكابتن' })).toBeChecked();
 });

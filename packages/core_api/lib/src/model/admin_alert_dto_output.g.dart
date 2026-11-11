@@ -46,6 +46,9 @@ const AdminAlertDtoOutputCodeEnum
 _$adminAlertDtoOutputCodeEnum_editUnacknowledged =
     const AdminAlertDtoOutputCodeEnum._('editUnacknowledged');
 const AdminAlertDtoOutputCodeEnum
+_$adminAlertDtoOutputCodeEnum_captainCannotComplete =
+    const AdminAlertDtoOutputCodeEnum._('captainCannotComplete');
+const AdminAlertDtoOutputCodeEnum
 _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused =
     const AdminAlertDtoOutputCodeEnum._('restaurantAutoPaused');
 
@@ -81,6 +84,8 @@ AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
       return _$adminAlertDtoOutputCodeEnum_itemUnavailable;
     case 'editUnacknowledged':
       return _$adminAlertDtoOutputCodeEnum_editUnacknowledged;
+    case 'captainCannotComplete':
+      return _$adminAlertDtoOutputCodeEnum_captainCannotComplete;
     case 'restaurantAutoPaused':
       return _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused;
     default:
@@ -106,6 +111,7 @@ _$adminAlertDtoOutputCodeEnumValues =
       _$adminAlertDtoOutputCodeEnum_awayFromAddress,
       _$adminAlertDtoOutputCodeEnum_itemUnavailable,
       _$adminAlertDtoOutputCodeEnum_editUnacknowledged,
+      _$adminAlertDtoOutputCodeEnum_captainCannotComplete,
       _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused,
     ]);
 
@@ -219,6 +225,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'awayFromAddress': 'away_from_address',
     'itemUnavailable': 'item_unavailable',
     'editUnacknowledged': 'edit_unacknowledged',
+    'captainCannotComplete': 'captain_cannot_complete',
     'restaurantAutoPaused': 'restaurant_auto_paused',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
@@ -237,6 +244,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'away_from_address': 'awayFromAddress',
     'item_unavailable': 'itemUnavailable',
     'edit_unacknowledged': 'editUnacknowledged',
+    'captain_cannot_complete': 'captainCannotComplete',
     'restaurant_auto_paused': 'restaurantAutoPaused',
   };
 

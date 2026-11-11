@@ -35,14 +35,18 @@ export interface ReassignForm {
   reason: string;
 }
 
-// Choosing a reason prefills its default fault (AP Appendix B).
+// Choosing a reason prefills its default fault (AP Appendix B), or
+// «بخطأ من الكابتن» while the captain's «لا أستطيع إكمال الطلب» is open
+// (AP §9.7.6, slice 2.13b: a captain cancellation unless «دون خطأ»).
 export function chooseReason(
   form: ReassignForm,
   choices: ReassignChoices,
   code: string,
+  cannotComplete = false,
 ): ReassignForm {
   const reason = choices.reasons.find((each) => each.code === code);
-  return { ...form, reassignment: code, captainFault: reason?.captainFault ?? null };
+  const captainFault = reason === undefined ? null : cannotComplete || reason.captainFault;
+  return { ...form, reassignment: code, captainFault };
 }
 
 // The body of a complete form, or null while a step is missing: a reason, the

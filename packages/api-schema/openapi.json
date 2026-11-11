@@ -6307,6 +6307,120 @@
         ]
       }
     },
+    "/v1/captain/orders/{orderId}/cannot-complete": {
+      "post": {
+        "operationId": "captainOrdersCannotComplete",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptainCannotCompleteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/captain/orders/{orderId}/cannot-complete/withdraw": {
+      "post": {
+        "operationId": "captainOrdersWithdrawCannotComplete",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptainArriveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
     "/v1/captain/orders/{orderId}/arrive-at-customer": {
       "post": {
         "operationId": "captainOrdersArriveAtCustomer",
@@ -18580,6 +18694,10 @@
                   "itemReport": {
                     "type": "boolean",
                     "description": "«صنف نفد»: an open item-unavailable report (RA §8.12)."
+                  },
+                  "cannotComplete": {
+                    "type": "boolean",
+                    "description": "«بانتظار العمليات»: the captain's open «لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b)."
                   }
                 },
                 "required": [
@@ -18588,7 +18706,8 @@
                   "newCustomer",
                   "pickupPending",
                   "awaitingCollection",
-                  "itemReport"
+                  "itemReport",
+                  "cannotComplete"
                 ],
                 "additionalProperties": false
               },
@@ -18709,7 +18828,8 @@
                     "collection_shortfall",
                     "away_from_address",
                     "item_unavailable",
-                    "edit_unacknowledged"
+                    "edit_unacknowledged",
+                    "captain_cannot_complete"
                   ]
                 },
                 "description": "AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active."
@@ -20990,6 +21110,10 @@
                     "itemReport": {
                       "type": "boolean",
                       "description": "«صنف نفد»: an open item-unavailable report (RA §8.12)."
+                    },
+                    "cannotComplete": {
+                      "type": "boolean",
+                      "description": "«بانتظار العمليات»: the captain's open «لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b)."
                     }
                   },
                   "required": [
@@ -20998,7 +21122,8 @@
                     "newCustomer",
                     "pickupPending",
                     "awaitingCollection",
-                    "itemReport"
+                    "itemReport",
+                    "cannotComplete"
                   ],
                   "additionalProperties": false
                 },
@@ -21119,7 +21244,8 @@
                       "collection_shortfall",
                       "away_from_address",
                       "item_unavailable",
-                      "edit_unacknowledged"
+                      "edit_unacknowledged",
+                      "captain_cannot_complete"
                     ]
                   },
                   "description": "AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active."
@@ -21331,6 +21457,10 @@
                   "itemReport": {
                     "type": "boolean",
                     "description": "«صنف نفد»: an open item-unavailable report (RA §8.12)."
+                  },
+                  "cannotComplete": {
+                    "type": "boolean",
+                    "description": "«بانتظار العمليات»: the captain's open «لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b)."
                   }
                 },
                 "required": [
@@ -21339,7 +21469,8 @@
                   "newCustomer",
                   "pickupPending",
                   "awaitingCollection",
-                  "itemReport"
+                  "itemReport",
+                  "cannotComplete"
                 ],
                 "additionalProperties": false
               },
@@ -21460,7 +21591,8 @@
                     "collection_shortfall",
                     "away_from_address",
                     "item_unavailable",
-                    "edit_unacknowledged"
+                    "edit_unacknowledged",
+                    "captain_cannot_complete"
                   ]
                 },
                 "description": "AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active."
@@ -21912,6 +22044,13 @@
                           "type": "string",
                           "format": "uuid",
                           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "captainFault": {
+                          "description": "AP §9.7.6 (slice 2.13b): the fault chosen while the first captain could not complete the order; null when they had not asked.",
+                          "type": [
+                            "boolean",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -21926,7 +22065,8 @@
                         "closedAt",
                         "closeReason",
                         "note",
-                        "adminId"
+                        "adminId",
+                        "captainFault"
                       ],
                       "additionalProperties": false
                     },
@@ -22427,6 +22567,52 @@
                   }
                 ],
                 "description": "While picked up or arrived: the choices of «تحديد النتيجة» (AP §9.3.2)."
+              },
+              "cannotComplete": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "captainId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "reason": {
+                        "type": "string",
+                        "description": "The captain_cannot_complete code."
+                      },
+                      "label": {
+                        "type": "string",
+                        "description": "The reason's label as the captain chose it."
+                      },
+                      "note": {
+                        "description": "The text of «أخرى».",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      }
+                    },
+                    "required": [
+                      "captainId",
+                      "reason",
+                      "label",
+                      "note",
+                      "at"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«بانتظار العمليات» (CA §9.11, slice 2.13b): the captain's open «لا أستطيع إكمال الطلب»; «سحب وإعادة تعيين» prefills «بخطأ من الكابتن» and «تسليم لكابتن آخر» asks the fault while it is open. Null without one."
               },
               "itemReport": {
                 "anyOf": [
@@ -24050,6 +24236,7 @@
               "outcome",
               "outcomeChange",
               "outcomeChoices",
+              "cannotComplete",
               "itemReport",
               "timeChange",
               "editChoices",
@@ -24884,6 +25071,41 @@
                       }
                     ],
                     "description": "«تسليم لكابتن آخر» (CA §9.10.1, slice 2.12b): the open handover of the order, or null. While giving, the steps wait; while receiving, «لا تدفع شيئاً»."
+                  },
+                  "cannotComplete": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "reason": {
+                            "type": "string",
+                            "description": "The captain_cannot_complete reason's label as chosen."
+                          },
+                          "note": {
+                            "description": "The text of «أخرى».",
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          }
+                        },
+                        "required": [
+                          "reason",
+                          "note",
+                          "at"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b): the captain's open request, «بانتظار العمليات» with «تراجع»; every step stays open. Null without one."
                   }
                 },
                 "required": [
@@ -24906,7 +25128,8 @@
                   "pickup",
                   "customer",
                   "radii",
-                  "handover"
+                  "handover",
+                  "cannotComplete"
                 ],
                 "additionalProperties": false,
                 "description": "The active order (CA §9)."
@@ -26081,6 +26304,41 @@
                   }
                 ],
                 "description": "«تسليم لكابتن آخر» (CA §9.10.1, slice 2.12b): the open handover of the order, or null. While giving, the steps wait; while receiving, «لا تدفع شيئاً»."
+              },
+              "cannotComplete": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "reason": {
+                        "type": "string",
+                        "description": "The captain_cannot_complete reason's label as chosen."
+                      },
+                      "note": {
+                        "description": "The text of «أخرى».",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      }
+                    },
+                    "required": [
+                      "reason",
+                      "note",
+                      "at"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b): the captain's open request, «بانتظار العمليات» with «تراجع»; every step stays open. Null without one."
               }
             },
             "required": [
@@ -26103,7 +26361,8 @@
               "pickup",
               "customer",
               "radii",
-              "handover"
+              "handover",
+              "cannotComplete"
             ],
             "additionalProperties": false,
             "description": "The active order (CA §9)."
@@ -26113,6 +26372,70 @@
           "order"
         ],
         "additionalProperties": false
+      },
+      "CaptainCannotCompleteDto": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "object",
+            "properties": {
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "accuracyMetres": {
+                "type": "number",
+                "minimum": 0
+              },
+              "recordedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "simulated": {
+                "type": "boolean",
+                "description": "The device reports a mock location."
+              }
+            },
+            "required": [
+              "latitude",
+              "longitude",
+              "accuracyMetres",
+              "recordedAt",
+              "simulated"
+            ],
+            "description": "The latest GPS fix."
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{1,40}$",
+            "description": "A code of the captain_cannot_complete list (GET /v1/captain/content): «عطل في المركبة», «حادث», «ظرف طارئ», «لا أملك المبلغ المطلوب للمطعم», «أخرى» (with note)."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The text of a reason that needs one («أخرى»), and only of it."
+          }
+        },
+        "required": [
+          "location",
+          "reason",
+          "note"
+        ]
       },
       "CaptainArriveAtCustomerDto": {
         "type": "object",
@@ -27172,6 +27495,7 @@
                     "away_from_address",
                     "item_unavailable",
                     "edit_unacknowledged",
+                    "captain_cannot_complete",
                     "restaurant_auto_paused"
                   ],
                   "description": "The rule of AP §9.1.3."
@@ -27321,6 +27645,7 @@
               "away_from_address",
               "item_unavailable",
               "edit_unacknowledged",
+              "captain_cannot_complete",
               "restaurant_auto_paused"
             ],
             "description": "The rule of AP §9.1.3."
@@ -27823,6 +28148,14 @@
             "minLength": 1,
             "maxLength": 500,
             "description": "Operations’ internal note (AP §9.3.2: required; never shown to the apps)."
+          },
+          "captainFault": {
+            "default": null,
+            "description": "AP §9.7.6 (slice 2.13b): «بخطأ من الكابتن» (true) or «دون خطأ» (false), kept only while the first captain's «لا أستطيع إكمال الطلب» is open (the detail's cannotComplete), where null counts as true; ignored otherwise.",
+            "type": [
+              "boolean",
+              "null"
+            ]
           }
         },
         "required": [

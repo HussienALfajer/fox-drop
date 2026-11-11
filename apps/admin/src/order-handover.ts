@@ -54,8 +54,12 @@ export function useHandOver(orderId: string) {
   const queryClient = useQueryClient();
   const keys = useRef(new Map<string, string>());
   return useMutation({
-    mutationFn: async (choice: { captainId: string; reason: string }): Promise<HandoverResult> => {
-      const choiceKey = `${choice.captainId}\n${choice.reason}`;
+    mutationFn: async (choice: {
+      captainId: string;
+      reason: string;
+      captainFault: boolean | null;
+    }): Promise<HandoverResult> => {
+      const choiceKey = `${choice.captainId}\n${choice.reason}\n${choice.captainFault}`;
       let key = keys.current.get(choiceKey);
       if (key === undefined) {
         key = crypto.randomUUID();

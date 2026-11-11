@@ -960,3 +960,137 @@ describe('the handover’s pay and its other ways out (slice 2.12b)', () => {
     expect((await first.acknowledgeHandover(order.id)).statusCode).toBe(200);
   });
 });
+
+describe('the handover after «لا أستطيع إكمال الطلب» (CA §9.11, AP §9.7.6; slice 2.13b)', () => {
+  const faults = async (orderId: string) =>
+    (
+      await sql.query(
+        'SELECT captain_fault FROM ordering.handovers WHERE order_id = $1 ORDER BY opened_at',
+        [orderId],
+      )
+    ).rows.map((row) => row.captain_fault);
+
+  it('keeps the fault operations chose while the request is open, and the receipt closes it', async () => {
+    const { order, first, ops } = await pickedUpOrder();
+    const asked = await app.inject({
+      method: 'POST',
+      url: `/v1/captain/orders/${order.id}/cannot-complete`,
+      headers: { ...first.headers, 'idempotency-key': randomUUID() },
+      payload: {
+        location: {
+          ...brokenDown,
+          accuracyMetres: 10,
+          recordedAt: new Date().toISOString(),
+          simulated: false,
+        },
+        reason: 'vehicle_breakdown',
+        note: null,
+      },
+    });
+    expect(asked.statusCode).toBe(200);
+    expect((await ops.detail(order.id)).cannotComplete).toMatchObject({
+      captainId: first.captainId,
+    });
+    const second = await onlineCaptain('بلا خطأ', besideThem);
+    const handedOver = await ops.post(`/v1/admin/orders/${order.id}/handover`, {
+      captainId: second.captainId,
+      reason: 'حادث',
+      captainFault: false,
+    });
+    expect(handedOver.statusCode).toBe(200);
+    expect(await faults(order.id)).toEqual([false]);
+    expect((await ops.detail(order.id)).handover.handovers[0].captainFault).toBe(false);
+    expect((await second.receive(order.id)).statusCode).toBe(200);
+    const { rows } = await sql.query(
+      'SELECT closed_how FROM ordering.cannot_complete_requests WHERE order_id = $1',
+      [order.id],
+    );
+    expect(rows).toEqual([{ closed_how: 'handed_over' }]);
+    expect((await first.availability()).state).toBe('offline');
+  });
+
+  const ask = (captain: { headers: Record<string, string> }, orderId: string, path = '') =>
+    app.inject({
+      method: 'POST',
+      url: `/v1/captain/orders/${orderId}/cannot-complete${path}`,
+      headers: { ...captain.headers, 'idempotency-key': randomUUID() },
+      payload: {
+        location: {
+          ...brokenDown,
+          accuracyMetres: 10,
+          recordedAt: new Date().toISOString(),
+          simulated: false,
+        },
+        ...(path === '' ? { reason: 'vehicle_breakdown', note: null } : {}),
+      },
+    });
+  const periodEnd = async (captainId: string) =>
+    (
+      await sql.query(
+        `SELECT end_reason FROM captains.online_periods WHERE captain_id = $1
+          ORDER BY started_at DESC LIMIT 1`,
+        [captainId],
+      )
+    ).rows[0].end_reason;
+  const closedHow = async (orderId: string) =>
+    (
+      await sql.query(
+        'SELECT closed_how FROM ordering.cannot_complete_requests WHERE order_id = $1',
+        [orderId],
+      )
+    ).rows.map((row) => row.closed_how);
+
+  it('takes the captain offline when the order is delivered with the request open (K17)', async () => {
+    const { order, first, ops } = await pickedUpOrder();
+    expect((await ask(first, order.id)).statusCode).toBe(200);
+    const recorded = await ops.post(`/v1/admin/orders/${order.id}/record-delivery`, {
+      received: [{ currency: 'TRY', amount: '28000' }],
+      change: [],
+      amountDue: { amount: '28000', currency: 'TRY' },
+      shortfall: null,
+      reason: 'أوصله الكابتن بنفسه',
+    });
+    expect(recorded.statusCode).toBe(200);
+    expect(await closedHow(order.id)).toEqual(['ended']);
+    expect(await periodEnd(first.captainId)).toBe('cannot_complete');
+  });
+
+  it('ends a last order with cannot_complete after an outcome, and refuses another captain’s «تراجع»', async () => {
+    const { order, first, ops } = await pickedUpOrder();
+    expect((await first.lastOrder()).statusCode).toBe(200);
+    expect((await ask(first, order.id)).statusCode).toBe(200);
+    const stranger = await onlineCaptain('غريب', besideThem);
+    expect((await ask(stranger, order.id, '/withdraw')).statusCode).toBe(404);
+    const { version } = await ops.detail(order.id);
+    const outcome = await ops.post(`/v1/admin/orders/${order.id}/outcome`, {
+      outcome: 'failed_other',
+      responsible: 'platform',
+      delivered: false,
+      food: 'kept_by_captain',
+      version,
+      reason: 'تعطلت الدراجة',
+    });
+    expect(outcome.statusCode).toBe(200);
+    expect(await closedHow(order.id)).toEqual(['ended']);
+    expect(await periodEnd(first.captainId)).toBe('cannot_complete');
+    // The order ended: nothing left to withdraw.
+    expect((await ask(first, order.id, '/withdraw')).json()).toMatchObject({
+      error: 'order_state_changed',
+    });
+  });
+
+  it('keeps no fault on a handover without a request', async () => {
+    const plain = await pickedUpOrder();
+    const second = await onlineCaptain('عادي', besideThem);
+    expect(
+      (
+        await plain.ops.post(`/v1/admin/orders/${plain.order.id}/handover`, {
+          captainId: second.captainId,
+          reason: 'تأخر',
+          captainFault: false,
+        })
+      ).statusCode,
+    ).toBe(200);
+    expect(await faults(plain.order.id)).toEqual([null]);
+  });
+});

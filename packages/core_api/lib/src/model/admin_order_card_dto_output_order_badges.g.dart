@@ -20,6 +20,8 @@ class _$AdminOrderCardDtoOutputOrderBadges
   final bool awaitingCollection;
   @override
   final bool itemReport;
+  @override
+  final bool cannotComplete;
 
   factory _$AdminOrderCardDtoOutputOrderBadges([
     void Function(AdminOrderCardDtoOutputOrderBadgesBuilder)? updates,
@@ -32,6 +34,7 @@ class _$AdminOrderCardDtoOutputOrderBadges
     required this.pickupPending,
     required this.awaitingCollection,
     required this.itemReport,
+    required this.cannotComplete,
   }) : super._();
   @override
   AdminOrderCardDtoOutputOrderBadges rebuild(
@@ -51,7 +54,8 @@ class _$AdminOrderCardDtoOutputOrderBadges
         newCustomer == other.newCustomer &&
         pickupPending == other.pickupPending &&
         awaitingCollection == other.awaitingCollection &&
-        itemReport == other.itemReport;
+        itemReport == other.itemReport &&
+        cannotComplete == other.cannotComplete;
   }
 
   @override
@@ -63,6 +67,7 @@ class _$AdminOrderCardDtoOutputOrderBadges
     _$hash = $jc(_$hash, pickupPending.hashCode);
     _$hash = $jc(_$hash, awaitingCollection.hashCode);
     _$hash = $jc(_$hash, itemReport.hashCode);
+    _$hash = $jc(_$hash, cannotComplete.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -75,7 +80,8 @@ class _$AdminOrderCardDtoOutputOrderBadges
           ..add('newCustomer', newCustomer)
           ..add('pickupPending', pickupPending)
           ..add('awaitingCollection', awaitingCollection)
-          ..add('itemReport', itemReport))
+          ..add('itemReport', itemReport)
+          ..add('cannotComplete', cannotComplete))
         .toString();
   }
 }
@@ -115,6 +121,11 @@ class AdminOrderCardDtoOutputOrderBadgesBuilder
   bool? get itemReport => _$this._itemReport;
   set itemReport(bool? itemReport) => _$this._itemReport = itemReport;
 
+  bool? _cannotComplete;
+  bool? get cannotComplete => _$this._cannotComplete;
+  set cannotComplete(bool? cannotComplete) =>
+      _$this._cannotComplete = cannotComplete;
+
   AdminOrderCardDtoOutputOrderBadgesBuilder() {
     AdminOrderCardDtoOutputOrderBadges._defaults(this);
   }
@@ -128,6 +139,7 @@ class AdminOrderCardDtoOutputOrderBadgesBuilder
       _pickupPending = $v.pickupPending;
       _awaitingCollection = $v.awaitingCollection;
       _itemReport = $v.itemReport;
+      _cannotComplete = $v.cannotComplete;
       _$v = null;
     }
     return this;
@@ -181,6 +193,11 @@ class AdminOrderCardDtoOutputOrderBadgesBuilder
             itemReport,
             r'AdminOrderCardDtoOutputOrderBadges',
             'itemReport',
+          ),
+          cannotComplete: BuiltValueNullFieldError.checkNotNull(
+            cannotComplete,
+            r'AdminOrderCardDtoOutputOrderBadges',
+            'cannotComplete',
           ),
         );
     replace(_$result);

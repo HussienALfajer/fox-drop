@@ -24,11 +24,15 @@ class ReasonChoice {
 /// (CA §11.4, §13).
 class CaptainContent {
   const CaptainContent({
+    required this.cannotComplete,
     required this.away,
     required this.shortfall,
     required this.faq,
     required this.workRules,
   });
+
+  /// «لا أستطيع إكمال الطلب» (C5, CA §9.11).
+  final List<ReasonChoice> cannotComplete;
 
   /// Arrival or delivery away from the pin (C9, K4).
   final List<ReasonChoice> away;
@@ -57,6 +61,7 @@ final contentProvider = FutureProvider<CaptainContent>((ref) async {
       .captainContentGet();
   final body = answer.data!;
   return CaptainContent(
+    cannotComplete: _choices(body.reasons.captainCannotComplete),
     away: _choices(body.reasons.captainAway),
     shortfall: _choices(body.reasons.shortfall),
     faq: [

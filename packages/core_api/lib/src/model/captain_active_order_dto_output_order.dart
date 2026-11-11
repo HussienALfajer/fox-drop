@@ -3,17 +3,18 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/captain_active_order_dto_output_order_handover.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_outcome_to_collect.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_preparation.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/captain_active_order_dto_output_order_handover.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_cannot_complete.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_payment.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
-import 'package:core_api/src/model/captain_active_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_radii.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -43,6 +44,7 @@ part 'captain_active_order_dto_output_order.g.dart';
 /// * [customer]
 /// * [radii]
 /// * [handover]
+/// * [cannotComplete]
 @BuiltValue()
 abstract class CaptainActiveOrderDtoOutputOrder
     implements
@@ -118,6 +120,9 @@ abstract class CaptainActiveOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'handover')
   CaptainActiveOrderDtoOutputOrderHandover? get handover;
+
+  @BuiltValueField(wireName: r'cannotComplete')
+  CaptainActiveOrderDtoOutputOrderCannotComplete? get cannotComplete;
 
   CaptainActiveOrderDtoOutputOrder._();
 
@@ -269,6 +274,15 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
             object.handover,
             specifiedType: const FullType.nullable(
               CaptainActiveOrderDtoOutputOrderHandover,
+            ),
+          );
+    yield r'cannotComplete';
+    yield object.cannotComplete == null
+        ? null
+        : serializers.serialize(
+            object.cannotComplete,
+            specifiedType: const FullType.nullable(
+              CaptainActiveOrderDtoOutputOrderCannotComplete,
             ),
           );
   }
@@ -501,6 +515,18 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
                   as CaptainActiveOrderDtoOutputOrderHandover?;
           if (valueDes == null) continue;
           result.handover.replace(valueDes);
+          break;
+        case r'cannotComplete':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainActiveOrderDtoOutputOrderCannotComplete,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderCannotComplete?;
+          if (valueDes == null) continue;
+          result.cannotComplete.replace(valueDes);
           break;
         default:
           unhandled.add(key);

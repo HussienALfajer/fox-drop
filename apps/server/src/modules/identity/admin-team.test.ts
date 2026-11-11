@@ -479,6 +479,8 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/captain/orders/{orderId}/acknowledge-withdrawal': 'app_session',
   'POST /v1/captain/orders/{orderId}/acknowledge-handover': 'app_session',
   'POST /v1/captain/orders/{orderId}/receive-handover': 'app_session',
+  'POST /v1/captain/orders/{orderId}/cannot-complete': 'app_session',
+  'POST /v1/captain/orders/{orderId}/cannot-complete/withdraw': 'app_session',
   'POST /v1/merchant/orders/{orderId}/reject': 'app_session',
   'POST /v1/merchant/orders/{orderId}/item-report': 'app_session',
   'POST /v1/merchant/orders/{orderId}/item-report/withdraw': 'app_session',

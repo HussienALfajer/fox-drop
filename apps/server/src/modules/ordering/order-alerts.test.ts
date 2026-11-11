@@ -23,6 +23,7 @@ const placed: OrderAlertInput = {
   away: false,
   shortfall: false,
   itemReportOpen: false,
+  cannotCompleteOpen: false,
   editAlertAt: null,
 };
 
@@ -121,6 +122,20 @@ describe('orderAlerts (AP §9.1.3)', () => {
       'item_unavailable',
     ]);
     expect(orderAlerts(reported, now).open).toEqual([]);
+  });
+
+  it('raises «كابتن لا يستطيع إكمال الطلب» while the request is open on an active order (CA §9.11)', () => {
+    const asked = {
+      ...placed,
+      status: 'picked_up' as const,
+      acceptAlertAt: null,
+      captainId: 'captain',
+      captainTrack: 'picked_up' as const,
+      cannotCompleteOpen: true,
+    };
+    expect(orderAlerts(asked, now).open).toEqual(['captain_cannot_complete']);
+    expect(orderAlerts({ ...asked, cannotCompleteOpen: false }, now).open).toEqual([]);
+    expect(orderAlerts({ ...asked, status: 'delivered' }, now).open).toEqual([]);
   });
 
   it('raises «المطعم لم يؤكد التعديل» 3 minutes after an unacknowledged addition, before the pickup only (RA §8.13)', () => {

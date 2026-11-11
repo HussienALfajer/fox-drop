@@ -176,6 +176,9 @@ _$adminOrderCardDtoOutputOrderAlertsEnum_itemUnavailable =
 const AdminOrderCardDtoOutputOrderAlertsEnum
 _$adminOrderCardDtoOutputOrderAlertsEnum_editUnacknowledged =
     const AdminOrderCardDtoOutputOrderAlertsEnum._('editUnacknowledged');
+const AdminOrderCardDtoOutputOrderAlertsEnum
+_$adminOrderCardDtoOutputOrderAlertsEnum_captainCannotComplete =
+    const AdminOrderCardDtoOutputOrderAlertsEnum._('captainCannotComplete');
 
 AdminOrderCardDtoOutputOrderAlertsEnum
 _$adminOrderCardDtoOutputOrderAlertsEnumValueOf(String name) {
@@ -204,6 +207,8 @@ _$adminOrderCardDtoOutputOrderAlertsEnumValueOf(String name) {
       return _$adminOrderCardDtoOutputOrderAlertsEnum_itemUnavailable;
     case 'editUnacknowledged':
       return _$adminOrderCardDtoOutputOrderAlertsEnum_editUnacknowledged;
+    case 'captainCannotComplete':
+      return _$adminOrderCardDtoOutputOrderAlertsEnum_captainCannotComplete;
     default:
       throw ArgumentError(name);
   }
@@ -225,6 +230,7 @@ _$adminOrderCardDtoOutputOrderAlertsEnumValues =
         _$adminOrderCardDtoOutputOrderAlertsEnum_awayFromAddress,
         _$adminOrderCardDtoOutputOrderAlertsEnum_itemUnavailable,
         _$adminOrderCardDtoOutputOrderAlertsEnum_editUnacknowledged,
+        _$adminOrderCardDtoOutputOrderAlertsEnum_captainCannotComplete,
       ],
     );
 
@@ -350,6 +356,7 @@ class _$AdminOrderCardDtoOutputOrderAlertsEnumSerializer
     'awayFromAddress': 'away_from_address',
     'itemUnavailable': 'item_unavailable',
     'editUnacknowledged': 'edit_unacknowledged',
+    'captainCannotComplete': 'captain_cannot_complete',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -364,6 +371,7 @@ class _$AdminOrderCardDtoOutputOrderAlertsEnumSerializer
     'away_from_address': 'awayFromAddress',
     'item_unavailable': 'itemUnavailable',
     'edit_unacknowledged': 'editUnacknowledged',
+    'captain_cannot_complete': 'captainCannotComplete',
   };
 
   @override

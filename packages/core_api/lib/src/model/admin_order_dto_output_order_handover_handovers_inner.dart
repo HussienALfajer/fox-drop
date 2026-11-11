@@ -24,6 +24,7 @@ part 'admin_order_dto_output_order_handover_handovers_inner.g.dart';
 /// * [closeReason] - Why it closed without the receipt: the offer declined, expired or withdrawn, or the order ended first.
 /// * [note] - Operations' internal note.
 /// * [adminId]
+/// * [captainFault] - AP §9.7.6 (slice 2.13b): the fault chosen while the first captain could not complete the order; null when they had not asked.
 @BuiltValue()
 abstract class AdminOrderDtoOutputOrderHandoverHandoversInner
     implements
@@ -73,6 +74,10 @@ abstract class AdminOrderDtoOutputOrderHandoverHandoversInner
 
   @BuiltValueField(wireName: r'adminId')
   String get adminId;
+
+  /// AP §9.7.6 (slice 2.13b): the fault chosen while the first captain could not complete the order; null when they had not asked.
+  @BuiltValueField(wireName: r'captainFault')
+  bool? get captainFault;
 
   AdminOrderDtoOutputOrderHandoverHandoversInner._();
 
@@ -182,6 +187,13 @@ class _$AdminOrderDtoOutputOrderHandoverHandoversInnerSerializer
       object.adminId,
       specifiedType: const FullType(String),
     );
+    yield r'captainFault';
+    yield object.captainFault == null
+        ? null
+        : serializers.serialize(
+            object.captainFault,
+            specifiedType: const FullType.nullable(bool),
+          );
   }
 
   @override
@@ -324,6 +336,16 @@ class _$AdminOrderDtoOutputOrderHandoverHandoversInnerSerializer
                   )
                   as String;
           result.adminId = valueDes;
+          break;
+        case r'captainFault':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(bool),
+                  )
+                  as bool?;
+          if (valueDes == null) continue;
+          result.captainFault = valueDes;
           break;
         default:
           unhandled.add(key);

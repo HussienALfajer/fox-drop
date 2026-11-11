@@ -774,12 +774,16 @@ export class DispatchService implements OnModuleInit {
   // captain's latest point (the restaurant without one); C4 does not apply
   // (they pay nothing). The order stays the first captain's until the
   // receipt (owner decision 2026-11-11).
-  async handover(command: AdminCommand & { reason: string }, now: Date): Promise<DispatchState> {
+  async handover(
+    command: AdminCommand & { reason: string; captainFault?: boolean | null },
+    now: Date,
+  ): Promise<DispatchState> {
     const hash = commandHash({
       verb: 'handover',
       orderId: command.orderId,
       captainId: command.captainId,
       reason: command.reason,
+      captainFault: command.captainFault ?? null,
     });
     const earlier = await this.replay(
       this.database.db,
@@ -866,6 +870,7 @@ export class DispatchService implements OnModuleInit {
             toCaptainId: command.captainId,
             note: command.reason,
             adminId: command.admin.accountId,
+            captainFault: command.captainFault ?? null,
             offer: { id: offerId, pay: shown.pay, expiresAt },
           },
           now,
@@ -878,6 +883,7 @@ export class DispatchService implements OnModuleInit {
             toCaptainId: command.captainId,
             note: command.reason,
             adminId: command.admin.accountId,
+            captainFault: command.captainFault ?? null,
             offer: null,
           },
           now,

@@ -943,6 +943,78 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets('«مشكلة» calls operations and sends «لا أستطيع إكمال الطلب», '
+      'then «بانتظار العمليات» with «تراجع» (CA §9.11)', (tester) async {
+    final app = TestApp();
+    app.server.on('/v1/captain/contact', [
+      const FakeAnswer(200, {
+        'phone': '+963944000000',
+        'whatsapp': '+963944000001',
+      }),
+    ]);
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [orderJson(track: 'at_merchant')],
+    );
+    await app.pump(tester);
+    await app.live(tester);
+    await app.tapVisible(tester, find.text('مشكلة'));
+    await app.settle(tester);
+    await tester.tap(find.text('اتصال بالعمليات'));
+    await app.settle(tester);
+    expect(app.launched.last, Uri(scheme: 'tel', path: '+963944000000'));
+
+    final asked = orderJson(
+      track: 'at_merchant',
+      version: 4,
+      cannotComplete: {
+        'reason': 'حادث',
+        'note': null,
+        'at': now.toIso8601String(),
+      },
+    );
+    app.server.on('/v1/captain/orders/$orderId/cannot-complete', [
+      FakeAnswer(200, {'order': asked}),
+    ]);
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [asked],
+    );
+    await tester.tap(find.text('لا أستطيع إكمال الطلب'));
+    await app.settle(tester);
+    await tester.tap(find.text('حادث'));
+    await app.settle(tester);
+    await tester.tap(find.text('إرسال'));
+    await app.settle(tester);
+    final body = bodyOf(app, '/v1/captain/orders/$orderId/cannot-complete');
+    expect(body['reason'], 'accident');
+    expect(body['note'], isNull);
+    expect(find.text('بانتظار العمليات'), findsOneWidget);
+    // «مشكلة» no longer offers a second request.
+    await app.tapVisible(tester, find.text('مشكلة'));
+    await app.settle(tester);
+    expect(find.text('لا أستطيع إكمال الطلب'), findsNothing);
+    await tester.tapAt(const Offset(10, 10));
+    await app.settle(tester);
+
+    final back = orderJson(track: 'at_merchant', version: 5);
+    app.server.on('/v1/captain/orders/$orderId/cannot-complete/withdraw', [
+      FakeAnswer(200, {'order': back}),
+    ]);
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [back],
+    );
+    await app.tapVisible(tester, find.text('تراجع'));
+    await app.settle(tester);
+    expect(
+      app.server.to('/v1/captain/orders/$orderId/cannot-complete/withdraw'),
+      hasLength(1),
+    );
+    expect(find.text('بانتظار العمليات'), findsNothing);
+    await app.done(tester);
+  });
+
   testWidgets('shows a force offline during an order with its reason, '
       'without the switch (CA §7.6, K18)', (tester) async {
     final app = TestApp();

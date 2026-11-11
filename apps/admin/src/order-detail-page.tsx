@@ -199,6 +199,16 @@ export function OrderDetailPage() {
         </>
       )}
       <Badges card={detail} />
+      {detail.cannotComplete && (
+        <section>
+          <h4>{t('order.cannotComplete.title')}</h4>
+          <p>{t('order.cannotComplete.reason', { label: detail.cannotComplete.label })}</p>
+          {detail.cannotComplete.note && <p>{detail.cannotComplete.note}</p>}
+          <p>{t('order.cannotComplete.at', { time: time(detail.cannotComplete.at) })}</p>
+          <p>{t('order.cannotComplete.actions')}</p>
+          <p>{t('order.cannotComplete.fault')}</p>
+        </section>
+      )}
       {detail.itemReport && <ItemReportSection report={detail.itemReport} time={time} />}
       {canCloseItemReport(session, detail) && <CloseItemReport key={orderId} orderId={orderId} />}
       {canChangeTime(session, detail) && (
@@ -274,6 +284,7 @@ export function OrderDetailPage() {
           orderId={orderId}
           version={detail.version}
           choices={detail.reassignChoices}
+          cannotComplete={detail.cannotComplete !== null}
         />
       )}
       {canResend(session) && (
@@ -338,8 +349,18 @@ export function OrderDetailPage() {
                               ? 'order.handovers.offered'
                               : 'order.handovers.waiting',
                           ),
+                    each.captainFault !== null &&
+                      t('order.handovers.fault', {
+                        fault: t(
+                          each.captainFault
+                            ? 'order.reassign.captainFault'
+                            : 'order.reassign.noFault',
+                        ),
+                      }),
                     each.note,
-                  ].join(' ')}
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
                 </li>
               );
             })}
