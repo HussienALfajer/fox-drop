@@ -99,17 +99,15 @@ async function admin(roles: string[]) {
 }
 
 async function captain() {
-  const captainId = await app
-    .get(CaptainsService)
-    .createCaptain(
-      azaz,
-      {
-        name: 'كابتن الذروة',
-        vehicle: 'walking',
-        custodyLimit: { amount: 300_000n, currency: 'TRY' },
-      },
-      change,
-    );
+  const captainId = await app.get(CaptainsService).createCaptain(
+    azaz,
+    {
+      name: 'كابتن الذروة',
+      vehicle: 'walking',
+      custodyLimit: { amount: 300_000n, currency: 'TRY' },
+    },
+    change,
+  );
   const phone = `+9639${randomInt(100_000_000).toString().padStart(8, '0')}`;
   await app.get(CaptainAccountsService).addAccount(captainId, phone, change);
   const deviceId = randomUUID();
