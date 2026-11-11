@@ -106,6 +106,11 @@ const CUSTOMER_SKIPS = new Set([
   'order.cannot_complete_requested',
   'order.cannot_complete_withdrawn',
   'order.emergency_raised',
+  // CA §9.9 (slice 2.13d): the captain's report and operations' answer. The
+  // ping and the answer reach the customer's devices (the ring, and its end
+  // on the others).
+  'order.customer_not_answering',
+  'order.no_answer_waited',
 ]);
 
 // AP §10: the restaurant hears nothing of a handover but the receipt, which
@@ -119,6 +124,11 @@ const MERCHANT_SKIPS = new Set([
   'order.cannot_complete_requested',
   'order.cannot_complete_withdrawn',
   'order.emergency_raised',
+  // CA §9.9: the door is between the captain, the customer and operations.
+  'order.customer_pinged',
+  'order.ping_answered',
+  'order.customer_not_answering',
+  'order.no_answer_waited',
 ]);
 
 // The restaurant's own steps the captain's channel never carries.
@@ -131,7 +141,8 @@ const RESTAURANT_REASONS = new Set(['order.item_report_closed']);
 // Events whose reason is for operations and the captain only (AP §10, slice
 // 2.12a): the withdrawal's reason code reaches the restaurant's and the
 // customer's channels without it; they hear only that the captain changed.
-const CAPTAIN_REASONS = new Set(['order.reassigned']);
+// Operations' «انتظر» carries their message to the captain (CA §9.9).
+const CAPTAIN_REASONS = new Set(['order.reassigned', 'order.no_answer_waited']);
 
 function customerPublication(type: string, payload: OutboxPayload) {
   const { schema, orderId, number, restaurantId, status, version, at } = payload;

@@ -10,6 +10,7 @@ import 'package:core_api/src/model/admin_order_dto_output_order_outcome_choices.
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cannot_complete.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_no_answer.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_outcome_change.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_removed_lines_inner.dart';
@@ -69,6 +70,7 @@ part 'admin_order_dto_output_order.g.dart';
 /// * [outcomeChoices]
 /// * [cannotComplete]
 /// * [emergency]
+/// * [noAnswer]
 /// * [itemReport]
 /// * [timeChange]
 /// * [editChoices]
@@ -140,7 +142,7 @@ abstract class AdminOrderDtoOutputOrder
   /// AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active.
   @BuiltValueField(wireName: r'alerts')
   BuiltList<AdminOrderDtoOutputOrderAlertsEnum> get alerts;
-  // enum alertsEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  captain_emergency,  };
+  // enum alertsEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  captain_emergency,  customer_not_answering,  };
 
   @BuiltValueField(wireName: r'promisedAt')
   DateTime? get promisedAt;
@@ -181,6 +183,9 @@ abstract class AdminOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'emergency')
   AdminOrderDtoOutputOrderEmergency? get emergency;
+
+  @BuiltValueField(wireName: r'noAnswer')
+  AdminOrderDtoOutputOrderNoAnswer get noAnswer;
 
   @BuiltValueField(wireName: r'itemReport')
   AdminOrderDtoOutputOrderItemReport? get itemReport;
@@ -450,6 +455,11 @@ class _$AdminOrderDtoOutputOrderSerializer
               AdminOrderDtoOutputOrderEmergency,
             ),
           );
+    yield r'noAnswer';
+    yield serializers.serialize(
+      object.noAnswer,
+      specifiedType: const FullType(AdminOrderDtoOutputOrderNoAnswer),
+    );
     yield r'itemReport';
     yield object.itemReport == null
         ? null
@@ -882,6 +892,17 @@ class _$AdminOrderDtoOutputOrderSerializer
           if (valueDes == null) continue;
           result.emergency.replace(valueDes);
           break;
+        case r'noAnswer':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminOrderDtoOutputOrderNoAnswer,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderNoAnswer;
+          result.noAnswer.replace(valueDes);
+          break;
         case r'itemReport':
           final valueDes =
               serializers.deserialize(
@@ -1192,6 +1213,9 @@ class AdminOrderDtoOutputOrderAlertsEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'captain_emergency')
   static const AdminOrderDtoOutputOrderAlertsEnum captainEmergency =
       _$adminOrderDtoOutputOrderAlertsEnum_captainEmergency;
+  @BuiltValueEnumConst(wireName: r'customer_not_answering')
+  static const AdminOrderDtoOutputOrderAlertsEnum customerNotAnswering =
+      _$adminOrderDtoOutputOrderAlertsEnum_customerNotAnswering;
 
   static Serializer<AdminOrderDtoOutputOrderAlertsEnum> get serializer =>
       _$adminOrderDtoOutputOrderAlertsEnumSerializer;

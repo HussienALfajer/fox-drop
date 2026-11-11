@@ -311,6 +311,29 @@ describe('the pushes of an order event', () => {
     expect(sent('order.delivered')).toEqual([[customer, 'customer.delivered', {}]]);
   });
 
+  it('rings the customer at the door and chimes their answer and «انتظر» to the captain (CU §14 #5, CA §14 #13, #13a)', () => {
+    expect(sent('order.customer_pinged')).toEqual([[customer, 'customer.door_ping', {}]]);
+    expect(sent('order.customer_pinged', null, { recipientName: 'سارة' })).toEqual([
+      [customer, 'customer.door_ping_recipient', { المستلم: 'سارة' }],
+    ]);
+    expect(sent('order.ping_answered', 'coming')).toEqual([
+      [captain, 'captain.customer_coming', { رقم: '10002' }],
+    ]);
+    expect(sent('order.ping_answered', 'contacting_recipient')).toEqual([
+      [captain, 'captain.customer_contacting_recipient', { رقم: '10002' }],
+    ]);
+    // The open app rings on any screen for this push.
+    expect(orderPushes('order.customer_pinged', null, facts)[0]!.data).toEqual({
+      target: 'order',
+      orderId: facts.orderId,
+      kind: 'door_ping',
+    });
+    expect(sent('order.customer_not_answering')).toEqual([]);
+    expect(sent('order.no_answer_waited', 'انتظره 5 دقائق')).toEqual([
+      [captain, 'captain.no_answer_wait', { رقم: '10002', الرسالة: 'انتظره 5 دقائق' }],
+    ]);
+  });
+
   it('apologises for an automatic cancellation and tells the restaurant its count (AP §8.3, RA §16 #2)', () => {
     expect(
       sent('order.cancelled', 'merchant_auto_cancel', {

@@ -24,6 +24,11 @@ abstract interface class Push {
 
   /// The pushes tapped while the app runs in the background.
   Stream<PushData> get taps;
+
+  /// The pushes that arrive while the app is in the foreground, which the
+  /// system does not show: an app acts on the ones it must (the customer's
+  /// door ping, CU §11.7).
+  Stream<PushData> get received;
 }
 
 /// No push: builds without a Firebase project, and platforms push does not
@@ -42,6 +47,9 @@ class NoPush implements Push {
 
   @override
   Stream<PushData> get taps => const Stream.empty();
+
+  @override
+  Stream<PushData> get received => const Stream.empty();
 }
 
 /// Push through FCM on the Firebase app `startAppCheck` started from the
@@ -79,6 +87,9 @@ class FirebasePush implements Push {
 
   @override
   Stream<PushData> get taps => FirebaseMessaging.onMessageOpenedApp.map(_data);
+
+  @override
+  Stream<PushData> get received => FirebaseMessaging.onMessage.map(_data);
 
   static PushData _data(RemoteMessage message) => {
     for (final entry in message.data.entries)

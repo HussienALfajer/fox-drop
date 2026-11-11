@@ -307,6 +307,7 @@ export class OperationsViews {
           itemReportOpen: view.itemReport !== null,
           cannotCompleteOpen: view.cannotComplete !== null,
           emergencyOpen: view.emergency !== null,
+          noAnswerOpen: view.noAnswer !== null,
           editAlertAt: editAlertAt(view, rule.editAlertMin),
         },
         now,

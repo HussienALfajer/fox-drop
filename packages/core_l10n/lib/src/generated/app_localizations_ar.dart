@@ -2231,4 +2231,57 @@ class AppLocalizationsAr extends AppLocalizations {
   String customerOrderEditedBanner(String amount) {
     return 'عدّلت FOX DROP طلبك. المجموع الجديد: $amount';
   }
+
+  @override
+  String get customerDoorRing => 'الكابتن عند الباب ويحاول الوصول إليك';
+
+  @override
+  String customerDoorRingRecipient(String recipient) {
+    return 'الكابتن عند الباب ويحاول الوصول إلى $recipient';
+  }
+
+  @override
+  String get customerComing => 'أنا قادم';
+
+  @override
+  String get customerCallingRecipient => 'سأتصل بالمستلم';
+
+  @override
+  String get customerCallCaptain => 'اتصال بالكابتن';
+
+  @override
+  String get captainPingCustomer => 'تنبيه الزبون';
+
+  @override
+  String captainPingsLeft(String count) {
+    return 'التنبيهات المتبقية: $count';
+  }
+
+  @override
+  String captainNextPingAt(String time) {
+    return 'يمكنك التنبيه مرة أخرى الساعة $time';
+  }
+
+  @override
+  String get captainCustomerComing => 'الزبون رأى التنبيه وهو قادم';
+
+  @override
+  String get captainCustomerContactingRecipient => 'الزبون يتواصل مع المستلم';
+
+  @override
+  String get captainCustomerNotAnswering => 'الزبون لا يستجيب';
+
+  @override
+  String captainNoAnswerAt(String time) {
+    return 'يظهر «الزبون لا يستجيب» الساعة $time';
+  }
+
+  @override
+  String get captainOperationsReviewing =>
+      'العمليات تراجع الطلب — انتظر تعليماتهم';
+
+  @override
+  String captainOperationsWait(String message) {
+    return 'العمليات: انتظر الزبون. $message';
+  }
 }

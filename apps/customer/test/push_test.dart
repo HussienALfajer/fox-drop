@@ -92,6 +92,36 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets('a door ping arriving while the app is open opens its order '
+      '(CU §11.7)', (tester) async {
+    final push = FakePush();
+    final app = _app(push);
+    await app.pump(tester);
+    // Another push while open opens nothing.
+    push.receive({'target': 'order', 'orderId': _orderId});
+    await tester.pumpAndSettle();
+    expect(_location(app), isNot('/orders/$_orderId'));
+    final ping = {'target': 'order', 'orderId': _orderId, 'kind': 'door_ping'};
+    push.receive(ping);
+    await tester.pumpAndSettle();
+    final router = app.container.read(routerProvider);
+    // Over the screen the customer was on, which stays below.
+    expect(router.state.uri.toString(), '/orders/$_orderId');
+    expect(router.canPop(), isTrue);
+    // Already on the order: it is read again, no second screen.
+    final reads = app.server.to('/v1/customer/orders/$_orderId').length;
+    push.receive(ping);
+    await tester.pumpAndSettle();
+    expect(
+      app.server.to('/v1/customer/orders/$_orderId').length,
+      greaterThan(reads),
+    );
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(router.canPop(), isFalse);
+    await app.done(tester);
+  });
+
   test('only an order target has a route yet', () {
     expect(
       pushTargetPath({'target': 'order', 'orderId': 'a b'}),

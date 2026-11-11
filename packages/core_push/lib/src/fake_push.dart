@@ -18,6 +18,7 @@ class FakePush implements Push {
   bool echo = false;
   final _refreshes = StreamController<String>.broadcast();
   final _taps = StreamController<PushData>.broadcast();
+  final _received = StreamController<PushData>.broadcast();
 
   /// Firebase renews the token.
   void renew(String token) {
@@ -27,6 +28,9 @@ class FakePush implements Push {
 
   /// The person taps a push while the app runs in the background.
   void tap(PushData data) => _taps.add(data);
+
+  /// A push arrives while the app is in the foreground.
+  void receive(PushData data) => _received.add(data);
 
   @override
   Future<String?> token() async {
@@ -46,6 +50,9 @@ class FakePush implements Push {
 
   @override
   Stream<PushData> get taps => _taps.stream;
+
+  @override
+  Stream<PushData> get received => _received.stream;
 }
 
 /// A [NotificationPermission] a test sets: what the phone answers.

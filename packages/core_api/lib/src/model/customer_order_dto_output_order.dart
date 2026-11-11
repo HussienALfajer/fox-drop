@@ -13,6 +13,7 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_estimate.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_outcome.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_rejection.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_door_ping.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_removed_lines_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_captain.dart';
@@ -31,6 +32,7 @@ part 'customer_order_dto_output_order.g.dart';
 /// * [version] - Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3).
 /// * [placedAt]
 /// * [promisedAt] - «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows.
+/// * [doorPing]
 /// * [itemReport]
 /// * [cancellation]
 /// * [rejection]
@@ -74,6 +76,9 @@ abstract class CustomerOrderDtoOutputOrder
   /// «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows.
   @BuiltValueField(wireName: r'promisedAt')
   DateTime? get promisedAt;
+
+  @BuiltValueField(wireName: r'doorPing')
+  CustomerActiveOrdersDtoOutputOrdersInnerDoorPing? get doorPing;
 
   @BuiltValueField(wireName: r'itemReport')
   CustomerActiveOrdersDtoOutputOrdersInnerItemReport? get itemReport;
@@ -192,6 +197,15 @@ class _$CustomerOrderDtoOutputOrderSerializer
         : serializers.serialize(
             object.promisedAt,
             specifiedType: const FullType.nullable(DateTime),
+          );
+    yield r'doorPing';
+    yield object.doorPing == null
+        ? null
+        : serializers.serialize(
+            object.doorPing,
+            specifiedType: const FullType.nullable(
+              CustomerActiveOrdersDtoOutputOrdersInnerDoorPing,
+            ),
           );
     yield r'itemReport';
     yield object.itemReport == null
@@ -400,6 +414,18 @@ class _$CustomerOrderDtoOutputOrderSerializer
                   as DateTime?;
           if (valueDes == null) continue;
           result.promisedAt = valueDes;
+          break;
+        case r'doorPing':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerActiveOrdersDtoOutputOrdersInnerDoorPing,
+                    ),
+                  )
+                  as CustomerActiveOrdersDtoOutputOrdersInnerDoorPing?;
+          if (valueDes == null) continue;
+          result.doorPing.replace(valueDes);
           break;
         case r'itemReport':
           final valueDes =

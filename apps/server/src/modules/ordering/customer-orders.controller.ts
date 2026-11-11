@@ -18,7 +18,7 @@ import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { CustomerController } from '../../http/route-groups.js';
 import { type Captain, CaptainsService } from '../captains/index.js';
 import { unsavedAddressFields, withRecipient } from '../customers/index.js';
-import type { AppSession } from '../identity/index.js';
+import { type AppSession, CaptainAccountsService } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import {
   appVersion,
@@ -81,6 +81,21 @@ const customerOrder = z.object({
     .nullable()
     .describe(
       '«يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows.',
+    ),
+  doorPing: z
+    .object({
+      at: z.iso.datetime(),
+      answer: z
+        .enum(['coming', 'contacting_recipient'])
+        .nullable()
+        .describe(
+          '«أنا قادم», or «سأتصل بالمستلم» for an order with a recipient; null unanswered.',
+        ),
+      answeredAt: z.iso.datetime().nullable(),
+    })
+    .nullable()
+    .describe(
+      "CU §11.7 (slice 2.13d): the captain's latest «تنبيه الزبون» while at the door. Unanswered and under 30 seconds old, the open app rings full screen «الكابتن عند الباب ويحاول الوصول إليك» (or «… إلى {المستلم}») with «أنا قادم» (or «سأتصل بالمستلم») and «اتصال بالكابتن». Null without one.",
     ),
   itemReport: z
     .object({ at: z.iso.datetime() })
@@ -168,10 +183,16 @@ const customerOrder = z.object({
         .describe(
           'Before the pickup: «الكابتن {الاسم} وصل إلى المطعم», or «الكابتن يستلم طلبك الآن» once ready (CU §11.2).',
         ),
+      phone: z
+        .string()
+        .nullable()
+        .describe(
+          '«اتصال بالكابتن» (CU §11.3, §11.7, U12): the number the button dials from the pickup until the order ends; the app never prints it. Null before and after.',
+        ),
     })
     .nullable()
     .describe(
-      'The captain card from assignment (CU §11.3, Q14): «الكابتن {الاسم} في طريقه إلى المطعم»; never the phone number or the captain track (CU §11.2). The photo comes with the object storage.',
+      'The captain card from assignment (CU §11.3, Q14): «الكابتن {الاسم} في طريقه إلى المطعم»; never the captain track (CU §11.2). The photo comes with the object storage.',
     ),
   currency: z.string().length(3),
   money: z.object({
@@ -271,6 +292,7 @@ export class CustomerOrdersController {
     private readonly merchants: MerchantsService,
     private readonly captains: CaptainsService,
     private readonly commands: OrderCommands,
+    private readonly captainAccounts: CaptainAccountsService,
   ) {}
 
   @Get('orders/active')
@@ -409,6 +431,50 @@ export class CustomerOrdersController {
     }
   }
 
+  // CU §11.7, CA §9.9 (slice 2.13d): «أنا قادم», or «سأتصل بالمستلم» for an
+  // order with a recipient, to the captain's latest ping; the captain hears a
+  // chime. 409 order_state_changed with the order (no ping waiting: answered
+  // from another device, or the captain left the door); 404 unknown_order;
+  // 422 idempotency_key_reused.
+  @Post('orders/:orderId/answer-ping')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CustomerOrderDto })
+  async answerPing(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: CustomerOrderParamsDto,
+  ) {
+    try {
+      const order = await this.commands.answerPing(
+        { accountId: session.accountId, idempotencyKey, orderId: params.orderId },
+        new Date(),
+      );
+      return { order: await this.withNames(order) };
+    } catch (error) {
+      if (!(error instanceof OrderCommandRefusedError)) throw error;
+      const { refusal } = error;
+      if (refusal === 'unknown_order') {
+        throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: refusal });
+      }
+      if (refusal === 'idempotency_key_reused') {
+        throw new UnprocessableEntityException({
+          statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: refusal,
+        });
+      }
+      if (refusal === 'order_state_changed' && error.order !== null) {
+        throw new ConflictException({
+          statusCode: HttpStatus.CONFLICT,
+          error: refusal,
+          order: await this.withNames(error.order),
+        });
+      }
+      throw error;
+    }
+  }
+
   private async withNames(order: OrderView) {
     const [names, captains] = await Promise.all([
       this.merchants.names([order.restaurantId]),
@@ -417,20 +483,40 @@ export class CustomerOrdersController {
     return orderBody(order, names, captains);
   }
 
-  private async captainsOf(orders: OrderView[]): Promise<Map<string, Captain>> {
+  // The captains of these orders; with their number once one of their orders
+  // is picked up (CU §11.3, U12: «اتصال بالكابتن» until the order ends).
+  private async captainsOf(orders: OrderView[]): Promise<Map<string, CardCaptain>> {
     const ids = [...new Set(orders.flatMap((order) => order.captainId ?? []))];
+    const calling = new Set(
+      orders.flatMap((order) =>
+        order.captainId !== null && CALL_CAPTAIN.includes(order.status) ? [order.captainId] : [],
+      ),
+    );
     const now = new Date();
-    const found = await Promise.all(ids.map((id) => this.captains.captain(id, now)));
+    const found = await Promise.all(
+      ids.map(async (id) => {
+        const [captain, phone] = await Promise.all([
+          this.captains.captain(id, now),
+          calling.has(id) ? this.captainAccounts.phone(id) : null,
+        ]);
+        return captain && { ...captain, phone };
+      }),
+    );
     return new Map(found.flatMap((captain) => (captain ? [[captain.id, captain] as const] : [])));
   }
 }
+
+// CU §11.3, U12: «اتصال بالكابتن» from the pickup until the order ends.
+const CALL_CAPTAIN: readonly OrderView['status'][] = ['picked_up', 'arrived'];
+
+type CardCaptain = Captain & { phone: string | null };
 
 // What the customer sees of the order: never the commission or the
 // captain's pay (CU §11.1).
 function orderBody(
   order: OrderView,
   names: Map<string, { nameAr: string; nameEn: string | null }>,
-  captains: Map<string, Captain>,
+  captains: Map<string, CardCaptain>,
 ) {
   const captain = order.captainId === null ? undefined : captains.get(order.captainId);
   const restaurant = names.get(order.restaurantId);
@@ -442,6 +528,11 @@ function orderBody(
     version: order.version,
     placedAt: order.placedAt.toISOString(),
     promisedAt: order.acceptance?.promisedAt.toISOString() ?? null,
+    doorPing: order.doorPing && {
+      at: order.doorPing.at.toISOString(),
+      answer: order.doorPing.answer,
+      answeredAt: order.doorPing.answeredAt?.toISOString() ?? null,
+    },
     itemReport: order.itemReport && { at: order.itemReport.at.toISOString() },
     rejection: order.rejection && {
       at: order.rejection.at.toISOString(),
@@ -484,6 +575,7 @@ function orderBody(
           vehicle: captain.vehicle,
           atRestaurant:
             order.captainTrack === 'at_merchant' || order.captainTrack === 'pickup_pending',
+          phone: CALL_CAPTAIN.includes(order.status) ? captain.phone : null,
         }
       : null,
     currency: order.currency,

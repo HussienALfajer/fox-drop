@@ -92,7 +92,7 @@ abstract class AdminOrderCardDtoOutputOrder
   /// AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active.
   @BuiltValueField(wireName: r'alerts')
   BuiltList<AdminOrderCardDtoOutputOrderAlertsEnum> get alerts;
-  // enum alertsEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  captain_emergency,  };
+  // enum alertsEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  captain_emergency,  customer_not_answering,  };
 
   AdminOrderCardDtoOutputOrder._();
 
@@ -541,6 +541,9 @@ class AdminOrderCardDtoOutputOrderAlertsEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'captain_emergency')
   static const AdminOrderCardDtoOutputOrderAlertsEnum captainEmergency =
       _$adminOrderCardDtoOutputOrderAlertsEnum_captainEmergency;
+  @BuiltValueEnumConst(wireName: r'customer_not_answering')
+  static const AdminOrderCardDtoOutputOrderAlertsEnum customerNotAnswering =
+      _$adminOrderCardDtoOutputOrderAlertsEnum_customerNotAnswering;
 
   static Serializer<AdminOrderCardDtoOutputOrderAlertsEnum> get serializer =>
       _$adminOrderCardDtoOutputOrderAlertsEnumSerializer;

@@ -273,6 +273,50 @@ const activeOrder = z
       .describe(
         "«طوارئ» (CA §9.11, slice 2.13c): the captain's open emergency; it cannot be withdrawn and every step stays open. Null without one.",
       ),
+    noAnswer: z
+      .object({
+        pingsLeft: z.number().int().describe('«تنبيه الزبون» presses left.'),
+        nextPingAt: z.iso
+          .datetime()
+          .nullable()
+          .describe(
+            'When «تنبيه الزبون» is allowed next (the screen shows it); null with none left.',
+          ),
+        answer: z
+          .object({
+            answer: z
+              .enum(['coming', 'contacting_recipient'])
+              .describe(
+                '«الزبون رأى التنبيه وهو قادم», or «الزبون يتواصل مع المستلم» for an order with a recipient.',
+              ),
+            at: z.iso.datetime(),
+          })
+          .nullable()
+          .describe("The customer's latest answer to a ping."),
+        reportableAt: z.iso
+          .datetime()
+          .nullable()
+          .describe(
+            'When «الزبون لا يستجيب» appears: after every ping and pings × interval since the arrival or the latest «انتظر»; null while pings are left or a report waits.',
+          ),
+        report: z
+          .object({
+            at: z.iso.datetime(),
+            waitedAt: z.iso.datetime().nullable(),
+            waitMessage: z
+              .string()
+              .nullable()
+              .describe(
+                "Operations' «انتظر» message; null while «العمليات تراجع الطلب — انتظر تعليماتهم».",
+              ),
+          })
+          .nullable()
+          .describe('The latest «الزبون لا يستجيب».'),
+      })
+      .nullable()
+      .describe(
+        'CA §9.9 (slice 2.13d): the door, while the order is arrived with this captain at the customer; null otherwise.',
+      ),
   })
   .describe('The active order (CA §9).');
 
@@ -651,6 +695,7 @@ function activeOrderBody({
   handover,
   cannotComplete,
   emergency,
+  noAnswer,
 }: CaptainActiveOrder) {
   if (order.captainTrack === null) throw new Error(`order ${order.id} has no captain track`);
   if (order.acceptance === null) throw new Error(`order ${order.id} was never accepted`);
@@ -731,6 +776,20 @@ function activeOrderBody({
     emergency: emergency && {
       at: emergency.at.toISOString(),
       located: emergency.location !== null,
+    },
+    noAnswer: noAnswer && {
+      pingsLeft: noAnswer.pingsLeft,
+      nextPingAt: noAnswer.nextPingAt?.toISOString() ?? null,
+      answer: noAnswer.answer && {
+        answer: noAnswer.answer.answer,
+        at: noAnswer.answer.at.toISOString(),
+      },
+      reportableAt: noAnswer.reportableAt?.toISOString() ?? null,
+      report: noAnswer.report && {
+        at: noAnswer.report.at.toISOString(),
+        waitedAt: noAnswer.report.waitedAt?.toISOString() ?? null,
+        waitMessage: noAnswer.report.waitMessage,
+      },
     },
   };
 }
@@ -968,6 +1027,72 @@ export class CaptainOrdersController {
     return refusalsAsHttp(captainId, this.orders, async () => ({
       order: activeOrderBody(
         await this.orders.withdrawCannotComplete(
+          {
+            orderId: params.orderId,
+            captainId,
+            accountId: session.accountId,
+            deviceId: session.deviceId,
+            idempotencyKey,
+            location: { ...body.location, recordedAt: new Date(body.location.recordedAt) },
+          },
+          new Date(),
+        ),
+      ),
+    }));
+  }
+
+  // CA §9.9 «تنبيه الزبون» (CU §11.7, slice 2.13d): rings the customer's
+  // signed-in devices. 409 order_state_changed (not at the door, too soon
+  // or none left: `noAnswer` gives the next time), not_online; 404
+  // unknown_order; 400 invalid_location; 422 idempotency_key_reused.
+  @Post(':orderId/ping-customer')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CaptainOrderDto })
+  async pingCustomer(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: CaptainOrderParamsDto,
+    @Body() body: CaptainArriveDto,
+  ) {
+    const captainId = captainOf(session);
+    return refusalsAsHttp(captainId, this.orders, async () => ({
+      order: activeOrderBody(
+        await this.orders.pingCustomer(
+          {
+            orderId: params.orderId,
+            captainId,
+            accountId: session.accountId,
+            deviceId: session.deviceId,
+            idempotencyKey,
+            location: { ...body.location, recordedAt: new Date(body.location.recordedAt) },
+          },
+          new Date(),
+        ),
+      ),
+    }));
+  }
+
+  // CA §9.9 «الزبون لا يستجيب» (slice 2.13d): operations get «زبون لا يرد».
+  // 409 order_state_changed (not at the door, before `noAnswer.reportableAt`,
+  // or one already waiting), not_online; 404 unknown_order; 400
+  // invalid_location; 422 idempotency_key_reused.
+  @Post(':orderId/customer-not-answering')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CaptainOrderDto })
+  async reportNoAnswer(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: CaptainOrderParamsDto,
+    @Body() body: CaptainArriveDto,
+  ) {
+    const captainId = captainOf(session);
+    return refusalsAsHttp(captainId, this.orders, async () => ({
+      order: activeOrderBody(
+        await this.orders.reportNoAnswer(
           {
             orderId: params.orderId,
             captainId,

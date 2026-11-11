@@ -17,13 +17,16 @@ import { mapLink } from './map-link.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { can } from './session.js';
 import { alertKeys } from './order-labels.js';
+import { OPERATIONS_MANAGE } from './assign-captain.js';
+import { WaitForCustomer } from './order-no-answer-page.js';
 import { canChangeRestaurantStatus, useResumeRestaurant } from './restaurant-status.js';
 
 const alertsRoute = getRouteApi('/signed-in/alerts');
 const signedIn = getRouteApi('/signed-in');
 
 // AP §9.1.3: the alerts list, by severity then age, with «استلام» and the
-// direct action built so far (open the order); and the history.
+// direct actions built so far (open the order, «استئناف», «انتظر»); and the
+// history.
 export function AlertsPage() {
   const { t } = useTranslation();
   const { city: code } = alertsRoute.useSearch();
@@ -51,6 +54,7 @@ function CityAlerts({ city }: { city: City }) {
           <li key={alert.id}>
             <AlertLine alert={alert} city={city} />
             <ResumeRestaurant alert={alert} city={city} />
+            <WaitOnAlert alert={alert} />
             {alert.acknowledged === null && (
               <button
                 type="button"
@@ -95,6 +99,16 @@ function ResumeRestaurant({ alert, city }: { alert: AdminAlert; city: City }) {
       )}
     </>
   );
+}
+
+// AP §9.1.3, CA §9.9: «زبون لا يرد» with its direct action «انتظر» (OWN,
+// OPS; owner decision 2026-11-11); «فتح الطلب» leads to «تحديد النتيجة».
+function WaitOnAlert({ alert }: { alert: AdminAlert }) {
+  const { session } = signedIn.useRouteContext();
+  const orderId = orderOf(alert);
+  if (alert.code !== 'customer_not_answering' || orderId === null) return null;
+  if (!can(session, OPERATIONS_MANAGE)) return null;
+  return <WaitForCustomer orderId={orderId} />;
 }
 
 function History({ city }: { city: City }) {

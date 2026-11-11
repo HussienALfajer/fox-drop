@@ -1,6 +1,9 @@
+import 'package:core_api/core_api.dart';
 import 'package:core_auth/testing.dart';
 import 'package:core_realtime/core_realtime.dart';
 import 'package:customer/src/cart/cart.dart';
+import 'package:customer/src/orders/door_ring.dart';
+import 'package:customer/src/orders/order_live.dart';
 import 'package:customer/src/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,6 +24,8 @@ Map<String, Object?> _order({
   String? promisedAt,
   Map<String, Object?>? itemReport,
   List<Map<String, Object?>> removedLines = const [],
+  Map<String, Object?>? doorPing,
+  String? recipient,
 }) => {
   'id': _orderId,
   'number': '10423',
@@ -33,6 +38,7 @@ Map<String, Object?> _order({
   'outcome': outcome,
   'delivery': null,
   'itemReport': itemReport,
+  'doorPing': doorPing,
   'restaurant': {'id': shamId, 'nameAr': 'مطعم الشام', 'nameEn': null},
   'captain': captain,
   'currency': 'TRY',
@@ -73,7 +79,7 @@ Map<String, Object?> _order({
     'street': 'شارع القلعة، بناء 4',
     'floor': null,
     'landmark': 'قرب جامع النور',
-    'recipientName': null,
+    'recipientName': recipient,
     'directions': null,
   },
 };
@@ -82,6 +88,7 @@ const _captain = {
   'firstName': 'سامر',
   'vehicle': 'motorbike',
   'atRestaurant': false,
+  'phone': null,
 };
 
 String _status(WidgetTester tester) {
@@ -848,4 +855,104 @@ void main() {
       await app.done(tester);
     },
   );
+
+  testWidgets('the door ping rings full screen for 30 seconds, «أنا قادم» '
+      'answers it and «اتصال بالكابتن» dials the captain (CU §11.7)', (
+    tester,
+  ) async {
+    final pingAt = DateTime.now().toUtc().toIso8601String();
+    Map<String, Object?> atDoor({
+      Map<String, Object?>? doorPing,
+      int version = 6,
+      String? recipient,
+    }) => _order(
+      status: 'arrived',
+      version: version,
+      captain: {..._captain, 'phone': '+963944333333'},
+      doorPing: doorPing,
+      recipient: recipient,
+    );
+    final ringing = atDoor(
+      doorPing: {'at': pingAt, 'answer': null, 'answeredAt': null},
+    );
+    final answered = atDoor(
+      version: 7,
+      doorPing: {'at': pingAt, 'answer': 'coming', 'answeredAt': pingAt},
+    );
+    final app = await open(
+      tester,
+      [
+        FakeAnswer(200, {'order': ringing}),
+        FakeAnswer(200, {'order': answered}),
+      ],
+      before: (app) =>
+          app.server.on('/v1/customer/orders/$_orderId/answer-ping', [
+            FakeAnswer(200, {'order': answered}),
+          ]),
+    );
+    expect(find.byKey(const Key('door-ring')), findsOneWidget);
+    expect(find.text('الكابتن عند الباب ويحاول الوصول إليك'), findsOneWidget);
+    expect(app.doorRinger.ringing, isTrue);
+    await tester.tap(find.text('أنا قادم'));
+    await tester.pumpAndSettle();
+    expect(
+      app.server.to('/v1/customer/orders/$_orderId/answer-ping'),
+      hasLength(1),
+    );
+    expect(find.byKey(const Key('door-ring')), findsNothing);
+    expect(app.doorRinger.ringing, isFalse);
+    await app.done(tester);
+  });
+
+  test('the ring lasts 30 seconds from the ping, at the door, unanswered '
+      '(CU §11.7)', () {
+    final at = DateTime.utc(2026, 11, 11, 12);
+    CustomerOrder order(String status, {String? answer}) => CoreApi()
+        .serializers
+        .deserializeWith(CustomerOrderDtoOutput.serializer, {
+          'order': _order(
+            status: status,
+            doorPing: {
+              'at': at.toIso8601String(),
+              'answer': answer,
+              'answeredAt': answer == null ? null : at.toIso8601String(),
+            },
+          ),
+        })!
+        .order;
+    final ringing = order('arrived');
+    expect(ringingPing(ringing, at.add(const Duration(seconds: 29)), {}), at);
+    expect(
+      ringingPing(ringing, at.add(const Duration(seconds: 30)), {}),
+      isNull,
+    );
+    expect(ringingPing(ringing, at, {at}), isNull);
+    expect(ringingPing(order('arrived', answer: 'coming'), at, {}), isNull);
+    expect(ringingPing(order('delivered'), at, {}), isNull);
+  });
+
+  testWidgets('the ring for someone else answers «سأتصل بالمستلم» and calls '
+      'the captain (CU §11.7, Q5)', (tester) async {
+    final pingAt = DateTime.now().toUtc().toIso8601String();
+    final ringing = _order(
+      status: 'arrived',
+      version: 6,
+      captain: {..._captain, 'phone': '+963944333333'},
+      doorPing: {'at': pingAt, 'answer': null, 'answeredAt': null},
+      recipient: 'سارة',
+    );
+    final app = await open(tester, [
+      FakeAnswer(200, {'order': ringing}),
+    ]);
+    expect(
+      find.text('الكابتن عند الباب ويحاول الوصول إلى سارة'),
+      findsOneWidget,
+    );
+    expect(find.text('سأتصل بالمستلم'), findsOneWidget);
+    await tester.tap(find.text('اتصال بالكابتن'));
+    await tester.pumpAndSettle();
+    expect(app.launched, [Uri(scheme: 'tel', path: '+963944333333')]);
+    expect(find.byKey(const Key('door-ring')), findsNothing);
+    await app.done(tester);
+  });
 }

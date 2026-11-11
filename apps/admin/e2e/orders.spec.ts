@@ -55,6 +55,7 @@ const detail = {
   handover: { allowed: false, handovers: [] },
   cannotComplete: null,
   emergency: null,
+  noAnswer: { pings: [], reports: [], waitAllowed: false },
   outcome: null,
   outcomeChoices: null,
   itemReport: null,
@@ -1126,4 +1127,44 @@ test('shows «طوارئ» with its map and prefills no fault', async ({ page })
   const reassign = page.getByRole('form', { name: 'سحب وإعادة تعيين' });
   await reassign.getByRole('radio', { name: 'تأخر الكابتن' }).check();
   await expect(reassign.getByRole('radio', { name: 'دون خطأ' })).toBeChecked();
+});
+
+// CA §9.9, AP §9.1.3 (slice 2.13d): the door's pings and the captain's «الزبون
+// لا يستجيب» show on the detail, and «انتظر» sends operations' message.
+test('lists the door pings and sends «انتظر» with a message', async ({ page }) => {
+  await fakeSession(page, ['operations.read', 'operations.manage']);
+  await fakeOperations(page);
+  const captainId = '01900000-0000-7000-8000-0000000000c1';
+  await page.route(`**/v1/admin/orders/${orderId}`, (route) =>
+    route.fulfill({
+      json: {
+        order: {
+          ...detail,
+          status: 'arrived',
+          alerts: ['customer_not_answering'],
+          noAnswer: {
+            pings: [
+              { captainId, at: later(-16), answer: 'coming', answeredAt: later(-15) },
+              { captainId, at: later(-10), answer: null, answeredAt: null },
+            ],
+            reports: [{ captainId, at: later(-1), waitedAt: null, waitMessage: null }],
+            waitAllowed: true,
+          },
+        },
+      },
+    }),
+  );
+  let sent: unknown = null;
+  await page.route(`**/v1/admin/orders/${orderId}/no-answer/wait`, (route) => {
+    sent = route.request().postDataJSON();
+    return route.fulfill({ json: { order: card } });
+  });
+  await page.goto(`/orders/${orderId}`);
+
+  await expect(page.getByRole('heading', { name: 'الزبون لا يرد' })).toBeVisible();
+  await expect(page.getByText('«أنا قادم»', { exact: false })).toBeVisible();
+  const wait = page.getByRole('form', { name: 'انتظر' });
+  await wait.getByLabel('رسالة للكابتن').fill('الزبون في الطريق، انتظره 5 دقائق');
+  await wait.getByRole('button', { name: 'إرسال «انتظر»' }).click();
+  await expect.poll(() => sent).toEqual({ message: 'الزبون في الطريق، انتظره 5 دقائق' });
 });

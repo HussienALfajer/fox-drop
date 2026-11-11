@@ -1369,4 +1369,141 @@ void main() {
     expect(app.ringer.cancellations, 0);
     await app.done(tester);
   });
+
+  testWidgets('«تنبيه الزبون» at the door, the answer\'s chime, «الزبون لا '
+      'يستجيب» and operations\' «انتظر» (CA §9.9)', (tester) async {
+    final app = TestApp();
+    Map<String, Object?> door({
+      int left = 3,
+      DateTime? next,
+      Map<String, Object?>? answer,
+      DateTime? reportableAt,
+      Map<String, Object?>? report,
+    }) => {
+      'pingsLeft': left,
+      'nextPingAt': left == 0 ? null : (next ?? now).toIso8601String(),
+      'answer': answer,
+      'reportableAt': reportableAt?.toIso8601String(),
+      'report': report,
+    };
+    Map<String, Object?> atDoor(Map<String, Object?> noAnswer, {int v = 5}) =>
+        orderJson(
+          status: 'arrived',
+          track: 'at_customer',
+          pickedUp: true,
+          version: v,
+          noAnswer: noAnswer,
+        );
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [atDoor(door())],
+    );
+    await app.pump(tester);
+    await app.live(tester);
+    expect(find.text('التنبيهات المتبقية: 3'), findsOneWidget);
+
+    final pinged = atDoor(
+      door(left: 2, next: now.add(const Duration(minutes: 5))),
+      v: 6,
+    );
+    app.server.on('/v1/captain/orders/$orderId/ping-customer', [
+      FakeAnswer(200, {'order': pinged}),
+    ]);
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [pinged],
+    );
+    final ping = find.byKey(const Key('ping-customer'));
+    await tester.ensureVisible(ping);
+    await tester.tap(ping);
+    await app.settle(tester);
+    expect(
+      app.server.to('/v1/captain/orders/$orderId/ping-customer'),
+      hasLength(1),
+    );
+    expect(tester.widget<OutlinedButton>(ping).onPressed, isNull);
+    expect(find.text('التنبيهات المتبقية: 2'), findsOneWidget);
+    expect(
+      find.textContaining('يمكنك التنبيه مرة أخرى الساعة'),
+      findsOneWidget,
+    );
+
+    // The customer answers «أنا قادم»: a chime and the line.
+    final answered = atDoor(
+      door(
+        left: 2,
+        next: now.add(const Duration(minutes: 5)),
+        answer: {'answer': 'coming', 'at': now.toIso8601String()},
+      ),
+      v: 7,
+    );
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [answered],
+    );
+    app.transport.event('order.ping_answered', 7);
+    await app.settle(tester);
+    expect(app.ringer.chimes, greaterThan(0));
+    expect(find.text('الزبون رأى التنبيه وهو قادم'), findsWidgets);
+
+    // Every ping sent and 15 minutes passed: «الزبون لا يستجيب».
+    final reportable = atDoor(
+      door(left: 0, reportableAt: now.subtract(const Duration(seconds: 1))),
+      v: 8,
+    );
+    final reported = atDoor(
+      door(
+        left: 0,
+        report: {
+          'at': now.toIso8601String(),
+          'waitedAt': null,
+          'waitMessage': null,
+        },
+      ),
+      v: 9,
+    );
+    app.server.on('/v1/captain/orders/$orderId/customer-not-answering', [
+      FakeAnswer(200, {'order': reported}),
+    ]);
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [reportable],
+    );
+    app.transport.event('order.customer_pinged', 8);
+    await app.settle(tester);
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [reported],
+    );
+    final report = find.byKey(const Key('customer-not-answering'));
+    await tester.ensureVisible(report);
+    await tester.tap(report);
+    await app.settle(tester);
+    expect(find.text('العمليات تراجع الطلب — انتظر تعليماتهم'), findsOneWidget);
+
+    // Operations answer «انتظر» with a message: a chime and the card.
+    final waited = atDoor(
+      door(
+        left: 0,
+        reportableAt: now.add(const Duration(minutes: 15)),
+        report: {
+          'at': now.toIso8601String(),
+          'waitedAt': now.toIso8601String(),
+          'waitMessage': 'الزبون في الطريق',
+        },
+      ),
+      v: 10,
+    );
+    final chimes = app.ringer.chimes;
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [waited],
+    );
+    app.transport.event('order.no_answer_waited', 10);
+    await app.settle(tester);
+    expect(app.ringer.chimes, greaterThan(chimes));
+    expect(find.text('العمليات: انتظر الزبون. الزبون في الطريق'), findsWidgets);
+    expect(find.byKey(const Key('customer-not-answering')), findsNothing);
+    await app.done(tester);
+  });
 }

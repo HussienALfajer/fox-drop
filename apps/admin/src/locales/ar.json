@@ -167,7 +167,8 @@
       "restaurantAutoPaused": "مطعم أوقف تلقائياً",
       "editUnacknowledged": "المطعم لم يؤكد التعديل",
       "captainCannotComplete": "كابتن لا يستطيع إكمال الطلب",
-      "captainEmergency": "طوارئ كابتن"
+      "captainEmergency": "طوارئ كابتن",
+      "customerNotAnswering": "زبون لا يرد"
     },
     "badge": {
       "needsAssignment": "بحاجة لتعيين",
@@ -305,7 +306,11 @@
       "handedOver": "استلم الكابتن الثاني الطلب",
       "cannotCompleteRequested": "الكابتن لا يستطيع إكمال الطلب",
       "cannotCompleteWithdrawn": "تراجع الكابتن عن طلبه",
-      "emergencyRaised": "ضغط الكابتن «طوارئ»"
+      "emergencyRaised": "ضغط الكابتن «طوارئ»",
+      "customerPinged": "نبّه الكابتن الزبون",
+      "pingAnswered": "ردّ الزبون على التنبيه",
+      "customerNotAnswering": "أبلغ الكابتن «الزبون لا يستجيب»",
+      "noAnswerWaited": "طلبت العمليات من الكابتن الانتظار"
     },
     "actor": {
       "system": "النظام",
@@ -582,6 +587,22 @@
       "noLocation": "لم يُرسل هاتف الكابتن موقعه.",
       "simulated": "أبلغ الهاتف أن هذا الموقع وهمي: تأكّد من مكان الكابتن بالاتصال به.",
       "actions": "اتصل بالكابتن. قبل الاستلام: «سحب وإعادة تعيين». بعد الاستلام: «تسليم لكابتن آخر». يُسجَّل «دون خطأ» ما لم تختر غيره، ويصبح الكابتن غير متصل حين يخرج الطلب منه."
+    },
+    "noAnswer": {
+      "title": "الزبون لا يرد",
+      "ping": "نبّه الكابتن الزبون الساعة {{time}}.",
+      "answered": "ردّ الزبون «{{answer}}» الساعة {{time}}.",
+      "coming": "أنا قادم",
+      "contactingRecipient": "سأتصل بالمستلم",
+      "reported": "أبلغ الكابتن «الزبون لا يستجيب» الساعة {{time}}.",
+      "waited": "«انتظر» الساعة {{time}}: {{message}}",
+      "waitTitle": "انتظر",
+      "waitExplanation": "اتصل بالزبون أولاً. تصل رسالتك إلى الكابتن مع تنبيه، ويُغلق «زبون لا يرد». لإنهاء الطلب استخدم «تحديد النتيجة».",
+      "message": "رسالة للكابتن",
+      "wait": "إرسال «انتظر»",
+      "nothingWaits": "لم يعد هناك بلاغ ينتظر ردّك.",
+      "closedHandedOver": "أُغلق: استلم كابتن آخر الطلب.",
+      "closedEnded": "أُغلق: انتهى الطلب."
     }
   },
   "forceOffline": {
@@ -834,6 +855,7 @@
           "cancelled": "إلغاء المهمة",
           "handed_over": "تسليم الطلب لكابتن آخر",
           "cancelled_before_acceptance": "إلغاء طلب قبل قبول المطعم",
+          "no_answer_wait": "«انتظر» الزبون الذي لا يرد",
           "customer_coming": "الزبون قادم",
           "customer_contacting_recipient": "الزبون يتواصل مع المستلم",
           "charge": "خصم من المستحقات",

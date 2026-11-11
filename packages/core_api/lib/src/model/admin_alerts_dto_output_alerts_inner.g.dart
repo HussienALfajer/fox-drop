@@ -58,6 +58,9 @@ const AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnum_captainEmergency =
     const AdminAlertsDtoOutputAlertsInnerCodeEnum._('captainEmergency');
 const AdminAlertsDtoOutputAlertsInnerCodeEnum
+_$adminAlertsDtoOutputAlertsInnerCodeEnum_customerNotAnswering =
+    const AdminAlertsDtoOutputAlertsInnerCodeEnum._('customerNotAnswering');
+const AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused =
     const AdminAlertsDtoOutputAlertsInnerCodeEnum._('restaurantAutoPaused');
 
@@ -98,6 +101,8 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_captainCannotComplete;
     case 'captainEmergency':
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_captainEmergency;
+    case 'customerNotAnswering':
+      return _$adminAlertsDtoOutputAlertsInnerCodeEnum_customerNotAnswering;
     case 'restaurantAutoPaused':
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused;
     default:
@@ -126,6 +131,7 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValues =
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_editUnacknowledged,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_captainCannotComplete,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_captainEmergency,
+        _$adminAlertsDtoOutputAlertsInnerCodeEnum_customerNotAnswering,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused,
       ],
     );
@@ -240,6 +246,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'editUnacknowledged': 'edit_unacknowledged',
     'captainCannotComplete': 'captain_cannot_complete',
     'captainEmergency': 'captain_emergency',
+    'customerNotAnswering': 'customer_not_answering',
     'restaurantAutoPaused': 'restaurant_auto_paused',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
@@ -260,6 +267,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'edit_unacknowledged': 'editUnacknowledged',
     'captain_cannot_complete': 'captainCannotComplete',
     'captain_emergency': 'captainEmergency',
+    'customer_not_answering': 'customerNotAnswering',
     'restaurant_auto_paused': 'restaurantAutoPaused',
   };
 

@@ -182,6 +182,9 @@ _$adminOrderCardDtoOutputOrderAlertsEnum_captainCannotComplete =
 const AdminOrderCardDtoOutputOrderAlertsEnum
 _$adminOrderCardDtoOutputOrderAlertsEnum_captainEmergency =
     const AdminOrderCardDtoOutputOrderAlertsEnum._('captainEmergency');
+const AdminOrderCardDtoOutputOrderAlertsEnum
+_$adminOrderCardDtoOutputOrderAlertsEnum_customerNotAnswering =
+    const AdminOrderCardDtoOutputOrderAlertsEnum._('customerNotAnswering');
 
 AdminOrderCardDtoOutputOrderAlertsEnum
 _$adminOrderCardDtoOutputOrderAlertsEnumValueOf(String name) {
@@ -214,6 +217,8 @@ _$adminOrderCardDtoOutputOrderAlertsEnumValueOf(String name) {
       return _$adminOrderCardDtoOutputOrderAlertsEnum_captainCannotComplete;
     case 'captainEmergency':
       return _$adminOrderCardDtoOutputOrderAlertsEnum_captainEmergency;
+    case 'customerNotAnswering':
+      return _$adminOrderCardDtoOutputOrderAlertsEnum_customerNotAnswering;
     default:
       throw ArgumentError(name);
   }
@@ -237,6 +242,7 @@ _$adminOrderCardDtoOutputOrderAlertsEnumValues =
         _$adminOrderCardDtoOutputOrderAlertsEnum_editUnacknowledged,
         _$adminOrderCardDtoOutputOrderAlertsEnum_captainCannotComplete,
         _$adminOrderCardDtoOutputOrderAlertsEnum_captainEmergency,
+        _$adminOrderCardDtoOutputOrderAlertsEnum_customerNotAnswering,
       ],
     );
 
@@ -364,6 +370,7 @@ class _$AdminOrderCardDtoOutputOrderAlertsEnumSerializer
     'editUnacknowledged': 'edit_unacknowledged',
     'captainCannotComplete': 'captain_cannot_complete',
     'captainEmergency': 'captain_emergency',
+    'customerNotAnswering': 'customer_not_answering',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -380,6 +387,7 @@ class _$AdminOrderCardDtoOutputOrderAlertsEnumSerializer
     'edit_unacknowledged': 'editUnacknowledged',
     'captain_cannot_complete': 'captainCannotComplete',
     'captain_emergency': 'captainEmergency',
+    'customer_not_answering': 'customerNotAnswering',
   };
 
   @override

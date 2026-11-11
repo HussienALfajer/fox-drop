@@ -9,12 +9,13 @@ import 'package:built_value/serializer.dart';
 
 part 'customer_active_orders_dto_output_orders_inner_captain.g.dart';
 
-/// The captain card from assignment (CU §11.3, Q14): «الكابتن {الاسم} في طريقه إلى المطعم»; never the phone number or the captain track (CU §11.2). The photo comes with the object storage.
+/// The captain card from assignment (CU §11.3, Q14): «الكابتن {الاسم} في طريقه إلى المطعم»; never the captain track (CU §11.2). The photo comes with the object storage.
 ///
 /// Properties:
 /// * [firstName]
 /// * [vehicle] - «سيراً على الأقدام», «دراجة», «دراجة نارية» or «سيارة» (CU §11.3).
 /// * [atRestaurant] - Before the pickup: «الكابتن {الاسم} وصل إلى المطعم», or «الكابتن يستلم طلبك الآن» once ready (CU §11.2).
+/// * [phone] - «اتصال بالكابتن» (CU §11.3, §11.7, U12): the number the button dials from the pickup until the order ends; the app never prints it. Null before and after.
 @BuiltValue()
 abstract class CustomerActiveOrdersDtoOutputOrdersInnerCaptain
     implements
@@ -33,6 +34,10 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerCaptain
   /// Before the pickup: «الكابتن {الاسم} وصل إلى المطعم», or «الكابتن يستلم طلبك الآن» once ready (CU §11.2).
   @BuiltValueField(wireName: r'atRestaurant')
   bool get atRestaurant;
+
+  /// «اتصال بالكابتن» (CU §11.3, §11.7, U12): the number the button dials from the pickup until the order ends; the app never prints it. Null before and after.
+  @BuiltValueField(wireName: r'phone')
+  String? get phone;
 
   CustomerActiveOrdersDtoOutputOrdersInnerCaptain._();
 
@@ -85,6 +90,13 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptainSerializer
       object.atRestaurant,
       specifiedType: const FullType(bool),
     );
+    yield r'phone';
+    yield object.phone == null
+        ? null
+        : serializers.serialize(
+            object.phone,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -140,6 +152,16 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptainSerializer
                   )
                   as bool;
           result.atRestaurant = valueDes;
+          break;
+        case r'phone':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.phone = valueDes;
           break;
         default:
           unhandled.add(key);

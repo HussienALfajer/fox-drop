@@ -29,6 +29,7 @@ typedef EndedFood = CaptainActiveOrderDtoOutputEndedFoodEnum;
 typedef Handover = CaptainActiveOrderDtoOutputOrderHandover;
 typedef HandoverRole = CaptainActiveOrderDtoOutputOrderHandoverRoleEnum;
 typedef HandedOver = CaptainActiveOrderDtoOutputHandedOver;
+typedef PingAnswer = CaptainActiveOrderDtoOutputOrderNoAnswerAnswerAnswerEnum;
 
 /// What the captain's screens show, always as the server answered it: the
 /// availability (CA §7), the open offer (CA §8), the active order (CA §9)

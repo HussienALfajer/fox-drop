@@ -52,6 +52,9 @@ const AdminAlertDtoOutputCodeEnum
 _$adminAlertDtoOutputCodeEnum_captainEmergency =
     const AdminAlertDtoOutputCodeEnum._('captainEmergency');
 const AdminAlertDtoOutputCodeEnum
+_$adminAlertDtoOutputCodeEnum_customerNotAnswering =
+    const AdminAlertDtoOutputCodeEnum._('customerNotAnswering');
+const AdminAlertDtoOutputCodeEnum
 _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused =
     const AdminAlertDtoOutputCodeEnum._('restaurantAutoPaused');
 
@@ -91,6 +94,8 @@ AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
       return _$adminAlertDtoOutputCodeEnum_captainCannotComplete;
     case 'captainEmergency':
       return _$adminAlertDtoOutputCodeEnum_captainEmergency;
+    case 'customerNotAnswering':
+      return _$adminAlertDtoOutputCodeEnum_customerNotAnswering;
     case 'restaurantAutoPaused':
       return _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused;
     default:
@@ -118,6 +123,7 @@ _$adminAlertDtoOutputCodeEnumValues =
       _$adminAlertDtoOutputCodeEnum_editUnacknowledged,
       _$adminAlertDtoOutputCodeEnum_captainCannotComplete,
       _$adminAlertDtoOutputCodeEnum_captainEmergency,
+      _$adminAlertDtoOutputCodeEnum_customerNotAnswering,
       _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused,
     ]);
 
@@ -233,6 +239,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'editUnacknowledged': 'edit_unacknowledged',
     'captainCannotComplete': 'captain_cannot_complete',
     'captainEmergency': 'captain_emergency',
+    'customerNotAnswering': 'customer_not_answering',
     'restaurantAutoPaused': 'restaurant_auto_paused',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
@@ -253,6 +260,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'edit_unacknowledged': 'editUnacknowledged',
     'captain_cannot_complete': 'captainCannotComplete',
     'captain_emergency': 'captainEmergency',
+    'customer_not_answering': 'customerNotAnswering',
     'restaurant_auto_paused': 'restaurantAutoPaused',
   };
 

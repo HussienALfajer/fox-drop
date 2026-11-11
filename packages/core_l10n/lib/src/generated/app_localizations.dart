@@ -3681,6 +3681,90 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'عدّلت FOX DROP طلبك. المجموع الجديد: {amount}'**
   String customerOrderEditedBanner(String amount);
+
+  /// The door ping's full-screen ring while the app is open (CU §11.7, §14 #5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن عند الباب ويحاول الوصول إليك'**
+  String get customerDoorRing;
+
+  /// The door ping's ring for an order for someone else (CU §11.7, Q5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن عند الباب ويحاول الوصول إلى {recipient}'**
+  String customerDoorRingRecipient(String recipient);
+
+  /// Answers the captain's door ping (CU §11.7, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'أنا قادم'**
+  String get customerComing;
+
+  /// Answers the door ping of an order for someone else (CU §11.7, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'سأتصل بالمستلم'**
+  String get customerCallingRecipient;
+
+  /// Dials the captain from the door ping's ring (CU §11.3, §11.7, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'اتصال بالكابتن'**
+  String get customerCallCaptain;
+
+  /// Rings the customer's app from the door (CA §9.9, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'تنبيه الزبون'**
+  String get captainPingCustomer;
+
+  /// The «تنبيه الزبون» presses left (CA §9.9; the spec gives no wording); {count} is the number as Western digits.
+  ///
+  /// In ar, this message translates to:
+  /// **'التنبيهات المتبقية: {count}'**
+  String captainPingsLeft(String count);
+
+  /// When «تنبيه الزبون» is allowed next (CA §9.9 «the next allowed time»; the spec gives no wording); {time} is formatted with formatTime.
+  ///
+  /// In ar, this message translates to:
+  /// **'يمكنك التنبيه مرة أخرى الساعة {time}'**
+  String captainNextPingAt(String time);
+
+  /// The customer answered «أنا قادم» (CA §9.9, §14 #13a).
+  ///
+  /// In ar, this message translates to:
+  /// **'الزبون رأى التنبيه وهو قادم'**
+  String get captainCustomerComing;
+
+  /// The customer answered «سأتصل بالمستلم» (CA §9.9, §14 #13a).
+  ///
+  /// In ar, this message translates to:
+  /// **'الزبون يتواصل مع المستلم'**
+  String get captainCustomerContactingRecipient;
+
+  /// Tells operations the customer does not answer, after every ping and 15 minutes (CA §9.9, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'الزبون لا يستجيب'**
+  String get captainCustomerNotAnswering;
+
+  /// When «الزبون لا يستجيب» becomes available (CA §9.9; the spec gives no wording); {time} is formatted with formatTime.
+  ///
+  /// In ar, this message translates to:
+  /// **'يظهر «الزبون لا يستجيب» الساعة {time}'**
+  String captainNoAnswerAt(String time);
+
+  /// After «الزبون لا يستجيب», until operations answer (CA §9.9).
+  ///
+  /// In ar, this message translates to:
+  /// **'العمليات تراجع الطلب — انتظر تعليماتهم'**
+  String get captainOperationsReviewing;
+
+  /// Operations' «انتظر» with their message (CA §9.9, §14 #13; owner decision 2026-11-11: the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'العمليات: انتظر الزبون. {message}'**
+  String captainOperationsWait(String message);
 }
 
 class _AppLocalizationsDelegate

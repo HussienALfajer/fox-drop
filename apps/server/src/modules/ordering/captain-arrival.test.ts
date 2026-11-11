@@ -369,6 +369,8 @@ describe("the captain on the customer's order screen (CU §11.2–11.3)", () => 
       firstName: 'كابتن',
       vehicle: 'motorbike',
       atRestaurant: false,
+      // «اتصال بالكابتن» from the pickup only (CU §11.3, U12).
+      phone: null,
     });
     // The captain track itself is never shown to the customer (CU §11.2).
     expect(assigned).not.toHaveProperty('captainTrack');
