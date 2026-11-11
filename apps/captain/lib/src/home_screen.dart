@@ -52,10 +52,67 @@ class HomeScreen extends ConsumerWidget {
             live?.failed == true
                 ? Center(child: Text(l10n.statusError))
                 : const Center(child: CircularProgressIndicator()),
-          Work(order: final order?) => OrderView(order: order),
+          Work(order: final order?) => Column(
+            children: [
+              _LastOrderBar(work: work),
+              Expanded(child: OrderView(order: order)),
+            ],
+          ),
           _ => _AvailabilityView(work: work),
         },
       ),
+    );
+  }
+}
+
+/// CA §7.3, K13: during an active order «لا أريد طلبات جديدة» replaces
+/// «متصل»; the captain cancels their own mode before the order ends, never
+/// one operations, a suspension or a termination set (CA §7.6, K18), whose
+/// reason shows instead.
+class _LastOrderBar extends ConsumerWidget {
+  const _LastOrderBar({required this.work});
+
+  final Work work;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final state = work.availability.availability;
+    final on = state.state == AvailabilityState.lastOrder;
+    final imposed = l10n.lastOrderText(work.availability);
+    final sending = ref.watch(commandsProvider).contains('availability');
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (imposed != null)
+          Padding(
+            padding: const EdgeInsetsDirectional.symmetric(horizontal: 16),
+            child: Text(imposed, key: const Key('last-order-imposed')),
+          )
+        else
+          SwitchListTile(
+            key: const Key('last-order-switch'),
+            title: Text(
+              sending ? l10n.captainSending : l10n.captainLastOrderSwitch,
+            ),
+            subtitle: on ? Text(l10n.captainLastOrderOn) : null,
+            value: on,
+            onChanged: sending
+                ? null
+                : (value) async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    final notice = await ref
+                        .read(commandsProvider.notifier)
+                        .setLastOrder(value);
+                    if (notice != null) {
+                      messenger.showSnackBar(
+                        SnackBar(content: Text(l10n.noticeText(notice))),
+                      );
+                    }
+                  },
+          ),
+      ],
     );
   }
 }
@@ -244,6 +301,9 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
       }
       _keepScreenOn(after.online);
       if (identical(before, after)) return;
+      if (handInAfterLastOrder(before, after) case final handIn?) {
+        ref.read(handInProvider.notifier).show(handIn);
+      }
       final now = ref.read(serverClockProvider).now();
       for (final alert in alertStep(
         before,

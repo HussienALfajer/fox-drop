@@ -1936,6 +1936,48 @@ abstract class AppLocalizations {
   /// **'مشغول'**
   String get captainStateBusy;
 
+  /// Last-order mode: no new offers, offline after the order (CA §7.1, §7.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر طلب'**
+  String get captainStateLastOrder;
+
+  /// Replaces «متصل» during an active order (CA §7.3, K13).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا أريد طلبات جديدة'**
+  String get captainLastOrderSwitch;
+
+  /// Under the switch while last-order mode is on (CA §7.3); the wording is ours.
+  ///
+  /// In ar, this message translates to:
+  /// **'ستصبح غير متصل بعد هذا الطلب.'**
+  String get captainLastOrderOn;
+
+  /// Force offline during an order (CA §7.6, K18); the wording is ours.
+  ///
+  /// In ar, this message translates to:
+  /// **'فصلتك العمليات من الاتصال: {reason}. ستصبح غير متصل بعد هذا الطلب.'**
+  String captainLastOrderForced(String reason);
+
+  /// A suspension during an order (CA §7.6, K18); the wording is ours.
+  ///
+  /// In ar, this message translates to:
+  /// **'حسابك موقوف: {reason}. أكمل هذا الطلب ثم تصبح غير متصل.'**
+  String captainLastOrderSuspended(String reason);
+
+  /// A contract end during an order (CA §7.2, K18); the wording is ours.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهى تعاقدك مع FOX DROP. أكمل هذا الطلب ثم تصبح غير متصل.'**
+  String get captainLastOrderTerminated;
+
+  /// Refused cancelling a last-order mode operations set (CA §7.6); the wording is ours.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يمكنك إلغاء هذا الوضع: وضعته العمليات.'**
+  String get captainLastOrderNotYours;
+
   /// Online without offers (CA §7.1); the reason follows.
   ///
   /// In ar, this message translates to:

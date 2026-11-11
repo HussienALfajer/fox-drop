@@ -3,9 +3,11 @@ import 'package:core_realtime/core_realtime.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api.dart';
+import 'door_payment.dart';
 
 typedef Availability = CaptainAvailabilityDtoOutput;
 typedef AvailabilityState = CaptainAvailabilityDtoOutputAvailabilityStateEnum;
+typedef LastOrderBy = CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum;
 typedef NoOffersReason = CaptainAvailabilityDtoOutputAvailabilityReasonsEnum;
 typedef Offer = CaptainCurrentOfferDtoOutputOffer;
 typedef ActiveOrder = CaptainActiveOrderDtoOutputOrder;
@@ -129,8 +131,23 @@ final workFeedProvider = Provider.autoDispose<LiveFeed<Work>?>((ref) {
       if (work.order case final order?) order.id: order.version,
     },
   );
+  // CA §7.6, AP §10 (slice 2.13a): a change of the captain's availability
+  // outside an order event (a force offline, the end of a last order) is
+  // heard on the same channel without an order version.
+  final changes = ref
+      .watch(realtimeTransportProvider)
+      .channel('captain:${session.captainId}')
+      .listen((signal) {
+        if (signal is RealtimePublication &&
+            signal.data['type'] == 'captain.availability_changed') {
+          feed.refresh();
+        }
+      });
   feed.start();
-  ref.onDispose(feed.close);
+  ref.onDispose(() {
+    changes.cancel();
+    feed.close();
+  });
   return feed;
 });
 
@@ -146,6 +163,16 @@ final workProvider = StreamProvider.autoDispose<LiveState<Work>>((ref) {
 final tickProvider = StreamProvider.autoDispose<int>(
   (ref) => Stream.periodic(const Duration(seconds: 1), (count) => count),
 );
+
+/// CA §7.3, §7.5: the cash to hand in once a last order took the captain
+/// offline (held above `captain.remit_tolerance`), or null.
+Money? handInAfterLastOrder(Work? before, Work after) {
+  if (before?.state != AvailabilityState.lastOrder || after.online) return null;
+  final custody = after.availability.custody;
+  final held = BigInt.parse(custody.usage.amount);
+  if (held <= BigInt.parse(custody.remitTolerance.amount)) return null;
+  return Money(custody.usage.amount, custody.usage.currency);
+}
 
 /// Fetches the state again, after a command's answer.
 void refreshWork(Ref ref) {
