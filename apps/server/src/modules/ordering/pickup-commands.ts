@@ -5,6 +5,7 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { AuditService } from '../audit/index.js';
+import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 import { openItemReport } from './item-reports.js';
 import type { AdminOrderCommand } from './captain-orders.js';
@@ -19,6 +20,7 @@ import {
   type PaymentLine,
   pickable,
   PickupBooking,
+  pickupCurrencies,
   type PickupOrder,
   storedLines,
 } from './pickup-booking.js';
@@ -47,6 +49,7 @@ export class PickupCommands {
     private readonly booking: PickupBooking,
     private readonly settings: SettingsService,
     private readonly audit: AuditService,
+    private readonly merchants: MerchantsService,
   ) {}
 
   // Each order's pickup requests, newest first, and its dispute after the
@@ -105,7 +108,14 @@ export class PickupCommands {
       { verb: 'dispute_pickup', receivedLines: storedLines(command.receivedLines) },
       now,
       async (tx, order) => {
-        const refusal = checkLines(order.snapshot, command.receivedLines, null);
+        // What the restaurant received, in any currency the order accepted:
+        // its own pickup currencies may have changed since the captain paid.
+        const refusal = checkLines(
+          order.snapshot,
+          command.receivedLines,
+          null,
+          order.snapshot.currencies.map((entry) => entry.code),
+        );
         if (refusal !== null) throw new OrderCommandRefusedError(refusal, 'invalid lines');
         const request = await openRequest(tx, order.id);
         if (request) {
@@ -187,6 +197,8 @@ export class PickupCommands {
     const earlier = await this.replay(accountId, command.idempotencyKey, requestHash, now);
     if (earlier !== null) return this.read(earlier);
     const found = await this.findAny(command.orderId);
+    // RA §12.7: the restaurant's currencies as they are now.
+    const accepts = (await this.merchants.restaurant(found.restaurantId))?.pickupCurrencies ?? [];
     await this.jobs.ready();
     const done = await this.database.db.transaction(async (tx) => {
       const order = await lockForPickup(tx, found.id, found.placedAt);
@@ -199,7 +211,12 @@ export class PickupCommands {
       if ((await openItemReport(tx, order.id, order.placedAt)) !== null) {
         throw new OrderCommandRefusedError('item_report_open', 'an item report is open');
       }
-      const refusal = checkLines(order.snapshot, command.lines, order.itemsValue);
+      const refusal = checkLines(
+        order.snapshot,
+        command.lines,
+        order.itemsValue,
+        pickupCurrencies(order.snapshot, accepts),
+      );
       if (refusal !== null) throw new OrderCommandRefusedError(refusal, 'invalid lines');
       let request = await openRequest(tx, order.id);
       if (!request) {
@@ -347,7 +364,7 @@ export class PickupCommands {
 
   private async findAny(orderId: string) {
     const [order] = await this.database.db
-      .select({ id: orders.id, placedAt: orders.placedAt })
+      .select({ id: orders.id, placedAt: orders.placedAt, restaurantId: orders.restaurantId })
       .from(orders)
       .where(eq(orders.id, orderId));
     if (!order) throw new OrderCommandRefusedError('unknown_order', 'no such order');

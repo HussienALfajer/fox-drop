@@ -42,7 +42,10 @@ export type CaptainsRefusal =
   // CA §7.3, §15: last-order mode needs an active order, and the captain may
   // cancel only the mode they asked for.
   | 'no_active_order'
-  | 'last_order_not_yours';
+  | 'last_order_not_yours'
+  // CA §10.5: the carried currencies are the city's enabled ones, once each,
+  // one at least.
+  | 'invalid_carried_currencies';
 
 // A change the captains module refuses, with the reason the routes map to
 // their own answers; going online carries its blocks (CA §7.2).
@@ -116,6 +119,20 @@ export interface Captain {
   status: CaptainStatus;
   suspension: { reason: string; until: Date | null } | null;
   custodyLimit: Money;
+  // CA §10.5 «العملات التي أحملها»: null until the captain sets them, the
+  // base only. A reader keeps only the ones its snapshot has.
+  carriedCurrencies: string[] | null;
+}
+
+// CA §10.5: the carried currencies with their choices.
+export interface CarriedCurrencies {
+  // Null while the city has no base, with nothing to choose.
+  baseCurrency: string | null;
+  // In the city's display order; the base only by default.
+  carried: string[];
+  // Every currency the city has enabled, the base among them, with its
+  // Arabic name (AP §8.6: currencies are data).
+  choices: { currency: string; name: string }[];
 }
 
 export interface PayTable {
@@ -367,6 +384,60 @@ export class CaptainsService implements OnModuleInit {
       .from(captainRecords)
       .where(eq(captainRecords.id, captainId));
     return row ? captainOf(row, now) : null;
+  }
+
+  // CA §10.5 «العملات التي أحملها»: what the captain carries of the city's
+  // enabled currencies (the base until they set them), and the choices.
+  async carriedCurrencies(captainId: string): Promise<CarriedCurrencies> {
+    const [row] = await this.database.db
+      .select({ cityId: captainRecords.cityId, carried: captainRecords.carriedCurrencies })
+      .from(captainRecords)
+      .where(eq(captainRecords.id, captainId));
+    if (!row) throw new CaptainsRefusedError('unknown_captain', 'no such captain');
+    const city = await this.fx.cityCurrencies(row.cityId);
+    const base = city.find((entry) => entry.isBase);
+    if (!base) return { baseCurrency: null, carried: [], choices: [] };
+    const names = new Map((await this.fx.currencies()).map((each) => [each.code, each.nameAr]));
+    const choices = city.filter((entry) => entry.enabled).map((entry) => entry.currency);
+    const carried = row.carried ?? [base.currency];
+    return {
+      baseCurrency: base.currency,
+      carried: choices.filter((code) => carried.includes(code)),
+      choices: choices.map((currency) => ({ currency, name: names.get(currency) ?? currency })),
+    };
+  }
+
+  // CA §10.5: the captain switches the currencies they carry, any time; the
+  // next pickup's proposal uses them. Refused invalid_carried_currencies
+  // outside the city's enabled currencies, repeated or empty. The captain's
+  // own preference, as their device check, so it is not audited.
+  async setCarriedCurrencies(captainId: string, currencies: string[]): Promise<CarriedCurrencies> {
+    const [row] = await this.database.db
+      .select({ cityId: captainRecords.cityId })
+      .from(captainRecords)
+      .where(eq(captainRecords.id, captainId));
+    if (!row) throw new CaptainsRefusedError('unknown_captain', 'no such captain');
+    const choices = (await this.fx.cityCurrencies(row.cityId))
+      .filter((entry) => entry.enabled)
+      .map((entry) => entry.currency);
+    if (
+      currencies.length === 0 ||
+      new Set(currencies).size !== currencies.length ||
+      currencies.some((code) => !choices.includes(code))
+    ) {
+      throw new CaptainsRefusedError(
+        'invalid_carried_currencies',
+        `the carried currencies are among ${choices.join(', ')}, once each, one at least`,
+      );
+    }
+    await this.database.db
+      .update(captainRecords)
+      .set({
+        carriedCurrencies: choices.filter((code) => currencies.includes(code)),
+        updatedAt: sql`now()`,
+      })
+      .where(eq(captainRecords.id, captainId));
+    return this.carriedCurrencies(captainId);
   }
 
   // Whether the city has a pay table, in force or to come, for the seed.
@@ -1423,6 +1494,7 @@ function captainOf(row: typeof captainRecords.$inferSelect, now: Date): Captain 
     suspension:
       status === 'suspended' ? { reason: row.suspensionReason!, until: row.suspendedUntil } : null,
     custodyLimit: { amount: row.custodyLimit, currency: row.custodyLimitCurrency },
+    carriedCurrencies: row.carriedCurrencies,
   };
 }
 

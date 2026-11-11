@@ -6,8 +6,9 @@ import type { Database } from '../../database/database.js';
 import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { reportError } from '../../observability/error-tracking.js';
-import { type RateSnapshot, toBase } from '../fx/index.js';
-import { type LedgerActor, LedgerService } from '../ledger/index.js';
+import { equivalent, type RateSnapshot, toBase } from '../fx/index.js';
+import { type LedgerActor, type LedgerEntry, LedgerService } from '../ledger/index.js';
+import { journalRates } from './journal-rates.js';
 import { lockOrder, type OrderRow, recordTransition } from './order-events.js';
 import { snapshotOf } from './order-views.js';
 import { orders, pickupRequests } from './schema.js';
@@ -31,22 +32,35 @@ export interface PickupAutoConfirmJob {
 
 export type LinesRefusal = 'invalid_lines' | 'currency_not_accepted' | 'amount_mismatch';
 
-// At most one line per currency, each above zero; Phase 1 takes payments in
-// the base currency only (owner decision 2026-11-05: RA §12.7's other
-// currencies wait). With `due`, the lines' total converted by the order's
-// snapshot must be within half the largest rounding unit among their
-// currencies of it (AP §8.1); else amount_mismatch, «المبلغ لا يطابق المطلوب».
+// The currencies a pickup takes (RA §12.7): the base first, always, then
+// the other currencies the restaurant switched on that the order's snapshot
+// has, in the city's display order.
+export function pickupCurrencies(snapshot: RateSnapshot, restaurantOthers: string[]): string[] {
+  return [
+    snapshot.baseCurrency,
+    ...snapshot.currencies
+      .filter(
+        (entry) => entry.code !== snapshot.baseCurrency && restaurantOthers.includes(entry.code),
+      )
+      .map((entry) => entry.code),
+  ];
+}
+
+// At most one line per currency, each above zero, each a currency the
+// restaurant accepts (`accepted`, from pickupCurrencies; RA §12.7). With
+// `due`, the lines' total converted by the order's snapshot must be within
+// half the largest rounding unit among their currencies of it (AP §8.1,
+// §8.6); else amount_mismatch, «المبلغ لا يطابق المطلوب».
 export function checkLines(
   snapshot: RateSnapshot,
   lines: PaymentLine[],
   due: bigint | null,
+  accepted: readonly string[],
 ): LinesRefusal | null {
   const currencies = new Set(lines.map((line) => line.currency));
   if (lines.length === 0 || currencies.size !== lines.length) return 'invalid_lines';
   if (lines.some((line) => line.amount <= 0n)) return 'invalid_lines';
-  if (lines.some((line) => line.currency !== snapshot.baseCurrency)) {
-    return 'currency_not_accepted';
-  }
+  if (lines.some((line) => !accepted.includes(line.currency))) return 'currency_not_accepted';
   if (due === null) return null;
   const paid = baseTotal(snapshot, lines);
   const largestUnit = lines
@@ -57,6 +71,54 @@ export function checkLines(
     .reduce((largest, unit) => (unit > largest ? unit : largest), 0n);
   const gap = paid > due ? paid - due : due - paid;
   return 2n * gap <= largestUnit ? null : 'amount_mismatch';
+}
+
+// The whole pickup payment in one currency, as one line within the
+// tolerance (CA §10.5, C8): the base as it is; another currency rounded by
+// its rule, or by the nearest unit when the rule (up or down) falls past
+// the tolerance (to confirm with the owner); null when even that fails,
+// such as an amount that rounds to nothing.
+export function wholeIn(
+  snapshot: RateSnapshot,
+  due: bigint,
+  currency: string,
+  accepted: readonly string[],
+): PaymentLine | null {
+  if (currency === snapshot.baseCurrency) return { currency, amount: due };
+  const nearest: RateSnapshot = {
+    ...snapshot,
+    currencies: snapshot.currencies.map((entry) =>
+      entry.code === currency ? { ...entry, roundingMode: 'nearest' as const } : entry,
+    ),
+  };
+  for (const rules of [snapshot, nearest]) {
+    const line = { currency, amount: equivalent(rules, due, currency) };
+    if (checkLines(snapshot, [line], due, accepted) === null) return line;
+  }
+  return null;
+}
+
+// CA §10.5: the one line the server proposes for the pickup payment, from
+// the currencies the restaurant accepts (pickupCurrencies) and the captain
+// carries (null: the base only, the default). Both with the base: the whole
+// amount in it; else the first common currency in the display order whose
+// whole amount is within the tolerance (wholeIn; a currency it cannot be
+// paid in is passed over, to confirm with the owner); with none, the base.
+export function proposeLines(
+  snapshot: RateSnapshot,
+  accepted: readonly string[],
+  carried: readonly string[] | null,
+  due: bigint,
+): PaymentLine[] {
+  const base = snapshot.baseCurrency;
+  const carries = carried ?? [base];
+  if (carries.includes(base) && accepted.includes(base)) return [{ currency: base, amount: due }];
+  for (const entry of snapshot.currencies) {
+    if (!accepted.includes(entry.code) || !carries.includes(entry.code)) continue;
+    const line = wholeIn(snapshot, due, entry.code, accepted);
+    if (line) return [line];
+  }
+  return [{ currency: base, amount: due }];
 }
 
 export function baseTotal(snapshot: RateSnapshot, lines: PaymentLine[]): bigint {
@@ -232,11 +294,14 @@ export class PickupBooking {
   }
 
   // custody.pay_merchant per currency of the lines (D26, docs/domain/05):
-  // the captain's custody down, the order clearing account up. The gap
-  // between the lines' base total and the items value, allowed within
-  // rounding, goes to platform.fx_rounding (RA §12.7), so the order's
-  // clearing account holds the full items value, as the restaurant's account
-  // counts it.
+  // the captain's custody down, the order clearing account up. Then one
+  // platform.fx_rounding journal (RA §12.7, AP §8.6) brings each other
+  // currency's line into the base at the order's rates, as at the door
+  // (the clearing account in that currency back to zero, platform.fx_rounding
+  // holding the currency position), and books the gap between the lines'
+  // base total and the items value, allowed within rounding, so the order's
+  // clearing account holds the full items value in the base, as the
+  // restaurant's account counts it.
   private async post(
     tx: Tx,
     order: PickupOrder,
@@ -244,54 +309,84 @@ export class PickupBooking {
     lines: PaymentLine[],
     actor: PickupBy['actor'],
   ): Promise<void> {
-    const { cityId } = order;
+    const { cityId, snapshot } = order;
     const source = { kind: 'order' as const, id: order.id };
     const ledgerActor: LedgerActor = {
       type: actor.type === 'restaurant' ? 'merchant' : actor.type,
       id: actor.id,
     };
-    const entries = [];
+    const account = (
+      purpose: 'captain.custody' | 'platform.order_clearing' | 'platform.fx_rounding',
+      currency: string,
+    ) =>
+      this.ledger.openAccount(
+        { cityId, purpose, ownerId: purpose === 'captain.custody' ? captainId : null, currency },
+        tx,
+      );
+    const entries: LedgerEntry[] = [];
     for (const line of lines) {
-      const custody = await this.ledger.openAccount(
-        { cityId, purpose: 'captain.custody', ownerId: captainId, currency: line.currency },
-        tx,
-      );
-      const clearing = await this.ledger.openAccount(
-        { cityId, purpose: 'platform.order_clearing', ownerId: null, currency: line.currency },
-        tx,
-      );
       entries.push(
-        { accountId: custody, currency: line.currency, amount: -line.amount },
-        { accountId: clearing, currency: line.currency, amount: line.amount },
+        {
+          accountId: await account('captain.custody', line.currency),
+          currency: line.currency,
+          amount: -line.amount,
+        },
+        {
+          accountId: await account('platform.order_clearing', line.currency),
+          currency: line.currency,
+          amount: line.amount,
+        },
       );
     }
     await this.ledger.post(
-      { cityId, type: 'custody.pay_merchant', source, actor: ledgerActor, entries },
+      {
+        cityId,
+        type: 'custody.pay_merchant',
+        source,
+        actor: ledgerActor,
+        entries,
+        rates: journalRates(snapshot, entries),
+      },
       tx,
     );
-    const gap = order.itemsValue - baseTotal(order.snapshot, lines);
-    if (gap === 0n) return;
-    const base = order.snapshot.baseCurrency;
-    const [clearing, rounding] = await Promise.all([
-      this.ledger.openAccount(
-        { cityId, purpose: 'platform.order_clearing', ownerId: null, currency: base },
-        tx,
-      ),
-      this.ledger.openAccount(
-        { cityId, purpose: 'platform.fx_rounding', ownerId: null, currency: base },
-        tx,
-      ),
-    ]);
+    const base = snapshot.baseCurrency;
+    const conversion: LedgerEntry[] = [];
+    let inBase = order.itemsValue - baseTotal(snapshot, lines);
+    for (const line of lines) {
+      if (line.currency === base) continue;
+      conversion.push(
+        {
+          accountId: await account('platform.order_clearing', line.currency),
+          currency: line.currency,
+          amount: -line.amount,
+        },
+        {
+          accountId: await account('platform.fx_rounding', line.currency),
+          currency: line.currency,
+          amount: line.amount,
+        },
+      );
+      inBase += toBase(snapshot, line.amount, line.currency);
+    }
+    if (inBase !== 0n) {
+      conversion.push(
+        {
+          accountId: await account('platform.order_clearing', base),
+          currency: base,
+          amount: inBase,
+        },
+        { accountId: await account('platform.fx_rounding', base), currency: base, amount: -inBase },
+      );
+    }
+    if (conversion.length === 0) return;
     await this.ledger.post(
       {
         cityId,
         type: 'platform.fx_rounding',
         source,
         actor: ledgerActor,
-        entries: [
-          { accountId: clearing, currency: base, amount: gap },
-          { accountId: rounding, currency: base, amount: -gap },
-        ],
+        entries: conversion,
+        rates: journalRates(snapshot, conversion),
       },
       tx,
     );

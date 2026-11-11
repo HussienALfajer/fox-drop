@@ -27,7 +27,11 @@ import {
   MerchantsRefusedError,
   MerchantsService,
 } from './merchants.service.js';
-import { type RestaurantStatus, RestaurantStatusService } from './restaurant-status.service.js';
+import {
+  type PickupCurrencies,
+  type RestaurantStatus,
+  RestaurantStatusService,
+} from './restaurant-status.service.js';
 
 const instant = z.iso.datetime();
 const reason = z.string().trim().min(1).max(500).describe('Why, for the change log (AP §9.6.4).');
@@ -37,6 +41,11 @@ const message = z
   .refine((text) => [...text].length <= 100)
   .nullable()
   .describe('To customers, up to 100 characters.');
+
+const currencyName = z.object({
+  currency: z.string().length(3),
+  name: z.string().describe('Its Arabic name.'),
+});
 
 const adminRestaurantStatusSchema = merchantStatusSchema
   .omit({ pauseChoicesMin: true, busyExtraOptionsMin: true, busyReminderMin: true })
@@ -54,6 +63,17 @@ const adminRestaurantStatusSchema = merchantStatusSchema
     pauseMessage: z.string().nullable().describe('An operations pause’s, to customers (CU §9.2).'),
     pauseReason: z.string().nullable().describe('An operations pause’s reason.'),
     pauseChoicesMin: z.array(z.int()).describe('«15 د», «30 د», «60 د» (AP §9.6.5).'),
+    pickupBaseCurrency: currencyName
+      .nullable()
+      .describe(
+        '«العملات التي تقبلها من الكابتن» (RA §12.7): the base, always accepted; null while the city has none.',
+      ),
+    pickupCurrencies: z
+      .array(z.string().length(3))
+      .describe('The other currencies switched on, in the city’s display order.'),
+    pickupCurrencyChoices: z
+      .array(currencyName)
+      .describe('Every other currency the city has enabled, in its display order.'),
   });
 
 class AdminRestaurantStatusDto extends createZodDto(adminRestaurantStatusSchema) {}
@@ -106,6 +126,7 @@ async function answer(run: () => Promise<void>): Promise<void> {
       case 'invalid_pause':
       case 'invalid_holiday_close':
       case 'invalid_max_active_orders':
+      case 'invalid_pickup_currencies':
         throw new BadRequestException({ ...body(HttpStatus.BAD_REQUEST), message: error.message });
       default:
         throw error;
@@ -113,11 +134,21 @@ async function answer(run: () => Promise<void>): Promise<void> {
   }
 }
 
+class AdminRestaurantPickupCurrenciesDto extends createZodDto(
+  z.object({
+    currencies: z
+      .array(z.string().length(3))
+      .max(10)
+      .describe('The other currencies to accept at pickup; the base is always accepted.'),
+  }),
+) {}
+
 // AP §9.6.5, the panel's restaurant actions on its state (OWN, OPS:
 // restaurants.manage): «إيقاف مؤقت» with a reason and a message to
 // customers, «استئناف» of any pause (the auto-pause's too, AP §9.1.3),
 // «إنهاء وضع الضغط», the holiday close with a reason, and the maximum active
-// orders on the restaurant's request. None takes an Idempotency-Key: each
+// orders and the pickup currencies (AP §9.6.4, RA §12.7) on the
+// restaurant's request. None takes an Idempotency-Key: each
 // sets a state to a value, and the same pause again is a repeat that changes
 // nothing (operationsPause); each answers the status after it.
 @AdminController('restaurants')
@@ -244,6 +275,25 @@ export class AdminRestaurantStatusController {
     return this.body(params.restaurantId);
   }
 
+  @Put(':restaurantId/pickup-currencies')
+  @RequirePermission('restaurants.manage')
+  @ZodResponse({ status: 200, type: AdminRestaurantStatusDto })
+  async setPickupCurrencies(
+    @Param() params: AdminRestaurantStatusParamsDto,
+    @Body() body: AdminRestaurantPickupCurrenciesDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    await answer(() =>
+      this.status.setPickupCurrencies(
+        params.restaurantId,
+        body.currencies,
+        adminChange(session, request),
+      ),
+    );
+    return this.body(params.restaurantId);
+  }
+
   private async body(restaurantId: string): Promise<z.infer<typeof adminRestaurantStatusSchema>> {
     const restaurant = await this.merchants.restaurant(restaurantId);
     if (restaurant === null) {
@@ -252,7 +302,10 @@ export class AdminRestaurantStatusController {
         error: 'unknown_restaurant',
       });
     }
-    const status: RestaurantStatus = await this.status.status(restaurantId);
+    const [status, pickup]: [RestaurantStatus, PickupCurrencies] = await Promise.all([
+      this.status.status(restaurantId),
+      this.status.pickupCurrencies(restaurantId),
+    ]);
     const { pause } = status;
     const ops = pause !== null && pause.source === 'ops' ? pause : null;
     // The restaurant's busy-mode choices are left out by the schema.
@@ -264,6 +317,9 @@ export class AdminRestaurantStatusController {
       heldPauseUntil: pause?.endsAt?.toISOString() ?? null,
       pauseMessage: ops?.message ?? null,
       pauseReason: ops?.reason ?? null,
+      pickupBaseCurrency: pickup.base,
+      pickupCurrencies: pickup.accepted,
+      pickupCurrencyChoices: pickup.choices,
     };
   }
 }

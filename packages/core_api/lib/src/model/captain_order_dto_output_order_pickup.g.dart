@@ -11,6 +11,8 @@ class _$CaptainOrderDtoOutputOrderPickup
   @override
   final BuiltList<CaptainAvailabilityDtoOutputCustodyLimit> proposedLines;
   @override
+  final BuiltList<CaptainAvailabilityDtoOutputCustodyLimit> currencies;
+  @override
   final CaptainOrderDtoOutputOrderPickupRequest? request;
   @override
   final DateTime? pickedUpAt;
@@ -23,6 +25,7 @@ class _$CaptainOrderDtoOutputOrderPickup
 
   _$CaptainOrderDtoOutputOrderPickup._({
     required this.proposedLines,
+    required this.currencies,
     this.request,
     this.pickedUpAt,
     this.disputedAt,
@@ -41,6 +44,7 @@ class _$CaptainOrderDtoOutputOrderPickup
     if (identical(other, this)) return true;
     return other is CaptainOrderDtoOutputOrderPickup &&
         proposedLines == other.proposedLines &&
+        currencies == other.currencies &&
         request == other.request &&
         pickedUpAt == other.pickedUpAt &&
         disputedAt == other.disputedAt;
@@ -50,6 +54,7 @@ class _$CaptainOrderDtoOutputOrderPickup
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, proposedLines.hashCode);
+    _$hash = $jc(_$hash, currencies.hashCode);
     _$hash = $jc(_$hash, request.hashCode);
     _$hash = $jc(_$hash, pickedUpAt.hashCode);
     _$hash = $jc(_$hash, disputedAt.hashCode);
@@ -61,6 +66,7 @@ class _$CaptainOrderDtoOutputOrderPickup
   String toString() {
     return (newBuiltValueToStringHelper(r'CaptainOrderDtoOutputOrderPickup')
           ..add('proposedLines', proposedLines)
+          ..add('currencies', currencies)
           ..add('request', request)
           ..add('pickedUpAt', pickedUpAt)
           ..add('disputedAt', disputedAt))
@@ -84,6 +90,14 @@ class CaptainOrderDtoOutputOrderPickupBuilder
     ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>? proposedLines,
   ) => _$this._proposedLines = proposedLines;
 
+  ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>? _currencies;
+  ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit> get currencies =>
+      _$this._currencies ??=
+          ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>();
+  set currencies(
+    ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>? currencies,
+  ) => _$this._currencies = currencies;
+
   CaptainOrderDtoOutputOrderPickupRequestBuilder? _request;
   CaptainOrderDtoOutputOrderPickupRequestBuilder get request =>
       _$this._request ??= CaptainOrderDtoOutputOrderPickupRequestBuilder();
@@ -106,6 +120,7 @@ class CaptainOrderDtoOutputOrderPickupBuilder
     final $v = _$v;
     if ($v != null) {
       _proposedLines = $v.proposedLines.toBuilder();
+      _currencies = $v.currencies.toBuilder();
       _request = $v.request?.toBuilder();
       _pickedUpAt = $v.pickedUpAt;
       _disputedAt = $v.disputedAt;
@@ -134,6 +149,7 @@ class CaptainOrderDtoOutputOrderPickupBuilder
           _$v ??
           _$CaptainOrderDtoOutputOrderPickup._(
             proposedLines: proposedLines.build(),
+            currencies: currencies.build(),
             request: _request?.build(),
             pickedUpAt: pickedUpAt,
             disputedAt: disputedAt,
@@ -143,6 +159,8 @@ class CaptainOrderDtoOutputOrderPickupBuilder
       try {
         _$failedField = 'proposedLines';
         proposedLines.build();
+        _$failedField = 'currencies';
+        currencies.build();
         _$failedField = 'request';
         _request?.build();
       } catch (e) {

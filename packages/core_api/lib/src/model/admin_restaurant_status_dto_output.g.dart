@@ -395,6 +395,13 @@ class _$AdminRestaurantStatusDtoOutput extends AdminRestaurantStatusDtoOutput {
   final String? pauseReason;
   @override
   final BuiltList<int> pauseChoicesMin;
+  @override
+  final AdminRestaurantStatusDtoOutputPickupBaseCurrency? pickupBaseCurrency;
+  @override
+  final BuiltList<String> pickupCurrencies;
+  @override
+  final BuiltList<AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner>
+  pickupCurrencyChoices;
 
   factory _$AdminRestaurantStatusDtoOutput([
     void Function(AdminRestaurantStatusDtoOutputBuilder)? updates,
@@ -417,6 +424,9 @@ class _$AdminRestaurantStatusDtoOutput extends AdminRestaurantStatusDtoOutput {
     this.pauseMessage,
     this.pauseReason,
     required this.pauseChoicesMin,
+    this.pickupBaseCurrency,
+    required this.pickupCurrencies,
+    required this.pickupCurrencyChoices,
   }) : super._();
   @override
   AdminRestaurantStatusDtoOutput rebuild(
@@ -446,7 +456,10 @@ class _$AdminRestaurantStatusDtoOutput extends AdminRestaurantStatusDtoOutput {
         heldPauseUntil == other.heldPauseUntil &&
         pauseMessage == other.pauseMessage &&
         pauseReason == other.pauseReason &&
-        pauseChoicesMin == other.pauseChoicesMin;
+        pauseChoicesMin == other.pauseChoicesMin &&
+        pickupBaseCurrency == other.pickupBaseCurrency &&
+        pickupCurrencies == other.pickupCurrencies &&
+        pickupCurrencyChoices == other.pickupCurrencyChoices;
   }
 
   @override
@@ -468,6 +481,9 @@ class _$AdminRestaurantStatusDtoOutput extends AdminRestaurantStatusDtoOutput {
     _$hash = $jc(_$hash, pauseMessage.hashCode);
     _$hash = $jc(_$hash, pauseReason.hashCode);
     _$hash = $jc(_$hash, pauseChoicesMin.hashCode);
+    _$hash = $jc(_$hash, pickupBaseCurrency.hashCode);
+    _$hash = $jc(_$hash, pickupCurrencies.hashCode);
+    _$hash = $jc(_$hash, pickupCurrencyChoices.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -490,7 +506,10 @@ class _$AdminRestaurantStatusDtoOutput extends AdminRestaurantStatusDtoOutput {
           ..add('heldPauseUntil', heldPauseUntil)
           ..add('pauseMessage', pauseMessage)
           ..add('pauseReason', pauseReason)
-          ..add('pauseChoicesMin', pauseChoicesMin))
+          ..add('pauseChoicesMin', pauseChoicesMin)
+          ..add('pickupBaseCurrency', pickupBaseCurrency)
+          ..add('pickupCurrencies', pickupCurrencies)
+          ..add('pickupCurrencyChoices', pickupCurrencyChoices))
         .toString();
   }
 }
@@ -584,6 +603,30 @@ class AdminRestaurantStatusDtoOutputBuilder
   set pauseChoicesMin(ListBuilder<int>? pauseChoicesMin) =>
       _$this._pauseChoicesMin = pauseChoicesMin;
 
+  AdminRestaurantStatusDtoOutputPickupBaseCurrencyBuilder? _pickupBaseCurrency;
+  AdminRestaurantStatusDtoOutputPickupBaseCurrencyBuilder
+  get pickupBaseCurrency => _$this._pickupBaseCurrency ??=
+      AdminRestaurantStatusDtoOutputPickupBaseCurrencyBuilder();
+  set pickupBaseCurrency(
+    AdminRestaurantStatusDtoOutputPickupBaseCurrencyBuilder? pickupBaseCurrency,
+  ) => _$this._pickupBaseCurrency = pickupBaseCurrency;
+
+  ListBuilder<String>? _pickupCurrencies;
+  ListBuilder<String> get pickupCurrencies =>
+      _$this._pickupCurrencies ??= ListBuilder<String>();
+  set pickupCurrencies(ListBuilder<String>? pickupCurrencies) =>
+      _$this._pickupCurrencies = pickupCurrencies;
+
+  ListBuilder<AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner>?
+  _pickupCurrencyChoices;
+  ListBuilder<AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner>
+  get pickupCurrencyChoices => _$this._pickupCurrencyChoices ??=
+      ListBuilder<AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner>();
+  set pickupCurrencyChoices(
+    ListBuilder<AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner>?
+    pickupCurrencyChoices,
+  ) => _$this._pickupCurrencyChoices = pickupCurrencyChoices;
+
   AdminRestaurantStatusDtoOutputBuilder() {
     AdminRestaurantStatusDtoOutput._defaults(this);
   }
@@ -607,6 +650,9 @@ class AdminRestaurantStatusDtoOutputBuilder
       _pauseMessage = $v.pauseMessage;
       _pauseReason = $v.pauseReason;
       _pauseChoicesMin = $v.pauseChoicesMin.toBuilder();
+      _pickupBaseCurrency = $v.pickupBaseCurrency?.toBuilder();
+      _pickupCurrencies = $v.pickupCurrencies.toBuilder();
+      _pickupCurrencyChoices = $v.pickupCurrencyChoices.toBuilder();
       _$v = null;
     }
     return this;
@@ -659,6 +705,9 @@ class AdminRestaurantStatusDtoOutputBuilder
             pauseMessage: pauseMessage,
             pauseReason: pauseReason,
             pauseChoicesMin: pauseChoicesMin.build(),
+            pickupBaseCurrency: _pickupBaseCurrency?.build(),
+            pickupCurrencies: pickupCurrencies.build(),
+            pickupCurrencyChoices: pickupCurrencyChoices.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -671,6 +720,12 @@ class AdminRestaurantStatusDtoOutputBuilder
 
         _$failedField = 'pauseChoicesMin';
         pauseChoicesMin.build();
+        _$failedField = 'pickupBaseCurrency';
+        _pickupBaseCurrency?.build();
+        _$failedField = 'pickupCurrencies';
+        pickupCurrencies.build();
+        _$failedField = 'pickupCurrencyChoices';
+        pickupCurrencyChoices.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminRestaurantStatusDtoOutput',

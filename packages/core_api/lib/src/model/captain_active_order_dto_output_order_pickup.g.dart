@@ -11,6 +11,8 @@ class _$CaptainActiveOrderDtoOutputOrderPickup
   @override
   final BuiltList<CaptainWentOfflineDtoOutputHandIn?> proposedLines;
   @override
+  final BuiltList<CaptainWentOfflineDtoOutputHandIn?> currencies;
+  @override
   final CaptainActiveOrderDtoOutputOrderPickupRequest? request;
   @override
   final DateTime? pickedUpAt;
@@ -24,6 +26,7 @@ class _$CaptainActiveOrderDtoOutputOrderPickup
 
   _$CaptainActiveOrderDtoOutputOrderPickup._({
     required this.proposedLines,
+    required this.currencies,
     this.request,
     this.pickedUpAt,
     this.disputedAt,
@@ -42,6 +45,7 @@ class _$CaptainActiveOrderDtoOutputOrderPickup
     if (identical(other, this)) return true;
     return other is CaptainActiveOrderDtoOutputOrderPickup &&
         proposedLines == other.proposedLines &&
+        currencies == other.currencies &&
         request == other.request &&
         pickedUpAt == other.pickedUpAt &&
         disputedAt == other.disputedAt;
@@ -51,6 +55,7 @@ class _$CaptainActiveOrderDtoOutputOrderPickup
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, proposedLines.hashCode);
+    _$hash = $jc(_$hash, currencies.hashCode);
     _$hash = $jc(_$hash, request.hashCode);
     _$hash = $jc(_$hash, pickedUpAt.hashCode);
     _$hash = $jc(_$hash, disputedAt.hashCode);
@@ -64,6 +69,7 @@ class _$CaptainActiveOrderDtoOutputOrderPickup
             r'CaptainActiveOrderDtoOutputOrderPickup',
           )
           ..add('proposedLines', proposedLines)
+          ..add('currencies', currencies)
           ..add('request', request)
           ..add('pickedUpAt', pickedUpAt)
           ..add('disputedAt', disputedAt))
@@ -86,6 +92,12 @@ class CaptainActiveOrderDtoOutputOrderPickupBuilder
   set proposedLines(
     ListBuilder<CaptainWentOfflineDtoOutputHandIn?>? proposedLines,
   ) => _$this._proposedLines = proposedLines;
+
+  ListBuilder<CaptainWentOfflineDtoOutputHandIn?>? _currencies;
+  ListBuilder<CaptainWentOfflineDtoOutputHandIn?> get currencies =>
+      _$this._currencies ??= ListBuilder<CaptainWentOfflineDtoOutputHandIn?>();
+  set currencies(ListBuilder<CaptainWentOfflineDtoOutputHandIn?>? currencies) =>
+      _$this._currencies = currencies;
 
   CaptainActiveOrderDtoOutputOrderPickupRequestBuilder? _request;
   CaptainActiveOrderDtoOutputOrderPickupRequestBuilder get request =>
@@ -110,6 +122,7 @@ class CaptainActiveOrderDtoOutputOrderPickupBuilder
     final $v = _$v;
     if ($v != null) {
       _proposedLines = $v.proposedLines.toBuilder();
+      _currencies = $v.currencies.toBuilder();
       _request = $v.request?.toBuilder();
       _pickedUpAt = $v.pickedUpAt;
       _disputedAt = $v.disputedAt;
@@ -140,6 +153,7 @@ class CaptainActiveOrderDtoOutputOrderPickupBuilder
           _$v ??
           _$CaptainActiveOrderDtoOutputOrderPickup._(
             proposedLines: proposedLines.build(),
+            currencies: currencies.build(),
             request: _request?.build(),
             pickedUpAt: pickedUpAt,
             disputedAt: disputedAt,
@@ -149,6 +163,8 @@ class CaptainActiveOrderDtoOutputOrderPickupBuilder
       try {
         _$failedField = 'proposedLines';
         proposedLines.build();
+        _$failedField = 'currencies';
+        currencies.build();
         _$failedField = 'request';
         _request?.build();
       } catch (e) {

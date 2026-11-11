@@ -3,9 +3,11 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_restaurant_status_dto_output_pickup_base_currency.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/merchant_status_dto_output_busy_mode.dart';
 import 'package:core_api/src/model/merchant_status_dto_output_holiday.dart';
+import 'package:core_api/src/model/admin_restaurant_status_dto_output_pickup_currency_choices_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -30,6 +32,9 @@ part 'admin_restaurant_status_dto_output.g.dart';
 /// * [pauseMessage] - An operations pause’s, to customers (CU §9.2).
 /// * [pauseReason] - An operations pause’s reason.
 /// * [pauseChoicesMin] - «15 د», «30 د», «60 د» (AP §9.6.5).
+/// * [pickupBaseCurrency]
+/// * [pickupCurrencies] - The other currencies switched on, in the city’s display order.
+/// * [pickupCurrencyChoices] - Every other currency the city has enabled, in its display order.
 @BuiltValue()
 abstract class AdminRestaurantStatusDtoOutput
     implements
@@ -99,6 +104,18 @@ abstract class AdminRestaurantStatusDtoOutput
   /// «15 د», «30 د», «60 د» (AP §9.6.5).
   @BuiltValueField(wireName: r'pauseChoicesMin')
   BuiltList<int> get pauseChoicesMin;
+
+  @BuiltValueField(wireName: r'pickupBaseCurrency')
+  AdminRestaurantStatusDtoOutputPickupBaseCurrency? get pickupBaseCurrency;
+
+  /// The other currencies switched on, in the city’s display order.
+  @BuiltValueField(wireName: r'pickupCurrencies')
+  BuiltList<String> get pickupCurrencies;
+
+  /// Every other currency the city has enabled, in its display order.
+  @BuiltValueField(wireName: r'pickupCurrencyChoices')
+  BuiltList<AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner>
+  get pickupCurrencyChoices;
 
   AdminRestaurantStatusDtoOutput._();
 
@@ -243,6 +260,27 @@ class _$AdminRestaurantStatusDtoOutputSerializer
     yield serializers.serialize(
       object.pauseChoicesMin,
       specifiedType: const FullType(BuiltList, [FullType(int)]),
+    );
+    yield r'pickupBaseCurrency';
+    yield object.pickupBaseCurrency == null
+        ? null
+        : serializers.serialize(
+            object.pickupBaseCurrency,
+            specifiedType: const FullType.nullable(
+              AdminRestaurantStatusDtoOutputPickupBaseCurrency,
+            ),
+          );
+    yield r'pickupCurrencies';
+    yield serializers.serialize(
+      object.pickupCurrencies,
+      specifiedType: const FullType(BuiltList, [FullType(String)]),
+    );
+    yield r'pickupCurrencyChoices';
+    yield serializers.serialize(
+      object.pickupCurrencyChoices,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner),
+      ]),
     );
   }
 
@@ -438,6 +476,44 @@ class _$AdminRestaurantStatusDtoOutputSerializer
                   )
                   as BuiltList<int>;
           result.pauseChoicesMin.replace(valueDes);
+          break;
+        case r'pickupBaseCurrency':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminRestaurantStatusDtoOutputPickupBaseCurrency,
+                    ),
+                  )
+                  as AdminRestaurantStatusDtoOutputPickupBaseCurrency?;
+          if (valueDes == null) continue;
+          result.pickupBaseCurrency.replace(valueDes);
+          break;
+        case r'pickupCurrencies':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
+          result.pickupCurrencies.replace(valueDes);
+          break;
+        case r'pickupCurrencyChoices':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(
+                        AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner,
+                      ),
+                    ]),
+                  )
+                  as BuiltList<
+                    AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner
+                  >;
+          result.pickupCurrencyChoices.replace(valueDes);
           break;
         default:
           unhandled.add(key);

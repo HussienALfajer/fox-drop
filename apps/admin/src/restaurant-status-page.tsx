@@ -19,6 +19,7 @@ import {
   usePauseRestaurant,
   useResumeRestaurant,
   useSetMaxActiveOrders,
+  useSetPickupCurrencies,
 } from './restaurant-status.js';
 
 const route = getRouteApi('/signed-in/restaurant-status');
@@ -150,6 +151,18 @@ function Now({ status, city }: { status: RestaurantStatus; city: City }) {
           })}
         </p>
       )}
+      {status.pickupBaseCurrency && (
+        <p>
+          {t('restaurantStatus.pickupCurrenciesNow', {
+            currencies: [
+              status.pickupBaseCurrency.name,
+              ...status.pickupCurrencyChoices
+                .filter((choice) => status.pickupCurrencies.includes(choice.currency))
+                .map((choice) => choice.name),
+            ].join('، '),
+          })}
+        </p>
+      )}
       {status.holiday && (
         <>
           <p>
@@ -232,6 +245,14 @@ function Actions({
         </section>
       )}
       <MaxForm restaurantId={restaurantId} current={status.maxActiveOrders} />
+      {status.pickupBaseCurrency && (
+        <PickupCurrenciesForm
+          restaurantId={restaurantId}
+          base={status.pickupBaseCurrency.name}
+          accepted={status.pickupCurrencies}
+          choices={status.pickupCurrencyChoices}
+        />
+      )}
     </>
   );
 }
@@ -347,6 +368,51 @@ function MaxForm({ restaurantId, current }: { restaurantId: string; current: num
           <input name="max" type="number" min={1} max={50} defaultValue={current ?? ''} />
         </label>
         <button type="submit">{t('restaurantStatus.max.submit')}</button>
+      </fieldset>
+      <Outcome pending={set.isPending} failed={set.isError} result={set.data} />
+    </form>
+  );
+}
+
+// RA §12.7, AP §9.6.4 «العملات التي تقبلها من الكابتن»: changed on the
+// restaurant's request; the base is fixed.
+function PickupCurrenciesForm({
+  restaurantId,
+  base,
+  accepted,
+  choices,
+}: {
+  restaurantId: string;
+  base: string;
+  accepted: string[];
+  choices: { currency: string; name: string }[];
+}) {
+  const { t } = useTranslation();
+  const set = useSetPickupCurrencies(restaurantId);
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    set.mutate(choices.map((choice) => choice.currency).filter((code) => form.get(code) !== null));
+  }
+  return (
+    <form onSubmit={submit} aria-label={t('restaurantStatus.pickupCurrencies.title')}>
+      <h3>{t('restaurantStatus.pickupCurrencies.title')}</h3>
+      <p>{t('restaurantStatus.pickupCurrencies.explain')}</p>
+      <fieldset disabled={set.isPending}>
+        <label>
+          <input type="checkbox" checked disabled />
+          {t('restaurantStatus.pickupCurrencies.base', { currency: base })}
+        </label>
+        {choices.length === 0 && <p>{t('restaurantStatus.pickupCurrencies.none')}</p>}
+        {choices.map(({ currency, name }) => (
+          <label key={currency}>
+            <input name={currency} type="checkbox" defaultChecked={accepted.includes(currency)} />
+            {name}
+          </label>
+        ))}
+        {choices.length > 0 && (
+          <button type="submit">{t('restaurantStatus.pickupCurrencies.submit')}</button>
+        )}
       </fieldset>
       <Outcome pending={set.isPending} failed={set.isError} result={set.data} />
     </form>

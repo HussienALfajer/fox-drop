@@ -16,7 +16,7 @@ export const REASSIGNABLE: (typeof orderStatuses)[number][] = ['accepted', 'read
 // value).
 export interface ReassignmentFacts extends Pick<
   CancellationFacts,
-  'restaurantId' | 'currency' | 'cashLines' | 'cashBase'
+  'restaurantId' | 'currency' | 'cashLines' | 'cashBase' | 'snapshot'
 > {
   status: (typeof orderStatuses)[number];
   captainId: string | null;

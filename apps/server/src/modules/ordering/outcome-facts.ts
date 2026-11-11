@@ -1,7 +1,7 @@
 import { and, asc, eq, gt, isNull } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { CaptainsService } from '../captains/index.js';
-import type { LedgerActor, LedgerService } from '../ledger/index.js';
+import type { JournalRate, LedgerActor, LedgerService } from '../ledger/index.js';
 import type { SettingsService } from '../settings/index.js';
 import { captainPay } from './captain-pay.js';
 import { frozenAtPickup } from './order-edits.js';
@@ -126,7 +126,9 @@ export async function postOrderJournals(
   ledger: LedgerService,
   order: { id: string; cityId: string },
   actor: LedgerActor,
-  journals: Pick<OutcomeJournal, 'type' | 'reason' | 'entries'>[],
+  journals: (Pick<OutcomeJournal, 'type' | 'reason' | 'entries'> & {
+    rates?: JournalRate[] | undefined;
+  })[],
 ): Promise<string[]> {
   const ids: string[] = [];
   for (const journal of journals) {
@@ -151,6 +153,7 @@ export async function postOrderJournals(
         actor,
         reason: journal.reason,
         entries,
+        rates: journal.rates,
       },
       tx,
     );

@@ -1092,6 +1092,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurants/{restaurantId}/pickup-currencies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantStatusSetPickupCurrencies"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cities": {
         parameters: {
             query?: never;
@@ -1182,6 +1198,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["captainAvailabilityLastOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/settings/carried-currencies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainAvailabilityCarriedCurrencies"];
+        put: operations["captainAvailabilitySetCarriedCurrencies"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3794,6 +3826,20 @@ export interface components {
             pauseReason: string | null;
             /** @description «15 د», «30 د», «60 د» (AP §9.6.5). */
             pauseChoicesMin: number[];
+            /** @description «العملات التي تقبلها من الكابتن» (RA §12.7): the base, always accepted; null while the city has none. */
+            pickupBaseCurrency: {
+                currency: string;
+                /** @description Its Arabic name. */
+                name: string;
+            } | null;
+            /** @description The other currencies switched on, in the city’s display order. */
+            pickupCurrencies: string[];
+            /** @description Every other currency the city has enabled, in its display order. */
+            pickupCurrencyChoices: {
+                currency: string;
+                /** @description Its Arabic name. */
+                name: string;
+            }[];
         };
         AdminRestaurantPauseDto: {
             /** @description 15, 30 or 60; null with until, or for «حتى الاستئناف». */
@@ -3818,6 +3864,10 @@ export interface components {
         AdminRestaurantMaxActiveOrdersDto: {
             /** @description Off (null) or 1 to 50 (RA §7.4). */
             maxActiveOrders: number | null;
+        };
+        AdminRestaurantPickupCurrenciesDto: {
+            /** @description The other currencies to accept at pickup; the base is always accepted. */
+            currencies: string[];
         };
         AdminCitiesDto_Output: {
             /** @description The active cities, by name. */
@@ -3915,6 +3965,21 @@ export interface components {
         CaptainLastOrderDto: {
             /** @description CA §7.3: «لا أريد طلبات جديدة» on, or cancelled before the order ends. */
             on: boolean;
+        };
+        CaptainCarriedCurrenciesDto_Output: {
+            /** @description Null while the city has none. */
+            baseCurrency: string | null;
+            /** @description «العملات التي أحملها» (CA §10.5), in the city’s display order. */
+            carried: string[];
+            /** @description Every currency the city has enabled, the base among them, with its Arabic name. */
+            choices: {
+                currency: string;
+                name: string;
+            }[];
+        };
+        CaptainSetCarriedCurrenciesDto: {
+            /** @description The currencies carried, one at least, the base among them or not. */
+            currencies: string[];
         };
         CaptainLocationsDto: {
             /** @description Every 10 seconds, or the points queued without a signal (CA §4.3). */
@@ -7250,8 +7315,14 @@ export interface components {
                 };
                 /** @description Step 2 and the pickup request (CA §9.3–9.4). */
                 pickup: {
-                    /** @description «ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): the whole amount in the base currency in Phase 1. */
+                    /** @description «ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): one line, in the base when the restaurant and the captain both have it, else in their first common currency, else in the base. */
                     proposedLines: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    }[];
+                    /** @description C8: the currencies the restaurant accepts, the base first, each with the whole pickup payment in it as the server takes it, for the captain’s own split. */
+                    currencies: {
                         /** @description Integer minor units (AP §8.6). */
                         amount: string;
                         currency: string;
@@ -7583,8 +7654,14 @@ export interface components {
                 };
                 /** @description Step 2 and the pickup request (CA §9.3–9.4). */
                 pickup: {
-                    /** @description «ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): the whole amount in the base currency in Phase 1. */
+                    /** @description «ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): one line, in the base when the restaurant and the captain both have it, else in their first common currency, else in the base. */
                     proposedLines: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    }[];
+                    /** @description C8: the currencies the restaurant accepts, the base first, each with the whole pickup payment in it as the server takes it, for the captain’s own split. */
+                    currencies: {
                         /** @description Integer minor units (AP §8.6). */
                         amount: string;
                         currency: string;
@@ -10009,6 +10086,32 @@ export interface operations {
             };
         };
     };
+    adminRestaurantStatusSetPickupCurrencies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRestaurantPickupCurrenciesDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantStatusDto_Output"];
+                };
+            };
+        };
+    };
     adminCitiesList: {
         parameters: {
             query?: never;
@@ -10137,6 +10240,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainAvailabilityDto_Output"];
+                };
+            };
+        };
+    };
+    captainAvailabilityCarriedCurrencies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainCarriedCurrenciesDto_Output"];
+                };
+            };
+        };
+    };
+    captainAvailabilitySetCarriedCurrencies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainSetCarriedCurrenciesDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainCarriedCurrenciesDto_Output"];
                 };
             };
         };

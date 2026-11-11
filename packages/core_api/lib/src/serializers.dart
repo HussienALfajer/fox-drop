@@ -171,7 +171,10 @@ import 'package:core_api/src/model/admin_restaurant_images_dto_output_categories
 import 'package:core_api/src/model/admin_restaurant_images_dto_output_categories_inner_items_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_max_active_orders_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_pause_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_pickup_currencies_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_status_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_status_dto_output_pickup_base_currency.dart';
+import 'package:core_api/src/model/admin_restaurant_status_dto_output_pickup_currency_choices_inner.dart';
 import 'package:core_api/src/model/admin_restaurants_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurants_dto_output_restaurants_inner.dart';
 import 'package:core_api/src/model/admin_resume_emergency_stop_dto.dart';
@@ -237,6 +240,8 @@ import 'package:core_api/src/model/captain_availability_dto_output_custody_limit
 import 'package:core_api/src/model/captain_availability_dto_output_custody_remit_tolerance.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_custody_usage.dart';
 import 'package:core_api/src/model/captain_cannot_complete_dto.dart';
+import 'package:core_api/src/model/captain_carried_currencies_dto_output.dart';
+import 'package:core_api/src/model/captain_carried_currencies_dto_output_choices_inner.dart';
 import 'package:core_api/src/model/captain_code_request_dto.dart';
 import 'package:core_api/src/model/captain_code_sent_dto_output.dart';
 import 'package:core_api/src/model/captain_content_dto_output.dart';
@@ -277,6 +282,7 @@ import 'package:core_api/src/model/captain_outcome_payment_dto.dart';
 import 'package:core_api/src/model/captain_pickup_request_dto.dart';
 import 'package:core_api/src/model/captain_refresh_dto.dart';
 import 'package:core_api/src/model/captain_session_dto_output.dart';
+import 'package:core_api/src/model/captain_set_carried_currencies_dto.dart';
 import 'package:core_api/src/model/captain_sign_in_dto.dart';
 import 'package:core_api/src/model/captain_signed_in_dto_output.dart';
 import 'package:core_api/src/model/captain_signed_out_dto_output.dart';
@@ -627,7 +633,10 @@ part 'serializers.g.dart';
   AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner,
   AdminRestaurantMaxActiveOrdersDto,
   AdminRestaurantPauseDto,
+  AdminRestaurantPickupCurrenciesDto,
   AdminRestaurantStatusDtoOutput,
+  AdminRestaurantStatusDtoOutputPickupBaseCurrency,
+  AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner,
   AdminRestaurantsDtoOutput,
   AdminRestaurantsDtoOutputRestaurantsInner,
   AdminResumeEmergencyStopDto,
@@ -693,6 +702,8 @@ part 'serializers.g.dart';
   CaptainAvailabilityDtoOutputCustodyRemitTolerance,
   CaptainAvailabilityDtoOutputCustodyUsage,
   CaptainCannotCompleteDto,
+  CaptainCarriedCurrenciesDtoOutput,
+  CaptainCarriedCurrenciesDtoOutputChoicesInner,
   CaptainCodeRequestDto,
   CaptainCodeSentDtoOutput,
   CaptainContentDtoOutput,
@@ -733,6 +744,7 @@ part 'serializers.g.dart';
   CaptainPickupRequestDto,
   CaptainRefreshDto,
   CaptainSessionDtoOutput,
+  CaptainSetCarriedCurrenciesDto,
   CaptainSignInDto,
   CaptainSignedInDtoOutput,
   CaptainSignedOutDtoOutput,
@@ -934,6 +946,17 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(
+                AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(MerchantMenuDtoOutputCategoriesInnerItemsInner),
             ]),
             () => ListBuilder<MerchantMenuDtoOutputCategoriesInnerItemsInner>(),
@@ -1055,6 +1078,12 @@ Serializers serializers =
               FullType(CaptainActiveOrderDtoOutputOrderLinesInner),
             ]),
             () => ListBuilder<CaptainActiveOrderDtoOutputOrderLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainCarriedCurrenciesDtoOutputChoicesInner),
+            ]),
+            () => ListBuilder<CaptainCarriedCurrenciesDtoOutputChoicesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

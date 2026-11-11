@@ -147,6 +147,8 @@ Map<String, Object?> orderJson({
   Map<String, Object?>? cannotComplete,
   Map<String, Object?>? emergency,
   Map<String, Object?>? noAnswer,
+  List<Map<String, Object?>>? proposedLines,
+  List<Map<String, Object?>>? pickupCurrencies,
 }) {
   final atRestaurant = track != 'assigned';
   final atCustomer = track == 'at_customer';
@@ -188,7 +190,8 @@ Map<String, Object?> orderJson({
     'pickupPayment': moneyJson(pickupPayment),
     'collect': moneyJson(collect),
     'pickup': {
-      'proposedLines': [moneyJson('40000')],
+      'proposedLines': proposedLines ?? [moneyJson('40000')],
+      'currencies': pickupCurrencies ?? [moneyJson('40000')],
       'request': request,
       'pickedUpAt': pickedUp ? now.toIso8601String() : null,
       'disputedAt': disputedAt?.toIso8601String(),

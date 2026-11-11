@@ -60,6 +60,7 @@ export type MerchantsRefusal =
   | 'invalid_holiday_close'
   | 'invalid_prep_time'
   | 'invalid_max_active_orders'
+  | 'invalid_pickup_currencies'
   | 'restaurant_suspended'
   | 'owner_only';
 
@@ -131,6 +132,9 @@ export interface Restaurant {
   minimumOrder: Money;
   defaultPrepMin: number;
   maxActiveOrders: number | null;
+  // RA §12.7: the other currencies switched on for pickup, as stored; the
+  // base is always accepted. A reader keeps only the ones its snapshot has.
+  pickupCurrencies: string[];
   // The commission in effect now, in basis points.
   commissionBp: number | null;
   schedule: OpeningPeriod[];
@@ -387,6 +391,7 @@ export class MerchantsService implements OnModuleInit {
         minimumOrderCurrency: restaurants.minimumOrderCurrency,
         defaultPrepMin: restaurants.defaultPrepMin,
         maxActiveOrders: restaurants.maxActiveOrders,
+        pickupCurrencies: restaurants.pickupCurrencies,
       })
       .from(restaurants)
       .where(eq(restaurants.id, restaurantId));
@@ -422,6 +427,7 @@ export class MerchantsService implements OnModuleInit {
       minimumOrder: { amount: row.minimumOrder, currency: row.minimumOrderCurrency },
       defaultPrepMin: row.defaultPrepMin,
       maxActiveOrders: row.maxActiveOrders,
+      pickupCurrencies: row.pickupCurrencies,
       commissionBp: commissionAt(rates, at)?.rateBp ?? null,
       schedule: await this.schedule(this.database.db, restaurantId),
     };

@@ -9,6 +9,31 @@ import {
 // AP §8.1, docs/domain/01, 08, 09; AP §9.3.2 «إلغاء الطلب»: what operations'
 // cancellation books, and when it counts a late-cancellation strike.
 
+// TRY the base; USD at 41.20 TRY (AP §8.6).
+const snapshot = {
+  cityId: 'city-1',
+  baseCurrency: 'TRY',
+  takenAt: new Date('2026-11-11T10:00:00Z'),
+  currencies: [
+    {
+      code: 'TRY',
+      decimals: 2,
+      rate: { numerator: 1n, denominator: 1n },
+      rateVersionId: null,
+      roundingUnitMinor: 500n,
+      roundingMode: 'nearest' as const,
+    },
+    {
+      code: 'USD',
+      decimals: 2,
+      rate: { numerator: 412n, denominator: 10n },
+      rateVersionId: '019a0000-0000-7000-8000-000000000001',
+      roundingUnitMinor: 50n,
+      roundingMode: 'nearest' as const,
+    },
+  ],
+};
+
 const accepted: CancellationFacts = {
   status: 'accepted',
   restaurantId: 'restaurant-1',
@@ -21,6 +46,7 @@ const accepted: CancellationFacts = {
   testOrder: false,
   cashLines: [{ currency: 'TRY', amount: 24_000n }],
   cashBase: 24_000n,
+  snapshot,
   captainPay: 2_500n,
 };
 
@@ -228,17 +254,57 @@ describe('cancellationEntries', () => {
     ).toEqual({ problem: 'invalid_cancellation' });
   });
 
-  it('refuses to book a kept payment outside the base currency (Phase 1)', () => {
+  it('brings a kept payment in another currency into the base at the order’s rates (RA §12.7)', () => {
+    // 100 TRY and 5 USD (206 TRY): the restaurant owes 306 TRY back.
     const facts = {
       ...atRestaurant,
       cashLines: [
         { currency: 'TRY', amount: 10_000n },
         { currency: 'USD', amount: 500n },
       ],
+      cashBase: 30_600n,
     };
-    expect(() => cancellationEntries(facts, { ...plain, cash: 'not_returned' })).toThrow(
-      /base currency/,
-    );
+    const result = cancellationEntries(facts, { ...plain, cash: 'not_returned' });
+    expect('journals' in result && result.journals.slice(-2)).toEqual([
+      {
+        type: 'platform.fx_rounding',
+        reason: null,
+        entries: [
+          { account: 'platform.order_clearing', party: platform, amount: -500n, currency: 'USD' },
+          { account: 'platform.fx_rounding', party: platform, amount: 500n, currency: 'USD' },
+          { account: 'platform.order_clearing', party: platform, amount: 20_600n, currency: 'TRY' },
+          { account: 'platform.fx_rounding', party: platform, amount: -20_600n, currency: 'TRY' },
+        ],
+        rates: [{ currency: 'USD', rateVersionId: snapshot.currencies[1]!.rateVersionId }],
+      },
+      {
+        type: 'merchant.debit',
+        reason: null,
+        entries: [
+          {
+            account: 'merchant.account',
+            party: { kind: 'merchant', id: 'restaurant-1' },
+            amount: 30_600n,
+            currency: 'TRY',
+          },
+          {
+            account: 'platform.order_clearing',
+            party: platform,
+            amount: -30_600n,
+            currency: 'TRY',
+          },
+        ],
+      },
+    ]);
+    // The clearing account nets to zero in each currency.
+    const clearing = new Map<string, bigint>();
+    for (const journal of 'journals' in result ? result.journals : []) {
+      for (const entry of journal.entries) {
+        if (entry.account !== 'platform.order_clearing') continue;
+        clearing.set(entry.currency, (clearing.get(entry.currency) ?? 0n) + entry.amount);
+      }
+    }
+    expect([...clearing.values()]).toEqual([0n, 0n]);
     expect(cancellationEntries(facts, { ...plain, cash: 'returned' })).toMatchObject({
       journals: [],
     });

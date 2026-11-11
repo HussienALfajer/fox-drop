@@ -66,6 +66,8 @@ export interface OrderView {
   // ignore an event not newer than the version they show.
   version: number;
   placedAt: Date;
+  // AP §8.6: the rates the order kept, for every later calculation.
+  snapshot: RateSnapshot;
   // RA §8.2–8.3: late to answer from the first, cancelled automatically at
   // the second; null for an order placed before slice 1.9.
   acceptAlertAt: Date | null;
@@ -659,6 +661,7 @@ export async function readOrders(
             }
           : null,
       currency: row.currency,
+      snapshot,
       money: {
         itemsValue: row.itemsValue,
         deliveryFee: row.deliveryFee,

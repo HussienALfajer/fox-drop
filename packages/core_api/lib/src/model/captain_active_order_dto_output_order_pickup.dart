@@ -14,7 +14,8 @@ part 'captain_active_order_dto_output_order_pickup.g.dart';
 /// Step 2 and the pickup request (CA §9.3–9.4).
 ///
 /// Properties:
-/// * [proposedLines] - «ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): the whole amount in the base currency in Phase 1.
+/// * [proposedLines] - «ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): one line, in the base when the restaurant and the captain both have it, else in their first common currency, else in the base.
+/// * [currencies] - C8: the currencies the restaurant accepts, the base first, each with the whole pickup payment in it as the server takes it, for the captain’s own split.
 /// * [request]
 /// * [pickedUpAt]
 /// * [disputedAt] - «فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات».
@@ -25,9 +26,13 @@ abstract class CaptainActiveOrderDtoOutputOrderPickup
           CaptainActiveOrderDtoOutputOrderPickup,
           CaptainActiveOrderDtoOutputOrderPickupBuilder
         > {
-  /// «ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): the whole amount in the base currency in Phase 1.
+  /// «ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): one line, in the base when the restaurant and the captain both have it, else in their first common currency, else in the base.
   @BuiltValueField(wireName: r'proposedLines')
   BuiltList<CaptainWentOfflineDtoOutputHandIn?> get proposedLines;
+
+  /// C8: the currencies the restaurant accepts, the base first, each with the whole pickup payment in it as the server takes it, for the captain’s own split.
+  @BuiltValueField(wireName: r'currencies')
+  BuiltList<CaptainWentOfflineDtoOutputHandIn?> get currencies;
 
   @BuiltValueField(wireName: r'request')
   CaptainActiveOrderDtoOutputOrderPickupRequest? get request;
@@ -72,6 +77,13 @@ class _$CaptainActiveOrderDtoOutputOrderPickupSerializer
     yield r'proposedLines';
     yield serializers.serialize(
       object.proposedLines,
+      specifiedType: const FullType(BuiltList, [
+        FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+      ]),
+    );
+    yield r'currencies';
+    yield serializers.serialize(
+      object.currencies,
       specifiedType: const FullType(BuiltList, [
         FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
       ]),
@@ -136,6 +148,17 @@ class _$CaptainActiveOrderDtoOutputOrderPickupSerializer
                   )
                   as BuiltList<CaptainWentOfflineDtoOutputHandIn?>;
           result.proposedLines.replace(valueDes);
+          break;
+        case r'currencies':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
+                    ]),
+                  )
+                  as BuiltList<CaptainWentOfflineDtoOutputHandIn?>;
+          result.currencies.replace(valueDes);
           break;
         case r'request':
           final valueDes =

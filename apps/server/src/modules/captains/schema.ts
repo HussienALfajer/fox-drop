@@ -76,6 +76,10 @@ export const captainRecords = captains.table(
     // activation.
     custodyLimit: bigint('custody_limit', { mode: 'bigint' }).notNull(),
     custodyLimitCurrency: text('custody_limit_currency').notNull(),
+    // CA §10.5 «العملات التي أحملها»: the city's currencies the captain
+    // carries, the base among them when switched on. Null until the captain
+    // sets them: the base only, its default.
+    carriedCurrencies: text('carried_currencies').array(),
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

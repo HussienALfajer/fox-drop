@@ -53,6 +53,15 @@ export interface PostJournal {
   // Required for a manual correction and a manual bonus (AP §8.5.2, §9.10.7).
   reason?: string | null;
   entries: LedgerEntry[];
+  // A journal whose entries span two currencies or more: the rate version of
+  // each of them but the base (AP §8.6, §8.11), the order's from its
+  // snapshot, so platform.fx_rounding reads in the base. None otherwise.
+  rates?: JournalRate[] | undefined;
+}
+
+export interface JournalRate {
+  currency: string;
+  rateVersionId: string;
 }
 
 export interface Balance {
@@ -156,6 +165,8 @@ export class LedgerService {
       actor: reversal.actor,
       reason: reversal.reason,
       entries: lines.map((line) => ({ ...line, amount: -line.amount })),
+      // The reversal undoes the conversion at the rates it was made at.
+      rates: (original.rates as JournalRate[] | null) ?? undefined,
     };
     this.checkActor(journal.actor);
     return this.insert(journal, journalId, executor);
@@ -295,6 +306,7 @@ export class LedgerService {
       if (entry.amount === 0n) throw new LedgerRefusal('an entry of zero');
     }
     this.checkActor(journal.actor);
+    this.checkRates(journal);
 
     const ids = [...new Set(journal.entries.map((entry) => entry.accountId))];
     const found = await executor.select().from(accounts).where(inArray(accounts.id, ids));
@@ -357,6 +369,27 @@ export class LedgerService {
     }
   }
 
+  // Every currency of a journal that spans several but one (the base) names
+  // its rate version, once; a journal in one currency names none.
+  private checkRates(journal: PostJournal): void {
+    const currencies = new Set(journal.entries.map((entry) => entry.currency));
+    const rates = journal.rates ?? [];
+    if (currencies.size < 2) {
+      if (rates.length > 0) throw new LedgerRefusal('a journal in one currency takes no rate');
+      return;
+    }
+    const named = new Set(rates.map((rate) => rate.currency));
+    if (
+      named.size !== rates.length ||
+      rates.some((rate) => !currencies.has(rate.currency) || !uuid.test(rate.rateVersionId))
+    ) {
+      throw new LedgerRefusal('a rate names a currency of the journal, once, by its version id');
+    }
+    if (currencies.size - named.size > 1) {
+      throw new LedgerRefusal('a journal across currencies names the rate of each but the base');
+    }
+  }
+
   private async insert(
     journal: PostJournal,
     reversesJournalId: string | null,
@@ -373,6 +406,7 @@ export class LedgerService {
         actorId: journal.actor.id,
         reason: journal.reason ?? null,
         reversesJournalId,
+        rates: journal.rates && journal.rates.length > 0 ? journal.rates : null,
       })
       .returning({ id: journals.id });
     if (!posted) throw new Error('the journal was not inserted');
