@@ -6,54 +6,55 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'captain_active_order_dto_output_ended_charge.g.dart';
+part 'captain_offer_dto_output_offer_peak_bonus.g.dart';
 
-/// With the captain responsible: the charge on the earnings (CA §10.6).
+/// «يشمل مكافأة الذروة +{المبلغ}» (AP §9.12.5, D15), included in pay; null outside a window.
 ///
 /// Properties:
-/// * [amount]
+/// * [amount] - Minor units of the currency, as a string.
 /// * [currency]
 @BuiltValue()
-abstract class CaptainActiveOrderDtoOutputEndedCharge
+abstract class CaptainOfferDtoOutputOfferPeakBonus
     implements
         Built<
-          CaptainActiveOrderDtoOutputEndedCharge,
-          CaptainActiveOrderDtoOutputEndedChargeBuilder
+          CaptainOfferDtoOutputOfferPeakBonus,
+          CaptainOfferDtoOutputOfferPeakBonusBuilder
         > {
+  /// Minor units of the currency, as a string.
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
   @BuiltValueField(wireName: r'currency')
   String get currency;
 
-  CaptainActiveOrderDtoOutputEndedCharge._();
+  CaptainOfferDtoOutputOfferPeakBonus._();
 
-  factory CaptainActiveOrderDtoOutputEndedCharge([
-    void updates(CaptainActiveOrderDtoOutputEndedChargeBuilder b),
-  ]) = _$CaptainActiveOrderDtoOutputEndedCharge;
+  factory CaptainOfferDtoOutputOfferPeakBonus([
+    void updates(CaptainOfferDtoOutputOfferPeakBonusBuilder b),
+  ]) = _$CaptainOfferDtoOutputOfferPeakBonus;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CaptainActiveOrderDtoOutputEndedChargeBuilder b) => b;
+  static void _defaults(CaptainOfferDtoOutputOfferPeakBonusBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainActiveOrderDtoOutputEndedCharge> get serializer =>
-      _$CaptainActiveOrderDtoOutputEndedChargeSerializer();
+  static Serializer<CaptainOfferDtoOutputOfferPeakBonus> get serializer =>
+      _$CaptainOfferDtoOutputOfferPeakBonusSerializer();
 }
 
-class _$CaptainActiveOrderDtoOutputEndedChargeSerializer
-    implements PrimitiveSerializer<CaptainActiveOrderDtoOutputEndedCharge> {
+class _$CaptainOfferDtoOutputOfferPeakBonusSerializer
+    implements PrimitiveSerializer<CaptainOfferDtoOutputOfferPeakBonus> {
   @override
   final Iterable<Type> types = const [
-    CaptainActiveOrderDtoOutputEndedCharge,
-    _$CaptainActiveOrderDtoOutputEndedCharge,
+    CaptainOfferDtoOutputOfferPeakBonus,
+    _$CaptainOfferDtoOutputOfferPeakBonus,
   ];
 
   @override
-  final String wireName = r'CaptainActiveOrderDtoOutputEndedCharge';
+  final String wireName = r'CaptainOfferDtoOutputOfferPeakBonus';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CaptainActiveOrderDtoOutputEndedCharge object, {
+    CaptainOfferDtoOutputOfferPeakBonus object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'amount';
@@ -71,7 +72,7 @@ class _$CaptainActiveOrderDtoOutputEndedChargeSerializer
   @override
   Object serialize(
     Serializers serializers,
-    CaptainActiveOrderDtoOutputEndedCharge object, {
+    CaptainOfferDtoOutputOfferPeakBonus object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -86,7 +87,7 @@ class _$CaptainActiveOrderDtoOutputEndedChargeSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CaptainActiveOrderDtoOutputEndedChargeBuilder result,
+    required CaptainOfferDtoOutputOfferPeakBonusBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -120,12 +121,12 @@ class _$CaptainActiveOrderDtoOutputEndedChargeSerializer
   }
 
   @override
-  CaptainActiveOrderDtoOutputEndedCharge deserialize(
+  CaptainOfferDtoOutputOfferPeakBonus deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = CaptainActiveOrderDtoOutputEndedChargeBuilder();
+    final result = CaptainOfferDtoOutputOfferPeakBonusBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

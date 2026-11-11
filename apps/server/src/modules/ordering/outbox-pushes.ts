@@ -16,13 +16,8 @@ import { GeoService } from '../geo/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { PushQueue, type QueuedPush } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
-import {
-  formatMoney,
-  formatTime,
-  orderPushes,
-  type OrderPushFacts,
-  PICKUP_EVENTS,
-} from './order-pushes.js';
+import { formatMoney, formatTime } from '../content/index.js';
+import { orderPushes, type OrderPushFacts, PICKUP_EVENTS } from './order-pushes.js';
 import {
   orderEdits,
   orderEvents,

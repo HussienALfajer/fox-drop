@@ -426,7 +426,7 @@ class _$AdminOrderCardDtoOutputOrder extends AdminOrderCardDtoOutputOrder {
   @override
   final DateTime placedAt;
   @override
-  final AdminOrderCardDtoOutputOrderRestaurant restaurant;
+  final AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner? restaurant;
   @override
   final String neighbourhood;
   @override
@@ -458,7 +458,7 @@ class _$AdminOrderCardDtoOutputOrder extends AdminOrderCardDtoOutputOrder {
     required this.status,
     required this.version,
     required this.placedAt,
-    required this.restaurant,
+    this.restaurant,
     required this.neighbourhood,
     required this.statusSince,
     this.limitAt,
@@ -576,11 +576,13 @@ class AdminOrderCardDtoOutputOrderBuilder
   DateTime? get placedAt => _$this._placedAt;
   set placedAt(DateTime? placedAt) => _$this._placedAt = placedAt;
 
-  AdminOrderCardDtoOutputOrderRestaurantBuilder? _restaurant;
-  AdminOrderCardDtoOutputOrderRestaurantBuilder get restaurant =>
-      _$this._restaurant ??= AdminOrderCardDtoOutputOrderRestaurantBuilder();
-  set restaurant(AdminOrderCardDtoOutputOrderRestaurantBuilder? restaurant) =>
-      _$this._restaurant = restaurant;
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder? _restaurant;
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder get restaurant =>
+      _$this._restaurant ??=
+          AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder();
+  set restaurant(
+    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder? restaurant,
+  ) => _$this._restaurant = restaurant;
 
   String? _neighbourhood;
   String? get neighbourhood => _$this._neighbourhood;
@@ -650,7 +652,7 @@ class AdminOrderCardDtoOutputOrderBuilder
       _status = $v.status;
       _version = $v.version;
       _placedAt = $v.placedAt;
-      _restaurant = $v.restaurant.toBuilder();
+      _restaurant = $v.restaurant?.toBuilder();
       _neighbourhood = $v.neighbourhood;
       _statusSince = $v.statusSince;
       _limitAt = $v.limitAt;
@@ -710,7 +712,7 @@ class AdminOrderCardDtoOutputOrderBuilder
               r'AdminOrderCardDtoOutputOrder',
               'placedAt',
             ),
-            restaurant: restaurant.build(),
+            restaurant: _restaurant?.build(),
             neighbourhood: BuiltValueNullFieldError.checkNotNull(
               neighbourhood,
               r'AdminOrderCardDtoOutputOrder',
@@ -734,7 +736,7 @@ class AdminOrderCardDtoOutputOrderBuilder
       late String _$failedField;
       try {
         _$failedField = 'restaurant';
-        restaurant.build();
+        _restaurant?.build();
 
         _$failedField = 'captain';
         _captain?.build();

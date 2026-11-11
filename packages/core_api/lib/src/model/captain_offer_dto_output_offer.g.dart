@@ -115,6 +115,8 @@ class _$CaptainOfferDtoOutputOffer extends CaptainOfferDtoOutputOffer {
   @override
   final AdminPickerDtoOutputCaptainsInnerCustodyLimit? pay;
   @override
+  final CaptainOfferDtoOutputOfferPeakBonus? peakBonus;
+  @override
   final CaptainCurrentOfferDtoOutputOfferRestaurant restaurant;
   @override
   final CaptainCurrentOfferDtoOutputOfferCustomer customer;
@@ -142,6 +144,7 @@ class _$CaptainOfferDtoOutputOffer extends CaptainOfferDtoOutputOffer {
     required this.offeredAt,
     required this.expiresAt,
     this.pay,
+    this.peakBonus,
     required this.restaurant,
     required this.customer,
     required this.pickupPayment,
@@ -171,6 +174,7 @@ class _$CaptainOfferDtoOutputOffer extends CaptainOfferDtoOutputOffer {
         offeredAt == other.offeredAt &&
         expiresAt == other.expiresAt &&
         pay == other.pay &&
+        peakBonus == other.peakBonus &&
         restaurant == other.restaurant &&
         customer == other.customer &&
         pickupPayment == other.pickupPayment &&
@@ -191,6 +195,7 @@ class _$CaptainOfferDtoOutputOffer extends CaptainOfferDtoOutputOffer {
     _$hash = $jc(_$hash, offeredAt.hashCode);
     _$hash = $jc(_$hash, expiresAt.hashCode);
     _$hash = $jc(_$hash, pay.hashCode);
+    _$hash = $jc(_$hash, peakBonus.hashCode);
     _$hash = $jc(_$hash, restaurant.hashCode);
     _$hash = $jc(_$hash, customer.hashCode);
     _$hash = $jc(_$hash, pickupPayment.hashCode);
@@ -213,6 +218,7 @@ class _$CaptainOfferDtoOutputOffer extends CaptainOfferDtoOutputOffer {
           ..add('offeredAt', offeredAt)
           ..add('expiresAt', expiresAt)
           ..add('pay', pay)
+          ..add('peakBonus', peakBonus)
           ..add('restaurant', restaurant)
           ..add('customer', customer)
           ..add('pickupPayment', pickupPayment)
@@ -264,6 +270,12 @@ class CaptainOfferDtoOutputOfferBuilder
       _$this._pay ??= AdminPickerDtoOutputCaptainsInnerCustodyLimitBuilder();
   set pay(AdminPickerDtoOutputCaptainsInnerCustodyLimitBuilder? pay) =>
       _$this._pay = pay;
+
+  CaptainOfferDtoOutputOfferPeakBonusBuilder? _peakBonus;
+  CaptainOfferDtoOutputOfferPeakBonusBuilder get peakBonus =>
+      _$this._peakBonus ??= CaptainOfferDtoOutputOfferPeakBonusBuilder();
+  set peakBonus(CaptainOfferDtoOutputOfferPeakBonusBuilder? peakBonus) =>
+      _$this._peakBonus = peakBonus;
 
   CaptainCurrentOfferDtoOutputOfferRestaurantBuilder? _restaurant;
   CaptainCurrentOfferDtoOutputOfferRestaurantBuilder get restaurant =>
@@ -327,6 +339,7 @@ class CaptainOfferDtoOutputOfferBuilder
       _offeredAt = $v.offeredAt;
       _expiresAt = $v.expiresAt;
       _pay = $v.pay?.toBuilder();
+      _peakBonus = $v.peakBonus?.toBuilder();
       _restaurant = $v.restaurant.toBuilder();
       _customer = $v.customer.toBuilder();
       _pickupPayment = $v.pickupPayment.toBuilder();
@@ -394,6 +407,7 @@ class CaptainOfferDtoOutputOfferBuilder
               'expiresAt',
             ),
             pay: _pay?.build(),
+            peakBonus: _peakBonus?.build(),
             restaurant: restaurant.build(),
             customer: customer.build(),
             pickupPayment: pickupPayment.build(),
@@ -411,6 +425,8 @@ class CaptainOfferDtoOutputOfferBuilder
       try {
         _$failedField = 'pay';
         _pay?.build();
+        _$failedField = 'peakBonus';
+        _peakBonus?.build();
         _$failedField = 'restaurant';
         restaurant.build();
         _$failedField = 'customer';

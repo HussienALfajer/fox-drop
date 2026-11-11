@@ -2372,4 +2372,71 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get merchantRetry => 'إعادة المحاولة';
+
+  @override
+  String captainOfferPeakBonus(String amount) {
+    return 'يشمل مكافأة الذروة +$amount';
+  }
+
+  @override
+  String captainPayPeak(String amount) {
+    return 'مكافأة الذروة: $amount';
+  }
+
+  @override
+  String captainPeakNow(String amount, String time) {
+    return 'مكافأة الذروة الآن: +$amount لكل طلب حتى $time';
+  }
+
+  @override
+  String get captainPeakWindows => 'أوقات مكافأة الذروة';
+
+  @override
+  String get captainPeakExplain =>
+      'يُضاف المبلغ إلى أجرك عن كل طلب تسلّمه داخل النافذة، بحسب منطقة المطعم.';
+
+  @override
+  String get captainPeakOff => 'لا مكافأة ذروة الآن.';
+
+  @override
+  String captainPeakWindow(
+    String days,
+    String start,
+    String end,
+    String amount,
+  ) {
+    return '$days من $start إلى $end: +$amount لكل طلب';
+  }
+
+  @override
+  String get captainPeakNextDay => '(تنتهي في اليوم التالي)';
+
+  @override
+  String get captainPeakAllZones => 'كل المناطق';
+
+  @override
+  String captainPeakZones(String zones) {
+    return 'في: $zones';
+  }
+
+  @override
+  String get captainPeakDayMonday => 'الإثنين';
+
+  @override
+  String get captainPeakDayTuesday => 'الثلاثاء';
+
+  @override
+  String get captainPeakDayWednesday => 'الأربعاء';
+
+  @override
+  String get captainPeakDayThursday => 'الخميس';
+
+  @override
+  String get captainPeakDayFriday => 'الجمعة';
+
+  @override
+  String get captainPeakDaySaturday => 'السبت';
+
+  @override
+  String get captainPeakDaySunday => 'الأحد';
 }

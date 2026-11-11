@@ -3,6 +3,7 @@ import { DatabaseModule } from '../../database/database.module.js';
 import { JobsModule } from '../../jobs/jobs.module.js';
 import { ContentModule } from '../content/index.js';
 import { CaptainsModule } from '../captains/index.js';
+import { FxModule } from '../fx/index.js';
 import { GeoModule } from '../geo/index.js';
 import { IdentityModule, OpenAppSessionsModule, OtpSenderPoolModule } from '../identity/index.js';
 import { MerchantsModule } from '../merchants/index.js';
@@ -19,6 +20,7 @@ import { PlatformRelay, PlatformRelayWorker } from './platform-relay.js';
 import { RestaurantStateRelay, RestaurantStateRelayWorker } from './restaurant-state-relay.js';
 import { PushDevices } from './push-devices.js';
 import { PushQueue } from './push-queue.js';
+import { PeakWindowNotices, PeakWindowNoticesWorker } from './peak-window-notices.js';
 import { PushRelay, PushRelayWorker } from './push-relay.js';
 import {
   CaptainPushTokenController,
@@ -87,10 +89,17 @@ export class NotificationsModule {}
 export class NotificationsWorkerModule {}
 
 // The worker's side of the captain's availability notices: C3 sets a
-// captain offline from the offer timers (CA §7.4, slice 2.15b).
+// captain offline from the offer timers (CA §7.4, slice 2.15b); and the
+// push when a peak window starts (CA §14 #23, slice 2.16).
 @Module({
-  imports: [DatabaseModule, CaptainsModule, ContentModule],
-  providers: [PushQueue, PlatformBroadcasts, CaptainAvailabilityNotices],
+  imports: [DatabaseModule, CaptainsModule, ContentModule, GeoModule, FxModule],
+  providers: [
+    PushQueue,
+    PlatformBroadcasts,
+    CaptainAvailabilityNotices,
+    PeakWindowNotices,
+    PeakWindowNoticesWorker,
+  ],
 })
 export class CaptainNoticesWorkerModule {}
 

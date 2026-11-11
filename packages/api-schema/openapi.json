@@ -3011,6 +3011,32 @@
         ]
       }
     },
+    "/v1/captain/peak-bonus": {
+      "get": {
+        "operationId": "captainPeakBonusPeakBonus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainPeakBonusDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
     "/v1/admin/captains/{captainId}/availability": {
       "get": {
         "operationId": "adminCaptainsAvailability",
@@ -3080,6 +3106,77 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminCaptainAvailabilityDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/peak-bonus": {
+      "get": {
+        "operationId": "adminPeakBonusState",
+        "parameters": [
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPeakBonusDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      },
+      "put": {
+        "operationId": "adminPeakBonusSet",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSetPeakBonusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPeakBonusDto_Output"
                 }
               }
             },
@@ -12082,6 +12179,157 @@
         ],
         "additionalProperties": false
       },
+      "CaptainPeakBonusDto_Output": {
+        "type": "object",
+        "properties": {
+          "windows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "days": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 7
+                  },
+                  "description": "ISO days: 1 Monday to 7 Sunday."
+                },
+                "startMinute": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "Minutes from midnight on the city clock."
+                },
+                "endMinute": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "Minutes from midnight; at or before the start it ends the next day."
+                },
+                "amount": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^\\d+$"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false,
+                  "description": "Per delivered order."
+                },
+                "zones": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "The zones of the restaurants it pays for; none: every zone."
+                }
+              },
+              "required": [
+                "days",
+                "startMinute",
+                "endMinute",
+                "amount",
+                "zones"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The windows in force while the bonus is on (CA §12.5); empty while it is off."
+          },
+          "active": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^\\d+$"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false
+                },
+                "until": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "zones": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "The zones of the restaurants it pays for; none: every zone."
+                }
+              },
+              "required": [
+                "amount",
+                "until",
+                "zones"
+              ],
+              "additionalProperties": false
+            },
+            "description": "«مكافأة الذروة الآن: +{المبلغ} لكل طلب حتى {الساعة}» on the home screen."
+          }
+        },
+        "required": [
+          "windows",
+          "active"
+        ],
+        "additionalProperties": false
+      },
       "AdminCaptainAvailabilityDto_Output": {
         "type": "object",
         "properties": {
@@ -12132,6 +12380,337 @@
         },
         "required": [
           "reason"
+        ]
+      },
+      "AdminPeakBonusDto_Output": {
+        "type": "object",
+        "properties": {
+          "inForce": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "effectiveFrom": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "windows": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "days": {
+                          "minItems": 1,
+                          "maxItems": 7,
+                          "type": "array",
+                          "items": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 7
+                          },
+                          "description": "ISO days: 1 Monday to 7 Sunday."
+                        },
+                        "startMinute": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1439,
+                          "description": "Minutes from midnight on the city clock, 20:00 is 1200."
+                        },
+                        "endMinute": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1439,
+                          "description": "Minutes from midnight; at or before the start the window runs past midnight."
+                        },
+                        "amount": {
+                          "type": "string",
+                          "pattern": "^\\d{1,18}$",
+                          "description": "Per delivered order, minor units of the base currency."
+                        },
+                        "zones": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "name"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "description": "None: every zone."
+                        }
+                      },
+                      "required": [
+                        "days",
+                        "startMinute",
+                        "endMinute",
+                        "amount",
+                        "zones"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "enabled",
+                  "currency",
+                  "effectiveFrom",
+                  "windows"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null until the owner first saves it: off (D15)."
+          },
+          "pending": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "effectiveFrom": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "windows": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "days": {
+                          "minItems": 1,
+                          "maxItems": 7,
+                          "type": "array",
+                          "items": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 7
+                          },
+                          "description": "ISO days: 1 Monday to 7 Sunday."
+                        },
+                        "startMinute": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1439,
+                          "description": "Minutes from midnight on the city clock, 20:00 is 1200."
+                        },
+                        "endMinute": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1439,
+                          "description": "Minutes from midnight; at or before the start the window runs past midnight."
+                        },
+                        "amount": {
+                          "type": "string",
+                          "pattern": "^\\d{1,18}$",
+                          "description": "Per delivered order, minor units of the base currency."
+                        },
+                        "zones": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "name"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "description": "None: every zone."
+                        }
+                      },
+                      "required": [
+                        "days",
+                        "startMinute",
+                        "endMinute",
+                        "amount",
+                        "zones"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "enabled",
+                  "currency",
+                  "effectiveFrom",
+                  "windows"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A lowering or disabling waiting for the end of the current window."
+          },
+          "zones": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "active": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "active"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "baseCurrency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The amounts are typed in it; null while the city has none."
+          }
+        },
+        "required": [
+          "inForce",
+          "pending",
+          "zones",
+          "baseCurrency"
+        ],
+        "additionalProperties": false
+      },
+      "AdminSetPeakBonusDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "windows": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "days": {
+                  "minItems": 1,
+                  "maxItems": 7,
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 7
+                  },
+                  "description": "ISO days: 1 Monday to 7 Sunday."
+                },
+                "startMinute": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1439,
+                  "description": "Minutes from midnight on the city clock, 20:00 is 1200."
+                },
+                "endMinute": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1439,
+                  "description": "Minutes from midnight; at or before the start the window runs past midnight."
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^\\d{1,18}$",
+                  "description": "Per delivered order, minor units of the base currency."
+                },
+                "zoneIds": {
+                  "maxItems": 200,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                }
+              },
+              "required": [
+                "days",
+                "startMinute",
+                "endMinute",
+                "amount",
+                "zoneIds"
+              ]
+            }
+          }
+        },
+        "required": [
+          "cityId",
+          "enabled",
+          "windows"
         ]
       },
       "ContactDto_Output": {
@@ -28671,10 +29250,15 @@
                     "pattern": "^-?\\d+$",
                     "description": "Integer minor units (AP §8.6)."
                   },
+                  "peak": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$",
+                    "description": "«مكافأة الذروة» (AP §9.12.5, D15), shown when above 0."
+                  },
                   "total": {
                     "type": "string",
                     "pattern": "^-?\\d+$",
-                    "description": "«ربحت من هذا الطلب: {الأجر}»."
+                    "description": "«ربحت من هذا الطلب: {الأجر}», the peak bonus included."
                   },
                   "currency": {
                     "type": "string",
@@ -28687,11 +29271,12 @@
                   "distance",
                   "topUp",
                   "waiting",
+                  "peak",
                   "total",
                   "currency"
                 ],
                 "additionalProperties": false,
-                "description": "The peak bonus comes with the peak windows."
+                "description": "The pay in its parts, as the delivery posted them."
               },
               "custodyChange": {
                 "type": "object",
@@ -30347,7 +30932,35 @@
                         "type": "null"
                       }
                     ],
-                    "description": "The order pay, the largest text; «قد يُضاف أجر انتظار». Null without a pay table."
+                    "description": "The order pay plus the peak bonus if it would apply now, the largest text; «قد يُضاف أجر انتظار». Null without a pay table."
+                  },
+                  "peakBonus": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "string",
+                            "pattern": "^\\d+$",
+                            "description": "Minor units of the currency, as a string."
+                          },
+                          "currency": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3
+                          }
+                        },
+                        "required": [
+                          "amount",
+                          "currency"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«يشمل مكافأة الذروة +{المبلغ}» (AP §9.12.5, D15), included in pay; null outside a window."
                   },
                   "restaurant": {
                     "type": "object",
@@ -30540,6 +31153,7 @@
                   "offeredAt",
                   "expiresAt",
                   "pay",
+                  "peakBonus",
                   "restaurant",
                   "customer",
                   "pickupPayment",
@@ -30633,7 +31247,35 @@
                     "type": "null"
                   }
                 ],
-                "description": "The order pay, the largest text; «قد يُضاف أجر انتظار». Null without a pay table."
+                "description": "The order pay plus the peak bonus if it would apply now, the largest text; «قد يُضاف أجر انتظار». Null without a pay table."
+              },
+              "peakBonus": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^\\d+$",
+                        "description": "Minor units of the currency, as a string."
+                      },
+                      "currency": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 3
+                      }
+                    },
+                    "required": [
+                      "amount",
+                      "currency"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«يشمل مكافأة الذروة +{المبلغ}» (AP §9.12.5, D15), included in pay; null outside a window."
               },
               "restaurant": {
                 "type": "object",
@@ -30826,6 +31468,7 @@
               "offeredAt",
               "expiresAt",
               "pay",
+              "peakBonus",
               "restaurant",
               "customer",
               "pickupPayment",

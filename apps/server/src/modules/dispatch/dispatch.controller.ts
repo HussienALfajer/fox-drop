@@ -201,7 +201,12 @@ const offer = z
     pay: money
       .nullable()
       .describe(
-        'The order pay, the largest text; «قد يُضاف أجر انتظار». Null without a pay table.',
+        'The order pay plus the peak bonus if it would apply now, the largest text; «قد يُضاف أجر انتظار». Null without a pay table.',
+      ),
+    peakBonus: money
+      .nullable()
+      .describe(
+        '«يشمل مكافأة الذروة +{المبلغ}» (AP §9.12.5, D15), included in pay; null outside a window.',
       ),
     restaurant: z.object({
       name: z.string(),
@@ -283,6 +288,7 @@ function offerBody(value: CaptainOffer) {
     offeredAt: value.offeredAt.toISOString(),
     expiresAt: value.expiresAt.toISOString(),
     pay: value.pay && moneyBody(value.pay),
+    peakBonus: value.peakBonus && moneyBody(value.peakBonus),
     restaurant: value.restaurant,
     customer: value.customer,
     pickupPayment: moneyBody(value.pickupPayment),

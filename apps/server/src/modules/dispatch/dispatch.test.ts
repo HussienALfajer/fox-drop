@@ -9,7 +9,7 @@ import { startTestDatabase, type TestDatabase } from '../../database/test-databa
 import { createApiApp } from '../../http/create-api-app.js';
 import { QUEUES } from '../../jobs/job-queue.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
-import { CaptainsService } from '../captains/index.js';
+import { CaptainsService, localClock, PeakBonusService } from '../captains/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService, type Point } from '../geo/index.js';
 import {
@@ -376,6 +376,53 @@ describe('POST /v1/admin/orders/{orderId}/assign as an offer (AP §9.3.2, CA §8
     });
     expect(current.json().offer.restaurant.distanceMetres).toBeGreaterThan(1000);
     expect(JSON.stringify(current.json())).not.toMatch(/شارع السوق|قرب الجامع|36\.59\b/);
+  });
+
+  // CA §8.2, AP §9.12.5 (D15, slice 2.16): the pay shown includes the peak
+  // bonus if it would apply now, with its own line, and so does the push.
+  it('shows the peak bonus in the pay while a window runs', async () => {
+    const order = await acceptedOrder();
+    const captain = await onlineCaptain();
+    const { minute } = localClock(new Date(), 'Asia/Damascus');
+    await app.get(PeakBonusService).setPeakBonus(
+      azaz,
+      {
+        enabled: true,
+        windows: [
+          {
+            days: [1, 2, 3, 4, 5, 6, 7],
+            startMinute: (minute - 60 + 1440) % 1440,
+            endMinute: (minute + 60) % 1440,
+            amount: 500n,
+            zoneIds: [],
+          },
+        ],
+      },
+      change,
+    );
+    try {
+      const offer = (await (await admin(['OPS'])).assign(order.id, captain.captainId)).json().order
+        .offer;
+      const current = (await captain.call('GET', '/v1/captain/offers/current')).json().offer;
+      expect(current).toMatchObject({
+        pay: { amount: '3000', currency: 'TRY' },
+        peakBonus: { amount: '500', currency: 'TRY' },
+      });
+      // The offer keeps the order pay as logged.
+      expect((await offerRow(offer.id)).pay).toBe('2500');
+      const outbox = await sql.query(
+        "SELECT payload FROM ordering.outbox WHERE order_id = $1 AND type = 'order.offered'",
+        [order.id],
+      );
+      expect(outbox.rows[0].payload.offerPay).toMatchObject({ amount: '3000' });
+    } finally {
+      // A newer disabled version, at once (the service would wait for the
+      // window's end).
+      await migrator.query(
+        "INSERT INTO captains.peak_bonus_versions (city_id, enabled, currency, effective_from, editor_type, created_at) VALUES ($1, false, 'TRY', now(), 'system', now())",
+        [azaz],
+      );
+    }
   });
 
   it('assigns the order when the captain accepts: the captain is busy', async () => {

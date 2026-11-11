@@ -11,6 +11,7 @@ import 'package:core_api/src/model/captain_current_offer_dto_output_offer_restau
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_handover.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_pickup_payment.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_preparation.dart';
+import 'package:core_api/src/model/captain_offer_dto_output_offer_peak_bonus.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -27,6 +28,7 @@ part 'captain_offer_dto_output_offer.g.dart';
 /// * [offeredAt]
 /// * [expiresAt] - The countdown ring runs to it (CA §8.2).
 /// * [pay]
+/// * [peakBonus]
 /// * [restaurant]
 /// * [customer]
 /// * [pickupPayment]
@@ -64,6 +66,9 @@ abstract class CaptainOfferDtoOutputOffer
 
   @BuiltValueField(wireName: r'pay')
   AdminPickerDtoOutputCaptainsInnerCustodyLimit? get pay;
+
+  @BuiltValueField(wireName: r'peakBonus')
+  CaptainOfferDtoOutputOfferPeakBonus? get peakBonus;
 
   @BuiltValueField(wireName: r'restaurant')
   CaptainCurrentOfferDtoOutputOfferRestaurant get restaurant;
@@ -159,6 +164,15 @@ class _$CaptainOfferDtoOutputOfferSerializer
             object.pay,
             specifiedType: const FullType.nullable(
               AdminPickerDtoOutputCaptainsInnerCustodyLimit,
+            ),
+          );
+    yield r'peakBonus';
+    yield object.peakBonus == null
+        ? null
+        : serializers.serialize(
+            object.peakBonus,
+            specifiedType: const FullType.nullable(
+              CaptainOfferDtoOutputOfferPeakBonus,
             ),
           );
     yield r'restaurant';
@@ -309,6 +323,18 @@ class _$CaptainOfferDtoOutputOfferSerializer
                   as AdminPickerDtoOutputCaptainsInnerCustodyLimit?;
           if (valueDes == null) continue;
           result.pay.replace(valueDes);
+          break;
+        case r'peakBonus':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainOfferDtoOutputOfferPeakBonus,
+                    ),
+                  )
+                  as CaptainOfferDtoOutputOfferPeakBonus?;
+          if (valueDes == null) continue;
+          result.peakBonus.replace(valueDes);
           break;
         case r'restaurant':
           final valueDes =

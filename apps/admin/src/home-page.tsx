@@ -4,6 +4,7 @@ import { SETTINGS_READ } from './app-settings.js';
 import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
 import { OPERATIONS_READ } from './orders-board.js';
+import { ZONES_READ } from './peak-bonus.js';
 import { canSeeImages } from './restaurant-images.js';
 import { canSeeRestaurantStatus } from './restaurant-status.js';
 import { can, useSignOut } from './session.js';
@@ -54,6 +55,11 @@ export function HomePage() {
           {canSeeRestaurantStatus(session) && (
             <li>
               <Link to="/restaurant-status">{t('restaurantStatus.title')}</Link>
+            </li>
+          )}
+          {can(session, ZONES_READ) && (
+            <li>
+              <Link to="/peak-bonus">{t('peakBonus.title')}</Link>
             </li>
           )}
           {can(session, SETTINGS_READ) && (

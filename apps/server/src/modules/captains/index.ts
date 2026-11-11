@@ -8,14 +8,18 @@ import { LedgerModule } from '../ledger/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { ValkeyModule } from '../../valkey/valkey.module.js';
 import { AdminCaptainsController } from './admin-captains.controller.js';
+import { AdminPeakBonusController } from './admin-peak-bonus.controller.js';
 import { CaptainAvailabilityController } from './captain-availability.controller.js';
+import { CaptainPeakBonusController } from './captain-peak-bonus.controller.js';
 import { CaptainsService } from './captains.service.js';
 import { LivePositions } from './live-positions.js';
 import { LocationPartitions } from './location-partitions.js';
+import { PeakBonusService } from './peak-bonus.service.js';
 
 // The captains module (architecture §4.2): the captain record, its cash
-// limit, availability and location, and the city's pay table. Other modules read them
-// through CaptainsService only.
+// limit, availability and location, and the city's pay table and peak
+// bonus. Other modules read them through CaptainsService and PeakBonusService
+// only.
 @Module({
   imports: [
     DatabaseModule,
@@ -27,9 +31,14 @@ import { LocationPartitions } from './location-partitions.js';
     AuditModule,
     ContentModule,
   ],
-  controllers: [CaptainAvailabilityController, AdminCaptainsController],
-  providers: [CaptainsService, LivePositions],
-  exports: [CaptainsService],
+  controllers: [
+    CaptainAvailabilityController,
+    CaptainPeakBonusController,
+    AdminCaptainsController,
+    AdminPeakBonusController,
+  ],
+  providers: [CaptainsService, PeakBonusService, LivePositions],
+  exports: [CaptainsService, PeakBonusService],
 })
 export class CaptainsModule {}
 
@@ -46,6 +55,7 @@ export type {
   OnlineBlock,
 } from './availability.js';
 export { orderPay, type PayParts, type PayRate } from './pay.js';
+export { localClock, type PeakWindow } from './peak-bonus.js';
 export {
   type ActiveOrderLookup,
   type AvailabilityChange,
@@ -63,3 +73,8 @@ export {
   type NewCaptain,
   type PayTable,
 } from './captains.service.js';
+export {
+  type ActivePeakWindow,
+  type PeakBonusAmount,
+  PeakBonusService,
+} from './peak-bonus.service.js';

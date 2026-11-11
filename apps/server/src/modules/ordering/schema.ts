@@ -821,6 +821,13 @@ export const collections = ordering.table(
     topUpPay: bigint('top_up_pay', { mode: 'bigint' }).notNull(),
     waitingPay: bigint('waiting_pay', { mode: 'bigint' }).notNull(),
     waitingMinutes: integer('waiting_minutes').notNull(),
+    // AP §9.12.5, D15 (slice 2.16): the peak bonus of a delivery inside a
+    // window (earn.peak_bonus), 0 without one, with the captains module's
+    // peak bonus version that paid it.
+    peakBonus: bigint('peak_bonus', { mode: 'bigint' })
+      .notNull()
+      .default(sql`0`),
+    peakBonusVersionId: uuid('peak_bonus_version_id'),
     recordedAt: timestamp('recorded_at', { withTimezone: true }).notNull(),
     // captain (with the app installation) or admin.
     recordedByType: text('recorded_by_type').notNull(),
@@ -846,6 +853,10 @@ export const collections = ordering.table(
     check(
       'collections_shortfall',
       sql`(${table.shortfall} > 0) = (${table.shortfallReason} IS NOT NULL) AND (${table.shortfallReason} IS NOT NULL OR (${table.shortfallReasonLabel} IS NULL AND ${table.shortfallNote} IS NULL)) AND char_length(${table.shortfallNote}) BETWEEN 1 AND 200`,
+    ),
+    check(
+      'collections_peak_bonus',
+      sql`${table.peakBonus} >= 0 AND (${table.peakBonus} > 0) = (${table.peakBonusVersionId} IS NOT NULL)`,
     ),
     check(
       'collections_recorded_by',

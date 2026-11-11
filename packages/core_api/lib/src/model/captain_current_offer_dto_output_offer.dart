@@ -27,6 +27,7 @@ part 'captain_current_offer_dto_output_offer.g.dart';
 /// * [offeredAt]
 /// * [expiresAt] - The countdown ring runs to it (CA §8.2).
 /// * [pay]
+/// * [peakBonus]
 /// * [restaurant]
 /// * [customer]
 /// * [pickupPayment]
@@ -67,6 +68,9 @@ abstract class CaptainCurrentOfferDtoOutputOffer
 
   @BuiltValueField(wireName: r'pay')
   AdminPickerDtoOutputCaptainsInnerCustodyLimit? get pay;
+
+  @BuiltValueField(wireName: r'peakBonus')
+  AdminPickerDtoOutputCaptainsInnerCustodyLimit? get peakBonus;
 
   @BuiltValueField(wireName: r'restaurant')
   CaptainCurrentOfferDtoOutputOfferRestaurant get restaurant;
@@ -162,6 +166,15 @@ class _$CaptainCurrentOfferDtoOutputOfferSerializer
         ? null
         : serializers.serialize(
             object.pay,
+            specifiedType: const FullType.nullable(
+              AdminPickerDtoOutputCaptainsInnerCustodyLimit,
+            ),
+          );
+    yield r'peakBonus';
+    yield object.peakBonus == null
+        ? null
+        : serializers.serialize(
+            object.peakBonus,
             specifiedType: const FullType.nullable(
               AdminPickerDtoOutputCaptainsInnerCustodyLimit,
             ),
@@ -314,6 +327,18 @@ class _$CaptainCurrentOfferDtoOutputOfferSerializer
                   as AdminPickerDtoOutputCaptainsInnerCustodyLimit?;
           if (valueDes == null) continue;
           result.pay.replace(valueDes);
+          break;
+        case r'peakBonus':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminPickerDtoOutputCaptainsInnerCustodyLimit,
+                    ),
+                  )
+                  as AdminPickerDtoOutputCaptainsInnerCustodyLimit?;
+          if (valueDes == null) continue;
+          result.peakBonus.replace(valueDes);
           break;
         case r'restaurant':
           final valueDes =

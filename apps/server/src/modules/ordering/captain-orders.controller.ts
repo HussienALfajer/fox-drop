@@ -652,10 +652,11 @@ class CaptainDeliverySummaryDto extends createZodDto(
             distance: minor,
             topUp: minor.describe('«إكمال للحد الأدنى», shown when above 0.'),
             waiting: minor,
-            total: minor.describe('«ربحت من هذا الطلب: {الأجر}».'),
+            peak: minor.describe('«مكافأة الذروة» (AP §9.12.5, D15), shown when above 0.'),
+            total: minor.describe('«ربحت من هذا الطلب: {الأجر}», the peak bonus included.'),
             currency: z.string().length(3),
           })
-          .describe('The peak bonus comes with the peak windows.'),
+          .describe('The pay in its parts, as the delivery posted them.'),
         custodyChange: z
           .object({ amount: z.string().regex(/^-?\d+$/), currency: z.string().length(3) })
           .describe('«تغيّرت عهدتك: {+المبلغ}»: the net collected minus the pickup payment.'),
@@ -676,6 +677,7 @@ function summaryBody(summary: DeliverySummary) {
         distance: amount(summary.pay.distance),
         topUp: amount(summary.pay.topUp),
         waiting: amount(summary.pay.waiting),
+        peak: amount(summary.pay.peak),
         total: amount(summary.pay.total),
         currency: summary.currency,
       },

@@ -4,18 +4,22 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.16, peak windows and the peak bonus (`docs/roadmap.md`, Phase 2).
+Slice 2.17, the cash desk and captain custody (`docs/roadmap.md`, Phase 2, Money).
 
-- **Roadmap line:** 2.16 Peak windows and the peak bonus, off by default (D15, AP §9.12.5). The owner turns peak on and the bonus shows on the offer and in the pay.
-- **Specs:** AP §9.12.5 («مكافأة ساعة الذروة»: the switch, the windows, the amount per delivered order optionally by zone, matched on the delivery time and the restaurant's zone, raising at once and lowering or disabling at the end of the current announced window), D15 (AP §2, CA §2: built and off by default), AP §8.4 (the captain's pay), CA §8.2 (the offer's pay), CA §12.5 (the windows on the profile and «مكافأة الذروة الآن: +{المبلغ} لكل طلب حتى {الساعة}» on the home screen), AP §10 (what the panel pushes), docs/domain/ (the pay's journals), the dispatch and ordering modules' `CLAUDE.md` ("Not yet": the peak bonus on the offer and at the delivery).
-- **Branch:** `feat/peak-bonus`.
-- **First:** the slice spans the server, the panel and the captain app; if it is more than one pull request, propose the split to the owner with the `slice-plan` skill before building (as 2.15 was split).
-- **Plan (draft, one step per commit):**
-  - [ ] Server: the peak windows and the bonus setting (off by default; days of the week and hours, the amount, optional zones), the effective rule (a raise or enabling at once, a lowering or disabling at the end of the current announced window), audited; tests first.
-  - [ ] Server: the bonus in the captain's pay at the delivery (matched on the delivery time and the restaurant's zone, with its journal per docs/domain/) and on the offer (CA §8.2); tests first.
-  - [ ] Panel: the peak bonus screen under the zones and pricing (unstyled, design stop).
-  - [ ] Captain app: the windows on the profile, the home line during a window, the offer's bonus.
-  - [ ] Review, then hand over.
+- **Roadmap line:** 2.17 Cash desk and captain custody: receipts numbered without gaps and printable, drawer sessions with variance, custody per currency split into previous days and today, the daily hand-in and its grace, the cash limit at 80% and 100%, the hand-in reminders (AP §8.5.4, §9.10.2–9.10.3, CA §10). The desk records a hand-in and the receipt appears in the captain app.
+- **Specs:** AP §8.5 (custody and the desk, `docs/domain/05`), AP §8.5.3–8.5.4 (the cash limit and the daily hand-in, D10, D11), AP §9.10.2 «أرصدة الكباتن», AP §9.10.3 (the cash desk), AP §8.6 (currencies at the desk, `custody.fx_convert`: pass the current rate's version, 2.14a), CA §10.2–10.4 («عهدتي», the daily hand-in, the cash limit), CA §14 #15–#19 (the cash limit, hand-in reminders, grace and receipts), AP §10 (what the panel pushes), the captains, ledger and notifications modules' `CLAUDE.md` ("Not yet": the desk entries, the hand-in grace, the first captain's reimbursement after a handover).
+- **Branch:** `feat/cash-desk`.
+- **First:** the slice spans the server, the panel and the captain app, with money and printing; propose its split into pull requests to the owner with the `slice-plan` skill before building (as 2.15 was split). Ask about the open items it touches (`docs/open-questions.md`).
+- **Plan:** written after the split is approved, one step per commit.
+
+### Left from 2.16 (`feat/peak-bonus`)
+
+- **Before deploying to staging:** migration 0062 adds `captains.peak_bonus_versions` and `captains.peak_bonus_windows` (new tables; the application role may only insert) and 0063 `ordering.collections.peak_bonus` (default 0) and `peak_bonus_version_id` with their `CHECK` (added `NOT VALID`, then validated). The captain's offer gains the required `peakBonus` and the summary's pay the required `peak`; the panel's read is new. The worker queues the window's push (`PeakWindowNotices`). Deploy the server first, then the panel and the captain APK (a new APK cannot read an offer or a summary from an older server).
+- **To check on staging:** in the panel «مكافأة ساعة الذروة» (OWN): «المكافأة متوقفة.»; tick «تشغيل مكافأة الذروة», «إضافة نافذة» with today, from a minute ago to two hours ahead, 5 ₺, no zone → «حُفظت المكافأة وسرت الآن.»; within a minute every active captain gets «مكافأة الذروة الآن: +5 ₺ لكل طلب حتى {الساعة}» with the chime, and the captain app's home shows the same line and «أوقات مكافأة الذروة»; an offer says «يشمل مكافأة الذروة +5 ₺» with the pay 5 ₺ higher; after the delivery the summary shows «مكافأة الذروة: 5 ₺». Lower it to 2 ₺ during the window → «حُفظ التغيير ويسري في {الوقت}» at the window's end, and the panel shows «تغيير يسري في …»; outside a window a lowering applies at once.
+- **Owner decisions 2026-11-12:** one pull request; overlapping windows pay the largest amount, never the sum; a lowering or disabling with no window running applies at once; the window's push goes to every active captain of the city, online or not.
+- **To confirm with the owner:** only a normal delivery (the captain's or operations' «تسجيل التسليم») pays the bonus, an outcome of «تحديد النتيجة» pays none; a save that both raises one window and lowers a running one waits as a whole for the running window's end; a window ending at or before its start runs past midnight and belongs to the day it starts; the push is sent only within 10 minutes of a window's start, so enabling or raising later in a window announces nothing (the home line shows it); the strings the spec gives no wording for: the panel's whole «مكافأة ساعة الذروة» screen (its explanation, «السارية الآن», «المكافأة متوقفة.», «تغيير يسري في {الوقت}», the rule's text, the form's labels and problems, «حُفظت المكافأة وسرت الآن.», «حُفظ التغيير ويسري في {الوقت}.»), the captain app's «أوقات مكافأة الذروة», «يُضاف المبلغ إلى أجرك عن كل طلب تسلّمه داخل النافذة، بحسب منطقة المطعم.», «لا مكافأة ذروة الآن.», «{الأيام} من {البداية} إلى {النهاية}: +{المبلغ} لكل طلب», «(تنتهي في اليوم التالي)», «كل المناطق», «في: {المناطق}», «مكافأة الذروة: {المبلغ}», and the push «مكافأة الذروة الآن: +{المبلغ} لكل طلب حتى {الساعة} في {المناطق}».
+- **Decided by us:** a newer save replaces a version still waiting; the panel's page sits outside the zones and pricing screens until 2.37, and the captain's windows on their own screen until the profile (2.36); the push formatters moved from ordering to content.
+- **Not yet:** the captain's announcement of a peak bonus change (AP §10, with the pay table's announcement and calculator); the window's push does not read the home line again (it shows within 5 minutes).
 
 ### Left from 2.15c (`feat/auto-dispatch-panel`)
 

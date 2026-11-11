@@ -167,6 +167,15 @@ const captain: Entry[] = [
     'chime',
   ],
   ['assigned_by_operations', '4', 'عيّنتك العمليات على طلب #{رقم}', 'chime'],
+  // CA §14 #23, §12.5 (AP §9.12.5, D15; slice 2.16): the spec's «مكافأة
+  // الذروة الآن…» in full, and with the zones of a window limited to some.
+  ['peak_started', '23', 'مكافأة الذروة الآن: +{المبلغ} لكل طلب حتى {الساعة}', 'chime'],
+  [
+    'peak_started_zones',
+    '23',
+    'مكافأة الذروة الآن: +{المبلغ} لكل طلب حتى {الساعة} في {المناطق}',
+    'chime',
+  ],
   ['order_ready', '5', 'الطلب #{رقم} جاهز', 'chime'],
   ['picked_up', '7', 'تم الاستلام — توجّه إلى الزبون', 'chime'],
   // CA §9.4 item 4: the restaurant's two answers to a pickup request.

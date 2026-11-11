@@ -6,10 +6,10 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_moments.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_captain.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_dispatch.dart';
-import 'package:core_api/src/model/admin_order_card_dto_output_order_restaurant.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -61,7 +61,7 @@ abstract class AdminOrderCardDtoOutputOrder
   DateTime get placedAt;
 
   @BuiltValueField(wireName: r'restaurant')
-  AdminOrderCardDtoOutputOrderRestaurant get restaurant;
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner? get restaurant;
 
   @BuiltValueField(wireName: r'neighbourhood')
   String get neighbourhood;
@@ -155,10 +155,14 @@ class _$AdminOrderCardDtoOutputOrderSerializer
       specifiedType: const FullType(DateTime),
     );
     yield r'restaurant';
-    yield serializers.serialize(
-      object.restaurant,
-      specifiedType: const FullType(AdminOrderCardDtoOutputOrderRestaurant),
-    );
+    yield object.restaurant == null
+        ? null
+        : serializers.serialize(
+            object.restaurant,
+            specifiedType: const FullType.nullable(
+              AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+            ),
+          );
     yield r'neighbourhood';
     yield serializers.serialize(
       object.neighbourhood,
@@ -296,11 +300,12 @@ class _$AdminOrderCardDtoOutputOrderSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminOrderCardDtoOutputOrderRestaurant,
+                    specifiedType: const FullType.nullable(
+                      AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
                     ),
                   )
-                  as AdminOrderCardDtoOutputOrderRestaurant;
+                  as AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?;
+          if (valueDes == null) continue;
           result.restaurant.replace(valueDes);
           break;
         case r'neighbourhood':

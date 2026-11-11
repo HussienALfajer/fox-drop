@@ -17,6 +17,8 @@ class _$CaptainDeliverySummaryDtoOutputSummaryPay
   @override
   final String waiting;
   @override
+  final String peak;
+  @override
   final String total;
   @override
   final String currency;
@@ -31,6 +33,7 @@ class _$CaptainDeliverySummaryDtoOutputSummaryPay
     required this.distance,
     required this.topUp,
     required this.waiting,
+    required this.peak,
     required this.total,
     required this.currency,
   }) : super._();
@@ -51,6 +54,7 @@ class _$CaptainDeliverySummaryDtoOutputSummaryPay
         distance == other.distance &&
         topUp == other.topUp &&
         waiting == other.waiting &&
+        peak == other.peak &&
         total == other.total &&
         currency == other.currency;
   }
@@ -62,6 +66,7 @@ class _$CaptainDeliverySummaryDtoOutputSummaryPay
     _$hash = $jc(_$hash, distance.hashCode);
     _$hash = $jc(_$hash, topUp.hashCode);
     _$hash = $jc(_$hash, waiting.hashCode);
+    _$hash = $jc(_$hash, peak.hashCode);
     _$hash = $jc(_$hash, total.hashCode);
     _$hash = $jc(_$hash, currency.hashCode);
     _$hash = $jf(_$hash);
@@ -77,6 +82,7 @@ class _$CaptainDeliverySummaryDtoOutputSummaryPay
           ..add('distance', distance)
           ..add('topUp', topUp)
           ..add('waiting', waiting)
+          ..add('peak', peak)
           ..add('total', total)
           ..add('currency', currency))
         .toString();
@@ -107,6 +113,10 @@ class CaptainDeliverySummaryDtoOutputSummaryPayBuilder
   String? get waiting => _$this._waiting;
   set waiting(String? waiting) => _$this._waiting = waiting;
 
+  String? _peak;
+  String? get peak => _$this._peak;
+  set peak(String? peak) => _$this._peak = peak;
+
   String? _total;
   String? get total => _$this._total;
   set total(String? total) => _$this._total = total;
@@ -126,6 +136,7 @@ class CaptainDeliverySummaryDtoOutputSummaryPayBuilder
       _distance = $v.distance;
       _topUp = $v.topUp;
       _waiting = $v.waiting;
+      _peak = $v.peak;
       _total = $v.total;
       _currency = $v.currency;
       _$v = null;
@@ -171,6 +182,11 @@ class CaptainDeliverySummaryDtoOutputSummaryPayBuilder
             waiting,
             r'CaptainDeliverySummaryDtoOutputSummaryPay',
             'waiting',
+          ),
+          peak: BuiltValueNullFieldError.checkNotNull(
+            peak,
+            r'CaptainDeliverySummaryDtoOutputSummaryPay',
+            'peak',
           ),
           total: BuiltValueNullFieldError.checkNotNull(
             total,

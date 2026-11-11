@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Jobs } from '../../jobs/jobs.module.js';
-import { CaptainsService, type PayParts } from '../captains/index.js';
+import { CaptainsService, type PayParts, type PeakBonusAmount } from '../captains/index.js';
 import type { RateSnapshot } from '../fx/index.js';
 import {
   type AccountPurpose,
@@ -65,6 +65,9 @@ export interface Delivery {
   shortfall: ChosenReason | null;
   pay: PayParts;
   waitingMinutes: number;
+  // AP §9.12.5, D15: the peak bonus of a delivery inside a window for the
+  // restaurant's zone, in the order's currency, or null.
+  peakBonus: PeakBonusAmount | null;
   // AP §8.4: the order's commission rate, null on a test restaurant's
   // order, which posts none (AP §9.6.3).
   commissionBp: number | null;
@@ -158,6 +161,8 @@ export class DeliveryBooking {
       topUpPay: delivery.pay.topUp,
       waitingPay: delivery.pay.waiting,
       waitingMinutes: delivery.waitingMinutes,
+      peakBonus: delivery.peakBonus?.amount ?? 0n,
+      peakBonusVersionId: delivery.peakBonus?.versionId ?? null,
       recordedAt: now,
       recordedByType: by.actor.type,
       recordedById: by.actor.id,
@@ -422,6 +427,8 @@ export class DeliveryBooking {
     for (const [type, amount] of [
       ['earn.order_pay', delivery.pay.orderPay],
       ['earn.waiting_pay', delivery.pay.waiting],
+      // D15: never absorbed by the minimum pay (docs/domain/04).
+      ['earn.peak_bonus', delivery.peakBonus?.amount ?? 0n],
     ] as const) {
       await post(type, [
         { accountId: earnings, currency: base, amount: -amount },

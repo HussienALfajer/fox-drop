@@ -6,64 +6,65 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_order_card_dto_output_order_restaurant.g.dart';
+part 'captain_peak_bonus_dto_output_active_inner_amount.g.dart';
 
-/// AdminOrderCardDtoOutputOrderRestaurant
+/// CaptainPeakBonusDtoOutputActiveInnerAmount
 ///
 /// Properties:
-/// * [id]
-/// * [name]
+/// * [amount]
+/// * [currency]
 @BuiltValue()
-abstract class AdminOrderCardDtoOutputOrderRestaurant
+abstract class CaptainPeakBonusDtoOutputActiveInnerAmount
     implements
         Built<
-          AdminOrderCardDtoOutputOrderRestaurant,
-          AdminOrderCardDtoOutputOrderRestaurantBuilder
+          CaptainPeakBonusDtoOutputActiveInnerAmount,
+          CaptainPeakBonusDtoOutputActiveInnerAmountBuilder
         > {
-  @BuiltValueField(wireName: r'id')
-  String get id;
+  @BuiltValueField(wireName: r'amount')
+  String get amount;
 
-  @BuiltValueField(wireName: r'name')
-  String get name;
+  @BuiltValueField(wireName: r'currency')
+  String get currency;
 
-  AdminOrderCardDtoOutputOrderRestaurant._();
+  CaptainPeakBonusDtoOutputActiveInnerAmount._();
 
-  factory AdminOrderCardDtoOutputOrderRestaurant([
-    void updates(AdminOrderCardDtoOutputOrderRestaurantBuilder b),
-  ]) = _$AdminOrderCardDtoOutputOrderRestaurant;
+  factory CaptainPeakBonusDtoOutputActiveInnerAmount([
+    void updates(CaptainPeakBonusDtoOutputActiveInnerAmountBuilder b),
+  ]) = _$CaptainPeakBonusDtoOutputActiveInnerAmount;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminOrderCardDtoOutputOrderRestaurantBuilder b) => b;
+  static void _defaults(CaptainPeakBonusDtoOutputActiveInnerAmountBuilder b) =>
+      b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderCardDtoOutputOrderRestaurant> get serializer =>
-      _$AdminOrderCardDtoOutputOrderRestaurantSerializer();
+  static Serializer<CaptainPeakBonusDtoOutputActiveInnerAmount>
+  get serializer => _$CaptainPeakBonusDtoOutputActiveInnerAmountSerializer();
 }
 
-class _$AdminOrderCardDtoOutputOrderRestaurantSerializer
-    implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderRestaurant> {
+class _$CaptainPeakBonusDtoOutputActiveInnerAmountSerializer
+    implements PrimitiveSerializer<CaptainPeakBonusDtoOutputActiveInnerAmount> {
   @override
   final Iterable<Type> types = const [
-    AdminOrderCardDtoOutputOrderRestaurant,
-    _$AdminOrderCardDtoOutputOrderRestaurant,
+    CaptainPeakBonusDtoOutputActiveInnerAmount,
+    _$CaptainPeakBonusDtoOutputActiveInnerAmount,
   ];
 
   @override
-  final String wireName = r'AdminOrderCardDtoOutputOrderRestaurant';
+  final String wireName = r'CaptainPeakBonusDtoOutputActiveInnerAmount';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminOrderCardDtoOutputOrderRestaurant object, {
+    CaptainPeakBonusDtoOutputActiveInnerAmount object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'id';
+    yield r'amount';
     yield serializers.serialize(
-      object.id,
+      object.amount,
       specifiedType: const FullType(String),
     );
-    yield r'name';
+    yield r'currency';
     yield serializers.serialize(
-      object.name,
+      object.currency,
       specifiedType: const FullType(String),
     );
   }
@@ -71,7 +72,7 @@ class _$AdminOrderCardDtoOutputOrderRestaurantSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminOrderCardDtoOutputOrderRestaurant object, {
+    CaptainPeakBonusDtoOutputActiveInnerAmount object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -86,30 +87,30 @@ class _$AdminOrderCardDtoOutputOrderRestaurantSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminOrderCardDtoOutputOrderRestaurantBuilder result,
+    required CaptainPeakBonusDtoOutputActiveInnerAmountBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'id':
+        case r'amount':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.id = valueDes;
+          result.amount = valueDes;
           break;
-        case r'name':
+        case r'currency':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.name = valueDes;
+          result.currency = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -120,12 +121,12 @@ class _$AdminOrderCardDtoOutputOrderRestaurantSerializer
   }
 
   @override
-  AdminOrderCardDtoOutputOrderRestaurant deserialize(
+  CaptainPeakBonusDtoOutputActiveInnerAmount deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminOrderCardDtoOutputOrderRestaurantBuilder();
+    final result = CaptainPeakBonusDtoOutputActiveInnerAmountBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

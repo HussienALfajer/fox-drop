@@ -24,6 +24,10 @@ Serializers _$serializers =
           ..add(AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum.serializer)
           ..add(AdminAssignDto.serializer)
           ..add(AdminBoardDtoOutput.serializer)
+          ..add(AdminBoardDtoOutputOrdersInner.serializer)
+          ..add(AdminBoardDtoOutputOrdersInnerAlertsEnum.serializer)
+          ..add(AdminBoardDtoOutputOrdersInnerCaptainTrackEnum.serializer)
+          ..add(AdminBoardDtoOutputOrdersInnerStatusEnum.serializer)
           ..add(AdminCancelDto.serializer)
           ..add(AdminCancelDtoCashEnum.serializer)
           ..add(AdminCancelDtoResponsibleEnum.serializer)
@@ -118,7 +122,6 @@ Serializers _$serializers =
           ..add(AdminOrderCardDtoOutputOrderDispatchManualReasonEnum.serializer)
           ..add(AdminOrderCardDtoOutputOrderDispatchModeEnum.serializer)
           ..add(AdminOrderCardDtoOutputOrderMoments.serializer)
-          ..add(AdminOrderCardDtoOutputOrderRestaurant.serializer)
           ..add(AdminOrderCardDtoOutputOrderStatusEnum.serializer)
           ..add(AdminOrderCardDtoOutputOrderTotal.serializer)
           ..add(AdminOrderDtoOutput.serializer)
@@ -251,6 +254,13 @@ Serializers _$serializers =
           ..add(AdminOutcomePreviewDtoFoodEnum.serializer)
           ..add(AdminOutcomePreviewDtoOutcomeEnum.serializer)
           ..add(AdminOutcomePreviewDtoResponsibleEnum.serializer)
+          ..add(AdminPeakBonusDtoOutput.serializer)
+          ..add(AdminPeakBonusDtoOutputInForce.serializer)
+          ..add(AdminPeakBonusDtoOutputInForceWindowsInner.serializer)
+          ..add(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner.serializer)
+          ..add(AdminPeakBonusDtoOutputPending.serializer)
+          ..add(AdminPeakBonusDtoOutputPendingWindowsInner.serializer)
+          ..add(AdminPeakBonusDtoOutputZonesInner.serializer)
           ..add(AdminPickerDtoOutput.serializer)
           ..add(AdminPickerDtoOutputCaptainsInner.serializer)
           ..add(AdminPickerDtoOutputCaptainsInnerCustody.serializer)
@@ -311,6 +321,8 @@ Serializers _$serializers =
           ..add(AdminSetOutcomeDtoFoodEnum.serializer)
           ..add(AdminSetOutcomeDtoOutcomeEnum.serializer)
           ..add(AdminSetOutcomeDtoResponsibleEnum.serializer)
+          ..add(AdminSetPeakBonusDto.serializer)
+          ..add(AdminSetPeakBonusDtoWindowsInner.serializer)
           ..add(AdminShortfallsDtoOutput.serializer)
           ..add(AdminShortfallsDtoOutputShortfallsInner.serializer)
           ..add(AdminStartEmergencyStopDto.serializer)
@@ -329,7 +341,6 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputCancelled.serializer)
           ..add(CaptainActiveOrderDtoOutputCancelledCashEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputEnded.serializer)
-          ..add(CaptainActiveOrderDtoOutputEndedCharge.serializer)
           ..add(CaptainActiveOrderDtoOutputEndedFoodEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputEndedOutcomeEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputEndedPay.serializer)
@@ -435,6 +446,7 @@ Serializers _$serializers =
           ..add(CaptainMaxPickupDtoOutput.serializer)
           ..add(CaptainOfferDtoOutput.serializer)
           ..add(CaptainOfferDtoOutputOffer.serializer)
+          ..add(CaptainOfferDtoOutputOfferPeakBonus.serializer)
           ..add(CaptainOfferDtoOutputOfferStatusEnum.serializer)
           ..add(CaptainOrderDtoOutput.serializer)
           ..add(CaptainOrderDtoOutputOrder.serializer)
@@ -450,6 +462,12 @@ Serializers _$serializers =
           ..add(CaptainOrderDtoOutputOrderPickupRequestStatusEnum.serializer)
           ..add(CaptainOrderDtoOutputOrderStatusEnum.serializer)
           ..add(CaptainOutcomePaymentDto.serializer)
+          ..add(CaptainPeakBonusDtoOutput.serializer)
+          ..add(CaptainPeakBonusDtoOutputActiveInner.serializer)
+          ..add(CaptainPeakBonusDtoOutputActiveInnerAmount.serializer)
+          ..add(CaptainPeakBonusDtoOutputWindowsInner.serializer)
+          ..add(CaptainPeakBonusDtoOutputWindowsInnerAmount.serializer)
+          ..add(CaptainPeakBonusDtoOutputWindowsInnerZonesInner.serializer)
           ..add(CaptainPickupRequestDto.serializer)
           ..add(CaptainRefreshDto.serializer)
           ..add(CaptainSessionDtoOutput.serializer)
@@ -536,7 +554,6 @@ Serializers _$serializers =
           ..add(CustomerEmergencyStopDtoOutput.serializer)
           ..add(CustomerLocationDtoOutput.serializer)
           ..add(CustomerLocationDtoOutputStateEnum.serializer)
-          ..add(CustomerLocationDtoOutputZone.serializer)
           ..add(CustomerNewAddressDto.serializer)
           ..add(CustomerNewAddressDtoLabelEnum.serializer)
           ..add(CustomerNewAddressDtoLocation.serializer)
@@ -798,6 +815,18 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminBoardDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<AdminBoardDtoOutputOrdersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminBoardDtoOutputOrdersInnerAlertsEnum),
+            ]),
+            () => ListBuilder<AdminBoardDtoOutputOrdersInnerAlertsEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminCancelPreviewAnswerDtoOutputEntriesInner),
             ]),
             () => ListBuilder<AdminCancelPreviewAnswerDtoOutputEntriesInner>(),
@@ -891,12 +920,6 @@ Serializers _$serializers =
               const FullType(AdminNotificationTextsDtoOutputTemplatesInner),
             ]),
             () => ListBuilder<AdminNotificationTextsDtoOutputTemplatesInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(AdminOrderCardDtoOutputOrder),
-            ]),
-            () => ListBuilder<AdminOrderCardDtoOutputOrder>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1072,6 +1095,24 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminPeakBonusDtoOutputInForceWindowsInner),
+            ]),
+            () => ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminPeakBonusDtoOutputPendingWindowsInner),
+            ]),
+            () => ListBuilder<AdminPeakBonusDtoOutputPendingWindowsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminPeakBonusDtoOutputZonesInner),
+            ]),
+            () => ListBuilder<AdminPeakBonusDtoOutputZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminPickerDtoOutputCaptainsInner),
             ]),
             () => ListBuilder<AdminPickerDtoOutputCaptainsInner>(),
@@ -1185,6 +1226,12 @@ Serializers _$serializers =
               const FullType(AdminRestaurantsDtoOutputRestaurantsInner),
             ]),
             () => ListBuilder<AdminRestaurantsDtoOutputRestaurantsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminSetPeakBonusDtoWindowsInner),
+            ]),
+            () => ListBuilder<AdminSetPeakBonusDtoWindowsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1302,6 +1349,25 @@ Serializers _$serializers =
               const FullType(CaptainLocationsDtoPointsInner),
             ]),
             () => ListBuilder<CaptainLocationsDtoPointsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInner),
+            ]),
+            () => ListBuilder<CaptainPeakBonusDtoOutputWindowsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputActiveInner),
+            ]),
+            () => ListBuilder<CaptainPeakBonusDtoOutputActiveInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -2002,6 +2068,36 @@ Serializers _$serializers =
             () => ListBuilder<int>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(int)]),
+            () => ListBuilder<int>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(int)]),
+            () => ListBuilder<int>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(int)]),
+            () => ListBuilder<int>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),
             () => ListBuilder<String>(),
           )
@@ -2023,6 +2119,21 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(int)]),
             () => ListBuilder<int>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(int)]),
+            () => ListBuilder<int>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

@@ -8,7 +8,7 @@ import 'package:built_value/serializer.dart';
 
 part 'admin_picker_dto_output_captains_inner_custody_limit.g.dart';
 
-/// The order pay, the largest text; «قد يُضاف أجر انتظار». Null without a pay table.
+/// The order pay plus the peak bonus if it would apply now, the largest text; «قد يُضاف أجر انتظار». Null without a pay table.
 ///
 /// Properties:
 /// * [amount] - Minor units of the currency, as a string.

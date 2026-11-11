@@ -47,7 +47,10 @@ export type CaptainsRefusal =
   // one at least.
   | 'invalid_carried_currencies'
   // CA §10.5, C4: «أقصى مبلغ أحمله» is above zero, in the city's base.
-  | 'invalid_max_pickup';
+  | 'invalid_max_pickup'
+  // AP §9.12.5: the peak windows' days, hours, amounts and zones.
+  | 'invalid_peak_bonus'
+  | 'unknown_city';
 
 // A change the captains module refuses, with the reason the routes map to
 // their own answers; going online carries its blocks (CA §7.2).
@@ -532,6 +535,22 @@ export class CaptainsService implements OnModuleInit {
       .where(eq(payTables.cityId, cityId))
       .limit(1);
     return table !== undefined;
+  }
+
+  // CA §14 #23 (owner decision 2026-11-12): the city's active captains,
+  // online or not: neither terminated nor in a suspension still running.
+  async activeCaptainIds(cityId: string, now: Date): Promise<string[]> {
+    const rows = await this.database.db
+      .select({ id: captainRecords.id })
+      .from(captainRecords)
+      .where(
+        and(
+          eq(captainRecords.cityId, cityId),
+          sql`(${captainRecords.status} = 'active' OR (${captainRecords.status} = 'suspended'
+                AND ${captainRecords.suspendedUntil} <= ${now}))`,
+        ),
+      );
+    return rows.map((row) => row.id);
   }
 
   // The captains of a city by name, for the seed.
