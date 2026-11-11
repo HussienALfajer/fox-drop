@@ -28,11 +28,14 @@ export function OrderHandoverPage() {
   const picker = useQuery(pickerQuery(orderId));
   const handOver = useHandOver(orderId);
   const now = useServerNow();
-  // CA §9.11, AP §9.7.6 (slice 2.13b): while the first captain's «لا أستطيع
-  // إكمال الطلب» is open the fault is asked, «بخطأ من الكابتن» prefilled.
+  // CA §9.11, AP §9.7.6: while the first captain's «لا أستطيع إكمال الطلب»
+  // (slice 2.13b, «بخطأ من الكابتن» prefilled) or «طوارئ» (slice 2.13c,
+  // «دون خطأ» prefilled, which wins) is open the fault is asked.
   const order = useQuery({ ...orderQuery(orderId, undefined), refetchInterval: false });
-  const asked = order.data?.cannotComplete != null;
-  const [captainFault, setCaptainFault] = useState(true);
+  const emergency = order.data?.emergency != null;
+  const asked = order.data?.cannotComplete != null || emergency;
+  const [chosenFault, setCaptainFault] = useState<boolean | null>(null);
+  const captainFault = chosenFault ?? !emergency;
   const [text, setText] = useState('');
   const note = handoverNote(text);
   const back = (

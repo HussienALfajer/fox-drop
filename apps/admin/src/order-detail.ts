@@ -59,6 +59,7 @@ export const eventKeys = {
   'order.handed_over': 'order.event.handedOver',
   'order.cannot_complete_requested': 'order.event.cannotCompleteRequested',
   'order.cannot_complete_withdrawn': 'order.event.cannotCompleteWithdrawn',
+  'order.emergency_raised': 'order.event.emergencyRaised',
 } as const;
 
 export function eventKey(type: string | null): (typeof eventKeys)[keyof typeof eventKeys] | null {

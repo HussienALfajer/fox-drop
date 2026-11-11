@@ -46,6 +46,11 @@ describe('chooseReason', () => {
     });
     expect(chooseReason(empty, choices, 'unknown', true).captainFault).toBeNull();
   });
+
+  it('prefills «دون خطأ» after the captain’s «طوارئ» (owner decision 2026-11-11)', () => {
+    expect(chooseReason(empty, choices, 'captain_late', false, true).captainFault).toBe(false);
+    expect(chooseReason(empty, choices, 'captain_late', true, true).captainFault).toBe(false);
+  });
 });
 
 describe('reassignBody', () => {

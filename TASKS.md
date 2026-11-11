@@ -15,7 +15,7 @@ Slice 2.13c, «طوارئ» (`docs/roadmap.md`, Phase 2; 2.13 split into 2.13a-d
 - **Plan:**
   - [x] Server: `ordering.emergencies` (migration 0056, the online end reason `emergency`), `POST /v1/captain/orders/{orderId}/emergency` with the fix (never refused for its quality), the order's mark on the board, the detail and the captain's active read, the critical alert «طوارئ كابتن» with its location, K17 through `leaveCaptain` and the handover's receipt, the handover's fault «دون خطأ» by default; failing tests first.
   - [x] Captain app: the red «طوارئ» with its 2-second press and progress ring, the call to operations (Android's `CALL_PHONE`, asked at «متصل»; the dialer without it), the command with the latest fix, «أُبلغت العمليات بالطوارئ» while open.
-  - [ ] Panel: the alert's location and «فتح الخريطة», the board's «طوارئ», the detail's section, «دون خطأ» prefilled in «سحب وإعادة تعيين» and «تسليم لكابتن آخر», the timeline line.
+  - [x] Panel: the alert's location and «فتح الخريطة», the board's «طوارئ», the detail's section, «دون خطأ» prefilled in «سحب وإعادة تعيين» and «تسليم لكابتن آخر», the timeline line.
   - [ ] Docs and hand over to 2.13d.
 
 ### Left from 2.13b (`feat/captain-cannot-complete`)
