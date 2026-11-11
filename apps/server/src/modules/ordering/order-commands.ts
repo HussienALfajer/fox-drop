@@ -2609,6 +2609,7 @@ export class OrderCommands {
     // pg-boss connects before the lock is taken, never while it is held.
     await this.jobs.ready();
     let afterCommit: AfterCommit = () => Promise.resolve();
+    let handoverAfter: AfterCommit = () => Promise.resolve();
     const outcome = await this.database.db.transaction(async (tx) => {
       const locked = await lockOrder(tx, order.id, order.placedAt);
       if (!locked) throw new Error(`order ${order.id} not found`);
@@ -2687,10 +2688,12 @@ export class OrderCommands {
         );
       }
       await keepKey(tx, accountId, command.idempotencyKey, requestHash, order, now);
+      handoverAfter = this.assignments.takeAfterCommit(tx);
       return { done: true as const };
     });
     if (!outcome.done) throw await this.stateChanged(order);
     await afterCommit();
+    await handoverAfter();
     return this.read(order);
   }
 

@@ -51,11 +51,17 @@ export class NotificationTexts {
     }));
   }
 
-  // The template's text in use, filled with the values.
-  async render(key: string, values: Record<string, string>): Promise<RenderedNotification> {
+  // The template's text in use, filled with the values; read through the
+  // caller's transaction when it renders inside one (slice 2.13a), so it
+  // never waits for a second connection while holding locks.
+  async render(
+    key: string,
+    values: Record<string, string>,
+    executor: Pick<Database['db'], 'select'> = this.database.db,
+  ): Promise<RenderedNotification> {
     const template = notificationTemplate(key);
     if (!template) throw new Error(`no notification template ${key}`);
-    const [row] = await this.database.db
+    const [row] = await executor
       .select({ value: texts.value })
       .from(texts)
       .where(eq(texts.key, PREFIX + key));

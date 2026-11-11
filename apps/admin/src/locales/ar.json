@@ -818,6 +818,8 @@
           "bonus": "مكافأة",
           "pay_table_change": "جدول أجور جديد",
           "violation": "مخالفة",
+          "forced_offline": "فصل من الاتصال فوراً",
+          "forced_last_order": "فصل من الاتصال بعد الطلب",
           "document_expiring": "قرب انتهاء مستند",
           "document_rejected": "رفض مستند",
           "contract_phase": "مرحلة العقد",

@@ -678,4 +678,19 @@ describe('last-order mode when the order leaves the captain', () => {
       'captain.availability_changed',
     ]);
   });
+
+  it('refuses a force offline of an unknown captain or without a reason', async () => {
+    const ops = await admin(['OPS']);
+    const unknown = await ops.forceOffline(randomUUID(), 'سبب');
+    expect(unknown.statusCode).toBe(404);
+    expect(unknown.json()).toMatchObject({ error: 'unknown_captain' });
+    const captain = await onlineCaptain();
+    expect((await ops.forceOffline(captain.captainId, '  ')).statusCode).toBe(400);
+    const sup = await admin(['SUP']);
+    expect((await sup.forceOffline(captain.captainId, 'سبب')).statusCode).toBe(403);
+    expect((await ops.forceOffline(captain.captainId, 'سبب')).json()).toEqual({
+      state: 'offline',
+      lastOrderBy: null,
+    });
+  });
 });

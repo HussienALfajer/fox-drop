@@ -772,4 +772,46 @@ describe('last-order mode and force offline', () => {
     );
     await captains.goOffline(id, new Date(until.getTime() + 1_000));
   });
+
+  it('keeps a captain terminated during an order tracked until it ends (K18)', async () => {
+    const id = await onOrder();
+    await captains.setStatus(id, 'terminated', change, new Date());
+    expect((await captains.state(id, new Date())).availability).toMatchObject({
+      state: 'last_order',
+      by: 'terminated',
+    });
+    await leaves(id);
+    expect((await captains.state(id, new Date())).availability).toEqual({ state: 'offline' });
+    expect(await endReason(id)).toBe('terminated');
+  });
+
+  it('writes nothing for a repeated force offline, and a suspension never lifts it', async () => {
+    const id = await onOrder();
+    await captains.forceOffline(id, { ...change, reason: 'السبب الأول' }, new Date());
+    const heard = changes.length;
+    await captains.forceOffline(id, { ...change, reason: 'السبب الثاني' }, new Date());
+    expect(changes.length).toBe(heard);
+    const now = new Date();
+    await captains.setStatus(id, 'suspended', { ...change, until: null }, now);
+    await captains.setStatus(id, 'active', change, now);
+    expect((await captains.state(id, now)).availability).toMatchObject({
+      state: 'last_order',
+      by: 'forced',
+      reason: 'السبب الأول',
+    });
+    await leaves(id);
+    expect(await endReason(id)).toBe('forced');
+  });
+
+  it('shows a captain whose suspension lapsed during the order as busy', async () => {
+    const id = await onOrder();
+    const now = new Date();
+    const until = new Date(now.getTime() + 60_000);
+    await captains.setStatus(id, 'suspended', { ...change, until }, now);
+    expect((await captains.state(id, new Date(until.getTime() + 1))).availability.state).toBe(
+      'busy',
+    );
+    await leaves(id, new Date(until.getTime() + 1));
+    await captains.goOffline(id, new Date(until.getTime() + 1));
+  });
 });

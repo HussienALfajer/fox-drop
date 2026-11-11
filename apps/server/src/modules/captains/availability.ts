@@ -118,6 +118,7 @@ export function availability(input: AvailabilityInput, now: Date): Availability 
   if (
     since !== null &&
     mode !== null &&
+    !(mode.by === 'suspended' && suspension === null) &&
     (input.activeOrder || (suspension === null && input.status !== 'terminated'))
   ) {
     const reason = mode.by === 'suspended' ? (suspension?.reason ?? null) : mode.reason;

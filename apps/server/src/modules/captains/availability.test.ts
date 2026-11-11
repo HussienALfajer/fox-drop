@@ -229,8 +229,8 @@ describe('availability', () => {
   });
 
   it('never offers a captain in last-order mode once the order left them', () => {
-    // Until the job ends the online period, the state stays last-order, which
-    // dispatch never offers (it offers online_available only).
+    // Until afterOrderLeft ends the online period, the state stays last-order,
+    // which dispatch never offers (it offers online_available only).
     expect(availability({ ...online, lastOrder: { by: 'captain', reason: null } }, now).state).toBe(
       'last_order',
     );

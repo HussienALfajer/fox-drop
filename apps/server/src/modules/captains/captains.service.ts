@@ -465,7 +465,10 @@ export class CaptainsService implements OnModuleInit {
     const { cityId, ended } = await this.database.db.transaction(async (tx) => {
       const row = await this.lockCaptain(tx, captainId);
       const open = await this.openPeriod(tx, captainId);
-      if (open === null) return { cityId: row.cityId, ended: null };
+      // Offline, or already forced: a repeat writes nothing more.
+      if (open === null || open.lastOrderBy === 'forced') {
+        return { cityId: row.cityId, ended: null };
+      }
       const ended = await this.offlineOrLastOrder(tx, captainId, 'forced', reason, now);
       await this.audit.recordWrite(
         {
@@ -573,6 +576,9 @@ export class CaptainsService implements OnModuleInit {
     if ((await this.activeOrders([captainId], tx)).size === 0) {
       return this.endOnline(tx, captainId, LAST_ORDER_END[by], now);
     }
+    // Operations' force offline stays: a suspension or termination after it
+    // ends the period anyway, and lifting the suspension must not lift it.
+    if (open.lastOrderBy === 'forced') return null;
     await tx
       .update(onlinePeriods)
       .set({ lastOrderBy: by, lastOrderAt: now, lastOrderReason: by === 'forced' ? reason : null })

@@ -911,6 +911,7 @@ export class CaptainOrders {
     }
     const delivery = await this.prepareDelivery(order, command, now);
     await this.jobs.ready();
+    let handoverAfter: AfterCommit = () => Promise.resolve();
     let afterCommit: AfterCommit = () => Promise.resolve();
     const done = await this.database.db.transaction(async (tx) => {
       const locked = await lockOrder(tx, order.id, order.placedAt);
@@ -931,6 +932,7 @@ export class CaptainOrders {
       const due = await lockForDelivery(tx, current);
       // An edit since the payment was checked (AP §9.3.3).
       if (due.total !== delivery.amountDue) return false;
+      handoverAfter = this.assignments.takeAfterCommit(tx);
       afterCommit = await this.booking.complete(
         tx,
         due,
@@ -962,6 +964,7 @@ export class CaptainOrders {
       return true;
     });
     if (!done) throw await this.stateChanged(order);
+    await handoverAfter();
     await afterCommit();
     return this.read(order);
   }

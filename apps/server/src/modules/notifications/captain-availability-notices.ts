@@ -21,7 +21,7 @@ export class CaptainAvailabilityNotices implements OnModuleInit {
   onModuleInit(): void {
     this.captains.onAvailabilityChanged(async (tx, change) => {
       if (change.kind === 'forced_offline') {
-        await this.pushes.enqueue(tx, [await this.forcedPush(change)], change.at);
+        await this.pushes.enqueue(tx, [await this.forcedPush(tx, change)], change.at);
       }
       await this.broadcasts.enqueue(tx, {
         type: 'captain.availability_changed',
@@ -32,9 +32,12 @@ export class CaptainAvailabilityNotices implements OnModuleInit {
     });
   }
 
-  private async forcedPush(change: Extract<AvailabilityChange, { kind: 'forced_offline' }>) {
+  private async forcedPush(
+    tx: Parameters<Parameters<CaptainsService['onAvailabilityChanged']>[0]>[0],
+    change: Extract<AvailabilityChange, { kind: 'forced_offline' }>,
+  ) {
     const templateKey = change.atOnce ? 'captain.forced_offline' : 'captain.forced_last_order';
-    const rendered = await this.texts.render(templateKey, { السبب: change.reason });
+    const rendered = await this.texts.render(templateKey, { السبب: change.reason }, tx);
     return {
       source: `captain:${templateKey}:${change.captainId}:${change.at.toISOString()}`,
       recipient: { party: 'captain' as const, captainId: change.captainId },
