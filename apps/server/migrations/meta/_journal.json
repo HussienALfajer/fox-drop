@@ -421,6 +421,13 @@
       "when": 1794422207452,
       "tag": "0059_max_pickup_amount",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1794427223957,
+      "tag": "0060_dispatch_auto",
+      "breakpoints": true
     }
   ]
 }

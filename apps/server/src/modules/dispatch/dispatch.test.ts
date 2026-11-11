@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ApiModule } from '../../api.module.js';
 import { createDatabase, type Database } from '../../database/database.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
@@ -22,7 +22,7 @@ import {
 } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
-import { DispatchService } from './index.js';
+import { AutoDispatcher, DispatchService } from './index.js';
 
 // Manual dispatch (D6; AP §9.3.2, §9.12.6, §8.3; CA §8, §15): operations
 // offer an accepted order to an eligible captain, who accepts or declines it
@@ -203,27 +203,39 @@ async function admin(roles: string[]) {
 }
 
 // A placed order the restaurant accepted, its search started.
-async function acceptedOrder(): Promise<{ id: string; placedAt: string }> {
+// At the main restaurant unless another is given (automatic dispatch's,
+// apart from the manual tests' captains).
+async function acceptedOrder(
+  at: { restaurant: string; item: string; home: Point } = { restaurant, item, home },
+): Promise<{ id: string; placedAt: string }> {
   const customer = await appSignIn('customer', phoneNumber());
-  const lines = [{ itemId: item, optionIds: [], quantity: 1, note: null, knownUnitPrice: '12000' }];
+  const lines = [
+    { itemId: at.item, optionIds: [], quantity: 1, note: null, knownUnitPrice: '12000' },
+  ];
   const quote = await app.inject({
     method: 'POST',
     url: '/v1/customer/quote',
-    payload: { restaurantId: restaurant, location: home, lines, payIn: null, appVersion: '1.0.0' },
+    payload: {
+      restaurantId: at.restaurant,
+      location: at.home,
+      lines,
+      payIn: null,
+      appVersion: '1.0.0',
+    },
   });
   const placed = await app.inject({
     method: 'POST',
     url: '/v1/customer/orders',
     headers: { ...customer, 'idempotency-key': randomUUID() },
     payload: {
-      restaurantId: restaurant,
+      restaurantId: at.restaurant,
       lines,
       payIn: null,
       appVersion: '1.0.0',
       quoteVersion: quote.json().version,
       addressId: null,
       unsavedAddress: {
-        location: home,
+        location: at.home,
         street: 'شارع السوق',
         floor: null,
         landmark: 'قرب الجامع',
@@ -239,7 +251,7 @@ async function acceptedOrder(): Promise<{ id: string; placedAt: string }> {
   const phone = phoneNumber();
   await app
     .get(MerchantAccountsService)
-    .addAccount(restaurant, { role: 'cashier', name: 'cashier', phone }, change);
+    .addAccount(at.restaurant, { role: 'cashier', name: 'cashier', phone }, change);
   const cashier = await appSignIn('merchant', phone);
   await app.inject({
     method: 'PUT',
@@ -959,5 +971,289 @@ describe('dispatch under races and repeats (AP §9.12.6, architecture §5.3)', (
         bySystem,
       );
     }
+  });
+});
+
+// AP §9.12.6 «آلي» and «مختلط» (slice 2.15b): the dispatcher's pass over the
+// city, at a restaurant about 5 km north of the main one, so the manual
+// tests' captains are beyond dispatch.search_radius_km.
+describe('automatic dispatch (AP §9.12.6, CA §8.1)', () => {
+  const north = { latitude: 36.632, longitude: 37.046 };
+  const northHome = { latitude: 36.634, longitude: 37.046 };
+  let at: { restaurant: string; item: string; home: Point };
+  const started: Awaited<ReturnType<typeof onlineCaptain>>[] = [];
+  const dispatch = () => app.get(DispatchService);
+  const update = (key: 'dispatch.mode' | 'dispatch.max_offers_before_manual', value: unknown) =>
+    app.get(SettingsService).update(key, { cityId: azaz }, value as never, bySystem);
+  const mode = (value: 'manual' | 'auto' | 'mixed') => update('dispatch.mode', value);
+
+  beforeAll(async () => {
+    const merchants = app.get(MerchantsService);
+    const id = await merchants.createRestaurant(
+      azaz,
+      {
+        nameAr: 'مطعم الشمال',
+        location: north,
+        coverage: { kind: 'radius', radiusMetres: 1000 },
+        minimumOrder: { amount: 10_000n, currency: 'TRY' },
+        commissionBp: 1500,
+        defaultPrepMin: 20,
+      },
+      change,
+    );
+    await merchants.setAccountStatus(id, 'active', change);
+    await merchants.setWeeklySchedule(id, allWeek, change);
+    const category = await merchants.addCategory(id, { name: 'وجبات' }, change);
+    const northItem = await merchants.addItem(
+      id,
+      { categoryId: category, name: 'فلافل', price: { amount: 12_000n, currency: 'TRY' } },
+      change,
+    );
+    at = { restaurant: id, item: northItem, home: northHome };
+  });
+
+  // Each test's orders leave automatic dispatch after it (the dispatcher
+  // would otherwise offer a test's order still waiting to the next test's
+  // nearest captain), its captains go offline (a busy one cannot, and is not
+  // eligible anyway), and the city goes back to manual.
+  afterEach(async () => {
+    await sql.query(
+      `INSERT INTO dispatch.manual_orders (order_id, order_placed_at, city_id, reason, failed_offers, at)
+       SELECT id, placed_at, city_id, 'max_offers', 0, now() FROM ordering.orders WHERE restaurant_id = $1
+       ON CONFLICT DO NOTHING`,
+      [at.restaurant],
+    );
+    for (const captain of started.splice(0)) {
+      await captain.call('POST', '/v1/captain/availability/offline');
+    }
+    await mode('manual');
+    await update('dispatch.max_offers_before_manual', 5);
+  });
+
+  // A captain the given metres north of the restaurant.
+  async function captainNorth(metres: number) {
+    const captain = await onlineCaptain({
+      latitude: north.latitude + metres / 111_195,
+      longitude: north.longitude,
+    });
+    started.push(captain);
+    return captain;
+  }
+
+  // An accepted order at the north restaurant, its search started (the
+  // worker's job), «طلب بلا كابتن» an hour away.
+  async function searchingOrder() {
+    const order = await acceptedOrder(at);
+    await sql.query(
+      `UPDATE ordering.orders SET captain_track = 'searching', search_started_at = now(),
+         search_alert_at = now() + interval '1 hour' WHERE id = $1`,
+      [order.id],
+    );
+    return order;
+  }
+
+  const offersOf = async (orderId: string) =>
+    (
+      await sql.query(
+        'SELECT captain_id, kind, offered_by, status FROM dispatch.offers WHERE order_id = $1 ORDER BY offered_at',
+        [orderId],
+      )
+    ).rows;
+
+  const openOffer = async (orderId: string) =>
+    (await offersOf(orderId)).find((offer) => offer.status === 'open');
+
+  const currentOffer = async (captain: Awaited<ReturnType<typeof onlineCaptain>>) =>
+    (await captain.call('GET', '/v1/captain/offers/current')).json().offer;
+
+  const manualRow = async (orderId: string) =>
+    (
+      await sql.query(
+        'SELECT reason, failed_offers FROM dispatch.manual_orders WHERE order_id = $1',
+        [orderId],
+      )
+    ).rows;
+
+  it('sends nothing in manual mode (D6)', async () => {
+    const order = await searchingOrder();
+    await captainNorth(300);
+    expect(await dispatch().autoDispatchCity(azaz, new Date())).toBe(0);
+    expect(await offersOf(order.id)).toEqual([]);
+  });
+
+  it('offers the nearest eligible captain, passing over one above its «أقصى مبلغ أحمله» (C4)', async () => {
+    await mode('auto');
+    const order = await searchingOrder();
+    await captainNorth(1500);
+    const near = await captainNorth(600);
+    const nearest = await captainNorth(200);
+    // 100 TRY, below the order's 120 TRY of items.
+    const limited = await app.inject({
+      method: 'PUT',
+      url: '/v1/captain/settings/max-pickup-amount',
+      headers: nearest.headers,
+      payload: { amount: '10000' },
+    });
+    expect(limited.statusCode).toBe(200);
+    await dispatch().autoDispatchCity(azaz, new Date());
+    expect(await offersOf(order.id)).toEqual([
+      { captain_id: near.captainId, kind: 'auto', offered_by: null, status: 'open' },
+    ]);
+    expect(await orderRow(order.id)).toMatchObject({ captain_track: 'offered' });
+    const event = await sql.query(
+      "SELECT actor_type FROM ordering.order_events WHERE order_id = $1 AND type = 'order.offered'",
+      [order.id],
+    );
+    expect(event.rows).toEqual([{ actor_type: 'system' }]);
+    const job = await sql.query(
+      "SELECT 1 FROM pgboss.job WHERE name = $1 AND data->>'orderId' = $2",
+      [QUEUES.offerExpiry, order.id],
+    );
+    expect(job.rowCount).toBe(1);
+    // CA §8.2: an automatic offer is not «تعيين من العمليات».
+    const offer = await currentOffer(near);
+    expect(offer).toMatchObject({ fromOperations: false, pay: { amount: '2500' } });
+    expect(offer.restaurant.distanceMetres).toBeGreaterThan(500);
+    // One offer at a time: the next pass leaves the order alone.
+    await dispatch().autoDispatchCity(azaz, new Date());
+    expect(await offersOf(order.id)).toHaveLength(1);
+    // Accepted, the order is the captain's.
+    const accepted = await near.call('POST', `/v1/captain/offers/${offer.id}/accept`);
+    expect(accepted.statusCode).toBe(200);
+    expect(await orderRow(order.id)).toMatchObject({ captain_id: near.captainId });
+  });
+
+  it('offers the next captain on a decline, an expiry or a withdrawal, never one already offered', async () => {
+    await mode('auto');
+    const order = await searchingOrder();
+    const first = await captainNorth(200);
+    const second = await captainNorth(400);
+    const third = await captainNorth(600);
+    const fourth = await captainNorth(800);
+
+    await dispatch().autoDispatchCity(azaz, new Date());
+    expect((await openOffer(order.id))?.captain_id).toBe(first.captainId);
+    await first.call('POST', `/v1/captain/offers/${(await currentOffer(first)).id}/decline`);
+
+    await dispatch().autoDispatchCity(azaz, new Date());
+    expect((await openOffer(order.id))?.captain_id).toBe(second.captainId);
+    const job = {
+      offerId: (await currentOffer(second)).id,
+      orderId: order.id,
+      orderPlacedAt: order.placedAt,
+    };
+    expect(await dispatch().expire(job, new Date(Date.now() + 46 * SECOND))).toBe(true);
+
+    await dispatch().autoDispatchCity(azaz, new Date());
+    expect((await openOffer(order.id))?.captain_id).toBe(third.captainId);
+    // Going offline withdraws the offer (CA §7.5).
+    await third.call('POST', '/v1/captain/availability/offline');
+
+    await dispatch().autoDispatchCity(azaz, new Date());
+    expect((await openOffer(order.id))?.captain_id).toBe(fourth.captainId);
+    await fourth.call('POST', `/v1/captain/offers/${(await currentOffer(fourth)).id}/decline`);
+
+    // No captain left who was not offered: nothing, and no new search for
+    // 30 seconds; one who comes online meanwhile gets it after them.
+    const start = Date.now();
+    expect(await dispatch().autoDispatchCity(azaz, new Date(start))).toBe(0);
+    const fifth = await captainNorth(1000);
+    await dispatch().autoDispatchCity(azaz, new Date(start + 20 * SECOND));
+    expect(await openOffer(order.id)).toBeUndefined();
+    await dispatch().autoDispatchCity(azaz, new Date(start + 31 * SECOND));
+    expect((await openOffer(order.id))?.captain_id).toBe(fifth.captainId);
+    expect((await offersOf(order.id)).map((offer) => offer.status)).toEqual([
+      'declined',
+      'expired',
+      'withdrawn',
+      'declined',
+      'open',
+    ]);
+  });
+
+  it('passes over a captain with another open offer', async () => {
+    await mode('auto');
+    const first = await searchingOrder();
+    const second = await searchingOrder();
+    const near = await captainNorth(200);
+    const far = await captainNorth(900);
+    await dispatch().autoDispatchCity(azaz, new Date());
+    expect((await openOffer(first.id))?.captain_id).toBe(near.captainId);
+    expect((await openOffer(second.id))?.captain_id).toBe(far.captainId);
+  });
+
+  it('«مختلط»: leaves automatic dispatch after dispatch.max_offers_before_manual failed offers', async () => {
+    await mode('mixed');
+    await update('dispatch.max_offers_before_manual', 2);
+    const order = await searchingOrder();
+    const first = await captainNorth(200);
+    const second = await captainNorth(400);
+    const third = await captainNorth(600);
+    for (const captain of [first, second]) {
+      await dispatch().autoDispatchCity(azaz, new Date());
+      await captain.call('POST', `/v1/captain/offers/${(await currentOffer(captain)).id}/decline`);
+    }
+    expect(await dispatch().autoDispatchCity(azaz, new Date())).toBe(0);
+    expect(await offersOf(order.id)).toHaveLength(2);
+    expect(await manualRow(order.id)).toEqual([{ reason: 'max_offers', failed_offers: 2 }]);
+    // «بحاجة لتعيين»: operations offer it by hand.
+    expect(await orderRow(order.id)).toMatchObject({ captain_track: 'searching' });
+    const assigned = await (await admin(['OPS'])).assign(order.id, third.captainId);
+    expect(assigned.statusCode).toBe(200);
+  });
+
+  it('«مختلط»: leaves automatic dispatch at the no-captain alert, while «آلي» keeps searching', async () => {
+    const order = await searchingOrder();
+    const captain = await captainNorth(200);
+    await sql.query(
+      "UPDATE ordering.orders SET search_alert_at = now() - interval '1 second' WHERE id = $1",
+      [order.id],
+    );
+    await mode('auto');
+    await dispatch().autoDispatchCity(azaz, new Date());
+    expect((await openOffer(order.id))?.captain_id).toBe(captain.captainId);
+    await captain.call('POST', `/v1/captain/offers/${(await currentOffer(captain)).id}/decline`);
+
+    await mode('mixed');
+    await captainNorth(300);
+    expect(await dispatch().autoDispatchCity(azaz, new Date())).toBe(0);
+    expect(await manualRow(order.id)).toEqual([{ reason: 'no_captain_alert', failed_offers: 1 }]);
+    // Back in «آلي», an order left to operations stays theirs.
+    await mode('auto');
+    expect(await dispatch().autoDispatchCity(azaz, new Date())).toBe(0);
+    expect(await offersOf(order.id)).toHaveLength(1);
+  });
+});
+
+describe('the dispatcher role (architecture §4.4)', () => {
+  it('leads each city from one process at a time, and hands over when it stops', async () => {
+    const passes: string[] = [];
+    const counting = (name: string) =>
+      ({
+        autoDispatchCity: (cityId: string) => {
+          if (cityId === azaz) passes.push(name);
+          return Promise.resolve(0);
+        },
+      }) as unknown as DispatchService;
+    const first = new AutoDispatcher(db, app.get(GeoService), counting('first'));
+    const second = new AutoDispatcher(db, app.get(GeoService), counting('second'));
+    try {
+      await first.tick();
+      await second.tick();
+      await first.tick();
+      expect(passes).toEqual(['first', 'first']);
+      await first.onModuleDestroy();
+      await second.tick();
+      expect(passes).toEqual(['first', 'first', 'second']);
+    } finally {
+      await first.onModuleDestroy();
+      await second.onModuleDestroy();
+    }
+  });
+
+  it('keeps a fallback to manual as logged: the application role cannot change it', async () => {
+    await expect(
+      sql.query("UPDATE dispatch.manual_orders SET reason = 'max_offers'"),
+    ).rejects.toThrow(/permission denied/);
   });
 });

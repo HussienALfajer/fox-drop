@@ -23,9 +23,9 @@ export const dispatch = pgSchema('dispatch');
 // the captain went offline first.
 export const offerStatuses = ['open', 'accepted', 'declined', 'expired', 'withdrawn'] as const;
 
-// AP §9.3.2: operations' manual offer; automatic offers join with automatic
-// dispatch (D6: manual at launch).
-export const offerKinds = ['manual'] as const;
+// AP §9.3.2: operations' manual offer; AP §9.12.6 (slice 2.15b): the
+// automatic dispatcher's, sent by no admin.
+export const offerKinds = ['manual', 'auto'] as const;
 
 // One offer of an order to one captain (CA §8, AP §9.12.6), with what the
 // captain was shown: the distance to the restaurant and the pay estimate,
@@ -79,8 +79,8 @@ export const offers = dispatch.table(
       'offers_status_values',
       sql`${table.status} IN ('open', 'accepted', 'declined', 'expired', 'withdrawn')`,
     ),
-    check('offers_kind_values', sql`${table.kind} IN ('manual')`),
-    check('offers_manual_by', sql`${table.kind} <> 'manual' OR ${table.offeredBy} IS NOT NULL`),
+    check('offers_kind_values', sql`${table.kind} IN ('manual', 'auto')`),
+    check('offers_manual_by', sql`(${table.kind} = 'manual') = (${table.offeredBy} IS NOT NULL)`),
     check(
       'offers_response',
       sql`(${table.status} = 'open') = (${table.respondedAt} IS NULL) AND ${table.expiresAt} > ${table.offeredAt}`,
@@ -89,6 +89,33 @@ export const offers = dispatch.table(
       'offers_pay',
       sql`(${table.pay} IS NULL) = (${table.payCurrency} IS NULL) AND ${table.pay} >= 0 AND ${table.pickupMetres} >= 0`,
     ),
+  ],
+);
+
+// AP §9.12.6 «مختلط» (slice 2.15b): an order that left automatic dispatch
+// for operations («بحاجة لتعيين») after dispatch.max_offers_before_manual
+// failed offers or at the no-captain alert; no automatic offer follows. Kept,
+// never updated.
+export const manualReasons = ['max_offers', 'no_captain_alert'] as const;
+
+export const manualOrders = dispatch.table(
+  'manual_orders',
+  {
+    // The ordering module's order, by its partition key.
+    orderId: uuid('order_id').primaryKey(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    reason: text('reason', { enum: manualReasons }).notNull(),
+    // The automatic offers that had failed (declined, expired, withdrawn).
+    failedOffers: integer('failed_offers').notNull(),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    check(
+      'manual_orders_reason_values',
+      sql`${table.reason} IN ('max_offers', 'no_captain_alert')`,
+    ),
+    check('manual_orders_failed', sql`${table.failedOffers} >= 0`),
   ],
 );
 

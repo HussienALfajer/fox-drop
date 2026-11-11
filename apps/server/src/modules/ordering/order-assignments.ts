@@ -51,6 +51,10 @@ export interface DispatchOrder {
   // «الحي» of the address (CA §8.2 shows it, never the pin, before acceptance).
   neighbourhood: string;
   location: Point;
+  // Operations' «طلب بلا كابتن» moments (AP §8.3): after the search start
+  // and after ready; «مختلط» falls back to manual at either (AP §9.12.6).
+  searchAlertAt: Date | null;
+  noCaptainAlertAt: Date | null;
 }
 
 // A change of the captain track that dispatch makes (AP §8.2): an offer
@@ -336,6 +340,24 @@ export class OrderAssignments implements OnModuleInit {
     return order ?? null;
   }
 
+  // AP §9.12.6 (slice 2.15b): the city's orders waiting for a captain with
+  // their search started and no open offer («بحاجة لتعيين»), the earliest
+  // search first, for the automatic dispatcher.
+  async searching(cityId: string): Promise<DispatchOrder[]> {
+    const waiting = await selectOrders(
+      this.database.db,
+      and(
+        eq(orders.cityId, cityId),
+        inArray(orders.status, ['accepted', 'ready']),
+        isNull(orders.captainId),
+        eq(orders.captainTrack, 'searching'),
+      ),
+    );
+    return waiting.sort(
+      (a, b) => (a.searchStartedAt?.getTime() ?? 0) - (b.searchStartedAt?.getTime() ?? 0),
+    );
+  }
+
   // The order locked for a change, in the command's transaction.
   async lock(tx: Tx, orderId: string, placedAt: Date): Promise<DispatchOrder | null> {
     const [order] = await selectOrders(
@@ -521,6 +543,8 @@ async function selectOrders(
       total: orders.total,
       payTableId: orders.payTableId,
       neighbourhood: orders.neighbourhood,
+      searchAlertAt: orders.searchAlertAt,
+      noCaptainAlertAt: orders.noCaptainAlertAt,
       latitude: sql<number>`ST_Y(${orders.location})`.mapWith(Number),
       longitude: sql<number>`ST_X(${orders.location})`.mapWith(Number),
     })

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
-import { and, desc, eq, gt, gte, lt, ne } from 'drizzle-orm';
+import { and, count, desc, eq, gt, gte, inArray, lt, ne } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -9,6 +9,7 @@ import { Jobs } from '../../jobs/jobs.module.js';
 import { type AuditRequestContext, AuditService } from '../audit/index.js';
 import {
   type Availability,
+  type Candidate,
   CaptainsService,
   type IneligibleReason,
   type Money,
@@ -25,7 +26,8 @@ import {
   OrderAssignments,
 } from '../ordering/index.js';
 import { SettingsService } from '../settings/index.js';
-import { idempotencyKeys, offers } from './schema.js';
+import { nearestThenFewestToday } from './ranking.js';
+import { idempotencyKeys, manualOrders, type manualReasons, offers } from './schema.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 type Executor = Pick<NodePgDatabase, 'select'>;
@@ -33,6 +35,17 @@ type OfferRow = typeof offers.$inferSelect;
 
 // Architecture §5.3: a key answers its command for 24 hours.
 const KEY_LIFETIME_MS = 24 * 60 * 60 * 1000;
+
+// Owner decision 2026-11-11: with no captain left to offer, the automatic
+// dispatcher searches again every 30 seconds for captains not yet offered.
+export const AUTO_SEARCH_RETRY_MS = 30_000;
+
+type ManualReason = (typeof manualReasons)[number];
+
+// Who opens an offer: operations' admin (manual) or the automatic
+// dispatcher (auto, no admin).
+type Offerer =
+  { captainId: string; kind: 'manual'; adminId: string } | { captainId: string; kind: 'auto' };
 
 export type DispatchRefusal =
   | 'unknown_order'
@@ -273,7 +286,7 @@ export class DispatchService implements OnModuleInit {
       let offerId: string | null = null;
       if (shown !== null) {
         const expiresAt = new Date(now.getTime() + timeoutSec * 1000);
-        offerId = await this.openOffer(tx, current, command, shown, now, expiresAt);
+        offerId = await this.openOffer(tx, current, manualBy(command), shown, now, expiresAt);
         await this.assignments.change(
           tx,
           current,
@@ -470,16 +483,11 @@ export class DispatchService implements OnModuleInit {
       )
     ).filter((candidate) => candidate.captainId !== order.captainId);
     if (candidates.length === 0) return [];
-    const [speedKmh, window, cutoff, timeZone] = await Promise.all([
+    const [speedKmh, window, dayStart] = await Promise.all([
       this.settings.get('order.eta_speed_kmh', { cityId: order.cityId }),
       this.settings.get('captain.acceptance_window_offers', { cityId: order.cityId }),
-      this.settings.get('finance.business_day_cutoff', { cityId: order.cityId }),
-      this.geo.cityTimeZone(order.cityId),
+      this.businessDayStart(order.cityId, now),
     ]);
-    // «طلبات اليوم»: since the business day began (finance.business_day_cutoff).
-    const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
-    if (timeZone === null) throw new Error(`city ${order.cityId} has no time zone`);
-    const dayStart = lastCutoff(now, hours * 60 + minutes, timeZone);
     const ids = candidates.map((candidate) => candidate.captainId);
     const [today, rates] = await Promise.all([
       this.assignments.assignedSince(ids, dayStart),
@@ -508,6 +516,253 @@ export class DispatchService implements OnModuleInit {
     return listed.sort(
       (a, b) => a.distanceMetres - b.distanceMetres || a.ordersToday - b.ordersToday,
     );
+  }
+
+  // «طلبات اليوم»: since the business day began (finance.business_day_cutoff).
+  private async businessDayStart(cityId: string, now: Date): Promise<Date> {
+    const [cutoff, timeZone] = await Promise.all([
+      this.settings.get('finance.business_day_cutoff', { cityId }),
+      this.geo.cityTimeZone(cityId),
+    ]);
+    const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
+    if (timeZone === null) throw new Error(`city ${cityId} has no time zone`);
+    return lastCutoff(now, hours * 60 + minutes, timeZone);
+  }
+
+  // The orders whose next automatic search waits (owner decision
+  // 2026-11-11: every 30 seconds with no captain left), by city; kept in the
+  // dispatcher's memory, so a new leader only searches sooner.
+  private readonly retries = new Map<string, Map<string, number>>();
+
+  // AP §9.12.6 «آلي» and «مختلط» (slice 2.15b): one pass of the automatic
+  // dispatcher over the city's orders waiting for a captain, the earliest
+  // search first: each gets one offer, to the best captain not yet offered
+  // it. The mode is read on every pass, so «يدوي» stops new offers (an open
+  // one runs its time). The number of offers sent.
+  async autoDispatchCity(cityId: string, now: Date): Promise<number> {
+    const mode = await this.settings.get('dispatch.mode', { cityId });
+    if (mode === 'manual') {
+      this.retries.delete(cityId);
+      return 0;
+    }
+    const waiting = await this.assignments.searching(cityId);
+    const retries = this.retries.get(cityId) ?? new Map<string, number>();
+    this.retries.set(cityId, retries);
+    for (const orderId of retries.keys()) {
+      if (!waiting.some((order) => order.id === orderId)) retries.delete(orderId);
+    }
+    if (waiting.length === 0) return 0;
+    const left = await this.database.db
+      .select({ orderId: manualOrders.orderId })
+      .from(manualOrders)
+      .where(
+        inArray(
+          manualOrders.orderId,
+          waiting.map((order) => order.id),
+        ),
+      );
+    const manual = new Set(left.map((row) => row.orderId));
+    let sent = 0;
+    for (const order of waiting) {
+      if (manual.has(order.id) || (retries.get(order.id) ?? 0) > now.getTime()) continue;
+      const outcome = await this.autoDispatch(order, mode, now);
+      if (outcome === 'offered') {
+        retries.delete(order.id);
+        sent += 1;
+      } else if (outcome === 'none_left') {
+        retries.set(order.id, now.getTime() + AUTO_SEARCH_RETRY_MS);
+      }
+    }
+    return sent;
+  }
+
+  // One automatic offer of the order (AP §9.12.6): «مختلط» first falls back
+  // to manual after dispatch.max_offers_before_manual failed automatic
+  // offers or at the no-captain alert; then the eligible captains (C4
+  // included) never offered this order and without an open offer, nearest
+  // to the restaurant first (the matrix, following pricing.distance_method),
+  // then fewest orders today: the first whose offer opens under the locks.
+  private async autoDispatch(
+    order: DispatchOrder,
+    mode: 'auto' | 'mixed',
+    now: Date,
+  ): Promise<'offered' | 'none_left' | 'manual' | 'skipped'> {
+    const maxFailed =
+      mode === 'mixed'
+        ? await this.settings.get('dispatch.max_offers_before_manual', { cityId: order.cityId })
+        : null;
+    if (maxFailed !== null) {
+      const failed = await failedAutoOffers(this.database.db, order.id);
+      const reason: ManualReason | null =
+        failed >= maxFailed
+          ? 'max_offers'
+          : [order.searchAlertAt, order.noCaptainAlertAt].some((at) => at !== null && at <= now)
+            ? 'no_captain_alert'
+            : null;
+      if (reason !== null) {
+        await this.leaveAuto(order, reason, now);
+        return 'manual';
+      }
+    }
+    const restaurant = await this.restaurantOf(order, now);
+    const [candidates, offered] = await Promise.all([
+      this.captains.candidates(
+        order.cityId,
+        restaurant.location,
+        order.tripMetres,
+        now,
+        pickupPaymentOf(order),
+      ),
+      this.offeredCaptains(order.id),
+    ]);
+    const open = await this.captainsWithOpenOffers(
+      candidates.map((candidate) => candidate.captainId),
+    );
+    const eligible = candidates.filter(
+      (candidate) =>
+        candidate.reasons.length === 0 &&
+        !offered.has(candidate.captainId) &&
+        !open.has(candidate.captainId),
+    );
+    if (eligible.length === 0) return 'none_left';
+    const [ranked, timeoutSec, lockCaptain] = await Promise.all([
+      this.rank(order.cityId, eligible, restaurant.location, now),
+      this.settings.get('dispatch.offer_timeout_sec', { cityId: order.cityId }),
+      this.captains.assignmentLock(order.cityId, now),
+    ]);
+    for (const { candidate, metres } of ranked) {
+      const pay =
+        order.payTableId === null
+          ? null
+          : await this.captains.orderPay(order.payTableId, candidate.vehicle, order.tripMetres);
+      const result = await this.openAutoOffer(
+        order,
+        candidate.captainId,
+        { pickupMetres: metres, pay },
+        lockCaptain,
+        now,
+        new Date(now.getTime() + timeoutSec * 1000),
+        maxFailed,
+      );
+      if (result !== 'captain_taken') return result;
+    }
+    return 'none_left';
+  }
+
+  // AP §9.12.6 ranking (dispatch.ranking nearest_then_fewest_today): the
+  // distance to the restaurant by each captain's vehicle, then the orders
+  // assigned since the business day began.
+  private async rank(
+    cityId: string,
+    eligible: Candidate[],
+    restaurant: Point,
+    now: Date,
+  ): Promise<{ candidate: Candidate; metres: number }[]> {
+    const ids = eligible.map((candidate) => candidate.captainId);
+    const [distances, today] = await Promise.all([
+      this.geo.distancesTo(
+        eligible.map((candidate) => ({ point: candidate.position, vehicle: candidate.vehicle })),
+        restaurant,
+      ),
+      this.businessDayStart(cityId, now).then((since) =>
+        this.assignments.assignedSince(ids, since),
+      ),
+    ]);
+    return nearestThenFewestToday(
+      eligible.map((candidate, index) => ({
+        candidate,
+        metres: distances[index]!.metres,
+        ordersToday: today.get(candidate.captainId) ?? 0,
+      })),
+    );
+  }
+
+  // Under the order's lock: still waiting for a captain with its search
+  // started, still automatic, and in «مختلط» still short of
+  // dispatch.max_offers_before_manual; then under the captain's lock: free,
+  // without an open offer, and never offered this order. The order is
+  // offered (order.offered, actor the system).
+  private async openAutoOffer(
+    order: DispatchOrder,
+    captainId: string,
+    shown: { pickupMetres: number; pay: { amount: bigint; currency: string } | null },
+    lockCaptain: (tx: Tx, captainId: string) => Promise<Availability>,
+    now: Date,
+    expiresAt: Date,
+    maxFailed: number | null,
+  ): Promise<'offered' | 'captain_taken' | 'skipped' | 'manual'> {
+    await this.jobs.ready();
+    return this.database.db.transaction(async (tx) => {
+      const locked = await this.assignments.lock(tx, order.id, order.placedAt);
+      if (!locked) throw new Error(`order ${order.id} not found`);
+      const current = await this.expireLate(tx, locked, now);
+      if (!this.assignments.assignable(current) || current.captainTrack !== 'searching') {
+        return 'skipped';
+      }
+      const [left] = await tx
+        .select({ orderId: manualOrders.orderId })
+        .from(manualOrders)
+        .where(eq(manualOrders.orderId, order.id));
+      if (left) return 'skipped';
+      if (maxFailed !== null) {
+        const failed = await failedAutoOffers(tx, order.id);
+        if (failed >= maxFailed) {
+          await insertManual(tx, current, 'max_offers', failed, now);
+          return 'manual';
+        }
+      }
+      const [before] = await tx
+        .select({ id: offers.id })
+        .from(offers)
+        .where(and(eq(offers.orderId, order.id), eq(offers.captainId, captainId)))
+        .limit(1);
+      if (before) return 'captain_taken';
+      try {
+        await this.lockFreeCaptain(tx, lockCaptain, captainId);
+      } catch (error) {
+        if (error instanceof DispatchRefusedError) return 'captain_taken';
+        throw error;
+      }
+      await this.openOffer(tx, current, { captainId, kind: 'auto' }, shown, now, expiresAt);
+      await this.assignments.change(
+        tx,
+        current,
+        { type: 'order.offered', captainId, pay: shown.pay, expiresAt },
+        { type: 'system', id: null },
+        now,
+      );
+      return 'offered';
+    });
+  }
+
+  // «مختلط»: the order leaves automatic dispatch for operations, «بحاجة
+  // لتعيين», under its lock while it still waits for a captain.
+  private async leaveAuto(order: DispatchOrder, reason: ManualReason, now: Date): Promise<void> {
+    const left = await this.database.db.transaction(async (tx) => {
+      const locked = await this.assignments.lock(tx, order.id, order.placedAt);
+      if (!locked || !this.assignments.assignable(locked)) return false;
+      await insertManual(tx, locked, reason, await failedAutoOffers(tx, order.id), now);
+      return true;
+    });
+    if (left) this.logger.log({ orderId: order.id, reason }, 'order left automatic dispatch');
+  }
+
+  // Every captain this order was ever offered to, by any kind of offer.
+  private async offeredCaptains(orderId: string): Promise<Set<string>> {
+    const rows = await this.database.db
+      .selectDistinct({ captainId: offers.captainId })
+      .from(offers)
+      .where(eq(offers.orderId, orderId));
+    return new Set(rows.map((row) => row.captainId));
+  }
+
+  private async captainsWithOpenOffers(captainIds: string[]): Promise<Set<string>> {
+    if (captainIds.length === 0) return new Set();
+    const rows = await this.database.db
+      .select({ captainId: offers.captainId })
+      .from(offers)
+      .where(and(inArray(offers.captainId, captainIds), eq(offers.status, 'open')));
+    return new Set(rows.map((row) => row.captainId));
   }
 
   // AP §9.3.2, CA §8.4: whether «تعيين» reaches the captain as an offer
@@ -669,7 +924,7 @@ export class DispatchService implements OnModuleInit {
   private async openOffer(
     tx: Tx,
     order: DispatchOrder,
-    command: AdminCommand,
+    offerer: Offerer,
     shown: {
       pickupMetres: number;
       pay: { amount: bigint; currency: string } | null;
@@ -685,9 +940,9 @@ export class DispatchService implements OnModuleInit {
         cityId: order.cityId,
         orderId: order.id,
         orderPlacedAt: order.placedAt,
-        captainId: command.captainId,
-        kind: 'manual',
-        offeredBy: command.admin.accountId,
+        captainId: offerer.captainId,
+        kind: offerer.kind,
+        offeredBy: offerer.kind === 'manual' ? offerer.adminId : null,
         offeredAt: now,
         expiresAt,
         status: 'open',
@@ -910,7 +1165,7 @@ export class DispatchService implements OnModuleInit {
       let offerId: string | null = null;
       if (shown !== null) {
         const expiresAt = new Date(now.getTime() + timeoutSec * 1000);
-        offerId = await this.openOffer(tx, current, command, shown, now, expiresAt, true);
+        offerId = await this.openOffer(tx, current, manualBy(command), shown, now, expiresAt, true);
         await this.assignments.startHandover(
           tx,
           current,
@@ -1043,6 +1298,46 @@ export class DispatchService implements OnModuleInit {
     }
     return row;
   }
+}
+
+// «مختلط»: the order's automatic offers that failed (declined, expired or
+// withdrawn).
+async function failedAutoOffers(executor: Executor, orderId: string): Promise<number> {
+  const [row] = await executor
+    .select({ n: count() })
+    .from(offers)
+    .where(
+      and(
+        eq(offers.orderId, orderId),
+        eq(offers.kind, 'auto'),
+        inArray(offers.status, ['declined', 'expired', 'withdrawn']),
+      ),
+    );
+  return row?.n ?? 0;
+}
+
+async function insertManual(
+  tx: Tx,
+  order: DispatchOrder,
+  reason: ManualReason,
+  failedOffers: number,
+  now: Date,
+): Promise<void> {
+  await tx
+    .insert(manualOrders)
+    .values({
+      orderId: order.id,
+      orderPlacedAt: order.placedAt,
+      cityId: order.cityId,
+      reason,
+      failedOffers,
+      at: now,
+    })
+    .onConflictDoNothing();
+}
+
+function manualBy(command: AdminCommand): Offerer {
+  return { captainId: command.captainId, kind: 'manual', adminId: command.admin.accountId };
 }
 
 async function lockOffer(tx: Tx, offerId: string): Promise<OfferRow | undefined> {
