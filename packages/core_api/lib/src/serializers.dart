@@ -26,6 +26,7 @@ import 'package:core_api/src/model/admin_cancel_dto.dart';
 import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner.dart';
 import 'package:core_api/src/model/admin_cancel_preview_dto.dart';
+import 'package:core_api/src/model/admin_captain_availability_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_device_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_device_dto_output_device.dart';
 import 'package:core_api/src/model/admin_change_outcome_dto.dart';
@@ -60,6 +61,7 @@ import 'package:core_api/src/model/admin_faq_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_faq_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output_customer_inner.dart';
+import 'package:core_api/src/model/admin_force_offline_dto.dart';
 import 'package:core_api/src/model/admin_handover_dto.dart';
 import 'package:core_api/src/model/admin_image_set_dto_output.dart';
 import 'package:core_api/src/model/admin_new_upload_dto.dart';
@@ -219,6 +221,7 @@ import 'package:core_api/src/model/captain_availability_dto_output_availability.
 import 'package:core_api/src/model/captain_availability_dto_output_custody.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_custody_closed_due.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_custody_limit.dart';
+import 'package:core_api/src/model/captain_availability_dto_output_custody_remit_tolerance.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_custody_usage.dart';
 import 'package:core_api/src/model/captain_code_request_dto.dart';
 import 'package:core_api/src/model/captain_code_sent_dto_output.dart';
@@ -242,6 +245,7 @@ import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_h
 import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_pay.dart';
 import 'package:core_api/src/model/captain_emergency_stop_dto_output.dart';
 import 'package:core_api/src/model/captain_go_online_dto.dart';
+import 'package:core_api/src/model/captain_last_order_dto.dart';
 import 'package:core_api/src/model/captain_locations_dto.dart';
 import 'package:core_api/src/model/captain_locations_dto_points_inner.dart';
 import 'package:core_api/src/model/captain_locations_saved_dto_output.dart';
@@ -462,6 +466,7 @@ part 'serializers.g.dart';
   AdminCancelPreviewAnswerDtoOutput,
   AdminCancelPreviewAnswerDtoOutputEntriesInner,
   AdminCancelPreviewDto,
+  AdminCaptainAvailabilityDtoOutput,
   AdminCaptainDeviceDtoOutput,
   AdminCaptainDeviceDtoOutputDevice,
   AdminChangeOutcomeDto,
@@ -496,6 +501,7 @@ part 'serializers.g.dart';
   AdminFaqDtoOutput,
   AdminFaqsDtoOutput,
   AdminFaqsDtoOutputCustomerInner,
+  AdminForceOfflineDto,
   AdminHandoverDto,
   AdminImageSetDtoOutput,
   AdminNewUploadDto,
@@ -655,6 +661,7 @@ part 'serializers.g.dart';
   CaptainAvailabilityDtoOutputCustody,
   CaptainAvailabilityDtoOutputCustodyClosedDue,
   CaptainAvailabilityDtoOutputCustodyLimit,
+  CaptainAvailabilityDtoOutputCustodyRemitTolerance,
   CaptainAvailabilityDtoOutputCustodyUsage,
   CaptainCodeRequestDto,
   CaptainCodeSentDtoOutput,
@@ -678,6 +685,7 @@ part 'serializers.g.dart';
   CaptainDeliverySummaryDtoOutputSummaryPay,
   CaptainEmergencyStopDtoOutput,
   CaptainGoOnlineDto,
+  CaptainLastOrderDto,
   CaptainLocationsDto,
   CaptainLocationsDtoPointsInner,
   CaptainLocationsSavedDtoOutput,

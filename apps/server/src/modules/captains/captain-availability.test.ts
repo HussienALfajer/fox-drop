@@ -114,6 +114,22 @@ const sendPoints = (headers: Headers, points: object[]) =>
   call(headers, 'POST', '/v1/captain/location', { points });
 
 describe('the availability routes (CA §7)', () => {
+  // CA §7.3, §15 (slice 2.13a): without an active order the mode is refused.
+  it('refuses last-order mode while offline or without an order', async () => {
+    const { headers } = await signedIn();
+    const offline = await call(headers, 'POST', '/v1/captain/availability/last-order', { on: true });
+    expect(offline.statusCode).toBe(409);
+    expect(offline.json()).toMatchObject({ error: 'not_online' });
+    await goOnline(headers);
+    const noOrder = await call(headers, 'POST', '/v1/captain/availability/last-order', { on: true });
+    expect(noOrder.statusCode).toBe(409);
+    expect(noOrder.json()).toMatchObject({ error: 'no_active_order' });
+    const off = await call(headers, 'POST', '/v1/captain/availability/last-order', { on: false });
+    expect(off.statusCode).toBe(200);
+    expect(off.json().availability).toMatchObject({ state: 'online_available', lastOrderBy: null });
+    await call(headers, 'POST', '/v1/captain/availability/offline');
+  });
+
   it('answers the state with the cash, goes online and offline', async () => {
     const { headers } = await signedIn();
     const state = await call(headers, 'GET', '/v1/captain/availability');
@@ -124,6 +140,7 @@ describe('the availability routes (CA §7)', () => {
         limit: { amount: '300000', currency: 'TRY' },
         warn: false,
         closedDue: { amount: '0', currency: 'TRY' },
+        remitTolerance: { amount: '0', currency: 'TRY' },
       },
     });
     const online = await goOnline(headers);
@@ -137,6 +154,8 @@ describe('the availability routes (CA §7)', () => {
       reasons: [],
       suspensionReason: null,
       suspendedUntil: null,
+      lastOrderBy: null,
+      lastOrderReason: null,
     });
   });
 
@@ -259,6 +278,8 @@ describe('the location route (CA §4.3, architecture §7.3)', () => {
       reasons: ['simulated_location'],
       suspensionReason: null,
       suspendedUntil: null,
+      lastOrderBy: null,
+      lastOrderReason: null,
     });
     await sendPoints(headers, [point(new Date(Date.now() + 2_000))]);
     expect((await call(headers, 'GET', '/v1/captain/availability')).json().availability.state).toBe(

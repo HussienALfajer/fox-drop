@@ -204,6 +204,13 @@ async function admin(roles: string[]) {
       }),
     reassign: (orderId: string, body: object, key?: string) =>
       post(`/v1/admin/orders/${orderId}/reassign`, body, key),
+    forceOffline: (captainId: string, reason: string) =>
+      app.inject({
+        method: 'POST',
+        url: `/v1/admin/captains/${captainId}/force-offline`,
+        cookies,
+        payload: { reason },
+      }),
     reassignPreview: (orderId: string, body: object) =>
       app.inject({
         method: 'POST',
@@ -593,5 +600,82 @@ describe('POST /v1/admin/orders/{orderId}/reassign (AP §9.3.2)', () => {
       [order.id],
     );
     expect(rows).toHaveLength(1);
+  });
+});
+
+// CA §7.3, §7.6, K18 (slice 2.13a): a captain in last-order mode goes
+// offline in the transaction that takes the order from them, and the app
+// hears it on the captain's own channel.
+describe('last-order mode when the order leaves the captain', () => {
+  const periodEnd = async (captainId: string) =>
+    (
+      await sql.query(
+        `SELECT end_reason FROM captains.online_periods WHERE captain_id = $1
+          ORDER BY started_at DESC LIMIT 1`,
+        [captainId],
+      )
+    ).rows[0].end_reason;
+  const heard = async (captainId: string) =>
+    (
+      await sql.query(
+        `SELECT type FROM notifications.platform_outbox WHERE payload->>'captainId' = $1`,
+        [captainId],
+      )
+    ).rows.map((row) => row.type);
+
+  it('takes a withdrawn captain offline after their own last order', async () => {
+    const order = await acceptedOrder();
+    const captain = await onlineCaptain();
+    const ops = await admin(['OPS']);
+    expect((await ops.assign(order.id, captain.captainId)).statusCode).toBe(200);
+    const on = await app.inject({
+      method: 'POST',
+      url: '/v1/captain/availability/last-order',
+      headers: captain.headers,
+      payload: { on: true },
+    });
+    expect(on.statusCode).toBe(200);
+    expect(on.json().availability).toMatchObject({ state: 'last_order', lastOrderBy: 'captain' });
+    expect((await ops.reassign(order.id, withdrawal)).statusCode).toBe(200);
+    expect(
+      (await app.get(CaptainsService).state(captain.captainId, new Date())).availability,
+    ).toEqual({ state: 'offline' });
+    expect(await periodEnd(captain.captainId)).toBe('last_order');
+    expect(await heard(captain.captainId)).toEqual(['captain.availability_changed']);
+  });
+
+  it('forces a captain on an order offline once operations cancel it, with the push', async () => {
+    const order = await acceptedOrder();
+    const captain = await onlineCaptain();
+    const ops = await admin(['OPS']);
+    expect((await ops.assign(order.id, captain.captainId)).statusCode).toBe(200);
+    const forced = await ops.forceOffline(captain.captainId, 'تأخر في تسليم النقد');
+    expect(forced.statusCode).toBe(200);
+    expect(forced.json()).toEqual({ state: 'last_order', lastOrderBy: 'forced' });
+    const { rows: pushes } = await sql.query(
+      `SELECT template_key, body FROM notifications.push_messages WHERE captain_id = $1
+        AND template_key = 'captain.forced_last_order'`,
+      [captain.captainId],
+    );
+    expect(pushes).toEqual([
+      {
+        template_key: 'captain.forced_last_order',
+        body: 'ستصبح غير متصل بعد هذا الطلب: تأخر في تسليم النقد',
+      },
+    ]);
+    const cancelled = await ops.cancel(order.id, {
+      cancellation: 'emergency',
+      responsible: 'platform',
+      foodPrepared: false,
+      compensateCaptain: false,
+      cash: null,
+      reason: 'إلغاء للاختبار',
+    });
+    expect(cancelled.statusCode).toBe(200);
+    expect(await periodEnd(captain.captainId)).toBe('forced');
+    expect(await heard(captain.captainId)).toEqual([
+      'captain.availability_changed',
+      'captain.availability_changed',
+    ]);
   });
 });

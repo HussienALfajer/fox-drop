@@ -111,6 +111,7 @@ class AdminPickerDto extends createZodDto(
             .array(
               z.enum([
                 'busy',
+                'last_order',
                 'cash_limit',
                 'closed_due',
                 'simulated_location',

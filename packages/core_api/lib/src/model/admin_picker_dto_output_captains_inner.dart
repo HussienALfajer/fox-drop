@@ -46,7 +46,7 @@ abstract class AdminPickerDtoOutputCaptainsInner
   /// Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed.
   @BuiltValueField(wireName: r'reasons')
   BuiltList<AdminPickerDtoOutputCaptainsInnerReasonsEnum> get reasons;
-  // enum reasonsEnum {  busy,  cash_limit,  closed_due,  simulated_location,  out_of_range,  vehicle_not_allowed,  };
+  // enum reasonsEnum {  busy,  last_order,  cash_limit,  closed_due,  simulated_location,  out_of_range,  vehicle_not_allowed,  };
 
   /// To the restaurant (after the pickup, to the order’s captain at their latest point): by road within the search radius, else the straight line.
   @BuiltValueField(wireName: r'distanceMetres')
@@ -332,6 +332,9 @@ class AdminPickerDtoOutputCaptainsInnerReasonsEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'busy')
   static const AdminPickerDtoOutputCaptainsInnerReasonsEnum busy =
       _$adminPickerDtoOutputCaptainsInnerReasonsEnum_busy;
+  @BuiltValueEnumConst(wireName: r'last_order')
+  static const AdminPickerDtoOutputCaptainsInnerReasonsEnum lastOrder =
+      _$adminPickerDtoOutputCaptainsInnerReasonsEnum_lastOrder;
   @BuiltValueEnumConst(wireName: r'cash_limit')
   static const AdminPickerDtoOutputCaptainsInnerReasonsEnum cashLimit =
       _$adminPickerDtoOutputCaptainsInnerReasonsEnum_cashLimit;

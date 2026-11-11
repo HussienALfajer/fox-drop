@@ -9,7 +9,7 @@ import 'package:built_value/serializer.dart';
 
 part 'captain_availability_dto_output_availability.g.dart';
 
-/// CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «لا تصلك عروض» with its reasons, «موقوف».
+/// CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «آخر طلب» (last-order mode), «لا تصلك عروض» with its reasons, «موقوف».
 ///
 /// Properties:
 /// * [state]
@@ -17,6 +17,8 @@ part 'captain_availability_dto_output_availability.g.dart';
 /// * [reasons] - Why no offers arrive; empty unless not_receiving_offers.
 /// * [suspensionReason]
 /// * [suspendedUntil] - While suspended: the end, or null until further notice.
+/// * [lastOrderBy] - In last_order: who set it (CA §7.3, §7.6, K18). Only the captain's own can be cancelled.
+/// * [lastOrderReason] - In last_order: the reason shown, a force offline's or a suspension's.
 @BuiltValue()
 abstract class CaptainAvailabilityDtoOutputAvailability
     implements
@@ -26,7 +28,7 @@ abstract class CaptainAvailabilityDtoOutputAvailability
         > {
   @BuiltValueField(wireName: r'state')
   CaptainAvailabilityDtoOutputAvailabilityStateEnum get state;
-  // enum stateEnum {  offline,  online_available,  busy,  not_receiving_offers,  suspended,  };
+  // enum stateEnum {  offline,  online_available,  busy,  last_order,  not_receiving_offers,  suspended,  };
 
   /// Online since; null unless online.
   @BuiltValueField(wireName: r'since')
@@ -43,6 +45,15 @@ abstract class CaptainAvailabilityDtoOutputAvailability
   /// While suspended: the end, or null until further notice.
   @BuiltValueField(wireName: r'suspendedUntil')
   DateTime? get suspendedUntil;
+
+  /// In last_order: who set it (CA §7.3, §7.6, K18). Only the captain's own can be cancelled.
+  @BuiltValueField(wireName: r'lastOrderBy')
+  CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum? get lastOrderBy;
+  // enum lastOrderByEnum {  captain,  forced,  suspended,  terminated,  };
+
+  /// In last_order: the reason shown, a force offline's or a suspension's.
+  @BuiltValueField(wireName: r'lastOrderReason')
+  String? get lastOrderReason;
 
   CaptainAvailabilityDtoOutputAvailability._();
 
@@ -108,6 +119,22 @@ class _$CaptainAvailabilityDtoOutputAvailabilitySerializer
         : serializers.serialize(
             object.suspendedUntil,
             specifiedType: const FullType.nullable(DateTime),
+          );
+    yield r'lastOrderBy';
+    yield object.lastOrderBy == null
+        ? null
+        : serializers.serialize(
+            object.lastOrderBy,
+            specifiedType: const FullType.nullable(
+              CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum,
+            ),
+          );
+    yield r'lastOrderReason';
+    yield object.lastOrderReason == null
+        ? null
+        : serializers.serialize(
+            object.lastOrderReason,
+            specifiedType: const FullType.nullable(String),
           );
   }
 
@@ -192,6 +219,28 @@ class _$CaptainAvailabilityDtoOutputAvailabilitySerializer
           if (valueDes == null) continue;
           result.suspendedUntil = valueDes;
           break;
+        case r'lastOrderBy':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum,
+                    ),
+                  )
+                  as CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum?;
+          if (valueDes == null) continue;
+          result.lastOrderBy = valueDes;
+          break;
+        case r'lastOrderReason':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.lastOrderReason = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -232,6 +281,9 @@ class CaptainAvailabilityDtoOutputAvailabilityStateEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'busy')
   static const CaptainAvailabilityDtoOutputAvailabilityStateEnum busy =
       _$captainAvailabilityDtoOutputAvailabilityStateEnum_busy;
+  @BuiltValueEnumConst(wireName: r'last_order')
+  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum lastOrder =
+      _$captainAvailabilityDtoOutputAvailabilityStateEnum_lastOrder;
   @BuiltValueEnumConst(wireName: r'not_receiving_offers')
   static const CaptainAvailabilityDtoOutputAvailabilityStateEnum
   notReceivingOffers =
@@ -278,4 +330,36 @@ class CaptainAvailabilityDtoOutputAvailabilityReasonsEnum extends EnumClass {
   static CaptainAvailabilityDtoOutputAvailabilityReasonsEnum valueOf(
     String name,
   ) => _$captainAvailabilityDtoOutputAvailabilityReasonsEnumValueOf(name);
+}
+
+/// In last_order: who set it (CA §7.3, §7.6, K18). Only the captain's own can be cancelled.
+class CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum
+    extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'captain')
+  static const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum captain =
+      _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_captain;
+  @BuiltValueEnumConst(wireName: r'forced')
+  static const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum forced =
+      _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_forced;
+  @BuiltValueEnumConst(wireName: r'suspended')
+  static const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum
+  suspended =
+      _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_suspended;
+  @BuiltValueEnumConst(wireName: r'terminated')
+  static const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum
+  terminated =
+      _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_terminated;
+
+  static Serializer<CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum>
+  get serializer =>
+      _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnumSerializer;
+
+  const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum._(String name)
+    : super(name);
+
+  static BuiltSet<CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum>
+  get values => _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnumValues;
+  static CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum valueOf(
+    String name,
+  ) => _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnumValueOf(name);
 }

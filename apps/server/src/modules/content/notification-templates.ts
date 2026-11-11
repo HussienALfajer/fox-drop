@@ -212,6 +212,10 @@ const captain: Entry[] = [
   ['bonus', '21', 'مكافأة {المبلغ}: {السبب}', 'silent'],
   ['pay_table_change', '22', 'جدول أجور جديد يبدأ في {التاريخ}', 'silent'],
   ['violation', '25', 'سُجّلت عليك مخالفة: {النوع} — {النتيجة}', 'silent'],
+  // CA §14 #26 «With the reason» (slice 2.13a): a force offline at once, or
+  // during an order (K18); the wording is ours.
+  ['forced_offline', '26', 'فصلتك العمليات من الاتصال: {السبب}', 'chime'],
+  ['forced_last_order', '26', 'ستصبح غير متصل بعد هذا الطلب: {السبب}', 'chime'],
   ['document_expiring', '27', 'تنتهي صلاحية {المستند} في {التاريخ}', 'silent'],
   ['document_rejected', '27', 'رُفض {المستند}: {السبب}', 'silent'],
   ['contract_phase', '28', 'بدأت {المرحلة} من {التاريخ}', 'silent'],

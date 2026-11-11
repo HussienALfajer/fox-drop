@@ -7,6 +7,7 @@ import { GeoModule } from '../geo/index.js';
 import { LedgerModule } from '../ledger/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { ValkeyModule } from '../../valkey/valkey.module.js';
+import { AdminCaptainsController } from './admin-captains.controller.js';
 import { CaptainAvailabilityController } from './captain-availability.controller.js';
 import { CaptainsService } from './captains.service.js';
 import { LivePositions } from './live-positions.js';
@@ -26,7 +27,7 @@ import { LocationPartitions } from './location-partitions.js';
     AuditModule,
     ContentModule,
   ],
-  controllers: [CaptainAvailabilityController],
+  controllers: [CaptainAvailabilityController, AdminCaptainsController],
   providers: [CaptainsService, LivePositions],
   exports: [CaptainsService],
 })
@@ -37,10 +38,17 @@ export class CaptainsModule {}
 @Module({ imports: [DatabaseModule], providers: [LocationPartitions] })
 export class CaptainsWorkerModule {}
 
-export type { Availability, CaptainStatus, NoOffersReason, OnlineBlock } from './availability.js';
+export type {
+  Availability,
+  CaptainStatus,
+  LastOrderBy,
+  NoOffersReason,
+  OnlineBlock,
+} from './availability.js';
 export { orderPay, type PayParts, type PayRate } from './pay.js';
 export {
   type ActiveOrderLookup,
+  type AvailabilityChange,
   type Candidate,
   type Captain,
   type CaptainChange,

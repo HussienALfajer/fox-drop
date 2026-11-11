@@ -865,6 +865,30 @@ describe('POST /v1/captain/orders/{orderId}/deliver (CA §9.7–9.8)', () => {
     expect(outbox.rows[0].payload).toMatchObject({ status: 'delivered', reason: null });
   });
 
+  // CA §7.3, §7.5 (slice 2.13a): «لا أريد طلبات جديدة» ends with the
+  // delivery; the state read after it is offline with the cash to hand in.
+  it('takes a captain in last-order mode offline with the delivery', async () => {
+    const door = await orderAtDoor();
+    const on = await app.inject({
+      method: 'POST',
+      url: '/v1/captain/availability/last-order',
+      headers: door.captain.headers,
+      payload: { on: true },
+    });
+    expect(on.json().availability.state).toBe('last_order');
+    expect((await door.deliver()).statusCode).toBe(200);
+    const state = await app.inject({
+      method: 'GET',
+      url: '/v1/captain/availability',
+      headers: door.captain.headers,
+    });
+    expect(state.json().availability.state).toBe('offline');
+    expect(state.json().custody).toMatchObject({
+      usage: { amount: '4000', currency: 'TRY' },
+      remitTolerance: { amount: '0', currency: 'TRY' },
+    });
+  });
+
   it('shows the customer what was received and given back (CU §11.8, Q23)', async () => {
     const door = await orderAtDoor();
     const answer = await door.deliver({ received: TRY('30000'), change: TRY('2000') });

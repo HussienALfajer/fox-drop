@@ -66,6 +66,7 @@ import { OrderAssignments } from './order-assignments.js';
 import { canHandOver } from './handover.js';
 import { baseTotal, linesOf } from './pickup-booking.js';
 import type { SearchStartJob } from './order-timers.js';
+import type { AfterCommit } from './delivery-booking.js';
 import {
   AFTER_PICKUP,
   BEFORE_PICKUP,
@@ -2607,6 +2608,7 @@ export class OrderCommands {
 
     // pg-boss connects before the lock is taken, never while it is held.
     await this.jobs.ready();
+    let afterCommit: AfterCommit = () => Promise.resolve();
     const outcome = await this.database.db.transaction(async (tx) => {
       const locked = await lockOrder(tx, order.id, order.placedAt);
       if (!locked) throw new Error(`order ${order.id} not found`);
@@ -2659,6 +2661,15 @@ export class OrderCommands {
         });
       }
       await prepared.effects?.(tx);
+      // CA §7.3, K18 (slice 2.13a): an order that left its captain (ended,
+      // cancelled or withdrawn) may end the captain's last order.
+      if (
+        current.captainId !== null &&
+        !LEFT_CAPTAIN.includes(current.status) &&
+        (LEFT_CAPTAIN.includes(to) || prepared.set.captainId === null)
+      ) {
+        afterCommit = await this.captains.afterOrderLeft(tx, current.captainId, now);
+      }
       if (caller.kind === 'admin') {
         const { admin, context, reason } = caller.command;
         await this.audit.recordWrite(
@@ -2679,6 +2690,7 @@ export class OrderCommands {
       return { done: true as const };
     });
     if (!outcome.done) throw await this.stateChanged(order);
+    await afterCommit();
     return this.read(order);
   }
 
@@ -2867,6 +2879,8 @@ export interface OutcomeChangePreview extends OutcomePreview {
 
 // AP §8.9 «تغيير النتيجة»: a finished order with an outcome.
 const FINISHED: OrderView['status'][] = ['delivered', 'failed'];
+// The statuses that take an order from its captain (CA §7.3).
+const LEFT_CAPTAIN: OrderView['status'][] = ['delivered', 'failed', 'cancelled', 'rejected'];
 
 // The party of a ledger account, as the outcome's preview names it.
 function partyOf(purpose: AccountPurpose, ownerId: string | null): OutcomeEntry['party'] {

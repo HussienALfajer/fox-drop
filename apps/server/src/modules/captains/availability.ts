@@ -30,6 +30,19 @@ export interface AvailabilityInput {
   termsPending: boolean;
   // CA §7.1: the captain has an active order (AP §9.12.6: no stacking in V1).
   activeOrder: boolean;
+  // CA §7.3, §7.6, K18: the open online period's last-order mode, or null.
+  lastOrder: LastOrderMode | null;
+}
+
+// CA §7.3, §7.6, K18: who put the captain in last-order mode. The captain
+// asked («لا أريد طلبات جديدة»), operations forced them offline with a
+// reason, or a suspension or termination came during an order.
+export const lastOrderBy = ['captain', 'forced', 'suspended', 'terminated'] as const;
+export type LastOrderBy = (typeof lastOrderBy)[number];
+// reason: operations' reason of a force offline, null otherwise.
+export interface LastOrderMode {
+  by: LastOrderBy;
+  reason: string | null;
 }
 
 // CA §7.2: a reason the «متصل» switch is refused, in the table's order.
@@ -45,12 +58,15 @@ export type OnlineBlock =
 // CA §7.1, §7.2: why an online captain gets no offers.
 export type NoOffersReason = 'cash_limit' | 'closed_due' | 'simulated_location';
 
-// CA §7.1. Last-order mode comes with the delivery slices.
+// CA §7.1.
 export type Availability =
   | { state: 'offline' }
   | { state: 'online_available'; since: Date }
   // «مشغول»: an active order; no offers in V1 (no stacking, AP §9.12.6).
   | { state: 'busy'; since: Date }
+  // «آخر طلب» (CA §7.3, K18): no offers, offline once no order is left. The
+  // reason shown: a force offline's, or a suspension's.
+  | { state: 'last_order'; since: Date; by: LastOrderBy; reason: string | null }
   | { state: 'not_receiving_offers'; since: Date; reasons: NoOffersReason[] }
   | { state: 'suspended'; reason: string; until: Date | null };
 
@@ -90,12 +106,26 @@ export function onlineBlocks(input: AvailabilityInput, now: Date): OnlineBlock[]
 // starts"). A captain online when the cutoff passed keeps offers for
 // captain.remit_online_grace_hours (AP §8.5.4); the version and terms apply
 // only the next time they go online.
+//
+// Last-order mode (CA §7.3, K18) holds while the captain is online: with an
+// order, a suspension or termination too keeps tracking until it ends; once
+// no order is left, the mode stays until the online period ends, and is
+// never offered.
 export function availability(input: AvailabilityInput, now: Date): Availability {
   const suspension = suspendedAt(input, now);
+  const since = input.onlineSince;
+  const mode = input.lastOrder;
+  if (
+    since !== null &&
+    mode !== null &&
+    (input.activeOrder || (suspension === null && input.status !== 'terminated'))
+  ) {
+    const reason = mode.by === 'suspended' ? (suspension?.reason ?? null) : mode.reason;
+    return { state: 'last_order', since, by: mode.by, reason };
+  }
   if (suspension !== null) {
     return { state: 'suspended', reason: suspension.reason, until: suspension.until };
   }
-  const since = input.onlineSince;
   if (input.status === 'terminated' || since === null) return { state: 'offline' };
   if (input.activeOrder) return { state: 'busy', since };
   const reasons: NoOffersReason[] = [];

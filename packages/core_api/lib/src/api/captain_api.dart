@@ -21,6 +21,7 @@ import 'package:core_api/src/model/captain_deliver_dto.dart';
 import 'package:core_api/src/model/captain_delivery_summary_dto_output.dart';
 import 'package:core_api/src/model/captain_emergency_stop_dto_output.dart';
 import 'package:core_api/src/model/captain_go_online_dto.dart';
+import 'package:core_api/src/model/captain_last_order_dto.dart';
 import 'package:core_api/src/model/captain_locations_dto.dart';
 import 'package:core_api/src/model/captain_locations_saved_dto_output.dart';
 import 'package:core_api/src/model/captain_offer_dto_output.dart';
@@ -459,6 +460,97 @@ class CaptainApi {
     }
 
     return Response<CaptainSignedOutDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// captainAvailabilityLastOrder
+  ///
+  ///
+  /// Parameters:
+  /// * [captainLastOrderDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [CaptainAvailabilityDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<CaptainAvailabilityDtoOutput>> captainAvailabilityLastOrder({
+    required CaptainLastOrderDto captainLastOrderDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/captain/availability/last-order';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(CaptainLastOrderDto);
+      _bodyData = _serializers.serialize(
+        captainLastOrderDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    CaptainAvailabilityDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CaptainAvailabilityDtoOutput),
+                )
+                as CaptainAvailabilityDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<CaptainAvailabilityDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

@@ -685,8 +685,8 @@ export class DispatchService implements OnModuleInit {
       throw new DispatchRefusedError(
         'captain_not_eligible',
         'the captain cannot take the order',
-        state.state === 'busy'
-          ? ['busy']
+        state.state === 'busy' || state.state === 'last_order'
+          ? [state.state]
           : state.state === 'not_receiving_offers'
             ? state.reasons
             : ['offline'],

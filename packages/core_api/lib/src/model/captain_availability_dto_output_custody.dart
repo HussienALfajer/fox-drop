@@ -6,6 +6,7 @@
 import 'package:core_api/src/model/captain_availability_dto_output_custody_closed_due.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_custody_usage.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_custody_limit.dart';
+import 'package:core_api/src/model/captain_availability_dto_output_custody_remit_tolerance.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -19,6 +20,7 @@ part 'captain_availability_dto_output_custody.g.dart';
 /// * [warn] - At captain.custody_warn_pct of the limit or more.
 /// * [closedDue]
 /// * [lastCutoff]
+/// * [remitTolerance]
 @BuiltValue()
 abstract class CaptainAvailabilityDtoOutputCustody
     implements
@@ -41,6 +43,9 @@ abstract class CaptainAvailabilityDtoOutputCustody
 
   @BuiltValueField(wireName: r'lastCutoff')
   DateTime get lastCutoff;
+
+  @BuiltValueField(wireName: r'remitTolerance')
+  CaptainAvailabilityDtoOutputCustodyRemitTolerance get remitTolerance;
 
   CaptainAvailabilityDtoOutputCustody._();
 
@@ -98,6 +103,13 @@ class _$CaptainAvailabilityDtoOutputCustodySerializer
     yield serializers.serialize(
       object.lastCutoff,
       specifiedType: const FullType(DateTime),
+    );
+    yield r'remitTolerance';
+    yield serializers.serialize(
+      object.remitTolerance,
+      specifiedType: const FullType(
+        CaptainAvailabilityDtoOutputCustodyRemitTolerance,
+      ),
     );
   }
 
@@ -176,6 +188,17 @@ class _$CaptainAvailabilityDtoOutputCustodySerializer
                   )
                   as DateTime;
           result.lastCutoff = valueDes;
+          break;
+        case r'remitTolerance':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainAvailabilityDtoOutputCustodyRemitTolerance,
+                    ),
+                  )
+                  as CaptainAvailabilityDtoOutputCustodyRemitTolerance;
+          result.remitTolerance.replace(valueDes);
           break;
         default:
           unhandled.add(key);

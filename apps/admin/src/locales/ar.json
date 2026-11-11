@@ -599,6 +599,7 @@
     "assigned": "تم تعيين الكابتن.",
     "reason": {
       "busy": "مشغول",
+      "lastOrder": "آخر طلب",
       "cashLimit": "تجاوز حد النقد",
       "closedDue": "محجوب لعدم تسليم النقد",
       "simulatedLocation": "موقع وهمي",

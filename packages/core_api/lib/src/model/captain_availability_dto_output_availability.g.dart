@@ -18,6 +18,9 @@ const CaptainAvailabilityDtoOutputAvailabilityStateEnum
 _$captainAvailabilityDtoOutputAvailabilityStateEnum_busy =
     const CaptainAvailabilityDtoOutputAvailabilityStateEnum._('busy');
 const CaptainAvailabilityDtoOutputAvailabilityStateEnum
+_$captainAvailabilityDtoOutputAvailabilityStateEnum_lastOrder =
+    const CaptainAvailabilityDtoOutputAvailabilityStateEnum._('lastOrder');
+const CaptainAvailabilityDtoOutputAvailabilityStateEnum
 _$captainAvailabilityDtoOutputAvailabilityStateEnum_notReceivingOffers =
     const CaptainAvailabilityDtoOutputAvailabilityStateEnum._(
       'notReceivingOffers',
@@ -35,6 +38,8 @@ _$captainAvailabilityDtoOutputAvailabilityStateEnumValueOf(String name) {
       return _$captainAvailabilityDtoOutputAvailabilityStateEnum_onlineAvailable;
     case 'busy':
       return _$captainAvailabilityDtoOutputAvailabilityStateEnum_busy;
+    case 'lastOrder':
+      return _$captainAvailabilityDtoOutputAvailabilityStateEnum_lastOrder;
     case 'notReceivingOffers':
       return _$captainAvailabilityDtoOutputAvailabilityStateEnum_notReceivingOffers;
     case 'suspended':
@@ -51,6 +56,7 @@ _$captainAvailabilityDtoOutputAvailabilityStateEnumValues =
         _$captainAvailabilityDtoOutputAvailabilityStateEnum_offline,
         _$captainAvailabilityDtoOutputAvailabilityStateEnum_onlineAvailable,
         _$captainAvailabilityDtoOutputAvailabilityStateEnum_busy,
+        _$captainAvailabilityDtoOutputAvailabilityStateEnum_lastOrder,
         _$captainAvailabilityDtoOutputAvailabilityStateEnum_notReceivingOffers,
         _$captainAvailabilityDtoOutputAvailabilityStateEnum_suspended,
       ],
@@ -92,12 +98,59 @@ _$captainAvailabilityDtoOutputAvailabilityReasonsEnumValues =
       ],
     );
 
+const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum
+_$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_captain =
+    const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum._('captain');
+const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum
+_$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_forced =
+    const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum._('forced');
+const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum
+_$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_suspended =
+    const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum._(
+      'suspended',
+    );
+const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum
+_$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_terminated =
+    const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum._(
+      'terminated',
+    );
+
+CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum
+_$captainAvailabilityDtoOutputAvailabilityLastOrderByEnumValueOf(String name) {
+  switch (name) {
+    case 'captain':
+      return _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_captain;
+    case 'forced':
+      return _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_forced;
+    case 'suspended':
+      return _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_suspended;
+    case 'terminated':
+      return _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_terminated;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum>
+_$captainAvailabilityDtoOutputAvailabilityLastOrderByEnumValues =
+    BuiltSet<CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum>(
+      const <CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum>[
+        _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_captain,
+        _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_forced,
+        _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_suspended,
+        _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_terminated,
+      ],
+    );
+
 Serializer<CaptainAvailabilityDtoOutputAvailabilityStateEnum>
 _$captainAvailabilityDtoOutputAvailabilityStateEnumSerializer =
     _$CaptainAvailabilityDtoOutputAvailabilityStateEnumSerializer();
 Serializer<CaptainAvailabilityDtoOutputAvailabilityReasonsEnum>
 _$captainAvailabilityDtoOutputAvailabilityReasonsEnumSerializer =
     _$CaptainAvailabilityDtoOutputAvailabilityReasonsEnumSerializer();
+Serializer<CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum>
+_$captainAvailabilityDtoOutputAvailabilityLastOrderByEnumSerializer =
+    _$CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnumSerializer();
 
 class _$CaptainAvailabilityDtoOutputAvailabilityStateEnumSerializer
     implements
@@ -106,6 +159,7 @@ class _$CaptainAvailabilityDtoOutputAvailabilityStateEnumSerializer
     'offline': 'offline',
     'onlineAvailable': 'online_available',
     'busy': 'busy',
+    'lastOrder': 'last_order',
     'notReceivingOffers': 'not_receiving_offers',
     'suspended': 'suspended',
   };
@@ -113,6 +167,7 @@ class _$CaptainAvailabilityDtoOutputAvailabilityStateEnumSerializer
     'offline': 'offline',
     'online_available': 'onlineAvailable',
     'busy': 'busy',
+    'last_order': 'lastOrder',
     'not_receiving_offers': 'notReceivingOffers',
     'suspended': 'suspended',
   };
@@ -181,6 +236,49 @@ class _$CaptainAvailabilityDtoOutputAvailabilityReasonsEnumSerializer
   );
 }
 
+class _$CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnumSerializer
+    implements
+        PrimitiveSerializer<
+          CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum
+        > {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'captain': 'captain',
+    'forced': 'forced',
+    'suspended': 'suspended',
+    'terminated': 'terminated',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'captain': 'captain',
+    'forced': 'forced',
+    'suspended': 'suspended',
+    'terminated': 'terminated',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum,
+  ];
+  @override
+  final String wireName =
+      'CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$CaptainAvailabilityDtoOutputAvailability
     extends CaptainAvailabilityDtoOutputAvailability {
   @override
@@ -193,6 +291,10 @@ class _$CaptainAvailabilityDtoOutputAvailability
   final String? suspensionReason;
   @override
   final DateTime? suspendedUntil;
+  @override
+  final CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum? lastOrderBy;
+  @override
+  final String? lastOrderReason;
 
   factory _$CaptainAvailabilityDtoOutputAvailability([
     void Function(CaptainAvailabilityDtoOutputAvailabilityBuilder)? updates,
@@ -205,6 +307,8 @@ class _$CaptainAvailabilityDtoOutputAvailability
     required this.reasons,
     this.suspensionReason,
     this.suspendedUntil,
+    this.lastOrderBy,
+    this.lastOrderReason,
   }) : super._();
   @override
   CaptainAvailabilityDtoOutputAvailability rebuild(
@@ -223,7 +327,9 @@ class _$CaptainAvailabilityDtoOutputAvailability
         since == other.since &&
         reasons == other.reasons &&
         suspensionReason == other.suspensionReason &&
-        suspendedUntil == other.suspendedUntil;
+        suspendedUntil == other.suspendedUntil &&
+        lastOrderBy == other.lastOrderBy &&
+        lastOrderReason == other.lastOrderReason;
   }
 
   @override
@@ -234,6 +340,8 @@ class _$CaptainAvailabilityDtoOutputAvailability
     _$hash = $jc(_$hash, reasons.hashCode);
     _$hash = $jc(_$hash, suspensionReason.hashCode);
     _$hash = $jc(_$hash, suspendedUntil.hashCode);
+    _$hash = $jc(_$hash, lastOrderBy.hashCode);
+    _$hash = $jc(_$hash, lastOrderReason.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -247,7 +355,9 @@ class _$CaptainAvailabilityDtoOutputAvailability
           ..add('since', since)
           ..add('reasons', reasons)
           ..add('suspensionReason', suspensionReason)
-          ..add('suspendedUntil', suspendedUntil))
+          ..add('suspendedUntil', suspendedUntil)
+          ..add('lastOrderBy', lastOrderBy)
+          ..add('lastOrderReason', lastOrderReason))
         .toString();
   }
 }
@@ -287,6 +397,18 @@ class CaptainAvailabilityDtoOutputAvailabilityBuilder
   set suspendedUntil(DateTime? suspendedUntil) =>
       _$this._suspendedUntil = suspendedUntil;
 
+  CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum? _lastOrderBy;
+  CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum? get lastOrderBy =>
+      _$this._lastOrderBy;
+  set lastOrderBy(
+    CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum? lastOrderBy,
+  ) => _$this._lastOrderBy = lastOrderBy;
+
+  String? _lastOrderReason;
+  String? get lastOrderReason => _$this._lastOrderReason;
+  set lastOrderReason(String? lastOrderReason) =>
+      _$this._lastOrderReason = lastOrderReason;
+
   CaptainAvailabilityDtoOutputAvailabilityBuilder() {
     CaptainAvailabilityDtoOutputAvailability._defaults(this);
   }
@@ -299,6 +421,8 @@ class CaptainAvailabilityDtoOutputAvailabilityBuilder
       _reasons = $v.reasons.toBuilder();
       _suspensionReason = $v.suspensionReason;
       _suspendedUntil = $v.suspendedUntil;
+      _lastOrderBy = $v.lastOrderBy;
+      _lastOrderReason = $v.lastOrderReason;
       _$v = null;
     }
     return this;
@@ -334,6 +458,8 @@ class CaptainAvailabilityDtoOutputAvailabilityBuilder
             reasons: reasons.build(),
             suspensionReason: suspensionReason,
             suspendedUntil: suspendedUntil,
+            lastOrderBy: lastOrderBy,
+            lastOrderReason: lastOrderReason,
           );
     } catch (_) {
       late String _$failedField;

@@ -71,7 +71,10 @@ async function city({ usd = false } = {}): Promise<string> {
   cities += 1;
   const { rows } = await sql.query<{ id: string }>(
     'INSERT INTO geo.cities (code, name) VALUES ($1, $2) RETURNING id',
-    [`C${String.fromCharCode(64 + cities)}`, `test city ${cities}`],
+    [
+      `C${String.fromCharCode(65 + Math.floor(cities / 26))}${String.fromCharCode(65 + (cities % 26))}`,
+      `test city ${cities}`,
+    ],
   );
   const cityId = rows[0]!.id;
   await fx.setCityCurrency(cityId, { currency: 'TRY', displayOrder: 1, enabled: true }, fxSystem);
@@ -630,5 +633,141 @@ describe('CaptainsService.eligibleNear (AP §9.12.6)', () => {
     } finally {
       for (const each of [id, far.id, simulated.id]) await captains.goOffline(each, new Date());
     }
+  });
+});
+
+// CA §7.3, §7.6, K13, K18 (slice 2.13a): last-order mode, asked by the
+// captain or set by a force offline or a suspension during an order, ends
+// the online period once the order left the captain.
+describe('last-order mode and force offline', () => {
+  const active = new Set<string>();
+  const changes: { kind: string; captainId: string; atOnce?: boolean; reason?: string }[] = [];
+  beforeAll(() => {
+    captains.onAvailabilityChanged((_tx, change) => {
+      changes.push(change);
+      return Promise.resolve();
+    });
+  });
+
+  async function onOrder() {
+    const { id } = await captain();
+    await captains.goOnline(id, device, new Date());
+    active.add(id);
+    captains.useActiveOrders((ids) => Promise.resolve(new Set(ids.filter((each) => active.has(each)))));
+    return id;
+  }
+
+  async function leaves(id: string, now = new Date()) {
+    active.delete(id);
+    const after = await db.transaction((tx) => captains.afterOrderLeft(tx, id, now));
+    await after();
+  }
+
+  async function endReason(id: string) {
+    const { rows } = await sql.query<{ end_reason: string | null }>(
+      'SELECT end_reason FROM captains.online_periods WHERE captain_id = $1 ORDER BY started_at DESC LIMIT 1',
+      [id],
+    );
+    return rows[0]?.end_reason ?? null;
+  }
+
+  it('turns on with an order, is never offered, and goes offline when the order leaves', async () => {
+    const id = await onOrder();
+    const state = await captains.setLastOrder(id, true, new Date());
+    expect(state.availability).toMatchObject({ state: 'last_order', by: 'captain', reason: null });
+    // An order that leaves while another stays changes nothing.
+    await db.transaction(async (tx) => (await captains.afterOrderLeft(tx, id, new Date()))());
+    expect((await captains.state(id, new Date())).availability.state).toBe('last_order');
+    await leaves(id);
+    expect((await captains.state(id, new Date())).availability).toEqual({ state: 'offline' });
+    expect(await endReason(id)).toBe('last_order');
+    expect(changes.at(-1)).toMatchObject({ kind: 'offline_after_order', captainId: id });
+  });
+
+  it('can be cancelled by the captain before the order ends', async () => {
+    const id = await onOrder();
+    await captains.setLastOrder(id, true, new Date());
+    expect((await captains.setLastOrder(id, false, new Date())).availability.state).toBe('busy');
+    await leaves(id);
+    expect((await captains.state(id, new Date())).availability.state).toBe('online_available');
+    await captains.goOffline(id, new Date());
+  });
+
+  it('needs an order to turn on, and the captain online', async () => {
+    const { id } = await captain();
+    await expect(captains.setLastOrder(id, true, new Date())).rejects.toMatchObject({
+      refusal: 'not_online',
+    });
+    await captains.goOnline(id, device, new Date());
+    await expect(captains.setLastOrder(id, true, new Date())).rejects.toMatchObject({
+      refusal: 'no_active_order',
+    });
+    await captains.goOffline(id, new Date());
+  });
+
+  it('forces an online captain offline at once with the reason (AP §9.7.5)', async () => {
+    const { id } = await captain();
+    await captains.goOnline(id, device, new Date());
+    await expect(
+      captains.forceOffline(id, { ...change, reason: ' ' }, new Date()),
+    ).rejects.toMatchObject({ refusal: 'reason_required' });
+    await captains.forceOffline(id, { ...change, reason: 'تأخر في التسليم' }, new Date());
+    expect((await captains.state(id, new Date())).availability).toEqual({ state: 'offline' });
+    expect(await endReason(id)).toBe('forced');
+    expect(changes.at(-1)).toMatchObject({
+      kind: 'forced_offline',
+      captainId: id,
+      atOnce: true,
+      reason: 'تأخر في التسليم',
+    });
+  });
+
+  it('puts a captain on an order in last-order mode instead (K18), which they cannot cancel', async () => {
+    const id = await onOrder();
+    await captains.setLastOrder(id, true, new Date());
+    await captains.forceOffline(id, { ...change, reason: 'تأخر في التسليم' }, new Date());
+    expect((await captains.state(id, new Date())).availability).toMatchObject({
+      state: 'last_order',
+      by: 'forced',
+      reason: 'تأخر في التسليم',
+    });
+    expect(changes.at(-1)).toMatchObject({ kind: 'forced_offline', atOnce: false });
+    await expect(captains.setLastOrder(id, false, new Date())).rejects.toMatchObject({
+      refusal: 'last_order_not_yours',
+    });
+    await expect(captains.goOffline(id, new Date())).rejects.toMatchObject({
+      refusal: 'active_order',
+    });
+    await leaves(id);
+    expect(await endReason(id)).toBe('forced');
+  });
+
+  it('keeps a captain suspended during an order tracked until it ends (K18)', async () => {
+    const id = await onOrder();
+    const now = new Date();
+    await captains.setStatus(id, 'suspended', { ...change, until: null }, now);
+    expect((await captains.state(id, now)).availability).toMatchObject({
+      state: 'last_order',
+      by: 'suspended',
+      reason: 'اختبار',
+    });
+    await leaves(id);
+    expect((await captains.state(id, new Date())).availability.state).toBe('suspended');
+    expect(await endReason(id)).toBe('suspended');
+  });
+
+  it('lifts the suspension mode when the captain is reactivated or the suspension ends', async () => {
+    const id = await onOrder();
+    const now = new Date();
+    await captains.setStatus(id, 'suspended', { ...change, until: null }, now);
+    await captains.setStatus(id, 'active', change, now);
+    expect((await captains.state(id, now)).availability.state).toBe('busy');
+    const until = new Date(now.getTime() + 60_000);
+    await captains.setStatus(id, 'suspended', { ...change, until }, now);
+    await leaves(id, new Date(until.getTime() + 1_000));
+    expect((await captains.state(id, new Date(until.getTime() + 1_000))).availability.state).toBe(
+      'online_available',
+    );
+    await captains.goOffline(id, new Date(until.getTime() + 1_000));
   });
 });

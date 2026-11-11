@@ -23,6 +23,7 @@ const ready: AvailabilityInput = {
   simulatedLocation: false,
   termsPending: false,
   activeOrder: false,
+  lastOrder: null,
 };
 
 describe('onlineBlocks', () => {
@@ -177,5 +178,62 @@ describe('availability', () => {
       ),
     ).toEqual({ state: 'suspended', reason: 'تأخر متكرر', until });
     expect(availability({ ...ready, status: 'terminated' }, now)).toEqual({ state: 'offline' });
+  });
+
+  // CA §7.3, §7.6, K13, K18: last-order mode, asked by the captain or set by
+  // operations' force offline, a suspension or a termination during an order.
+  it('is in last-order mode while an order runs, whoever asked', () => {
+    const busy = { ...online, activeOrder: true };
+    expect(availability({ ...busy, lastOrder: { by: 'captain', reason: null } }, now)).toEqual({
+      state: 'last_order',
+      since: online.onlineSince,
+      by: 'captain',
+      reason: null,
+    });
+    expect(
+      availability({ ...busy, lastOrder: { by: 'forced', reason: 'Late hand-in' } }, now),
+    ).toEqual({ state: 'last_order', since: online.onlineSince, by: 'forced', reason: 'Late hand-in' });
+  });
+
+  it('keeps a captain suspended or terminated during an order in last-order mode (K18)', () => {
+    const until = new Date(now.getTime() + hours(24));
+    const suspended: AvailabilityInput = {
+      ...online,
+      activeOrder: true,
+      status: 'suspended',
+      suspension: { reason: 'Repeated delays', until },
+      lastOrder: { by: 'suspended', reason: null },
+    };
+    expect(availability(suspended, now)).toEqual({
+      state: 'last_order',
+      since: online.onlineSince,
+      by: 'suspended',
+      reason: 'Repeated delays',
+    });
+    expect(
+      availability(
+        { ...online, activeOrder: true, status: 'terminated', lastOrder: { by: 'terminated', reason: null } },
+        now,
+      ),
+    ).toEqual({ state: 'last_order', since: online.onlineSince, by: 'terminated', reason: null });
+  });
+
+  it('never offers a captain in last-order mode once the order left them', () => {
+    // Until the job ends the online period, the state stays last-order, which
+    // dispatch never offers (it offers online_available only).
+    expect(
+      availability({ ...online, lastOrder: { by: 'captain', reason: null } }, now).state,
+    ).toBe('last_order');
+    expect(
+      availability(
+        {
+          ...online,
+          status: 'suspended',
+          suspension: { reason: 'Repeated delays', until: null },
+          lastOrder: { by: 'suspended', reason: null },
+        },
+        now,
+      ).state,
+    ).toBe('suspended');
   });
 });

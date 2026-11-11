@@ -2712,6 +2712,42 @@
         ]
       }
     },
+    "/v1/captain/availability/last-order": {
+      "post": {
+        "operationId": "captainAvailabilityLastOrder",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptainLastOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainAvailabilityDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
     "/v1/captain/location": {
       "post": {
         "operationId": "captainAvailabilityLocation",
@@ -2745,6 +2781,90 @@
         },
         "tags": [
           "captain"
+        ]
+      }
+    },
+    "/v1/admin/captains/{captainId}/availability": {
+      "get": {
+        "operationId": "adminCaptainsAvailability",
+        "parameters": [
+          {
+            "name": "captainId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCaptainAvailabilityDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/captains/{captainId}/force-offline": {
+      "post": {
+        "operationId": "adminCaptainsForceOffline",
+        "parameters": [
+          {
+            "name": "captainId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminForceOfflineDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCaptainAvailabilityDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
         ]
       }
     },
@@ -10599,6 +10719,7 @@
                   "offline",
                   "online_available",
                   "busy",
+                  "last_order",
                   "not_receiving_offers",
                   "suspended"
                 ]
@@ -10646,6 +10767,30 @@
                   }
                 ],
                 "description": "While suspended: the end, or null until further notice."
+              },
+              "lastOrderBy": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "captain",
+                      "forced",
+                      "suspended",
+                      "terminated"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "In last_order: who set it (CA §7.3, §7.6, K18). Only the captain's own can be cancelled."
+              },
+              "lastOrderReason": {
+                "description": "In last_order: the reason shown, a force offline's or a suspension's.",
+                "type": [
+                  "string",
+                  "null"
+                ]
               }
             },
             "required": [
@@ -10653,10 +10798,12 @@
               "since",
               "reasons",
               "suspensionReason",
-              "suspendedUntil"
+              "suspendedUntil",
+              "lastOrderBy",
+              "lastOrderReason"
             ],
             "additionalProperties": false,
-            "description": "CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «لا تصلك عروض» with its reasons, «موقوف»."
+            "description": "CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «آخر طلب» (last-order mode), «لا تصلك عروض» with its reasons, «موقوف»."
           },
           "custody": {
             "type": "object",
@@ -10731,6 +10878,27 @@
                 "type": "string",
                 "format": "date-time",
                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "remitTolerance": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$",
+                    "description": "Integer minor units (AP §8.6)."
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  }
+                },
+                "required": [
+                  "amount",
+                  "currency"
+                ],
+                "additionalProperties": false,
+                "description": "CA §7.5: captain.remit_tolerance; the hand-in reminder shows when usage is above it."
               }
             },
             "required": [
@@ -10738,7 +10906,8 @@
               "limit",
               "warn",
               "closedDue",
-              "lastCutoff"
+              "lastCutoff",
+              "remitTolerance"
             ],
             "additionalProperties": false
           }
@@ -10802,6 +10971,18 @@
           "handIn"
         ],
         "additionalProperties": false
+      },
+      "CaptainLastOrderDto": {
+        "type": "object",
+        "properties": {
+          "on": {
+            "type": "boolean",
+            "description": "CA §7.3: «لا أريد طلبات جديدة» on, or cancelled before the order ends."
+          }
+        },
+        "required": [
+          "on"
+        ]
       },
       "CaptainLocationsDto": {
         "type": "object",
@@ -10867,6 +11048,58 @@
           "accepted"
         ],
         "additionalProperties": false
+      },
+      "AdminCaptainAvailabilityDto_Output": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "offline",
+              "online_available",
+              "busy",
+              "last_order",
+              "not_receiving_offers",
+              "suspended"
+            ]
+          },
+          "lastOrderBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "captain",
+                  "forced",
+                  "suspended",
+                  "terminated"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "In last_order: who set it (CA §7.3, §7.6, K18)."
+          }
+        },
+        "required": [
+          "state",
+          "lastOrderBy"
+        ],
+        "additionalProperties": false
+      },
+      "AdminForceOfflineDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Shown to the captain and kept in the audit log (AP §9.7.5)."
+          }
+        },
+        "required": [
+          "reason"
+        ]
       },
       "ContactDto_Output": {
         "type": "object",
@@ -27317,6 +27550,7 @@
                     "type": "string",
                     "enum": [
                       "busy",
+                      "last_order",
                       "cash_limit",
                       "closed_due",
                       "simulated_location",
