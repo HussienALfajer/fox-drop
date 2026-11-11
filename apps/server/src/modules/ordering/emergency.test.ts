@@ -451,7 +451,7 @@ describe('«طوارئ» (CA §9.11, C15)', () => {
     const { order, captain, ops } = await captainAtRestaurant();
     const pressed = await emergency(captain, order.id);
     expect(pressed.statusCode).toBe(200);
-    expect(pressed.json().order.emergency).toEqual({ at: expect.any(String) });
+    expect(pressed.json().order.emergency).toEqual({ at: expect.any(String), located: true });
     expect((await captain.active()).json().order.emergency).not.toBeNull();
     expect(await emergencyRows(order.id)).toEqual([
       {
@@ -477,6 +477,7 @@ describe('«طوارئ» (CA §9.11, C15)', () => {
         longitude: atDoor.longitude,
         accuracyMetres: 10,
         recordedAt: expect.any(String),
+        simulated: false,
       },
       at: expect.any(String),
     });
@@ -528,6 +529,7 @@ describe('«طوارئ» (CA §9.11, C15)', () => {
     const blind = await emergency(other.captain, other.order.id, null);
     expect(blind.statusCode).toBe(200);
     expect((await other.ops.detail(other.order.id)).emergency.location).toBeNull();
+    expect((await other.captain.active()).json().order.emergency.located).toBe(false);
   });
 
   it('takes the captain offline when operations reassign the order (K17)', async () => {
@@ -569,5 +571,55 @@ describe('«طوارئ» (CA §9.11, C15)', () => {
     expect(cancelled.statusCode).toBe(200);
     expect((await emergencyRows(order.id))[0].closed_how).toBe('ended');
     expect(await periodEnd(captain.captainId)).toBe('emergency');
+  });
+
+  it('ends the period with emergency when «لا أستطيع إكمال الطلب» is open too', async () => {
+    const { order, captain, ops } = await captainAtRestaurant();
+    const asked = await captainPost(captain, order.id, 'cannot-complete', {
+      location: fixNow(),
+      reason: 'accident',
+      note: null,
+    });
+    expect(asked.statusCode).toBe(200);
+    expect((await emergency(captain, order.id)).statusCode).toBe(200);
+    const reassigned = await ops.reassign(order.id, {
+      reassignment: 'captain_request',
+      captainFault: false,
+      cash: 'not_paid',
+      reason: 'حادث',
+    });
+    expect(reassigned.statusCode).toBe(200);
+    expect(await periodEnd(captain.captainId)).toBe('emergency');
+    const { rows } = await sql.query(
+      'SELECT closed_how FROM ordering.cannot_complete_requests WHERE order_id = $1',
+      [order.id],
+    );
+    expect(rows).toEqual([{ closed_how: 'reassigned' }]);
+  });
+
+  it('moves the open alert to a newer emergency’s location', async () => {
+    const alerts = app.get(AlertsService);
+    const subject = { type: 'order' as const, id: randomUUID(), cityId: azaz };
+    const at = (latitude: string) => ({
+      ...subject,
+      details: { orderNumber: '10001' },
+      codeDetails: { captain_emergency: { latitude, longitude: '37', locatedAt: 'x' } },
+    });
+    const sync = (latitude: string) =>
+      db.db.transaction((tx) =>
+        alerts.sync(tx, at(latitude), ['captain_emergency'], ['captain_emergency'], new Date()),
+      );
+    await sync('36.1');
+    await sync('36.2');
+    const { rows } = await sql.query(
+      'SELECT details, resolved_at FROM notifications.alerts WHERE subject_id = $1',
+      [subject.id],
+    );
+    expect(rows).toEqual([
+      {
+        details: { orderNumber: '10001', latitude: '36.2', longitude: '37', locatedAt: 'x' },
+        resolved_at: null,
+      },
+    ]);
   });
 });

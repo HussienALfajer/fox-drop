@@ -263,7 +263,7 @@ export interface CaptainActiveOrder {
   // («بانتظار العمليات» with «تراجع»), or null.
   cannotComplete: Pick<OpenCannotComplete, 'reasonLabel' | 'note' | 'at'> | null;
   // CA §9.11 (slice 2.13c): this captain's open «طوارئ», or null.
-  emergency: Pick<OpenEmergency, 'at'> | null;
+  emergency: Pick<OpenEmergency, 'at' | 'location'> | null;
 }
 
 // The captain's side of an order (CA §9, §15) and operations' commands on the
@@ -1792,7 +1792,7 @@ export class CaptainOrders {
           : null,
       emergency:
         emergency?.captainId === captainId && order.captainId === captainId
-          ? { at: emergency.at }
+          ? { at: emergency.at, location: emergency.location }
           : null,
     };
   }

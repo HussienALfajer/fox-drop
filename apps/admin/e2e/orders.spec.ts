@@ -1102,6 +1102,7 @@ test('shows «طوارئ» with its map and prefills no fault', async ({ page })
               longitude: 37.046,
               accuracyMetres: 12,
               recordedAt: later(-2),
+              simulated: false,
             },
             at: later(-2),
           },

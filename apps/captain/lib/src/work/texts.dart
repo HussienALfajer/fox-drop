@@ -148,6 +148,7 @@ extension CaptainTexts on AppLocalizations {
         EditUnacknowledged() => captainWaitingForEditAcknowledgement,
         CommandFailed() => captainCommandFailed,
         ReasonChanged() => captainReasonChanged,
+        NoOperationsNumber() => captainEmergencyNoNumber,
       };
 
   String alertText(Alert alert) => switch (alert) {

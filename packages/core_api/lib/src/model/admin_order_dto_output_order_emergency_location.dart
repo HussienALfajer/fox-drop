@@ -15,6 +15,7 @@ part 'admin_order_dto_output_order_emergency_location.g.dart';
 /// * [longitude]
 /// * [accuracyMetres]
 /// * [recordedAt]
+/// * [simulated] - The device reported a mock location.
 @BuiltValue()
 abstract class AdminOrderDtoOutputOrderEmergencyLocation
     implements
@@ -33,6 +34,10 @@ abstract class AdminOrderDtoOutputOrderEmergencyLocation
 
   @BuiltValueField(wireName: r'recordedAt')
   DateTime get recordedAt;
+
+  /// The device reported a mock location.
+  @BuiltValueField(wireName: r'simulated')
+  bool get simulated;
 
   AdminOrderDtoOutputOrderEmergencyLocation._();
 
@@ -84,6 +89,11 @@ class _$AdminOrderDtoOutputOrderEmergencyLocationSerializer
     yield serializers.serialize(
       object.recordedAt,
       specifiedType: const FullType(DateTime),
+    );
+    yield r'simulated';
+    yield serializers.serialize(
+      object.simulated,
+      specifiedType: const FullType(bool),
     );
   }
 
@@ -138,6 +148,15 @@ class _$AdminOrderDtoOutputOrderEmergencyLocationSerializer
                   )
                   as DateTime;
           result.recordedAt = valueDes;
+          break;
+        case r'simulated':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.simulated = valueDes;
           break;
         default:
           unhandled.add(key);

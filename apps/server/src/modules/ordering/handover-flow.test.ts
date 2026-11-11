@@ -1134,4 +1134,44 @@ describe('the handover after «طوارئ» (CA §9.11, AP §9.7.6; slice 2.13c)
     expect(rows).toEqual([{ closed_how: 'handed_over' }]);
     expect((await first.availability()).state).toBe('offline');
   });
+
+  it('takes the captain offline when operations record the delivery with it open (K17)', async () => {
+    const { order, first, ops } = await pickedUpOrder();
+    expect((await press(first, order.id)).statusCode).toBe(200);
+    const recorded = await ops.post(`/v1/admin/orders/${order.id}/record-delivery`, {
+      received: [{ currency: 'TRY', amount: '28000' }],
+      change: [],
+      amountDue: { amount: '28000', currency: 'TRY' },
+      shortfall: null,
+      reason: 'أوصله الكابتن بعد الطوارئ',
+    });
+    expect(recorded.statusCode).toBe(200);
+    const { rows } = await sql.query(
+      'SELECT closed_how FROM ordering.emergencies WHERE order_id = $1',
+      [order.id],
+    );
+    expect(rows).toEqual([{ closed_how: 'ended' }]);
+    const { rows: periods } = await sql.query(
+      `SELECT end_reason FROM captains.online_periods WHERE captain_id = $1
+        ORDER BY started_at DESC LIMIT 1`,
+      [first.captainId],
+    );
+    expect(periods).toEqual([{ end_reason: 'emergency' }]);
+  });
+
+  it('ends the period with emergency after an outcome', async () => {
+    const { order, first, ops } = await pickedUpOrder();
+    expect((await press(first, order.id)).statusCode).toBe(200);
+    const { version } = await ops.detail(order.id);
+    const outcome = await ops.post(`/v1/admin/orders/${order.id}/outcome`, {
+      outcome: 'failed_other',
+      responsible: 'platform',
+      delivered: false,
+      food: 'kept_by_captain',
+      version,
+      reason: 'حادث',
+    });
+    expect(outcome.statusCode).toBe(200);
+    expect((await first.availability()).state).toBe('offline');
+  });
 });

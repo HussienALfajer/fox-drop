@@ -139,9 +139,12 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
         <span>{t('alerts.restaurant', { name: alert.restaurantName })}</span>
       )}{' '}
       {alert.location && (
-        <a href={mapLink(alert.location)} target="_blank" rel="noreferrer">
-          {t('alerts.openMap')}
-        </a>
+        <>
+          <span>{t('alerts.locatedAt', { time: time(alert.location.at) })}</span>{' '}
+          <a href={mapLink(alert.location)} target="_blank" rel="noreferrer">
+            {t('alerts.openMap')}
+          </a>
+        </>
       )}{' '}
       <span>{t('alerts.raisedAt', { time: time(alert.raisedAt) })}</span>{' '}
       {alert.acknowledged && (

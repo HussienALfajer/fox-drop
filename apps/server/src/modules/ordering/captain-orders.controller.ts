@@ -265,7 +265,10 @@ const activeOrder = z
         "«لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b): the captain's open request, «بانتظار العمليات» with «تراجع»; every step stays open. Null without one.",
       ),
     emergency: z
-      .object({ at: z.iso.datetime() })
+      .object({
+        at: z.iso.datetime(),
+        located: z.boolean().describe('Whether the press sent a fix.'),
+      })
       .nullable()
       .describe(
         "«طوارئ» (CA §9.11, slice 2.13c): the captain's open emergency; it cannot be withdrawn and every step stays open. Null without one.",
@@ -725,7 +728,10 @@ function activeOrderBody({
       note: cannotComplete.note,
       at: cannotComplete.at.toISOString(),
     },
-    emergency: emergency && { at: emergency.at.toISOString() },
+    emergency: emergency && {
+      at: emergency.at.toISOString(),
+      located: emergency.location !== null,
+    },
   };
 }
 

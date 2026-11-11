@@ -1058,7 +1058,7 @@ void main() {
       track: 'picked_up',
       pickedUp: true,
       version: 4,
-      emergency: {'at': now.toIso8601String()},
+      emergency: {'at': now.toIso8601String(), 'located': true},
     );
     app.server.on('/v1/captain/orders/$orderId/emergency', [
       FakeAnswer(200, {'order': pressed}),
@@ -1079,6 +1079,13 @@ void main() {
       find.text('أُبلغت العمليات بالطوارئ وموقعك. ابقَ في مكان آمن.'),
       findsOneWidget,
     );
+    // The number stays on the phone for a press without signal.
+    expect(
+      await app.container
+          .read(captainAuth.store)
+          .read('captain.operations_phone'),
+      '+963944000000',
+    );
 
     // Open: it cannot be withdrawn, and another press only calls.
     press = await tester.startGesture(tester.getCenter(button));
@@ -1090,6 +1097,48 @@ void main() {
     expect(
       app.server.to('/v1/captain/orders/$orderId/emergency'),
       hasLength(1),
+    );
+    await app.done(tester);
+  });
+
+  testWidgets('«طوارئ» without signal calls the number kept on the phone, '
+      'and says no location went (CA §9.11)', (tester) async {
+    final app = TestApp();
+    app.server.on('/v1/captain/contact', [const FakeAnswer(503, {})]);
+    final pressed = orderJson(
+      track: 'picked_up',
+      pickedUp: true,
+      version: 4,
+      emergency: {'at': now.toIso8601String(), 'located': false},
+    );
+    app.server.on('/v1/captain/orders/$orderId/emergency', [
+      FakeAnswer(200, {'order': pressed}),
+    ]);
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [orderJson(track: 'picked_up', pickedUp: true)],
+    );
+    await app.pump(
+      tester,
+      stored: {...signedIn(), 'captain.operations_phone': '+963944000009'},
+    );
+    await app.live(tester);
+    final button = find.text('طوارئ');
+    await tester.ensureVisible(button);
+    await app.settle(tester);
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [pressed],
+    );
+    final press = await tester.startGesture(tester.getCenter(button));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 2100));
+    await press.up();
+    await app.settle(tester);
+    expect(app.caller.calls, ['+963944000009']);
+    expect(
+      find.text('أُبلغت العمليات بالطوارئ، ولم يصل موقعك. ابقَ في مكان آمن.'),
+      findsOneWidget,
     );
     await app.done(tester);
   });

@@ -16,6 +16,8 @@ class _$AdminOrderDtoOutputOrderEmergencyLocation
   final num accuracyMetres;
   @override
   final DateTime recordedAt;
+  @override
+  final bool simulated;
 
   factory _$AdminOrderDtoOutputOrderEmergencyLocation([
     void Function(AdminOrderDtoOutputOrderEmergencyLocationBuilder)? updates,
@@ -27,6 +29,7 @@ class _$AdminOrderDtoOutputOrderEmergencyLocation
     required this.longitude,
     required this.accuracyMetres,
     required this.recordedAt,
+    required this.simulated,
   }) : super._();
   @override
   AdminOrderDtoOutputOrderEmergencyLocation rebuild(
@@ -44,7 +47,8 @@ class _$AdminOrderDtoOutputOrderEmergencyLocation
         latitude == other.latitude &&
         longitude == other.longitude &&
         accuracyMetres == other.accuracyMetres &&
-        recordedAt == other.recordedAt;
+        recordedAt == other.recordedAt &&
+        simulated == other.simulated;
   }
 
   @override
@@ -54,6 +58,7 @@ class _$AdminOrderDtoOutputOrderEmergencyLocation
     _$hash = $jc(_$hash, longitude.hashCode);
     _$hash = $jc(_$hash, accuracyMetres.hashCode);
     _$hash = $jc(_$hash, recordedAt.hashCode);
+    _$hash = $jc(_$hash, simulated.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -66,7 +71,8 @@ class _$AdminOrderDtoOutputOrderEmergencyLocation
           ..add('latitude', latitude)
           ..add('longitude', longitude)
           ..add('accuracyMetres', accuracyMetres)
-          ..add('recordedAt', recordedAt))
+          ..add('recordedAt', recordedAt)
+          ..add('simulated', simulated))
         .toString();
   }
 }
@@ -96,6 +102,10 @@ class AdminOrderDtoOutputOrderEmergencyLocationBuilder
   DateTime? get recordedAt => _$this._recordedAt;
   set recordedAt(DateTime? recordedAt) => _$this._recordedAt = recordedAt;
 
+  bool? _simulated;
+  bool? get simulated => _$this._simulated;
+  set simulated(bool? simulated) => _$this._simulated = simulated;
+
   AdminOrderDtoOutputOrderEmergencyLocationBuilder() {
     AdminOrderDtoOutputOrderEmergencyLocation._defaults(this);
   }
@@ -107,6 +117,7 @@ class AdminOrderDtoOutputOrderEmergencyLocationBuilder
       _longitude = $v.longitude;
       _accuracyMetres = $v.accuracyMetres;
       _recordedAt = $v.recordedAt;
+      _simulated = $v.simulated;
       _$v = null;
     }
     return this;
@@ -150,6 +161,11 @@ class AdminOrderDtoOutputOrderEmergencyLocationBuilder
             recordedAt,
             r'AdminOrderDtoOutputOrderEmergencyLocation',
             'recordedAt',
+          ),
+          simulated: BuiltValueNullFieldError.checkNotNull(
+            simulated,
+            r'AdminOrderDtoOutputOrderEmergencyLocation',
+            'simulated',
           ),
         );
     replace(_$result);

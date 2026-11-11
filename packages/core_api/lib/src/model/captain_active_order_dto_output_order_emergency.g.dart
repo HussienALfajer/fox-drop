@@ -10,13 +10,18 @@ class _$CaptainActiveOrderDtoOutputOrderEmergency
     extends CaptainActiveOrderDtoOutputOrderEmergency {
   @override
   final DateTime at;
+  @override
+  final bool located;
 
   factory _$CaptainActiveOrderDtoOutputOrderEmergency([
     void Function(CaptainActiveOrderDtoOutputOrderEmergencyBuilder)? updates,
   ]) => (CaptainActiveOrderDtoOutputOrderEmergencyBuilder()..update(updates))
       ._build();
 
-  _$CaptainActiveOrderDtoOutputOrderEmergency._({required this.at}) : super._();
+  _$CaptainActiveOrderDtoOutputOrderEmergency._({
+    required this.at,
+    required this.located,
+  }) : super._();
   @override
   CaptainActiveOrderDtoOutputOrderEmergency rebuild(
     void Function(CaptainActiveOrderDtoOutputOrderEmergencyBuilder) updates,
@@ -29,13 +34,16 @@ class _$CaptainActiveOrderDtoOutputOrderEmergency
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is CaptainActiveOrderDtoOutputOrderEmergency && at == other.at;
+    return other is CaptainActiveOrderDtoOutputOrderEmergency &&
+        at == other.at &&
+        located == other.located;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, at.hashCode);
+    _$hash = $jc(_$hash, located.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -43,8 +51,11 @@ class _$CaptainActiveOrderDtoOutputOrderEmergency
   @override
   String toString() {
     return (newBuiltValueToStringHelper(
-      r'CaptainActiveOrderDtoOutputOrderEmergency',
-    )..add('at', at)).toString();
+            r'CaptainActiveOrderDtoOutputOrderEmergency',
+          )
+          ..add('at', at)
+          ..add('located', located))
+        .toString();
   }
 }
 
@@ -60,6 +71,10 @@ class CaptainActiveOrderDtoOutputOrderEmergencyBuilder
   DateTime? get at => _$this._at;
   set at(DateTime? at) => _$this._at = at;
 
+  bool? _located;
+  bool? get located => _$this._located;
+  set located(bool? located) => _$this._located = located;
+
   CaptainActiveOrderDtoOutputOrderEmergencyBuilder() {
     CaptainActiveOrderDtoOutputOrderEmergency._defaults(this);
   }
@@ -68,6 +83,7 @@ class CaptainActiveOrderDtoOutputOrderEmergencyBuilder
     final $v = _$v;
     if ($v != null) {
       _at = $v.at;
+      _located = $v.located;
       _$v = null;
     }
     return this;
@@ -96,6 +112,11 @@ class CaptainActiveOrderDtoOutputOrderEmergencyBuilder
             at,
             r'CaptainActiveOrderDtoOutputOrderEmergency',
             'at',
+          ),
+          located: BuiltValueNullFieldError.checkNotNull(
+            located,
+            r'CaptainActiveOrderDtoOutputOrderEmergency',
+            'located',
           ),
         );
     replace(_$result);

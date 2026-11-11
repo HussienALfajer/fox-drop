@@ -2476,6 +2476,18 @@ abstract class AppLocalizations {
   /// **'أُبلغت العمليات بالطوارئ وموقعك. ابقَ في مكان آمن.'**
   String get captainEmergencySent;
 
+  /// Above «طوارئ» once open, when the phone had no fix to send. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أُبلغت العمليات بالطوارئ، ولم يصل موقعك. ابقَ في مكان آمن.'**
+  String get captainEmergencySentNoLocation;
+
+  /// «طوارئ» without an operations number on the phone. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يصل رقم العمليات إلى هاتفك بعد، فلم يتصل. أُبلغت العمليات بالطوارئ.'**
+  String get captainEmergencyNoNumber;
+
   /// The text of «أخرى». The spec gives no wording.
   ///
   /// In ar, this message translates to:

@@ -63,7 +63,9 @@ export class AlertsService {
   // Raises the codes of `open` that are not open for the subject, and
   // resolves the open ones among `evaluated` that are no longer in `open`
   // (AP §7.3, auto-resolve). A rule that does not resolve itself is raised
-  // once per subject and left to its acknowledgment.
+  // once per subject and left to its acknowledgment. An alert still open
+  // takes its rule's `codeDetails` again when they changed (a new
+  // emergency's location before the old one's alert resolved).
   async sync(
     executor: Executor,
     subject: AlertSubjectRef,
@@ -73,7 +75,12 @@ export class AlertsService {
   ): Promise<void> {
     if (evaluated.length === 0) return;
     const rows = await executor
-      .select({ id: alerts.id, code: alerts.code, resolvedAt: alerts.resolvedAt })
+      .select({
+        id: alerts.id,
+        code: alerts.code,
+        resolvedAt: alerts.resolvedAt,
+        details: alerts.details,
+      })
       .from(alerts)
       .where(
         and(
@@ -101,6 +108,13 @@ export class AlertsService {
         )
         .returning();
       await recordEvents(executor, 'alert.resolved', resolved, now);
+    }
+    for (const row of rows) {
+      const extra = subject.codeDetails?.[row.code];
+      if (row.resolvedAt !== null || !open.includes(row.code) || extra === undefined) continue;
+      const details = { ...subject.details, ...extra };
+      if (sameDetails(row.details as Record<string, string>, details)) continue;
+      await executor.update(alerts).set({ details }).where(eq(alerts.id, row.id));
     }
     const missing = open.filter((code) =>
       ALERT_RULES[code].resolvesItself
@@ -233,4 +247,9 @@ async function recordEvents(
 
 function toAlert(row: typeof alerts.$inferSelect): Alert {
   return { ...row, details: row.details as Record<string, string> };
+}
+
+function sameDetails(a: Record<string, string>, b: Record<string, string>): boolean {
+  const keys = Object.keys(a);
+  return keys.length === Object.keys(b).length && keys.every((key) => a[key] === b[key]);
 }

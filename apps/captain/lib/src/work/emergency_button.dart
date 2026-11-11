@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +12,10 @@ import 'work.dart';
 
 /// K12: how long «طوارئ» must be held (fixed).
 const emergencyHold = Duration(seconds: 2);
+
+/// The operations number kept on the phone after each fetch, so «طوارئ»
+/// still calls when the fetch fails with no signal.
+const operationsPhoneKey = 'captain.operations_phone';
 
 /// CA §9.11 «طوارئ» (C15, K12; slice 2.13c): the red button on the active
 /// order. Held for [emergencyHold], with its progress ring, it calls
@@ -36,21 +42,43 @@ class _EmergencyButtonState extends ConsumerState<EmergencyButton>
         });
 
   @override
+  void initState() {
+    super.initState();
+    ref.listenManual(captainAuth.contact, (_, next) {
+      final phone = next.value?.phone;
+      if (phone != null) {
+        unawaited(ref.read(captainAuth.store).write(operationsPhoneKey, phone));
+      }
+    }, fireImmediately: true);
+  }
+
+  @override
   void dispose() {
     _hold.dispose();
     super.dispose();
   }
 
+  Future<String?> _phone() async {
+    final live = ref.read(captainAuth.contact).value?.phone;
+    if (live != null) return live;
+    try {
+      return await ref.read(captainAuth.store).read(operationsPhoneKey);
+    } on Object {
+      return null;
+    }
+  }
+
   Future<void> _fire() async {
     final order = widget.order;
-    final phone = ref.read(captainAuth.contact).value?.phone;
     // The second captain of a handover does not have the order yet: they
     // only call (CA §15).
     final send = order.emergency == null && receiving(order) == null
         ? ref.read(commandsProvider.notifier).emergency(order.id)
         : null;
+    final phone = await _phone();
     if (phone != null) await ref.read(operationsCallerProvider).call(phone);
-    final notice = await send;
+    final notice = phone == null ? const NoOperationsNumber() : await send;
+    if (phone == null) await send;
     if (mounted) {
       _hold.reset();
       showNotice(context, notice);
@@ -67,13 +95,18 @@ class _EmergencyButtonState extends ConsumerState<EmergencyButton>
     final scheme = Theme.of(context).colorScheme;
     // Kept loaded, so the call needs no request when it is pressed.
     ref.watch(captainAuth.contact);
-    final pressed = widget.order.emergency != null;
+    final pressed = widget.order.emergency;
     return Padding(
       padding: const EdgeInsetsDirectional.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (pressed) Text(l10n.captainEmergencySent),
+          if (pressed != null)
+            Text(
+              pressed.located
+                  ? l10n.captainEmergencySent
+                  : l10n.captainEmergencySentNoLocation,
+            ),
           Semantics(
             button: true,
             hint: l10n.captainEmergencyHold,

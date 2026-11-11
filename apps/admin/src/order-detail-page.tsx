@@ -227,6 +227,9 @@ export function OrderDetailPage() {
           ) : (
             <p>{t('order.emergency.noLocation')}</p>
           )}
+          {detail.emergency.location?.simulated && (
+            <p role="alert">{t('order.emergency.simulated')}</p>
+          )}
           <p>{t('order.emergency.actions')}</p>
         </section>
       )}

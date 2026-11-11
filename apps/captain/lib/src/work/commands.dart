@@ -125,6 +125,11 @@ class EditUnacknowledged extends Notice {
   const EditUnacknowledged();
 }
 
+/// «طوارئ» found no operations number on the phone (none fetched yet).
+class NoOperationsNumber extends Notice {
+  const NoOperationsNumber();
+}
+
 /// Any other refusal.
 class CommandFailed extends Notice {
   const CommandFailed();

@@ -12,6 +12,7 @@ part 'captain_active_order_dto_output_order_emergency.g.dart';
 ///
 /// Properties:
 /// * [at]
+/// * [located] - Whether the press sent a fix.
 @BuiltValue()
 abstract class CaptainActiveOrderDtoOutputOrderEmergency
     implements
@@ -21,6 +22,10 @@ abstract class CaptainActiveOrderDtoOutputOrderEmergency
         > {
   @BuiltValueField(wireName: r'at')
   DateTime get at;
+
+  /// Whether the press sent a fix.
+  @BuiltValueField(wireName: r'located')
+  bool get located;
 
   CaptainActiveOrderDtoOutputOrderEmergency._();
 
@@ -58,6 +63,11 @@ class _$CaptainActiveOrderDtoOutputOrderEmergencySerializer
       object.at,
       specifiedType: const FullType(DateTime),
     );
+    yield r'located';
+    yield serializers.serialize(
+      object.located,
+      specifiedType: const FullType(bool),
+    );
   }
 
   @override
@@ -93,6 +103,15 @@ class _$CaptainActiveOrderDtoOutputOrderEmergencySerializer
                   )
                   as DateTime;
           result.at = valueDes;
+          break;
+        case r'located':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.located = valueDes;
           break;
         default:
           unhandled.add(key);

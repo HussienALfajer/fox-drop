@@ -6680,6 +6680,8 @@ export interface components {
                         accuracyMetres: number;
                         /** Format: date-time */
                         recordedAt: string;
+                        /** @description The device reported a mock location. */
+                        simulated: boolean;
                     } | null;
                     /** Format: date-time */
                     at: string;
@@ -7261,6 +7263,8 @@ export interface components {
                 emergency: {
                     /** Format: date-time */
                     at: string;
+                    /** @description Whether the press sent a fix. */
+                    located: boolean;
                 } | null;
             } | null;
             /** @description The latest order operations cancelled within 12 hours that the captain has not acknowledged (POST …/acknowledge-cancellation); the app plays the cancellation sound when one appears. */
@@ -7565,6 +7569,8 @@ export interface components {
                 emergency: {
                     /** Format: date-time */
                     at: string;
+                    /** @description Whether the press sent a fix. */
+                    located: boolean;
                 } | null;
             };
         };

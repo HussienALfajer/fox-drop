@@ -847,6 +847,7 @@ class AdminOrderDto extends createZodDto(
               longitude: z.number(),
               accuracyMetres: z.number(),
               recordedAt: z.iso.datetime(),
+              simulated: z.boolean().describe('The device reported a mock location.'),
             })
             .nullable()
             .describe('The fix the app sent, whatever its quality; null without one.'),
@@ -2161,6 +2162,7 @@ export class AdminOrdersController {
             longitude: order.emergency.location.longitude,
             accuracyMetres: order.emergency.location.accuracyMetres,
             recordedAt: order.emergency.location.recordedAt.toISOString(),
+            simulated: order.emergency.location.simulated,
           },
           at: order.emergency.at.toISOString(),
         },
