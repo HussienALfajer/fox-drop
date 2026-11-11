@@ -16,6 +16,8 @@ import { AppSignInService } from './app-sign-in.service.js';
 import { AppSigningKeys } from './app-signing-keys.js';
 import { CaptainAccountsService } from './captain-accounts.service.js';
 import { CaptainAuthController } from './captain-auth.controller.js';
+import { CaptainDevicesController } from './captain-devices.controller.js';
+import { CaptainDevicesService } from './captain-devices.service.js';
 import { APP_CHECK_VERIFIER, appCheckVerifierFromEnvironment } from './app-check.js';
 import { CODE_SENDER, codeSenderFromEnvironment } from './code-sender.js';
 import { CustomerAccountsService } from './customer-accounts.service.js';
@@ -52,6 +54,7 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
     CaptainAuthController,
     OtpSenderNumbersController,
     EmergencySignInController,
+    CaptainDevicesController,
   ],
   providers: [
     { provide: IDENTITY_SECRETS, useFactory: identitySecretsFromEnvironment },
@@ -75,6 +78,7 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
     RouteAccessGuard,
     OtpSenderPoolService,
     EmergencySignInService,
+    CaptainDevicesService,
   ],
   exports: [
     AdminSessionsService,

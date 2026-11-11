@@ -15,7 +15,9 @@ import { CODE_SENDER, type DevelopmentCodeSender } from './code-sender.js';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
+import { AdminSessionsService } from './admin-sessions.service.js';
 import { changePlaceholderPhone } from './placeholder-phone.js';
+import { ADMIN_SESSION_COOKIE } from './route-access.guard.js';
 import { IDENTITY_SECRETS, type IdentitySecrets } from './secrets.js';
 
 // The captain app's sign-in (CA §4.9) on the app sign-in engine, served by the
@@ -252,6 +254,138 @@ describe('the captain app sign-in (CA §4.9)', () => {
     });
     expect(out.json()).toEqual({ status: 'signed_out' });
     expect((await session(accessToken)).statusCode).toBe(401);
+  });
+});
+
+let admins = 0;
+// A signed-in admin holding these roles, and their «تحرير الجهاز».
+async function admin(roles: string[]) {
+  admins += 1;
+  const { rows } = await sql.query(
+    `INSERT INTO identity.admin_accounts (name, email, status, password_hash, totp_secret_encrypted)
+     VALUES ($1, $2, 'active', 'not used', 'not used') RETURNING id`,
+    [`Operator ${admins}`, `device-operator${admins}@example.test`],
+  );
+  const accountId: string = rows[0].id;
+  for (const role of roles) {
+    await sql.query(
+      'INSERT INTO identity.admin_account_roles (account_id, role_code) VALUES ($1, $2)',
+      [accountId, role],
+    );
+  }
+  const { token } = await app
+    .get(AdminSessionsService)
+    .start(
+      app.get<Database>(DATABASE).db,
+      accountId,
+      { ipAddress: '203.0.113.9', device: 'test' },
+      new Date(),
+    );
+  const cookies = { [ADMIN_SESSION_COOKIE]: token };
+  return {
+    accountId,
+    release: (captainId: string, payload: Record<string, unknown>) =>
+      app.inject({
+        method: 'POST',
+        url: `/v1/admin/captains/${captainId}/release-device`,
+        cookies,
+        payload,
+      }),
+  };
+}
+
+// Past the resend wait of the codes already sent, and the hourly limits.
+async function pastResendWait() {
+  await valkey.flushall();
+  await sql.query(
+    "UPDATE identity.app_sign_in_codes SET created_at = created_at - interval '2 minutes'",
+  );
+}
+
+// CA §4.9 «During an active order», AP §9.7.5 «تحرير الجهاز» (slice 2.12c).
+// Which captains have an active order is ordering's lookup (proved by its own
+// tests); here a stand-in names them.
+describe('one device during an active order (CA §4.9, K5)', () => {
+  const busy = new Set<string>();
+  beforeAll(() => {
+    captains.useActiveOrders((ids) => Promise.resolve(new Set(ids.filter((id) => busy.has(id)))));
+  });
+
+  it('refuses a second device while the captain has an active order, and uses the code up', async () => {
+    const { captainId, phone } = await captain();
+    const deviceId = randomUUID();
+    const first = (await signIn(phone, deviceId)).json();
+    busy.add(captainId);
+    await pastResendWait();
+    const refused = await signIn(phone);
+    expect(refused.statusCode).toBe(403);
+    expect(refused.json()).toMatchObject({ error: 'active_order_elsewhere' });
+    // The first device keeps the order.
+    expect((await session(first.accessToken)).statusCode).toBe(200);
+    const { rows } = await sql.query(
+      "SELECT end_reason FROM identity.app_sign_in_codes WHERE party = 'captain' AND ended_at IS NOT NULL ORDER BY created_at DESC LIMIT 1",
+    );
+    expect(rows).toEqual([{ end_reason: 'used' }]);
+    // The same device signs in again; and with no order, a new one may.
+    await pastResendWait();
+    expect((await signIn(phone, deviceId)).statusCode).toBe(200);
+    busy.delete(captainId);
+    await pastResendWait();
+    expect((await signIn(phone)).statusCode).toBe(200);
+  });
+
+  it('lets OWN and OPS release the device with a reason, audited, so a new phone signs in', async () => {
+    const { captainId, phone, accountId } = await captain();
+    const old = (await signIn(phone)).json();
+    busy.add(captainId);
+    const ops = await admin(['OPS']);
+
+    expect((await ops.release(captainId, { reason: ' ' })).statusCode).toBe(400);
+    const released = await ops.release(captainId, { reason: 'انكسر هاتفه' });
+    expect(released.statusCode).toBe(200);
+    expect(released.json()).toEqual({ status: 'released' });
+    // The old device is signed out, not told of another device.
+    const gone = await session(old.accessToken);
+    expect(gone.statusCode).toBe(401);
+    expect(gone.json().error).toBeUndefined();
+    const { rows: ended } = await sql.query(
+      "SELECT end_reason FROM identity.app_sessions WHERE party = 'captain' AND account_id = $1",
+      [accountId],
+    );
+    expect(ended).toEqual([{ end_reason: 'device_released' }]);
+    const { rows: audit } = await sql.query(
+      `SELECT actor_id, actor_role, target_type, target_id, city_id, reason, changes::text AS changes
+         FROM audit.events WHERE action = 'captain_account.release_device' AND target_id = $1`,
+      [accountId],
+    );
+    expect(audit).toEqual([
+      {
+        actor_id: ops.accountId,
+        actor_role: 'OPS',
+        target_type: 'captain_account',
+        target_id: accountId,
+        city_id: azaz,
+        reason: 'انكسر هاتفه',
+        changes: expect.any(String),
+      },
+    ]);
+
+    // Nothing left to release.
+    const again = await ops.release(captainId, { reason: 'مرة ثانية' });
+    expect(again.statusCode).toBe(409);
+    expect(again.json()).toMatchObject({ error: 'no_device' });
+
+    // The captain signs in on the new phone during the order.
+    await pastResendWait();
+    const fresh = await signIn(phone);
+    expect(fresh.statusCode).toBe(200);
+    busy.delete(captainId);
+
+    const owner = await admin(['OWN']);
+    expect((await owner.release(captainId, { reason: 'هاتف جديد' })).statusCode).toBe(200);
+    expect((await owner.release(randomUUID(), { reason: 'x' })).statusCode).toBe(404);
+    const support = await admin(['SUP']);
+    expect((await support.release(captainId, { reason: 'x' })).statusCode).toBe(403);
   });
 });
 

@@ -1,0 +1,2 @@
+ALTER TABLE "identity"."app_sessions" DROP CONSTRAINT "app_sessions_end_reason_values";--> statement-breakpoint
+ALTER TABLE "identity"."app_sessions" ADD CONSTRAINT "app_sessions_end_reason_values" CHECK ("identity"."app_sessions"."end_reason" IN ('sign_out', 'sign_out_everywhere', 'refresh_reuse', 'new_sign_in', 'other_device', 'device_released'));

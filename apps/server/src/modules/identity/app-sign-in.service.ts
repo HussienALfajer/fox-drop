@@ -322,6 +322,9 @@ export class AppSignInService {
         account = await this.stillNotRemoved(tx, merchant);
         if (account === null) return new MerchantSignInRefusedError('not_registered');
       } else if (captain !== null) {
+        if (await this.captainAccounts.activeOrderElsewhere(tx, captain, request.deviceId)) {
+          return new CaptainSignInRefusedError('active_order_elsewhere');
+        }
         account = { id: captain.id, created: false };
       } else {
         account = await this.findOrCreateCustomer(tx, request.phone, phoneHash, now);

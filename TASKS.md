@@ -10,8 +10,12 @@ Slice 2.12c, «تحرير الجهاز» and one device during an active order (
 - **Specs:** AP §9.7.5 row «تحرير الجهاز» (`docs/product/v1/admin-panel/09-modules/07-captains.md`: OWN, OPS, a required reason), CA §4.9 «One device (K5)» and «During an active order» (`docs/product/v1/captain-app/04-platforms-and-technical-foundations.md`), K5 (`captain-app/02-decisions.md`), the panel's audit (AP §6), and the definitions of done (AP §14, CA §19) for the device.
 - **Branch:** `feat/captain-device-release`.
 - **Builds on:** identity's captain sessions and devices (`CaptainAccountsService`, the sign-in that signs the old device out with «سُجّل دخولك من جهاز آخر»), the captain app's session end (`LocationTracker` reset), the captain's active order read (`CaptainOrders.active`, which a new device reads to continue from the step), the second captain of an assigned handover (2.12b: they hold an order too, `captainsWithActiveOrders`).
-- **Ask the owner first:** where the panel's «تحرير الجهاز» lives before the captain screens of AP §9.7 exist (a small captain page beside «حالة المطاعم», or the order detail's captain line); what the refused sign-in on a second device says to the captain (the spec gives no wording); whether releasing the device also takes the captain offline or keeps the online period (the order continues, and the location stops until the new phone signs in).
-- **Plan:** write it once those answers are in: the server rule first (test first), the sign-in refusal and the release command, the captain app, the panel, the docs and the handover to 2.13.
+- **Owner decisions 2026-11-11:** «تحرير الجهاز» sits on the order detail's captain line (moved to the captain page with AP §9.7's screens); the refused sign-in says «لديك طلب نشط على جهاز آخر. اتصل بالعمليات لتحرير جهازك القديم.», with no call button; releasing the device keeps the captain online (the order continues; the location stops until the new phone signs in).
+- **Plan:**
+  - [ ] Server: a captain with an active order and an open session on another device is refused at sign-in (`403 active_order_elsewhere`, the code used up; test first); `POST /v1/admin/captains/{captainId}/release-device` (`captains.manage`: OWN, OPS; a required reason) ends the captain's sessions with `device_released` (migration 0053 widens the `CHECK`), audited `captain_account.release_device`; `409 no_device` without an open session.
+  - [ ] Panel: «تحرير الجهاز» with the reason on the order detail's captain line while the order is active.
+  - [ ] Captain app: the refusal's text on the sign-in screen.
+  - [ ] Docs and the handover to 2.13.
 
 ### Left from 2.12b (`feat/order-handover`)
 

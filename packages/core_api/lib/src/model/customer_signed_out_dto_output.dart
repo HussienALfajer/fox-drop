@@ -12,36 +12,27 @@ part 'customer_signed_out_dto_output.g.dart';
 /// CustomerSignedOutDtoOutput
 ///
 /// Properties:
-/// * [status]
+/// * [status] 
 @BuiltValue()
-abstract class CustomerSignedOutDtoOutput
-    implements
-        Built<CustomerSignedOutDtoOutput, CustomerSignedOutDtoOutputBuilder> {
+abstract class CustomerSignedOutDtoOutput implements Built<CustomerSignedOutDtoOutput, CustomerSignedOutDtoOutputBuilder> {
   @BuiltValueField(wireName: r'status')
   CustomerSignedOutDtoOutputStatusEnum get status;
   // enum statusEnum {  signed_out,  };
 
   CustomerSignedOutDtoOutput._();
 
-  factory CustomerSignedOutDtoOutput([
-    void updates(CustomerSignedOutDtoOutputBuilder b),
-  ]) = _$CustomerSignedOutDtoOutput;
+  factory CustomerSignedOutDtoOutput([void updates(CustomerSignedOutDtoOutputBuilder b)]) = _$CustomerSignedOutDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CustomerSignedOutDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerSignedOutDtoOutput> get serializer =>
-      _$CustomerSignedOutDtoOutputSerializer();
+  static Serializer<CustomerSignedOutDtoOutput> get serializer => _$CustomerSignedOutDtoOutputSerializer();
 }
 
-class _$CustomerSignedOutDtoOutputSerializer
-    implements PrimitiveSerializer<CustomerSignedOutDtoOutput> {
+class _$CustomerSignedOutDtoOutputSerializer implements PrimitiveSerializer<CustomerSignedOutDtoOutput> {
   @override
-  final Iterable<Type> types = const [
-    CustomerSignedOutDtoOutput,
-    _$CustomerSignedOutDtoOutput,
-  ];
+  final Iterable<Type> types = const [CustomerSignedOutDtoOutput, _$CustomerSignedOutDtoOutput];
 
   @override
   final String wireName = r'CustomerSignedOutDtoOutput';
@@ -64,11 +55,7 @@ class _$CustomerSignedOutDtoOutputSerializer
     CustomerSignedOutDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -84,14 +71,10 @@ class _$CustomerSignedOutDtoOutputSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'status':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CustomerSignedOutDtoOutputStatusEnum,
-                    ),
-                  )
-                  as CustomerSignedOutDtoOutputStatusEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CustomerSignedOutDtoOutputStatusEnum),
+          ) as CustomerSignedOutDtoOutputStatusEnum;
           result.status = valueDes;
           break;
         default:
@@ -123,18 +106,17 @@ class _$CustomerSignedOutDtoOutputSerializer
   }
 }
 
+
 class CustomerSignedOutDtoOutputStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'signed_out')
-  static const CustomerSignedOutDtoOutputStatusEnum signedOut =
-      _$customerSignedOutDtoOutputStatusEnum_signedOut;
+  static const CustomerSignedOutDtoOutputStatusEnum signedOut = _$customerSignedOutDtoOutputStatusEnum_signedOut;
 
-  static Serializer<CustomerSignedOutDtoOutputStatusEnum> get serializer =>
-      _$customerSignedOutDtoOutputStatusEnumSerializer;
+  static Serializer<CustomerSignedOutDtoOutputStatusEnum> get serializer => _$customerSignedOutDtoOutputStatusEnumSerializer;
 
-  const CustomerSignedOutDtoOutputStatusEnum._(String name) : super(name);
+  const CustomerSignedOutDtoOutputStatusEnum._(String name): super(name);
 
-  static BuiltSet<CustomerSignedOutDtoOutputStatusEnum> get values =>
-      _$customerSignedOutDtoOutputStatusEnumValues;
-  static CustomerSignedOutDtoOutputStatusEnum valueOf(String name) =>
-      _$customerSignedOutDtoOutputStatusEnumValueOf(name);
+  static BuiltSet<CustomerSignedOutDtoOutputStatusEnum> get values => _$customerSignedOutDtoOutputStatusEnumValues;
+  static CustomerSignedOutDtoOutputStatusEnum valueOf(String name) => _$customerSignedOutDtoOutputStatusEnumValueOf(name);
 }
+

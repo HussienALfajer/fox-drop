@@ -33,6 +33,7 @@ import 'package:core_api/src/model/admin_cities_dto_output_cities_inner.dart';
 import 'package:core_api/src/model/admin_close_item_report_dto.dart';
 import 'package:core_api/src/model/admin_confirm_pickup_dto.dart';
 import 'package:core_api/src/model/admin_contact_dto_output.dart';
+import 'package:core_api/src/model/admin_device_released_dto_output.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order_offer.dart';
@@ -150,6 +151,7 @@ import 'package:core_api/src/model/admin_record_delivery_dto_received_inner.dart
 import 'package:core_api/src/model/admin_record_delivery_dto_shortfall.dart';
 import 'package:core_api/src/model/admin_reject_dto.dart';
 import 'package:core_api/src/model/admin_reject_dto_items_inner.dart';
+import 'package:core_api/src/model/admin_release_device_dto.dart';
 import 'package:core_api/src/model/admin_resend_notification_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_holiday_close_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output.dart';
@@ -465,6 +467,7 @@ part 'serializers.g.dart';
   AdminCloseItemReportDto,
   AdminConfirmPickupDto,
   AdminContactDtoOutput,
+  AdminDeviceReleasedDtoOutput,
   AdminDispatchStateDtoOutput,
   AdminDispatchStateDtoOutputOrder,
   AdminDispatchStateDtoOutputOrderOffer,
@@ -582,6 +585,7 @@ part 'serializers.g.dart';
   AdminRecordDeliveryDtoShortfall,
   AdminRejectDto,
   AdminRejectDtoItemsInner,
+  AdminReleaseDeviceDto,
   AdminResendNotificationDto,
   AdminRestaurantHolidayCloseDto,
   AdminRestaurantImagesDtoOutput,

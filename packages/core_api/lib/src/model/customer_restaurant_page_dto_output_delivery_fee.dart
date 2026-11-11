@@ -12,15 +12,10 @@ part 'customer_restaurant_page_dto_output_delivery_fee.g.dart';
 /// To the point; null while the city has no fee rule in its base currency.
 ///
 /// Properties:
-/// * [fee]
+/// * [fee] 
 /// * [free] - «توصيل مجاني».
 @BuiltValue()
-abstract class CustomerRestaurantPageDtoOutputDeliveryFee
-    implements
-        Built<
-          CustomerRestaurantPageDtoOutputDeliveryFee,
-          CustomerRestaurantPageDtoOutputDeliveryFeeBuilder
-        > {
+abstract class CustomerRestaurantPageDtoOutputDeliveryFee implements Built<CustomerRestaurantPageDtoOutputDeliveryFee, CustomerRestaurantPageDtoOutputDeliveryFeeBuilder> {
   @BuiltValueField(wireName: r'fee')
   CaptainAvailabilityDtoOutputCustodyLimit get fee;
 
@@ -30,26 +25,18 @@ abstract class CustomerRestaurantPageDtoOutputDeliveryFee
 
   CustomerRestaurantPageDtoOutputDeliveryFee._();
 
-  factory CustomerRestaurantPageDtoOutputDeliveryFee([
-    void updates(CustomerRestaurantPageDtoOutputDeliveryFeeBuilder b),
-  ]) = _$CustomerRestaurantPageDtoOutputDeliveryFee;
+  factory CustomerRestaurantPageDtoOutputDeliveryFee([void updates(CustomerRestaurantPageDtoOutputDeliveryFeeBuilder b)]) = _$CustomerRestaurantPageDtoOutputDeliveryFee;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerRestaurantPageDtoOutputDeliveryFeeBuilder b) =>
-      b;
+  static void _defaults(CustomerRestaurantPageDtoOutputDeliveryFeeBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerRestaurantPageDtoOutputDeliveryFee>
-  get serializer => _$CustomerRestaurantPageDtoOutputDeliveryFeeSerializer();
+  static Serializer<CustomerRestaurantPageDtoOutputDeliveryFee> get serializer => _$CustomerRestaurantPageDtoOutputDeliveryFeeSerializer();
 }
 
-class _$CustomerRestaurantPageDtoOutputDeliveryFeeSerializer
-    implements PrimitiveSerializer<CustomerRestaurantPageDtoOutputDeliveryFee> {
+class _$CustomerRestaurantPageDtoOutputDeliveryFeeSerializer implements PrimitiveSerializer<CustomerRestaurantPageDtoOutputDeliveryFee> {
   @override
-  final Iterable<Type> types = const [
-    CustomerRestaurantPageDtoOutputDeliveryFee,
-    _$CustomerRestaurantPageDtoOutputDeliveryFee,
-  ];
+  final Iterable<Type> types = const [CustomerRestaurantPageDtoOutputDeliveryFee, _$CustomerRestaurantPageDtoOutputDeliveryFee];
 
   @override
   final String wireName = r'CustomerRestaurantPageDtoOutputDeliveryFee';
@@ -77,11 +64,7 @@ class _$CustomerRestaurantPageDtoOutputDeliveryFeeSerializer
     CustomerRestaurantPageDtoOutputDeliveryFee object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -97,23 +80,17 @@ class _$CustomerRestaurantPageDtoOutputDeliveryFeeSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'fee':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(
-                      CaptainAvailabilityDtoOutputCustodyLimit,
-                    ),
-                  )
-                  as CaptainAvailabilityDtoOutputCustodyLimit;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
+          ) as CaptainAvailabilityDtoOutputCustodyLimit;
           result.fee.replace(valueDes);
           break;
         case r'free':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.free = valueDes;
           break;
         default:
@@ -144,3 +121,5 @@ class _$CustomerRestaurantPageDtoOutputDeliveryFeeSerializer
     return result.build();
   }
 }
+
+
