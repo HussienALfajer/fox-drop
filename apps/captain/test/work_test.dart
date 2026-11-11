@@ -523,6 +523,7 @@ void main() {
       'keeps the points on the server clock and sends them oldest first',
       () async {
         tracker.start();
+        await Future<void>.delayed(Duration.zero);
         source.move(restaurant);
         source.move(pin);
         await Future<void>.delayed(Duration.zero);
@@ -540,6 +541,7 @@ void main() {
       'keeps the points when no answer comes, and drops them when offline',
       () async {
         tracker.start();
+        await Future<void>.delayed(Duration.zero);
         source.move(restaurant);
         await Future<void>.delayed(Duration.zero);
         answers.add(refused(0));
@@ -562,6 +564,7 @@ void main() {
 
     test('a session that ends stops everything and drops the points', () async {
       tracker.start();
+      await Future<void>.delayed(Duration.zero);
       source.move(restaurant);
       await Future<void>.delayed(Duration.zero);
       tracker.reset();
@@ -574,6 +577,7 @@ void main() {
       'stops collecting when stopped, still sending what it holds',
       () async {
         tracker.start();
+        await Future<void>.delayed(Duration.zero);
         source.move(restaurant);
         await Future<void>.delayed(Duration.zero);
         tracker.stop();

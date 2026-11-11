@@ -216,6 +216,15 @@ export class CaptainsService implements OnModuleInit {
     this.activeOrders = lookup;
   }
 
+  // Whether the captain has an active order now (CA §4.9: identity refuses a
+  // second device then).
+  async hasActiveOrder(
+    captainId: string,
+    executor: Pick<NodePgDatabase, 'select'> = this.database.db,
+  ): Promise<boolean> {
+    return (await this.activeOrders([captainId], executor)).size > 0;
+  }
+
   // Dispatch withdraws a captain's open offer once the captain is offline
   // (going offline, a suspension, a termination), so the order is free again
   // at once. A listener that fails is logged and never undoes the offline.

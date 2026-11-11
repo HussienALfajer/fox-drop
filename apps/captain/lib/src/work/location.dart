@@ -167,6 +167,9 @@ class LocationTracker {
 
   final _queue = <Fix>[];
   StreamSubscription<Fix>? _tracking;
+  // A start waiting for the location access; a stop or reset makes it stale.
+  bool _starting = false;
+  int _generation = 0;
   Timer? _timer;
   bool _sending = false;
   Fix? _latest;
@@ -193,15 +196,37 @@ class LocationTracker {
     simulated: fix.simulated,
   );
 
+  /// Starts collecting once the phone gives the location. Asked here, not
+  /// only at «متصل»: a phone signed in while the captain is online (a
+  /// released device, CA §4.9) has never asked. Without access, or when the
+  /// stream fails, it stays stopped, and the next online state tries again.
   void start() {
-    if (_tracking != null) return;
-    _tracking = source.track().listen(_record, onError: (Object _) {});
+    if (_tracking != null || _starting) return;
+    _starting = true;
     _timer ??= Timer.periodic(locationEvery, (_) => unawaited(flush()));
+    final generation = _generation;
+    unawaited(() async {
+      try {
+        final problem = await source.ensureAccess();
+        if (generation != _generation || problem != null) return;
+        _tracking = source.track().listen(
+          _record,
+          onError: (Object _) {
+            unawaited(_tracking?.cancel());
+            _tracking = null;
+          },
+        );
+      } finally {
+        if (generation == _generation) _starting = false;
+      }
+    }());
   }
 
   /// Stops collecting (CA §4.3: never while offline); the points already
   /// recorded are still sent, since the server keeps those recorded online.
   void stop() {
+    _generation++;
+    _starting = false;
     unawaited(_tracking?.cancel());
     _tracking = null;
     if (_queue.isEmpty) _stopTimer();
@@ -219,6 +244,8 @@ class LocationTracker {
   /// The session ended: nothing more is collected or sent, and the points
   /// held are dropped, since the server would refuse them.
   void reset() {
+    _generation++;
+    _starting = false;
     unawaited(_tracking?.cancel());
     _tracking = null;
     _queue.clear();
@@ -260,6 +287,7 @@ class LocationTracker {
   }
 
   void dispose() {
+    _generation++;
     unawaited(_tracking?.cancel());
     _tracking = null;
     _stopTimer();

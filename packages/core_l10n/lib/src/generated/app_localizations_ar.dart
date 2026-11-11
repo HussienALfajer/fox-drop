@@ -152,6 +152,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get captainSignedInElsewhere => 'سُجّل دخولك من جهاز آخر';
 
   @override
+  String get captainActiveOrderElsewhere =>
+      'لديك طلب نشط على جهاز آخر. اتصل بالعمليات لتحرير جهازك القديم.';
+
+  @override
   String get captainContractEnded => 'انتهى تعاقدك مع FOX DROP.';
 
   @override

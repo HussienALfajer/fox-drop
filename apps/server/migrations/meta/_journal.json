@@ -372,6 +372,13 @@
       "when": 1794348176116,
       "tag": "0052_ordering_handovers",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1794355531324,
+      "tag": "0053_identity_device_released",
+      "breakpoints": true
     }
   ]
 }

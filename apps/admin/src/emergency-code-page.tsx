@@ -12,6 +12,7 @@ const refusalKeys = {
   contract_ended: 'emergencyCode.refused.contractEnded',
   restaurant_draft: 'emergencyCode.refused.restaurantDraft',
   restaurant_terminated: 'emergencyCode.refused.restaurantTerminated',
+  active_order_elsewhere: 'emergencyCode.refused.activeOrderElsewhere',
   phone_invalid: 'emergencyCode.refused.phoneInvalid',
   reason_missing: 'emergencyCode.refused.reasonMissing',
 } as const satisfies Record<EmergencyRefusal, string>;

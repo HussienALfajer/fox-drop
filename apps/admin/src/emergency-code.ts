@@ -11,6 +11,9 @@ export type EmergencyRefusal =
   | 'contract_ended'
   | 'restaurant_draft'
   | 'restaurant_terminated'
+  // A captain with an active order still signed in on another device:
+  // «تحرير الجهاز» first (CA §4.9, slice 2.12c).
+  | 'active_order_elsewhere'
   | 'phone_invalid'
   | 'reason_missing';
 
@@ -19,6 +22,7 @@ const refusals: readonly string[] = [
   'contract_ended',
   'restaurant_draft',
   'restaurant_terminated',
+  'active_order_elsewhere',
 ] satisfies EmergencyRefusal[];
 
 export type EmergencyResult =

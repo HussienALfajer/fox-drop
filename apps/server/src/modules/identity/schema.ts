@@ -360,13 +360,15 @@ export const captainAccounts = identity.table('captain_accounts', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-// other_device: a captain signed in on another device (CA §4.9, K5).
+// other_device: a captain signed in on another device (CA §4.9, K5);
+// device_released: OWN or OPS released a captain's device (AP §9.7.5).
 export const appSessionEndReasons = [
   'sign_out',
   'sign_out_everywhere',
   'refresh_reuse',
   'new_sign_in',
   'other_device',
+  'device_released',
 ] as const;
 
 // A signed-in app installation (architecture §15.1): one refresh token family.
@@ -401,7 +403,7 @@ export const appSessions = identity.table(
     check('app_sessions_party_values', sql`${table.party} IN ('customer', 'merchant', 'captain')`),
     check(
       'app_sessions_end_reason_values',
-      sql`${table.endReason} IN ('sign_out', 'sign_out_everywhere', 'refresh_reuse', 'new_sign_in', 'other_device')`,
+      sql`${table.endReason} IN ('sign_out', 'sign_out_everywhere', 'refresh_reuse', 'new_sign_in', 'other_device', 'device_released')`,
     ),
     check(
       'app_sessions_ended_with_reason',

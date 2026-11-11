@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:captain/src/auth.dart';
 import 'package:captain/src/work/location.dart';
+import 'package:captain/src/work/work.dart';
 import 'package:core_auth/testing.dart';
 import 'package:core_realtime/core_realtime.dart';
 import 'package:flutter/material.dart';
@@ -547,6 +548,27 @@ void main() {
     await app.advance(tester, const Duration(seconds: 5));
     await app.advance(tester, const Duration(seconds: 1));
     expect(find.text('0:54'), findsOneWidget);
+    await app.done(tester);
+  });
+
+  testWidgets('a new phone signed in while online asks for the location '
+      'before tracking (CA §4.9, §4.3)', (tester) async {
+    final app = TestApp();
+    // A released device: the captain is online, and this phone never went
+    // online, so it never asked; first it is refused.
+    app.location.problem = LocationProblem.denied;
+    app.work(availability: [availabilityJson(state: 'online_available')]);
+    await app.pump(tester);
+    await app.live(tester);
+    expect(app.location.accessAsked, greaterThan(0));
+    expect(app.location.tracking, 0);
+
+    // The next state tries again, and the phone allows it now.
+    app.location.problem = null;
+    app.work(availability: [availabilityJson(state: 'online_available')]);
+    app.container.invalidate(workFeedProvider);
+    await app.settle(tester);
+    expect(app.location.tracking, 1);
     await app.done(tester);
   });
 

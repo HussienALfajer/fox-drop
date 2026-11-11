@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, isNull, ne, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { CaptainsService } from '../captains/index.js';
 import { APP_PHONE_PATTERN } from './app-phone.js';
-import { captainAccounts } from './schema.js';
+import { appSessions, captainAccounts } from './schema.js';
 import { IDENTITY_SECRETS, IdentitySecrets } from './secrets.js';
 
 // Why a captain cannot sign in (CA §4.9): the number belongs to no captain, or
@@ -13,7 +13,9 @@ import { IDENTITY_SECRETS, IdentitySecrets } from './secrets.js';
 export type CaptainSignInRefusal = 'not_registered' | 'contract_ended';
 
 export class CaptainSignInRefusedError extends Error {
-  constructor(readonly refusal: CaptainSignInRefusal) {
+  // active_order_elsewhere: the captain has an active order and is signed in
+  // on another device (CA §4.9), which OWN or OPS release first (AP §9.7.5).
+  constructor(readonly refusal: CaptainSignInRefusal | 'active_order_elsewhere') {
     super(`captain sign-in refused: ${refusal}`);
   }
 }
@@ -153,6 +155,30 @@ export class CaptainAccountsService {
       .from(captainAccounts)
       .where(eq(captainAccounts.id, accountId));
     return account ?? null;
+  }
+
+  // CA §4.9 «During an active order»: the captain cannot sign in on a second
+  // device by themselves while they have an active order and another device
+  // is still signed in; the same device may sign in again. Read in the
+  // sign-in's transaction.
+  async activeOrderElsewhere(
+    executor: Executor,
+    account: CaptainAccount,
+    deviceId: string,
+  ): Promise<boolean> {
+    const [other] = await executor
+      .select({ id: appSessions.id })
+      .from(appSessions)
+      .where(
+        and(
+          eq(appSessions.party, 'captain'),
+          eq(appSessions.accountId, account.id),
+          ne(appSessions.deviceId, deviceId),
+          isNull(appSessions.endedAt),
+        ),
+      )
+      .limit(1);
+    return other !== undefined && (await this.captains.hasActiveOrder(account.captainId, executor));
   }
 
   // Whether the account may still sign in, refresh and call the routes: a

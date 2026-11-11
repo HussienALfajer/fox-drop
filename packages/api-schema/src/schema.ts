@@ -612,6 +612,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/captains/{captainId}/device": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainDevicesDevice"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captains/{captainId}/release-device": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainDevicesRelease"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/settings": {
         parameters: {
             query?: never;
@@ -3211,6 +3243,31 @@ export interface components {
              * @description The captain or restaurant user account it signs in to.
              */
             accountId: string;
+        };
+        AdminCaptainDeviceDto_Output: {
+            /** @description The device signed in now (K5: one at a time), or null. */
+            device: {
+                /**
+                 * Format: uuid
+                 * @description Named by «تحرير الجهاز», so it never ends a newer one.
+                 */
+                sessionId: string;
+                /** Format: date-time */
+                signedInAt: string;
+            } | null;
+        };
+        AdminReleaseDeviceDto: {
+            /**
+             * Format: uuid
+             * @description The device the panel showed.
+             */
+            sessionId: string;
+            /** @description Why, kept in the audit log (AP §9.7.5). */
+            reason: string;
+        };
+        AdminDeviceReleasedDto_Output: {
+            /** @constant */
+            status: "released";
         };
         SettingListDto_Output: {
             settings: {
@@ -8763,6 +8820,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EmergencySignInCodeDto_Output"];
+                };
+            };
+        };
+    };
+    captainDevicesDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainDeviceDto_Output"];
+                };
+            };
+        };
+    };
+    captainDevicesRelease: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminReleaseDeviceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeviceReleasedDto_Output"];
                 };
             };
         };
