@@ -261,6 +261,34 @@ class Commands extends Notifier<Set<String>> {
     ),
   );
 
+  /// «لا أستطيع إكمال الطلب» with its reason (CA §9.11, C5): operations get
+  /// the alert, the order stays the captain's.
+  Future<Notice?> cannotComplete(String orderId, Reason reason) => _withFix(
+    orderId,
+    'cannot-complete ${reason.key}',
+    (key, location) => _api.captainOrdersCannotComplete(
+      orderId: orderId,
+      idempotencyKey: key,
+      captainCannotCompleteDto: CaptainCannotCompleteDto(
+        (b) => b
+          ..location.replace(location)
+          ..reason = reason.reason
+          ..note = reason.note,
+      ),
+    ),
+  );
+
+  /// «تراجع»: the captain withdraws their «لا أستطيع إكمال الطلب».
+  Future<Notice?> withdrawCannotComplete(String orderId) => _withFix(
+    orderId,
+    'withdraw-cannot-complete',
+    (key, location) => _api.captainOrdersWithdrawCannotComplete(
+      orderId: orderId,
+      idempotencyKey: key,
+      captainArriveDto: CaptainArriveDto((b) => b..location.replace(location)),
+    ),
+  );
+
   /// «دفعت للمطعم واستلمت الطلب» (CA §9.4) with the lines paid.
   Future<Notice?> requestPickup(String orderId, List<Money> lines) => _withFix(
     orderId,

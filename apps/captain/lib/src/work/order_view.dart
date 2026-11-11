@@ -15,7 +15,8 @@ import 'work.dart';
 
 /// The active order (CA §9.1): the progress through the four steps and the
 /// step's own screen, each with one main button. Unstyled until the design;
-/// the map and the route wait for Phase 2, «مشكلة» and «طوارئ» for §9.11.
+/// the map and the route wait for Phase 2; «مشكلة» is `ProblemBar` above it
+/// (slice 2.13b) and «طوارئ» waits for slice 2.13c.
 class OrderView extends ConsumerWidget {
   const OrderView({super.key, required this.order});
 

@@ -1447,6 +1447,26 @@ class AppLocalizationsAr extends AppLocalizations {
   String get captainAwayTitle => 'أنت بعيد عن موقع الزبون. اختر السبب:';
 
   @override
+  String get captainProblem => 'مشكلة';
+
+  @override
+  String get captainCannotComplete => 'لا أستطيع إكمال الطلب';
+
+  @override
+  String get captainCannotCompleteTitle => 'لماذا لا تستطيع إكمال الطلب؟';
+
+  @override
+  String get captainAwaitingOperations => 'بانتظار العمليات';
+
+  @override
+  String captainCannotCompleteSent(String reason) {
+    return 'أبلغت العمليات أنك لا تستطيع إكمال الطلب: $reason. أكمل حتى تتصرف العمليات.';
+  }
+
+  @override
+  String get captainWithdrawRequest => 'تراجع';
+
+  @override
   String get captainOtherHint => 'اكتب السبب';
 
   @override

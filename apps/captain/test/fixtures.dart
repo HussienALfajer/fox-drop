@@ -143,6 +143,7 @@ Map<String, Object?> orderJson({
   int quantity = 2,
   bool pickedUp = false,
   Map<String, Object?>? handover,
+  Map<String, Object?>? cannotComplete,
 }) {
   final atRestaurant = track != 'assigned';
   final atCustomer = track == 'at_customer';
@@ -211,6 +212,7 @@ Map<String, Object?> orderJson({
     'itemReportOpen': itemReportOpen,
     'editUnacknowledged': editUnacknowledged,
     'handover': handover,
+    'cannotComplete': cannotComplete,
   };
 }
 

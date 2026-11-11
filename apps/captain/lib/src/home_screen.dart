@@ -16,6 +16,7 @@ import 'work/door_payment.dart';
 import 'work/location.dart';
 import 'work/offer_sheet.dart';
 import 'work/order_view.dart';
+import 'work/problem_sheet.dart';
 import 'work/texts.dart';
 import 'work/work.dart';
 
@@ -55,6 +56,7 @@ class HomeScreen extends ConsumerWidget {
           Work(order: final order?) => Column(
             children: [
               _LastOrderBar(work: work),
+              ProblemBar(order: order),
               Expanded(child: OrderView(order: order)),
             ],
           ),

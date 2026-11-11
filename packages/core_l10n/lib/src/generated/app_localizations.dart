@@ -2422,6 +2422,42 @@ abstract class AppLocalizations {
   /// **'أنت بعيد عن موقع الزبون. اختر السبب:'**
   String get captainAwayTitle;
 
+  /// The problem button on every step of the active order, and the sheet's title (CA §9.11).
+  ///
+  /// In ar, this message translates to:
+  /// **'مشكلة'**
+  String get captainProblem;
+
+  /// Inside «مشكلة»: asks operations to take the order (C5, CA §9.11).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا أستطيع إكمال الطلب'**
+  String get captainCannotComplete;
+
+  /// The reason sheet of «لا أستطيع إكمال الطلب» (CA Appendix C). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لماذا لا تستطيع إكمال الطلب؟'**
+  String get captainCannotCompleteTitle;
+
+  /// While the captain's «لا أستطيع إكمال الطلب» is open (CA §9.11, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار العمليات'**
+  String get captainAwaitingOperations;
+
+  /// Under «بانتظار العمليات», with the reason's label. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أبلغت العمليات أنك لا تستطيع إكمال الطلب: {reason}. أكمل حتى تتصرف العمليات.'**
+  String captainCannotCompleteSent(String reason);
+
+  /// Withdraws the «لا أستطيع إكمال الطلب» request (CA §9.11, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'تراجع'**
+  String get captainWithdrawRequest;
+
   /// The text of «أخرى». The spec gives no wording.
   ///
   /// In ar, this message translates to:
