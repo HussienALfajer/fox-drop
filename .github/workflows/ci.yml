@@ -47,7 +47,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       # The generator jar, version pinned in openapitools.json, downloads once.
-      - uses: actions/cache@v5
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: node_modules/@openapitools/openapi-generator-cli/versions
           key: openapi-generator-${{ hashFiles('openapitools.json') }}
@@ -55,7 +55,7 @@ jobs:
       - run: dart pub get --enforce-lockfile
 
       # The web apps' smoke tests run in Chromium (architecture §18.2).
-      - uses: actions/cache@v5
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ hashFiles('pnpm-lock.yaml') }}
