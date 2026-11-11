@@ -3,10 +3,10 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/customer_location_dto_output_zone.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_moments.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_captain.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_dispatch.dart';
@@ -61,7 +61,7 @@ abstract class AdminOrderCardDtoOutputOrder
   DateTime get placedAt;
 
   @BuiltValueField(wireName: r'restaurant')
-  CustomerLocationDtoOutputZone? get restaurant;
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner? get restaurant;
 
   @BuiltValueField(wireName: r'neighbourhood')
   String get neighbourhood;
@@ -160,7 +160,7 @@ class _$AdminOrderCardDtoOutputOrderSerializer
         : serializers.serialize(
             object.restaurant,
             specifiedType: const FullType.nullable(
-              CustomerLocationDtoOutputZone,
+              AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
             ),
           );
     yield r'neighbourhood';
@@ -301,10 +301,10 @@ class _$AdminOrderCardDtoOutputOrderSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      CustomerLocationDtoOutputZone,
+                      AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
                     ),
                   )
-                  as CustomerLocationDtoOutputZone?;
+                  as AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?;
           if (valueDes == null) continue;
           result.restaurant.replace(valueDes);
           break;

@@ -14,6 +14,7 @@ import {
   CaptainsService,
   type IneligibleReason,
   type Money,
+  PeakBonusService,
 } from '../captains/index.js';
 import type { Vehicle } from '../settings/index.js';
 import { GeoService, lastCutoff, type Point, tripMinutes } from '../geo/index.js';
@@ -112,9 +113,12 @@ export interface CaptainOffer {
   fromOperations: boolean;
   offeredAt: Date;
   expiresAt: Date;
-  // The order pay of the pay table, null while the city had none; the peak
-  // bonus joins with D15, waiting pay is added later («قد يُضاف أجر انتظار»).
+  // CA §8.2: the order pay of the pay table plus the peak bonus if it would
+  // apply now (D15), null while the city had no pay table; waiting pay is
+  // added later («قد يُضاف أجر انتظار»).
   pay: { amount: bigint; currency: string } | null;
+  // «يشمل مكافأة الذروة +{المبلغ}», null outside a window.
+  peakBonus: { amount: bigint; currency: string } | null;
   restaurant: { name: string; location: Point; distanceMetres: number };
   customer: { neighbourhood: string; tripMetres: number };
   // «تدفع للمطعم» (D26: the items value) and «تقبض من الزبون».
@@ -208,6 +212,7 @@ export class DispatchService implements OnModuleInit {
     private readonly settings: SettingsService,
     private readonly assignments: OrderAssignments,
     private readonly captains: CaptainsService,
+    private readonly peakBonus: PeakBonusService,
     private readonly merchants: MerchantsService,
     private readonly geo: GeoService,
     private readonly audit: AuditService,
@@ -501,7 +506,12 @@ export class DispatchService implements OnModuleInit {
         await this.assignments.change(
           tx,
           current,
-          { type: 'order.offered', captainId: command.captainId, pay: shown.pay, expiresAt },
+          {
+            type: 'order.offered',
+            captainId: command.captainId,
+            pay: withPeak(shown.pay, shown.peak),
+            expiresAt,
+          },
           actor,
           now,
         );
@@ -854,6 +864,7 @@ export class DispatchService implements OnModuleInit {
         !open.has(candidate.captainId),
     );
     if (eligible.length === 0) return 'none_left';
+    const peak = await this.peakNow(order, restaurant.location, now);
     const [ranked, timeoutSec, lockCaptain] = await Promise.all([
       this.rank(order.cityId, eligible, restaurant.location, now),
       this.settings.get('dispatch.offer_timeout_sec', { cityId: order.cityId }),
@@ -869,7 +880,7 @@ export class DispatchService implements OnModuleInit {
       const result = await this.openAutoOffer(
         order,
         candidate.captainId,
-        { pickupMetres: metres, pay },
+        { pickupMetres: metres, pay, peak },
         lockCaptain,
         at,
         new Date(at.getTime() + timeoutSec * 1000),
@@ -920,7 +931,11 @@ export class DispatchService implements OnModuleInit {
   private async openAutoOffer(
     order: DispatchOrder,
     captainId: string,
-    shown: { pickupMetres: number; pay: { amount: bigint; currency: string } | null },
+    shown: {
+      pickupMetres: number;
+      pay: { amount: bigint; currency: string } | null;
+      peak: { amount: bigint; currency: string } | null;
+    },
     lockCaptain: (tx: Tx, captainId: string) => Promise<Availability>,
     now: Date,
     expiresAt: Date,
@@ -969,7 +984,7 @@ export class DispatchService implements OnModuleInit {
       await this.assignments.change(
         tx,
         current,
-        { type: 'order.offered', captainId, pay: shown.pay, expiresAt },
+        { type: 'order.offered', captainId, pay: withPeak(shown.pay, shown.peak), expiresAt },
         { type: 'system', id: null },
         now,
       );
@@ -1159,7 +1174,21 @@ export class DispatchService implements OnModuleInit {
       order.payTableId === null
         ? null
         : await this.captains.orderPay(order.payTableId, captain.vehicle, order.tripMetres);
-    return { pickupMetres: distance.metres, pay };
+    const peak = await this.peakNow(order, restaurant.location, now);
+    return { pickupMetres: distance.metres, pay, peak };
+  }
+
+  // AP §9.12.5, CA §8.2: the peak bonus the order would earn if delivered
+  // now, in the order's currency, or null.
+  private async peakNow(
+    order: DispatchOrder,
+    restaurant: Point,
+    now: Date,
+  ): Promise<{ amount: bigint; currency: string } | null> {
+    const bonus = await this.peakBonus.bonusFor(order.cityId, restaurant, now);
+    return bonus !== null && bonus.currency === order.currency
+      ? { amount: bonus.amount, currency: bonus.currency }
+      : null;
   }
 
   private async openOffer(
@@ -1267,6 +1296,13 @@ export class DispatchService implements OnModuleInit {
     // edit while the offer is open warns too; never on a handover (they pay
     // nothing).
     const limit = handover ? null : (await this.captains.captain(offer.captainId, now))?.maxPickup;
+    // CA §8.2: the pay kept when the offer opened, plus the peak bonus if it
+    // would apply now.
+    const pay =
+      offer.pay === null || offer.payCurrency === null
+        ? null
+        : { amount: offer.pay, currency: offer.payCurrency };
+    const peakBonus = pay && (await this.peakNow(order, restaurant.location, now));
     const aboveMaxPickup =
       !offer.handover &&
       limit != null &&
@@ -1280,10 +1316,8 @@ export class DispatchService implements OnModuleInit {
       fromOperations: offer.kind === 'manual',
       offeredAt: offer.offeredAt,
       expiresAt: offer.expiresAt,
-      pay:
-        offer.pay === null || offer.payCurrency === null
-          ? null
-          : { amount: offer.pay, currency: offer.payCurrency },
+      pay: withPeak(pay, peakBonus),
+      peakBonus,
       restaurant: {
         name: restaurant.nameAr,
         location: restaurant.location,
@@ -1415,7 +1449,7 @@ export class DispatchService implements OnModuleInit {
             note: command.reason,
             adminId: command.admin.accountId,
             captainFault: command.captainFault ?? null,
-            offer: { id: offerId, pay: shown.pay, expiresAt },
+            offer: { id: offerId, pay: withPeak(shown.pay, shown.peak), expiresAt },
           },
           now,
         );
@@ -1626,4 +1660,15 @@ function commandHash(command: unknown): string {
 // «أقصى مبلغ أحمله» is measured against.
 function pickupPaymentOf(order: DispatchOrder): { amount: bigint; currency: string } {
   return { amount: order.itemsValue, currency: order.currency };
+}
+
+// CA §8.2: the pay an offer shows, the order pay plus the peak bonus in the
+// same currency.
+function withPeak(
+  pay: { amount: bigint; currency: string } | null,
+  peak: { amount: bigint; currency: string } | null,
+): { amount: bigint; currency: string } | null {
+  return pay && peak && peak.currency === pay.currency
+    ? { amount: pay.amount + peak.amount, currency: pay.currency }
+    : pay;
 }

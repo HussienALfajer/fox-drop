@@ -3,10 +3,10 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
-import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_moments.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_captain.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_dispatch.dart';
@@ -61,7 +61,7 @@ abstract class AdminBoardDtoOutputOrdersInner
   DateTime get placedAt;
 
   @BuiltValueField(wireName: r'restaurant')
-  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner get restaurant;
+  CaptainPeakBonusDtoOutputWindowsInnerZonesInner get restaurant;
 
   @BuiltValueField(wireName: r'neighbourhood')
   String get neighbourhood;
@@ -158,7 +158,7 @@ class _$AdminBoardDtoOutputOrdersInnerSerializer
     yield serializers.serialize(
       object.restaurant,
       specifiedType: const FullType(
-        AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+        CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
       ),
     );
     yield r'neighbourhood';
@@ -299,10 +299,10 @@ class _$AdminBoardDtoOutputOrdersInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+                      CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
                     ),
                   )
-                  as AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner;
+                  as CaptainPeakBonusDtoOutputWindowsInnerZonesInner;
           result.restaurant.replace(valueDes);
           break;
         case r'neighbourhood':

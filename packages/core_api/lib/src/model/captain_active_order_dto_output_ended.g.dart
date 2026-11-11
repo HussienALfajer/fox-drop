@@ -253,7 +253,7 @@ class _$CaptainActiveOrderDtoOutputEnded
   @override
   final CaptainActiveOrderDtoOutputEndedPay? pay;
   @override
-  final CaptainActiveOrderDtoOutputEndedCharge? charge;
+  final CaptainActiveOrderDtoOutputEndedPay? charge;
   @override
   final DateTime at;
 
@@ -360,10 +360,10 @@ class CaptainActiveOrderDtoOutputEndedBuilder
       _$this._pay ??= CaptainActiveOrderDtoOutputEndedPayBuilder();
   set pay(CaptainActiveOrderDtoOutputEndedPayBuilder? pay) => _$this._pay = pay;
 
-  CaptainActiveOrderDtoOutputEndedChargeBuilder? _charge;
-  CaptainActiveOrderDtoOutputEndedChargeBuilder get charge =>
-      _$this._charge ??= CaptainActiveOrderDtoOutputEndedChargeBuilder();
-  set charge(CaptainActiveOrderDtoOutputEndedChargeBuilder? charge) =>
+  CaptainActiveOrderDtoOutputEndedPayBuilder? _charge;
+  CaptainActiveOrderDtoOutputEndedPayBuilder get charge =>
+      _$this._charge ??= CaptainActiveOrderDtoOutputEndedPayBuilder();
+  set charge(CaptainActiveOrderDtoOutputEndedPayBuilder? charge) =>
       _$this._charge = charge;
 
   DateTime? _at;

@@ -426,7 +426,7 @@ class _$AdminOrderCardDtoOutputOrder extends AdminOrderCardDtoOutputOrder {
   @override
   final DateTime placedAt;
   @override
-  final CustomerLocationDtoOutputZone? restaurant;
+  final AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner? restaurant;
   @override
   final String neighbourhood;
   @override
@@ -576,11 +576,13 @@ class AdminOrderCardDtoOutputOrderBuilder
   DateTime? get placedAt => _$this._placedAt;
   set placedAt(DateTime? placedAt) => _$this._placedAt = placedAt;
 
-  CustomerLocationDtoOutputZoneBuilder? _restaurant;
-  CustomerLocationDtoOutputZoneBuilder get restaurant =>
-      _$this._restaurant ??= CustomerLocationDtoOutputZoneBuilder();
-  set restaurant(CustomerLocationDtoOutputZoneBuilder? restaurant) =>
-      _$this._restaurant = restaurant;
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder? _restaurant;
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder get restaurant =>
+      _$this._restaurant ??=
+          AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder();
+  set restaurant(
+    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder? restaurant,
+  ) => _$this._restaurant = restaurant;
 
   String? _neighbourhood;
   String? get neighbourhood => _$this._neighbourhood;

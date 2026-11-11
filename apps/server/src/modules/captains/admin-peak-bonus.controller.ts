@@ -27,6 +27,7 @@ const windowFields = {
 };
 
 const peakVersion = z.object({
+  id: z.uuid(),
   enabled: z.boolean(),
   currency: z.string().length(3),
   effectiveFrom: z.iso.datetime(),
@@ -120,6 +121,7 @@ export class AdminPeakBonusController {
 
 function versionBody(version: PeakVersionView) {
   return {
+    id: version.id,
     enabled: version.enabled,
     currency: version.currency,
     effectiveFrom: version.effectiveFrom.toISOString(),

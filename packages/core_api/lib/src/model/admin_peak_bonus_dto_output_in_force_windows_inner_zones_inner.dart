@@ -8,7 +8,7 @@ import 'package:built_value/serializer.dart';
 
 part 'admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.g.dart';
 
-/// AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner
+/// The zone the point is in, the neighbourhood of an unsaved point.
 ///
 /// Properties:
 /// * [id]

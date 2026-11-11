@@ -10,6 +10,7 @@ import { ValkeyModule } from '../../valkey/valkey.module.js';
 import { AdminCaptainsController } from './admin-captains.controller.js';
 import { AdminPeakBonusController } from './admin-peak-bonus.controller.js';
 import { CaptainAvailabilityController } from './captain-availability.controller.js';
+import { CaptainPeakBonusController } from './captain-peak-bonus.controller.js';
 import { CaptainsService } from './captains.service.js';
 import { LivePositions } from './live-positions.js';
 import { LocationPartitions } from './location-partitions.js';
@@ -30,7 +31,12 @@ import { PeakBonusService } from './peak-bonus.service.js';
     AuditModule,
     ContentModule,
   ],
-  controllers: [CaptainAvailabilityController, AdminCaptainsController, AdminPeakBonusController],
+  controllers: [
+    CaptainAvailabilityController,
+    CaptainPeakBonusController,
+    AdminCaptainsController,
+    AdminPeakBonusController,
+  ],
   providers: [CaptainsService, PeakBonusService, LivePositions],
   exports: [CaptainsService, PeakBonusService],
 })
@@ -49,6 +55,7 @@ export type {
   OnlineBlock,
 } from './availability.js';
 export { orderPay, type PayParts, type PayRate } from './pay.js';
+export { localClock, type PeakWindow } from './peak-bonus.js';
 export {
   type ActiveOrderLookup,
   type AvailabilityChange,

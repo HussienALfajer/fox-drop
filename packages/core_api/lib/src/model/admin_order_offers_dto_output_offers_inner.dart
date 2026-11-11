@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/customer_location_dto_output_zone.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -33,7 +33,7 @@ abstract class AdminOrderOffersDtoOutputOffersInner
   String get id;
 
   @BuiltValueField(wireName: r'captain')
-  CustomerLocationDtoOutputZone? get captain;
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner? get captain;
 
   /// Operations’ («تعيين من العمليات») or the automatic dispatcher’s.
   @BuiltValueField(wireName: r'kind')
@@ -103,7 +103,7 @@ class _$AdminOrderOffersDtoOutputOffersInnerSerializer
         : serializers.serialize(
             object.captain,
             specifiedType: const FullType.nullable(
-              CustomerLocationDtoOutputZone,
+              AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
             ),
           );
     yield r'kind';
@@ -190,10 +190,10 @@ class _$AdminOrderOffersDtoOutputOffersInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      CustomerLocationDtoOutputZone,
+                      AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
                     ),
                   )
-                  as CustomerLocationDtoOutputZone?;
+                  as AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?;
           if (valueDes == null) continue;
           result.captain.replace(valueDes);
           break;

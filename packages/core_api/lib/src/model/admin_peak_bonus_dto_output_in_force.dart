@@ -13,6 +13,7 @@ part 'admin_peak_bonus_dto_output_in_force.g.dart';
 /// Null until the owner first saves it: off (D15).
 ///
 /// Properties:
+/// * [id]
 /// * [enabled]
 /// * [currency]
 /// * [effectiveFrom]
@@ -24,6 +25,9 @@ abstract class AdminPeakBonusDtoOutputInForce
           AdminPeakBonusDtoOutputInForce,
           AdminPeakBonusDtoOutputInForceBuilder
         > {
+  @BuiltValueField(wireName: r'id')
+  String get id;
+
   @BuiltValueField(wireName: r'enabled')
   bool get enabled;
 
@@ -66,6 +70,11 @@ class _$AdminPeakBonusDtoOutputInForceSerializer
     AdminPeakBonusDtoOutputInForce object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    yield r'id';
+    yield serializers.serialize(
+      object.id,
+      specifiedType: const FullType(String),
+    );
     yield r'enabled';
     yield serializers.serialize(
       object.enabled,
@@ -115,6 +124,15 @@ class _$AdminPeakBonusDtoOutputInForceSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'id':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.id = valueDes;
+          break;
         case r'enabled':
           final valueDes =
               serializers.deserialize(

@@ -8,14 +8,15 @@ import 'package:built_value/serializer.dart';
 
 part 'captain_delivery_summary_dto_output_summary_pay.g.dart';
 
-/// The peak bonus comes with the peak windows.
+/// The pay in its parts, as the delivery posted them.
 ///
 /// Properties:
 /// * [base_] - Integer minor units (AP §8.6).
 /// * [distance] - Integer minor units (AP §8.6).
 /// * [topUp] - «إكمال للحد الأدنى», shown when above 0.
 /// * [waiting] - Integer minor units (AP §8.6).
-/// * [total] - «ربحت من هذا الطلب: {الأجر}».
+/// * [peak] - «مكافأة الذروة» (AP §9.12.5, D15), shown when above 0.
+/// * [total] - «ربحت من هذا الطلب: {الأجر}», the peak bonus included.
 /// * [currency]
 @BuiltValue()
 abstract class CaptainDeliverySummaryDtoOutputSummaryPay
@@ -40,7 +41,11 @@ abstract class CaptainDeliverySummaryDtoOutputSummaryPay
   @BuiltValueField(wireName: r'waiting')
   String get waiting;
 
-  /// «ربحت من هذا الطلب: {الأجر}».
+  /// «مكافأة الذروة» (AP §9.12.5, D15), shown when above 0.
+  @BuiltValueField(wireName: r'peak')
+  String get peak;
+
+  /// «ربحت من هذا الطلب: {الأجر}», the peak bonus included.
   @BuiltValueField(wireName: r'total')
   String get total;
 
@@ -96,6 +101,11 @@ class _$CaptainDeliverySummaryDtoOutputSummaryPaySerializer
     yield r'waiting';
     yield serializers.serialize(
       object.waiting,
+      specifiedType: const FullType(String),
+    );
+    yield r'peak';
+    yield serializers.serialize(
+      object.peak,
       specifiedType: const FullType(String),
     );
     yield r'total';
@@ -170,6 +180,15 @@ class _$CaptainDeliverySummaryDtoOutputSummaryPaySerializer
                   )
                   as String;
           result.waiting = valueDes;
+          break;
+        case r'peak':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.peak = valueDes;
           break;
         case r'total':
           final valueDes =

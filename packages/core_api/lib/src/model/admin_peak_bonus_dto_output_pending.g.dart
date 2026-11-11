@@ -8,19 +8,22 @@ part of 'admin_peak_bonus_dto_output_pending.dart';
 
 class _$AdminPeakBonusDtoOutputPending extends AdminPeakBonusDtoOutputPending {
   @override
+  final String id;
+  @override
   final bool enabled;
   @override
   final String currency;
   @override
   final DateTime effectiveFrom;
   @override
-  final BuiltList<AdminPeakBonusDtoOutputInForceWindowsInner> windows;
+  final BuiltList<AdminPeakBonusDtoOutputPendingWindowsInner> windows;
 
   factory _$AdminPeakBonusDtoOutputPending([
     void Function(AdminPeakBonusDtoOutputPendingBuilder)? updates,
   ]) => (AdminPeakBonusDtoOutputPendingBuilder()..update(updates))._build();
 
   _$AdminPeakBonusDtoOutputPending._({
+    required this.id,
     required this.enabled,
     required this.currency,
     required this.effectiveFrom,
@@ -39,6 +42,7 @@ class _$AdminPeakBonusDtoOutputPending extends AdminPeakBonusDtoOutputPending {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is AdminPeakBonusDtoOutputPending &&
+        id == other.id &&
         enabled == other.enabled &&
         currency == other.currency &&
         effectiveFrom == other.effectiveFrom &&
@@ -48,6 +52,7 @@ class _$AdminPeakBonusDtoOutputPending extends AdminPeakBonusDtoOutputPending {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, enabled.hashCode);
     _$hash = $jc(_$hash, currency.hashCode);
     _$hash = $jc(_$hash, effectiveFrom.hashCode);
@@ -59,6 +64,7 @@ class _$AdminPeakBonusDtoOutputPending extends AdminPeakBonusDtoOutputPending {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'AdminPeakBonusDtoOutputPending')
+          ..add('id', id)
           ..add('enabled', enabled)
           ..add('currency', currency)
           ..add('effectiveFrom', effectiveFrom)
@@ -75,6 +81,10 @@ class AdminPeakBonusDtoOutputPendingBuilder
         > {
   _$AdminPeakBonusDtoOutputPending? _$v;
 
+  String? _id;
+  String? get id => _$this._id;
+  set id(String? id) => _$this._id = id;
+
   bool? _enabled;
   bool? get enabled => _$this._enabled;
   set enabled(bool? enabled) => _$this._enabled = enabled;
@@ -88,12 +98,12 @@ class AdminPeakBonusDtoOutputPendingBuilder
   set effectiveFrom(DateTime? effectiveFrom) =>
       _$this._effectiveFrom = effectiveFrom;
 
-  ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInner>? _windows;
-  ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInner> get windows =>
+  ListBuilder<AdminPeakBonusDtoOutputPendingWindowsInner>? _windows;
+  ListBuilder<AdminPeakBonusDtoOutputPendingWindowsInner> get windows =>
       _$this._windows ??=
-          ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInner>();
+          ListBuilder<AdminPeakBonusDtoOutputPendingWindowsInner>();
   set windows(
-    ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInner>? windows,
+    ListBuilder<AdminPeakBonusDtoOutputPendingWindowsInner>? windows,
   ) => _$this._windows = windows;
 
   AdminPeakBonusDtoOutputPendingBuilder() {
@@ -103,6 +113,7 @@ class AdminPeakBonusDtoOutputPendingBuilder
   AdminPeakBonusDtoOutputPendingBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _id = $v.id;
       _enabled = $v.enabled;
       _currency = $v.currency;
       _effectiveFrom = $v.effectiveFrom;
@@ -131,6 +142,11 @@ class AdminPeakBonusDtoOutputPendingBuilder
       _$result =
           _$v ??
           _$AdminPeakBonusDtoOutputPending._(
+            id: BuiltValueNullFieldError.checkNotNull(
+              id,
+              r'AdminPeakBonusDtoOutputPending',
+              'id',
+            ),
             enabled: BuiltValueNullFieldError.checkNotNull(
               enabled,
               r'AdminPeakBonusDtoOutputPending',

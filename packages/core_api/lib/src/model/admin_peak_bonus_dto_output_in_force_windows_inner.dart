@@ -43,7 +43,7 @@ abstract class AdminPeakBonusDtoOutputInForceWindowsInner
 
   /// None: every zone.
   @BuiltValueField(wireName: r'zones')
-  BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner> get zones;
+  BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?> get zones;
 
   AdminPeakBonusDtoOutputInForceWindowsInner._();
 
@@ -100,7 +100,7 @@ class _$AdminPeakBonusDtoOutputInForceWindowsInnerSerializer
     yield serializers.serialize(
       object.zones,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner),
+        FullType.nullable(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner),
       ]),
     );
   }
@@ -165,13 +165,13 @@ class _$AdminPeakBonusDtoOutputInForceWindowsInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
+                      FullType.nullable(
                         AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner
+                    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
                   >;
           result.zones.replace(valueDes);
           break;

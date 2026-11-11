@@ -426,7 +426,7 @@ class _$AdminBoardDtoOutputOrdersInner extends AdminBoardDtoOutputOrdersInner {
   @override
   final DateTime placedAt;
   @override
-  final AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner restaurant;
+  final CaptainPeakBonusDtoOutputWindowsInnerZonesInner restaurant;
   @override
   final String neighbourhood;
   @override
@@ -576,12 +576,12 @@ class AdminBoardDtoOutputOrdersInnerBuilder
   DateTime? get placedAt => _$this._placedAt;
   set placedAt(DateTime? placedAt) => _$this._placedAt = placedAt;
 
-  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder? _restaurant;
-  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder get restaurant =>
+  CaptainPeakBonusDtoOutputWindowsInnerZonesInnerBuilder? _restaurant;
+  CaptainPeakBonusDtoOutputWindowsInnerZonesInnerBuilder get restaurant =>
       _$this._restaurant ??=
-          AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder();
+          CaptainPeakBonusDtoOutputWindowsInnerZonesInnerBuilder();
   set restaurant(
-    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder? restaurant,
+    CaptainPeakBonusDtoOutputWindowsInnerZonesInnerBuilder? restaurant,
   ) => _$this._restaurant = restaurant;
 
   String? _neighbourhood;

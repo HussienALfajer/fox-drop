@@ -1268,6 +1268,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/peak-bonus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainPeakBonusPeakBonus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/captains/{captainId}/availability": {
         parameters: {
             query?: never;
@@ -4117,6 +4133,43 @@ export interface components {
             /** @description The new points kept. */
             accepted: number;
         };
+        CaptainPeakBonusDto_Output: {
+            /** @description The windows in force while the bonus is on (CA §12.5); empty while it is off. */
+            windows: {
+                /** @description ISO days: 1 Monday to 7 Sunday. */
+                days: number[];
+                /** @description Minutes from midnight on the city clock. */
+                startMinute: number;
+                /** @description Minutes from midnight; at or before the start it ends the next day. */
+                endMinute: number;
+                /** @description Per delivered order. */
+                amount: {
+                    amount: string;
+                    currency: string;
+                };
+                /** @description The zones of the restaurants it pays for; none: every zone. */
+                zones: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                }[];
+            }[];
+            /** @description «مكافأة الذروة الآن: +{المبلغ} لكل طلب حتى {الساعة}» on the home screen. */
+            active: {
+                amount: {
+                    amount: string;
+                    currency: string;
+                };
+                /** Format: date-time */
+                until: string;
+                /** @description The zones of the restaurants it pays for; none: every zone. */
+                zones: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                }[];
+            }[];
+        };
         AdminCaptainAvailabilityDto_Output: {
             /** @enum {string} */
             state: "offline" | "online_available" | "busy" | "last_order" | "not_receiving_offers" | "suspended";
@@ -4130,6 +4183,8 @@ export interface components {
         AdminPeakBonusDto_Output: {
             /** @description Null until the owner first saves it: off (D15). */
             inForce: {
+                /** Format: uuid */
+                id: string;
                 enabled: boolean;
                 currency: string;
                 /** Format: date-time */
@@ -4153,6 +4208,8 @@ export interface components {
             } | null;
             /** @description A lowering or disabling waiting for the end of the current window. */
             pending: {
+                /** Format: uuid */
+                id: string;
                 enabled: boolean;
                 currency: string;
                 /** Format: date-time */
@@ -8177,7 +8234,7 @@ export interface components {
                 /** Format: uuid */
                 orderId: string;
                 number: string;
-                /** @description The peak bonus comes with the peak windows. */
+                /** @description The pay in its parts, as the delivery posted them. */
                 pay: {
                     /** @description Integer minor units (AP §8.6). */
                     base: string;
@@ -8187,7 +8244,9 @@ export interface components {
                     topUp: string;
                     /** @description Integer minor units (AP §8.6). */
                     waiting: string;
-                    /** @description «ربحت من هذا الطلب: {الأجر}». */
+                    /** @description «مكافأة الذروة» (AP §9.12.5, D15), shown when above 0. */
+                    peak: string;
+                    /** @description «ربحت من هذا الطلب: {الأجر}», the peak bonus included. */
                     total: string;
                     currency: string;
                 };
@@ -8592,8 +8651,14 @@ export interface components {
                  * @description The countdown ring runs to it (CA §8.2).
                  */
                 expiresAt: string;
-                /** @description The order pay, the largest text; «قد يُضاف أجر انتظار». Null without a pay table. */
+                /** @description The order pay plus the peak bonus if it would apply now, the largest text; «قد يُضاف أجر انتظار». Null without a pay table. */
                 pay: {
+                    /** @description Minor units of the currency, as a string. */
+                    amount: string;
+                    currency: string;
+                } | null;
+                /** @description «يشمل مكافأة الذروة +{المبلغ}» (AP §9.12.5, D15), included in pay; null outside a window. */
+                peakBonus: {
                     /** @description Minor units of the currency, as a string. */
                     amount: string;
                     currency: string;
@@ -8668,8 +8733,14 @@ export interface components {
                  * @description The countdown ring runs to it (CA §8.2).
                  */
                 expiresAt: string;
-                /** @description The order pay, the largest text; «قد يُضاف أجر انتظار». Null without a pay table. */
+                /** @description The order pay plus the peak bonus if it would apply now, the largest text; «قد يُضاف أجر انتظار». Null without a pay table. */
                 pay: {
+                    /** @description Minor units of the currency, as a string. */
+                    amount: string;
+                    currency: string;
+                } | null;
+                /** @description «يشمل مكافأة الذروة +{المبلغ}» (AP §9.12.5, D15), included in pay; null outside a window. */
+                peakBonus: {
                     /** @description Minor units of the currency, as a string. */
                     amount: string;
                     currency: string;
@@ -10693,6 +10764,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainLocationsSavedDto_Output"];
+                };
+            };
+        };
+    };
+    captainPeakBonusPeakBonus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainPeakBonusDto_Output"];
                 };
             };
         };

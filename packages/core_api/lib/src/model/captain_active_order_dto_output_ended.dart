@@ -4,7 +4,6 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/captain_active_order_dto_output_ended_charge.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_ended_pay.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -53,7 +52,7 @@ abstract class CaptainActiveOrderDtoOutputEnded
   CaptainActiveOrderDtoOutputEndedPay? get pay;
 
   @BuiltValueField(wireName: r'charge')
-  CaptainActiveOrderDtoOutputEndedCharge? get charge;
+  CaptainActiveOrderDtoOutputEndedPay? get charge;
 
   @BuiltValueField(wireName: r'at')
   DateTime get at;
@@ -134,7 +133,7 @@ class _$CaptainActiveOrderDtoOutputEndedSerializer
         : serializers.serialize(
             object.charge,
             specifiedType: const FullType.nullable(
-              CaptainActiveOrderDtoOutputEndedCharge,
+              CaptainActiveOrderDtoOutputEndedPay,
             ),
           );
     yield r'at';
@@ -238,10 +237,10 @@ class _$CaptainActiveOrderDtoOutputEndedSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      CaptainActiveOrderDtoOutputEndedCharge,
+                      CaptainActiveOrderDtoOutputEndedPay,
                     ),
                   )
-                  as CaptainActiveOrderDtoOutputEndedCharge?;
+                  as CaptainActiveOrderDtoOutputEndedPay?;
           if (valueDes == null) continue;
           result.charge.replace(valueDes);
           break;

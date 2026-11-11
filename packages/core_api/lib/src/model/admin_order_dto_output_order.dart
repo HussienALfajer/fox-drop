@@ -3,7 +3,6 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/customer_location_dto_output_zone.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_edits_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf.dart';
@@ -11,6 +10,7 @@ import 'package:core_api/src/model/admin_order_dto_output_order_outcome_choices.
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cannot_complete.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_no_answer.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_outcome_change.dart';
@@ -111,7 +111,7 @@ abstract class AdminOrderDtoOutputOrder
   DateTime get placedAt;
 
   @BuiltValueField(wireName: r'restaurant')
-  CustomerLocationDtoOutputZone? get restaurant;
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner? get restaurant;
 
   @BuiltValueField(wireName: r'neighbourhood')
   String get neighbourhood;
@@ -297,7 +297,7 @@ class _$AdminOrderDtoOutputOrderSerializer
         : serializers.serialize(
             object.restaurant,
             specifiedType: const FullType.nullable(
-              CustomerLocationDtoOutputZone,
+              AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
             ),
           );
     yield r'neighbourhood';
@@ -654,10 +654,10 @@ class _$AdminOrderDtoOutputOrderSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      CustomerLocationDtoOutputZone,
+                      AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
                     ),
                   )
-                  as CustomerLocationDtoOutputZone?;
+                  as AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?;
           if (valueDes == null) continue;
           result.restaurant.replace(valueDes);
           break;

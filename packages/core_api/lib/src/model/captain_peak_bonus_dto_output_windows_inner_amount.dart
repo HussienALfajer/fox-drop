@@ -6,64 +6,66 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'customer_location_dto_output_zone.g.dart';
+part 'captain_peak_bonus_dto_output_windows_inner_amount.g.dart';
 
-/// The zone the point is in, the neighbourhood of an unsaved point.
+/// Per delivered order.
 ///
 /// Properties:
-/// * [id]
-/// * [name]
+/// * [amount]
+/// * [currency]
 @BuiltValue()
-abstract class CustomerLocationDtoOutputZone
+abstract class CaptainPeakBonusDtoOutputWindowsInnerAmount
     implements
         Built<
-          CustomerLocationDtoOutputZone,
-          CustomerLocationDtoOutputZoneBuilder
+          CaptainPeakBonusDtoOutputWindowsInnerAmount,
+          CaptainPeakBonusDtoOutputWindowsInnerAmountBuilder
         > {
-  @BuiltValueField(wireName: r'id')
-  String get id;
+  @BuiltValueField(wireName: r'amount')
+  String get amount;
 
-  @BuiltValueField(wireName: r'name')
-  String get name;
+  @BuiltValueField(wireName: r'currency')
+  String get currency;
 
-  CustomerLocationDtoOutputZone._();
+  CaptainPeakBonusDtoOutputWindowsInnerAmount._();
 
-  factory CustomerLocationDtoOutputZone([
-    void updates(CustomerLocationDtoOutputZoneBuilder b),
-  ]) = _$CustomerLocationDtoOutputZone;
+  factory CaptainPeakBonusDtoOutputWindowsInnerAmount([
+    void updates(CaptainPeakBonusDtoOutputWindowsInnerAmountBuilder b),
+  ]) = _$CaptainPeakBonusDtoOutputWindowsInnerAmount;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerLocationDtoOutputZoneBuilder b) => b;
+  static void _defaults(CaptainPeakBonusDtoOutputWindowsInnerAmountBuilder b) =>
+      b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerLocationDtoOutputZone> get serializer =>
-      _$CustomerLocationDtoOutputZoneSerializer();
+  static Serializer<CaptainPeakBonusDtoOutputWindowsInnerAmount>
+  get serializer => _$CaptainPeakBonusDtoOutputWindowsInnerAmountSerializer();
 }
 
-class _$CustomerLocationDtoOutputZoneSerializer
-    implements PrimitiveSerializer<CustomerLocationDtoOutputZone> {
+class _$CaptainPeakBonusDtoOutputWindowsInnerAmountSerializer
+    implements
+        PrimitiveSerializer<CaptainPeakBonusDtoOutputWindowsInnerAmount> {
   @override
   final Iterable<Type> types = const [
-    CustomerLocationDtoOutputZone,
-    _$CustomerLocationDtoOutputZone,
+    CaptainPeakBonusDtoOutputWindowsInnerAmount,
+    _$CaptainPeakBonusDtoOutputWindowsInnerAmount,
   ];
 
   @override
-  final String wireName = r'CustomerLocationDtoOutputZone';
+  final String wireName = r'CaptainPeakBonusDtoOutputWindowsInnerAmount';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CustomerLocationDtoOutputZone object, {
+    CaptainPeakBonusDtoOutputWindowsInnerAmount object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'id';
+    yield r'amount';
     yield serializers.serialize(
-      object.id,
+      object.amount,
       specifiedType: const FullType(String),
     );
-    yield r'name';
+    yield r'currency';
     yield serializers.serialize(
-      object.name,
+      object.currency,
       specifiedType: const FullType(String),
     );
   }
@@ -71,7 +73,7 @@ class _$CustomerLocationDtoOutputZoneSerializer
   @override
   Object serialize(
     Serializers serializers,
-    CustomerLocationDtoOutputZone object, {
+    CaptainPeakBonusDtoOutputWindowsInnerAmount object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -86,30 +88,30 @@ class _$CustomerLocationDtoOutputZoneSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CustomerLocationDtoOutputZoneBuilder result,
+    required CaptainPeakBonusDtoOutputWindowsInnerAmountBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'id':
+        case r'amount':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.id = valueDes;
+          result.amount = valueDes;
           break;
-        case r'name':
+        case r'currency':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.name = valueDes;
+          result.currency = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -120,12 +122,12 @@ class _$CustomerLocationDtoOutputZoneSerializer
   }
 
   @override
-  CustomerLocationDtoOutputZone deserialize(
+  CaptainPeakBonusDtoOutputWindowsInnerAmount deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = CustomerLocationDtoOutputZoneBuilder();
+    final result = CaptainPeakBonusDtoOutputWindowsInnerAmountBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

@@ -6,19 +6,19 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'captain_active_order_dto_output_ended_charge.g.dart';
+part 'captain_peak_bonus_dto_output_active_inner_amount.g.dart';
 
-/// With the captain responsible: the charge on the earnings (CA §10.6).
+/// CaptainPeakBonusDtoOutputActiveInnerAmount
 ///
 /// Properties:
 /// * [amount]
 /// * [currency]
 @BuiltValue()
-abstract class CaptainActiveOrderDtoOutputEndedCharge
+abstract class CaptainPeakBonusDtoOutputActiveInnerAmount
     implements
         Built<
-          CaptainActiveOrderDtoOutputEndedCharge,
-          CaptainActiveOrderDtoOutputEndedChargeBuilder
+          CaptainPeakBonusDtoOutputActiveInnerAmount,
+          CaptainPeakBonusDtoOutputActiveInnerAmountBuilder
         > {
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -26,34 +26,35 @@ abstract class CaptainActiveOrderDtoOutputEndedCharge
   @BuiltValueField(wireName: r'currency')
   String get currency;
 
-  CaptainActiveOrderDtoOutputEndedCharge._();
+  CaptainPeakBonusDtoOutputActiveInnerAmount._();
 
-  factory CaptainActiveOrderDtoOutputEndedCharge([
-    void updates(CaptainActiveOrderDtoOutputEndedChargeBuilder b),
-  ]) = _$CaptainActiveOrderDtoOutputEndedCharge;
+  factory CaptainPeakBonusDtoOutputActiveInnerAmount([
+    void updates(CaptainPeakBonusDtoOutputActiveInnerAmountBuilder b),
+  ]) = _$CaptainPeakBonusDtoOutputActiveInnerAmount;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CaptainActiveOrderDtoOutputEndedChargeBuilder b) => b;
+  static void _defaults(CaptainPeakBonusDtoOutputActiveInnerAmountBuilder b) =>
+      b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainActiveOrderDtoOutputEndedCharge> get serializer =>
-      _$CaptainActiveOrderDtoOutputEndedChargeSerializer();
+  static Serializer<CaptainPeakBonusDtoOutputActiveInnerAmount>
+  get serializer => _$CaptainPeakBonusDtoOutputActiveInnerAmountSerializer();
 }
 
-class _$CaptainActiveOrderDtoOutputEndedChargeSerializer
-    implements PrimitiveSerializer<CaptainActiveOrderDtoOutputEndedCharge> {
+class _$CaptainPeakBonusDtoOutputActiveInnerAmountSerializer
+    implements PrimitiveSerializer<CaptainPeakBonusDtoOutputActiveInnerAmount> {
   @override
   final Iterable<Type> types = const [
-    CaptainActiveOrderDtoOutputEndedCharge,
-    _$CaptainActiveOrderDtoOutputEndedCharge,
+    CaptainPeakBonusDtoOutputActiveInnerAmount,
+    _$CaptainPeakBonusDtoOutputActiveInnerAmount,
   ];
 
   @override
-  final String wireName = r'CaptainActiveOrderDtoOutputEndedCharge';
+  final String wireName = r'CaptainPeakBonusDtoOutputActiveInnerAmount';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CaptainActiveOrderDtoOutputEndedCharge object, {
+    CaptainPeakBonusDtoOutputActiveInnerAmount object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'amount';
@@ -71,7 +72,7 @@ class _$CaptainActiveOrderDtoOutputEndedChargeSerializer
   @override
   Object serialize(
     Serializers serializers,
-    CaptainActiveOrderDtoOutputEndedCharge object, {
+    CaptainPeakBonusDtoOutputActiveInnerAmount object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -86,7 +87,7 @@ class _$CaptainActiveOrderDtoOutputEndedChargeSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CaptainActiveOrderDtoOutputEndedChargeBuilder result,
+    required CaptainPeakBonusDtoOutputActiveInnerAmountBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -120,12 +121,12 @@ class _$CaptainActiveOrderDtoOutputEndedChargeSerializer
   }
 
   @override
-  CaptainActiveOrderDtoOutputEndedCharge deserialize(
+  CaptainPeakBonusDtoOutputActiveInnerAmount deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = CaptainActiveOrderDtoOutputEndedChargeBuilder();
+    final result = CaptainPeakBonusDtoOutputActiveInnerAmountBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

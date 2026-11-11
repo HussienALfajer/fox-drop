@@ -8,6 +8,8 @@ part of 'admin_peak_bonus_dto_output_in_force.dart';
 
 class _$AdminPeakBonusDtoOutputInForce extends AdminPeakBonusDtoOutputInForce {
   @override
+  final String id;
+  @override
   final bool enabled;
   @override
   final String currency;
@@ -21,6 +23,7 @@ class _$AdminPeakBonusDtoOutputInForce extends AdminPeakBonusDtoOutputInForce {
   ]) => (AdminPeakBonusDtoOutputInForceBuilder()..update(updates))._build();
 
   _$AdminPeakBonusDtoOutputInForce._({
+    required this.id,
     required this.enabled,
     required this.currency,
     required this.effectiveFrom,
@@ -39,6 +42,7 @@ class _$AdminPeakBonusDtoOutputInForce extends AdminPeakBonusDtoOutputInForce {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is AdminPeakBonusDtoOutputInForce &&
+        id == other.id &&
         enabled == other.enabled &&
         currency == other.currency &&
         effectiveFrom == other.effectiveFrom &&
@@ -48,6 +52,7 @@ class _$AdminPeakBonusDtoOutputInForce extends AdminPeakBonusDtoOutputInForce {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, enabled.hashCode);
     _$hash = $jc(_$hash, currency.hashCode);
     _$hash = $jc(_$hash, effectiveFrom.hashCode);
@@ -59,6 +64,7 @@ class _$AdminPeakBonusDtoOutputInForce extends AdminPeakBonusDtoOutputInForce {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'AdminPeakBonusDtoOutputInForce')
+          ..add('id', id)
           ..add('enabled', enabled)
           ..add('currency', currency)
           ..add('effectiveFrom', effectiveFrom)
@@ -74,6 +80,10 @@ class AdminPeakBonusDtoOutputInForceBuilder
           AdminPeakBonusDtoOutputInForceBuilder
         > {
   _$AdminPeakBonusDtoOutputInForce? _$v;
+
+  String? _id;
+  String? get id => _$this._id;
+  set id(String? id) => _$this._id = id;
 
   bool? _enabled;
   bool? get enabled => _$this._enabled;
@@ -103,6 +113,7 @@ class AdminPeakBonusDtoOutputInForceBuilder
   AdminPeakBonusDtoOutputInForceBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _id = $v.id;
       _enabled = $v.enabled;
       _currency = $v.currency;
       _effectiveFrom = $v.effectiveFrom;
@@ -131,6 +142,11 @@ class AdminPeakBonusDtoOutputInForceBuilder
       _$result =
           _$v ??
           _$AdminPeakBonusDtoOutputInForce._(
+            id: BuiltValueNullFieldError.checkNotNull(
+              id,
+              r'AdminPeakBonusDtoOutputInForce',
+              'id',
+            ),
             enabled: BuiltValueNullFieldError.checkNotNull(
               enabled,
               r'AdminPeakBonusDtoOutputInForce',

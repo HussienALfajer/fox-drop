@@ -6,7 +6,7 @@ import type { Database } from '../../database/database.js';
 import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { type AuditRequestContext, AuditService } from '../audit/index.js';
-import { CaptainsRefusedError, CaptainsService } from '../captains/index.js';
+import { CaptainsRefusedError, CaptainsService, PeakBonusService } from '../captains/index.js';
 import { CustomersService } from '../customers/index.js';
 import { equivalent, FxService } from '../fx/index.js';
 import { LedgerService } from '../ledger/index.js';
@@ -304,6 +304,7 @@ export class CaptainOrders {
     private readonly jobs: Jobs,
     private readonly merchants: MerchantsService,
     private readonly captains: CaptainsService,
+    private readonly peakBonus: PeakBonusService,
     private readonly settings: SettingsService,
     private readonly audit: AuditService,
     private readonly customers: CustomersService,
@@ -1547,6 +1548,12 @@ export class CaptainOrders {
       now,
     );
     if (!pay) throw new Error(`order ${order.id}'s pay table has no rate for its captain`);
+    const restaurant = await this.merchants.restaurant(order.restaurantId, now);
+    if (!restaurant) throw new Error(`restaurant ${order.restaurantId} not found`);
+    // AP §9.12.5: matched on the delivery time and the restaurant's zone; a
+    // bonus in another currency than the order's (a base changed since it was
+    // placed) pays nothing.
+    const peak = await this.peakBonus.bonusFor(order.cityId, restaurant.location, now);
     return {
       received: collection.received,
       change: collection.change,
@@ -1558,6 +1565,7 @@ export class CaptainOrders {
           : null,
       pay,
       waitingMinutes: waiting,
+      peakBonus: peak !== null && peak.currency === base ? peak : null,
       // AP §9.6.3: a test order, flagged at placing, posts no commission.
       commissionBp,
       amountDue: order.total,
@@ -1579,6 +1587,7 @@ export class CaptainOrders {
         distancePay: collections.distancePay,
         topUpPay: collections.topUpPay,
         waitingPay: collections.waitingPay,
+        peakBonus: collections.peakBonus,
       })
       .from(collections)
       .innerJoin(
@@ -1604,7 +1613,8 @@ export class CaptainOrders {
         distance: row.distancePay,
         topUp: row.topUpPay,
         waiting: row.waitingPay,
-        total: orderPay + row.waitingPay,
+        peak: row.peakBonus,
+        total: orderPay + row.waitingPay + row.peakBonus,
       },
       custodyChange: row.netReceived - paid,
       handInToday: await this.custodyTotal(row.captainId, now),
@@ -2154,7 +2164,15 @@ export interface DeliverySummary {
   orderId: string;
   number: bigint;
   currency: string;
-  pay: { base: bigint; distance: bigint; topUp: bigint; waiting: bigint; total: bigint };
+  pay: {
+    base: bigint;
+    distance: bigint;
+    topUp: bigint;
+    waiting: bigint;
+    // AP §9.12.5, D15: «مكافأة الذروة», 0 outside a window.
+    peak: bigint;
+    total: bigint;
+  };
   // The collection's net minus the pickup payment.
   custodyChange: bigint;
   // The positive custody positions now, converted at current rates.

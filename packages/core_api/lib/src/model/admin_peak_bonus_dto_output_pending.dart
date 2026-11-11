@@ -4,7 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output_pending_windows_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -13,6 +13,7 @@ part 'admin_peak_bonus_dto_output_pending.g.dart';
 /// A lowering or disabling waiting for the end of the current window.
 ///
 /// Properties:
+/// * [id]
 /// * [enabled]
 /// * [currency]
 /// * [effectiveFrom]
@@ -24,6 +25,9 @@ abstract class AdminPeakBonusDtoOutputPending
           AdminPeakBonusDtoOutputPending,
           AdminPeakBonusDtoOutputPendingBuilder
         > {
+  @BuiltValueField(wireName: r'id')
+  String get id;
+
   @BuiltValueField(wireName: r'enabled')
   bool get enabled;
 
@@ -34,7 +38,7 @@ abstract class AdminPeakBonusDtoOutputPending
   DateTime get effectiveFrom;
 
   @BuiltValueField(wireName: r'windows')
-  BuiltList<AdminPeakBonusDtoOutputInForceWindowsInner> get windows;
+  BuiltList<AdminPeakBonusDtoOutputPendingWindowsInner> get windows;
 
   AdminPeakBonusDtoOutputPending._();
 
@@ -66,6 +70,11 @@ class _$AdminPeakBonusDtoOutputPendingSerializer
     AdminPeakBonusDtoOutputPending object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    yield r'id';
+    yield serializers.serialize(
+      object.id,
+      specifiedType: const FullType(String),
+    );
     yield r'enabled';
     yield serializers.serialize(
       object.enabled,
@@ -85,7 +94,7 @@ class _$AdminPeakBonusDtoOutputPendingSerializer
     yield serializers.serialize(
       object.windows,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminPeakBonusDtoOutputInForceWindowsInner),
+        FullType(AdminPeakBonusDtoOutputPendingWindowsInner),
       ]),
     );
   }
@@ -115,6 +124,15 @@ class _$AdminPeakBonusDtoOutputPendingSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'id':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.id = valueDes;
+          break;
         case r'enabled':
           final valueDes =
               serializers.deserialize(
@@ -147,10 +165,10 @@ class _$AdminPeakBonusDtoOutputPendingSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(AdminPeakBonusDtoOutputInForceWindowsInner),
+                      FullType(AdminPeakBonusDtoOutputPendingWindowsInner),
                     ]),
                   )
-                  as BuiltList<AdminPeakBonusDtoOutputInForceWindowsInner>;
+                  as BuiltList<AdminPeakBonusDtoOutputPendingWindowsInner>;
           result.windows.replace(valueDes);
           break;
         default:

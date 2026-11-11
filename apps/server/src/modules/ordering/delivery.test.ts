@@ -8,7 +8,7 @@ import { createDatabase, type Database } from '../../database/database.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
 import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
-import { CaptainsService } from '../captains/index.js';
+import { CaptainsService, localClock, PeakBonusService } from '../captains/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService, type Point } from '../geo/index.js';
 import {
@@ -806,6 +806,42 @@ const deliveryRow = async (orderId: string) =>
 const collectionRow = async (orderId: string) =>
   (await sql.query('SELECT * FROM ordering.collections WHERE order_id = $1', [orderId])).rows;
 
+// AP §9.12.5, D15 (slice 2.16): a peak window running now on Azaz's clock,
+// every day, for every zone, and its end: a newer disabled version written
+// by the migration role, so the bonus stops at once for the next tests (a
+// disabling through the service waits for the window's end).
+async function peakNow(amount: bigint): Promise<() => Promise<void>> {
+  const { minute } = localClock(new Date(), 'Asia/Damascus');
+  await app.get(PeakBonusService).setPeakBonus(
+    azaz,
+    {
+      enabled: true,
+      windows: [
+        {
+          days: [1, 2, 3, 4, 5, 6, 7],
+          startMinute: (minute - 60 + 1440) % 1440,
+          endMinute: (minute + 60) % 1440,
+          amount,
+          zoneIds: [],
+        },
+      ],
+    },
+    change,
+  );
+  return async () => {
+    const migrator = new pg.Client({ connectionString: database.migratorUrl });
+    await migrator.connect();
+    try {
+      await migrator.query(
+        "INSERT INTO captains.peak_bonus_versions (city_id, enabled, currency, effective_from, editor_type, created_at) VALUES ($1, false, 'TRY', clock_timestamp(), 'system', clock_timestamp())",
+        [azaz],
+      );
+    } finally {
+      await migrator.end();
+    }
+  };
+}
+
 describe('POST /v1/captain/orders/{orderId}/deliver (CA §9.7–9.8)', () => {
   it('delivers with outcome normal, books the money and answers the summary', async () => {
     const door = await orderAtDoor();
@@ -1074,6 +1110,31 @@ describe('POST /v1/captain/orders/{orderId}/deliver (CA §9.7–9.8)', () => {
     expect(again.json().summary).toEqual(first.json().summary);
     expect(await collectionRow(door.order.id)).toHaveLength(1);
     expect(await owned(door.captain.captainId, 'captain.earnings')).toBe(2_500n);
+  });
+
+  it('adds the peak bonus inside a window, matched on the restaurant zone (AP §9.12.5, D15)', async () => {
+    const door = await orderAtDoor();
+    const before = await platformNow();
+    const end = await peakNow(500n);
+    try {
+      const answer = await door.deliver();
+      expect(answer.statusCode).toBe(200);
+      expect(answer.json().summary.pay).toMatchObject({
+        base: '2500',
+        peak: '500',
+        total: '3000',
+      });
+      expect(await owned(door.captain.captainId, 'captain.earnings')).toBe(3_000n);
+      expect(delta(before, await platformNow())['platform.captain_pay']).toBe(3_000n);
+      const [collection] = await collectionRow(door.order.id);
+      expect(collection.peak_bonus).toBe('500');
+      expect(collection.peak_bonus_version_id).not.toBeNull();
+    } finally {
+      await end();
+    }
+    // Outside a window: nothing more.
+    const next = await orderAtDoor();
+    expect((await next.deliver()).json().summary.pay).toMatchObject({ peak: '0', total: '2500' });
   });
 
   it('pays the waiting past the threshold apart from the order pay (docs/domain/04)', async () => {
