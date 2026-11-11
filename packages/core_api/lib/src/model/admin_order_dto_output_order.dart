@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/customer_location_dto_output_zone.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_edits_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_customer.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf.dart';
@@ -33,7 +34,6 @@ import 'package:core_api/src/model/admin_order_dto_output_order_cancellation.dar
 import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_reassignments_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_outcome.dart';
-import 'package:core_api/src/model/admin_order_card_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_pickup.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -111,7 +111,7 @@ abstract class AdminOrderDtoOutputOrder
   DateTime get placedAt;
 
   @BuiltValueField(wireName: r'restaurant')
-  AdminOrderCardDtoOutputOrderRestaurant get restaurant;
+  CustomerLocationDtoOutputZone? get restaurant;
 
   @BuiltValueField(wireName: r'neighbourhood')
   String get neighbourhood;
@@ -292,10 +292,14 @@ class _$AdminOrderDtoOutputOrderSerializer
       specifiedType: const FullType(DateTime),
     );
     yield r'restaurant';
-    yield serializers.serialize(
-      object.restaurant,
-      specifiedType: const FullType(AdminOrderCardDtoOutputOrderRestaurant),
-    );
+    yield object.restaurant == null
+        ? null
+        : serializers.serialize(
+            object.restaurant,
+            specifiedType: const FullType.nullable(
+              CustomerLocationDtoOutputZone,
+            ),
+          );
     yield r'neighbourhood';
     yield serializers.serialize(
       object.neighbourhood,
@@ -649,11 +653,12 @@ class _$AdminOrderDtoOutputOrderSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminOrderCardDtoOutputOrderRestaurant,
+                    specifiedType: const FullType.nullable(
+                      CustomerLocationDtoOutputZone,
                     ),
                   )
-                  as AdminOrderCardDtoOutputOrderRestaurant;
+                  as CustomerLocationDtoOutputZone?;
+          if (valueDes == null) continue;
           result.restaurant.replace(valueDes);
           break;
         case r'neighbourhood':

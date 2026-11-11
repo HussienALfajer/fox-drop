@@ -6,19 +6,19 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_order_card_dto_output_order_restaurant.g.dart';
+part 'admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.g.dart';
 
-/// AdminOrderCardDtoOutputOrderRestaurant
+/// AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner
 ///
 /// Properties:
 /// * [id]
 /// * [name]
 @BuiltValue()
-abstract class AdminOrderCardDtoOutputOrderRestaurant
+abstract class AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner
     implements
         Built<
-          AdminOrderCardDtoOutputOrderRestaurant,
-          AdminOrderCardDtoOutputOrderRestaurantBuilder
+          AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+          AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder
         > {
   @BuiltValueField(wireName: r'id')
   String get id;
@@ -26,34 +26,41 @@ abstract class AdminOrderCardDtoOutputOrderRestaurant
   @BuiltValueField(wireName: r'name')
   String get name;
 
-  AdminOrderCardDtoOutputOrderRestaurant._();
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner._();
 
-  factory AdminOrderCardDtoOutputOrderRestaurant([
-    void updates(AdminOrderCardDtoOutputOrderRestaurantBuilder b),
-  ]) = _$AdminOrderCardDtoOutputOrderRestaurant;
+  factory AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner([
+    void updates(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder b),
+  ]) = _$AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminOrderCardDtoOutputOrderRestaurantBuilder b) => b;
+  static void _defaults(
+    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderCardDtoOutputOrderRestaurant> get serializer =>
-      _$AdminOrderCardDtoOutputOrderRestaurantSerializer();
+  static Serializer<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner>
+  get serializer =>
+      _$AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerSerializer();
 }
 
-class _$AdminOrderCardDtoOutputOrderRestaurantSerializer
-    implements PrimitiveSerializer<AdminOrderCardDtoOutputOrderRestaurant> {
+class _$AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerSerializer
+    implements
+        PrimitiveSerializer<
+          AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner
+        > {
   @override
   final Iterable<Type> types = const [
-    AdminOrderCardDtoOutputOrderRestaurant,
-    _$AdminOrderCardDtoOutputOrderRestaurant,
+    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+    _$AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
   ];
 
   @override
-  final String wireName = r'AdminOrderCardDtoOutputOrderRestaurant';
+  final String wireName =
+      r'AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminOrderCardDtoOutputOrderRestaurant object, {
+    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'id';
@@ -71,7 +78,7 @@ class _$AdminOrderCardDtoOutputOrderRestaurantSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminOrderCardDtoOutputOrderRestaurant object, {
+    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -86,7 +93,7 @@ class _$AdminOrderCardDtoOutputOrderRestaurantSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminOrderCardDtoOutputOrderRestaurantBuilder result,
+    required AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -120,12 +127,13 @@ class _$AdminOrderCardDtoOutputOrderRestaurantSerializer
   }
 
   @override
-  AdminOrderCardDtoOutputOrderRestaurant deserialize(
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminOrderCardDtoOutputOrderRestaurantBuilder();
+    final result =
+        AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

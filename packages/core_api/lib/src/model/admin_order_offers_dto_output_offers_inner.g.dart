@@ -170,7 +170,7 @@ class _$AdminOrderOffersDtoOutputOffersInner
   @override
   final String id;
   @override
-  final AdminOrderCardDtoOutputOrderRestaurant captain;
+  final CustomerLocationDtoOutputZone? captain;
   @override
   final AdminOrderOffersDtoOutputOffersInnerKindEnum kind;
   @override
@@ -193,7 +193,7 @@ class _$AdminOrderOffersDtoOutputOffersInner
 
   _$AdminOrderOffersDtoOutputOffersInner._({
     required this.id,
-    required this.captain,
+    this.captain,
     required this.kind,
     required this.handover,
     required this.offeredAt,
@@ -270,10 +270,10 @@ class AdminOrderOffersDtoOutputOffersInnerBuilder
   String? get id => _$this._id;
   set id(String? id) => _$this._id = id;
 
-  AdminOrderCardDtoOutputOrderRestaurantBuilder? _captain;
-  AdminOrderCardDtoOutputOrderRestaurantBuilder get captain =>
-      _$this._captain ??= AdminOrderCardDtoOutputOrderRestaurantBuilder();
-  set captain(AdminOrderCardDtoOutputOrderRestaurantBuilder? captain) =>
+  CustomerLocationDtoOutputZoneBuilder? _captain;
+  CustomerLocationDtoOutputZoneBuilder get captain =>
+      _$this._captain ??= CustomerLocationDtoOutputZoneBuilder();
+  set captain(CustomerLocationDtoOutputZoneBuilder? captain) =>
       _$this._captain = captain;
 
   AdminOrderOffersDtoOutputOffersInnerKindEnum? _kind;
@@ -314,7 +314,7 @@ class AdminOrderOffersDtoOutputOffersInnerBuilder
     final $v = _$v;
     if ($v != null) {
       _id = $v.id;
-      _captain = $v.captain.toBuilder();
+      _captain = $v.captain?.toBuilder();
       _kind = $v.kind;
       _handover = $v.handover;
       _offeredAt = $v.offeredAt;
@@ -353,7 +353,7 @@ class AdminOrderOffersDtoOutputOffersInnerBuilder
               r'AdminOrderOffersDtoOutputOffersInner',
               'id',
             ),
-            captain: captain.build(),
+            captain: _captain?.build(),
             kind: BuiltValueNullFieldError.checkNotNull(
               kind,
               r'AdminOrderOffersDtoOutputOffersInner',
@@ -386,7 +386,7 @@ class AdminOrderOffersDtoOutputOffersInnerBuilder
       late String _$failedField;
       try {
         _$failedField = 'captain';
-        captain.build();
+        _captain?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminOrderOffersDtoOutputOffersInner',

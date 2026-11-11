@@ -203,6 +203,66 @@ export const payRates = captains.table(
   ],
 );
 
+// AP §9.12.5 «مكافأة ساعة الذروة» (D15): a version of a city's peak bonus,
+// never changed, in force from its start unless a newer one was saved before
+// that start (peak-bonus.ts). Off until the owner turns it on.
+export const peakBonusVersions = captains.table(
+  'peak_bonus_versions',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    enabled: boolean('enabled').notNull(),
+    // The city's base currency when the version was saved (AP §8.6).
+    currency: text('currency').notNull(),
+    effectiveFrom: timestamp('effective_from', { withTimezone: true }).notNull(),
+    editorType: text('editor_type', { enum: ['admin', 'system'] }).notNull(),
+    editorId: uuid('editor_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index('peak_bonus_versions_city').on(table.cityId, table.createdAt, table.id),
+    check(
+      'peak_bonus_versions_editor_type_values',
+      sql`${table.editorType} IN ('admin', 'system')`,
+    ),
+    check(
+      'peak_bonus_versions_editor',
+      sql`(${table.editorType} = 'system') = (${table.editorId} IS NULL)`,
+    ),
+    check('peak_bonus_versions_start', sql`${table.effectiveFrom} >= ${table.createdAt}`),
+  ],
+);
+
+// One window of a peak bonus version: its ISO days, its hours in minutes of
+// the city's day (an end before the start runs past midnight), the amount
+// per delivered order and the zones it is limited to (none: every zone).
+export const peakBonusWindows = captains.table(
+  'peak_bonus_windows',
+  {
+    versionId: uuid('version_id')
+      .notNull()
+      .references(() => peakBonusVersions.id),
+    position: integer('position').notNull(),
+    days: integer('days').array().notNull(),
+    startMinute: integer('start_minute').notNull(),
+    endMinute: integer('end_minute').notNull(),
+    amount: bigint('amount', { mode: 'bigint' }).notNull(),
+    // Geo's zone ids, plain values (architecture §4.3).
+    zoneIds: uuid('zone_ids').array().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.versionId, table.position] }),
+    check(
+      'peak_bonus_windows_values',
+      sql`cardinality(${table.days}) > 0 AND ${table.days} <@ ARRAY[1, 2, 3, 4, 5, 6, 7]
+          AND ${table.startMinute} BETWEEN 0 AND 1439 AND ${table.endMinute} BETWEEN 0 AND 1439
+          AND ${table.startMinute} <> ${table.endMinute} AND ${table.amount} > 0`,
+    ),
+  ],
+);
+
 // CA §4.3, architecture §7.3: the points a captain's app sent while online,
 // for routes and disputes; the live position is in Valkey. Partitioned by
 // the month the point was recorded, append-only. A point sent again (a retry)

@@ -435,6 +435,13 @@
       "when": 1794432402840,
       "tag": "0061_dispatch_manual_by_operations",
       "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1794436499803,
+      "tag": "0062_captains_peak_bonus",
+      "breakpoints": true
     }
   ]
 }

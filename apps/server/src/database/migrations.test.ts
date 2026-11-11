@@ -445,6 +445,8 @@ describe('the captains tables (AP §9.7, §9.12.5; CA §7)', () => {
     ['delete a location', 'DELETE FROM captains.locations'],
     ['change a pay table version', "UPDATE captains.pay_tables SET reason = 'x'"],
     ['change a pay rate', 'UPDATE captains.pay_rates SET base_pay = 1'],
+    ['change a peak bonus version', 'UPDATE captains.peak_bonus_versions SET enabled = true'],
+    ['change a peak window', 'UPDATE captains.peak_bonus_windows SET amount = 1'],
     ['delete a captain', 'DELETE FROM captains.captains'],
   ])('refuse the application role to %s', async (_, statement) => {
     await expect(appQuery(statement)).rejects.toThrow(/permission denied/);

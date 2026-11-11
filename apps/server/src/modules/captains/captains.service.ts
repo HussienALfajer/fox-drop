@@ -47,7 +47,9 @@ export type CaptainsRefusal =
   // one at least.
   | 'invalid_carried_currencies'
   // CA §10.5, C4: «أقصى مبلغ أحمله» is above zero, in the city's base.
-  | 'invalid_max_pickup';
+  | 'invalid_max_pickup'
+  // AP §9.12.5: the peak windows' days, hours, amounts and zones.
+  | 'invalid_peak_bonus';
 
 // A change the captains module refuses, with the reason the routes map to
 // their own answers; going online carries its blocks (CA §7.2).

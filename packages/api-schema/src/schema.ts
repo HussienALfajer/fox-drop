@@ -1300,6 +1300,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/peak-bonus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminPeakBonusState"];
+        put: operations["adminPeakBonusSet"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/contact": {
         parameters: {
             query?: never;
@@ -4110,6 +4126,76 @@ export interface components {
         AdminForceOfflineDto: {
             /** @description Shown to the captain and kept in the audit log (AP §9.7.5). */
             reason: string;
+        };
+        AdminPeakBonusDto_Output: {
+            /** @description Null until the owner first saves it: off (D15). */
+            inForce: {
+                enabled: boolean;
+                currency: string;
+                /** Format: date-time */
+                effectiveFrom: string;
+                windows: {
+                    /** @description ISO days: 1 Monday to 7 Sunday. */
+                    days: number[];
+                    /** @description Minutes from midnight on the city clock, 20:00 is 1200. */
+                    startMinute: number;
+                    /** @description Minutes from midnight; at or before the start the window runs past midnight. */
+                    endMinute: number;
+                    /** @description Per delivered order, minor units of the base currency. */
+                    amount: string;
+                    /** @description None: every zone. */
+                    zones: {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                    }[];
+                }[];
+            } | null;
+            /** @description A lowering or disabling waiting for the end of the current window. */
+            pending: {
+                enabled: boolean;
+                currency: string;
+                /** Format: date-time */
+                effectiveFrom: string;
+                windows: {
+                    /** @description ISO days: 1 Monday to 7 Sunday. */
+                    days: number[];
+                    /** @description Minutes from midnight on the city clock, 20:00 is 1200. */
+                    startMinute: number;
+                    /** @description Minutes from midnight; at or before the start the window runs past midnight. */
+                    endMinute: number;
+                    /** @description Per delivered order, minor units of the base currency. */
+                    amount: string;
+                    /** @description None: every zone. */
+                    zones: {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                    }[];
+                }[];
+            } | null;
+            zones: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                active: boolean;
+            }[];
+        };
+        AdminSetPeakBonusDto: {
+            /** Format: uuid */
+            cityId: string;
+            enabled: boolean;
+            windows: {
+                /** @description ISO days: 1 Monday to 7 Sunday. */
+                days: number[];
+                /** @description Minutes from midnight on the city clock, 20:00 is 1200. */
+                startMinute: number;
+                /** @description Minutes from midnight; at or before the start the window runs past midnight. */
+                endMinute: number;
+                /** @description Per delivered order, minor units of the base currency. */
+                amount: string;
+                zoneIds: string[];
+            }[];
         };
         /** @description The support phone and WhatsApp numbers in E.164, when set (AP §9.13). */
         ContactDto_Output: {
@@ -10655,6 +10741,52 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCaptainAvailabilityDto_Output"];
+                };
+            };
+        };
+    };
+    adminPeakBonusState: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPeakBonusDto_Output"];
+                };
+            };
+        };
+    };
+    adminPeakBonusSet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetPeakBonusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPeakBonusDto_Output"];
                 };
             };
         };

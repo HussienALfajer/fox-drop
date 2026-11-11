@@ -24,6 +24,7 @@ export 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_acknowle
 export 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_location.dart';
 export 'package:core_api/src/model/admin_assign_dto.dart';
 export 'package:core_api/src/model/admin_board_dto_output.dart';
+export 'package:core_api/src/model/admin_board_dto_output_orders_inner.dart';
 export 'package:core_api/src/model/admin_cancel_dto.dart';
 export 'package:core_api/src/model/admin_cancel_preview_answer_dto_output.dart';
 export 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner.dart';
@@ -79,7 +80,6 @@ export 'package:core_api/src/model/admin_order_card_dto_output_order_captain.dar
 export 'package:core_api/src/model/admin_order_card_dto_output_order_dispatch.dart';
 export 'package:core_api/src/model/admin_order_card_dto_output_order_dispatch_manual.dart';
 export 'package:core_api/src/model/admin_order_card_dto_output_order_moments.dart';
-export 'package:core_api/src/model/admin_order_card_dto_output_order_restaurant.dart';
 export 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
 export 'package:core_api/src/model/admin_order_dto_output.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order.dart';
@@ -146,6 +146,12 @@ export 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_entri
 export 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_entries_inner_party.dart';
 export 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_loss.dart';
 export 'package:core_api/src/model/admin_outcome_preview_dto.dart';
+export 'package:core_api/src/model/admin_peak_bonus_dto_output.dart';
+export 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force.dart';
+export 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner.dart';
+export 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
+export 'package:core_api/src/model/admin_peak_bonus_dto_output_pending.dart';
+export 'package:core_api/src/model/admin_peak_bonus_dto_output_zones_inner.dart';
 export 'package:core_api/src/model/admin_picker_dto_output.dart';
 export 'package:core_api/src/model/admin_picker_dto_output_captains_inner.dart';
 export 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody.dart';
@@ -185,6 +191,8 @@ export 'package:core_api/src/model/admin_resume_emergency_stop_dto.dart';
 export 'package:core_api/src/model/admin_session_dto_output.dart';
 export 'package:core_api/src/model/admin_set_image_dto.dart';
 export 'package:core_api/src/model/admin_set_outcome_dto.dart';
+export 'package:core_api/src/model/admin_set_peak_bonus_dto.dart';
+export 'package:core_api/src/model/admin_set_peak_bonus_dto_windows_inner.dart';
 export 'package:core_api/src/model/admin_shortfalls_dto_output.dart';
 export 'package:core_api/src/model/admin_shortfalls_dto_output_shortfalls_inner.dart';
 export 'package:core_api/src/model/admin_start_emergency_stop_dto.dart';

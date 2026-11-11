@@ -23,6 +23,7 @@ import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_acknowle
 import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_location.dart';
 import 'package:core_api/src/model/admin_assign_dto.dart';
 import 'package:core_api/src/model/admin_board_dto_output.dart';
+import 'package:core_api/src/model/admin_board_dto_output_orders_inner.dart';
 import 'package:core_api/src/model/admin_cancel_dto.dart';
 import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner.dart';
@@ -78,7 +79,6 @@ import 'package:core_api/src/model/admin_order_card_dto_output_order_captain.dar
 import 'package:core_api/src/model/admin_order_card_dto_output_order_dispatch.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_dispatch_manual.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_moments.dart';
-import 'package:core_api/src/model/admin_order_card_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
 import 'package:core_api/src/model/admin_order_dto_output.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order.dart';
@@ -145,6 +145,12 @@ import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_entri
 import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_entries_inner_party.dart';
 import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_loss.dart';
 import 'package:core_api/src/model/admin_outcome_preview_dto.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output_pending.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output_zones_inner.dart';
 import 'package:core_api/src/model/admin_picker_dto_output.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody.dart';
@@ -184,6 +190,8 @@ import 'package:core_api/src/model/admin_resume_emergency_stop_dto.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/admin_set_image_dto.dart';
 import 'package:core_api/src/model/admin_set_outcome_dto.dart';
+import 'package:core_api/src/model/admin_set_peak_bonus_dto.dart';
+import 'package:core_api/src/model/admin_set_peak_bonus_dto_windows_inner.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output_shortfalls_inner.dart';
 import 'package:core_api/src/model/admin_start_emergency_stop_dto.dart';
@@ -494,6 +502,7 @@ part 'serializers.g.dart';
   AdminAlertsDtoOutputAlertsInnerLocation,
   AdminAssignDto,
   AdminBoardDtoOutput,
+  AdminBoardDtoOutputOrdersInner,
   AdminCancelDto,
   AdminCancelPreviewAnswerDtoOutput,
   AdminCancelPreviewAnswerDtoOutputEntriesInner,
@@ -549,7 +558,6 @@ part 'serializers.g.dart';
   AdminOrderCardDtoOutputOrderDispatch,
   AdminOrderCardDtoOutputOrderDispatchManual,
   AdminOrderCardDtoOutputOrderMoments,
-  AdminOrderCardDtoOutputOrderRestaurant,
   AdminOrderCardDtoOutputOrderTotal,
   AdminOrderDtoOutput,
   AdminOrderDtoOutputOrder,
@@ -616,6 +624,12 @@ part 'serializers.g.dart';
   AdminOutcomePreviewAnswerDtoOutputEntriesInnerParty,
   AdminOutcomePreviewAnswerDtoOutputLoss,
   AdminOutcomePreviewDto,
+  AdminPeakBonusDtoOutput,
+  AdminPeakBonusDtoOutputInForce,
+  AdminPeakBonusDtoOutputInForceWindowsInner,
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+  AdminPeakBonusDtoOutputPending,
+  AdminPeakBonusDtoOutputZonesInner,
   AdminPickerDtoOutput,
   AdminPickerDtoOutputCaptainsInner,
   AdminPickerDtoOutputCaptainsInnerCustody,
@@ -655,6 +669,8 @@ part 'serializers.g.dart';
   AdminSessionDtoOutput,
   AdminSetImageDto,
   AdminSetOutcomeDto,
+  AdminSetPeakBonusDto,
+  AdminSetPeakBonusDtoWindowsInner,
   AdminShortfallsDtoOutput,
   AdminShortfallsDtoOutputShortfallsInner,
   AdminStartEmergencyStopDto,
@@ -1009,10 +1025,6 @@ Serializers serializers =
                 ListBuilder<AdminReasonListsDtoOutputListsInnerReasonsInner>(),
           )
           ..addBuilderFactory(
-            const FullType(BuiltList, [FullType(AdminOrderCardDtoOutputOrder)]),
-            () => ListBuilder<AdminOrderCardDtoOutputOrder>(),
-          )
-          ..addBuilderFactory(
             const FullType(BuiltList, [
               FullType(AdminNotificationTextsDtoOutputTemplatesInner),
             ]),
@@ -1150,6 +1162,21 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminSetPeakBonusDtoWindowsInner),
+            ]),
+            () => ListBuilder<AdminSetPeakBonusDtoWindowsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminOrderOffersDtoOutputOffersInner),
             ]),
             () => ListBuilder<AdminOrderOffersDtoOutputOffersInner>(),
@@ -1269,6 +1296,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminBoardDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<AdminBoardDtoOutputOrdersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(
                 CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInnerOptionsInner,
               ),
@@ -1283,6 +1316,12 @@ Serializers serializers =
               FullType(SenderPoolDtoOutputAlertsInner),
             ]),
             () => ListBuilder<SenderPoolDtoOutputAlertsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminPeakBonusDtoOutputZonesInner),
+            ]),
+            () => ListBuilder<AdminPeakBonusDtoOutputZonesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1479,6 +1518,12 @@ Serializers serializers =
             ]),
             () =>
                 ListBuilder<AdminReassignPreviewAnswerDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminPeakBonusDtoOutputInForceWindowsInner),
+            ]),
+            () => ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

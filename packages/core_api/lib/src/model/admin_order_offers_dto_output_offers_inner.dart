@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/customer_location_dto_output_zone.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_order_card_dto_output_order_restaurant.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -33,7 +33,7 @@ abstract class AdminOrderOffersDtoOutputOffersInner
   String get id;
 
   @BuiltValueField(wireName: r'captain')
-  AdminOrderCardDtoOutputOrderRestaurant get captain;
+  CustomerLocationDtoOutputZone? get captain;
 
   /// Operations’ («تعيين من العمليات») or the automatic dispatcher’s.
   @BuiltValueField(wireName: r'kind')
@@ -98,10 +98,14 @@ class _$AdminOrderOffersDtoOutputOffersInnerSerializer
       specifiedType: const FullType(String),
     );
     yield r'captain';
-    yield serializers.serialize(
-      object.captain,
-      specifiedType: const FullType(AdminOrderCardDtoOutputOrderRestaurant),
-    );
+    yield object.captain == null
+        ? null
+        : serializers.serialize(
+            object.captain,
+            specifiedType: const FullType.nullable(
+              CustomerLocationDtoOutputZone,
+            ),
+          );
     yield r'kind';
     yield serializers.serialize(
       object.kind,
@@ -185,11 +189,12 @@ class _$AdminOrderOffersDtoOutputOffersInnerSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminOrderCardDtoOutputOrderRestaurant,
+                    specifiedType: const FullType.nullable(
+                      CustomerLocationDtoOutputZone,
                     ),
                   )
-                  as AdminOrderCardDtoOutputOrderRestaurant;
+                  as CustomerLocationDtoOutputZone?;
+          if (valueDes == null) continue;
           result.captain.replace(valueDes);
           break;
         case r'kind':
